@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 
 const blogServerMocks = vi.hoisted(() => ({
 	getBlogRecommendations: vi.fn(),
@@ -15,11 +15,13 @@ const mdxServerMocks = vi.hoisted(() => ({
 
 vi.mock('#app/utils/mdx.server.ts', () => mdxServerMocks)
 
+const sessionServerMocks = vi.hoisted(() => ({
+	getUser: vi.fn(),
+}))
+
 // The route module imports server DB/session helpers; mock them to avoid
 // requiring DATABASE_URL and an actual SQLite DB in unit tests.
-vi.mock('#app/utils/session.server.ts', () => ({
-	getUser: vi.fn().mockResolvedValue(null),
-}))
+vi.mock('#app/utils/session.server.ts', () => sessionServerMocks)
 
 vi.mock('#app/utils/prisma.server.ts', () => ({
 	prisma: {
@@ -53,18 +55,41 @@ vi.mock('vite-env-only/macros', () => ({
 // Import after mocks so the route loader sees the mocked deps.
 import { loader } from '../$slug.tsx'
 
-beforeEach(() => {
+function setup() {
 	vi.clearAllMocks()
-})
+	sessionServerMocks.getUser.mockResolvedValue(null)
+}
 
 describe('/blog/:slug loader cache behavior', () => {
+	test('rejects invalid slugs (400) before doing any work', async () => {
+		setup()
+
+		const request = new Request('http://localhost/blog/../etc')
+		const params = { slug: '../etc' }
+
+		await expect(loader({ request, params } as any)).rejects.toMatchObject({
+			status: 400,
+		})
+
+		expect(mdxServerMocks.getMdxPage).not.toHaveBeenCalled()
+		expect(sessionServerMocks.getUser).not.toHaveBeenCalled()
+		expect(blogServerMocks.getBlogRecommendations).not.toHaveBeenCalled()
+		expect(blogServerMocks.getBlogReadRankings).not.toHaveBeenCalled()
+		expect(blogServerMocks.getTotalPostReads).not.toHaveBeenCalled()
+	})
+
 	test('does not compute/cachify per-slug stats when post is missing (404)', async () => {
+		setup()
+
 		mdxServerMocks.getMdxPage.mockResolvedValueOnce(null)
 		blogServerMocks.getBlogRecommendations.mockResolvedValueOnce([])
 
 		const request = new Request('http://localhost/blog/does-not-exist')
 		const params = { slug: 'does-not-exist' }
 
+		// When calling a loader directly, react-router's `data()` helper throws a
+		// `DataWithResponseInit` object (not a `Response`). This assertion matches
+		// that shape as returned by react-router v7.
 		await expect(loader({ request, params } as any)).rejects.toMatchObject({
 			type: 'DataWithResponseInit',
 			data: { recommendations: [] },
@@ -81,11 +106,14 @@ describe('/blog/:slug loader cache behavior', () => {
 				exclude: ['does-not-exist'],
 			}),
 		)
+		expect(sessionServerMocks.getUser).not.toHaveBeenCalled()
 		expect(blogServerMocks.getBlogReadRankings).not.toHaveBeenCalled()
 		expect(blogServerMocks.getTotalPostReads).not.toHaveBeenCalled()
 	})
 
 	test('computes per-slug stats when post exists (200)', async () => {
+		setup()
+
 		mdxServerMocks.getMdxPage.mockResolvedValueOnce({
 			code: 'export default function Test() { return null }',
 			slug: 'my-post',
@@ -119,6 +147,7 @@ describe('/blog/:slug loader cache behavior', () => {
 		expect(blogServerMocks.getBlogRecommendations).toHaveBeenCalledWith(
 			expect.objectContaining({ keywords: ['react'] }),
 		)
+		expect(sessionServerMocks.getUser).toHaveBeenCalledTimes(1)
 		expect(blogServerMocks.getBlogReadRankings).toHaveBeenCalledTimes(1)
 		expect(blogServerMocks.getTotalPostReads).toHaveBeenCalledTimes(1)
 	})

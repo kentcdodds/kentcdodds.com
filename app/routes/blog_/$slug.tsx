@@ -62,10 +62,10 @@ type CatchData = {
 export async function loader({ request, params }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
-	const [user, page] = await Promise.all([
-		getUser(request, { timings }),
-		getMdxPage({ contentDir: 'blog', slug: params.slug }, { request, timings }),
-	])
+	const page = await getMdxPage(
+		{ contentDir: 'blog', slug: params.slug },
+		{ request, timings },
+	)
 
 	if (!page) {
 		// Avoid caching/creating per-slug stats entries for random 404 slugs. (issue #461)
@@ -86,6 +86,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw json(catchData, { status: 404, headers })
 	}
 
+	const userPromise = getUser(request, { timings })
+	const favoritePromise = userPromise.then((user) =>
+		user
+			? prisma.favorite.findUnique({
+					where: {
+						userId_contentType_contentId: {
+							userId: user.id,
+							contentType: 'blog-post',
+							contentId: params.slug,
+						},
+					},
+					select: { id: true },
+				})
+			: null,
+	)
+
 	const [recommendations, readRankings, totalReads, favorite] = await Promise.all([
 		getBlogRecommendations({
 			request,
@@ -99,18 +115,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		}),
 		getBlogReadRankings({ request, slug: params.slug, timings }),
 		getTotalPostReads({ request, slug: params.slug, timings }),
-		user
-			? prisma.favorite.findUnique({
-					where: {
-						userId_contentType_contentId: {
-							userId: user.id,
-							contentType: 'blog-post',
-							contentId: params.slug,
-						},
-					},
-					select: { id: true },
-				})
-			: null,
+		favoritePromise,
 	])
 
 	const headers = {
