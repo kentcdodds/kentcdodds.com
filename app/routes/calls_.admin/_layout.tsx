@@ -23,6 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			title: true,
 			description: true,
 			updatedAt: true,
+			isAnonymous: true,
 			user: { select: { firstName: true, team: true, email: true } },
 		},
 		orderBy: { updatedAt: 'desc' },
@@ -87,6 +88,7 @@ export default function CallListScreen() {
 														</p>
 														<p className="mt-1 truncate text-sm text-gray-500 dark:text-slate-500">
 															{call.user.firstName} • {call.user.email}
+															{call.isAnonymous ? ' • anonymous' : null}
 														</p>
 														<p className="mt-2 line-clamp-2 text-sm text-gray-500 dark:text-slate-400">
 															{call.description}

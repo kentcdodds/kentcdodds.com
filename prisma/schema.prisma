@@ -55,6 +55,7 @@ model Call {
   title       String
   description String
   keywords    String
+  isAnonymous Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   base64      String
