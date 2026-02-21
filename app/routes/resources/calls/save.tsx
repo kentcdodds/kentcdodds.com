@@ -1,6 +1,11 @@
 import { format } from 'date-fns'
 import * as React from 'react'
-import { data as json, redirect, useNavigate, useRevalidator } from 'react-router'
+import {
+	data as json,
+	redirect,
+	useNavigate,
+	useRevalidator,
+} from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { EpisodeArtworkPreview } from '#app/components/calls/episode-artwork-preview.tsx'
 import { Field } from '#app/components/form-elements.tsx'
@@ -78,7 +83,8 @@ function CharacterCountdown({
 	const remainingDisplay = Math.max(0, remaining)
 	let className = 'text-gray-500 dark:text-slate-400'
 	if (remaining <= 0) className = 'text-red-500'
-	else if (remaining <= warnAt) className = 'text-yellow-600 dark:text-yellow-500'
+	else if (remaining <= warnAt)
+		className = 'text-yellow-600 dark:text-yellow-500'
 
 	return (
 		<p
@@ -156,7 +162,9 @@ function RecordingForm({
 	}, [])
 
 	function markInteracted(field: RecordingTextFieldName) {
-		setFieldInteracted((prev) => (prev[field] ? prev : { ...prev, [field]: true }))
+		setFieldInteracted((prev) =>
+			prev[field] ? prev : { ...prev, [field]: true },
+		)
 	}
 
 	function handleTextFieldChange(field: RecordingTextFieldName) {
@@ -164,7 +172,9 @@ function RecordingForm({
 			event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 		) => {
 			const value = event.currentTarget.value
-			setFieldValues((prev) => (prev[field] === value ? prev : { ...prev, [field]: value }))
+			setFieldValues((prev) =>
+				prev[field] === value ? prev : { ...prev, [field]: value },
+			)
 			// Keep the values in sync for counters + validation, but do not show errors
 			// until the field is blurred or the user attempts to submit.
 			setSubmissionData((prev) =>
@@ -292,11 +302,7 @@ function RecordingForm({
 				setIsSubmitting(false)
 			}
 		}
-		reader.addEventListener(
-			'loadend',
-			handleLoadEnd,
-			{ once: true },
-		)
+		reader.addEventListener('loadend', handleLoadEnd, { once: true })
 		setIsSubmitting(true)
 		try {
 			reader.readAsDataURL(audio)
@@ -518,11 +524,7 @@ async function createCall({
 	try {
 		const [
 			{ sendMessageFromDiscordBot },
-			{
-				getDomainUrl,
-				getOptionalTeam,
-				getRequiredServerEnvVar,
-			},
+			{ getDomainUrl, getOptionalTeam, getRequiredServerEnvVar },
 			{ prisma },
 			{ requireUser },
 			{ teamEmoji },
@@ -624,12 +626,13 @@ async function publishCall({
 			description,
 			keywords,
 		} = getNonNull(fields)
+		const summaryName = call.isAnonymous ? 'Anonymous' : call.user.firstName
 		const episodeAudio = await createEpisodeAudio(call.base64, responseAudio)
 		const { episodeUrl, imageUrl } = await createEpisode({
 			request,
 			audio: episodeAudio,
 			title,
-			summary: `${call.user.firstName} asked this on ${format(call.createdAt, 'yyyy-MM-dd')}`,
+			summary: `${summaryName} asked this on ${format(call.createdAt, 'yyyy-MM-dd')}`,
 			description: await markdownToHtml(description),
 			user: call.user,
 			keywords,

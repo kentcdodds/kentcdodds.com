@@ -1,3 +1,5 @@
+import { toBase64 } from './misc.tsx'
+
 type CallKentEpisodeArtworkAvatar =
 	| { kind: 'fetch'; url: string }
 	| { kind: 'public'; publicId: string }
@@ -36,14 +38,6 @@ type CallKentEpisodeArtworkOptions = {
 }
 
 const DESIGN_SIZE = 3000
-
-function toBase64(string: string) {
-	if (typeof window === 'undefined') {
-		return Buffer.from(string).toString('base64')
-	} else {
-		return window.btoa(string)
-	}
-}
 
 // Cloudinary needs double-encoding for `l_text:` payloads.
 function doubleEncode(s: string) {
@@ -110,4 +104,3 @@ export function getCallKentEpisodeArtworkUrl({
 		`kentcdodds.com/social-background.png`,
 	].join('/')
 }
-
