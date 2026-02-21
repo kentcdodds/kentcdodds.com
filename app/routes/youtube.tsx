@@ -94,7 +94,9 @@ export default function YouTubePage() {
 							params={new URLSearchParams({
 								rel: '0',
 								modestbranding: '1',
-								list: playlistId,
+								// Do not include the configured playlist when deep-linking to a
+								// specific video. If the video is not in the playlist, YouTube will
+								// fall back to playing the first playlist entry instead.
 								...(startSeconds ? { start: String(startSeconds) } : {}),
 							}).toString()}
 						/>
