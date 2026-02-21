@@ -64,7 +64,15 @@ export async function consumeVerification({
 	if (!isValid) return null
 
 	await ensurePrimary()
-	await prisma.verification.delete({ where: { id: verification.id } })
+	try {
+		await prisma.verification.delete({ where: { id: verification.id } })
+	} catch (error: unknown) {
+		// Another request may have consumed/deleted it first.
+		if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+			return null
+		}
+		throw error
+	}
 
 	return { target: verification.target }
 }
@@ -93,7 +101,15 @@ export async function consumeVerificationForTarget({
 	if (!isValid) return null
 
 	await ensurePrimary()
-	await prisma.verification.delete({ where: { id: verification.id } })
+	try {
+		await prisma.verification.delete({ where: { id: verification.id } })
+	} catch (error: unknown) {
+		// Another request may have consumed/deleted it first.
+		if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+			return null
+		}
+		throw error
+	}
 
 	return { target: verification.target }
 }
