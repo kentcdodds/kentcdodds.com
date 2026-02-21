@@ -42,10 +42,13 @@ export const teamDisplay: Record<Team, string> = {
 }
 
 export function formatDuration(seconds: number) {
-	const mins = Math.floor(seconds / 60)
+	// Keep rounding semantics (like previous `.toFixed()` usage) but ensure we
+	// never produce an invalid `mm:60` display for fractional inputs.
+	const totalSeconds = Math.max(0, Math.round(seconds))
+	const mins = Math.floor(totalSeconds / 60)
 		.toString()
 		.padStart(2, '0')
-	const secs = (seconds % 60).toFixed().padStart(2, '0')
+	const secs = (totalSeconds % 60).toString().padStart(2, '0')
 	return `${mins}:${secs}`
 }
 
@@ -64,9 +67,8 @@ export function formatAbbreviatedNumber(num: number) {
 }
 
 export function parseDate(dateString: string) {
-	return dateAdd(dateParseISO(dateString), {
-		minutes: new Date().getTimezoneOffset(),
-	})
+	const parsed = dateParseISO(dateString)
+	return dateAdd(parsed, { minutes: parsed.getTimezoneOffset() })
 }
 
 export function formatDate(dateString: string | Date, format = 'PPP') {
