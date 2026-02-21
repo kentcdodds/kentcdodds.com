@@ -19,7 +19,7 @@ import {
 	transcribeMp3WithWorkersAi,
 } from './cloudflare-ai-transcription.server.ts'
 import { stripHtml } from './markdown.server.ts'
-import { getRequiredServerEnvVar } from './misc.ts'
+import { getOptionalTeam, getRequiredServerEnvVar } from './misc.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
 
@@ -227,30 +227,39 @@ async function createEpisode({
 		})
 		const shortDomain = domainUrl.replace(/^https?:\/\//, '')
 
-		// cloudinary needs this to be double-encoded
 		const avatarSize = 1400
-		const { hasGravatar, avatar } = isAnonymous
-			? {
-					hasGravatar: false,
-					avatar: images.kodyProfileGray({
-						resize: {
-							type: 'pad',
-							width: avatarSize,
-							height: avatarSize,
-						},
-					}),
+		let hasGravatar = false
+		let avatar: Parameters<typeof getCallKentEpisodeArtworkUrl>[0]['avatar']
+		if (isAnonymous) {
+			avatar = { kind: 'public', publicId: images.kodyProfileGray.id }
+		} else {
+			const result = await getDirectAvatarForUser(user, {
+				size: avatarSize,
+				request,
+				forceFresh: true,
+			})
+			hasGravatar = result.hasGravatar
+			if (result.hasGravatar) {
+				avatar = { kind: 'fetch', url: result.avatar }
+			} else {
+				const imageProfileIds = {
+					RED: images.kodyProfileRed.id,
+					BLUE: images.kodyProfileBlue.id,
+					YELLOW: images.kodyProfileYellow.id,
+					UNKNOWN: images.kodyProfileGray.id,
 				}
-			: await getDirectAvatarForUser(user, {
-					size: avatarSize,
-					request,
-					forceFresh: true,
-				})
+				avatar = {
+					kind: 'public',
+					publicId: imageProfileIds[getOptionalTeam(user.team)],
+				}
+			}
+		}
 
 		const imageUrl = getCallKentEpisodeArtworkUrl({
 			title,
 			url: `${shortDomain}${shortEpisodePath}`,
 			name: `- ${user.firstName}`,
-			avatarUrl: avatar,
+			avatar,
 			avatarIsRound: hasGravatar,
 			size: 3000,
 		})

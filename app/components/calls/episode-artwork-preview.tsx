@@ -5,7 +5,7 @@ import { getAvatar, getOptionalTeam } from '#app/utils/misc.tsx'
 
 const AVATAR_SIZE = 1400
 
-function getAvatarUrlForArtwork({
+function getAvatarForArtwork({
 	email,
 	team,
 	hasGravatar,
@@ -17,13 +17,14 @@ function getAvatarUrlForArtwork({
 	isAnonymous: boolean
 }) {
 	if (isAnonymous) {
-		return images.kodyProfileGray({
-			resize: { type: 'pad', width: AVATAR_SIZE, height: AVATAR_SIZE },
-		})
+		return { kind: 'public', publicId: images.kodyProfileGray.id } as const
 	}
 
 	if (hasGravatar) {
-		return getAvatar(email, { size: AVATAR_SIZE, fallback: null })
+		return {
+			kind: 'fetch',
+			url: getAvatar(email, { size: AVATAR_SIZE, fallback: null }),
+		} as const
 	}
 
 	const teamKey = getOptionalTeam(team)
@@ -33,10 +34,10 @@ function getAvatarUrlForArtwork({
 		YELLOW: images.kodyProfileYellow,
 		UNKNOWN: images.kodyProfileGray,
 	} as const
-	const builder = kodyProfileByTeam[teamKey]
-	return builder({
-		resize: { type: 'pad', width: AVATAR_SIZE, height: AVATAR_SIZE },
-	})
+	return {
+		kind: 'public',
+		publicId: kodyProfileByTeam[teamKey].id,
+	} as const
 }
 
 function getHost(origin: string) {
@@ -76,9 +77,9 @@ export function EpisodeArtworkPreview({
 	const host = getHost(origin)
 	const titleForPreview = debouncedTitle.trim() || 'Your Call Kent episode'
 
-	const avatarUrl = React.useMemo(
+	const avatar = React.useMemo(
 		() =>
-			getAvatarUrlForArtwork({
+			getAvatarForArtwork({
 				email,
 				team,
 				hasGravatar,
@@ -92,12 +93,12 @@ export function EpisodeArtworkPreview({
 			title: titleForPreview,
 			url: `${host}/calls/00/00`,
 			name: `- ${firstName}`,
-			avatarUrl,
+			avatar,
 			avatarIsRound: hasGravatar && !isAnonymous,
 			// Smaller than production; this is only a UI preview.
 			size: 900,
 		})
-	}, [titleForPreview, host, firstName, avatarUrl, hasGravatar, isAnonymous])
+	}, [titleForPreview, host, firstName, avatar, hasGravatar, isAnonymous])
 
 	const tooltip = isAnonymous
 		? `Anonymous is enabled. Your call still shows up in Kent's admin with your info, but the published episode artwork uses a generic Kody avatar instead of your photo.`

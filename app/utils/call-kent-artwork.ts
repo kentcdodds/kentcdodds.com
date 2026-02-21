@@ -1,3 +1,7 @@
+type CallKentEpisodeArtworkAvatar =
+	| { kind: 'fetch'; url: string }
+	| { kind: 'public'; publicId: string }
+
 type CallKentEpisodeArtworkOptions = {
 	title: string
 	/**
@@ -11,9 +15,11 @@ type CallKentEpisodeArtworkOptions = {
 	 */
 	name: string
 	/**
-	 * Absolute URL for Cloudinary `l_fetch:` layer (Gravatar or Cloudinary URL).
+	 * Avatar used in the artwork.
+	 * - Use `fetch` for remote images (ex: Gravatar).
+	 * - Use `public` for Cloudinary assets (ex: Kody) to keep URLs short.
 	 */
-	avatarUrl: string
+	avatar: CallKentEpisodeArtworkAvatar
 	/**
 	 * Whether to apply a circular crop (`r_max`) to the avatar layer.
 	 * Generally true for real photos, false for illustrations.
@@ -48,7 +54,7 @@ export function getCallKentEpisodeArtworkUrl({
 	title,
 	url,
 	name,
-	avatarUrl,
+	avatar,
 	avatarIsRound,
 	size = 3000,
 }: CallKentEpisodeArtworkOptions) {
@@ -56,8 +62,10 @@ export function getCallKentEpisodeArtworkUrl({
 	const encodedUrl = doubleEncode(url)
 	const encodedName = doubleEncode(name)
 
-	// Cloudinary fetch layers use base64-encoded remote URLs.
-	const encodedAvatar = encodeURIComponent(toBase64(avatarUrl))
+	const avatarLayer =
+		avatar.kind === 'public'
+			? `l_${avatar.publicId.replace(/\//g, ':')}`
+			: `l_fetch:${encodeURIComponent(toBase64(avatar.url))}`
 	const radius = avatarIsRound ? ',r_max' : ''
 
 	const textLines = Number(Math.ceil(Math.min(title.length, 50) / 18).toFixed())
@@ -70,7 +78,7 @@ export function getCallKentEpisodeArtworkUrl({
 		vars,
 		`w_$tw,h_$th,l_kentcdodds.com:social-background`,
 		`co_white,c_fit,g_north_west,w_$gw_mul_6,h_$gh_mul_2.6,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Medium.woff2_180:${encodedTitle}`,
-		`c_crop${radius},g_north_west,h_$gh_mul_5.5,w_$gh_mul_5.5,x_$gw_mul_0.8,y_$gh_mul_${avatarYPosition},l_fetch:${encodedAvatar}`,
+		`c_crop${radius},g_north_west,h_$gh_mul_5.5,w_$gh_mul_5.5,x_$gw_mul_0.8,y_$gh_mul_${avatarYPosition},${avatarLayer}`,
 		`co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Regular.woff2_120:${encodedUrl}`,
 		`co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_${nameYPosition},l_text:kentcdodds.com:Matter-Regular.woff2_140:${encodedName}`,
 		`c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,l_kentcdodds.com:illustrations:mic`,

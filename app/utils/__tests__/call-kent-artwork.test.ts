@@ -7,7 +7,7 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			title: 'Hello world',
 			url: 'kentcdodds.com/calls/01/01',
 			name: '- Alice',
-			avatarUrl: 'https://example.com/avatar.png',
+			avatar: { kind: 'fetch', url: 'https://example.com/avatar.png' },
 			avatarIsRound: true,
 			size: 900,
 		})
@@ -22,7 +22,7 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',
 			name: '- Alice',
-			avatarUrl: 'https://example.com/avatar.png',
+			avatar: { kind: 'fetch', url: 'https://example.com/avatar.png' },
 			avatarIsRound: true,
 		})
 		expect(url).toContain('c_crop,r_max')
@@ -33,24 +33,39 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',
 			name: '- Alice',
-			avatarUrl: 'https://example.com/avatar.png',
+			avatar: { kind: 'fetch', url: 'https://example.com/avatar.png' },
 			avatarIsRound: false,
 		})
 		expect(url).toContain('c_crop,g_north_west')
 		expect(url).not.toContain('r_max')
 	})
 
-	test('encodes avatarUrl into l_fetch', () => {
-		const avatarUrl = 'https://example.com/avatar.png'
-		const expectedBase64 = Buffer.from(avatarUrl).toString('base64')
+	test('encodes fetch avatar URL into l_fetch', () => {
+		const fetchUrl = 'https://example.com/avatar.png'
+		const expectedBase64 = Buffer.from(fetchUrl).toString('base64')
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',
 			name: '- Alice',
-			avatarUrl,
+			avatar: { kind: 'fetch', url: fetchUrl },
 			avatarIsRound: false,
 		})
 		expect(url).toContain(`l_fetch:${encodeURIComponent(expectedBase64)}`)
+	})
+
+	test('uses publicId overlays without l_fetch', () => {
+		const url = getCallKentEpisodeArtworkUrl({
+			title: 'Test',
+			url: 'kentcdodds.com/calls/00/00',
+			name: '- Alice',
+			avatar: {
+				kind: 'public',
+				publicId: 'kentcdodds.com/illustrations/kody/kody_profile_gray',
+			},
+			avatarIsRound: false,
+		})
+		expect(url).toContain('l_kentcdodds.com:illustrations:kody:kody_profile_gray')
+		expect(url).not.toContain('l_fetch:')
 	})
 })
 
