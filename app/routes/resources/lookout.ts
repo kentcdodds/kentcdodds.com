@@ -3,10 +3,22 @@ import  { type Route } from './+types/lookout'
 // this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
 
 
-const SENTRY_HOST = new URL(process.env.SENTRY_DSN).hostname
+const SENTRY_HOST = (() => {
+	const dsn = process.env.SENTRY_DSN
+	if (!dsn) return null
+	try {
+		return new URL(dsn).hostname
+	} catch {
+		return null
+	}
+})()
 const SENTRY_PROJECT_IDS = [process.env.SENTRY_PROJECT_ID]
 
 export async function action({ request }: Route.ActionArgs) {
+	if (!SENTRY_HOST) {
+		throw new Response('Sentry is not configured', { status: 404 })
+	}
+
 	const envelope = await request.text()
 	const piece = envelope.split('\n')[0]
 	invariantResponse(piece, 'no piece in envelope')
