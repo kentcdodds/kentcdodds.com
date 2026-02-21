@@ -76,7 +76,7 @@ describe('cloudflare MSW mocks', () => {
 		)
 
 		expect(res.ok).toBe(true)
-		expect(res.headers.get('content-type')).toMatch(/^audio\\//i)
+		expect(res.headers.get('content-type')).toMatch(/^audio\//i)
 		const buf = await res.arrayBuffer()
 		expect(buf.byteLength).toBeGreaterThan(1024)
 	})

@@ -51,7 +51,13 @@ export async function action({ request }: Route.ActionArgs) {
 			text: text.trim(),
 			voice: voiceRaw || undefined,
 		})
-		return new Response(bytes, {
+		// Some TS `fetch`/`Response` typings don't accept all `Uint8Array` variants.
+		// Normalize into an `ArrayBuffer` body for broad compatibility.
+		const body =
+			bytes.buffer instanceof ArrayBuffer
+				? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+				: Uint8Array.from(bytes).buffer
+		return new Response(body, {
 			headers: {
 				...headers,
 				'Content-Type': contentType || 'audio/mpeg',
