@@ -29,8 +29,10 @@ export function parseEpisodeFavoriteContentId(contentId: string) {
 	if (!seasonRaw || !episodeRaw || rest.length) return null
 	const seasonNumber = Number(seasonRaw)
 	const episodeNumber = Number(episodeRaw)
-	if (!Number.isInteger(seasonNumber) || seasonNumber < 0) return null
-	if (!Number.isInteger(episodeNumber) || episodeNumber < 0) return null
+	if (!Number.isInteger(seasonNumber) || seasonNumber < 1) return null
+	if (!Number.isInteger(episodeNumber) || episodeNumber < 1) return null
+	if (String(seasonNumber) !== seasonRaw) return null
+	if (String(episodeNumber) !== episodeRaw) return null
 	return { seasonNumber, episodeNumber }
 }
 

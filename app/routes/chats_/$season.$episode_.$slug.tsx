@@ -44,7 +44,9 @@ import {
 	typedBoolean,
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { getUser } from '#app/utils/session.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
 import { Themed } from '#app/utils/theme.tsx'
@@ -124,6 +126,7 @@ export const meta: Route.MetaFunction = ({
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const timings = {}
+	const user = await getUser(request, { timings })
 	const seasonNumber = Number(params.season)
 	const episodeParam =
 		'episode' in params
@@ -150,6 +153,23 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		return redirect(`/chats/${params.season}/${episodeParam}/${episode.slug}`)
 	}
 
+	const contentId = getEpisodeFavoriteContentId({
+		seasonNumber: episode.seasonNumber,
+		episodeNumber: episode.episodeNumber,
+	})
+	const favorite = user
+		? await prisma.favorite.findUnique({
+				where: {
+					userId_contentType_contentId: {
+						userId: user.id,
+						contentType: 'chats-with-kent-episode',
+						contentId,
+					},
+				},
+				select: { id: true },
+			})
+		: null
+
 	return json(
 		{
 			prevEpisode:
@@ -162,6 +182,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				season.episodes.filter((e) => episode !== e),
 			),
 			episode,
+			isFavorite: Boolean(favorite),
 		},
 		{
 			headers: {
@@ -416,7 +437,7 @@ function PrevNextButton({
 
 export default function PodcastDetail() {
 	const { requestInfo } = useRootData()
-	const { episode, featured, nextEpisode, prevEpisode } =
+	const { episode, featured, nextEpisode, prevEpisode, isFavorite } =
 		useLoaderData<Route.ComponentProps['loaderData']>()
 	const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
@@ -497,6 +518,7 @@ export default function PodcastDetail() {
 								seasonNumber: episode.seasonNumber,
 								episodeNumber: episode.episodeNumber,
 							})}
+							initialIsFavorite={isFavorite}
 							label="Favorite episode"
 						/>
 						<IconLink
