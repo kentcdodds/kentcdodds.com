@@ -216,33 +216,22 @@ function TeamOption({
 		onewheeling: TEAM_ONEWHEELING_MAP,
 	}[teamMap][value]
 
-	// On mobile we render a compact "profile" version to avoid the big cards
-	// taking over the entire signup flow (issue #86).
-	const profileImage = {
-		BLUE: images.kodyProfileBlue,
-		RED: images.kodyProfileRed,
-		YELLOW: images.kodyProfileYellow,
-	}[value]
-
-	const { className: profileClassName, ...profileImgProps } = getImgProps(
-		profileImage,
+	// Mobile uses the full illustration, but sized down so all three options can
+	// fit in a single row (issue #86).
+	const { className: teamImageClassName, ...teamImageProps } = getImgProps(
+		team.image,
 		{
 			className:
-				'mx-auto mb-3 block h-14 w-14 rounded-full object-contain lg:mb-16 lg:h-auto lg:w-auto lg:rounded-none',
-			widths: [80, 96, 112, 128, 160, 192],
-			sizes: ['(max-width: 1023px) 26vw', '80px'],
-			transformations: { resize: { type: 'pad', aspectRatio: '1:1' } },
+				'mx-auto mb-2 block h-16 w-16 object-contain sm:h-20 sm:w-20 lg:mb-16 lg:h-auto lg:w-auto',
+			widths: [64, 80, 96, 128, 160, 256, 320, 350, 512, 685, 1370],
+			sizes: [
+				'(max-width: 639px) 64px',
+				'(min-width: 640px) and (max-width: 1023px) 80px',
+				'(min-width:1024px) and (max-width:1620px) 20vw',
+				'320px',
+			],
 		},
 	)
-
-	const sportImgProps = getImgProps(team.image, {
-		className: 'mx-auto mb-16 block',
-		widths: [350, 512, 685, 1370, 2055],
-		sizes: [
-			'(min-width:1024px) and (max-width:1620px) 20vw',
-			'320px',
-		],
-	})
 
 	return (
 		<div
@@ -260,7 +249,7 @@ function TeamOption({
 				</span>
 			) : null}
 
-			<label className="flex cursor-pointer flex-col items-center justify-center px-3 py-4 text-center lg:block lg:px-12 lg:pt-20 lg:pb-12">
+			<label className="flex cursor-pointer flex-col items-center justify-center px-1 py-3 text-center sm:px-2 lg:block lg:px-12 lg:pt-20 lg:pb-12">
 				<input
 					className="sr-only"
 					type="radio"
@@ -268,19 +257,12 @@ function TeamOption({
 					value={value}
 					aria-describedby={error ? 'team-error' : undefined}
 				/>
-				<picture>
-					<source
-						media="(min-width: 1024px)"
-						srcSet={sportImgProps.srcSet}
-						sizes={sportImgProps.sizes}
-					/>
-					<img
-						{...profileImgProps}
-						alt=""
-						aria-hidden="true"
-						className={profileClassName}
-					/>
-				</picture>
+				<img
+					{...teamImageProps}
+					alt=""
+					aria-hidden="true"
+					className={teamImageClassName}
+				/>
 				<H6 as="span" className="text-sm leading-none lg:text-lg">
 					<span className="lg:hidden" aria-hidden="true">
 						{team.label.replace(' Team', '')}
