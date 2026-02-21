@@ -25,6 +25,11 @@ describe('mdx not-found caching', () => {
 			process.env.FLY_INSTANCE = 'test'
 
 			vi.resetModules()
+			// `cache.server.ts` imports `getUser` from `session.server.ts`, which pulls
+			// in Prisma + lots of env requirements. This test doesn't need that.
+			vi.doMock('../session.server.ts', () => {
+				return { getUser: async () => null }
+			})
 			// `cache.server.ts` imports `updatePrimaryCacheValue` from this route module,
 			// which uses the `vite-env-only` macro. That macro is not processed in the
 			// Vitest environment, so we stub the module for this unit test.
