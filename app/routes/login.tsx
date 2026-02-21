@@ -85,28 +85,28 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const emailAddress = formData.get('email')
 	invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
-	const email = emailAddress.toLowerCase()
-	if (email) loginSession.setEmail(email)
+	const email = emailAddress.trim().toLowerCase()
 
 	const password = formData.get('password')
 	invariantResponse(typeof password === 'string', 'Form submitted incorrectly')
-
-	if (!email.match(/.+@.+/)) {
-		loginSession.flashError('A valid email is required')
-		return redirect(`/login`, {
-			status: 400,
-			headers: await loginSession.getHeaders(),
-		})
-	}
 
 	// honeypot
 	const failedHoneypot = Boolean(formData.get('website'))
 	if (failedHoneypot) {
 		console.info(`FAILED HONEYPOT ON LOGIN`, {
-			email,
 			website: formData.get('website'),
 		})
 		return redirect(`/login`, {
+			headers: await loginSession.getHeaders(),
+		})
+	}
+
+	if (email) loginSession.setEmail(email)
+
+	if (!email.match(/.+@.+/)) {
+		loginSession.flashError('A valid email is required')
+		return redirect(`/login`, {
+			status: 400,
 			headers: await loginSession.getHeaders(),
 		})
 	}
@@ -146,22 +146,29 @@ export async function action({ request }: Route.ActionArgs) {
 	const session = await getSession(request)
 	await session.signIn({ id: userWithPassword.id })
 
-	const clientSession = await getClientSession(request, null)
-	const clientId = clientSession.getClientId()
-	if (clientId) {
-		await ensurePrimary()
-		await prisma.postRead.updateMany({
-			data: { userId: userWithPassword.id, clientId: null },
-			where: { clientId },
-		})
-	}
-	clientSession.setUser({})
-
 	const headers = new Headers()
 	loginSession.clean()
 	await loginSession.getHeaders(headers)
 	await session.getHeaders(headers)
-	await clientSession.getHeaders(headers)
+	try {
+		const clientSession = await getClientSession(request, null)
+		try {
+			const clientId = clientSession.getClientId()
+			if (clientId) {
+				await ensurePrimary()
+				await prisma.postRead.updateMany({
+					data: { userId: userWithPassword.id, clientId: null },
+					where: { clientId },
+				})
+			}
+		} catch (error) {
+			console.error('Failed to migrate postReads on login', error)
+		}
+		clientSession.setUser({})
+		await clientSession.getHeaders(headers)
+	} catch (error) {
+		console.error('Failed to read client session on login', error)
+	}
 	return redirect('/me', { headers })
 }
 
