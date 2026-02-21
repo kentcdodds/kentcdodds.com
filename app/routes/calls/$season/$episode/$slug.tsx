@@ -83,14 +83,16 @@ export const meta: MetaFunction<
 
 export async function loader({ params, request }: Route.LoaderArgs) {
 	const timings = {}
-	const user = await getUser(request, { timings })
 	const { season, episode: episodeParam, slug } = params
 	if (!season || !episodeParam || !slug) {
 		throw new Error(
 			'params.season or params.episode or params.slug is not defined',
 		)
 	}
-	const episodes = await getEpisodes({ request, timings })
+	const [user, episodes] = await Promise.all([
+		getUser(request, { timings }),
+		getEpisodes({ request, timings }),
+	])
 	const episode = getEpisodeFromParams(episodes, {
 		season,
 		episode: episodeParam,

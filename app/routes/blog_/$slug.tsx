@@ -66,12 +66,10 @@ type CatchData = {
 export async function loader({ request, params }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
 	const timings = {}
-	const user = await getUser(request, { timings })
-
-	const page = await getMdxPage(
-		{ contentDir: 'blog', slug: params.slug },
-		{ request, timings },
-	)
+	const [user, page] = await Promise.all([
+		getUser(request, { timings }),
+		getMdxPage({ contentDir: 'blog', slug: params.slug }, { request, timings }),
+	])
 
 	const [recommendations, readRankings, totalReads, favorite] = await Promise.all([
 		getBlogRecommendations({
