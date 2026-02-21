@@ -126,7 +126,7 @@ export default function RecordScreen({ loaderData: data }: Route.ComponentProps)
 						<Record
 							slug="./new"
 							active={activeSlug === 'new'}
-							title="Make a new call"
+							title="Make a new recording"
 						/>
 					</div>
 
