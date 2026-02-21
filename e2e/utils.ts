@@ -3,7 +3,7 @@ import { test as base } from '@playwright/test'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
-import invariant from 'tiny-invariant'
+import { invariant } from '@epic-web/invariant'
 import {
 	PrismaClient,
 	type User,

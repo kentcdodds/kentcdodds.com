@@ -1,4 +1,4 @@
-import invariant from 'tiny-invariant'
+import { invariant } from '@epic-web/invariant'
 import { expect, test } from './utils.ts'
 
 test('A new user can create an account', async ({ page, login }) => {

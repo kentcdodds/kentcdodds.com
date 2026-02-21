@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import invariant from 'tiny-invariant'
+import { invariant } from '@epic-web/invariant'
 import { expect, readEmail, test } from './utils.ts'
 
 test('Users can send an email', async ({ page, login }) => {

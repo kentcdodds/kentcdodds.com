@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import { Form, useLoaderData, useNavigate, useRevalidator, data as json, redirect, type HeadersFunction, type MetaFunction } from 'react-router';
-import invariant from 'tiny-invariant'
+import { invariantResponse } from '@epic-web/invariant'
 import { z } from 'zod'
 import { Button, LinkButton } from '#app/components/button.tsx'
 import { Input, InputError, Label } from '#app/components/form-elements.tsx'
@@ -73,7 +73,7 @@ export async function action({ request }: Route.ActionArgs) {
 	const loginSession = await getLoginInfoSession(request)
 
 	const emailAddress = formData.get('email')
-	invariant(typeof emailAddress === 'string', 'Form submitted incorrectly')
+	invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
 	if (emailAddress) loginSession.setEmail(emailAddress)
 
 	if (!emailAddress.match(/.+@.+/)) {

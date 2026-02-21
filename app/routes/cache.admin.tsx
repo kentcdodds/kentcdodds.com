@@ -1,5 +1,5 @@
 import { data as json, Form, useFetcher, useLoaderData, useSearchParams, useSubmit } from 'react-router';
-import invariant from 'tiny-invariant'
+import { invariantResponse } from '@epic-web/invariant'
 import { Button } from '#app/components/button.tsx'
 import {
 	Field,
@@ -57,9 +57,9 @@ export async function action({ request }: Route.ActionArgs) {
 	const instance = formData.get('instance') ?? currentInstance
 	const type = formData.get('type')
 
-	invariant(typeof key === 'string', 'cacheKey must be a string')
-	invariant(typeof type === 'string', 'type must be a string')
-	invariant(typeof instance === 'string', 'instance must be a string')
+	invariantResponse(typeof key === 'string', 'cacheKey must be a string')
+	invariantResponse(typeof type === 'string', 'type must be a string')
+	invariantResponse(typeof instance === 'string', 'instance must be a string')
 	await ensureInstance(instance)
 
 	switch (type) {

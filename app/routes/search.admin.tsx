@@ -8,7 +8,7 @@ import {
 	useSearchParams,
 	useSubmit,
 } from 'react-router'
-import invariant from 'tiny-invariant'
+import { invariantResponse } from '@epic-web/invariant'
 import { Button } from '#app/components/button.tsx'
 import {
 	ErrorPanel,
@@ -299,7 +299,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const formData = await request.formData()
 	const intent = formData.get('intent')
-	invariant(typeof intent === 'string', 'intent must be a string')
+	invariantResponse(typeof intent === 'string', 'intent must be a string')
 
 	if (intent === 'ignore-add') {
 		const pattern = String(formData.get('pattern') ?? '').trim()

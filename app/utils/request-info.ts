@@ -1,6 +1,6 @@
 import { useRouteLoaderData } from 'react-router';
+import { invariant } from '@epic-web/invariant'
 import { type loader as rootLoader } from '#app/root.tsx'
-import { invariant } from './misc.tsx'
 
 /**
  * @returns the request info from the root loader

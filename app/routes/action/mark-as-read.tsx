@@ -6,7 +6,7 @@ import {
 } from '#app/utils/blog.server.ts'
 import { getRankingLeader } from '#app/utils/blog.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
-import { invariantResponse } from '#app/utils/misc.tsx'
+import { invariantResponse } from '@epic-web/invariant'
 import { addPostRead } from '#app/utils/prisma.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
 import  { type Route } from './+types/mark-as-read'

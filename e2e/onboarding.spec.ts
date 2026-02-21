@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
-import invariant from 'tiny-invariant'
+import { invariant } from '@epic-web/invariant'
 import { deleteUserByEmail, extractUrl, readEmail } from './utils.ts'
 
 test('A new user can create an account', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { invariantResponse } from '#app/utils/misc.tsx'
+import { invariantResponse } from '@epic-web/invariant'
 import  { type Route } from './+types/lookout'
 // this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
 
