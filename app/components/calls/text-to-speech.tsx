@@ -55,6 +55,8 @@ function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>
 	return React.useCallback(() => {
 		const audio = audioRef.current
 		if (!audio) return
+		// Capture a non-null element for the hoisted handlers.
+		const audioEl = audio
 
 		// Stop any previous preview listeners.
 		cleanupRef.current?.()
@@ -66,16 +68,16 @@ function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>
 		function cleanup() {
 			if (cleanedUp) return
 			cleanedUp = true
-			audio.removeEventListener('timeupdate', onTimeUpdate)
-			audio.removeEventListener('ended', cleanup)
+			audioEl.removeEventListener('timeupdate', onTimeUpdate)
+			audioEl.removeEventListener('ended', cleanup)
 			cleanupRef.current = null
 		}
 
 		function onTimeUpdate() {
-			if (audio.currentTime >= stopAtSeconds) {
-				audio.pause()
+			if (audioEl.currentTime >= stopAtSeconds) {
+				audioEl.pause()
 				try {
-					audio.currentTime = 0
+					audioEl.currentTime = 0
 				} catch {
 					// ignore
 				}
@@ -83,16 +85,16 @@ function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>
 			}
 		}
 
-		audio.addEventListener('timeupdate', onTimeUpdate)
-		audio.addEventListener('ended', cleanup)
+		audioEl.addEventListener('timeupdate', onTimeUpdate)
+		audioEl.addEventListener('ended', cleanup)
 		cleanupRef.current = cleanup
 
 		try {
-			audio.currentTime = 0
+			audioEl.currentTime = 0
 		} catch {
 			// ignore
 		}
-		void audio.play().catch(() => cleanup())
+		void audioEl.play().catch(() => cleanup())
 	}, [audioRef])
 }
 
