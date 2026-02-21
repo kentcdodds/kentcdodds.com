@@ -379,7 +379,6 @@ function createServer() {
 				'Subscribe to Kent C. Dodds newsletter and get regular updates about new articles and courses',
 			inputSchema: {
 				email: z
-					.string()
 					.email()
 					.optional()
 					.describe(
@@ -448,18 +447,20 @@ export async function connect(sessionId?: string | null) {
 		}
 
 		const transportPromise = (async () => {
-			const transport = new WebStandardStreamableHTTPServerTransport({
-				sessionIdGenerator: () => sessionId,
-				async onsessioninitialized(initializedSessionId) {
-					transports.set(initializedSessionId, transport)
-				},
-				async onsessionclosed(closedSessionId) {
-					transports.delete(closedSessionId)
-				},
-			})
-
-			const server = createServer()
+			let transport: WebStandardStreamableHTTPServerTransport | undefined
+			let server: ReturnType<typeof createServer> | undefined
 			try {
+				transport = new WebStandardStreamableHTTPServerTransport({
+					sessionIdGenerator: () => sessionId,
+					async onsessioninitialized(initializedSessionId) {
+						if (transport) transports.set(initializedSessionId, transport)
+					},
+					async onsessionclosed(closedSessionId) {
+						transports.delete(closedSessionId)
+					},
+				})
+
+				server = createServer()
 				await server.connect(transport)
 				return transport
 			} catch (error) {
@@ -467,7 +468,7 @@ export async function connect(sessionId?: string | null) {
 				// Best-effort cleanup. `server.connect` should have connected the
 				// protocol callbacks, so closing the transport is sufficient, but we
 				// also close the server to be safe.
-				await Promise.allSettled([transport.close(), server.close()])
+				await Promise.allSettled([transport?.close(), server?.close()])
 				throw error
 			}
 		})()
@@ -475,19 +476,31 @@ export async function connect(sessionId?: string | null) {
 		return await transportPromise
 	}
 
-	const transport = new WebStandardStreamableHTTPServerTransport({
-		sessionIdGenerator: () => crypto.randomUUID(),
-		async onsessioninitialized(initializedSessionId) {
-			transports.set(initializedSessionId, transport)
-		},
-		async onsessionclosed(closedSessionId) {
-			transports.delete(closedSessionId)
-		},
-	})
-	const server = createServer()
-	await server.connect(transport)
-
-	return transport
+	let transport: WebStandardStreamableHTTPServerTransport | undefined
+	let server: ReturnType<typeof createServer> | undefined
+	try {
+		transport = new WebStandardStreamableHTTPServerTransport({
+			sessionIdGenerator: () => crypto.randomUUID(),
+			async onsessioninitialized(initializedSessionId) {
+				if (transport) transports.set(initializedSessionId, transport)
+			},
+			async onsessionclosed(closedSessionId) {
+				transports.delete(closedSessionId)
+			},
+		})
+		server = createServer()
+		await server.connect(transport)
+		return transport
+	} catch (error) {
+		if (transport) {
+			// Defensive cleanup in case `onsessioninitialized` ran before the failure.
+			for (const [key, entry] of transports.entries()) {
+				if (entry === transport) transports.delete(key)
+			}
+		}
+		await Promise.allSettled([transport?.close(), server?.close()])
+		throw error
+	}
 }
 
 function getUserId(authInfo?: AuthInfo): string | null {
