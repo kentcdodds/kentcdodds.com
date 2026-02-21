@@ -1,5 +1,3 @@
-import './litefs-dir-default.server.ts'
-
 export {
 	getInstanceInfo,
 	getInstanceInfoSync,
