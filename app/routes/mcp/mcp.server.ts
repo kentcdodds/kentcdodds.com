@@ -464,7 +464,6 @@ export async function connect(sessionId?: string | null) {
 				await server.connect(transport)
 				return transport
 			} catch (error) {
-				transports.delete(sessionId)
 				// Best-effort cleanup. `server.connect` should have connected the
 				// protocol callbacks, so closing the transport is sufficient, but we
 				// also close the server to be safe.
@@ -473,6 +472,13 @@ export async function connect(sessionId?: string | null) {
 			}
 		})()
 		transports.set(sessionId, transportPromise)
+		transportPromise.catch(() => {
+			// Ensure we don't permanently cache a rejected promise for this sessionId.
+			// (This can happen if the promise rejects before we can delete inside the IIFE.)
+			if (transports.get(sessionId) === transportPromise) {
+				transports.delete(sessionId)
+			}
+		})
 		return await transportPromise
 	}
 
