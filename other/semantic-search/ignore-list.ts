@@ -1,4 +1,3 @@
-import { getJsonObject } from './r2-manifest.ts'
 import {
 	DEFAULT_IGNORE_LIST_KEY,
 	getIgnoreListKey,
@@ -6,6 +5,7 @@ import {
 	matchesIgnorePattern,
 	type SemanticSearchIgnoreList,
 } from './ignore-list-patterns.ts'
+import { getJsonObject } from './r2-manifest.ts'
 
 export {
 	DEFAULT_IGNORE_LIST_KEY,
