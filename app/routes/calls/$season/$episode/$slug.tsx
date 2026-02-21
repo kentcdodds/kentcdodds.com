@@ -1,10 +1,10 @@
 import { data as json, redirect, type HeadersFunction, type MetaFunction, useLoaderData, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
-import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
 import { IconLink } from '#app/components/icon-link.tsx'
 import { XIcon } from '#app/components/icons.tsx'
 import { H6, Paragraph } from '#app/components/typography.tsx'
 import { type RootLoaderType, type loader as rootLoader } from '#app/root.tsx'
+import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import {
 	getEpisodeFromParams,

@@ -5,7 +5,6 @@ import { isRouteErrorResponse, Link, useLoaderData, useLocation, data as json, r
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
-import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { IconLink } from '#app/components/icon-link.tsx'
 import {
@@ -23,6 +22,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
+import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import {
 	type CWKEpisode,
 	type CWKListItem,

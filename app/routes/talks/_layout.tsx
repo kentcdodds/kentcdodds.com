@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { Link, useFetcher, useLoaderData, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
-import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
+import { FavoriteToggle, favoriteResourceRoute } from '#app/routes/resources/favorite.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { YoutubeIcon } from '#app/components/icons.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
@@ -230,7 +230,7 @@ export default function TalksScreen() {
 		if (!user) return
 		if (talkFavoritesFetcher.data) return
 		if (talkFavoritesFetcher.state !== 'idle') return
-		void talkFavoritesFetcher.load('/resources/favorites?contentType=talk')
+		void talkFavoritesFetcher.load(`${favoriteResourceRoute}?contentType=talk`)
 	}, [user, talkFavoritesFetcher])
 
 	const favoriteTalkIds = new Set(talkFavoritesFetcher.data?.contentIds ?? [])

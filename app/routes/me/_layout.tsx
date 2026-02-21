@@ -4,7 +4,6 @@ import * as React from 'react'
 import {
     data as json, redirect, type HeadersFunction, type MetaFunction, Form, Link, useActionData, useLoaderData } from 'react-router';
 import { Button, ButtonLink } from '#app/components/button.tsx'
-import { FavoriteToggle } from '#app/components/favorite-toggle.tsx'
 import { Field, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import {
@@ -18,6 +17,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
+import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { handleFormSubmission } from '#app/utils/actions.server.ts'
 import { getEpisodePath } from '#app/utils/call-kent.ts'
