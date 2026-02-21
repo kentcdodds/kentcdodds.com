@@ -1,5 +1,5 @@
-import { data as json } from 'react-router';
 import { invariantResponse } from '@epic-web/invariant'
+import { data as json } from 'react-router';
 import { cache } from '#app/utils/cache.server.ts'
 import {
 	ensureInstance,
