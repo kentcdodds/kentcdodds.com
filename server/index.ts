@@ -22,12 +22,12 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import { scheduleExpiredSessionsCleanup } from './expired-sessions-cleanup.js'
 import {
 	getRedirectsMiddleware,
 	oldImgSocial,
 	rickRollMiddleware,
 } from './redirects.js'
-import { scheduleExpiredSessionsCleanup } from './expired-sessions-cleanup.js'
 import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
