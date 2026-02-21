@@ -320,6 +320,9 @@ describe('RecordingForm', () => {
 			const titleInput = screen.getByLabelText('Title')
 			expect(titleInput).toHaveAttribute('maxLength', '80')
 			expect(screen.getByText('80 characters left')).toBeInTheDocument()
+			const titleId = titleInput.getAttribute('id')
+			expect(titleId).toBeTruthy()
+			expect(titleInput).toHaveAttribute('aria-describedby', `${titleId}-countdown`)
 
 			fireEvent.change(titleInput, { target: { value: 'abcd' } })
 			expect(screen.getByText('76 characters left')).toBeInTheDocument()
