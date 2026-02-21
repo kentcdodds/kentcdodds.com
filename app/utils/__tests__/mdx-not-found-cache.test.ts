@@ -71,11 +71,22 @@ describe('mdx not-found caching', () => {
 				expect(entry!.metadata.swr).toBe(0)
 			}
 		} finally {
+			// Prevent mock/module state leaking if more tests are added later.
+			vi.restoreAllMocks()
+			vi.resetModules()
+
 			for (const [key, value] of Object.entries(originalEnv)) {
 				if (typeof value === 'string') process.env[key] = value
 				else delete process.env[key]
 			}
-			await fs.rm(cacheDbPath, { force: true }).catch(() => {})
+			await Promise.all(
+				[
+					cacheDbPath,
+					// SQLite WAL mode may create these companion files.
+					`${cacheDbPath}-wal`,
+					`${cacheDbPath}-shm`,
+				].map((p) => fs.rm(p, { force: true }).catch(() => {})),
+			)
 		}
 	})
 })

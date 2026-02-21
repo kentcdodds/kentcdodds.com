@@ -225,6 +225,7 @@ async function compileMdxCached({
 	files: Array<GitHubFile>
 	options: CachifiedOptions
 }) {
+	const { ttl = defaultTTL } = options
 	const key = `${contentDir}:${slug}:compiled`
 	const page = await cachified({
 		cache,
@@ -275,7 +276,7 @@ async function compileMdxCached({
 					editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
 				}
 			} else {
-				applyNotFoundCacheMetadata(context.metadata, context.metadata.ttl)
+				applyNotFoundCacheMetadata(context.metadata, ttl)
 				return null
 			}
 		},
