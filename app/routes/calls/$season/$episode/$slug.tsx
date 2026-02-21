@@ -135,6 +135,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		{ isFavorite: Boolean(favorite) },
 		{
 			headers: {
+				// `isFavorite` is user-specific when logged in, so ensure it isn't
+				// cached in shared/CDN caches. For anonymous users it's always false,
+				// so allow public caching.
+				'Cache-Control': user ? 'private, max-age=600' : 'public, max-age=600',
+				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
 			},
 		},
