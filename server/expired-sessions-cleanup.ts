@@ -31,7 +31,7 @@ function randomInt(min: number, max: number) {
 export function scheduleExpiredSessionsCleanup({
 	intervalMs = DAY_MS,
 	startupDelayMs = randomInt(30_000, 5 * 60_000),
-	enabled = process.env.EXPIRED_SESSIONS_CLEANUP_DISABLED !== 'true',
+	enabled = process.env.EXPIRED_SESSIONS_CLEANUP_DISABLED !== 'true', // enabled unless explicitly disabled
 }: CleanupOptions = {}): CleanupController {
 	if (!enabled) {
 		return {
@@ -40,12 +40,14 @@ export function scheduleExpiredSessionsCleanup({
 		}
 	}
 
+	let stopped = false
 	let runningPromise: Promise<void> | null = null
 	let timeoutId: NodeJS.Timeout | null = null
 	let intervalId: NodeJS.Timeout | null = null
 
-	const runNow = async (reason = 'interval') => {
+	const runNow = async (reason = 'manual') => {
 		if (runningPromise) return runningPromise
+		if (stopped) return
 		runningPromise = (async () => {
 			try {
 				const { currentIsPrimary, currentInstance, primaryInstance } =
@@ -84,6 +86,7 @@ export function scheduleExpiredSessionsCleanup({
 
 	return {
 		async stop() {
+			stopped = true
 			if (timeoutId) clearTimeout(timeoutId)
 			if (intervalId) clearInterval(intervalId)
 			timeoutId = null
