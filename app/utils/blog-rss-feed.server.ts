@@ -25,7 +25,7 @@ async function getRssFeedXml(request: Request) {
 							)}</description>
               <pubDate>${formatDate(
 								post.frontmatter.date ?? new Date(),
-								'yyyy-MM-ii',
+								'yyyy-MM-dd',
 							)}</pubDate>
               <link>${blogUrl}/${post.slug}</link>
               <guid>${blogUrl}/${post.slug}</guid>
