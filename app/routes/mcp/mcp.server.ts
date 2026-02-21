@@ -463,6 +463,7 @@ export async function connect(sessionId?: string | null) {
 				await server.connect(transport)
 				return transport
 			} catch (error) {
+				transports.delete(sessionId)
 				// Best-effort cleanup. `server.connect` should have connected the
 				// protocol callbacks, so closing the transport is sufficient, but we
 				// also close the server to be safe.
@@ -470,6 +471,7 @@ export async function connect(sessionId?: string | null) {
 				throw error
 			}
 		})()
+		transports.set(sessionId, transportPromise)
 		return await transportPromise
 	}
 
