@@ -15,6 +15,25 @@ const mdxServerMocks = vi.hoisted(() => ({
 
 vi.mock('#app/utils/mdx.server.ts', () => mdxServerMocks)
 
+// The route module imports server DB/session helpers; mock them to avoid
+// requiring DATABASE_URL and an actual SQLite DB in unit tests.
+vi.mock('#app/utils/session.server.ts', () => ({
+	getUser: vi.fn().mockResolvedValue(null),
+}))
+
+vi.mock('#app/utils/prisma.server.ts', () => ({
+	prisma: {
+		favorite: {
+			findUnique: vi.fn().mockResolvedValue(null),
+		},
+	},
+}))
+
+// The route module imports this component, but tests only exercise the loader.
+vi.mock('#app/routes/resources/favorite.tsx', () => ({
+	FavoriteToggle: () => null,
+}))
+
 // The route module imports this client helper, which otherwise pulls in Prisma.
 vi.mock('../../action/mark-as-read.tsx', () => ({
 	markAsRead: vi.fn(),
