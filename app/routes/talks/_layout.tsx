@@ -1,7 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { Link, useFetcher, useLoaderData, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
-import { FavoriteToggle, favoriteResourceRoute } from '#app/routes/resources/favorite.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { YoutubeIcon } from '#app/components/icons.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
@@ -10,6 +9,7 @@ import { Tag } from '#app/components/tag.tsx'
 import { H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
+import { FavoriteToggle, favoriteResourceRoute } from '#app/routes/resources/favorite.tsx'
 import {
 	formatDate,
 	getDisplayUrl,
