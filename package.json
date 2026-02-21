@@ -48,7 +48,8 @@
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "react-router typegen && tsc -b .",
     "validate": "./other/validate",
-    "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
+    "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run",
+    "prepare": "husky"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.995.0",
@@ -198,8 +199,10 @@
     "eslint": "^10.0.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "glob": "^13.0.5",
+    "husky": "^9.1.7",
     "jest-environment-jsdom": "^30.2.0",
     "jest-watch-typeahead": "^3.0.1",
+    "lint-staged": "^16.2.7",
     "msw": "^2.12.10",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.8.1",
