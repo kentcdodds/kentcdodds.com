@@ -205,8 +205,8 @@ export function CheckIcon() {
 export function ChevronDownIcon({
 	className,
 	title,
-}: {
-	className?: string
+	...svgProps
+}: React.SVGProps<SVGSVGElement> & {
 	title?: string
 }) {
 	return (
@@ -216,6 +216,7 @@ export function ChevronDownIcon({
 			fill="none"
 			viewBox="0 0 24 24"
 			className={className}
+			{...svgProps}
 		>
 			{title ? <title>{title}</title> : null}
 			<path

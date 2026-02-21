@@ -643,7 +643,10 @@ function BlogHome() {
 									<option value="popular">Most popular</option>
 									<option value="oldest">Oldest</option>
 								</select>
-								<ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 peer-hover:text-team-current peer-focus:text-team-current" />
+								<ChevronDownIcon
+									aria-hidden="true"
+									className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 peer-hover:text-team-current peer-focus:text-team-current"
+								/>
 							</div>
 						</label>
 					</div>
