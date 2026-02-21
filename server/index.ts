@@ -22,6 +22,7 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import { scheduleExpiredSessionsCleanup } from './expired-sessions-cleanup.js'
 import {
 	getRedirectsMiddleware,
 	oldImgSocial,
@@ -100,6 +101,8 @@ if (MODE === 'production') {
 
 const app = express()
 app.use(serverTiming())
+
+const expiredSessionsCleanup = scheduleExpiredSessionsCleanup()
 
 app.get('/img/social', oldImgSocial)
 
@@ -469,11 +472,16 @@ if (process.env.NODE_ENV === 'development') {
 
 closeWithGrace(() => {
 	return Promise.all([
+		expiredSessionsCleanup.stop(),
 		new Promise((resolve, reject) => {
 			server.close((e) => (e ? reject(e) : resolve('ok')))
 		}),
 		new Promise((resolve, reject) => {
-			wss?.close((e) => (e ? reject(e) : resolve('ok')))
+			if (!wss) {
+				resolve('ok')
+				return
+			}
+			wss.close((e) => (e ? reject(e) : resolve('ok')))
 		}),
 	])
 })

@@ -162,6 +162,16 @@ async function createSession(
 	})
 }
 
+async function deleteExpiredSessions(
+	{ now = new Date() }: { now?: Date } = {},
+) {
+	await ensurePrimary()
+	const result = await prisma.session.deleteMany({
+		where: { expirationDate: { lt: now } },
+	})
+	return result.count
+}
+
 async function getUserFromSessionId(
 	sessionId: string,
 	{ timings }: { timings?: Timings } = {},
@@ -237,6 +247,7 @@ async function addPostRead({
 export {
 	addPostRead,
 	createSession,
+	deleteExpiredSessions,
 	getAllUserData,
 	getMagicLink,
 	getUserFromSessionId,
