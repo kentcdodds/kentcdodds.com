@@ -1,3 +1,8 @@
+// React/TSX-only utilities live here (hooks + components) and we re-export the
+// non-JSX helpers from `misc.ts` for convenience.
+//
+// Prefer importing from `./misc.ts` in server-only/Node-startup code paths.
+// Node can execute `.ts` but cannot execute `.tsx`.
 import * as Sentry from '@sentry/react-router'
 import md5 from 'md5-hash'
 import * as React from 'react'
