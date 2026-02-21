@@ -188,6 +188,7 @@ async function getEpisode(episodeId: string) {
 	const {
 		id,
 		is_published,
+		published_at,
 		updated_at,
 		slug,
 		transcription: transcriptMarkdown,
@@ -232,6 +233,10 @@ async function getEpisode(episodeId: string) {
 				},
 	])
 
+	// Simplecast exposes both published and updated timestamps; fall back to
+	// `updated_at` so older/malformed episodes still render a date.
+	const publishedAt = published_at ?? updated_at
+
 	const cwkEpisode: CWKEpisode = {
 		transcriptHTML,
 		descriptionHTML,
@@ -242,6 +247,7 @@ async function getEpisode(episodeId: string) {
 		resources,
 		image: image_url,
 		episodeNumber: number,
+		publishedAt,
 		updatedAt: updated_at,
 		homeworkHTMLs,
 		seasonNumber,
