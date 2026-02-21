@@ -12,11 +12,10 @@ import invariant from 'tiny-invariant'
 import { Button } from '#app/components/button.tsx'
 import {
 	ErrorPanel,
-	Field,
+	FieldContainer,
 	inputClassName,
 } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H4, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import {
@@ -54,6 +53,9 @@ type DocRow = {
 	chunks: Array<{ id: string; snippet: string; hash: string }>
 	ignored: boolean
 }
+
+const cardClassName =
+	'rounded-2xl bg-gray-100 p-6 ring-1 ring-inset ring-[rgba(0,0,0,0.05)] dark:bg-gray-850 dark:ring-[rgba(255,255,255,0.05)]'
 
 function asPositiveInt(value: string | null, fallback: number) {
 	if (!value) return fallback
@@ -409,7 +411,7 @@ export default function SearchAdminRoute() {
 
 	return (
 		<main className="mt-12 mb-24 lg:mt-24 lg:mb-48">
-			<Grid>
+			<Grid rowGap>
 				<div className="col-span-full">
 					<H2>Semantic Search Admin</H2>
 					<Paragraph textColorClassName="text-secondary">
@@ -418,194 +420,240 @@ export default function SearchAdminRoute() {
 					</Paragraph>
 				</div>
 
-				<Spacer size="2xs" className="col-span-full" />
-
 				{data.message ? (
 					<div className="col-span-full">
-						<ErrorPanel>{data.message}</ErrorPanel>
+						{data.configured ? (
+							<InfoPanel>{data.message}</InfoPanel>
+						) : (
+							<ErrorPanel>{data.message}</ErrorPanel>
+						)}
 					</div>
 				) : null}
 
 				{data.store ? (
 					<div className="col-span-full">
-						<Paragraph textColorClassName="text-secondary">
-							Store: {data.store.source} • Bucket: {data.store.bucket} • Ignore
-							list key: {data.store.ignoreListKey}
-						</Paragraph>
+						<InfoPanel>
+							<div className="flex flex-wrap gap-x-3 gap-y-1">
+								<span>
+									Store: <code>{data.store.source}</code>
+								</span>
+								<span>
+									Bucket: <code>{data.store.bucket}</code>
+								</span>
+								<span>
+									Ignore list key: <code>{data.store.ignoreListKey}</code>
+								</span>
+							</div>
+						</InfoPanel>
 					</div>
 				) : null}
 
-				<Spacer size="2xs" className="col-span-full" />
-
 				<div className="col-span-full">
-					<H3>Browse</H3>
-					<Form
-						method="get"
-						className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-12"
-						onChange={(e) => syncGetForm(e.currentTarget)}
-					>
-						<div className="md:col-span-4">
-							<label className="block text-sm font-medium">Manifest</label>
-							<select
-								name="manifest"
-								defaultValue={data.selectedManifest}
-								className={inputClassName}
-							>
-								<option value="all">All manifests</option>
-								{data.manifestKeys.map((k) => (
-									<option key={k} value={k}>
-										{k}
-									</option>
-								))}
-							</select>
-						</div>
-
-						<div className="md:col-span-4">
-							<Field
-								label="Query"
-								name="q"
-								defaultValue={searchParams.get('q') ?? ''}
-								placeholder="Filter by title/url/docId/snippet..."
-							/>
-						</div>
-
-						<div className="md:col-span-2">
-							<label className="block text-sm font-medium">Type</label>
-							<select
-								name="type"
-								defaultValue={data.type}
-								className={inputClassName}
-							>
-								<option value="">All</option>
-								{data.typeOptions.map((o: { type: string; count: number }) => (
-									<option key={o.type} value={o.type}>
-										{o.type} ({o.count})
-									</option>
-								))}
-							</select>
-						</div>
-
-						<div className="md:col-span-2">
-							<Field
-								label="Limit"
-								name="limit"
-								type="number"
-								step="1"
-								min="10"
-								max="500"
-								defaultValue={String(data.limit)}
-							/>
-						</div>
-
-						<input type="hidden" name="offset" value={String(data.offset)} />
-
-						<div className="flex items-center gap-3 md:col-span-12">
-							<label className="flex items-center gap-2 text-sm">
-								<input
-									type="checkbox"
-									name="showIgnored"
-									defaultChecked={data.showIgnored}
-									value="true"
-								/>
-								Show ignored
-							</label>
+					<div className={cardClassName}>
+						<div className="flex flex-wrap items-baseline justify-between gap-3">
+							<H3>Browse</H3>
 							<Paragraph textColorClassName="text-secondary">
 								Showing {data.docs.length} of {data.total} docs
 							</Paragraph>
 						</div>
-					</Form>
 
-					<div className="mt-4 flex items-center gap-2">
-						<Button
-							type="button"
-							disabled={!hasPrev}
-							onClick={() => {
-								const next = new URLSearchParams(searchParams)
-								next.set('offset', String(prevOffset))
-								void submit(next, { method: 'get', replace: true })
-							}}
+						<Form
+							method="get"
+							className="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 lg:grid-cols-12"
+							onChange={(e) => syncGetForm(e.currentTarget)}
 						>
-							Prev
-						</Button>
-						<Button
-							type="button"
-							disabled={!hasNext}
-							onClick={() => {
-								const next = new URLSearchParams(searchParams)
-								next.set('offset', String(nextOffset))
-								void submit(next, { method: 'get', replace: true })
-							}}
-						>
-							Next
-						</Button>
+							<FieldContainer label="Manifest" className="mb-0 lg:col-span-4">
+								{({ inputProps }) => (
+									<select
+										{...inputProps}
+										name="manifest"
+										defaultValue={data.selectedManifest}
+										className={inputClassName}
+									>
+										<option value="all">All manifests</option>
+										{data.manifestKeys.map((k) => (
+											<option key={k} value={k}>
+												{k}
+											</option>
+										))}
+									</select>
+								)}
+							</FieldContainer>
+
+							<FieldContainer label="Query" className="mb-0 lg:col-span-4">
+								{({ inputProps }) => (
+									<input
+										{...inputProps}
+										type="search"
+										name="q"
+										defaultValue={searchParams.get('q') ?? ''}
+										placeholder="Filter by title, URL, docId, or snippet…"
+										className={inputClassName}
+									/>
+								)}
+							</FieldContainer>
+
+							<FieldContainer label="Type" className="mb-0 lg:col-span-2">
+								{({ inputProps }) => (
+									<select
+										{...inputProps}
+										name="type"
+										defaultValue={data.type}
+										className={inputClassName}
+									>
+										<option value="">All</option>
+										{data.typeOptions.map(
+											(o: { type: string; count: number }) => (
+												<option key={o.type} value={o.type}>
+													{o.type} ({o.count})
+												</option>
+											),
+										)}
+									</select>
+								)}
+							</FieldContainer>
+
+							<FieldContainer label="Limit" className="mb-0 lg:col-span-2">
+								{({ inputProps }) => (
+									<input
+										{...inputProps}
+										name="limit"
+										type="number"
+										step={1}
+										min={10}
+										max={500}
+										defaultValue={String(data.limit)}
+										className={inputClassName}
+									/>
+								)}
+							</FieldContainer>
+
+							{/* Reset pagination when filters change */}
+							<input type="hidden" name="offset" value="0" />
+
+							<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:col-span-12">
+								<label className="flex items-center gap-2 text-lg text-gray-500 dark:text-slate-500">
+									<input
+										type="checkbox"
+										name="showIgnored"
+										defaultChecked={data.showIgnored}
+										value="true"
+									/>
+									Show ignored
+								</label>
+
+								<div className="flex items-center gap-2">
+									<Button
+										size="medium"
+										type="button"
+										disabled={!hasPrev}
+										onClick={() => {
+											const next = new URLSearchParams(searchParams)
+											next.set('offset', String(prevOffset))
+											void submit(next, { method: 'get', replace: true })
+										}}
+									>
+										Prev
+									</Button>
+									<Button
+										size="medium"
+										type="button"
+										disabled={!hasNext}
+										onClick={() => {
+											const next = new URLSearchParams(searchParams)
+											next.set('offset', String(nextOffset))
+											void submit(next, { method: 'get', replace: true })
+										}}
+									>
+										Next
+									</Button>
+								</div>
+							</div>
+						</Form>
 					</div>
 				</div>
 
-				<Spacer size="xs" className="col-span-full" />
+				<div className="col-span-full md:col-span-3 lg:col-span-4">
+					<div className={cardClassName}>
+						<H3>Ignore list</H3>
+						<Paragraph textColorClassName="text-secondary">
+							Patterns match manifest doc IDs like{' '}
+							<code>youtube:dQw4w9WgXcQ</code>. Use a trailing <code>*</code>{' '}
+							for prefixes (ex: <code>youtube:*</code>).
+						</Paragraph>
 
-				<div className="col-span-full md:col-span-5">
-					<H3>Ignore list</H3>
-					<Paragraph textColorClassName="text-secondary">
-						Patterns match manifest doc IDs like `youtube:dQw4w9WgXcQ`. Use a
-						trailing `*` for prefixes (ex: `youtube:*`).
-					</Paragraph>
+						<ignoreAddFetcher.Form
+							method="post"
+							className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end"
+							onSubmit={() => {
+								// Keep typing fast.
+								setTimeout(() => {
+									ignoreAddRef.current?.focus()
+								}, 0)
+							}}
+						>
+							<input type="hidden" name="intent" value="ignore-add" />
+							<div className="flex-1">
+								<FieldContainer label="Add pattern" className="mb-0">
+									{({ inputProps }) => (
+										<input
+											{...inputProps}
+											ref={ignoreAddRef}
+											name="pattern"
+											type="text"
+											placeholder="youtube:abc123 or youtube:*"
+											className={inputClassName}
+											required
+										/>
+									)}
+								</FieldContainer>
+							</div>
+							<Button
+								size="medium"
+								type="submit"
+								className="w-full sm:w-auto"
+								disabled={ignoreAddFetcher.state !== 'idle'}
+							>
+								{ignoreAddFetcher.state === 'idle' ? 'Add' : 'Adding...'}
+							</Button>
+						</ignoreAddFetcher.Form>
 
-					<ignoreAddFetcher.Form
-						method="post"
-						className="mt-3 flex items-end gap-2"
-						onSubmit={() => {
-							// Keep typing fast.
-							setTimeout(() => {
-								ignoreAddRef.current?.focus()
-							}, 0)
-						}}
-					>
-						<input type="hidden" name="intent" value="ignore-add" />
-						<div className="flex-1">
-							<label className="block text-sm font-medium" htmlFor="pattern">
-								Add pattern
-							</label>
-							<input
-								ref={ignoreAddRef}
-								id="pattern"
-								name="pattern"
-								type="text"
-								placeholder="youtube:abc123 or youtube:*"
-								className={inputClassName}
-							/>
-						</div>
-						<Button type="submit" disabled={ignoreAddFetcher.state !== 'idle'}>
-							{ignoreAddFetcher.state === 'idle' ? 'Add' : 'Adding...'}
-						</Button>
-					</ignoreAddFetcher.Form>
-
-					<ul className="mt-4 space-y-2">
-						{(data.ignoreList.patterns ?? []).length ? (
-							(data.ignoreList.patterns ?? []).map((pattern) => (
-								<IgnorePatternRow key={pattern} pattern={pattern} />
-							))
-						) : (
-							<li>
-								<Paragraph textColorClassName="text-secondary">
-									No ignore patterns yet.
-								</Paragraph>
-							</li>
-						)}
-					</ul>
+						<ul className="mt-6 space-y-3">
+							{(data.ignoreList.patterns ?? []).length ? (
+								(data.ignoreList.patterns ?? []).map((pattern) => (
+									<IgnorePatternRow key={pattern} pattern={pattern} />
+								))
+							) : (
+								<li>
+									<Paragraph textColorClassName="text-secondary">
+										No ignore patterns yet.
+									</Paragraph>
+								</li>
+							)}
+						</ul>
+					</div>
 				</div>
 
-				<div className="col-span-full md:col-span-7">
-					<H3>Docs</H3>
-					<div className="mt-3 space-y-4">
-						{data.docs.length ? (
-							data.docs.map((doc) => (
-								<DocCard key={`${doc.manifestKey}:${doc.docId}`} doc={doc} />
-							))
-						) : (
+				<div className="col-span-full md:col-span-5 lg:col-span-8">
+					<div className={cardClassName}>
+						<div className="flex flex-wrap items-baseline justify-between gap-3">
+							<H3>Docs</H3>
 							<Paragraph textColorClassName="text-secondary">
-								No docs match the current filters.
+								{data.total === 1 ? '1 doc' : `${data.total} docs`}
 							</Paragraph>
-						)}
+						</div>
+
+						<div className="mt-6 space-y-6">
+							{data.docs.length ? (
+								data.docs.map((doc) => (
+									<DocCard key={`${doc.manifestKey}:${doc.docId}`} doc={doc} />
+								))
+							) : (
+								<Paragraph textColorClassName="text-secondary">
+									No docs match the current filters.
+								</Paragraph>
+							)}
+						</div>
 					</div>
 				</div>
 			</Grid>
@@ -617,7 +665,7 @@ function IgnorePatternRow({ pattern }: { pattern: string }) {
 	const fetcher = useFetcher<typeof action>()
 	const dc = useDoubleCheck()
 	return (
-		<li className="flex items-center justify-between gap-3 rounded-lg bg-gray-100 p-3 dark:bg-gray-800">
+		<li className="flex flex-col gap-3 rounded-xl bg-white/60 p-4 sm:flex-row sm:items-center sm:justify-between dark:bg-black/20">
 			<code className="min-w-0 flex-1 truncate text-sm">{pattern}</code>
 			<fetcher.Form method="post">
 				<input type="hidden" name="intent" value="ignore-remove" />
@@ -627,6 +675,7 @@ function IgnorePatternRow({ pattern }: { pattern: string }) {
 					variant="danger"
 					{...dc.getButtonProps({ type: 'submit' })}
 					disabled={fetcher.state !== 'idle'}
+					className="w-full sm:w-auto"
 				>
 					{fetcher.state === 'idle'
 						? dc.doubleCheck
@@ -668,8 +717,8 @@ function DocCard({ doc }: { doc: DocRow }) {
 			: null
 
 	return (
-		<div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
-			<div className="flex flex-wrap items-start justify-between gap-3">
+		<div className="rounded-2xl bg-white/60 p-5 dark:bg-black/20">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 				<div className="min-w-0 flex-1">
 					<H4 className="truncate">
 						{doc.url ? (
@@ -696,16 +745,17 @@ function DocCard({ doc }: { doc: DocRow }) {
 					</Paragraph>
 				</div>
 
-				<div className="flex shrink-0 flex-wrap items-center gap-2">
+				<div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
 					<ignoreFetcher.Form method="post">
 						<input type="hidden" name="intent" value="ignore-add" />
 						<input type="hidden" name="pattern" value={doc.docId} />
 						<Button
-							size="small"
+							size="medium"
 							variant="secondary"
 							{...ignoreDc.getButtonProps({ type: 'submit' })}
 							disabled={isIgnoring}
 							title="Adds an exact ignore pattern for this doc ID"
+							className="w-full sm:w-auto"
 						>
 							{isIgnoring
 								? 'Ignoring...'
@@ -722,10 +772,11 @@ function DocCard({ doc }: { doc: DocRow }) {
 						<input type="hidden" name="scope" value="manifest" />
 						<input type="hidden" name="addToIgnore" value="false" />
 						<Button
-							size="small"
+							size="medium"
 							variant="danger"
 							{...deleteDc.getButtonProps({ type: 'submit' })}
 							disabled={isDeleting}
+							className="w-full sm:w-auto"
 						>
 							{isDeleting
 								? 'Deleting...'
@@ -742,11 +793,12 @@ function DocCard({ doc }: { doc: DocRow }) {
 						<input type="hidden" name="scope" value="manifest" />
 						<input type="hidden" name="addToIgnore" value="true" />
 						<Button
-							size="small"
+							size="medium"
 							variant="danger"
 							{...deleteIgnoreDc.getButtonProps({ type: 'submit' })}
 							disabled={isDeleting}
 							title="Deletes now and adds this docId to ignore list"
+							className="w-full sm:w-auto"
 						>
 							{isDeleting
 								? 'Deleting...'
@@ -805,6 +857,14 @@ export function ErrorBoundary() {
 		<div className="mx-10vw mt-10">
 			<h2>Search admin error</h2>
 			<pre className="whitespace-pre-wrap">{getErrorMessage(error)}</pre>
+		</div>
+	)
+}
+
+function InfoPanel({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="rounded-xl bg-slate-100 p-5 text-base text-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+			{children}
 		</div>
 	)
 }
