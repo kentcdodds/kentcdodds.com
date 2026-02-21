@@ -25,17 +25,17 @@ import {
 	useDoubleCheck,
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
-import { requireAdminUser } from '#app/utils/session.server.ts'
-import {
-	isSemanticSearchConfigured,
-	vectorizeDeleteByIds,
-} from '#app/utils/semantic-search.server.ts'
 import {
 	getSemanticSearchAdminStore,
 	isDocIdIgnored,
 	type SemanticSearchIgnoreList,
 	type SemanticSearchManifest,
 } from '#app/utils/semantic-search-admin.server.ts'
+import {
+	isSemanticSearchConfigured,
+	vectorizeDeleteByIds,
+} from '#app/utils/semantic-search.server.ts'
+import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/search.admin'
 
 export const handle: KCDHandle = {
@@ -129,6 +129,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 				semanticSearchConfigured: isSemanticSearchConfigured(),
 				manifestKeys: [] as string[],
 				selectedManifest: manifestParam,
+				selectedKeys: [] as string[],
 				query,
 				type,
 				showIgnored,
@@ -136,6 +137,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 				offset,
 				total: 0,
 				docs: [] as DocRow[],
+				typeOptions: [] as Array<{ type: string; count: number }>,
 				ignoreList: {
 					version: 1,
 					patterns: [],
@@ -475,7 +477,7 @@ export default function SearchAdminRoute() {
 								className={inputClassName}
 							>
 								<option value="">All</option>
-								{data.typeOptions.map((o) => (
+								{data.typeOptions.map((o: { type: string; count: number }) => (
 									<option key={o.type} value={o.type}>
 										{o.type} ({o.count})
 									</option>
@@ -515,7 +517,6 @@ export default function SearchAdminRoute() {
 
 					<div className="mt-4 flex items-center gap-2">
 						<Button
-							as="button"
 							type="button"
 							disabled={!hasPrev}
 							onClick={() => {
@@ -527,7 +528,6 @@ export default function SearchAdminRoute() {
 							Prev
 						</Button>
 						<Button
-							as="button"
 							type="button"
 							disabled={!hasNext}
 							onClick={() => {
@@ -648,6 +648,24 @@ function DocCard({ doc }: { doc: DocRow }) {
 	const isDeleting = deleteFetcher.state !== 'idle'
 	const isIgnoring = ignoreFetcher.state !== 'idle'
 
+	// `useFetcher<typeof action>()` does not narrow well when a single action
+	// supports multiple intents with different response shapes.
+	const deleteData = deleteFetcher.data as any
+	const deleteError =
+		deleteData?.ok === false
+			? String(deleteData.error ?? 'Delete failed')
+			: null
+	const deleteResult =
+		deleteData?.ok === true &&
+		typeof deleteData.vectorIdsRequested === 'number' &&
+		typeof deleteData.vectorDeleteSkipped === 'boolean'
+			? (deleteData as {
+					vectorIdsRequested: number
+					deletedVectors: number
+					vectorDeleteSkipped: boolean
+				})
+			: null
+
 	return (
 		<div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
 			<div className="flex flex-wrap items-start justify-between gap-3">
@@ -734,22 +752,19 @@ function DocCard({ doc }: { doc: DocRow }) {
 				</div>
 			</div>
 
-			{deleteFetcher.data?.ok === false ? (
+			{deleteError ? (
 				<div className="mt-3">
-					<ErrorPanel>
-						{String(deleteFetcher.data.error ?? 'Delete failed')}
-					</ErrorPanel>
+					<ErrorPanel>{deleteError}</ErrorPanel>
 				</div>
 			) : null}
 
-			{deleteFetcher.data?.ok === true ? (
+			{deleteResult ? (
 				<div className="mt-3">
 					<Paragraph textColorClassName="text-secondary">
-						Delete result: vectors requested{' '}
-						{deleteFetcher.data.vectorIdsRequested},{' '}
-						{deleteFetcher.data.vectorDeleteSkipped
+						Delete result: vectors requested {deleteResult.vectorIdsRequested},{' '}
+						{deleteResult.vectorDeleteSkipped
 							? 'Vectorize delete skipped (semantic search env not configured)'
-							: `deleted ${deleteFetcher.data.deletedVectors}`}
+							: `deleted ${deleteResult.deletedVectors}`}
 						.
 					</Paragraph>
 				</div>

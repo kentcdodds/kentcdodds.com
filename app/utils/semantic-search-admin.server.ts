@@ -2,6 +2,7 @@ import { Readable } from 'node:stream'
 import {
 	GetObjectCommand,
 	ListObjectsV2Command,
+	type ListObjectsV2CommandOutput,
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3'
@@ -217,7 +218,7 @@ async function listKeysFromR2({
 	const keys: string[] = []
 	let token: string | undefined = undefined
 	for (let page = 0; page < 25; page++) {
-		const res = await client.send(
+		const res: ListObjectsV2CommandOutput = await client.send(
 			new ListObjectsV2Command({
 				Bucket: bucket,
 				Prefix: prefix,

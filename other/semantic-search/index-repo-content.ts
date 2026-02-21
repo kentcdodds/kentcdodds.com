@@ -10,11 +10,11 @@ import {
 	vectorizeDeleteByIds,
 	vectorizeUpsert,
 } from './cloudflare.ts'
+import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import {
 	getJsxPagePathFromSlug,
 	loadJsxPageItemsFromLocalApp,
 } from './jsx-page-content.ts'
-import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 type DocType =
