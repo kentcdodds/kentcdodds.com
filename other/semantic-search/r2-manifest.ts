@@ -35,6 +35,10 @@ function getWranglerNpxPackage() {
 function getObjectViaWrangler(bucket: string, key: string) {
 	ensureLogDir()
 	const objectPath = wranglerR2ObjectPath(bucket, key)
+	// `execFileSync` has a relatively small default stdout buffer. Our manifests can
+	// grow beyond that (especially YouTube) and cause `spawnSync ... ENOBUFS`.
+	// Bump the buffer so large JSON manifests can be streamed back via `--pipe`.
+	const maxBufferBytes = 64 * 1024 * 1024
 	return execFileSync(
 		'npx',
 		[
@@ -49,6 +53,7 @@ function getObjectViaWrangler(bucket: string, key: string) {
 		{
 			env: getWranglerEnv(),
 			stdio: ['ignore', 'pipe', 'pipe'],
+			maxBuffer: maxBufferBytes,
 		},
 	).toString('utf8')
 }

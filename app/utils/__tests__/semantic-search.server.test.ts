@@ -162,6 +162,18 @@ describe('semantic search result normalization', () => {
 						snippet: 'bob-snippet',
 					},
 				},
+				{
+					id: 'youtube:dQw4w9WgXcQ:chunk:0',
+					values: vector as number[],
+					metadata: {
+						type: 'youtube',
+						slug: 'dQw4w9WgXcQ',
+						url: '/youtube?video=dQw4w9WgXcQ',
+						title: 'Never Gonna Give You Up',
+						snippet: 'never gonna give you up',
+						startSeconds: 123,
+					},
+				},
 			]
 
 			const ndjson =
@@ -179,8 +191,8 @@ describe('semantic search result normalization', () => {
 			)
 			expect(upsertRes.ok).toBe(true)
 
-			const results = await semanticSearchKCD({ query, topK: 4 })
-			expect(results).toHaveLength(4)
+			const results = await semanticSearchKCD({ query, topK: 5 })
+			expect(results).toHaveLength(5)
 
 			// Chunk-level duplicates collapse into a single doc-level result.
 			const ids = results.map((r) => r.id)
@@ -198,6 +210,12 @@ describe('semantic search result normalization', () => {
 			expect(ids).toContain('credit:alice')
 			expect(ids).toContain('credit:bob')
 			expect(urls.filter((u) => u === '/credits')).toHaveLength(2)
+
+			const youtubeResult = results.find((r) => r.type === 'youtube')
+			expect(youtubeResult).toBeDefined()
+			expect(youtubeResult!.timestampSeconds).toBe(123)
+			expect(youtubeResult!.url).toContain('/youtube')
+			expect(youtubeResult!.url).toContain('t=123')
 		} finally {
 			for (const [key, value] of Object.entries(originalEnv)) {
 				if (typeof value === 'string') process.env[key] = value

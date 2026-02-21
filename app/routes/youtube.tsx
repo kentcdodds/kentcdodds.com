@@ -19,6 +19,18 @@ function parseVideoId(value: string | null) {
 	return /^[A-Za-z0-9_-]{11}$/.test(value) ? value : null
 }
 
+function parseTimestampSeconds(value: string | null) {
+	if (!value) return null
+	const trimmed = value.trim()
+	if (!trimmed) return null
+	// Keep it simple: `t=123` (seconds). This is what our semantic search deep links emit.
+	if (!/^\d+$/.test(trimmed)) return null
+	const n = Number(trimmed)
+	if (!Number.isFinite(n)) return null
+	// Cap to something reasonable just to avoid nonsense inputs.
+	return Math.max(0, Math.min(n, 60 * 60 * 24))
+}
+
 function parsePlaylistId(value: string | undefined) {
 	if (!value) return null
 	const trimmed = value.trim()
@@ -62,6 +74,7 @@ export default function YouTubePage() {
 	const { playlistId } = useLoaderData<typeof loader>()
 	const [searchParams] = useSearchParams()
 	const selectedVideoId = parseVideoId(searchParams.get('video'))
+	const startSeconds = parseTimestampSeconds(searchParams.get('t'))
 	const playlistUrl = `https://www.youtube.com/playlist?list=${encodeURIComponent(
 		playlistId,
 	)}`
@@ -82,6 +95,7 @@ export default function YouTubePage() {
 								rel: '0',
 								modestbranding: '1',
 								list: playlistId,
+								...(startSeconds ? { start: String(startSeconds) } : {}),
 							}).toString()}
 						/>
 					</div>

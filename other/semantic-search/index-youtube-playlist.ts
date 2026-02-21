@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import * as YAML from 'yaml'
 import { chunkText, makeSnippet, normalizeText, sha256 } from './chunk-utils.ts'
 import {
 	getCloudflareConfig,
@@ -12,7 +13,7 @@ import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 type DocType = 'youtube'
 type TranscriptSource = 'manual' | 'auto' | 'none'
-type VideoSource = 'playlist' | 'appearances'
+type VideoSource = 'playlist' | 'appearances' | 'talks'
 
 type ManifestChunk = {
 	id: string
@@ -20,6 +21,9 @@ type ManifestChunk = {
 	snippet: string
 	chunkIndex: number
 	chunkCount: number
+	kind?: 'meta' | 'transcript'
+	startSeconds?: number
+	endSeconds?: number
 }
 
 type ManifestDoc = {
@@ -54,10 +58,26 @@ type VideoEnrichedData = {
 	channelTitle?: string
 	publishedAt?: string
 	transcript: string
+	transcriptEvents: TranscriptEvent[]
 	transcriptSource: TranscriptSource
 }
 
 const DEFAULT_PLAYLIST_ID = 'PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
+
+type TranscriptEvent = {
+	startMs: number
+	durationMs: number
+	text: string
+}
+
+type YoutubeChunkItem =
+	| { kind: 'meta'; body: string }
+	| {
+			kind: 'transcript'
+			body: string
+			startSeconds?: number
+			endSeconds?: number
+	  }
 
 function parseArgs() {
 	const args = process.argv.slice(2)
@@ -378,13 +398,63 @@ async function fetchAppearancesYouTubeVideos() {
 	return [...byVideoId.values()]
 }
 
+async function fetchTalksYouTubeVideos() {
+	const talksPath = path.join(process.cwd(), 'content', 'data', 'talks.yml')
+	let raw = ''
+	try {
+		raw = await fs.readFile(talksPath, 'utf8')
+	} catch (error: unknown) {
+		const code = (error as { code?: string })?.code
+		if (code === 'ENOENT') return []
+		throw error
+	}
+
+	let parsed: unknown
+	try {
+		parsed = YAML.parse(raw)
+	} catch {
+		// If talks.yml is malformed, don't fail the entire YouTube indexing run.
+		return []
+	}
+
+	if (!Array.isArray(parsed)) return []
+
+	const byVideoId = new Map<string, PlaylistVideo>()
+	for (const talk of parsed) {
+		const talkRecord = asRecord(talk)
+		if (!talkRecord) continue
+		const talkTitle = asString(talkRecord.title) ?? 'Talk'
+		const deliveries = asArray(talkRecord.deliveries)
+		for (const delivery of deliveries) {
+			const deliveryRecord = asRecord(delivery)
+			if (!deliveryRecord) continue
+			const recording = asString(deliveryRecord.recording)
+			if (!recording) continue
+			const videoId = extractYoutubeVideoId(recording)
+			if (!videoId) continue
+
+			if (!byVideoId.has(videoId)) {
+				byVideoId.set(videoId, {
+					videoId,
+					title: talkTitle,
+					sources: ['talks'],
+				})
+			}
+		}
+	}
+
+	return [...byVideoId.values()]
+}
+
 function mergeVideos({
 	playlistVideos,
 	appearancesVideos,
+	talksVideos,
 	maxVideos,
 }: {
 	playlistVideos: PlaylistVideo[]
 	appearancesVideos: PlaylistVideo[]
+	talksVideos: PlaylistVideo[]
 	maxVideos?: number
 }) {
 	const byVideoId = new Map<string, PlaylistVideo>()
@@ -417,6 +487,7 @@ function mergeVideos({
 
 	for (const video of playlistVideos) upsert(video)
 	for (const video of appearancesVideos) upsert(video)
+	for (const video of talksVideos) upsert(video)
 
 	const sorted = [...byVideoId.values()].sort((a, b) => {
 		const left = a.position ?? Number.MAX_SAFE_INTEGER
@@ -738,7 +809,11 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 	const transcriptUrl = new URL(track.baseUrl)
 	transcriptUrl.searchParams.set('fmt', 'json3')
 
-	type Json3Event = { segs?: Array<{ utf8?: string }> }
+	type Json3Event = {
+		tStartMs?: number
+		dDurationMs?: number
+		segs?: Array<{ utf8?: string }>
+	}
 	type Json3 = { events?: Json3Event[] }
 	const json = await fetchJsonWithRetries<Json3>(transcriptUrl.toString(), {
 		label,
@@ -747,15 +822,98 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 		},
 	})
 	const lines: string[] = []
+	const transcriptEvents: TranscriptEvent[] = []
 	for (const event of json.events ?? []) {
+		const startMs =
+			typeof event.tStartMs === 'number' && Number.isFinite(event.tStartMs)
+				? event.tStartMs
+				: 0
+		const durationMs =
+			typeof event.dDurationMs === 'number' && Number.isFinite(event.dDurationMs)
+				? event.dDurationMs
+				: 0
 		const line = (event.segs ?? [])
 			.map((seg) => seg.utf8 ?? '')
 			.join('')
 			.replace(/\u200B/g, '')
 			.trim()
-		if (line) lines.push(line)
+		if (!line) continue
+		lines.push(line)
+		transcriptEvents.push({ startMs, durationMs, text: line })
 	}
-	return normalizeText(lines.join('\n'))
+	return {
+		transcript: normalizeText(lines.join('\n')),
+		transcriptEvents,
+	}
+}
+
+function chunkTranscriptEvents(
+	events: TranscriptEvent[],
+	{
+		targetChars = 3500,
+		maxChunkChars = 5500,
+	}: { targetChars?: number; maxChunkChars?: number } = {},
+) {
+	const sorted = [...events].sort((a, b) => a.startMs - b.startMs)
+	const chunks: Array<{
+		body: string
+		startMs: number
+		endMs: number
+	}> = []
+
+	let currentLines: string[] = []
+	let currentLen = 0
+	let startMs: number | null = null
+	let endMs = 0
+
+	const flush = () => {
+		if (!currentLines.length || startMs === null) return
+		const body = normalizeText(currentLines.join('\n'))
+		if (!body) return
+		chunks.push({ body, startMs, endMs })
+		currentLines = []
+		currentLen = 0
+		startMs = null
+		endMs = 0
+	}
+
+	for (const e of sorted) {
+		const line = normalizeText(e.text)
+		if (!line) continue
+
+		// If we don't have a current chunk and this line is huge, split it.
+		if (!currentLines.length && line.length > maxChunkChars) {
+			const eStartMs = Math.max(0, Math.floor(e.startMs))
+			const eEndMs = Math.max(
+				eStartMs,
+				Math.floor(e.startMs + (e.durationMs || 0)),
+			)
+			for (let i = 0; i < line.length; i += targetChars) {
+				const part = line.slice(i, i + targetChars)
+				const body = normalizeText(part)
+				if (!body) continue
+				chunks.push({ body, startMs: eStartMs, endMs: eEndMs })
+			}
+			continue
+		}
+
+		const nextLen = currentLen + (currentLines.length ? 1 : 0) + line.length
+		if (currentLines.length && nextLen > targetChars) {
+			flush()
+		}
+
+		if (startMs === null) startMs = Math.max(0, Math.floor(e.startMs))
+		const eventEnd = Math.max(
+			0,
+			Math.floor(e.startMs + (e.durationMs || 0)),
+		)
+		endMs = Math.max(endMs, eventEnd)
+		currentLines.push(line)
+		currentLen = currentLen + (currentLines.length > 1 ? 1 : 0) + line.length
+	}
+
+	flush()
+	return chunks
 }
 
 async function fetchVideoEnrichedData({
@@ -822,6 +980,7 @@ async function fetchVideoEnrichedData({
 				channelTitle,
 				publishedAt,
 				transcript: '',
+				transcriptEvents: [],
 				transcriptSource: 'none',
 			}
 		}
@@ -835,8 +994,9 @@ async function fetchVideoEnrichedData({
 			description,
 			channelTitle,
 			publishedAt,
-			transcript,
-			transcriptSource: transcript ? chosen.source : 'none',
+			transcript: transcript.transcript,
+			transcriptEvents: transcript.transcriptEvents,
+			transcriptSource: transcript.transcript ? chosen.source : 'none',
 		}
 	} catch (error) {
 		console.warn(`Failed to fetch transcript/metadata for ${videoId}`, error)
@@ -844,13 +1004,14 @@ async function fetchVideoEnrichedData({
 			title: undefined,
 			description: '',
 			transcript: '',
+			transcriptEvents: [],
 			transcriptSource: 'none',
 		}
 	}
 }
 
 type VideoEnrichedDataCacheEntry = {
-	cacheVersion: 1
+	cacheVersion: 2
 	fetchedAt: string
 	videoId: string
 	includeAutoCaptions: boolean
@@ -897,7 +1058,7 @@ async function readVideoEnrichedDataCache({
 	try {
 		const raw = await fs.readFile(cachePath, 'utf8')
 		const parsed = JSON.parse(raw) as VideoEnrichedDataCacheEntry
-		if (parsed?.cacheVersion !== 1) return null
+		if (parsed?.cacheVersion !== 2) return null
 		if (parsed.videoId !== videoId) return null
 		if (parsed.includeAutoCaptions !== includeAutoCaptions) return null
 		if (!parsed.data || typeof parsed.data !== 'object') return null
@@ -927,7 +1088,7 @@ async function writeVideoEnrichedDataCache({
 	})
 	await fs.mkdir(cacheDir, { recursive: true })
 	const entry: VideoEnrichedDataCacheEntry = {
-		cacheVersion: 1,
+		cacheVersion: 2,
 		fetchedAt: new Date().toISOString(),
 		videoId,
 		includeAutoCaptions,
@@ -1064,7 +1225,15 @@ async function main() {
 	console.log(
 		`Appearances page YouTube videos discovered: ${appearancesVideos.length}`,
 	)
-	let videos = mergeVideos({ playlistVideos, appearancesVideos, maxVideos })
+	console.log('Loading YouTube links from talks data...')
+	const talksVideos = await fetchTalksYouTubeVideos()
+	console.log(`Talks data YouTube videos discovered: ${talksVideos.length}`)
+	let videos = mergeVideos({
+		playlistVideos,
+		appearancesVideos,
+		talksVideos,
+		maxVideos,
+	})
 
 	const explicitVideoIds = new Set<string>()
 	for (const input of explicitVideoInputs) {
@@ -1105,8 +1274,10 @@ async function main() {
 	const appearancesSourceCount = videos.filter((video) =>
 		video.sources.includes('appearances'),
 	).length
+	const talksSourceCount = videos.filter((video) => video.sources.includes('talks'))
+		.length
 	console.log(
-		`Total unique videos to process: ${videos.length} (playlist: ${playlistSourceCount}, appearances: ${appearancesSourceCount})${maxVideos ? `, capped by --max-videos=${maxVideos}` : ''}`,
+		`Total unique videos to process: ${videos.length} (playlist: ${playlistSourceCount}, appearances: ${appearancesSourceCount}, talks: ${talksSourceCount})${maxVideos ? `, capped by --max-videos=${maxVideos}` : ''}`,
 	)
 	if (explicitVideoIds.size) {
 		console.log(
@@ -1261,7 +1432,9 @@ async function main() {
 		)
 		const transcript = details.transcript
 
-		const text = normalizeText(
+		// Index "meta" (title/description) separately from time-aligned transcript chunks
+		// so YouTube results can deep-link to the approximate match timestamp.
+		const metaText = normalizeText(
 			[
 				`Title: ${title}`,
 				`Type: youtube`,
@@ -1278,24 +1451,43 @@ async function main() {
 				`Transcript source: ${details.transcriptSource}`,
 				'',
 				description,
-				'',
-				transcript,
 			].join('\n'),
 		)
-
-		const chunkBodies = chunkText(text, {
+		const metaChunks = chunkText(metaText, {
 			targetChars: 3500,
 			overlapChars: 500,
 			maxChunkChars: 5500,
-		})
-		const chunkCount = chunkBodies.length
+		}).map((body): YoutubeChunkItem => ({ kind: 'meta', body }))
+
+		const transcriptChunks: YoutubeChunkItem[] = details.transcriptEvents.length
+			? chunkTranscriptEvents(details.transcriptEvents, {
+					targetChars: 3500,
+					maxChunkChars: 5500,
+				}).map((c): YoutubeChunkItem => ({
+					kind: 'transcript',
+					body: c.body,
+					startSeconds: Math.floor(c.startMs / 1000),
+					endSeconds: Math.ceil(c.endMs / 1000),
+				}))
+			: transcript
+				? chunkText(transcript, {
+						targetChars: 3500,
+						overlapChars: 500,
+						maxChunkChars: 5500,
+					}).map((body): YoutubeChunkItem => ({ kind: 'transcript', body }))
+				: []
+
+		const chunkItems = [...metaChunks, ...transcriptChunks]
+		const chunkCount = chunkItems.length
 		const oldChunksById = new Map(
 			(manifest.docs[docId]?.chunks ?? []).map((chunk) => [chunk.id, chunk]),
 		)
 		const chunks: ManifestChunk[] = []
 
-		for (let index = 0; index < chunkBodies.length; index++) {
-			const body = chunkBodies[index] ?? ''
+		for (let index = 0; index < chunkItems.length; index++) {
+			const item = chunkItems[index]
+			if (!item) continue
+			const body = item.body
 			const vectorId = `youtube:${videoId}:chunk:${index}`
 			const hash = sha256(body)
 			const snippet = makeSnippet(body)
@@ -1305,8 +1497,14 @@ async function main() {
 				snippet,
 				chunkIndex: index,
 				chunkCount,
+				kind: item.kind,
+				startSeconds: item.kind === 'transcript' ? item.startSeconds : undefined,
+				endSeconds: item.kind === 'transcript' ? item.endSeconds : undefined,
 			})
 			if (oldChunksById.get(vectorId)?.hash === hash) continue
+
+			const startSeconds = item.kind === 'transcript' ? item.startSeconds : undefined
+			const endSeconds = item.kind === 'transcript' ? item.endSeconds : undefined
 
 			toUpsert.push({
 				vectorId,
@@ -1321,9 +1519,12 @@ async function main() {
 					snippet,
 					chunkIndex: index,
 					chunkCount,
+					chunkKind: item.kind,
 					contentHash: hash,
 					sourceUpdatedAt: details.publishedAt,
 					transcriptSource: details.transcriptSource,
+					...(typeof startSeconds === 'number' ? { startSeconds } : {}),
+					...(typeof endSeconds === 'number' ? { endSeconds } : {}),
 					sources: video.sources,
 					imageUrl:
 						video.thumbnailUrl ??

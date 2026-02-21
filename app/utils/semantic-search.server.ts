@@ -14,6 +14,15 @@ type VectorizeQueryResponse = {
 	}>
 }
 
+function asFiniteNumber(value: unknown): number | undefined {
+	if (typeof value === 'number' && Number.isFinite(value)) return value
+	if (typeof value === 'string' && value.trim()) {
+		const n = Number(value)
+		if (Number.isFinite(n)) return n
+	}
+	return undefined
+}
+
 /**
  * Parse a value that may be a string, returning a trimmed non-empty string.
  */
@@ -245,11 +254,59 @@ export type SemanticSearchResult = {
 	url?: string
 	snippet?: string
 	/**
+	 * Optional deep-link timestamp (seconds) for media results like YouTube.
+	 * When present, UIs can open the result at the approximate match location.
+	 */
+	timestampSeconds?: number
+	/**
 	 * A short, display-friendly summary. Prefer this over `snippet` in UIs.
 	 */
 	summary?: string
 	imageUrl?: string
 	imageAlt?: string
+}
+
+function parseYoutubeVideoIdFromUrl(url: string | undefined) {
+	if (!url) return null
+	try {
+		const u = new URL(url, 'https://kentcdodds.com')
+		if (u.pathname !== '/youtube') return null
+		const video = (u.searchParams.get('video') ?? '').trim()
+		return /^[A-Za-z0-9_-]{11}$/.test(video) ? video : null
+	} catch {
+		return null
+	}
+}
+
+function addYoutubeTimestampToUrl({
+	url,
+	videoId,
+	timestampSeconds,
+}: {
+	url: string | undefined
+	videoId: string | null
+	timestampSeconds: number | undefined
+}) {
+	const t =
+		typeof timestampSeconds === 'number' && Number.isFinite(timestampSeconds)
+			? Math.max(0, Math.floor(timestampSeconds))
+			: null
+	if (!t) return url
+
+	const vid = videoId ?? parseYoutubeVideoIdFromUrl(url)
+	if (!vid) return url
+
+	const base = url && url.startsWith('/youtube') ? url : `/youtube?video=${vid}`
+	try {
+		const u = new URL(base, 'https://kentcdodds.com')
+		u.searchParams.set('video', vid)
+		u.searchParams.set('t', String(t))
+		return `${u.pathname}?${u.searchParams.toString()}`
+	} catch {
+		return `/youtube?video=${encodeURIComponent(vid)}&t=${encodeURIComponent(
+			String(t),
+		)}`
+	}
 }
 
 export async function semanticSearchKCD({
@@ -310,6 +367,8 @@ export async function semanticSearchKCD({
 		const title = asNonEmptyString(md.title)
 		const url = asNonEmptyString(md.url)
 		const snippet = asNonEmptyString(md.snippet)
+		// For media (YouTube), chunk metadata can include a start time.
+		const timestampSeconds = asFiniteNumber(md.startSeconds)
 		const imageUrl = asNonEmptyString(md.imageUrl)
 		const imageAlt = asNonEmptyString(md.imageAlt)
 
@@ -329,6 +388,7 @@ export async function semanticSearchKCD({
 			title,
 			url,
 			snippet,
+			timestampSeconds,
 			imageUrl,
 			imageAlt,
 		}
@@ -362,6 +422,10 @@ export async function semanticSearchKCD({
 			snippet: nextIsBetter
 				? (next.snippet ?? prev.snippet)
 				: (prev.snippet ?? next.snippet),
+			// Keep the timestamp from the highest-scoring chunk when present.
+			timestampSeconds: nextIsBetter
+				? (next.timestampSeconds ?? prev.timestampSeconds)
+				: (prev.timestampSeconds ?? next.timestampSeconds),
 			imageUrl: prev.imageUrl ?? next.imageUrl,
 			imageAlt: prev.imageAlt ?? next.imageAlt,
 		}
@@ -375,6 +439,20 @@ export async function semanticSearchKCD({
 		})
 		.slice(0, safeTopK)
 		.map((x) => x.result)
+
+	// If a YouTube chunk match includes a timestamp, deep-link the result URL.
+	for (const r of baseResults) {
+		if (r.type !== 'youtube') continue
+		const videoId =
+			typeof r.slug === 'string' && /^[A-Za-z0-9_-]{11}$/.test(r.slug)
+				? r.slug
+				: null
+		r.url = addYoutubeTimestampToUrl({
+			url: r.url,
+			videoId,
+			timestampSeconds: r.timestampSeconds,
+		})
+	}
 
 	// Add UI-ready presentation fields (summary + image) with graceful fallbacks.
 	// This is derived from local repo content when possible, so it doesn't require
