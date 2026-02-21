@@ -53,13 +53,14 @@ describe('/blog/:slug loader cache behavior', () => {
 			thrown = e
 		}
 
-		expect(thrown).toBeInstanceOf(Response)
-		const response = thrown as Response
-		expect(response.status).toBe(404)
-		expect(response.headers.get('Cache-Control')).toBe('private, max-age=3600')
-
-		const data = await response.json()
-		expect(data).toEqual({ recommendations: [] })
+		expect(thrown).toMatchObject({
+			type: 'DataWithResponseInit',
+			data: { recommendations: [] },
+			init: {
+				status: 404,
+				headers: { 'Cache-Control': 'private, max-age=3600' },
+			},
+		})
 
 		expect(blogServerMocks.getBlogRecommendations).toHaveBeenCalledTimes(1)
 		expect(blogServerMocks.getBlogReadRankings).not.toHaveBeenCalled()
@@ -80,11 +81,15 @@ describe('/blog/:slug loader cache behavior', () => {
 		const request = new Request('http://localhost/blog/my-post')
 		const params = { slug: 'my-post' }
 
-		const response = (await loader({ request, params } as any)) as Response
-		expect(response.status).toBe(200)
-
-		const data = await response.json()
-		expect(data).toMatchObject({
+		const result = (await loader({ request, params } as any)) as any
+		expect(result).toMatchObject({
+			type: 'DataWithResponseInit',
+			init: {
+				status: 200,
+				headers: { 'Cache-Control': 'private, max-age=3600' },
+			},
+		})
+		expect(result.data).toMatchObject({
 			page: { slug: 'my-post' },
 			recommendations: [],
 			readRankings: [],
