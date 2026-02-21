@@ -1,8 +1,13 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { data as json } from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { CharacterCountdown } from '#app/components/character-countdown.tsx'
-import { Field, FieldContainer, inputClassName } from '#app/components/form-elements.tsx'
+import {
+	Field,
+	FieldContainer,
+	inputClassName,
+} from '#app/components/form-elements.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import {
 	callKentTextToSpeechConstraints,
@@ -10,9 +15,122 @@ import {
 	type CallKentTextToSpeechVoice,
 	getErrorForCallKentQuestionText,
 	getSuggestedCallTitleFromQuestionText,
+	isCallKentTextToSpeechVoice,
 } from '#app/utils/call-kent-text-to-speech.ts'
+import { type Route } from './+types/text-to-speech'
 
-const textToSpeechResourcePath = '/resources/calls/text-to-speech'
+const textToSpeechResourceRoute = '/resources/calls/text-to-speech'
+
+const TTS_RATE_LIMIT_MAX = 20
+const TTS_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+
+async function getTextToSpeechServerServices() {
+	const [
+		{ isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi },
+		{ rateLimit },
+		{ requireUser },
+	] = await Promise.all([
+		import('#app/utils/cloudflare-ai-text-to-speech.server.ts'),
+		import('#app/utils/rate-limit.server.ts'),
+		import('#app/utils/session.server.ts'),
+	])
+	return {
+		isCloudflareTextToSpeechConfigured,
+		synthesizeSpeechWithWorkersAi,
+		rateLimit,
+		requireUser,
+	}
+}
+
+export async function action({ request }: Route.ActionArgs) {
+	// This is a paid API call; require auth to limit abuse.
+	const { isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi, rateLimit, requireUser } =
+		await getTextToSpeechServerServices()
+	const user = await requireUser(request)
+
+	const headers = { 'Cache-Control': 'no-store' }
+
+	if (!isCloudflareTextToSpeechConfigured()) {
+		return json(
+			{
+				error:
+					'Text-to-speech is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (and optionally CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL).',
+			},
+			{ status: 503, headers },
+		)
+	}
+
+	let body: unknown
+	try {
+		body = await request.json()
+	} catch {
+		return json({ error: 'Invalid JSON body' }, { status: 400, headers })
+	}
+
+	const text = typeof (body as any)?.text === 'string' ? (body as any).text : ''
+	const voiceRaw =
+		typeof (body as any)?.voice === 'string' ? (body as any).voice : ''
+
+	const textError = getErrorForCallKentQuestionText(text)
+	if (textError) {
+		return json({ error: textError }, { status: 400, headers })
+	}
+
+	if (voiceRaw && !isCallKentTextToSpeechVoice(voiceRaw)) {
+		return json({ error: 'Invalid voice' }, { status: 400, headers })
+	}
+
+	const limit = rateLimit({
+		key: `call-kent-tts:${user.id}`,
+		max: TTS_RATE_LIMIT_MAX,
+		windowMs: TTS_RATE_LIMIT_WINDOW_MS,
+	})
+	if (!limit.allowed) {
+		const retryAfterSeconds = Math.ceil((limit.retryAfterMs ?? 0) / 1000)
+		return json(
+			{
+				error: `Too many text-to-speech requests. Try again in ${retryAfterSeconds}s.`,
+			},
+			{
+				status: 429,
+				headers: {
+					...headers,
+					'Retry-After': String(retryAfterSeconds),
+				},
+			},
+		)
+	}
+
+	try {
+		const { bytes, contentType } = await synthesizeSpeechWithWorkersAi({
+			text: text.trim(),
+			voice: voiceRaw || undefined,
+		})
+		// Some TS `fetch`/`Response` typings don't accept all `Uint8Array` variants.
+		// Normalize into an `ArrayBuffer` body for broad compatibility.
+		const responseBody =
+			bytes.buffer instanceof ArrayBuffer
+				? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+				: Uint8Array.from(bytes).buffer
+		return new Response(responseBody, {
+			headers: {
+				...headers,
+				'Content-Type': contentType || 'audio/mpeg',
+			},
+		})
+	} catch (error: unknown) {
+		console.error('Call Kent TTS failed', error)
+		return json(
+			{
+				error:
+					error instanceof Error
+						? error.message
+						: 'Unable to generate audio. Please try again.',
+			},
+			{ status: 500, headers },
+		)
+	}
+}
 
 function isProbablyAudioResponse(response: Response) {
 	const contentType = (response.headers.get('content-type') ?? '').toLowerCase()
@@ -178,7 +296,7 @@ export function CallKentTextToSpeech({
 		abortControllerRef.current = abortController
 		setIsGenerating(true)
 		try {
-			const response = await fetch(textToSpeechResourcePath, {
+			const response = await fetch(textToSpeechResourceRoute, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				credentials: 'same-origin',
