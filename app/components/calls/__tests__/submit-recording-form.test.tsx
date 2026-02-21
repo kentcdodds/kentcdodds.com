@@ -54,6 +54,16 @@ describe('RecordingForm', () => {
 				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
 			)
 
+			fireEvent.change(screen.getByLabelText('Title'), {
+				target: { value: 'A valid title' },
+			})
+			fireEvent.change(screen.getByLabelText('Description'), {
+				target: { value: 'A sufficiently long description for this call.' },
+			})
+			fireEvent.change(screen.getByLabelText('Keywords'), {
+				target: { value: 'test,call' },
+			})
+
 			const submitButton = screen.getByRole('button', { name: 'Submit Recording' })
 			const form = container.querySelector('form')
 			expect(form).not.toBeNull()
@@ -137,8 +147,15 @@ describe('RecordingForm', () => {
 				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
 			)
 
-			const titleInput = screen.getByLabelText('Title')
-			fireEvent.change(titleInput, { target: { value: 'My First Call' } })
+			fireEvent.change(screen.getByLabelText('Title'), {
+				target: { value: 'My First Call' },
+			})
+			fireEvent.change(screen.getByLabelText('Description'), {
+				target: { value: 'A sufficiently long description for this call.' },
+			})
+			fireEvent.change(screen.getByLabelText('Keywords'), {
+				target: { value: 'test,call' },
+			})
 			const form = container.querySelector('form')
 			expect(form).not.toBeNull()
 			fireEvent.submit(form as HTMLFormElement)
@@ -158,6 +175,10 @@ describe('RecordingForm', () => {
 			expect(requestBody.get('intent')).toBe('create-call')
 			expect(requestBody.get('audio')).toBe('data:audio/wav;base64,ZmFrZQ==')
 			expect(requestBody.get('title')).toBe('My First Call')
+			expect(requestBody.get('description')).toBe(
+				'A sufficiently long description for this call.',
+			)
+			expect(requestBody.get('keywords')).toBe('test,call')
 
 			await waitFor(() =>
 				expect(mockNavigate).toHaveBeenCalledWith(
@@ -274,6 +295,60 @@ describe('RecordingForm', () => {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()
 			vi.unstubAllGlobals()
+		}
+	})
+
+	it('shows validation feedback on blur or submit (and keeps native validation off)', async () => {
+		vi.clearAllMocks()
+		mockUseRootData.mockReturnValue({
+			requestInfo: { flyPrimaryInstance: null },
+		})
+		const createObjectURL = vi
+			.spyOn(URL, 'createObjectURL')
+			.mockReturnValue('blob:recording')
+		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
+		try {
+			const { container } = render(
+				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
+			)
+
+			const form = container.querySelector('form')
+			expect(form).not.toBeNull()
+			expect(form).toHaveAttribute('novalidate')
+
+			const titleInput = screen.getByLabelText('Title')
+			expect(titleInput).toHaveAttribute('maxLength', '80')
+			expect(screen.getByText('80 characters left')).toBeInTheDocument()
+			const titleId = titleInput.getAttribute('id')
+			expect(titleId).toBeTruthy()
+			expect(titleInput).toHaveAttribute('aria-describedby', `${titleId}-countdown`)
+
+			fireEvent.change(titleInput, { target: { value: 'abcd' } })
+			expect(screen.getByText('76 characters left')).toBeInTheDocument()
+			expect(
+				screen.queryByText('Title must be at least 5 characters'),
+			).not.toBeInTheDocument()
+
+			fireEvent.blur(titleInput)
+			expect(
+				screen.getByText('Title must be at least 5 characters'),
+			).toBeInTheDocument()
+
+			fireEvent.change(titleInput, { target: { value: 'abcde' } })
+			await waitFor(() =>
+				expect(
+					screen.queryByText('Title must be at least 5 characters'),
+				).not.toBeInTheDocument(),
+			)
+
+			// Submit should surface validation for untouched fields.
+			fireEvent.submit(form as HTMLFormElement)
+			await screen.findByText('Description is required')
+			await screen.findByText('Keywords is required')
+		} finally {
+			createObjectURL.mockRestore()
+			revokeObjectURL.mockRestore()
 		}
 	})
 })
