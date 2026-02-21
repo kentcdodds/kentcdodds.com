@@ -32,6 +32,7 @@ import {
 	getFeaturedEpisode,
 } from '#app/utils/chats-with-kent.ts'
 import {
+	formatDate,
 	formatDuration,
 	getDisplayUrl,
 	getOrigin,
@@ -429,9 +430,15 @@ export default function PodcastDetail() {
 			</Grid>
 
 			<Grid as="header" className="mb-12">
-				<H2 className="col-span-full lg:col-span-8 lg:col-start-3">
-					{episode.title}
-				</H2>
+				<div className="col-span-full lg:col-span-8 lg:col-start-3">
+					<H2>{episode.title}</H2>
+					<H6 variant="secondary" as="div" className="mt-3">
+						Published{' '}
+						<time dateTime={episode.publishedAt}>
+							{formatDate(episode.publishedAt)}
+						</time>
+					</H6>
+				</div>
 			</Grid>
 
 			<Grid as="main" className="mb-24 lg:mb-64">
@@ -544,7 +551,9 @@ export default function PodcastDetail() {
 					caption="Featured episode"
 					subTitle={`Season ${featured.seasonNumber} Episode ${
 						featured.episodeNumber
-					} — ${formatDuration(featured.duration)}`}
+					} — ${formatDate(featured.publishedAt)} — ${formatDuration(
+						featured.duration,
+					)}`}
 					title={featured.title}
 					href={getCWKEpisodePath(featured)}
 					imageUrl={featured.image}

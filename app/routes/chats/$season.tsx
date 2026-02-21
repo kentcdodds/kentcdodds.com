@@ -9,6 +9,7 @@ import { type KCDHandle } from '#app/types.ts'
 import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
 import { orderBy } from '#app/utils/cjs/lodash.ts'
 import {
+	formatDate,
 	formatDuration,
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
@@ -91,8 +92,13 @@ export default function ChatsSeason() {
 						</span>
 						{episode.title}
 					</div>
-					<div className="text-lg font-medium text-gray-400">
-						{formatDuration(episode.duration)}
+					<div className="text-lg font-medium text-gray-400 lg:text-right">
+						<div>
+							<time dateTime={episode.publishedAt}>
+								{formatDate(episode.publishedAt)}
+							</time>
+						</div>
+						<div>{formatDuration(episode.duration)}</div>
 					</div>
 				</div>
 			</Grid>

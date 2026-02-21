@@ -11,6 +11,7 @@ type SimplecastEpisode = {
 	transcription: string | null
 	status: 'draft' | 'published'
 	is_published: boolean
+	published_at?: string
 	updated_at: string
 	image_url: string
 	audio_file_url: string

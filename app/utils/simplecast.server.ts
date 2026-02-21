@@ -10,6 +10,7 @@ import remark2rehype from 'remark-rehype'
 import { unified } from 'unified'
 import type * as U from 'unist'
 import { visit } from 'unist-util-visit'
+import { z } from 'zod'
 import {
 	type CWKEpisode,
 	type CWKSeason,
@@ -35,6 +36,61 @@ const headers = {
 }
 
 const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
+
+const cwkCachedLinkSchema = z
+	.object({
+		name: z.string().min(1),
+		url: z.string().min(1),
+	})
+	.passthrough()
+
+const cwkCachedGuestSchema = z
+	.object({
+		name: z.string().min(1),
+		company: z.string().optional(),
+		github: z.string().optional(),
+		x: z.string().optional(),
+	})
+	.passthrough()
+
+const cwkCachedMetaSchema = z
+	.object({
+		keywords: z.array(z.string()).optional(),
+	})
+	.catchall(z.string())
+	.optional()
+
+const cwkCachedEpisodeSchema = z
+	.object({
+		slug: z.string().min(1),
+		title: z.string().min(1),
+		meta: cwkCachedMetaSchema,
+		descriptionHTML: z.string(),
+		description: z.string(),
+		summaryHTML: z.string(),
+		publishedAt: z.string().min(1),
+		updatedAt: z.string().min(1),
+		seasonNumber: z.number(),
+		episodeNumber: z.number(),
+		homeworkHTMLs: z.array(z.string()),
+		resources: z.array(cwkCachedLinkSchema),
+		image: z.string().min(1),
+		guests: z.array(cwkCachedGuestSchema),
+		duration: z.number(),
+		transcriptHTML: z.string(),
+		simpleCastId: z.string().min(1),
+		mediaUrl: z.string().min(1),
+	})
+	.passthrough()
+
+const cwkCachedSeasonsSchema = z.array(
+	z
+		.object({
+			seasonNumber: z.number(),
+			episodes: z.array(cwkCachedEpisodeSchema),
+		})
+		.passthrough(),
+)
 
 function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
 	return (
@@ -65,11 +121,7 @@ const getCachedSeasons = async ({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 		getFreshValue: () => getSeasons({ request, forceFresh, timings }),
 		forceFresh,
-		checkValue: (value: unknown) =>
-			Array.isArray(value) &&
-			value.every(
-				(v) => typeof v.seasonNumber === 'number' && Array.isArray(v.episodes),
-			),
+		checkValue: cwkCachedSeasonsSchema,
 	})
 
 async function getCachedEpisode(
@@ -94,8 +146,7 @@ async function getCachedEpisode(
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 		getFreshValue: () => getEpisode(episodeId),
 		forceFresh,
-		checkValue: (value: unknown) =>
-			typeof value === 'object' && value !== null && 'title' in value,
+		checkValue: cwkCachedEpisodeSchema,
 	})
 }
 
@@ -188,6 +239,7 @@ async function getEpisode(episodeId: string) {
 	const {
 		id,
 		is_published,
+		published_at,
 		updated_at,
 		slug,
 		transcription: transcriptMarkdown,
@@ -232,6 +284,10 @@ async function getEpisode(episodeId: string) {
 				},
 	])
 
+	// Simplecast exposes both published and updated timestamps; fall back to
+	// `updated_at` so older/malformed episodes still render a date.
+	const publishedAt = published_at ?? updated_at
+
 	const cwkEpisode: CWKEpisode = {
 		transcriptHTML,
 		descriptionHTML,
@@ -242,6 +298,7 @@ async function getEpisode(episodeId: string) {
 		resources,
 		image: image_url,
 		episodeNumber: number,
+		publishedAt,
 		updatedAt: updated_at,
 		homeworkHTMLs,
 		seasonNumber,

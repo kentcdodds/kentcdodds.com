@@ -24,6 +24,7 @@ import {
 	getFeaturedEpisode,
 } from '#app/utils/chats-with-kent.ts'
 import {
+	formatDate,
 	formatDuration,
 	getDisplayUrl,
 	getOrigin,
@@ -151,7 +152,9 @@ function PodcastHome() {
 						caption="Featured episode"
 						subTitle={`Season ${featured.seasonNumber} Episode ${
 							featured.episodeNumber
-						} — ${formatDuration(featured.duration)}`}
+						} — ${formatDate(featured.publishedAt)} — ${formatDuration(
+							featured.duration,
+						)}`}
 						title={featured.title}
 						href={getCWKEpisodePath(featured)}
 						imageUrl={featured.image}

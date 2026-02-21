@@ -80,6 +80,7 @@ type CWKEpisode = {
 	descriptionHTML: string
 	description: string
 	summaryHTML: string
+	publishedAt: string
 	updatedAt: string
 	seasonNumber: number
 	episodeNumber: number
@@ -110,6 +111,7 @@ type CWKListItem = Pick<
 	| 'image'
 	| 'guests'
 	| 'duration'
+	| 'publishedAt'
 	| 'simpleCastId'
 >
 
