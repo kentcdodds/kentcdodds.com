@@ -21,8 +21,11 @@ const limiter = remember(
 /**
  * Simple in-memory fixed-window rate limiter.
  *
- * Note: This is per-process (per instance). It's meant as a best-effort guardrail
- * against abuse, not a perfect global quota.
+ * Note: This is per-process (per instance). In a multi-instance deployment a
+ * user could effectively get up to `max × instances` requests through before any
+ * single instance blocks them.
+ *
+ * It's meant as a best-effort guardrail against abuse, not a perfect global quota.
  */
 export function rateLimit({
 	key,
