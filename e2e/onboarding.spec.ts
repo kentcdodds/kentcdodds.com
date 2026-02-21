@@ -25,8 +25,9 @@ test('A new user can create an account', async ({ page }) => {
 	await expect(page).toHaveURL(/.*signup/)
 
 	// request signup verification code
-	await page.getByRole('textbox', { name: /email/i }).fill(emailAddress)
-	await page.getByRole('button', { name: /email me a code/i }).click()
+	const signupMain = page.getByRole('main')
+	await signupMain.getByRole('textbox', { name: /email/i }).fill(emailAddress)
+	await signupMain.getByRole('button', { name: /email me a code/i }).click()
 	await expect(page.getByText(/verification code sent/i)).toBeVisible()
 
 	// read and verify the email
