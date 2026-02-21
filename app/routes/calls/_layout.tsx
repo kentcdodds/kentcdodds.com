@@ -161,7 +161,7 @@ export default function CallHomeScreen({ loaderData: data }: Route.ComponentProp
 				arrowLabel="Take a listen"
 				action={
 					<ButtonLink variant="primary" to="./record" className="mr-auto">
-						Record your call
+						Record or type your call
 					</ButtonLink>
 				}
 			/>
@@ -216,8 +216,8 @@ export default function CallHomeScreen({ loaderData: data }: Route.ComponentProp
 							{`The goal of the Call Kent Podcast is to `}
 							<strong>get my answers to your questions.</strong>
 							{`
-              You record your brief question (120 seconds or less) right from
-              your browser. Then I listen to it later and give my response,
+              You record (or type) your brief question (120 seconds or less)
+              right from your browser. Then I listen to it later and give my response,
               and through the magic of technology (ffmpeg), our question
               and answer are stitched together and published to the podcast
               feed.
@@ -226,7 +226,7 @@ export default function CallHomeScreen({ loaderData: data }: Route.ComponentProp
 						<Paragraph>{`I look forward to hearing from you!`}</Paragraph>
 						<Spacer size="2xs" />
 						<ButtonLink variant="primary" to="./record">
-							Record your call
+							Record or type your call
 						</ButtonLink>
 					</div>
 				</div>

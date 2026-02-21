@@ -1,10 +1,12 @@
 import * as React from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { Button } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
+import { CallKentTextToSpeech } from '#app/components/calls/text-to-speech.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Grimmacing } from '#app/components/kifs.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
-import { RecordingForm } from '#app/routes/resources/calls/save.tsx'
+import { RecordingForm, type RecordingFormData } from '#app/routes/resources/calls/save.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { useCapturedRouteError } from '#app/utils/misc-react.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -15,6 +17,10 @@ export const handle: KCDHandle = {
 
 export default function RecordScreen() {
 	const [audio, setAudio] = React.useState<Blob | null>(null)
+	const [prefill, setPrefill] = React.useState<RecordingFormData | undefined>(
+		undefined,
+	)
+	const [mode, setMode] = React.useState<'record' | 'text'>('record')
 	const [searchParams] = useSearchParams()
 	const { user, userInfo } = useRootData()
 	// should be impossible...
@@ -35,43 +41,101 @@ export default function RecordScreen() {
 	return (
 		<div>
 			{audio ? (
-				<RecordingForm audio={audio} intent="create-call" />
+				<div className="flex flex-col gap-6">
+					{shouldUseSampleAudio ? (
+						<Paragraph className="mb-2">
+							{`Using a sample recording (dev only)...`}
+						</Paragraph>
+					) : null}
+					<div className="flex flex-wrap gap-3">
+						<Button
+							type="button"
+							variant="secondary"
+							size="medium"
+							onClick={() => {
+								setAudio(null)
+								setPrefill(undefined)
+								setMode('record')
+							}}
+						>
+							Start over
+						</Button>
+					</div>
+					<RecordingForm audio={audio} intent="create-call" data={prefill} />
+				</div>
 			) : (
-				<div>
+				<div className="flex flex-col gap-8">
 					{shouldUseSampleAudio ? (
 						<Paragraph className="mb-4">
 							{`Using a sample recording (dev only)...`}
 						</Paragraph>
 					) : null}
-					<Paragraph className="mb-4">
-						{`
-              Choose which recording device you would like to use.
-              Then click "Start Recording," introduce yourself
-              ("Hi, Kent, my name is ${user.firstName}") and say whatever you'd like.
-              Try to keep it 2 minutes or less. Thanks!
-            `}
-					</Paragraph>
+					<div className="flex flex-wrap gap-3">
+						<Button
+							type="button"
+							variant={mode === 'record' ? 'primary' : 'secondary'}
+							size="medium"
+							onClick={() => setMode('record')}
+						>
+							Record your voice
+						</Button>
+						<Button
+							type="button"
+							variant={mode === 'text' ? 'primary' : 'secondary'}
+							size="medium"
+							onClick={() => setMode('text')}
+						>
+							Type your question
+						</Button>
+					</div>
 					{userInfo.avatar.hasGravatar ? null : (
-						<Paragraph className="mb-4">
+						<Paragraph>
 							{`
-                Oh, and I noticed that your avatar is generic. If you want your
-                episode art to be a photo of you, then you'll want to set your
-                avatar to a photo of you
-              `}
+                I noticed that your avatar is generic. If you want your episode art
+                to be a photo of you, set your avatar on `}
 							<a
 								href="https://gravatar.com"
 								target="_blank"
 								rel="noreferrer noopener"
 							>
-								on Gravatar
+								Gravatar
 							</a>
 							{'.'}
 						</Paragraph>
 					)}
-					{shouldUseSampleAudio ? null : (
-						<CallRecorder
-							onRecordingComplete={(recording) => setAudio(recording)}
-							team={user.team}
+
+					{mode === 'record' ? (
+						<div>
+							<Paragraph className="mb-4">
+								{`
+                Choose which recording device you would like to use.
+                Then click "Start Recording," introduce yourself
+                ("Hi, Kent, my name is ${user.firstName}") and say whatever you'd like.
+                Try to keep it 2 minutes or less. Thanks!
+              `}
+							</Paragraph>
+							{shouldUseSampleAudio ? null : (
+								<CallRecorder
+									onRecordingComplete={(recording) => setAudio(recording)}
+									team={user.team}
+								/>
+							)}
+						</div>
+					) : (
+						<CallKentTextToSpeech
+							onAcceptAudio={({ audio, questionText, suggestedTitle, voice }) => {
+								setAudio(audio)
+								setPrefill({
+									fields: {
+										title: suggestedTitle || 'Call Kent question',
+										description: questionText,
+										keywords: '',
+									},
+									errors: {},
+								})
+								// Ensure the recording form is visible right away.
+								setMode('text')
+							}}
 						/>
 					)}
 				</div>

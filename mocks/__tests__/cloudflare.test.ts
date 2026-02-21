@@ -58,6 +58,29 @@ describe('cloudflare MSW mocks', () => {
 		expect(json.result.text.toLowerCase()).toContain('mock transcription')
 	})
 
+	test('Workers AI text-to-speech endpoint returns audio bytes', async () => {
+		const res = await fetch(
+			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/deepgram/aura-1',
+			{
+				method: 'POST',
+				headers: {
+					Authorization: 'Bearer test-token',
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					text: 'Hello from the Call Kent TTS mock.',
+					speaker: 'asteria',
+					encoding: 'mp3',
+				}),
+			},
+		)
+
+		expect(res.ok).toBe(true)
+		expect(res.headers.get('content-type')).toMatch(/^audio\\//i)
+		const buf = await res.arrayBuffer()
+		expect(buf.byteLength).toBeGreaterThan(1024)
+	})
+
 	test('Vectorize query uses match-sorter when embedding text is known', async () => {
 		// Seed the expected doc so the test is independent of the filesystem.
 		const seedNdjson = `${JSON.stringify({
