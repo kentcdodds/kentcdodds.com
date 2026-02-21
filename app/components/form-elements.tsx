@@ -130,9 +130,12 @@ export function FieldContainer({
 	const inputId = id ?? defaultId
 	const errorId = `${inputId}-error`
 	const descriptionId = `${inputId}-description`
+	const hasMarginBottomClass = className
+		?.split(/\s+/)
+		.some((token) => token.includes('mb-'))
 
 	return (
-		<div className={clsx('mb-8', className)}>
+		<div className={clsx(!hasMarginBottomClass && 'mb-8', className)}>
 			<div className="mb-4 flex items-baseline justify-between gap-2">
 				<Label htmlFor={inputId}>{label}</Label>
 				{error ? (
