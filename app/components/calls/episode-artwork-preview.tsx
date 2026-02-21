@@ -1,44 +1,11 @@
 import * as React from 'react'
-import { images } from '#app/images.tsx'
-import { getCallKentEpisodeArtworkUrl } from '#app/utils/call-kent-artwork.ts'
-import { getAvatar, getOptionalTeam } from '#app/utils/misc.tsx'
+import {
+	getCallKentEpisodeArtworkAvatar,
+	getCallKentEpisodeArtworkUrl,
+} from '#app/utils/call-kent-artwork.ts'
+import { getAvatar } from '#app/utils/misc.tsx'
 
 const AVATAR_SIZE = 1400
-
-function getAvatarForArtwork({
-	email,
-	team,
-	hasGravatar,
-	isAnonymous,
-}: {
-	email: string
-	team: string
-	hasGravatar: boolean
-	isAnonymous: boolean
-}) {
-	if (isAnonymous) {
-		return { kind: 'public', publicId: images.kodyProfileGray.id } as const
-	}
-
-	if (hasGravatar) {
-		return {
-			kind: 'fetch',
-			url: getAvatar(email, { size: AVATAR_SIZE, fallback: null }),
-		} as const
-	}
-
-	const teamKey = getOptionalTeam(team)
-	const kodyProfileByTeam = {
-		RED: images.kodyProfileRed,
-		BLUE: images.kodyProfileBlue,
-		YELLOW: images.kodyProfileYellow,
-		UNKNOWN: images.kodyProfileGray,
-	} as const
-	return {
-		kind: 'public',
-		publicId: kodyProfileByTeam[teamKey].id,
-	} as const
-}
 
 function getHost(origin: string) {
 	try {
@@ -79,11 +46,12 @@ export function EpisodeArtworkPreview({
 
 	const avatar = React.useMemo(
 		() =>
-			getAvatarForArtwork({
-				email,
-				team,
-				hasGravatar,
+			getCallKentEpisodeArtworkAvatar({
 				isAnonymous,
+				team,
+				gravatarUrl: hasGravatar
+					? getAvatar(email, { size: AVATAR_SIZE, fallback: null })
+					: null,
 			}),
 		[email, team, hasGravatar, isAnonymous],
 	)

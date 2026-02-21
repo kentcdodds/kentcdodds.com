@@ -10,16 +10,18 @@ import {
 	type TransistorPublishedJson,
 	type TransistorUpdateEpisodeData,
 } from '#app/types.ts'
-import { images } from '../images.tsx'
 import { cache, cachified, shouldForceFresh } from './cache.server.ts'
-import { getCallKentEpisodeArtworkUrl } from './call-kent-artwork.ts'
+import {
+	getCallKentEpisodeArtworkAvatar,
+	getCallKentEpisodeArtworkUrl,
+} from './call-kent-artwork.ts'
 import { getEpisodePath } from './call-kent.ts'
 import {
 	isCloudflareTranscriptionConfigured,
 	transcribeMp3WithWorkersAi,
 } from './cloudflare-ai-transcription.server.ts'
 import { stripHtml } from './markdown.server.ts'
-import { getOptionalTeam, getRequiredServerEnvVar } from './misc.ts'
+import { getRequiredServerEnvVar } from './misc.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
 
@@ -229,31 +231,21 @@ async function createEpisode({
 
 		const avatarSize = 1400
 		let hasGravatar = false
-		let avatar: Parameters<typeof getCallKentEpisodeArtworkUrl>[0]['avatar']
-		if (isAnonymous) {
-			avatar = { kind: 'public', publicId: images.kodyProfileGray.id }
-		} else {
+		let gravatarUrl: string | null = null
+		if (!isAnonymous) {
 			const result = await getDirectAvatarForUser(user, {
 				size: avatarSize,
 				request,
 				forceFresh: true,
 			})
 			hasGravatar = result.hasGravatar
-			if (result.hasGravatar) {
-				avatar = { kind: 'fetch', url: result.avatar }
-			} else {
-				const imageProfileIds = {
-					RED: images.kodyProfileRed.id,
-					BLUE: images.kodyProfileBlue.id,
-					YELLOW: images.kodyProfileYellow.id,
-					UNKNOWN: images.kodyProfileGray.id,
-				}
-				avatar = {
-					kind: 'public',
-					publicId: imageProfileIds[getOptionalTeam(user.team)],
-				}
-			}
+			gravatarUrl = result.hasGravatar ? result.avatar : null
 		}
+		const avatar = getCallKentEpisodeArtworkAvatar({
+			isAnonymous,
+			team: user.team,
+			gravatarUrl,
+		})
 
 		const imageUrl = getCallKentEpisodeArtworkUrl({
 			title,
