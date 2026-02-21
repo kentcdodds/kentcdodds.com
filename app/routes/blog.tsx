@@ -624,7 +624,7 @@ function BlogHome() {
 						</H6>
 						<label className="flex items-center gap-3 text-sm font-medium text-slate-500">
 							<span>Sort by</span>
-							<div className="relative">
+							<span className="relative">
 								<select
 									value={
 										regularQuery === '' && sortState === 'newest'
@@ -647,7 +647,7 @@ function BlogHome() {
 									aria-hidden="true"
 									className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 peer-hover:text-team-current peer-focus:text-team-current"
 								/>
-							</div>
+							</span>
 						</label>
 					</div>
 				</Grid>
