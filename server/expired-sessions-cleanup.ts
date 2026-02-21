@@ -70,6 +70,7 @@ export function scheduleExpiredSessionsCleanup({
 	}
 
 	timeoutId = setTimeout(() => {
+		timeoutId = null
 		void runNow('startup')
 	}, startupDelayMs)
 	timeoutId.unref?.()
