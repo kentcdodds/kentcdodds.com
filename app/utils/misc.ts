@@ -68,7 +68,7 @@ export function formatAbbreviatedNumber(num: number) {
 
 export function parseDate(dateString: string) {
 	const parsed = dateParseISO(dateString)
-	return dateAdd(parsed, { minutes: parsed.getTimezoneOffset() })
+	return dateAdd(parsed, { minutes: new Date().getTimezoneOffset() })
 }
 
 export function formatDate(dateString: string | Date, format = 'PPP') {
