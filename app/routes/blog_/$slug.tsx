@@ -58,9 +58,6 @@ export const handle: KCDHandle = {
 
 type CatchData = {
 	recommendations: Array<MdxListItem>
-	readRankings: ReadRankings
-	totalReads: string
-	leadingTeam: Team | null
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -71,14 +68,33 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		getMdxPage({ contentDir: 'blog', slug: params.slug }, { request, timings }),
 	])
 
+	if (!page) {
+		// Avoid caching/creating per-slug stats entries for random 404 slugs. (issue #461)
+		const recommendations = await getBlogRecommendations({
+			request,
+			timings,
+			limit: 3,
+			keywords: [],
+			exclude: [params.slug],
+		})
+		const headers = {
+			// Don't cache speculative 404 slugs for long.
+			'Cache-Control': 'private, max-age=60',
+			Vary: 'Cookie',
+			'Server-Timing': getServerTimeHeader(timings),
+		}
+		const catchData: CatchData = { recommendations }
+		throw json(catchData, { status: 404, headers })
+	}
+
 	const [recommendations, readRankings, totalReads, favorite] = await Promise.all([
 		getBlogRecommendations({
 			request,
 			timings,
 			limit: 3,
 			keywords: [
-				...(page?.frontmatter.categories ?? []),
-				...(page?.frontmatter.meta?.keywords ?? []),
+				...(page.frontmatter.categories ?? []),
+				...(page.frontmatter.meta?.keywords ?? []),
 			],
 			exclude: [params.slug],
 		}),
@@ -98,26 +114,20 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			: null,
 	])
 
-	const catchData: CatchData = {
-		recommendations,
-		readRankings,
-		totalReads: formatNumber(totalReads),
-		leadingTeam: getRankingLeader(readRankings)?.team ?? null,
-	}
 	const headers = {
 		'Cache-Control': 'private, max-age=3600',
 		Vary: 'Cookie',
 		'Server-Timing': getServerTimeHeader(timings),
-	}
-	if (!page) {
-		throw json(catchData, { status: 404, headers })
 	}
 
 	return json(
 		{
 			page,
 			isFavorite: Boolean(favorite),
-			...catchData,
+			recommendations,
+			readRankings,
+			totalReads: formatNumber(totalReads),
+			leadingTeam: getRankingLeader(readRankings)?.team ?? null,
 		},
 		{ status: 200, headers },
 	)
