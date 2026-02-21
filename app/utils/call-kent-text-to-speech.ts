@@ -1,6 +1,6 @@
 export const callKentTextToSpeechConstraints = {
 	questionText: {
-		minLength: 1,
+		minLength: 20,
 		// Roughly sized so most questions land under ~2 minutes.
 		maxLength: 2000,
 	},

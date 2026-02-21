@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { Button } from '#app/components/button.tsx'
+import { CharacterCountdown } from '#app/components/character-countdown.tsx'
 import { Field, FieldContainer, inputClassName } from '#app/components/form-elements.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import {
@@ -13,34 +14,6 @@ import {
 
 const textToSpeechResourcePath = '/resources/calls/text-to-speech'
 
-function CharacterCountdown({
-	id,
-	value,
-	maxLength,
-	warnAt = 100,
-}: {
-	id?: string
-	value: string
-	maxLength: number
-	warnAt?: number
-}) {
-	const remaining = maxLength - value.length
-	const remainingDisplay = Math.max(0, remaining)
-	let className = 'text-gray-500 dark:text-slate-400'
-	if (remaining <= 0) className = 'text-red-500'
-	else if (remaining <= warnAt) className = 'text-yellow-600 dark:text-yellow-500'
-
-	return (
-		<p
-			id={id}
-			className={`mt-2 text-right text-sm tabular-nums ${className}`}
-			aria-live="polite"
-		>
-			{remainingDisplay} characters left
-		</p>
-	)
-}
-
 function isProbablyAudioResponse(response: Response) {
 	const contentType = (response.headers.get('content-type') ?? '').toLowerCase()
 	return contentType.startsWith('audio/')
@@ -48,8 +21,15 @@ function isProbablyAudioResponse(response: Response) {
 
 async function getErrorMessageFromResponse(response: Response) {
 	const contentType = (response.headers.get('content-type') ?? '').toLowerCase()
+	const bodyText = await response.text().catch(() => '')
 	if (contentType.includes('application/json')) {
-		const json = (await response.json().catch(() => null)) as any
+		const json = (() => {
+			try {
+				return JSON.parse(bodyText)
+			} catch {
+				return null
+			}
+		})() as any
 		const err =
 			typeof json?.error === 'string'
 				? json.error
@@ -58,8 +38,7 @@ async function getErrorMessageFromResponse(response: Response) {
 					: null
 		if (err) return err
 	}
-	const text = await response.text().catch(() => '')
-	return text.trim() || `Request failed (${response.status})`
+	return bodyText.trim() || `Request failed (${response.status})`
 }
 
 function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>) {
@@ -138,6 +117,8 @@ export function CallKentTextToSpeech({
 	const [audioBlob, setAudioBlob] = React.useState<Blob | null>(null)
 	const [audioUrl, setAudioUrl] = React.useState<string | null>(null)
 	const [durationSeconds, setDurationSeconds] = React.useState<number | null>(null)
+	const requestIdRef = React.useRef(0)
+	const abortControllerRef = React.useRef<AbortController | null>(null)
 
 	const audioRef = React.useRef<HTMLAudioElement | null>(null)
 	const playPreview = useFiveSecondPreview(audioRef)
@@ -148,8 +129,16 @@ export function CallKentTextToSpeech({
 		}
 	}, [audioUrl])
 
+	React.useEffect(() => {
+		return () => abortControllerRef.current?.abort()
+	}, [])
+
 	// If the text/voice changes after generating, discard the stale audio.
 	React.useEffect(() => {
+		abortControllerRef.current?.abort()
+		abortControllerRef.current = null
+		requestIdRef.current += 1
+		setIsGenerating(false)
 		setError(null)
 		setAudioBlob(null)
 		setAudioUrl(null)
@@ -175,6 +164,11 @@ export function CallKentTextToSpeech({
 			return
 		}
 
+		abortControllerRef.current?.abort()
+		const requestId = requestIdRef.current + 1
+		requestIdRef.current = requestId
+		const abortController = new AbortController()
+		abortControllerRef.current = abortController
 		setIsGenerating(true)
 		try {
 			const response = await fetch(textToSpeechResourcePath, {
@@ -182,15 +176,19 @@ export function CallKentTextToSpeech({
 				headers: { 'Content-Type': 'application/json' },
 				credentials: 'same-origin',
 				body: JSON.stringify({ text: questionText, voice }),
+				signal: abortController.signal,
 			})
 
+			if (requestIdRef.current !== requestId) return
 			if (!response.ok || !isProbablyAudioResponse(response)) {
 				const msg = await getErrorMessageFromResponse(response)
+				if (requestIdRef.current !== requestId) return
 				setError(msg)
 				return
 			}
 
 			const blob = await response.blob()
+			if (requestIdRef.current !== requestId) return
 			if (!blob.type.startsWith('audio/')) {
 				setError('Unexpected response while generating audio.')
 				return
@@ -203,9 +201,18 @@ export function CallKentTextToSpeech({
 			// Best-effort auto-preview (will be allowed since it's triggered by a click).
 			requestAnimationFrame(() => playPreview())
 		} catch (e: unknown) {
+			if (e instanceof DOMException && e.name === 'AbortError') {
+				return
+			}
+			if (requestIdRef.current !== requestId) return
 			setError(e instanceof Error ? e.message : 'Unable to generate audio.')
 		} finally {
-			setIsGenerating(false)
+			if (abortControllerRef.current === abortController) {
+				abortControllerRef.current = null
+			}
+			if (requestIdRef.current === requestId) {
+				setIsGenerating(false)
+			}
 		}
 	}
 
