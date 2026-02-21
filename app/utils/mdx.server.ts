@@ -19,6 +19,19 @@ type CachifiedOptions = {
 
 const defaultTTL = 1000 * 60 * 60 * 24 * 14
 const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 365 * 100
+const notFoundTTL = 1000 * 60 * 60 * 24
+const notFoundStaleWhileRevalidate = 0
+
+function applyNotFoundCacheMetadata(
+	metadata: { ttl?: number | null; swr?: number | null },
+	maxTtl: number | null | undefined,
+) {
+	// Cache negative lookups briefly to avoid hammering GitHub for repeated 404s,
+	// but don't keep them around for long (and never serve them stale).
+	const effectiveMaxTtl = typeof maxTtl === 'number' ? maxTtl : Infinity
+	metadata.ttl = Math.min(effectiveMaxTtl, notFoundTTL)
+	metadata.swr = notFoundStaleWhileRevalidate
+}
 
 const checkCompiledValue = (value: unknown) =>
 	typeof value === 'object' &&
@@ -45,7 +58,7 @@ export async function getMdxPage(
 		staleWhileRevalidate: defaultStaleWhileRevalidate,
 		forceFresh,
 		checkValue: checkCompiledValue,
-		getFreshValue: async () => {
+		getFreshValue: async (context) => {
 			const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
 			const compiledPage = await compileMdxCached({
 				contentDir,
@@ -59,13 +72,12 @@ export async function getMdxPage(
 				})
 				return Promise.reject(err)
 			})
+			if (!compiledPage) {
+				applyNotFoundCacheMetadata(context.metadata, ttl)
+			}
 			return compiledPage
 		},
 	})
-	if (!page) {
-		// if there's no page, let's remove it from the cache
-		void cache.delete(key)
-	}
 	return page
 }
 
@@ -189,13 +201,14 @@ export async function downloadMdxFilesCached(
 
 			return true
 		},
-		getFreshValue: async () =>
-			downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
+		getFreshValue: async (context) => {
+			const result = await downloadMdxFileOrDirectory(`${contentDir}/${slug}`)
+			if (!result.files.length) {
+				applyNotFoundCacheMetadata(context.metadata, ttl)
+			}
+			return result
+		},
 	})
-	// if there aren't any files, remove it from the cache
-	if (!downloaded.files.length) {
-		void cache.delete(key)
-	}
 	return downloaded
 }
 
@@ -212,6 +225,7 @@ async function compileMdxCached({
 	files: Array<GitHubFile>
 	options: CachifiedOptions
 }) {
+	const { ttl = defaultTTL } = options
 	const key = `${contentDir}:${slug}:compiled`
 	const page = await cachified({
 		cache,
@@ -220,7 +234,7 @@ async function compileMdxCached({
 		...options,
 		key,
 		checkValue: checkCompiledValue,
-		getFreshValue: async () => {
+		getFreshValue: async (context) => {
 			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
 			if (compiledPage) {
 				if (
@@ -262,14 +276,11 @@ async function compileMdxCached({
 					editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
 				}
 			} else {
+				applyNotFoundCacheMetadata(context.metadata, ttl)
 				return null
 			}
 		},
 	})
-	// if there's no page, remove it from the cache
-	if (!page) {
-		void cache.delete(key)
-	}
 	return page
 }
 
