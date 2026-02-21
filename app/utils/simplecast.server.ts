@@ -68,7 +68,21 @@ const getCachedSeasons = async ({
 		checkValue: (value: unknown) =>
 			Array.isArray(value) &&
 			value.every(
-				(v) => typeof v.seasonNumber === 'number' && Array.isArray(v.episodes),
+				(v) =>
+					typeof v === 'object' &&
+					v !== null &&
+					'seasonNumber' in v &&
+					typeof (v as { seasonNumber?: unknown }).seasonNumber === 'number' &&
+					'episodes' in v &&
+					Array.isArray((v as { episodes?: unknown }).episodes) &&
+					(v as { episodes: Array<unknown> }).episodes.every(
+						(e) =>
+							typeof e === 'object' &&
+							e !== null &&
+							'publishedAt' in e &&
+							typeof (e as { publishedAt?: unknown }).publishedAt === 'string' &&
+							(e as { publishedAt: string }).publishedAt.length > 0,
+					),
 			),
 	})
 
@@ -95,7 +109,12 @@ async function getCachedEpisode(
 		getFreshValue: () => getEpisode(episodeId),
 		forceFresh,
 		checkValue: (value: unknown) =>
-			typeof value === 'object' && value !== null && 'title' in value,
+			typeof value === 'object' &&
+			value !== null &&
+			'title' in value &&
+			'publishedAt' in value &&
+			typeof (value as { publishedAt?: unknown }).publishedAt === 'string' &&
+			(value as { publishedAt: string }).publishedAt.length > 0,
 	})
 }
 
