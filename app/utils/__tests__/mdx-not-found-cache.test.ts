@@ -1,14 +1,20 @@
-// @vitest-environment node
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { randomUUID } from 'node:crypto'
+import { TextDecoder, TextEncoder } from 'node:util'
 import { describe, expect, test, vi } from 'vitest'
 
 const oneDay = 1000 * 60 * 60 * 24
 
 describe('mdx not-found caching', () => {
 	test('caches missing mdx pages for 1 day (no swr)', async () => {
+		// `esbuild` (used by `mdx-bundler`) asserts that `TextEncoder` produces the
+		// current-realm `Uint8Array`. Under Vitest's default jsdom environment, the
+		// global `TextEncoder` can come from a different realm and fail that check.
+		globalThis.TextEncoder = TextEncoder
+		globalThis.TextDecoder = TextDecoder
+
 		const originalEnv = {
 			CACHE_DATABASE_PATH: process.env.CACHE_DATABASE_PATH,
 			LITEFS_DIR: process.env.LITEFS_DIR,
