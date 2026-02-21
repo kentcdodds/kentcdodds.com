@@ -8,10 +8,10 @@ import { useSpinDelay } from 'spin-delay'
 import invariant from 'tiny-invariant'
 
 import { LinkButton } from '#app/components/button.tsx'
+import { useCountdown } from '#app/components/hooks/use-countdown.ts'
 import { AlarmIcon } from '#app/components/icons.tsx'
 import { NotificationMessage } from '#app/components/notification-message.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
-import { useCountdown } from '#app/components/hooks/use-countdown.ts'
 import { type Route } from './+types/promotification'
 
 export function getPromoCookieValue({
