@@ -75,7 +75,7 @@ function FeaturedSection({
 		>
 			<div className="rounded-lg bg-gray-100 lg:bg-transparent dark:bg-gray-800 lg:dark:bg-transparent">
 				<div className="-mx-8 lg:mx-0">
-					<Grid className="group rounded-lg pt-14 pb-6 md:pb-12 lg:bg-gray-100 lg:dark:bg-gray-800">
+					<Grid className="group rounded-lg px-4 pt-14 pb-6 sm:px-0 md:pb-12 lg:bg-gray-100 lg:dark:bg-gray-800">
 						<div className="col-span-full lg:col-span-5 lg:col-start-2 lg:flex lg:flex-col lg:justify-between">
 							<div>
 								<H6 as="h2">{caption}</H6>
