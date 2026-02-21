@@ -1,11 +1,11 @@
 // A full stack component + action for promotional notification messages.
 // The user can dismiss (snooze) the promo for a period of time via an httpOnly cookie.
+import { invariantResponse } from '@epic-web/invariant'
 import * as cookie from 'cookie'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useFetcher, data as json } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
-import invariant from 'tiny-invariant'
 
 import { LinkButton } from '#app/components/button.tsx'
 import { useCountdown } from '#app/components/hooks/use-countdown.ts'
@@ -29,7 +29,7 @@ export function getPromoCookieValue({
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const promoName = formData.get('promoName')
-	invariant(typeof promoName === 'string', 'promoName must be a string')
+	invariantResponse(typeof promoName === 'string', 'promoName must be a string')
 
 	// Cookie names must be a valid RFC 6265 token (no whitespace, semicolons, etc).
 	// This is developer-controlled in our forms, but the endpoint is public.
