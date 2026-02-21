@@ -46,14 +46,7 @@ describe('/blog/:slug loader cache behavior', () => {
 		const request = new Request('http://localhost/blog/does-not-exist')
 		const params = { slug: 'does-not-exist' }
 
-		let thrown: unknown
-		try {
-			await loader({ request, params } as any)
-		} catch (e) {
-			thrown = e
-		}
-
-		expect(thrown).toMatchObject({
+		await expect(loader({ request, params } as any)).rejects.toMatchObject({
 			type: 'DataWithResponseInit',
 			data: { recommendations: [] },
 			init: {
