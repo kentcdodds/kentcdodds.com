@@ -1,10 +1,15 @@
 import { type CallKentEpisode } from '#app/types.ts'
 
+const callKentFieldConstraints = {
+	title: { minLength: 5, maxLength: 80 },
+	description: { minLength: 20, maxLength: 5000 },
+	keywords: { minLength: 2, maxLength: 100 },
+} as const
+
 function getErrorForDescription(description: string | null) {
 	if (!description) return `Description is required`
 
-	const minLength = 20
-	const maxLength = 5000
+	const { minLength, maxLength } = callKentFieldConstraints.description
 	if (description.length < minLength) {
 		return `Description must be at least ${minLength} characters`
 	}
@@ -17,8 +22,7 @@ function getErrorForDescription(description: string | null) {
 function getErrorForTitle(title: string | null) {
 	if (!title) return `Title is required`
 
-	const minLength = 5
-	const maxLength = 80
+	const { minLength, maxLength } = callKentFieldConstraints.title
 	if (title.length < minLength) {
 		return `Title must be at least ${minLength} characters`
 	}
@@ -31,8 +35,7 @@ function getErrorForTitle(title: string | null) {
 function getErrorForKeywords(keywords: string | null) {
 	if (!keywords) return `Keywords is required`
 
-	const minLength = 2
-	const maxLength = 100
+	const { minLength, maxLength } = callKentFieldConstraints.keywords
 	if (keywords.length < minLength) {
 		return `Keywords must be at least ${minLength} characters`
 	}
@@ -84,6 +87,7 @@ function getEpisodePath({
 }
 
 export {
+	callKentFieldConstraints,
 	getEpisodePath,
 	getEpisodeFromParams,
 	getErrorForAudio,

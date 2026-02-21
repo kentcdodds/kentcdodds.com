@@ -4,6 +4,7 @@ import { data as json, redirect, useNavigate, useRevalidator } from 'react-route
 import { Button } from '#app/components/button.tsx'
 import { Field } from '#app/components/form-elements.tsx'
 import {
+	callKentFieldConstraints,
 	getErrorForAudio,
 	getErrorForDescription,
 	getErrorForKeywords,
@@ -41,6 +42,7 @@ type RecordingFormData = {
 type ActionData = RecordingFormData
 type RecordingIntent = 'create-call' | 'publish-call' | 'delete-call'
 type RecordingSubmitIntent = Exclude<RecordingIntent, 'delete-call'>
+type RecordingTextFieldName = 'title' | 'description' | 'keywords'
 
 function isRecordingFormDataEqual(
 	first?: RecordingFormData,
@@ -57,6 +59,31 @@ function isRecordingFormDataEqual(
 		first.errors.title === second.errors.title &&
 		first.errors.description === second.errors.description &&
 		first.errors.keywords === second.errors.keywords
+	)
+}
+
+function CharacterCountdown({
+	value,
+	maxLength,
+	warnAt = 10,
+}: {
+	value: string
+	maxLength: number
+	warnAt?: number
+}) {
+	const remaining = maxLength - value.length
+	const remainingDisplay = Math.max(0, remaining)
+	let className = 'text-gray-500 dark:text-slate-400'
+	if (remaining <= 0) className = 'text-red-500'
+	else if (remaining <= warnAt) className = 'text-yellow-600 dark:text-yellow-500'
+
+	return (
+		<p
+			className={`mt-2 text-right text-sm tabular-nums ${className}`}
+			aria-live="polite"
+		>
+			{remainingDisplay} characters left
+		</p>
 	)
 }
 
@@ -80,6 +107,17 @@ function RecordingForm({
 		return URL.createObjectURL(audio)
 	}, [audio])
 	const [submissionData, setSubmissionData] = React.useState(data)
+	const [fieldValues, setFieldValues] = React.useState(() => ({
+		title: data?.fields.title ?? '',
+		description: data?.fields.description ?? '',
+		keywords: data?.fields.keywords ?? '',
+	}))
+	const [fieldInteracted, setFieldInteracted] = React.useState(() => ({
+		title: false,
+		description: false,
+		keywords: false,
+	}))
+	const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false)
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
 	const [requestError, setRequestError] = React.useState<string | null>(null)
 	const previousPropData = React.useRef(data)
@@ -93,11 +131,65 @@ function RecordingForm({
 		if (isRecordingFormDataEqual(previousPropData.current, data)) return
 		previousPropData.current = data
 		setSubmissionData(data)
+		setFieldValues({
+			title: data?.fields.title ?? '',
+			description: data?.fields.description ?? '',
+			keywords: data?.fields.keywords ?? '',
+		})
+		setFieldInteracted({ title: false, description: false, keywords: false })
+		setHasAttemptedSubmit(false)
 	}, [data])
 
 	React.useEffect(() => {
 		return () => abortControllerRef.current?.abort()
 	}, [])
+
+	function markInteracted(field: RecordingTextFieldName) {
+		setFieldInteracted((prev) => (prev[field] ? prev : { ...prev, [field]: true }))
+	}
+
+	function handleTextFieldChange(field: RecordingTextFieldName) {
+		return (
+			event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+		) => {
+			const value = event.currentTarget.value
+			setFieldValues((prev) => (prev[field] === value ? prev : { ...prev, [field]: value }))
+			markInteracted(field)
+			// If the user edits after a failed submit, hide stale server errors.
+			setSubmissionData((prev) =>
+				prev
+					? {
+							...prev,
+							errors: {
+								...(prev.errors ?? {}),
+								generalError: undefined,
+								[field]: null,
+							} as RecordingFormData['errors'],
+						}
+					: prev,
+			)
+		}
+	}
+
+	function handleTextFieldBlur(field: RecordingTextFieldName) {
+		return () => markInteracted(field)
+	}
+
+	const clientErrors = React.useMemo(
+		() => ({
+			title: getErrorForTitle(fieldValues.title),
+			description: getErrorForDescription(fieldValues.description),
+			keywords: getErrorForKeywords(fieldValues.keywords),
+		}),
+		[fieldValues.title, fieldValues.description, fieldValues.keywords],
+	)
+
+	const displayedErrors = {
+		title: clientErrors.title ?? submissionData?.errors.title ?? null,
+		description:
+			clientErrors.description ?? submissionData?.errors.description ?? null,
+		keywords: clientErrors.keywords ?? submissionData?.errors.keywords ?? null,
+	}
 
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
@@ -105,6 +197,22 @@ function RecordingForm({
 		setRequestError(null)
 
 		const form = new FormData(event.currentTarget)
+		const title = getStringFormValue(form, 'title') ?? ''
+		const description = getStringFormValue(form, 'description') ?? ''
+		const keywords = getStringFormValue(form, 'keywords') ?? ''
+		setHasAttemptedSubmit(true)
+		setFieldValues({ title, description, keywords })
+
+		const preflightErrors = {
+			title: getErrorForTitle(title),
+			description: getErrorForDescription(description),
+			keywords: getErrorForKeywords(keywords),
+		}
+		if (Object.values(preflightErrors).some(Boolean)) {
+			// Client-side validation matches server rules; don't upload audio until valid.
+			return
+		}
+
 		const reader = new FileReader()
 		const handleLoadEnd = async () => {
 			try {
@@ -221,30 +329,87 @@ function RecordingForm({
 				) : null}
 			</div>
 
-			<form method="post" onSubmit={handleSubmit}>
+			<form method="post" onSubmit={handleSubmit} noValidate>
 				<input type="hidden" name="intent" value={intent} />
 				{callId ? <input type="hidden" name="callId" value={callId} /> : null}
-				<Field
-					name="title"
-					label="Title"
-					defaultValue={submissionData?.fields.title ?? ''}
-					error={submissionData?.errors.title}
-				/>
-				<Field
-					error={submissionData?.errors.description}
-					name="description"
-					label="Description"
-					type="textarea"
-					defaultValue={submissionData?.fields.description ?? ''}
-				/>
+				<div className="mb-8">
+					<Field
+						name="title"
+						label="Title"
+						defaultValue={submissionData?.fields.title ?? ''}
+						maxLength={callKentFieldConstraints.title.maxLength}
+						onChange={handleTextFieldChange('title')}
+						onBlur={handleTextFieldBlur('title')}
+						aria-invalid={
+							Boolean(displayedErrors.title) &&
+							(hasAttemptedSubmit || fieldInteracted.title)
+						}
+						error={
+							hasAttemptedSubmit || fieldInteracted.title
+								? displayedErrors.title
+								: null
+						}
+						className="mb-2"
+					/>
+					<CharacterCountdown
+						value={fieldValues.title}
+						maxLength={callKentFieldConstraints.title.maxLength}
+						warnAt={10}
+					/>
+				</div>
+				<div className="mb-8">
+					<Field
+						name="description"
+						label="Description"
+						type="textarea"
+						defaultValue={submissionData?.fields.description ?? ''}
+						maxLength={callKentFieldConstraints.description.maxLength}
+						onChange={handleTextFieldChange('description')}
+						onBlur={handleTextFieldBlur('description')}
+						aria-invalid={
+							Boolean(displayedErrors.description) &&
+							(hasAttemptedSubmit || fieldInteracted.description)
+						}
+						error={
+							hasAttemptedSubmit || fieldInteracted.description
+								? displayedErrors.description
+								: null
+						}
+						className="mb-2"
+					/>
+					<CharacterCountdown
+						value={fieldValues.description}
+						maxLength={callKentFieldConstraints.description.maxLength}
+						warnAt={100}
+					/>
+				</div>
 
-				<Field
-					error={submissionData?.errors.keywords}
-					label="Keywords"
-					description="comma separated values"
-					name="keywords"
-					defaultValue={submissionData?.fields.keywords ?? ''}
-				/>
+				<div className="mb-8">
+					<Field
+						label="Keywords"
+						description="comma separated values"
+						name="keywords"
+						defaultValue={submissionData?.fields.keywords ?? ''}
+						maxLength={callKentFieldConstraints.keywords.maxLength}
+						onChange={handleTextFieldChange('keywords')}
+						onBlur={handleTextFieldBlur('keywords')}
+						aria-invalid={
+							Boolean(displayedErrors.keywords) &&
+							(hasAttemptedSubmit || fieldInteracted.keywords)
+						}
+						error={
+							hasAttemptedSubmit || fieldInteracted.keywords
+								? displayedErrors.keywords
+								: null
+						}
+						className="mb-2"
+					/>
+					<CharacterCountdown
+						value={fieldValues.keywords}
+						maxLength={callKentFieldConstraints.keywords.maxLength}
+						warnAt={10}
+					/>
+				</div>
 
 				<Button type="submit" className="mt-8" disabled={isSubmitting}>
 					{isSubmitting ? 'Submitting...' : 'Submit Recording'}
