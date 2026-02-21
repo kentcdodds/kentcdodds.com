@@ -44,11 +44,11 @@ import {
 	typedBoolean,
 	useCapturedRouteError,
 } from '#app/utils/misc.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
-import { getUser } from '#app/utils/session.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { getUser } from '#app/utils/session.server.ts'
 import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -126,7 +126,6 @@ export const meta: Route.MetaFunction = ({
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const timings = {}
-	const user = await getUser(request, { timings })
 	const seasonNumber = Number(params.season)
 	const episodeParam =
 		'episode' in params
@@ -136,8 +135,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw new Response(`Episode param missing`, { status: 404 })
 	}
 	const episodeNumber = Number(episodeParam)
-
-	const seasons = await getSeasons({ request, timings })
+	const [user, seasons] = await Promise.all([
+		getUser(request, { timings }),
+		getSeasons({ request, timings }),
+	])
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`Season ${seasonNumber} not found`, { status: 404 })
@@ -153,7 +154,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		return redirect(`/chats/${params.season}/${episodeParam}/${episode.slug}`)
 	}
 
-	const contentId = getEpisodeFavoriteContentId({
+	const favoriteContentType = 'chats-with-kent-episode' as const
+	const favoriteContentId = getEpisodeFavoriteContentId({
 		seasonNumber: episode.seasonNumber,
 		episodeNumber: episode.episodeNumber,
 	})
@@ -162,8 +164,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				where: {
 					userId_contentType_contentId: {
 						userId: user.id,
-						contentType: 'chats-with-kent-episode',
-						contentId,
+						contentType: favoriteContentType,
+						contentId: favoriteContentId,
 					},
 				},
 				select: { id: true },
@@ -182,11 +184,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				season.episodes.filter((e) => episode !== e),
 			),
 			episode,
+			favoriteContentType,
+			favoriteContentId,
 			isFavorite: Boolean(favorite),
 		},
 		{
 			headers: {
-				'Cache-Control': 'private, max-age=600',
+				'Cache-Control': user ? 'private, max-age=600' : 'public, max-age=600',
 				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
 			},
@@ -437,7 +441,15 @@ function PrevNextButton({
 
 export default function PodcastDetail() {
 	const { requestInfo } = useRootData()
-	const { episode, featured, nextEpisode, prevEpisode, isFavorite } =
+	const {
+		episode,
+		featured,
+		nextEpisode,
+		prevEpisode,
+		favoriteContentType,
+		favoriteContentId,
+		isFavorite,
+	} =
 		useLoaderData<Route.ComponentProps['loaderData']>()
 	const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
@@ -513,11 +525,8 @@ export default function PodcastDetail() {
 				<div className="col-span-full lg:col-span-8 lg:col-start-3">
 					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 						<FavoriteToggle
-							contentType="chats-with-kent-episode"
-							contentId={getEpisodeFavoriteContentId({
-								seasonNumber: episode.seasonNumber,
-								episodeNumber: episode.episodeNumber,
-							})}
+							contentType={favoriteContentType}
+							contentId={favoriteContentId}
 							initialIsFavorite={isFavorite}
 							label="Favorite episode"
 						/>
