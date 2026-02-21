@@ -30,7 +30,6 @@ import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import {
 	getDiscordAuthorizeURL,
 	getDisplayUrl,
-	getDomainUrl,
 	getErrorMessage,
 	getOrigin,
 	getTeam,

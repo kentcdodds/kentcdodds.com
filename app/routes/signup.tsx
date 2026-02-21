@@ -25,12 +25,12 @@ import { getPasswordHash, getPasswordStrengthError } from '#app/utils/password.s
 import { prisma } from '#app/utils/prisma.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
+import { useTeam } from '#app/utils/team-provider.tsx'
 import {
 	consumeVerification,
 	consumeVerificationForTarget,
 	createVerification,
 } from '#app/utils/verification.server.ts'
-import { useTeam } from '#app/utils/team-provider.tsx'
 import  { type Route } from './+types/signup'
 
 export const handle: KCDHandle = {
