@@ -928,7 +928,7 @@ pre {
 	font-weight: 500;
 }
 
-.prose :where(form, .demo) :where(button):hover {
+.prose :where(form, .demo) :where(button):hover:not(:disabled) {
 	background-color: var(--bg-primary);
 }
 
