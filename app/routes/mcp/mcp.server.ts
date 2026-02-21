@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
 import { getBlogRecommendations } from '#app/utils/blog.server.js'
@@ -14,11 +15,10 @@ import {
 } from '#app/utils/semantic-search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
-import { FetchAPIHTTPServerTransport } from './fetch-stream-transport.server.ts'
 
 export const requestStorage = new AsyncLocalStorage<Request>()
 
-const transports = new Map<string, FetchAPIHTTPServerTransport>()
+const transports = new Map<string, WebStandardStreamableHTTPServerTransport>()
 
 function createServer() {
 	const server = new McpServer(
@@ -441,15 +441,15 @@ export async function connect(sessionId?: string | null) {
 	if (existingTransport) {
 		return existingTransport
 	}
-	const transport = new FetchAPIHTTPServerTransport({
+	const transport = new WebStandardStreamableHTTPServerTransport({
 		sessionIdGenerator: () => sessionId ?? crypto.randomUUID(),
 		async onsessioninitialized(sessionId) {
 			transports.set(sessionId, transport)
 		},
+		async onsessionclosed(sessionId) {
+			transports.delete(sessionId)
+		},
 	})
-	transport.onclose = () => {
-		if (transport.sessionId) transports.delete(transport.sessionId)
-	}
 	const server = createServer()
 	await server.connect(transport)
 
