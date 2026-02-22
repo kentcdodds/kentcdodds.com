@@ -63,8 +63,8 @@ export default defineConfig({
 	outputDir: 'test-results/',
 	webServer: {
 		command: process.env.CI
-			? `cross-env PORT=${PORT} npm run start:mocks`
-			: `cross-env PORT=${PORT} npm run dev`,
+			? `cross-env PORT=${PORT} PLAYWRIGHT_TEST_BASE_URL=http://localhost:${PORT} npm run start:mocks`
+			: `cross-env PORT=${PORT} PLAYWRIGHT_TEST_BASE_URL=http://localhost:${PORT} npm run dev`,
 		port: Number(PORT),
 		// Default to a clean, deterministic server per run.
 		// Set `PW_REUSE_EXISTING_SERVER=true` to opt into reuse locally.

@@ -23,6 +23,7 @@ import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
 import { scheduleExpiredSessionsCleanup } from './expired-sessions-cleanup.js'
+import { createRateLimitingMiddleware } from './rate-limiting.js'
 import {
 	getRedirectsMiddleware,
 	oldImgSocial,
@@ -100,6 +101,8 @@ if (MODE === 'production') {
 }
 
 const app = express()
+// fly is our proxy
+app.set('trust proxy', true)
 app.use(serverTiming())
 
 const expiredSessionsCleanup = scheduleExpiredSessionsCleanup()
@@ -258,6 +261,8 @@ app.use(
 		},
 	),
 )
+
+app.use(createRateLimitingMiddleware({ mode: MODE }))
 
 app.use((req, res, next) => {
 	res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
