@@ -119,7 +119,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
 		getInstanceInfo().then((i) => i.primaryInstance),
-		getLatestPodcastSeasonLinks({ request, timings }),
+		getLatestPodcastSeasonLinks({ request, timings }).catch(() => ({
+			chats: { latestSeasonNumber: null, latestSeasonPath: '/chats' },
+			calls: { latestSeasonNumber: null, latestSeasonPath: '/calls' },
+		})),
 	])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
