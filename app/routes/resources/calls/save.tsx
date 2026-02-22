@@ -1,7 +1,13 @@
 import { format } from 'date-fns'
 import * as React from 'react'
-import { data as json, redirect, useNavigate, useRevalidator } from 'react-router'
+import {
+	data as json,
+	redirect,
+	useNavigate,
+	useRevalidator,
+} from 'react-router'
 import { Button } from '#app/components/button.tsx'
+import { EpisodeArtworkPreview } from '#app/components/calls/episode-artwork-preview.tsx'
 import { Field } from '#app/components/form-elements.tsx'
 import {
 	callKentFieldConstraints,
@@ -77,7 +83,8 @@ function CharacterCountdown({
 	const remainingDisplay = Math.max(0, remaining)
 	let className = 'text-gray-500 dark:text-slate-400'
 	if (remaining <= 0) className = 'text-red-500'
-	else if (remaining <= warnAt) className = 'text-yellow-600 dark:text-yellow-500'
+	else if (remaining <= warnAt)
+		className = 'text-yellow-600 dark:text-yellow-500'
 
 	return (
 		<p
@@ -103,9 +110,8 @@ function RecordingForm({
 }) {
 	const navigate = useNavigate()
 	const revalidator = useRevalidator()
-	const {
-		requestInfo: { flyPrimaryInstance },
-	} = useRootData()
+	const { requestInfo, user, userInfo } = useRootData()
+	const flyPrimaryInstance = requestInfo.flyPrimaryInstance
 	const audioURL = React.useMemo(() => {
 		return URL.createObjectURL(audio)
 	}, [audio])
@@ -127,6 +133,7 @@ function RecordingForm({
 		description: false,
 		keywords: false,
 	}))
+	const [isAnonymous, setIsAnonymous] = React.useState(false)
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false)
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
 	const [requestError, setRequestError] = React.useState<string | null>(null)
@@ -155,7 +162,9 @@ function RecordingForm({
 	}, [])
 
 	function markInteracted(field: RecordingTextFieldName) {
-		setFieldInteracted((prev) => (prev[field] ? prev : { ...prev, [field]: true }))
+		setFieldInteracted((prev) =>
+			prev[field] ? prev : { ...prev, [field]: true },
+		)
 	}
 
 	function handleTextFieldChange(field: RecordingTextFieldName) {
@@ -163,7 +172,9 @@ function RecordingForm({
 			event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 		) => {
 			const value = event.currentTarget.value
-			setFieldValues((prev) => (prev[field] === value ? prev : { ...prev, [field]: value }))
+			setFieldValues((prev) =>
+				prev[field] === value ? prev : { ...prev, [field]: value },
+			)
 			// Keep the values in sync for counters + validation, but do not show errors
 			// until the field is blurred or the user attempts to submit.
 			setSubmissionData((prev) =>
@@ -291,11 +302,7 @@ function RecordingForm({
 				setIsSubmitting(false)
 			}
 		}
-		reader.addEventListener(
-			'loadend',
-			handleLoadEnd,
-			{ once: true },
-		)
+		reader.addEventListener('loadend', handleLoadEnd, { once: true })
 		setIsSubmitting(true)
 		try {
 			reader.readAsDataURL(audio)
@@ -344,6 +351,20 @@ function RecordingForm({
 			<form method="post" onSubmit={handleSubmit} noValidate>
 				<input type="hidden" name="intent" value={intent} />
 				{callId ? <input type="hidden" name="callId" value={callId} /> : null}
+
+				{intent === 'create-call' && user && userInfo ? (
+					<EpisodeArtworkPreview
+						title={fieldValues.title}
+						email={user.email}
+						firstName={user.firstName}
+						team={user.team}
+						origin={requestInfo.origin}
+						hasGravatar={userInfo.avatar.hasGravatar}
+						isAnonymous={isAnonymous}
+						onAnonymousChange={setIsAnonymous}
+					/>
+				) : null}
+
 				<div className="mb-8">
 					<Field
 						id={titleId}
@@ -445,6 +466,12 @@ function getStringFormValue(formData: FormData, key: string) {
 	return typeof value === 'string' ? value : null
 }
 
+function getCheckboxFormValue(formData: FormData, key: string) {
+	const value = formData.get(key)
+	// HTML checkboxes submit the value only when checked (default "on").
+	return value === 'on' || value === 'true'
+}
+
 function getActionData(formData: FormData) {
 	const fields = {
 		audio: getStringFormValue(formData, 'audio'),
@@ -492,14 +519,12 @@ async function createCall({
 		return json(actionData, 400)
 	}
 
+	const isAnonymous = getCheckboxFormValue(formData, 'anonymous')
+
 	try {
 		const [
 			{ sendMessageFromDiscordBot },
-			{
-				getDomainUrl,
-				getOptionalTeam,
-				getRequiredServerEnvVar,
-			},
+			{ getDomainUrl, getOptionalTeam, getRequiredServerEnvVar },
 			{ prisma },
 			{ requireUser },
 			{ teamEmoji },
@@ -525,6 +550,7 @@ async function createCall({
 				keywords,
 				userId: user.id,
 				base64: audio,
+				isAnonymous,
 			},
 		})
 
@@ -600,15 +626,17 @@ async function publishCall({
 			description,
 			keywords,
 		} = getNonNull(fields)
+		const summaryName = call.isAnonymous ? 'Anonymous' : call.user.firstName
 		const episodeAudio = await createEpisodeAudio(call.base64, responseAudio)
 		const { episodeUrl, imageUrl } = await createEpisode({
 			request,
 			audio: episodeAudio,
 			title,
-			summary: `${call.user.firstName} asked this on ${format(call.createdAt, 'yyyy-MM-dd')}`,
+			summary: `${summaryName} asked this on ${format(call.createdAt, 'yyyy-MM-dd')}`,
 			description: await markdownToHtml(description),
 			user: call.user,
 			keywords,
+			isAnonymous: call.isAnonymous,
 		})
 
 		if (episodeUrl) {

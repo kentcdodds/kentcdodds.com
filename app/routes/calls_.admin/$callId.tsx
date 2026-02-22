@@ -35,6 +35,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			keywords: true,
 			title: true,
 			id: true,
+			isAnonymous: true,
 			user: {
 				select: { firstName: true, email: true, team: true, discordId: true },
 			},
@@ -81,6 +82,11 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 							<span className="text-team-current font-medium">
 								{call.user.firstName}
 							</span>
+							{call.isAnonymous ? (
+								<span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-slate-200">
+									anonymous
+								</span>
+							) : null}
 							<span>•</span>
 							<a
 								href={`mailto:${call.user.email}`}
