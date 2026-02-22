@@ -8,6 +8,28 @@ import { cjsInterop } from 'vite-plugin-cjs-interop'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 const MODE = process.env.NODE_ENV
+const SENTRY_UPLOAD =
+	process.env.SENTRY_UPLOAD === 'true' || process.env.SENTRY_UPLOAD === '1'
+
+if (SENTRY_UPLOAD && MODE === 'production') {
+	const authToken = process.env.SENTRY_AUTH_TOKEN
+	const project = process.env.SENTRY_PROJECT
+	const org = process.env.SENTRY_ORG
+	const tokenImpliesOrg = Boolean(authToken?.startsWith('sntrys_'))
+
+	// If upload is "on" but required settings are missing, the Sentry plugin will
+	// skip upload but still run the delete-after-upload step, which results in
+	// `.map` URLs returning our HTML 404 page.
+	if (!authToken) {
+		throw new Error('SENTRY_UPLOAD is enabled, but SENTRY_AUTH_TOKEN is missing')
+	}
+	if (!project) {
+		throw new Error('SENTRY_UPLOAD is enabled, but SENTRY_PROJECT is missing')
+	}
+	if (!org && !tokenImpliesOrg) {
+		throw new Error('SENTRY_UPLOAD is enabled, but SENTRY_ORG is missing')
+	}
+}
 
 export default defineConfig(async () => {
 	return {
@@ -23,7 +45,7 @@ export default defineConfig(async () => {
 			tailwindcss(),
 			reactRouter(),
 			tsconfigPaths(),
-			process.env.SENTRY_UPLOAD
+			SENTRY_UPLOAD
 				? sentryVitePlugin({
 						disable: MODE !== 'production',
 						authToken: process.env.SENTRY_AUTH_TOKEN,
