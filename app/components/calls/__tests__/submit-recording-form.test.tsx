@@ -305,15 +305,6 @@ describe('RecordingForm', () => {
 			expect(titleId).toBeTruthy()
 			expect(titleInput).toHaveAttribute('aria-describedby', `${titleId}-countdown`)
 
-			// Submit should surface validation for untouched required fields, but
-			// should not attempt to upload audio when validation fails.
-			fireEvent.submit(form as HTMLFormElement)
-			await screen.findByText('Title is required')
-			expect(titleInput.getAttribute('aria-describedby')).toContain(`${titleId}-error`)
-			expect(titleInput.getAttribute('aria-describedby')).toContain(
-				`${titleId}-countdown`,
-			)
-
 			fireEvent.change(titleInput, { target: { value: 'abcd' } })
 			expect(screen.getByText('76 characters left')).toBeInTheDocument()
 			expect(
@@ -327,6 +318,16 @@ describe('RecordingForm', () => {
 
 			const notesInput = screen.getByLabelText('Notes (optional)')
 			expect(notesInput).toHaveAttribute('maxLength', '5000')
+
+			// Submit should surface validation and should not attempt to upload audio
+			// when validation fails.
+			fireEvent.change(titleInput, { target: { value: '' } })
+			fireEvent.submit(form as HTMLFormElement)
+			await screen.findByText('Title is required')
+			expect(titleInput.getAttribute('aria-describedby')).toContain(`${titleId}-error`)
+			expect(titleInput.getAttribute('aria-describedby')).toContain(
+				`${titleId}-countdown`,
+			)
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()
