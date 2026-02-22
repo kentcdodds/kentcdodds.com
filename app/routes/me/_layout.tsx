@@ -106,13 +106,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 			where: { userId: user.id },
 			select: {
 				id: true,
-				seasonNumber: true,
-				episodeNumber: true,
-				slug: true,
-				episodeTitle: true,
-				episodePath: true,
-				imageUrl: true,
+				transistorEpisodeId: true,
 				isAnonymous: true,
+				callTitle: true,
+				callNotes: true,
 				createdAt: true,
 			},
 			orderBy: { createdAt: 'desc' },
@@ -124,6 +121,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const wantsCallEpisodes = rawFavorites.some(
 		(f) => f.contentType === 'call-kent-episode',
 	)
+	const wantsCallEpisodeData = wantsCallEpisodes || callKentCallerEpisodes.length > 0
 	const wantsChatEpisodes = rawFavorites.some(
 		(f) => f.contentType === 'chats-with-kent-episode',
 	)
@@ -131,7 +129,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const [blogPosts, talksAndTags, callEpisodes, chatSeasons] = await Promise.all([
 		wantsBlogPosts ? getBlogMdxListItems({ request, timings }) : [],
 		wantsTalks ? getTalksAndTags({ request, timings }) : { talks: [], tags: [] },
-		wantsCallEpisodes ? getEpisodes({ request, timings }) : [],
+		wantsCallEpisodeData ? getEpisodes({ request, timings }) : [],
 		wantsChatEpisodes ? getSeasonListItems({ request, timings }) : [],
 	])
 
@@ -149,6 +147,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 			}),
 			episode,
 		]),
+	)
+	const callEpisodeByTransistorId = new Map(
+		callEpisodes.map((episode) => [episode.transistorEpisodeId, episode]),
 	)
 	const chatEpisodeById = new Map(
 		chatSeasons
@@ -231,12 +232,44 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const activities = ['skiing', 'snowboarding', 'onewheeling'] as const
 	const activity: 'skiing' | 'snowboarding' | 'onewheeling' =
 		activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
+
+	const callKentCallerEpisodesDisplay = callKentCallerEpisodes.map((entry) => {
+		const episode = callEpisodeByTransistorId.get(entry.transistorEpisodeId)
+		if (!episode) {
+			return {
+				id: entry.id,
+				seasonNumber: 0,
+				episodeNumber: 0,
+				slug: '',
+				episodeTitle: 'Call Kent episode (unavailable)',
+				episodePath: '/calls',
+				imageUrl: null,
+				isAnonymous: entry.isAnonymous,
+				createdAt: entry.createdAt,
+			}
+		}
+		return {
+			id: entry.id,
+			seasonNumber: episode.seasonNumber,
+			episodeNumber: episode.episodeNumber,
+			slug: episode.slug,
+			episodeTitle: episode.title,
+			episodePath: getEpisodePath({
+				seasonNumber: episode.seasonNumber,
+				episodeNumber: episode.episodeNumber,
+				slug: episode.slug,
+			}),
+			imageUrl: episode.imageUrl,
+			isAnonymous: entry.isAnonymous,
+			createdAt: entry.createdAt,
+		}
+	})
 	return json(
 		{
 			sessionCount,
 			teamType: activity,
 			favorites,
-			callKentCallerEpisodes,
+			callKentCallerEpisodes: callKentCallerEpisodesDisplay,
 		} as const,
 		{
 			headers: {

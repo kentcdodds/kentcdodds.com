@@ -110,9 +110,8 @@ model CallKentEpisodeDraft {
   step          CallKentEpisodeDraftStep   @default(STARTED)
   errorMessage  String?
 
-  // The admin-recorded response audio (base64 data URL), needed to regenerate.
-  responseBase64 String
   // The final stitched mp3 (base64 data URL), generated before publish.
+  // Note: we do not persist the raw admin response audio; re-record to regenerate.
   episodeBase64  String?
 
   // Generated before publish so AI can write metadata; admin can edit.
@@ -141,17 +140,10 @@ model CallKentCallerEpisode {
   callNotes        String?
   isAnonymous      Boolean  @default(false)
 
-  // Episode identity on Transistor and on-site.
+  // Episode identity on Transistor. Everything else is derived via cached Transistor lookups.
   transistorEpisodeId String @unique
-  seasonNumber      Int
-  episodeNumber     Int
-  slug              String
-  episodeTitle      String
-  episodePath       String
-  imageUrl          String?
 
   @@index([userId, createdAt])
-  @@index([seasonNumber, episodeNumber])
 }
 
 model PostRead {

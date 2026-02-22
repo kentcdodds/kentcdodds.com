@@ -366,6 +366,7 @@ async function getEpisodes() {
 		if (!episode.attributes.duration) continue
 
 		episodes.push({
+			transistorEpisodeId: episode.id,
 			seasonNumber: episode.attributes.season,
 			episodeNumber: episode.attributes.number,
 			slug: slugify(episode.attributes.title),

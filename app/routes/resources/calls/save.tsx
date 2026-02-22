@@ -630,12 +630,6 @@ Thanks for your call. Kent just replied and the episode has been published to th
 				callNotes: call.notes,
 				isAnonymous: call.isAnonymous,
 				transistorEpisodeId: published.transistorEpisodeId,
-				seasonNumber: published.seasonNumber,
-				episodeNumber: published.episodeNumber,
-				slug: published.slug,
-				episodeTitle: title,
-				episodePath: published.episodePath,
-				imageUrl: published.imageUrl,
 			},
 		})
 
@@ -685,14 +679,15 @@ async function createEpisodeDraft({
 	const draft = await prisma.callKentEpisodeDraft.create({
 		data: {
 			callId,
-			responseBase64: responseAudio!,
 		},
 	})
 
 	const { startCallKentEpisodeDraftProcessing } = await import(
 		'#app/utils/call-kent-episode-draft.server.ts'
 	)
-	void startCallKentEpisodeDraftProcessing(draft.id)
+	void startCallKentEpisodeDraftProcessing(draft.id, {
+		responseBase64: responseAudio!,
+	})
 
 	return redirect(`/calls/admin/${callId}`)
 }

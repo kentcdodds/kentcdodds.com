@@ -126,6 +126,7 @@ type CallKentSeason = {
 }
 
 type CallKentEpisode = {
+	transistorEpisodeId: string
 	episodeNumber: number
 	seasonNumber: number
 	slug: string

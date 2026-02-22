@@ -6,7 +6,6 @@ CREATE TABLE "CallKentEpisodeDraft" (
     "status" TEXT NOT NULL DEFAULT 'PROCESSING',
     "step" TEXT NOT NULL DEFAULT 'STARTED',
     "errorMessage" TEXT,
-    "responseBase64" TEXT NOT NULL,
     "episodeBase64" TEXT,
     "transcript" TEXT,
     "title" TEXT,
@@ -26,12 +25,6 @@ CREATE TABLE "CallKentCallerEpisode" (
     "callNotes" TEXT,
     "isAnonymous" BOOLEAN NOT NULL DEFAULT false,
     "transistorEpisodeId" TEXT NOT NULL,
-    "seasonNumber" INTEGER NOT NULL,
-    "episodeNumber" INTEGER NOT NULL,
-    "slug" TEXT NOT NULL,
-    "episodeTitle" TEXT NOT NULL,
-    "episodePath" TEXT NOT NULL,
-    "imageUrl" TEXT,
     CONSTRAINT "CallKentCallerEpisode_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -49,7 +42,27 @@ CREATE TABLE "new_Call" (
     "base64" TEXT NOT NULL,
     CONSTRAINT "Call_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-INSERT INTO "new_Call" ("base64", "createdAt", "id", "isAnonymous", "title", "updatedAt", "userId") SELECT "base64", "createdAt", "id", "isAnonymous", "title", "updatedAt", "userId" FROM "Call";
+INSERT INTO "new_Call" ("base64", "createdAt", "id", "isAnonymous", "notes", "title", "updatedAt", "userId")
+SELECT
+  "base64",
+  "createdAt",
+  "id",
+  "isAnonymous",
+  TRIM(
+    'Title:\n' || TRIM("title") ||
+    CASE
+      WHEN "description" IS NOT NULL AND TRIM("description") <> '' THEN '\n\nDescription:\n' || TRIM("description")
+      ELSE ''
+    END ||
+    CASE
+      WHEN "keywords" IS NOT NULL AND TRIM("keywords") <> '' THEN '\n\nKeywords:\n' || TRIM("keywords")
+      ELSE ''
+    END
+  ),
+  "title",
+  "updatedAt",
+  "userId"
+FROM "Call";
 DROP TABLE "Call";
 ALTER TABLE "new_Call" RENAME TO "Call";
 CREATE INDEX "Call_createdAt_idx" ON "Call"("createdAt");
@@ -70,7 +83,4 @@ CREATE UNIQUE INDEX "CallKentCallerEpisode_transistorEpisodeId_key" ON "CallKent
 
 -- CreateIndex
 CREATE INDEX "CallKentCallerEpisode_userId_createdAt_idx" ON "CallKentCallerEpisode"("userId", "createdAt");
-
--- CreateIndex
-CREATE INDEX "CallKentCallerEpisode_seasonNumber_episodeNumber_idx" ON "CallKentCallerEpisode"("seasonNumber", "episodeNumber");
 
