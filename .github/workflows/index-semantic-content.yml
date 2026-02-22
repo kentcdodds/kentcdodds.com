@@ -34,10 +34,27 @@ jobs:
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1.11.2
 
+      - name: 🏄 Copy test env vars
+        run: cp .env.example .env
+
+      - name: 🏦 Prime Site Cache
+        id: site-cache
+        uses: actions/cache@v5
+        with:
+          path: other/cache.db
+          key: site-cache
+
+      - name: 🏗 Build (production)
+        if: steps.site-cache.outputs.cache-hit != 'true'
+        run: npm run build
+
+      - name: 😅 Generate Site Cache
+        if: steps.site-cache.outputs.cache-hit != 'true'
+        run: npm run prime-cache:mocks
+
       - name: 🔎 Index changed content
         run: |
           set -euo pipefail
-          cp .env.example .env
           node --env-file=.env other/semantic-search/index-repo-content.ts --before "${{ github.event.before }}" --after "${{ github.sha }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
