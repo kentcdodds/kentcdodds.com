@@ -23,17 +23,47 @@ import {
 } from './icons.tsx'
 import { TeamCircle } from './team-circle.tsx'
 
-const LINKS = [
-	{ id: 'blog', name: 'Blog', to: '/blog' },
-	{ id: 'talks', name: 'Talks', to: '/talks' },
-	{ id: 'courses', name: 'Courses', to: '/courses' },
-	{ id: 'discord', name: 'Discord', to: '/discord' },
-	{ id: 'chats', name: 'Chats', to: '/chats/05' },
-	{ id: 'calls', name: 'Calls', to: '/calls/05' },
-	{ id: 'about', name: 'About', to: '/about' },
-]
+type NavbarLinkItem = {
+	id: string
+	name: string
+	to: string
+	/**
+	 * Optional path prefix to determine active state. Useful when the `to` path
+	 * points at a specific season (e.g. `/chats/06`), but we want the nav item
+	 * active for all `/chats/*` routes.
+	 */
+	activeTo?: string
+}
 
-const MOBILE_LINKS = [{ name: 'Home', to: '/' }, ...LINKS]
+function useNavbarLinks(): {
+	links: Array<NavbarLinkItem>
+	mobileLinks: Array<{ name: string; to: string }>
+} {
+	const { latestPodcastSeasonLinks } = useRootData()
+
+	const chatsTo = latestPodcastSeasonLinks?.chats.latestSeasonPath ?? '/chats'
+	const callsTo = latestPodcastSeasonLinks?.calls.latestSeasonPath ?? '/calls'
+
+	const links = React.useMemo<Array<NavbarLinkItem>>(
+		() => [
+			{ id: 'blog', name: 'Blog', to: '/blog' },
+			{ id: 'talks', name: 'Talks', to: '/talks' },
+			{ id: 'courses', name: 'Courses', to: '/courses' },
+			{ id: 'discord', name: 'Discord', to: '/discord' },
+			{ id: 'chats', name: 'Chats', to: chatsTo, activeTo: '/chats' },
+			{ id: 'calls', name: 'Calls', to: callsTo, activeTo: '/calls' },
+			{ id: 'about', name: 'About', to: '/about' },
+		],
+		[chatsTo, callsTo],
+	)
+
+	const mobileLinks = React.useMemo(
+		() => [{ name: 'Home', to: '/' }, ...links.map((l) => ({ name: l.name, to: l.to }))],
+		[links],
+	)
+
+	return { links, mobileLinks }
+}
 const searchHotkeyOptions = {
 	ignoreInputs: true,
 	preventDefault: true,
@@ -48,15 +78,18 @@ const searchHotkeyModifierOptions = {
 
 function NavLink({
 	to,
+	activeTo,
 	navItem,
 	...rest
 }: Omit<Parameters<typeof Link>['0'], 'to'> & {
 	to: string
+	activeTo?: string
 	navItem?: string
 }) {
 	const location = useLocation()
+	const matchTo = activeTo ?? to
 	const isSelected =
-		to === location.pathname || location.pathname.startsWith(`${to}/`)
+		matchTo === location.pathname || location.pathname.startsWith(`${matchTo}/`)
 
 	return (
 		<li className="px-5 py-2" data-nav-item={navItem}>
@@ -610,7 +643,7 @@ function NavSearch({
 	)
 }
 
-function MobileMenu() {
+function MobileMenu({ links }: { links: Array<{ name: string; to: string }> }) {
 	const menuButtonRef = React.useRef<HTMLButtonElement>(null)
 	const popoverRef = React.useRef<HTMLDivElement>(null)
 	const location = useLocation()
@@ -720,7 +753,7 @@ function MobileMenu() {
 							}}
 						/>
 					</div>
-					{MOBILE_LINKS.map((link) => (
+					{links.map((link) => (
 						<Link
 							className="hover:bg-secondary focus:bg-secondary text-primary px-5vw hover:text-team-current border-b border-gray-200 py-9 dark:border-gray-600"
 							key={link.to}
@@ -815,6 +848,7 @@ function Navbar() {
 	const navigate = useNavigate()
 	const [team] = useTeam()
 	const { requestInfo, userInfo } = useRootData()
+	const { links, mobileLinks } = useNavbarLinks()
 	const avatar = userInfo ? userInfo.avatar : kodyProfiles[team]
 	const navLinksRef = React.useRef<HTMLDivElement>(null)
 	const searchIconRef = React.useRef<HTMLAnchorElement>(null)
@@ -886,8 +920,13 @@ function Navbar() {
 						className="navbar-links flex-none justify-center overflow-visible max-lg:hidden lg:flex"
 					>
 						<ul className="flex">
-							{LINKS.map((link) => (
-								<NavLink key={link.to} to={link.to} navItem={link.id}>
+							{links.map((link) => (
+								<NavLink
+									key={link.id}
+									to={link.to}
+									activeTo={link.activeTo}
+									navItem={link.id}
+								>
 									{link.name}
 								</NavLink>
 							))}
@@ -898,7 +937,7 @@ function Navbar() {
 				{/* Right: theme + profile */}
 				<div className="flex min-w-0 shrink-0 items-center justify-end">
 					<div className="block lg:hidden">
-						<MobileMenu />
+						<MobileMenu links={mobileLinks} />
 					</div>
 					<div className="ml-4 flex items-center gap-4 lg:ml-0">
 						<div className="noscript-hidden hidden lg:block">

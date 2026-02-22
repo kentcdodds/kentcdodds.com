@@ -44,6 +44,7 @@ import { getTheme } from './utils/theme.server.ts'
 import { useTheme } from './utils/theme.tsx'
 import { getServerTimeHeader } from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
+import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'root',
@@ -107,11 +108,18 @@ export const links: LinksFunction = () => {
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const session = await getSession(request)
-	const [user, clientSession, loginInfoSession, primaryInstance] = await Promise.all([
+	const [
+		user,
+		clientSession,
+		loginInfoSession,
+		primaryInstance,
+		latestPodcastSeasonLinks,
+	] = await Promise.all([
 		session.getUser({ timings }),
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
 		getInstanceInfo().then((i) => i.primaryInstance),
+		getLatestPodcastSeasonLinks({ request, timings }),
 	])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
@@ -122,6 +130,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
+		latestPodcastSeasonLinks,
 		ENV: getEnv(),
 		randomFooterImageKey,
 		requestInfo: {
