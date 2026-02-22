@@ -56,30 +56,3 @@ export function getErrorForCallKentQuestionText(value: string | null) {
 	return null
 }
 
-export function getSuggestedCallTitleFromQuestionText(text: string) {
-	const cleaned = text.replace(/\s+/g, ' ').trim()
-	if (!cleaned) return ''
-
-	const withoutGreeting = cleaned.replace(
-		/^((hi|hey|hello)\s+kent[!,]?\s+)/i,
-		'',
-	)
-	const base = (withoutGreeting || cleaned).trim()
-	if (!base) return ''
-
-	// Prefer the first sentence-ish chunk.
-	const punctuationIndex = base.search(/[?.!]/)
-	let candidate =
-		punctuationIndex === -1 ? base : base.slice(0, punctuationIndex + 1)
-	candidate = candidate.replace(/[?.!]+$/, '').trim()
-	if (!candidate) return ''
-
-	const maxLen = 80
-	if (candidate.length > maxLen) {
-		candidate = `${candidate.slice(0, maxLen - 3).trimEnd()}...`
-	}
-	// Recording form requires at least 5 chars.
-	if (candidate.length < 5) return 'Call Kent question'
-	return candidate
-}
-
