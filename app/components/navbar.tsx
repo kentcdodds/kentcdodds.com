@@ -752,12 +752,12 @@ function ProfileButton({
 	imageUrl,
 	imageAlt,
 	team,
-	magicLinkVerified,
+	signupEmail,
 }: {
 	imageUrl: string
 	imageAlt: string
 	team: OptionalTeam
-	magicLinkVerified: boolean | undefined
+	signupEmail: string | undefined
 }) {
 	const user = useOptionalUser()
 	const controls = useAnimation()
@@ -789,9 +789,9 @@ function ProfileButton({
 	return (
 		<Link
 			prefetch="intent"
-			to={user ? '/me' : magicLinkVerified ? '/signup' : '/login'}
+			to={user ? '/me' : signupEmail ? '/signup' : '/login'}
 			aria-label={
-				user ? 'My Account' : magicLinkVerified ? 'Finish signing up' : 'Login'
+				user ? 'My Account' : signupEmail ? 'Finish signing up' : 'Login'
 			}
 			className={clsx(
 				'ml-4 inline-flex h-14 w-14 items-center justify-center rounded-full focus:outline-none',
@@ -907,7 +907,7 @@ function Navbar() {
 					</div>
 
 					<ProfileButton
-						magicLinkVerified={requestInfo.session.magicLinkVerified}
+						signupEmail={requestInfo.session.signupEmail}
 						imageUrl={avatar.src}
 						imageAlt={avatar.alt}
 						team={team}

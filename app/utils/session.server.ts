@@ -2,17 +2,13 @@ import { createCookieSessionStorage, redirect } from 'react-router';
 import { z } from 'zod'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { type User } from '#app/utils/prisma-generated.server/client.ts'
-import { getLoginInfoSession } from './login.server.ts'
 import { getRequiredServerEnvVar } from './misc.ts'
 import {
 	createSession,
-	getMagicLink,
 	getUserFromSessionId,
 	prisma,
 	sessionExpirationTime,
-	validateMagicLink,
 } from './prisma.server.ts'
-import { sendMagicLinkEmail } from './send-email.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
 const sessionIdKey = '__session_id__'
@@ -28,35 +24,6 @@ const sessionStorage = createCookieSessionStorage({
 		httpOnly: true,
 	},
 })
-
-async function sendToken({
-	emailAddress,
-	domainUrl,
-}: {
-	emailAddress: string
-	domainUrl: string
-}) {
-	const magicLink = getMagicLink({
-		emailAddress,
-		validateSessionMagicLink: true,
-		domainUrl,
-	})
-
-	const user = await prisma.user
-		.findUnique({ where: { email: emailAddress } })
-		.catch(() => {
-			/* ignore... */
-			return null
-		})
-
-	await sendMagicLinkEmail({
-		emailAddress,
-		magicLink,
-		user,
-		domainUrl,
-	})
-	return magicLink
-}
 
 async function getSession(request: Request) {
 	const session = await sessionStorage.getSession(request.headers.get('Cookie'))
@@ -96,6 +63,15 @@ async function getSession(request: Request) {
 				prisma.session
 					.delete({ where: { id: sessionId } })
 					.catch((error: unknown) => {
+						// It's possible the session was already deleted (ex: user deleted).
+						if (
+							error &&
+							typeof error === 'object' &&
+							'code' in error &&
+							error.code === 'P2025'
+						) {
+							return
+						}
 						console.error(`Failure deleting user session: `, error)
 					})
 			}
@@ -190,21 +166,6 @@ async function getUser(
 	})
 }
 
-async function getUserSessionFromMagicLink(request: Request) {
-	const loginInfoSession = await getLoginInfoSession(request)
-	const email = await validateMagicLink(
-		request.url,
-		loginInfoSession.getMagicLink(),
-	)
-
-	const user = await prisma.user.findUnique({ where: { email } })
-	if (!user) return null
-
-	const session = await getSession(request)
-	await session.signIn(user)
-	return session
-}
-
 async function requireAdminUser(request: Request): Promise<User> {
 	const user = await getUser(request)
 	if (!user) {
@@ -234,9 +195,7 @@ async function requireUser(
 export {
 	getSession,
 	deleteOtherSessions,
-	getUserSessionFromMagicLink,
 	requireUser,
 	requireAdminUser,
 	getUser,
-	sendToken,
 }

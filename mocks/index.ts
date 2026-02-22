@@ -69,6 +69,10 @@ const miscHandlers = [
 	http.get('https://verifyright.co/verify/:email', () => {
 		return HttpResponse.json({ status: true })
 	}),
+	http.get('https://api.pwnedpasswords.com/range/:prefix', () => {
+		// Empty response means "not found" for all suffixes.
+		return new HttpResponse('', { status: 200 })
+	}),
 ]
 
 const server = setupServer(

@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, redirect, Form } from 'react-router';
-import { Button } from '#app/components/button.tsx'
+import { data as json, redirect, Form } from 'react-router'
+import { Button, ButtonLink } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { CheckCircledIcon } from '#app/components/icons.tsx'
@@ -11,19 +11,26 @@ import { H2, H6, Paragraph } from '#app/components/typography.tsx'
 import { getImgProps, images } from '#app/images.tsx'
 import { tagKCDSiteSubscriber } from '#app/kit/kit.server.ts'
 import { type KCDHandle, type Team } from '#app/types.ts'
-import { handleFormSubmission } from '#app/utils/actions.server.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
+import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getErrorStack, isTeam, teams } from '#app/utils/misc.ts'
+import { getDomainUrl, getErrorStack, isResponse, isTeam, teams } from '#app/utils/misc.ts'
 import {
 	TEAM_ONEWHEELING_MAP,
 	TEAM_SKIING_MAP,
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
-import { prisma, validateMagicLink } from '#app/utils/prisma.server.ts'
+import { getPasswordHash, getPasswordStrengthError } from '#app/utils/password.server.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
+import {
+	consumeVerification,
+	consumeVerificationForTarget,
+	createVerification,
+} from '#app/utils/verification.server.ts'
 import  { type Route } from './+types/signup'
 
 export const handle: KCDHandle = {
@@ -40,6 +47,8 @@ type ActionData = {
 		generalError?: string
 		firstName: string | null
 		team: string | null
+		password: string | null
+		confirmPassword: string | null
 	}
 }
 
@@ -55,8 +64,14 @@ function getErrorForTeam(team: string | null) {
 	return null
 }
 
+async function getErrorForPassword(password: string | null) {
+	return getPasswordStrengthError(password ?? '')
+}
+
 const actionIds = {
 	cancel: 'cancel',
+	requestCode: 'request code',
+	verifyCode: 'verify code',
 	signUp: 'sign up',
 }
 
@@ -65,89 +80,272 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const requestText = await request.text()
 	const form = new URLSearchParams(requestText)
-	if (form.get('actionId') === actionIds.cancel) {
+	const actionId = form.get('actionId')
+
+	if (actionId === actionIds.cancel) {
 		loginInfoSession.clean()
 		return redirect('/', {
 			headers: await loginInfoSession.getHeaders(),
 		})
 	}
 
-	const session = await getSession(request)
-	const magicLink = loginInfoSession.getMagicLink()
-	let email: string
-	try {
-		if (typeof magicLink !== 'string') {
-			throw new Error('email and magicLink required.')
+	if (actionId === actionIds.requestCode) {
+		const emailAddress = form.get('email')
+		const email =
+			typeof emailAddress === 'string' ? emailAddress.trim().toLowerCase() : ''
+		if (email) loginInfoSession.setEmail(email)
+
+		if (!email.match(/.+@.+/)) {
+			loginInfoSession.flashError('A valid email is required')
+			return redirect('/signup', {
+				headers: await loginInfoSession.getHeaders(),
+			})
 		}
 
-		email = await validateMagicLink(magicLink, loginInfoSession.getMagicLink())
-	} catch (error: unknown) {
-		console.error(getErrorStack(error))
+		const userExists = await prisma.user.findUnique({
+			where: { email },
+			select: { id: true },
+		})
+		if (userExists) {
+			loginInfoSession.flashMessage(
+				'An account already exists for that email. Log in instead (or reset your password).',
+			)
+			return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+		}
 
-		loginInfoSession.clean()
-		loginInfoSession.flashError(
-			'Sign in link invalid. Please request a new one.',
-		)
-		return redirect('/login', {
+		const { verification, code } = await createVerification({
+			type: 'SIGNUP',
+			target: email,
+		})
+
+		const domainUrl = getDomainUrl(request)
+		const verificationUrl = new URL('/signup', domainUrl)
+		verificationUrl.searchParams.set('verification', verification.id)
+		verificationUrl.searchParams.set('code', code)
+
+		try {
+			await sendSignupVerificationEmail({
+				emailAddress: email,
+				verificationCode: code,
+				verificationUrl: verificationUrl.toString(),
+				domainUrl,
+			})
+		} catch (error: unknown) {
+			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+			// If we swallow it, the email will never get sent.
+			if (isResponse(error)) throw error
+			// Avoid leaving an unused verification record around if email sending fails.
+			try {
+				await ensurePrimary()
+				await prisma.verification.delete({ where: { id: verification.id } })
+			} catch (cleanupError) {
+				console.error(
+					'Failed to cleanup verification after email send failure',
+					cleanupError,
+				)
+			}
+			console.error('Failed to send signup verification email', error)
+			loginInfoSession.flashError(
+				'Unable to send verification email right now. Please try again.',
+			)
+			return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+		}
+
+		loginInfoSession.flashMessage(`Verification code sent to ${email}.`)
+		return redirect(`/signup?verification=${verification.id}`, {
 			headers: await loginInfoSession.getHeaders(),
 		})
 	}
 
-	return handleFormSubmission<ActionData>({
-		form,
-		validators: {
-			firstName: getErrorForFirstName,
-			team: getErrorForTeam,
-		},
-		handleFormValues: async (formData) => {
-			const { firstName, team } = formData
+	if (actionId === actionIds.verifyCode) {
+		const verificationId = form.get('verificationId')
+		const code = form.get('code')
+		if (typeof code !== 'string' || !code) {
+			loginInfoSession.flashError('Verification code required')
+			return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+		}
 
-			try {
-				const user = await prisma.user.create({
-					data: { email, firstName, team },
-				})
+		const result =
+			typeof verificationId === 'string' && verificationId
+				? await consumeVerification({
+						id: verificationId,
+						code,
+						type: 'SIGNUP',
+					})
+				: await consumeVerificationForTarget({
+						target: (form.get('email') ?? loginInfoSession.getEmail() ?? '')
+							.toString()
+							.trim()
+							.toLowerCase(),
+						code,
+						type: 'SIGNUP',
+					})
 
-				// add user to mailing list
-				const sub = await tagKCDSiteSubscriber({
-					email,
-					firstName,
-					fields: { kcd_team: team, kcd_site_id: user.id },
-				})
+		if (!result) {
+			loginInfoSession.flashError(
+				'Verification code invalid or expired. Please request a new one.',
+			)
+			return redirect(
+				typeof verificationId === 'string' && verificationId
+					? `/signup?verification=${verificationId}`
+					: '/signup',
+				{
+					headers: await loginInfoSession.getHeaders(),
+				},
+			)
+		}
+
+		loginInfoSession.setSignupEmail(result.target)
+		loginInfoSession.setEmail(result.target)
+		loginInfoSession.flashMessage('Email verified. Finish creating your account.')
+		return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+	}
+
+	const signupEmail = loginInfoSession.getSignupEmail()
+	if (!signupEmail) {
+		loginInfoSession.flashError('Verify your email first to create an account.')
+		return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+	}
+
+	const firstName = form.get('firstName')
+	const team = form.get('team')
+	const password = form.get('password')
+	const confirmPassword = form.get('confirmPassword')
+
+	const errors: ActionData['errors'] = {
+		firstName: getErrorForFirstName(typeof firstName === 'string' ? firstName : null),
+		team: getErrorForTeam(typeof team === 'string' ? team : null),
+		password: await getErrorForPassword(typeof password === 'string' ? password : null),
+		confirmPassword: (() => {
+			if (typeof confirmPassword !== 'string' || !confirmPassword) {
+				return 'Confirm your password'
+			}
+			if (confirmPassword !== password) return 'Passwords must match'
+			return null
+		})(),
+	}
+
+	if (Object.values(errors).some((e) => e !== null)) {
+		return json(
+			{
+				status: 'error',
+				fields: {
+					firstName: typeof firstName === 'string' ? firstName : null,
+					team: typeof team === 'string' && isTeam(team) ? team : null,
+				},
+				errors: { ...errors },
+			} satisfies ActionData,
+			400,
+		)
+	}
+
+	try {
+		const safeFirstName = String(firstName).trim()
+		const safeTeam = team as Team
+		const safePassword = String(password)
+
+		const passwordHash = await getPasswordHash(safePassword)
+		await ensurePrimary()
+		let user: { id: string }
+		try {
+			user = await prisma.user.create({
+				data: {
+					email: signupEmail,
+					firstName: safeFirstName,
+					team: safeTeam,
+					password: { create: { hash: passwordHash } },
+				},
+				select: { id: true },
+			})
+		} catch (error: unknown) {
+			// If the account was created in another concurrent attempt, send the user to login.
+			if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+				loginInfoSession.clean()
+				loginInfoSession.flashMessage(
+					'An account already exists for that email. Log in instead (or reset your password).',
+				)
+				return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+			}
+			throw error
+		}
+
+		// Best-effort: don't block account creation on mailing-list issues.
+		void tagKCDSiteSubscriber({
+			email: signupEmail,
+			firstName: safeFirstName,
+			fields: { kcd_team: safeTeam, kcd_site_id: user.id },
+		})
+			.then(async (sub) => {
+				await ensurePrimary()
 				await prisma.user.update({
 					data: { kitId: String(sub.id) },
 					where: { id: user.id },
 				})
-				const clientSession = await getClientSession(request, null)
-				const clientId = clientSession.getClientId()
-				// update all PostReads from clientId to userId
-				if (clientId) {
-					await prisma.postRead.updateMany({
-						data: { userId: user.id, clientId: null },
-						where: { clientId },
-					})
-				}
-				clientSession.setUser(user)
+			})
+			.catch((error) => {
+				console.error('Failed to tag subscriber on signup', error)
+			})
 
-				const headers = new Headers()
-				await session.signIn(user)
-				await session.getHeaders(headers)
-				await clientSession.getHeaders(headers)
-				// IDEA: try using destroy... Didn't seem to work last time I tried though.
-				loginInfoSession.clean()
-				await loginInfoSession.getHeaders(headers)
-				return redirect('/me', { headers })
-			} catch (error: unknown) {
-				console.error(getErrorStack(error))
+		let session: Awaited<ReturnType<typeof getSession>>
+		try {
+			session = await getSession(request)
+			await session.signIn(user)
+		} catch (error: unknown) {
+			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+			if (isResponse(error)) throw error
+			console.error('Signup succeeded but auto-login failed', error)
+			loginInfoSession.unsetSignupEmail()
+			loginInfoSession.flashMessage(
+				'Your account was created. Please log in to continue.',
+			)
+			return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+		}
 
-				loginInfoSession.flashError(
-					'There was a problem creating your account. Please try again.',
-				)
-				return redirect('/login', {
-					headers: await loginInfoSession.getHeaders(),
+		let clientSession: Awaited<ReturnType<typeof getClientSession>> | null = null
+		try {
+			clientSession = await getClientSession(request, null)
+			const clientId = clientSession.getClientId()
+			// update all PostReads from clientId to userId
+			if (clientId) {
+				await ensurePrimary()
+				await prisma.postRead.updateMany({
+					data: { userId: user.id, clientId: null },
+					where: { clientId },
 				})
 			}
-		},
-	})
+			clientSession.setUser({})
+		} catch (error) {
+			console.error('Failed to migrate client data on signup', error)
+		}
+
+		const headers = new Headers()
+		await session.getHeaders(headers)
+		if (clientSession) await clientSession.getHeaders(headers)
+		loginInfoSession.clean()
+		await loginInfoSession.getHeaders(headers)
+		return redirect('/me', { headers })
+	} catch (error: unknown) {
+		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+		if (isResponse(error)) throw error
+		console.error(getErrorStack(error))
+		return json(
+			{
+				status: 'error',
+				fields: {
+					firstName: typeof firstName === 'string' ? firstName : null,
+					team: typeof team === 'string' && isTeam(team) ? team : null,
+				},
+				errors: {
+					firstName: null,
+					team: null,
+					password: null,
+					confirmPassword: null,
+					generalError: 'There was a problem creating your account. Please try again.',
+				},
+			} satisfies ActionData,
+			500,
+		)
+	}
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -155,30 +353,59 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (user) return redirect('/me')
 
 	const loginInfoSession = await getLoginInfoSession(request)
-	const magicLink = loginInfoSession.getMagicLink()
-	const email = loginInfoSession.getEmail()
-	if (!magicLink || !email) {
-		loginInfoSession.clean()
-		loginInfoSession.flashError('Invalid magic link. Try again.')
-		return redirect('/login', {
-			headers: await loginInfoSession.getHeaders(),
+
+	const url = new URL(request.url)
+	const verificationId = url.searchParams.get('verification')
+	const code = url.searchParams.get('code')
+
+	// Support verification links in email.
+	if (verificationId && code) {
+		const result = await consumeVerification({
+			id: verificationId,
+			code,
+			type: 'SIGNUP',
 		})
+		if (result) {
+			loginInfoSession.setSignupEmail(result.target)
+			loginInfoSession.setEmail(result.target)
+			loginInfoSession.flashMessage('Email verified. Finish creating your account.')
+			return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+		}
+		loginInfoSession.flashError(
+			'Verification link invalid or expired. Please request a new one.',
+		)
+		return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
 	}
 
-	const userForMagicLink = await prisma.user.findFirst({
-		where: { email },
+	const signupEmail = loginInfoSession.getSignupEmail()
+	const email = loginInfoSession.getEmail()
+	const error = loginInfoSession.getError()
+	const message = loginInfoSession.getMessage()
+
+	if (!signupEmail) {
+		return json(
+			{
+				step: 'verify',
+				email: email ?? '',
+				error,
+				message,
+				verificationId,
+			} as const,
+			{ headers: await loginInfoSession.getHeaders() },
+		)
+	}
+
+	// If a user already exists for this email, stop signup and send them to login.
+	const userExists = await prisma.user.findUnique({
+		where: { email: signupEmail },
 		select: { id: true },
 	})
-
-	if (userForMagicLink) {
-		// user exists, but they haven't clicked their magic link yet
-		// we don't want to tell them that a user exists with that email though
-		// so we'll invalidate the magic link and force them to try again.
-		loginInfoSession.clean()
-		loginInfoSession.flashError('Invalid magic link. Try again.')
-		return redirect('/login', {
-			headers: await loginInfoSession.getHeaders(),
-		})
+	if (userExists) {
+		loginInfoSession.unsetSignupEmail()
+		loginInfoSession.flashMessage(
+			'An account already exists for that email. Log in instead (or reset your password).',
+		)
+		return redirect('/login', { headers: await loginInfoSession.getHeaders() })
 	}
 
 	const activities = ['skiing', 'snowboarding', 'onewheeling'] as const
@@ -186,7 +413,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 		activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
 	return json(
 		{
-			email,
+			step: 'onboarding',
+			email: signupEmail,
+			error,
+			message,
 			// have to put this shuffle in the loader to ensure server render is the same as the client one.
 			teamsInOrder: shuffle(teams),
 			teamMap: activity,
@@ -280,20 +510,116 @@ export default function NewAccount({
 	actionData,
 }: Route.ComponentProps) {
 	const [, setTeam] = useTeam()
+
 	const [formValues, setFormValues] = React.useState<{
 		firstName: string
 		team?: Team
+		password: string
+		confirmPassword: string
 	}>({
 		firstName: '',
 		team: undefined,
+		password: '',
+		confirmPassword: '',
 	})
 
 	const team = formValues.team
 	React.useEffect(() => {
 		if (team && teams.includes(team)) setTeam(team)
 	}, [team, setTeam])
+
+	const passwordIsValid =
+		formValues.password.length >= 8 &&
+		formValues.password === formValues.confirmPassword
 	const formIsValid =
-		formValues.firstName.trim().length > 0 && formValues.team !== undefined
+		formValues.firstName.trim().length > 0 &&
+		formValues.team !== undefined &&
+		passwordIsValid
+
+	if (data.step === 'verify') {
+		return (
+			<div className="mt-24 pt-6">
+				<HeaderSection
+					as="header"
+					title="Create your account."
+					subTitle="We'll email you a verification code."
+					className="mb-16"
+				/>
+				<main>
+					<Grid>
+						<div className="col-span-full lg:col-span-6">
+							{data.error ? (
+								<div className="mb-8">
+									<InputError id="signup-error">{data.error}</InputError>
+								</div>
+							) : null}
+							{data.message ? (
+								<p className="text-secondary mb-8 text-lg">{data.message}</p>
+							) : null}
+
+							<Form method="POST" noValidate className="mb-12">
+								<input
+									type="hidden"
+									name="actionId"
+									value={actionIds.requestCode}
+								/>
+								<Field
+									name="email"
+									label="Email"
+									type="email"
+									autoComplete="email"
+									defaultValue={data.email}
+								/>
+								<Button type="submit">Email me a code</Button>
+							</Form>
+
+							{data.email.match(/.+@.+/) ? (
+								<Form method="POST" noValidate className="mb-12">
+									<input
+										type="hidden"
+										name="actionId"
+										value={actionIds.verifyCode}
+									/>
+									<input type="hidden" name="email" value={data.email} />
+									{data.verificationId ? (
+										<input
+											type="hidden"
+											name="verificationId"
+											value={data.verificationId}
+										/>
+									) : null}
+									<Field
+										name="code"
+										label="Verification code"
+										type="text"
+										autoComplete="one-time-code"
+										placeholder="123456"
+									/>
+									<Button type="submit">Verify code</Button>
+								</Form>
+							) : null}
+
+							<div className="flex flex-wrap gap-4">
+								<ButtonLink to="/login" variant="secondary">
+									Back to login
+								</ButtonLink>
+								<Form method="POST">
+									<input
+										type="hidden"
+										name="actionId"
+										value={actionIds.cancel}
+									/>
+									<Button type="submit" variant="danger">
+										Cancel
+									</Button>
+								</Form>
+							</div>
+						</div>
+					</Grid>
+				</main>
+			</div>
+		)
+	}
 
 	return (
 		<div className="mt-24 pt-6">
@@ -310,21 +636,41 @@ export default function NewAccount({
 						const formData = new FormData(event.currentTarget)
 						const firstName = formData.get('firstName')
 						const team = formData.get('team')
+						const password = formData.get('password')
+						const confirmPassword = formData.get('confirmPassword')
 						const selectedTeam =
 							typeof team === 'string' && isTeam(team) ? team : undefined
 						setFormValues({
 							firstName: typeof firstName === 'string' ? firstName : '',
 							team: selectedTeam,
+							password: typeof password === 'string' ? password : '',
+							confirmPassword:
+								typeof confirmPassword === 'string' ? confirmPassword : '',
 						})
 					}}
 				>
 					<input type="hidden" name="actionId" value={actionIds.signUp} />
 					<Grid>
+						{data.error ? (
+							<div className="col-span-full mb-8">
+								<InputError id="signup-error">{data.error}</InputError>
+							</div>
+						) : null}
+						{data.message ? (
+							<p className="text-secondary col-span-full mb-8 text-lg">
+								{data.message}
+							</p>
+						) : null}
+						{actionData?.errors.generalError ? (
+							<div className="col-span-full mb-4">
+								<InputError id="general-error">
+									{actionData.errors.generalError}
+								</InputError>
+							</div>
+						) : null}
 						{actionData?.errors.team ? (
 							<div className="col-span-full mb-4 text-right">
-								<InputError id="team-error">
-									{actionData.errors.team}
-								</InputError>
+								<InputError id="team-error">{actionData.errors.team}</InputError>
 							</div>
 						) : null}
 
@@ -387,10 +733,29 @@ export default function NewAccount({
 							/>
 						</div>
 
+						<div className="col-span-full mb-12 lg:col-span-5 lg:mb-20">
+							<Field
+								name="password"
+								label="Password"
+								type="password"
+								autoComplete="new-password"
+								error={actionData?.errors.password}
+							/>
+						</div>
+						<div className="col-span-full mb-12 lg:col-span-5 lg:col-start-7 lg:mb-20">
+							<Field
+								name="confirmPassword"
+								label="Confirm password"
+								type="password"
+								autoComplete="new-password"
+								error={actionData?.errors.confirmPassword}
+							/>
+						</div>
+
 						<div className="col-span-full">
-						<Button type="submit" disabled={!formIsValid}>
-							{`Create account`}
-						</Button>
+							<Button type="submit" disabled={!formIsValid}>
+								{`Create account`}
+							</Button>
 						</div>
 						<p className="text-primary col-span-4 mt-10 text-xs font-medium tracking-wider">
 							{`

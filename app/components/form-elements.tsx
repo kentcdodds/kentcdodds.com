@@ -72,6 +72,7 @@ function Field({
 	description,
 	id,
 	additionalAriaDescribedBy,
+	autoComplete,
 	...props
 }: {
 	defaultValue?: string | null
@@ -99,7 +100,7 @@ function Field({
 					{...props}
 					{...inputProps}
 					name={name}
-					autoComplete={name}
+					autoComplete={autoComplete ?? name}
 					defaultValue={defaultValue}
 				/>
 			)}

@@ -22,7 +22,7 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
-import { scheduleExpiredSessionsCleanup } from './expired-sessions-cleanup.js'
+import { scheduleExpiredDataCleanup } from './expired-sessions-cleanup.js'
 import { createRateLimitingMiddleware } from './rate-limiting.js'
 import {
 	getRedirectsMiddleware,
@@ -105,7 +105,7 @@ const app = express()
 app.set('trust proxy', true)
 app.use(serverTiming())
 
-const expiredSessionsCleanup = scheduleExpiredSessionsCleanup()
+const expiredDataCleanup = scheduleExpiredDataCleanup()
 
 app.get('/img/social', oldImgSocial)
 
@@ -477,7 +477,7 @@ if (process.env.NODE_ENV === 'development') {
 
 closeWithGrace(() => {
 	return Promise.all([
-		expiredSessionsCleanup.stop(),
+		expiredDataCleanup.stop(),
 		new Promise((resolve, reject) => {
 			server.close((e) => (e ? reject(e) : resolve('ok')))
 		}),

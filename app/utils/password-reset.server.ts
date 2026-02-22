@@ -1,0 +1,64 @@
+import { ensurePrimary } from './litefs-js.server.ts'
+import { getDomainUrl, isResponse } from './misc.ts'
+import { prisma } from './prisma.server.ts'
+import { sendPasswordResetEmail } from './send-email.server.ts'
+import { createVerification } from './verification.server.ts'
+
+/**
+ * Creates a PASSWORD_RESET verification and sends the email.
+ *
+ * - Rethrows LiteFS replay `Response`s (so the request can be replayed on primary).
+ * - Swallows non-Response errors (outage, mail provider errors) so auth flows
+ *   can still show a generic "check your email" message.
+ */
+export async function createAndSendPasswordResetVerificationEmail({
+	emailAddress,
+	team,
+	request,
+}: {
+	emailAddress: string
+	team: string
+	request: Request
+}) {
+	const domainUrl = getDomainUrl(request)
+
+	let verificationId: string | null = null
+	try {
+		const { verification, code } = await createVerification({
+			type: 'PASSWORD_RESET',
+			target: emailAddress,
+		})
+		verificationId = verification.id
+
+		const verificationUrl = new URL('/reset-password', domainUrl)
+		verificationUrl.searchParams.set('verification', verification.id)
+		verificationUrl.searchParams.set('code', code)
+
+		await sendPasswordResetEmail({
+			emailAddress,
+			verificationCode: code,
+			verificationUrl: verificationUrl.toString(),
+			domainUrl,
+			team,
+		})
+	} catch (error: unknown) {
+		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+		// If we swallow it, the email will never get sent.
+		if (isResponse(error)) throw error
+
+		if (verificationId) {
+			try {
+				// Best effort: don't leave unused verifications around if email sending fails.
+				await ensurePrimary()
+				await prisma.verification.delete({ where: { id: verificationId } })
+			} catch (cleanupError) {
+				console.error(
+					'Failed to cleanup verification after password reset email failure',
+					cleanupError,
+				)
+			}
+		}
+		console.error('Failed to send password reset email', error)
+	}
+}
+

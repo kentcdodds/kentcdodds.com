@@ -8,7 +8,6 @@ import { Field, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import {
 	CheckCircledIcon,
-	EyeIcon,
 	LogoutIcon,
 	PlusIcon,
 	RefreshIcon,
@@ -31,7 +30,6 @@ import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import {
 	getDiscordAuthorizeURL,
 	getDisplayUrl,
-	getDomainUrl,
 	getErrorMessage,
 	getOrigin,
 	getTeam,
@@ -43,8 +41,7 @@ import {
 	TEAM_SKIING_MAP,
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
-import { getMagicLink, prisma } from '#app/utils/prisma.server.ts'
-import { getQrCodeDataURL } from '#app/utils/qrcode.server.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	deleteOtherSessions,
@@ -106,13 +103,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 			orderBy: { createdAt: 'desc' },
 		}),
 	])
-	const qrLoginCode = await getQrCodeDataURL(
-		getMagicLink({
-			emailAddress: user.email,
-			validateSessionMagicLink: false,
-			domainUrl: getDomainUrl(request),
-		}),
-	)
 
 	const wantsBlogPosts = rawFavorites.some((f) => f.contentType === 'blog-post')
 	const wantsTalks = rawFavorites.some((f) => f.contentType === 'talk')
@@ -228,7 +218,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 		activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
 	return json(
 		{
-			qrLoginCode,
 			sessionCount,
 			teamType: activity,
 			favorites,
@@ -350,8 +339,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
-const SHOW_QR_DURATION = 15_000
-
 function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 	const teamMap = {
 		skiing: TEAM_SKIING_MAP,
@@ -368,18 +355,7 @@ function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 	if (!team) throw new Error('team required')
 
 	const authorizeURL = getDiscordAuthorizeURL(requestInfo.origin)
-	const [qrIsVisible, setQrIsVisible] = React.useState(false)
 	const [deleteModalOpen, setDeleteModalOpen] = React.useState(false)
-
-	React.useEffect(() => {
-		if (!qrIsVisible) return
-
-		const timeout = setTimeout(() => {
-			setQrIsVisible(false)
-		}, SHOW_QR_DURATION)
-
-		return () => clearTimeout(timeout)
-	}, [qrIsVisible, setQrIsVisible])
 
 	return (
 		<main>
@@ -553,32 +529,11 @@ function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 			</div>
 
 			<Grid>
-				<div className="col-span-full mb-12 lg:col-span-5 lg:col-start-8 lg:mb-0">
-					<H2>Need to login somewhere else?</H2>
+				<div className="col-span-full mb-12">
+					<H2>Log in on another device</H2>
 					<H2 variant="secondary" as="p">
-						Scan this QR code on the other device.
+						Use your password, or set up a passkey for easier sign-in.
 					</H2>
-				</div>
-
-				<div className="bg-secondary relative col-span-full rounded-lg p-4 lg:col-span-5 lg:col-start-1 lg:row-start-1">
-					<img
-						src={data.qrLoginCode}
-						alt="Login QR Code"
-						className="w-full rounded-lg object-contain"
-					/>
-					<button
-						onClick={() => setQrIsVisible(true)}
-						className={clsx(
-							'focus-ring text-primary bg-secondary absolute inset-0 flex h-full w-full flex-col items-center justify-center rounded-lg text-lg font-medium transition duration-200',
-							{
-								'opacity-100': !qrIsVisible,
-								'opacity-0': qrIsVisible,
-							},
-						)}
-					>
-						<EyeIcon size={36} />
-						<span>click to reveal</span>
-					</button>
 				</div>
 			</Grid>
 
@@ -646,6 +601,9 @@ function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 					</ButtonLink>
 					<ButtonLink variant="secondary" to="passkeys">
 						Manage Passkeys
+					</ButtonLink>
+					<ButtonLink variant="secondary" to="password">
+						Password
 					</ButtonLink>
 					<Form
 						action="/me"

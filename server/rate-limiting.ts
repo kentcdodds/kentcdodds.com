@@ -66,6 +66,9 @@ export function createRateLimitingMiddleware(
 		const strongestNonGetPaths = [
 			'/login',
 			'/signup',
+			'/forgot-password',
+			'/reset-password',
+			'/me/password',
 			'/oauth/authorize',
 			// Covers: /calls/admin, /cache/admin, /me/admin, /search/admin
 			'/admin',
@@ -81,7 +84,12 @@ export function createRateLimitingMiddleware(
 		}
 
 		// GET routes that can include sensitive tokens/codes in the query string.
-		const strongestGetPaths = ['/magic', '/discord/callback']
+		const strongestGetPaths = [
+			'/magic',
+			'/discord/callback',
+			'/signup',
+			'/reset-password',
+		]
 		if (strongestGetPaths.some((p) => req.path.includes(p))) {
 			return strongestRateLimit(req, res, next)
 		}
