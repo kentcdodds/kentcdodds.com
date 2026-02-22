@@ -41,8 +41,10 @@ export function createRateLimitingMiddleware(
 		// When sitting behind a CDN such as cloudflare, replace fly-client-ip with the CDN
 		// specific header such as cf-connecting-ip
 		keyGenerator: (req: Parameters<RequestHandler>[0]) => {
-			const ip = req.ip ?? req.socket?.remoteAddress
-			return req.get('fly-client-ip') ?? ipKeyGenerator(ip ?? '0.0.0.0')
+			const flyClientIp = req.get('fly-client-ip')
+			const ip =
+				flyClientIp ?? req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0'
+			return ipKeyGenerator(ip)
 		},
 	}
 
