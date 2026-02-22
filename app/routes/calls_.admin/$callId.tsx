@@ -80,8 +80,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 						...episodeDraft,
 						// Don’t send the storage key to the client.
 						episodeAudioKey: null,
-								// Don’t send the legacy base64 audio to the client either.
-								episodeBase64: null,
+						// Don’t send the legacy base64 audio to the client either.
+						episodeBase64: null,
 						hasEpisodeAudio,
 						episodeAudioUrl,
 					}
