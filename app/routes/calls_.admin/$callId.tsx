@@ -7,6 +7,7 @@ import { MailIcon } from '#app/components/icons.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import {
+	getNavigationPathFromResponse,
 	recordingFormActionPath,
 } from '#app/routes/resources/calls/save.tsx'
 import { type KCDHandle } from '#app/types.ts'
@@ -187,12 +188,6 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 }
 
 type EpisodeDraft = NonNullable<SerializeFrom<typeof loader>['call']['episodeDraft']>
-
-function getNavigationPathFromResponse(response: Response) {
-	if (!response.redirected || !response.url) return null
-	const redirectUrl = new URL(response.url, window.location.origin)
-	return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
-}
 
 function ResponseAudioDraftForm({
 	audio,

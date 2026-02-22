@@ -49,13 +49,13 @@ SELECT
   "id",
   "isAnonymous",
   TRIM(
-    'Title:\n' || TRIM("title") ||
+    'Title:' || char(10) || TRIM("title") ||
     CASE
-      WHEN "description" IS NOT NULL AND TRIM("description") <> '' THEN '\n\nDescription:\n' || TRIM("description")
+      WHEN "description" IS NOT NULL AND TRIM("description") <> '' THEN char(10) || char(10) || 'Description:' || char(10) || TRIM("description")
       ELSE ''
     END ||
     CASE
-      WHEN "keywords" IS NOT NULL AND TRIM("keywords") <> '' THEN '\n\nKeywords:\n' || TRIM("keywords")
+      WHEN "keywords" IS NOT NULL AND TRIM("keywords") <> '' THEN char(10) || char(10) || 'Keywords:' || char(10) || TRIM("keywords")
       ELSE ''
     END
   ),

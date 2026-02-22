@@ -21,7 +21,7 @@ import { type Route } from './+types/save'
 
 const recordingFormActionPath = '/resources/calls/save'
 
-function getNavigationPathFromResponse(response: Response) {
+export function getNavigationPathFromResponse(response: Response) {
 	if (!response.redirected || !response.url) return null
 	const redirectUrl = new URL(response.url, window.location.origin)
 	return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
