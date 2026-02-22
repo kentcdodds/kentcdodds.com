@@ -29,7 +29,7 @@ async function getLatestChatsSeasonNumber({
 		const { getSeasonListItems } = await import('./simplecast.server.ts')
 		const seasons = await getSeasonListItems({ request, timings })
 		const latestSeasonNumber = seasons.reduce(
-			(max, s) => Math.max(max, s.seasonNumber),
+			(max, s) => Math.max(max, s.seasonNumber ?? 0),
 			0,
 		)
 		return latestSeasonNumber || null
