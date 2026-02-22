@@ -56,6 +56,18 @@ function normalizeTextForCache(text: string) {
 	return text.trim().replace(/\s+/g, ' ')
 }
 
+function isDataWithResponseInit(value: unknown): value is {
+	type: 'DataWithResponseInit'
+	data: unknown
+	init: ResponseInit | null
+} {
+	return (
+		!!value &&
+		typeof value === 'object' &&
+		(value as { type?: string }).type === 'DataWithResponseInit'
+	)
+}
+
 export async function action({ request }: Route.ActionArgs) {
 	// This is a paid API call; require auth to limit abuse.
 	const {
@@ -187,6 +199,9 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	} catch (error: unknown) {
 		if (error instanceof Response) {
+			return error
+		}
+		if (isDataWithResponseInit(error)) {
 			return error
 		}
 		console.error('Call Kent TTS failed', error)
