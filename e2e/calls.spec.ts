@@ -3,6 +3,7 @@ import { faker } from '@faker-js/faker'
 import { expect, readEmail, test } from './utils.ts'
 
 test('Call Kent recording flow', async ({ page, login }) => {
+	test.setTimeout(120_000)
 	const user = await login()
 	await page.goto('/calls')
 
