@@ -117,11 +117,12 @@ function getRequiredEnvVarFromObj(
 	key: string,
 	devValue: string = `${key}-dev-value`,
 ) {
+	const mode = obj.MODE ?? obj.NODE_ENV
 	let value = devValue
 	const envVal = obj[key]
 	if (envVal) {
 		value = envVal
-	} else if (obj.NODE_ENV === 'production') {
+	} else if (mode === 'production') {
 		throw new Error(`${key} is a required env variable`)
 	}
 	return value

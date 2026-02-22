@@ -330,7 +330,7 @@ function App() {
 				<Spacer size="base" />
 				<Footer image={images[data.randomFooterImageKey]} />
 				<ScrollRestoration nonce={nonce} />
-				{ENV.NODE_ENV === 'development' ? null : (
+				{ENV.MODE === 'development' ? null : (
 					<script
 						nonce={nonce}
 						src="https://cdn.usefathom.com/script.js"
@@ -353,7 +353,7 @@ function App() {
 					/>
 				)}
 				<Scripts nonce={nonce} />
-				{ENV.NODE_ENV === 'development' ? (
+				{ENV.MODE === 'development' ? (
 					<script
 						nonce={nonce}
 						suppressHydrationWarning

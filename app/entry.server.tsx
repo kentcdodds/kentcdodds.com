@@ -12,9 +12,10 @@ import { ServerRouter,
     type HandleDocumentRequestFunction } from 'react-router';
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
-import { getEnv } from './utils/env.server.ts'
+import { getEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
 
+init()
 global.ENV = getEnv()
 
 const ABORT_DELAY = 5000

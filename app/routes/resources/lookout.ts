@@ -3,10 +3,33 @@ import  { type Route } from './+types/lookout'
 // this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
 
 
-const SENTRY_HOST = new URL(process.env.SENTRY_DSN).hostname
-const SENTRY_PROJECT_IDS = [process.env.SENTRY_PROJECT_ID]
+const SENTRY_HOST = (() => {
+	const dsn = process.env.SENTRY_DSN
+	if (!dsn) return null
+	try {
+		return new URL(dsn).hostname
+	} catch {
+		return null
+	}
+})()
+const SENTRY_PROJECT_IDS = process.env.SENTRY_PROJECT_ID
+	? [process.env.SENTRY_PROJECT_ID]
+	: []
 
 export async function action({ request }: Route.ActionArgs) {
+	// `start:mocks` (used in CI + local e2e) runs with `NODE_ENV=production` and
+	// `MOCKS=true`. In that mode we don't want/need to proxy Sentry envelopes to
+	// the real upstream ingest API.
+	if (process.env.MOCKS === 'true') {
+		// Drain the body to avoid hanging the underlying connection.
+		await request.text().catch(() => '')
+		return new Response(null, { status: 204 })
+	}
+
+	if (!SENTRY_HOST) {
+		throw new Response('Sentry is not configured', { status: 404 })
+	}
+
 	const envelope = await request.text()
 	const piece = envelope.split('\n')[0]
 	invariantResponse(piece, 'no piece in envelope')
@@ -14,7 +37,7 @@ export async function action({ request }: Route.ActionArgs) {
 	// Validate that the first line is valid JSON (required for Sentry envelope format)
 	let header: any
 	try {
-		header = JSON.parse(piece ?? '{}')
+		header = JSON.parse(piece)
 	} catch {
 		// Return 400 for malformed Sentry envelopes instead of crashing
 		throw new Response(
@@ -44,7 +67,7 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
-	const projectId = dsn.pathname?.replace('/', '')
+	const projectId = dsn.pathname.slice(1)
 
 	invariantResponse(
 		dsn.hostname === SENTRY_HOST,
@@ -56,5 +79,13 @@ export async function action({ request }: Route.ActionArgs) {
 	)
 
 	const upstreamSentryURL = `https://${SENTRY_HOST}/api/${projectId}/envelope/`
-	return fetch(upstreamSentryURL, { method: 'POST', body: envelope })
+	try {
+		return await fetch(upstreamSentryURL, {
+			method: 'POST',
+			body: envelope,
+			signal: AbortSignal.timeout(5_000),
+		})
+	} catch {
+		throw new Response('Failed to proxy request to Sentry', { status: 502 })
+	}
 }
