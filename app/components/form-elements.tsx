@@ -73,6 +73,7 @@ function Field({
 	id,
 	additionalAriaDescribedBy,
 	autoComplete,
+	required = true,
 	...props
 }: {
 	defaultValue?: string | null
@@ -82,6 +83,7 @@ function Field({
 	error?: string | null
 	description?: React.ReactNode
 	additionalAriaDescribedBy?: string
+	required?: boolean
 } & InputProps) {
 	return (
 		<FieldContainer
@@ -96,7 +98,7 @@ function Field({
 				<Input
 					// @ts-expect-error no idea 🤷‍♂️
 					ref={ref}
-					required
+					required={required}
 					{...props}
 					{...inputProps}
 					name={name}
