@@ -15,7 +15,7 @@ import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getDomainUrl, getErrorStack, isTeam, teams } from '#app/utils/misc.ts'
+import { getDomainUrl, getErrorStack, isResponse, isTeam, teams } from '#app/utils/misc.ts'
 import {
 	TEAM_ONEWHEELING_MAP,
 	TEAM_SKIING_MAP,
@@ -310,6 +310,8 @@ export async function action({ request }: Route.ActionArgs) {
 		await loginInfoSession.getHeaders(headers)
 		return redirect('/me', { headers })
 	} catch (error: unknown) {
+		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+		if (isResponse(error)) throw error
 		console.error(getErrorStack(error))
 		return json(
 			{
