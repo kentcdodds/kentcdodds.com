@@ -24,6 +24,20 @@ export async function verifyPassword({
 	return bcrypt.compare(password, hash)
 }
 
+// Note: We intentionally do NOT use AbortSignal/AbortController here.
+// Node.js v24 has a bug where aborting fetch requests can crash the process.
+function fetchWithTimeout(
+	url: string,
+	options: RequestInit,
+	timeoutMs: number,
+): Promise<Response> {
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		const id = setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+		id.unref?.()
+	})
+	return Promise.race([fetch(url, options), timeoutPromise])
+}
+
 function getPasswordHashParts(password: string) {
 	const hash = crypto
 		.createHash('sha1')
@@ -36,9 +50,10 @@ function getPasswordHashParts(password: string) {
 async function checkIsCommonPassword(password: string) {
 	const [prefix, suffix] = getPasswordHashParts(password)
 	try {
-		const response = await fetch(
+		const response = await fetchWithTimeout(
 			`https://api.pwnedpasswords.com/range/${prefix}`,
-			{ signal: AbortSignal.timeout(1000) },
+			{},
+			1000,
 		)
 		if (!response.ok) return false
 		const data = await response.text()
@@ -48,7 +63,7 @@ async function checkIsCommonPassword(password: string) {
 		})
 	} catch (error) {
 		// We don't want a third-party outage to block password creation/reset.
-		if (error instanceof DOMException && error.name === 'TimeoutError') {
+		if (error instanceof Error && error.message === 'Request timeout') {
 			console.warn('Password commonality check timed out')
 			return false
 		}
