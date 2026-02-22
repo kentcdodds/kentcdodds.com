@@ -1,4 +1,4 @@
-import { data as json, redirect, Form, useLoaderData } from 'react-router';
+import { data as json, redirect, Form } from 'react-router';
 import { type KCDHandle } from '#app/types.ts'
 import { useCapturedRouteError } from '#app/utils/misc-react.tsx'
 import  { type Route } from './+types/guest-info'
@@ -16,8 +16,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 // TODO: make this a thing...
-export default function GuestInfo() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function GuestInfo({ loaderData: data }: Route.ComponentProps) {
 	return (
 		<div>
 			{`TODO: make this a thing...`}

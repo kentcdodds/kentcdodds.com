@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { data as json, type HeadersFunction, Link, Outlet, useLoaderData, useLocation } from 'react-router';
+import { data as json, type HeadersFunction, Link, Outlet, useLocation } from 'react-router';
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -87,10 +87,9 @@ function Record({
 		</Grid>
 	)
 }
-export default function RecordScreen() {
+export default function RecordScreen({ loaderData: data }: Route.ComponentProps) {
 	const { pathname } = useLocation()
 	const { user } = useRootData()
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 
 	const [activeSlug] = pathname.split('/').slice(-1)
 	const calls = data.calls

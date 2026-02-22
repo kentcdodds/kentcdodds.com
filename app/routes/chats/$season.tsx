@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction, isRouteErrorResponse, Link, useLoaderData, useParams } from 'react-router';
+import { data as json, type HeadersFunction, isRouteErrorResponse, Link, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -56,8 +56,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export default function ChatsSeason() {
-	const { season } = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function ChatsSeason({ loaderData }: Route.ComponentProps) {
+	const { season } = loaderData
 	const { sortOrder } = useChatsEpisodeUIState()
 	const episodes = orderBy(season.episodes, 'episodeNumber', sortOrder)
 	return episodes.map((episode) => (

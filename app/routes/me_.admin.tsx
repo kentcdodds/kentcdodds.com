@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { addDays, format, startOfDay, subDays } from 'date-fns'
 import * as React from 'react'
-import { Form, useActionData, useLoaderData, useSearchParams, data as json, redirect } from 'react-router';
+import { Form, useSearchParams, data as json, redirect } from 'react-router';
 import { useTable, type Column } from 'react-table'
 import { Button } from '#app/components/button.tsx'
 import { Field } from '#app/components/form-elements.tsx'
@@ -539,8 +539,10 @@ function BarList({
 	)
 }
 
-export default function MeAdmin() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function MeAdmin({
+	loaderData: data,
+	actionData,
+}: Route.ComponentProps) {
 	const searchInputRef = React.useRef<HTMLInputElement>(null)
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -554,7 +556,6 @@ export default function MeAdmin() {
 		order: isSortOrder(spOrder) ? spOrder : 'asc',
 		field: isOrderField(spOrderField) ? spOrderField : 'createdAt',
 	})
-	const actionData = useActionData<Route.ComponentProps['actionData']>()
 
 	const syncSearchParams = useDebounce(() => {
 		if (

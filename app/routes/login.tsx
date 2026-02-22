@@ -4,7 +4,7 @@ import { type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/serv
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
-import { Form, useLoaderData, useNavigate, useRevalidator, data as json, redirect, type HeadersFunction, type MetaFunction } from 'react-router';
+import { Form, useNavigate, useRevalidator, data as json, redirect, type HeadersFunction, type MetaFunction } from 'react-router';
 import { z } from 'zod'
 import { Button, LinkButton } from '#app/components/button.tsx'
 import { Input, InputError, Label } from '#app/components/form-elements.tsx'
@@ -132,8 +132,7 @@ const AuthenticationOptionsSchema = z.object({
 	options: z.object({ challenge: z.string() }),
 }) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
 
-function Login() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+function Login({ loaderData: data }: Route.ComponentProps) {
 	const inputRef = React.useRef<HTMLInputElement>(null)
 	const navigate = useNavigate()
 	const { revalidate } = useRevalidator()

@@ -899,8 +899,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({ users })
 }
 
-export default function UsersPage() {
-	const data = useLoaderData<typeof loader>()
+export default function UsersPage({ loaderData: data }) {
 	return (
 		<div>
 			<h1>Users</h1>

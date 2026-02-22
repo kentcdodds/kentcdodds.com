@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { data as json, Link, Outlet, useLoaderData, useParams } from 'react-router'
+import { data as json, Link, Outlet, useParams } from 'react-router'
 import { Grid } from '#app/components/grid.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
@@ -32,8 +32,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return json({ calls })
 }
 
-export default function CallListScreen() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function CallListScreen({ loaderData: data }: Route.ComponentProps) {
 	const { requestInfo } = useRootData()
 	const params = useParams()
 	const selectedCallId = params.callId

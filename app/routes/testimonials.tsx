@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction, type MetaFunction, useLoaderData } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -58,8 +58,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	)
 }
 
-export default function Testimonials() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function Testimonials({ loaderData: data }: Route.ComponentProps) {
 
 	return (
 		<>

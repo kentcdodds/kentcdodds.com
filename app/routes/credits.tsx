@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useLoaderData, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import {
 	BehanceIcon,
@@ -134,8 +134,7 @@ function ProfileCard({ person }: { person: Person }) {
 	)
 }
 
-function CreditsIndex() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 	return (
 		<>
 			<HeroSection

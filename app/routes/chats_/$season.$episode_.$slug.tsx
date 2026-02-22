@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
 import React, { useState } from 'react'
-import { isRouteErrorResponse, Link, useLoaderData, useLocation, data as json, redirect, type HeadersFunction } from 'react-router';
+import { isRouteErrorResponse, Link, useLocation, data as json, redirect, type HeadersFunction } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
@@ -439,7 +439,7 @@ function PrevNextButton({
 	)
 }
 
-export default function PodcastDetail() {
+export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 	const { requestInfo } = useRootData()
 	const {
 		episode,
@@ -449,8 +449,7 @@ export default function PodcastDetail() {
 		favoriteContentType,
 		favoriteContentId,
 		isFavorite,
-	} =
-		useLoaderData<Route.ComponentProps['loaderData']>()
+	} = loaderData
 	const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
 	return (

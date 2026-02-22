@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { data as json, redirect, Form, useLoaderData } from 'react-router'
+import { data as json, redirect, Form } from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import { MailIcon } from '#app/components/icons.tsx'
@@ -166,9 +166,8 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 	)
 }
 
-function RecordingDetailScreen() {
+function RecordingDetailScreen({ data }: { data: Route.ComponentProps['loaderData'] }) {
 	const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const user = useUser()
 	const recordingFormData = React.useMemo(
 		() => ({
@@ -215,7 +214,8 @@ function RecordingDetailScreen() {
 	)
 }
 
-export default function RecordDetailScreenContainer() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
-	return <RecordingDetailScreen key={data.call.id} />
+export default function RecordDetailScreenContainer({
+	loaderData: data,
+}: Route.ComponentProps) {
+	return <RecordingDetailScreen data={data} key={data.call.id} />
 }

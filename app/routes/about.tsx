@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction, type LinksFunction, type MetaFunction, useLoaderData, useSearchParams } from 'react-router';
+import { data as json, type HeadersFunction, type LinksFunction, type MetaFunction, useSearchParams } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { FeatureCard } from '#app/components/feature-card.tsx'
 import {
@@ -85,9 +85,8 @@ export const links: LinksFunction = () => {
 	return youTubeEmbedLinks()
 }
 
-function AboutIndex() {
-	const { blogRecommendations, talkRecommendations } =
-		useLoaderData<Route.ComponentProps['loaderData']>()
+function AboutIndex({ loaderData }: Route.ComponentProps) {
+	const { blogRecommendations, talkRecommendations } = loaderData
 	const [searchParams] = useSearchParams()
 	const { requestInfo } = useRootData()
 	const permalinkAutoplay = `${requestInfo.origin}/about?autoplay`

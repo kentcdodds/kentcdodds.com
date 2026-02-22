@@ -1,4 +1,4 @@
-import { data as json, type LinksFunction, type MetaFunction, Link, useLoaderData, useSearchParams } from 'react-router';
+import { data as json, type LinksFunction, type MetaFunction, Link, useSearchParams } from 'react-router';
 import resumeStyles from '#app/styles/resume.css?url'
 import { getResumeData, type ResumeData } from '#app/utils/resume.server.ts'
 import  { type Route } from './+types/resume'
@@ -90,8 +90,9 @@ function formatMarkdown(resumeData: ResumeData, isShort: boolean) {
 	return lines.join('\n').trim()
 }
 
-export default function ResumePage() {
-	const { resumeData } = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function ResumePage({
+	loaderData: { resumeData },
+}: Route.ComponentProps) {
 	const [searchParams] = useSearchParams()
 	const view = searchParams.get('view')
 	const isShort = view === 'short'

@@ -2,7 +2,7 @@ import { Dialog } from '@reach/dialog'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import {
-    data as json, redirect, type HeadersFunction, type MetaFunction, Form, Link, useActionData, useLoaderData } from 'react-router';
+    data as json, redirect, type HeadersFunction, type MetaFunction, Form, Link } from 'react-router';
 import { Button, ButtonLink } from '#app/components/button.tsx'
 import { Field, InputError, Label } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -352,15 +352,13 @@ export async function action({ request }: Route.ActionArgs) {
 
 const SHOW_QR_DURATION = 15_000
 
-function YouScreen() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 	const teamMap = {
 		skiing: TEAM_SKIING_MAP,
 		snowboarding: TEAM_SNOWBOARD_MAP,
 		onewheeling: TEAM_ONEWHEELING_MAP,
 	}[data.teamType]
 	const otherSessionsCount = data.sessionCount - 1
-	const actionData = useActionData<Route.ComponentProps['actionData']>()
 	const { requestInfo, userInfo, user } = useRootData()
 	const team = getTeam(user?.team)
 

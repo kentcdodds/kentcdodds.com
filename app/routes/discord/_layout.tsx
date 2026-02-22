@@ -1,6 +1,6 @@
 import { Accordion, AccordionButton, AccordionItem, AccordionPanel, useAccordionItemContext, } from '@reach/accordion'
 import { motion } from 'framer-motion'
-import { data as json, type HeadersFunction, type MetaFunction, Outlet, useLoaderData } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, Outlet } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { FeatureCard } from '#app/components/feature-card.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -149,8 +149,7 @@ function CategoryCard(props: CategoryCardProps) {
 	)
 }
 
-export default function Discord() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function Discord({ loaderData: data }: Route.ComponentProps) {
 	const { requestInfo, user } = useRootData()
 	const authorizeURL = user
 		? getDiscordAuthorizeURL(requestInfo.origin)

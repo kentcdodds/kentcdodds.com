@@ -1,7 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, Outlet, useLoaderData, useMatches, useNavigate, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import { Link, Outlet, useMatches, useNavigate, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
@@ -112,10 +112,9 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export default function CallHomeScreen() {
+export default function CallHomeScreen({ loaderData: data }: Route.ComponentProps) {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('desc')
 
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const navigate = useNavigate()
 
 	const groupedEpisodeBySeasons = groupBy(data.episodes, 'seasonNumber')

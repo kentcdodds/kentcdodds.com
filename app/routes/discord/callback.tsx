@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { data as defer, redirect, Await, Link, useAsyncError, useLoaderData } from 'react-router';
+import { data as defer, redirect, Await, Link, useAsyncError } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ErrorPanel } from '#app/components/form-elements.tsx'
 import { PartyIcon, RefreshIcon } from '#app/components/icons.tsx'
@@ -61,8 +61,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 }
 
-export default function DiscordCallback() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function DiscordCallback({ loaderData: data }: Route.ComponentProps) {
 
 	React.useEffect(() => {
 		const newSearchParams = new URLSearchParams(window.location.search)

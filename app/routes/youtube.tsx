@@ -2,7 +2,6 @@ import {
 	data as json,
 	type LinksFunction,
 	type MetaFunction,
-	useLoaderData,
 	useSearchParams,
 } from 'react-router'
 import {
@@ -11,6 +10,7 @@ import {
 } from '#app/components/fullscreen-yt-embed.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
+import { type Route } from './+types/youtube'
 
 const DEFAULT_PLAYLIST_ID = 'PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
 
@@ -70,8 +70,9 @@ export const links: LinksFunction = () => {
 	return youTubeEmbedLinks()
 }
 
-export default function YouTubePage() {
-	const { playlistId } = useLoaderData<typeof loader>()
+export default function YouTubePage({
+	loaderData: { playlistId },
+}: Route.ComponentProps) {
 	const [searchParams] = useSearchParams()
 	const selectedVideoId = parseVideoId(searchParams.get('video'))
 	const startSeconds = parseTimestampSeconds(searchParams.get('t'))
