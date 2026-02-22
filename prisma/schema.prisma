@@ -80,7 +80,12 @@ model Call {
   isAnonymous Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  base64      String
+  // Preferred: store audio in R2 and keep a small DB row.
+  audioKey         String?
+  audioContentType String?
+  audioSize        Int?
+  // Legacy fallback: base64 data URL stored in the DB (pre-R2 migration).
+  base64      String?
   episodeDraft CallKentEpisodeDraft?
 
   @@index([createdAt])
@@ -113,6 +118,10 @@ model CallKentEpisodeDraft {
   // The final stitched mp3 (base64 data URL), generated before publish.
   // Note: we do not persist the raw admin response audio; re-record to regenerate.
   episodeBase64  String?
+  // Preferred: store episode audio in R2 and proxy it for playback/publish.
+  episodeAudioKey         String?
+  episodeAudioContentType String?
+  episodeAudioSize        Int?
 
   // Generated before publish so AI can write metadata; admin can edit.
   transcript    String?

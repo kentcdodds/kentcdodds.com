@@ -1,9 +1,9 @@
 import { prisma } from '#app/utils/prisma.server.ts'
-
-function bufferToMp3DataUrl(buffer: Buffer) {
-	// Consistent with existing call recordings, which are stored as data URLs.
-	return `data:audio/mpeg;base64,${buffer.toString('base64')}`
-}
+import {
+	getAudioBuffer,
+	parseBase64DataUrl,
+	putEpisodeDraftAudioFromBuffer,
+} from '#app/utils/call-kent-audio-storage.server.ts'
 
 function mp3DataUrlToBuffer(mp3DataUrl: string) {
 	const [, b64] = mp3DataUrl.split(',', 2)
@@ -24,9 +24,11 @@ export async function startCallKentEpisodeDraftProcessing(
 			include: {
 				call: {
 					select: {
+						id: true,
 						title: true,
 						notes: true,
-						base64: true,
+						audioKey: true,
+						base64: true, // legacy fallback (pre-R2)
 					},
 				},
 			},
@@ -44,10 +46,35 @@ export async function startCallKentEpisodeDraftProcessing(
 			import('#app/utils/cloudflare-ai-call-kent-metadata.server.ts'),
 		])
 
+		// Caller audio (from R2 or legacy base64)
+		let callAudio: Buffer | null = null
+		if (draft.call.audioKey) {
+			callAudio = await getAudioBuffer({ key: draft.call.audioKey })
+		} else if (draft.call.base64) {
+			callAudio = parseBase64DataUrl(draft.call.base64).buffer
+		}
+		if (!callAudio) {
+			throw new Error('Call audio is missing (no R2 key and no legacy base64).')
+		}
+
 		// Step 1: episode audio (stitch + persist) if needed
 		let episodeMp3: Buffer
-		if (draft.episodeBase64) {
+		if (draft.episodeAudioKey) {
+			episodeMp3 = await getAudioBuffer({ key: draft.episodeAudioKey })
+		} else if (draft.episodeBase64) {
 			episodeMp3 = mp3DataUrlToBuffer(draft.episodeBase64)
+
+			// Opportunistically migrate legacy episodeBase64 into R2 storage.
+			const stored = await putEpisodeDraftAudioFromBuffer({ draftId, mp3: episodeMp3 })
+			await prisma.callKentEpisodeDraft.updateMany({
+				where: { id: draftId, status: 'PROCESSING', episodeAudioKey: null },
+				data: {
+					episodeAudioKey: stored.key,
+					episodeAudioContentType: stored.contentType,
+					episodeAudioSize: stored.size,
+					episodeBase64: null,
+				},
+			})
 		} else {
 			if (!responseBase64) {
 				throw new Error(
@@ -61,12 +88,19 @@ export async function startCallKentEpisodeDraftProcessing(
 			})
 			if (step1.count !== 1) return
 
-			episodeMp3 = await createEpisodeAudio(draft.call.base64, responseBase64)
-			const episodeBase64 = bufferToMp3DataUrl(episodeMp3)
+			const responseAudio = parseBase64DataUrl(responseBase64).buffer
+			episodeMp3 = await createEpisodeAudio(callAudio, responseAudio)
+			const stored = await putEpisodeDraftAudioFromBuffer({ draftId, mp3: episodeMp3 })
 
 			const step2 = await prisma.callKentEpisodeDraft.updateMany({
 				where: { id: draftId, status: 'PROCESSING' },
-				data: { episodeBase64, step: 'TRANSCRIBING' },
+				data: {
+					episodeAudioKey: stored.key,
+					episodeAudioContentType: stored.contentType,
+					episodeAudioSize: stored.size,
+					episodeBase64: null,
+					step: 'TRANSCRIBING',
+				},
 			})
 			if (step2.count !== 1) return
 		}

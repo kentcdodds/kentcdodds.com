@@ -470,15 +470,35 @@ async function createCall({
 			return json(actionData, 400)
 		}
 
-		const createdCall = await prisma.call.create({
-			data: {
-				title,
-				notes: notes?.trim() || null,
-				userId: user.id,
-				base64: audio,
-				isAnonymous,
-			},
-		})
+		const [{ randomUUID }, { deleteAudioObject, putCallAudioFromDataUrl }] =
+			await Promise.all([
+			import('node:crypto'),
+			import('#app/utils/call-kent-audio-storage.server.ts'),
+		])
+
+		const callId = randomUUID()
+		const stored = await putCallAudioFromDataUrl({ callId, dataUrl: audio })
+		let createdCall: { id: string }
+		try {
+			createdCall = await prisma.call.create({
+				data: {
+					id: callId,
+					title,
+					notes: notes?.trim() || null,
+					userId: user.id,
+					isAnonymous,
+					audioKey: stored.key,
+					audioContentType: stored.contentType,
+					audioSize: stored.size,
+					base64: null,
+				},
+				select: { id: true },
+			})
+		} catch (error: unknown) {
+			// Best-effort cleanup so we don't orphan R2 objects.
+			await deleteAudioObject({ key: stored.key }).catch(() => {})
+			throw error
+		}
 
 		try {
 			const env = getEnv()
@@ -536,12 +556,14 @@ async function publishCall({
 			{ sendEmail },
 			{ requireAdminUser },
 			{ createEpisode },
+			{ deleteAudioObject, getAudioBuffer, parseBase64DataUrl },
 		] = await Promise.all([
 			import('#app/utils/markdown.server.ts'),
 			import('#app/utils/prisma.server.ts'),
 			import('#app/utils/send-email.server.ts'),
 			import('#app/utils/session.server.ts'),
 			import('#app/utils/transistor.server.ts'),
+			import('#app/utils/call-kent-audio-storage.server.ts'),
 		])
 
 		await requireAdminUser(request)
@@ -607,9 +629,16 @@ async function publishCall({
 		const description = (formDescription?.trim() || draft.description || '').trim()
 		const keywords = (formKeywords?.trim() || draft.keywords || '').trim()
 		const transcriptText = (formTranscript?.trim() || draft.transcript || '').trim()
+		const episodeAudioKey = draft.episodeAudioKey
 		const episodeBase64 = draft.episodeBase64
 
-		if (!title || !description || !keywords || !transcriptText || !episodeBase64) {
+		if (
+			!title ||
+			!description ||
+			!keywords ||
+			!transcriptText ||
+			(!episodeAudioKey && !episodeBase64)
+		) {
 			const searchParams = new URLSearchParams()
 			searchParams.set(
 				'error',
@@ -618,18 +647,21 @@ async function publishCall({
 			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 		}
 
-		const base64PayloadMatch = episodeBase64.match(/^data:[^;]+;base64,(.+)$/)
-		const base64Payload = base64PayloadMatch?.[1]
-		if (!base64Payload) {
-			const searchParams = new URLSearchParams()
-			searchParams.set(
-				'error',
-				'Draft episode audio is invalid. Please undo and re-record your response.',
-			)
-			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		let episodeAudio: Buffer
+		if (episodeAudioKey) {
+			episodeAudio = await getAudioBuffer({ key: episodeAudioKey })
+		} else {
+			try {
+				episodeAudio = parseBase64DataUrl(episodeBase64!).buffer
+			} catch {
+				const searchParams = new URLSearchParams()
+				searchParams.set(
+					'error',
+					'Draft episode audio is invalid. Please undo and re-record your response.',
+				)
+				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+			}
 		}
-
-		const episodeAudio = Buffer.from(base64Payload, 'base64')
 		const summaryName = call.isAnonymous ? 'Anonymous' : call.user.firstName
 		const published = await createEpisode({
 			request,
@@ -696,6 +728,14 @@ ${episodeMarkdown}
 			throw error
 		}
 
+		// Best-effort cleanup of stored audio blobs after publish.
+		const keysToDelete = [call.audioKey, draft.episodeAudioKey].filter(
+			(k): k is string => typeof k === 'string' && k.length > 0,
+		)
+		await Promise.all(
+			keysToDelete.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+		)
+
 		return redirect('/calls')
 	} catch (error: unknown) {
 		// If createEpisode already ran, log the episode ID for manual cleanup.
@@ -741,6 +781,18 @@ async function createEpisodeDraft({
 	const call = await prisma.call.findFirst({ where: { id: callId } })
 	if (!call) return redirectCallNotFound()
 
+	// If we're replacing a draft, clean up the old stored audio blob.
+	const existingDraft = await prisma.callKentEpisodeDraft.findFirst({
+		where: { callId },
+		select: { episodeAudioKey: true },
+	})
+	if (existingDraft?.episodeAudioKey) {
+		const { deleteAudioObject } = await import(
+			'#app/utils/call-kent-audio-storage.server.ts'
+		)
+		await deleteAudioObject({ key: existingDraft.episodeAudioKey }).catch(() => {})
+	}
+
 	// Replace any existing draft so "re-record response" is safe and predictable.
 	const [, draft] = await prisma.$transaction([
 		prisma.callKentEpisodeDraft.deleteMany({ where: { callId } }),
@@ -776,6 +828,22 @@ async function undoEpisodeDraft({
 		import('#app/utils/session.server.ts'),
 	])
 	await requireAdminUser(request)
+
+	const drafts = await prisma.callKentEpisodeDraft.findMany({
+		where: { callId },
+		select: { episodeAudioKey: true },
+	})
+	if (drafts.some((d) => d.episodeAudioKey)) {
+		const { deleteAudioObject } = await import(
+			'#app/utils/call-kent-audio-storage.server.ts'
+		)
+		await Promise.all(
+			drafts
+				.map((d) => d.episodeAudioKey)
+				.filter((k): k is string => typeof k === 'string' && k.length > 0)
+				.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+		)
+	}
 	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
 	return redirect(`/calls/admin/${callId}`)
 }
@@ -850,11 +918,30 @@ async function deleteCall({
 		import('#app/utils/session.server.ts'),
 	])
 	await requireAdminUser(request)
-	const call = await prisma.call.findFirst({ where: { id: callId } })
+	const call = await prisma.call.findFirst({
+		where: { id: callId },
+		select: {
+			id: true,
+			audioKey: true,
+			episodeDraft: { select: { episodeAudioKey: true } },
+		},
+	})
 	if (!call) {
 		return redirectCallNotFound()
 	}
 	await prisma.call.delete({ where: { id: callId } })
+
+	const keysToDelete = [call.audioKey, call.episodeDraft?.episodeAudioKey].filter(
+		(k): k is string => typeof k === 'string' && k.length > 0,
+	)
+	if (keysToDelete.length) {
+		const { deleteAudioObject } = await import(
+			'#app/utils/call-kent-audio-storage.server.ts'
+		)
+		await Promise.all(
+			keysToDelete.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+		)
+	}
 	return redirect('/calls/admin')
 }
 

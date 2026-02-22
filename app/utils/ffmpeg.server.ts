@@ -9,7 +9,7 @@ const asset = (...p: Array<string>) =>
 const cache = (...p: Array<string>) =>
 	path.join(process.cwd(), '.cache/calls', ...p)
 
-async function createEpisodeAudio(callBase64: string, responseBase64: string) {
+async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Array) {
 	const id = uuid.v4()
 	const cacheDir = cache(id)
 	fsExtra.ensureDirSync(cacheDir)
@@ -17,11 +17,8 @@ async function createEpisodeAudio(callBase64: string, responseBase64: string) {
 	const responsePath = cache(id, 'response.mp3')
 	const outputPath = cache(id, 'output.mp3')
 
-	const callBuffer = Buffer.from(callBase64.split(',')[1]!, 'base64')
-	const responseBuffer = Buffer.from(responseBase64.split(',')[1]!, 'base64')
-
-	await fs.promises.writeFile(callPath, callBuffer)
-	await fs.promises.writeFile(responsePath, responseBuffer)
+	await fs.promises.writeFile(callPath, callAudio)
+	await fs.promises.writeFile(responsePath, responseAudio)
 
 	await new Promise((resolve, reject) => {
 		const introPath = asset('call-kent/intro.mp3')

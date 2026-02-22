@@ -37,7 +37,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		where: { id: params.callId },
 		select: {
 			createdAt: true,
-			base64: true,
 			notes: true,
 			title: true,
 			id: true,
@@ -48,6 +47,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					status: true,
 					step: true,
 					errorMessage: true,
+					episodeAudioKey: true,
 					episodeBase64: true,
 					transcript: true,
 					title: true,
@@ -66,22 +66,36 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		searchParams.set('message', 'Call not found')
 		return redirect(`/calls/admin?${searchParams.toString()}`)
 	}
+	const episodeDraft = call.episodeDraft
+	const hasEpisodeAudio = Boolean(episodeDraft?.episodeAudioKey || episodeDraft?.episodeBase64)
+	const episodeAudioUrl = hasEpisodeAudio
+		? `/resources/calls/draft-episode-audio?callId=${call.id}`
+		: null
 	return json({
-		call: { ...call, formattedCreatedAt: formatDate(call.createdAt) },
+		call: {
+			...call,
+			formattedCreatedAt: formatDate(call.createdAt),
+			episodeDraft: episodeDraft
+				? {
+						...episodeDraft,
+						// Don’t send the storage key to the client.
+						episodeAudioKey: null,
+								// Don’t send the legacy base64 audio to the client either.
+								episodeBase64: null,
+						hasEpisodeAudio,
+						episodeAudioUrl,
+					}
+				: null,
+		},
 		error,
 		shouldUseSampleAudio,
 	})
 }
 
 function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
-	const [audioURL, setAudioURL] = React.useState<string | null>(null)
 	const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
 	const [playbackRate, setPlaybackRate] = React.useState(2)
 	const dc = useDoubleCheck()
-	React.useEffect(() => {
-		const audio = new Audio(call.base64)
-		setAudioURL(audio.src)
-	}, [call.base64])
 
 	React.useEffect(() => {
 		if (!audioEl) return
@@ -146,43 +160,41 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 			</div>
 
 			{/* Audio Player */}
-			{audioURL ? (
-				<div className="rounded-lg bg-gray-200 p-4 dark:bg-gray-700">
-					<H6 as="h3" className="mb-3">
-						Listen to Call
-					</H6>
-					<div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-						<audio
-							className="w-full flex-1"
-							ref={(el) => setAudioEl(el)}
-							src={audioURL}
-							controls
-							preload="metadata"
+			<div className="rounded-lg bg-gray-200 p-4 dark:bg-gray-700">
+				<H6 as="h3" className="mb-3">
+					Listen to Call
+				</H6>
+				<div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+					<audio
+						className="w-full flex-1"
+						ref={(el) => setAudioEl(el)}
+						src={`/resources/calls/call-audio?callId=${call.id}`}
+						controls
+						preload="metadata"
+					/>
+					<div className="flex items-center gap-2 lg:w-auto">
+						<label
+							htmlFor="playbackRate"
+							className="text-sm whitespace-nowrap text-gray-500 dark:text-slate-400"
+						>
+							Speed:
+						</label>
+						<input
+							id="playbackRate"
+							type="range"
+							min="0.5"
+							max="3"
+							step="0.1"
+							value={playbackRate}
+							onChange={(e) => setPlaybackRate(Number(e.target.value))}
+							className="w-20"
 						/>
-						<div className="flex items-center gap-2 lg:w-auto">
-							<label
-								htmlFor="playbackRate"
-								className="text-sm whitespace-nowrap text-gray-500 dark:text-slate-400"
-							>
-								Speed:
-							</label>
-							<input
-								id="playbackRate"
-								type="range"
-								min="0.5"
-								max="3"
-								step="0.1"
-								value={playbackRate}
-								onChange={(e) => setPlaybackRate(Number(e.target.value))}
-								className="w-20"
-							/>
-							<span className="w-10 text-sm font-medium text-gray-700 dark:text-slate-300">
-								{playbackRate}x
-							</span>
-						</div>
+						<span className="w-10 text-sm font-medium text-gray-700 dark:text-slate-300">
+							{playbackRate}x
+						</span>
 					</div>
 				</div>
-			) : null}
+			</div>
 		</section>
 	)
 }
@@ -343,13 +355,13 @@ function DraftEditor({
 	const disabled = draft.status !== 'READY'
 	return (
 		<div className="flex flex-col gap-6">
-			{draft.episodeBase64 ? (
+			{draft.hasEpisodeAudio && draft.episodeAudioUrl ? (
 				<div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
 					<H6 as="h3" className="mb-3">
 						Episode audio preview
 					</H6>
 					<audio
-						src={draft.episodeBase64}
+						src={draft.episodeAudioUrl}
 						controls
 						preload="metadata"
 						className="w-full"
@@ -537,13 +549,15 @@ function RecordingDetailScreen({ data }: { data: Route.ComponentProps['loaderDat
 									type="button"
 									variant="secondary"
 									onClick={() => {
-										const [meta, b64] = data.call.base64.split(',', 2)
-										const mime =
-											meta?.match(/^data:(.+);base64$/)?.[1] ?? 'audio/mpeg'
-										const bytes = Uint8Array.from(atob(b64 ?? ''), (c) =>
-											c.charCodeAt(0),
-										)
-										setResponseAudio(new Blob([bytes], { type: mime }))
+										void (async () => {
+											const res = await fetch(
+												`/resources/calls/call-audio?callId=${data.call.id}`,
+											)
+											if (!res.ok) return
+											const mime = res.headers.get('Content-Type') ?? 'audio/mpeg'
+											const bytes = await res.arrayBuffer()
+											setResponseAudio(new Blob([bytes], { type: mime }))
+										})()
 									}}
 								>
 									Use sample response audio
