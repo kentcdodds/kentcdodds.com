@@ -130,7 +130,10 @@ export async function action({ request }: Route.ActionArgs) {
 				verificationUrl: verificationUrl.toString(),
 				domainUrl,
 			})
-		} catch (error) {
+		} catch (error: unknown) {
+			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+			// If we swallow it, the email will never get sent.
+			if (isResponse(error)) throw error
 			// Avoid leaving an unused verification record around if email sending fails.
 			try {
 				await ensurePrimary()
