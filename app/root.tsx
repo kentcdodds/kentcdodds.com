@@ -37,6 +37,7 @@ import { getClientSession } from './utils/client.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
+import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
 import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
@@ -107,11 +108,21 @@ export const links: LinksFunction = () => {
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const session = await getSession(request)
-	const [user, clientSession, loginInfoSession, primaryInstance] = await Promise.all([
+	const [
+		user,
+		clientSession,
+		loginInfoSession,
+		primaryInstance,
+		latestPodcastSeasonLinks,
+	] = await Promise.all([
 		session.getUser({ timings }),
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
 		getInstanceInfo().then((i) => i.primaryInstance),
+		getLatestPodcastSeasonLinks({ request, timings }).catch(() => ({
+			chats: { latestSeasonNumber: null, latestSeasonPath: '/chats' },
+			calls: { latestSeasonNumber: null, latestSeasonPath: '/calls' },
+		})),
 	])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
@@ -122,6 +133,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
+		latestPodcastSeasonLinks,
 		ENV: getEnv(),
 		randomFooterImageKey,
 		requestInfo: {
