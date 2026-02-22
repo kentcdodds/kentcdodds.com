@@ -1,11 +1,11 @@
 import { createReadableStreamFromReadable } from '@react-router/node'
-import { prisma } from '#app/utils/prisma.server.ts'
-import { requireAdminUser } from '#app/utils/session.server.ts'
 import {
 	getAudioBuffer,
 	getAudioStream,
 	parseBase64DataUrl,
 } from '#app/utils/call-kent-audio-storage.server.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/draft-episode-audio'
 
 function parseRangeHeader(rangeHeader: string, size: number) {
@@ -59,7 +59,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 			const totalSize = buffer.byteLength
 			const range = rangeHeader ? parseRangeHeader(rangeHeader, totalSize) : null
 			const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
-			return new Response(body, {
+			const bodyBytes = new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
+			return new Response(bodyBytes, {
 				status: range ? 206 : 200,
 				headers: {
 					'Content-Type': contentType,
@@ -102,7 +103,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const size = parsed.buffer.byteLength
 	const range = rangeHeader ? parseRangeHeader(rangeHeader, size) : null
 	const body = range ? parsed.buffer.subarray(range.start, range.end + 1) : parsed.buffer
-	return new Response(body, {
+	const bodyBytes = new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
+	return new Response(bodyBytes, {
 		status: range ? 206 : 200,
 		headers: {
 			'Content-Type': contentType,
