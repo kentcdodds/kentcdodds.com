@@ -410,7 +410,6 @@ export async function action({ request }: Route.ActionArgs) {
 	)
 }
 
-export default function SearchAdminRoute() {
 export default function SearchAdminRoute({ loaderData: data }: Route.ComponentProps) {
 	const [searchParams] = useSearchParams()
 	const submit = useSubmit()
