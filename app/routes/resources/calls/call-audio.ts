@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream'
 import { createReadableStreamFromReadable } from '@react-router/node'
 import {
 	getAudioBuffer,
@@ -62,8 +63,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 			size = buffer.byteLength
 			const range = rangeHeader ? parseRangeHeader(rangeHeader, size) : null
 			const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
-			const bodyBytes = new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
-			return new Response(bodyBytes, {
+			const stream = Readable.from(body)
+			return new Response(createReadableStreamFromReadable(stream), {
 				status: range ? 206 : 200,
 				headers: {
 					'Content-Type': contentType,
@@ -107,8 +108,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 	size = parsed.buffer.byteLength
 	const range = rangeHeader ? parseRangeHeader(rangeHeader, size) : null
 	const body = range ? parsed.buffer.subarray(range.start, range.end + 1) : parsed.buffer
-	const bodyBytes = new Uint8Array(body.buffer, body.byteOffset, body.byteLength)
-	return new Response(bodyBytes, {
+	const stream = Readable.from(body)
+	return new Response(createReadableStreamFromReadable(stream), {
 		status: range ? 206 : 200,
 		headers: {
 			'Content-Type': contentType,
