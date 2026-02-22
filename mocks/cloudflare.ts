@@ -962,7 +962,7 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 			// Cloudflare's model-specific response shapes vary; the app code accepts
 			// a `result.response` string containing JSON.
 			const messagesRaw = body?.messages
-			const hasMessages = Array.isArray(messagesRaw)
+			const hasMessages = Array.isArray(messagesRaw) && messagesRaw.length > 0
 			const promptRaw = body?.prompt
 			const hasPrompt =
 				typeof promptRaw === 'string' && promptRaw.trim().length > 0

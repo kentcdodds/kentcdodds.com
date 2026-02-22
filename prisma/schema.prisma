@@ -133,7 +133,6 @@ model CallKentEpisodeDraft {
   callId        String   @unique
 
   @@index([status, updatedAt])
-  @@index([callId])
 }
 
 model CallKentCallerEpisode {
