@@ -17,6 +17,15 @@ const SENTRY_PROJECT_IDS = process.env.SENTRY_PROJECT_ID
 	: []
 
 export async function action({ request }: Route.ActionArgs) {
+	// `start:mocks` (used in CI + local e2e) runs with `NODE_ENV=production` and
+	// `MOCKS=true`. In that mode we don't want/need to proxy Sentry envelopes to
+	// the real upstream ingest API.
+	if (process.env.MOCKS === 'true') {
+		// Drain the body to avoid hanging the underlying connection.
+		await request.text().catch(() => '')
+		return new Response(null, { status: 204 })
+	}
+
 	if (!SENTRY_HOST) {
 		throw new Response('Sentry is not configured', { status: 404 })
 	}
