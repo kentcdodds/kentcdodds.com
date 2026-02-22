@@ -1,4 +1,4 @@
-import { data as json, redirect, Form, useActionData, useLoaderData } from 'react-router'
+import { data as json, redirect, Form } from 'react-router'
 import { Button, ButtonLink } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -114,10 +114,10 @@ export async function action({ request }: Route.ActionArgs) {
 	})
 }
 
-export default function PasswordRoute() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
-	const actionData = useActionData<Route.ComponentProps['actionData']>()
-
+export default function PasswordRoute({
+	loaderData: data,
+	actionData,
+}: Route.ComponentProps) {
 	return (
 		<div className="mt-24 pt-6">
 			<HeaderSection

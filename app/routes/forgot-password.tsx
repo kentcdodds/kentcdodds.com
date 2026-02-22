@@ -1,5 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { data as json, redirect, Form, useLoaderData, type MetaFunction } from 'react-router'
+import { data as json, redirect, Form, type MetaFunction } from 'react-router'
 import { Button, ButtonLink } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -119,8 +119,7 @@ export async function action({ request }: Route.ActionArgs) {
 	return redirect('/reset-password', { headers: await loginSession.getHeaders() })
 }
 
-export default function ForgotPassword() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function ForgotPassword({ loaderData: data }: Route.ComponentProps) {
 	return (
 		<div className="mt-24 pt-6">
 			<HeaderSection
