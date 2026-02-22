@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, expect, test, vi } from 'vitest'
+import { AI_VOICE_DISCLOSURE_PREFIX } from '#app/utils/call-kent-text-to-speech.ts'
 
 const synthesizeSpeechWithWorkersAi = vi.fn(
 	async ({
@@ -84,6 +85,8 @@ describe('/resources/calls/text-to-speech cache', () => {
 		const res1 = (await action({ request: req1 } as any)) as Response
 		expect(res1.ok).toBe(true)
 		const bytes1 = new Uint8Array(await res1.arrayBuffer())
+		const firstCallArgs = synthesizeSpeechWithWorkersAi.mock.calls[0]?.[0]
+		expect(firstCallArgs?.text?.startsWith(AI_VOICE_DISCLOSURE_PREFIX)).toBe(true)
 
 		// Same content, different whitespace: should hit cache.
 		const req2 = makeRequest({
