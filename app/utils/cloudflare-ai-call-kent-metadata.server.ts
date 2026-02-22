@@ -27,12 +27,9 @@ function getCloudflareWorkersAiAuth() {
 
 export function isCloudflareCallKentMetadataConfigured() {
 	const { accountId, apiToken } = getCloudflareWorkersAiAuth()
-	return Boolean(
-		accountId &&
-			apiToken &&
-			(process.env.CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL ||
-				process.env.CLOUDFLARE_AI_TEXT_MODEL),
-	)
+	// A model always resolves (hardcoded default in the generator), so only
+	// account credentials gate availability.
+	return Boolean(accountId && apiToken)
 }
 
 function extractJsonObjectFromText(text: string) {

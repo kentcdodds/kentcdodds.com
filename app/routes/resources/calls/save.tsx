@@ -487,10 +487,26 @@ async function createCall({
 			const { firstName, team, discordId } = user
 			const userMention = discordId ? `<@!${discordId}>` : firstName
 			const emoji = teamEmoji[getOptionalTeam(team)]
-			const notesBlock = notes?.trim()
-				? `\n\nNotes:\n${notes.trim()}`
-				: ''
-			const message = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"${isAnonymous ? ' (anonymous)' : ''}${notesBlock}\n\n${domainUrl}/calls/admin/${createdCall.id}`
+			const baseMessage = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"${isAnonymous ? ' (anonymous)' : ''}`
+			const callAdminUrl = `${domainUrl}/calls/admin/${createdCall.id}`
+			const discordMaxLength = 2000
+			const notesHeader = `\n\nNotes:\n`
+			const trimmedNotes = notes?.trim()
+
+			let message = `${baseMessage}\n\n${callAdminUrl}`
+			if (trimmedNotes) {
+				// Keep under Discord's hard 2000-character limit by truncating notes.
+				const maxNotesLength =
+					discordMaxLength -
+					(baseMessage.length + notesHeader.length + 2 + callAdminUrl.length) // +2 for "\n\n" before URL
+				if (maxNotesLength > 0) {
+					const truncatedNotes =
+						trimmedNotes.length > maxNotesLength
+							? `${trimmedNotes.slice(0, Math.max(0, maxNotesLength - 3))}...`
+							: trimmedNotes
+					message = `${baseMessage}${notesHeader}${truncatedNotes}\n\n${callAdminUrl}`
+				}
+			}
 			void sendMessageFromDiscordBot(channelId, message)
 		} catch (error: unknown) {
 			console.error('Problem sending a call message', error)
@@ -512,6 +528,7 @@ async function publishCall({
 	request: Request
 	formData: FormData
 }) {
+	let publishedTransistorEpisodeId: string | null = null
 	try {
 		const [
 			{ markdownToHtml },
@@ -559,21 +576,37 @@ async function publishCall({
 			formTranscript !== null
 
 		if (shouldUpdateFromForm) {
-			await prisma.callKentEpisodeDraft.update({
-				where: { callId },
-				data: {
-					title: formTitle?.trim() || null,
-					description: formDescription?.trim() || null,
-					keywords: formKeywords?.trim() || null,
-					transcript: formTranscript?.trim() || null,
-				},
-			})
+			const updateData: {
+				title?: string
+				description?: string
+				keywords?: string
+				transcript?: string
+			} = {}
+
+			const nextTitle = formTitle?.trim()
+			const nextDescription = formDescription?.trim()
+			const nextKeywords = formKeywords?.trim()
+			const nextTranscript = formTranscript?.trim()
+
+			// Only update when a non-empty value is provided; avoids wiping the draft
+			// if someone clicks Publish with an empty field.
+			if (nextTitle) updateData.title = nextTitle
+			if (nextDescription) updateData.description = nextDescription
+			if (nextKeywords) updateData.keywords = nextKeywords
+			if (nextTranscript) updateData.transcript = nextTranscript
+
+			if (Object.keys(updateData).length) {
+				await prisma.callKentEpisodeDraft.update({
+					where: { callId },
+					data: updateData,
+				})
+			}
 		}
 
-		const title = (formTitle ?? draft.title ?? '').trim()
-		const description = (formDescription ?? draft.description ?? '').trim()
-		const keywords = (formKeywords ?? draft.keywords ?? '').trim()
-		const transcriptText = (formTranscript ?? draft.transcript ?? '').trim()
+		const title = (formTitle?.trim() || draft.title || '').trim()
+		const description = (formDescription?.trim() || draft.description || '').trim()
+		const keywords = (formKeywords?.trim() || draft.keywords || '').trim()
+		const transcriptText = (formTranscript?.trim() || draft.transcript || '').trim()
 		const episodeBase64 = draft.episodeBase64
 
 		if (!title || !description || !keywords || !transcriptText || !episodeBase64) {
@@ -585,7 +618,18 @@ async function publishCall({
 			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 		}
 
-		const episodeAudio = Buffer.from(episodeBase64.split(',')[1]!, 'base64')
+		const base64PayloadMatch = episodeBase64.match(/^data:[^;]+;base64,(.+)$/)
+		const base64Payload = base64PayloadMatch?.[1]
+		if (!base64Payload) {
+			const searchParams = new URLSearchParams()
+			searchParams.set(
+				'error',
+				'Draft episode audio is invalid. Please undo and re-record your response.',
+			)
+			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		}
+
+		const episodeAudio = Buffer.from(base64Payload, 'base64')
 		const summaryName = call.isAnonymous ? 'Anonymous' : call.user.firstName
 		const published = await createEpisode({
 			request,
@@ -598,9 +642,13 @@ async function publishCall({
 			isAnonymous: call.isAnonymous,
 			transcriptText,
 		})
+		publishedTransistorEpisodeId = published.transistorEpisodeId
 
 		if (published.episodeUrl) {
 			try {
+				const episodeMarkdown = published.imageUrl
+					? `[![${title}](${published.imageUrl})](${published.episodeUrl})`
+					: `[${title}](${published.episodeUrl})`
 				void sendEmail({
 					to: call.user.email,
 					from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
@@ -610,7 +658,7 @@ Hi ${call.user.firstName},
 
 Thanks for your call. Kent just replied and the episode has been published to the podcast!
 
-[![${title}](${published.imageUrl ?? ''})](${published.episodeUrl})
+${episodeMarkdown}
           `.trim(),
 				})
 			} catch (error: unknown) {
@@ -623,22 +671,41 @@ Thanks for your call. Kent just replied and the episode has been published to th
 
 		// Persist a per-caller record so users can see their episodes on /me even
 		// after the raw call record is removed.
-		await prisma.callKentCallerEpisode.create({
-			data: {
-				userId: call.userId,
-				callTitle: call.title,
-				callNotes: call.notes,
-				isAnonymous: call.isAnonymous,
-				transistorEpisodeId: published.transistorEpisodeId,
-			},
-		})
-
-		await prisma.call.delete({
-			where: { id: call.id },
-		})
+		try {
+			await prisma.$transaction([
+				prisma.callKentCallerEpisode.create({
+					data: {
+						userId: call.userId,
+						callTitle: call.title,
+						callNotes: call.notes,
+						isAnonymous: call.isAnonymous,
+						transistorEpisodeId: published.transistorEpisodeId,
+					},
+				}),
+				prisma.call.delete({ where: { id: call.id } }),
+			])
+		} catch (error: unknown) {
+			console.error(
+				'Transistor episode already created but DB cleanup failed.',
+				{
+					transistorEpisodeId: published.transistorEpisodeId,
+					callId: call.id,
+				},
+				error,
+			)
+			throw error
+		}
 
 		return redirect('/calls')
 	} catch (error: unknown) {
+		// If createEpisode already ran, log the episode ID for manual cleanup.
+		if (publishedTransistorEpisodeId) {
+			console.error(
+				'Publish failed after Transistor episode creation.',
+				{ transistorEpisodeId: publishedTransistorEpisodeId },
+				error,
+			)
+		}
 		const { getErrorMessage } = await import('#app/utils/misc.ts')
 		const callId = getStringFormValue(formData, 'callId')
 		const searchParams = new URLSearchParams()
@@ -675,12 +742,14 @@ async function createEpisodeDraft({
 	if (!call) return redirectCallNotFound()
 
 	// Replace any existing draft so "re-record response" is safe and predictable.
-	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
-	const draft = await prisma.callKentEpisodeDraft.create({
-		data: {
-			callId,
-		},
-	})
+	const [, draft] = await prisma.$transaction([
+		prisma.callKentEpisodeDraft.deleteMany({ where: { callId } }),
+		prisma.callKentEpisodeDraft.create({
+			data: {
+				callId,
+			},
+		}),
+	])
 
 	const { startCallKentEpisodeDraftProcessing } = await import(
 		'#app/utils/call-kent-episode-draft.server.ts'
@@ -733,15 +802,28 @@ async function updateEpisodeDraft({
 	await requireAdminUser(request)
 
 	try {
-		await prisma.callKentEpisodeDraft.update({
-			where: { callId },
-			data: {
-				title: title?.trim() || null,
-				description: description?.trim() || null,
-				keywords: keywords?.trim() || null,
-				transcript: transcript?.trim() || null,
-			},
-		})
+		const updateData: {
+			title?: string
+			description?: string
+			keywords?: string
+			transcript?: string
+		} = {}
+		const nextTitle = title?.trim()
+		const nextDescription = description?.trim()
+		const nextKeywords = keywords?.trim()
+		const nextTranscript = transcript?.trim()
+
+		if (nextTitle) updateData.title = nextTitle
+		if (nextDescription) updateData.description = nextDescription
+		if (nextKeywords) updateData.keywords = nextKeywords
+		if (nextTranscript) updateData.transcript = nextTranscript
+
+		if (Object.keys(updateData).length) {
+			await prisma.callKentEpisodeDraft.update({
+				where: { callId },
+				data: updateData,
+			})
+		}
 		return redirect(`/calls/admin/${callId}`)
 	} catch (error: unknown) {
 		const { getErrorMessage } = await import('#app/utils/misc.ts')

@@ -38,11 +38,8 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await mainContent.getByRole('button', { name: /accept/i }).click()
 	await mainContent.getByRole('textbox', { name: /title/i }).type(title)
 	await mainContent
-		.getByRole('textbox', { name: /description/i })
+		.getByRole('textbox', { name: /notes/i })
 		.type(faker.lorem.paragraph())
-	await mainContent
-		.getByRole('textbox', { name: /keywords/i })
-		.type(faker.lorem.words(3).split(' ').join(','))
 	await mainContent.getByRole('button', { name: /submit/i }).click()
 
 	// Wait for the redirect to confirm the call was created
@@ -70,7 +67,14 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await page.getByRole('button', { name: /stop/i }).click()
 
 	await page.getByRole('button', { name: /accept/i }).click()
-	await page.getByRole('button', { name: /submit/i }).click()
+	await page.getByRole('button', { name: /generate episode draft/i }).click()
+
+	// Wait for draft processing to finish and editor to appear.
+	await expect(page.getByLabel(/episode title/i)).toBeVisible({ timeout: 60_000 })
+
+	// Publish requires a double-confirmation click.
+	await page.getByRole('button', { name: /^publish episode$/i }).click()
+	await page.getByRole('button', { name: /publish \(sure\?\)/i }).click()
 	await expect(page).toHaveURL(/.*\/calls(\/|$)/)
 
 	// processing the audio takes a while, so let the timeout run

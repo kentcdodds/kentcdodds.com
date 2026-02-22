@@ -108,8 +108,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 				id: true,
 				transistorEpisodeId: true,
 				isAnonymous: true,
-				callTitle: true,
-				callNotes: true,
 				createdAt: true,
 			},
 			orderBy: { createdAt: 'desc' },

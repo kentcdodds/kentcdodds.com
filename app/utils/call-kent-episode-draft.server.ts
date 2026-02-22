@@ -24,11 +24,9 @@ export async function startCallKentEpisodeDraftProcessing(
 			include: {
 				call: {
 					select: {
-						id: true,
 						title: true,
 						notes: true,
 						base64: true,
-						user: { select: { id: true } },
 					},
 				},
 			},

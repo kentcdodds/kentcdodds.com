@@ -964,7 +964,8 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 			const messagesRaw = body?.messages
 			const hasMessages = Array.isArray(messagesRaw)
 			const promptRaw = body?.prompt
-			const hasPrompt = typeof promptRaw === 'string' && promptRaw.trim().length
+			const hasPrompt =
+				typeof promptRaw === 'string' && promptRaw.trim().length > 0
 			if (hasMessages || hasPrompt) {
 				return jsonOk({
 					response: JSON.stringify({
