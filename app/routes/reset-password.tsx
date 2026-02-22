@@ -9,15 +9,13 @@ import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getDomainUrl, isResponse } from '#app/utils/misc.ts'
+import { createAndSendPasswordResetVerificationEmail } from '#app/utils/password-reset.server.ts'
 import { getPasswordStrengthError, getPasswordHash } from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
-import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import {
 	consumeVerification,
 	consumeVerificationForTarget,
-	createVerification,
 } from '#app/utils/verification.server.ts'
 import { type Route } from './+types/reset-password'
 
@@ -126,43 +124,11 @@ export async function action({ request }: Route.ActionArgs) {
 			select: { id: true, team: true },
 		})
 		if (user) {
-			const domainUrl = getDomainUrl(request)
-			let verificationId: string | null = null
-			try {
-				const { verification, code } = await createVerification({
-					type: 'PASSWORD_RESET',
-					target: email,
-				})
-				verificationId = verification.id
-
-				const verificationUrl = new URL('/reset-password', domainUrl)
-				verificationUrl.searchParams.set('verification', verification.id)
-				verificationUrl.searchParams.set('code', code)
-
-				await sendPasswordResetEmail({
-					emailAddress: email,
-					verificationCode: code,
-					verificationUrl: verificationUrl.toString(),
-					domainUrl,
-					team: user.team,
-				})
-			} catch (error) {
-				// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-				// If we swallow it, the email will never get sent.
-				if (isResponse(error)) throw error
-				if (verificationId) {
-					try {
-						// Best effort: don't leave unused verifications around if email sending fails.
-						await prisma.verification.delete({ where: { id: verificationId } })
-					} catch (cleanupError) {
-						console.error(
-							'Failed to cleanup verification after password reset resend failure',
-							cleanupError,
-						)
-					}
-				}
-				console.error('Failed to resend password reset email', error)
-			}
+			await createAndSendPasswordResetVerificationEmail({
+				emailAddress: email,
+				team: user.team,
+				request,
+			})
 		}
 
 		loginSession.flashMessage(
