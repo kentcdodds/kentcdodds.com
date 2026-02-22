@@ -67,7 +67,7 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
-	const projectId = dsn.pathname.replace('/', '')
+	const projectId = dsn.pathname.slice(1)
 
 	invariantResponse(
 		dsn.hostname === SENTRY_HOST,
