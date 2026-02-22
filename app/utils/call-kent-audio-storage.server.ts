@@ -220,6 +220,20 @@ export async function putCallAudioFromDataUrl({
 	return await store.put({ key, body: buffer, contentType })
 }
 
+export async function putCallAudioFromBuffer({
+	callId,
+	audio,
+	contentType,
+}: {
+	callId: string
+	audio: Uint8Array
+	contentType: string
+}): Promise<PutAudioResult> {
+	const { store } = getStore()
+	const key = getCallAudioKey(callId, contentType)
+	return await store.put({ key, body: audio, contentType })
+}
+
 export async function putEpisodeDraftAudioFromBuffer({
 	draftId,
 	mp3,

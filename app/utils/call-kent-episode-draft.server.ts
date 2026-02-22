@@ -1,6 +1,7 @@
 import {
 	getAudioBuffer,
 	parseBase64DataUrl,
+	putCallAudioFromBuffer,
 	putEpisodeDraftAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
@@ -51,7 +52,27 @@ export async function startCallKentEpisodeDraftProcessing(
 		if (draft.call.audioKey) {
 			callAudio = await getAudioBuffer({ key: draft.call.audioKey })
 		} else if (draft.call.base64) {
-			callAudio = parseBase64DataUrl(draft.call.base64).buffer
+			const parsed = parseBase64DataUrl(draft.call.base64)
+			callAudio = parsed.buffer
+			// Best-effort migration of legacy DB-stored audio into R2/disk storage.
+			try {
+				const stored = await putCallAudioFromBuffer({
+					callId: draft.call.id,
+					audio: callAudio,
+					contentType: parsed.contentType,
+				})
+				await prisma.call.updateMany({
+					where: { id: draft.call.id, audioKey: null },
+					data: {
+						audioKey: stored.key,
+						audioContentType: stored.contentType,
+						audioSize: stored.size,
+						base64: null,
+					},
+				})
+			} catch {
+				// Keep going; we can still generate the episode from the legacy audio.
+			}
 		}
 		if (!callAudio) {
 			throw new Error('Call audio is missing (no R2 key and no legacy base64).')
