@@ -59,35 +59,28 @@ export function createRateLimitingMiddleware(
 	const generalRateLimit = rateLimit(rateLimitDefault)
 
 	return (req, res, next) => {
-		const strongestPaths = [
+		// These should match real app routes. Update alongside
+		// `npx react-router routes` output.
+		const strongestNonGetPaths = [
 			'/login',
 			'/signup',
-			'/verify',
+			'/oauth/authorize',
+			// Covers: /calls/admin, /cache/admin, /me/admin, /search/admin
 			'/admin',
-			'/onboarding',
-			'/reset-password',
-			'/settings/profile',
-			'/resources/login',
-			'/resources/verify',
+			'/resources/calls/save',
 			'/resources/webauthn',
 		]
 
 		if (req.method !== 'GET' && req.method !== 'HEAD') {
-			if (strongestPaths.some((p) => req.path.includes(p))) {
+			if (strongestNonGetPaths.some((p) => req.path.includes(p))) {
 				return strongestRateLimit(req, res, next)
 			}
 			return strongRateLimit(req, res, next)
 		}
 
-		// Magic link verification is a special case because it is a GET route that
-		// can have a token in the query string.
-		if (req.path.includes('/magic')) {
-			return strongestRateLimit(req, res, next)
-		}
-
-		// The verify route is a special case in Epic Stack because it's a GET route
-		// that can have a token in the query string.
-		if (req.path.includes('/verify')) {
+		// GET routes that can include sensitive tokens/codes in the query string.
+		const strongestGetPaths = ['/magic', '/discord/callback']
+		if (strongestGetPaths.some((p) => req.path.includes(p))) {
 			return strongestRateLimit(req, res, next)
 		}
 

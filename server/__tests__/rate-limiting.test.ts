@@ -98,6 +98,34 @@ describe('rate limiting (epic-stack style)', () => {
 		expect(tooMany.status).toBe(429)
 	})
 
+	it('uses strongest limiter for GET /discord/callback (oauth code in query)', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 10; i++) {
+			const r = await fetch(`${started.baseUrl}/discord/callback?code=abc`)
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(`${started.baseUrl}/discord/callback?code=abc`)
+		expect(tooMany.status).toBe(429)
+	})
+
+	it('uses strongest limiter for POST /resources/calls/save (large payload endpoint)', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 10; i++) {
+			const r = await fetch(`${started.baseUrl}/resources/calls/save`, {
+				method: 'POST',
+			})
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(`${started.baseUrl}/resources/calls/save`, {
+			method: 'POST',
+		})
+		expect(tooMany.status).toBe(429)
+	})
+
 	it('sets standard RateLimit headers and disables legacy X-RateLimit headers', async () => {
 		started = await startTestServer()
 
