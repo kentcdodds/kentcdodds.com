@@ -283,8 +283,20 @@ export async function action({ request }: Route.ActionArgs) {
 				console.error('Failed to tag subscriber on signup', error)
 			})
 
-		const session = await getSession(request)
-		await session.signIn(user)
+		let session: Awaited<ReturnType<typeof getSession>>
+		try {
+			session = await getSession(request)
+			await session.signIn(user)
+		} catch (error: unknown) {
+			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+			if (isResponse(error)) throw error
+			console.error('Signup succeeded but auto-login failed', error)
+			loginInfoSession.unsetSignupEmail()
+			loginInfoSession.flashMessage(
+				'Your account was created. Please log in to continue.',
+			)
+			return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+		}
 
 		let clientSession: Awaited<ReturnType<typeof getClientSession>> | null = null
 		try {
