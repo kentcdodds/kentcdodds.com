@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction, type MetaFunction, Link, useLoaderData } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, Link } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { CourseCard, SmallCourseCard } from '#app/components/course-card.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -55,8 +55,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-function CoursesHome() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+function CoursesHome({ loaderData: data }: Route.ComponentProps) {
 	return (
 		<>
 			<HeroSection

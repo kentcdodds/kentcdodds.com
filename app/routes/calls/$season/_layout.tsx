@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
-import { isRouteErrorResponse, Link, useLoaderData, Outlet, useMatches, useParams, data as json, type HeadersFunction } from 'react-router';
+import { isRouteErrorResponse, Link, Outlet, useMatches, useParams, data as json, type HeadersFunction } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -66,8 +66,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export default function CallsSeason() {
-	const { season } = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function CallsSeason({ loaderData }: Route.ComponentProps) {
+	const { season } = loaderData
 	const matches = useMatches()
 	const shouldReduceMotion = useReducedMotion()
 	const { sortOrder } = useCallsEpisodeUIState()

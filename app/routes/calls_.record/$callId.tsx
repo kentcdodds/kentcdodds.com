@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { data as json, redirect, type HeadersFunction, Form, useLoaderData } from 'react-router';
+import { data as json, redirect, type HeadersFunction, Form } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
@@ -63,8 +63,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export default function Screen() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function Screen({ loaderData: data }: Route.ComponentProps) {
 	const [audioURL, setAudioURL] = React.useState<string | null>(null)
 	const dc = useDoubleCheck()
 	React.useEffect(() => {

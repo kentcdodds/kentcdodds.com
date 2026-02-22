@@ -1,4 +1,4 @@
-import { data as json, redirect, type HeadersFunction, type MetaFunction, useLoaderData, useParams } from 'react-router';
+import { data as json, redirect, type HeadersFunction, type MetaFunction, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { IconLink } from '#app/components/icon-link.tsx'
 import { XIcon } from '#app/components/icons.tsx'
@@ -148,8 +148,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export default function Screen() {
-	const loaderData = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function Screen({ loaderData }: Route.ComponentProps) {
 	const params = useParams() as Params
 	const { episodes } = useCallsData()
 	const { requestInfo } = useRootData()

@@ -5,7 +5,7 @@ import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import {
-    isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useLocation, useNavigation, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
+    isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation, useNavigation, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
 import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
@@ -285,8 +285,7 @@ function CanonicalLink({
 	return <link rel="canonical" href={canonicalUrl} />
 }
 
-function App() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+function App({ loaderData: data }: { loaderData: Route.ComponentProps['loaderData'] }) {
 	const nonce = useNonce()
 	const [team] = useTeam()
 	const theme = useTheme()
@@ -365,11 +364,11 @@ function App() {
 	)
 }
 
-function AppWithProviders() {
+function AppWithProviders({ loaderData }: Route.ComponentProps) {
 	return (
 		<TeamProvider>
 			<HotkeysProvider>
-				<App />
+				<App loaderData={loaderData} />
 			</HotkeysProvider>
 		</TeamProvider>
 	)

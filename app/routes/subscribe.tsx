@@ -1,4 +1,4 @@
-import { data as json, type MetaFunction, Link, useLoaderData } from 'react-router';
+import { data as json, type MetaFunction, Link } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { MailIcon } from '#app/components/icons.tsx'
@@ -47,8 +47,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 	)
 }
 
-export default function SubscribeScreen() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function SubscribeScreen({
+	loaderData: data,
+}: Route.ComponentProps) {
 	const { userInfo } = useRootData()
 	const subscribedToNewsletter = userInfo?.kit?.tags.some(
 		({ name }) => name === 'Subscribed: general newsletter',

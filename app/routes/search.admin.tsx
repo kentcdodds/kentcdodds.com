@@ -6,7 +6,6 @@ import {
 	Link,
 	isRouteErrorResponse,
 	useFetcher,
-	useLoaderData,
 	useSearchParams,
 	useSubmit,
 } from 'react-router'
@@ -412,7 +411,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function SearchAdminRoute() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function SearchAdminRoute({ loaderData: data }: Route.ComponentProps) {
 	const [searchParams] = useSearchParams()
 	const submit = useSubmit()
 

@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, useFetcher, useLoaderData, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import { Link, useFetcher, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { YoutubeIcon } from '#app/components/icons.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
@@ -217,8 +217,7 @@ function Card({
 	)
 }
 
-export default function TalksScreen() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function TalksScreen({ loaderData: data }: Route.ComponentProps) {
 	const { pathname } = useLocation()
 	const [activeSlug] = pathname.split('/').slice(-1)
 	const user = useOptionalUser()

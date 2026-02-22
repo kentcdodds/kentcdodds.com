@@ -1,7 +1,7 @@
 import { MixedCheckbox } from '@reach/checkbox'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, useLoaderData, useSearchParams, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
+import { Link, useSearchParams, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ArticleCard } from '#app/components/article-card.tsx'
 import { Button } from '#app/components/button.tsx'
@@ -171,7 +171,7 @@ function getSortStateFromParam(value: string | null): SortState {
 	}
 }
 
-function BlogHome() {
+function BlogHome({ loaderData: data }: Route.ComponentProps) {
 	const { requestInfo } = useRootData()
 	const [searchParams] = useSearchParams()
 	const [userReadsState, setUserReadsState] = React.useState<
@@ -206,7 +206,6 @@ function BlogHome() {
 			: sortState,
 	)
 
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const { posts: allPosts, userReads, postReadCounts } = data
 
 	const getLeadingTeamForSlug = React.useCallback(

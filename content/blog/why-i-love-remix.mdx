@@ -148,8 +148,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	return json(data)
 }
 
-export default function AttendeesRoute() {
-	const data = useLoaderData()
+export default function AttendeesRoute({ loaderData: data }) {
 	return <div>{/* render the data */}</div>
 }
 

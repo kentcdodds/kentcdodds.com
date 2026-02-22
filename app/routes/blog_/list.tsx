@@ -1,4 +1,4 @@
-import { data as json, Link, useLoaderData } from 'react-router';
+import { data as json, Link } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { RssIcon } from '#app/components/icons.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
@@ -35,8 +35,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	)
 }
 
-export default function BlogList() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function BlogList({ loaderData: data }: Route.ComponentProps) {
 
 	return (
 		<div>

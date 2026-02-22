@@ -5,7 +5,6 @@ import {
 	Link,
 	useAsyncError,
 	useFetcher,
-	useLoaderData,
 } from 'react-router'
 import {
 	ErrorPanel,
@@ -79,8 +78,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	)
 }
 
-export default function SearchPage() {
-	const loaderData = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function SearchPage({ loaderData }: Route.ComponentProps) {
 	const fetcher = useFetcher<typeof loader>({ key: 'search-page-results' })
 	const { load } = fetcher
 	const inputRef = React.useRef<HTMLInputElement>(null)

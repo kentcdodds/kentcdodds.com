@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, type HeadersFunction, Link, useLoaderData, useParams } from 'react-router';
+import { data as json, type HeadersFunction, Link, useParams } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -337,8 +337,7 @@ function ArticleQuestionCard() {
 	)
 }
 
-export default function MdxScreen() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 	const { requestInfo } = useRootData()
 
 	const { code, dateDisplay, frontmatter } = data.page

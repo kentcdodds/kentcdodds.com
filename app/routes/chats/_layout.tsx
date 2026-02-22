@@ -1,7 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, type HeadersFunction, type MetaFunction, Link, Outlet, useLoaderData, useMatches, useNavigate } from 'react-router';
+import { data as json, type HeadersFunction, type MetaFunction, Link, Outlet, useMatches, useNavigate } from 'react-router';
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
 import { PodcastSubs } from '#app/components/podcast-subs.tsx'
@@ -91,10 +91,9 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-function PodcastHome() {
+function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
 	const navigate = useNavigate()
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
 	const matches = useMatches()
 	const last = matches[matches.length - 1]
 

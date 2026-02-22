@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction, useLoaderData } from 'react-router';
+import { data as json, type HeadersFunction } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { ServerError } from '#app/components/errors.tsx'
 import { AboutSection } from '#app/components/sections/about-section.tsx'
@@ -77,8 +77,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export default function IndexRoute() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function IndexRoute({ loaderData: data }: Route.ComponentProps) {
 	const kodyFlying = getRandomFlyingKody(data.kodyTeam, data.randomImageNo)
 	return (
 		<div>

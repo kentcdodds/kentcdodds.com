@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { data as json, type HeadersFunction, useLoaderData } from 'react-router';
+import { data as json, type HeadersFunction } from 'react-router';
 import { serverOnly$ } from 'vite-env-only/macros'
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -66,8 +66,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta = mdxPageMeta
 
-export default function MdxScreen() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
+export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 	const { code, frontmatter } = data.page
 	const isDraft = Boolean(frontmatter.draft)
 	const isArchived = Boolean(frontmatter.archived)

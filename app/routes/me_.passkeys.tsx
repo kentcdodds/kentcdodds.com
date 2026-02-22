@@ -1,6 +1,6 @@
 import { startRegistration } from '@simplewebauthn/browser'
 import { type PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server'
-import { data as json, useLoaderData, Form, useRevalidator } from 'react-router';
+import { data as json, Form, useRevalidator } from 'react-router';
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
@@ -61,9 +61,10 @@ const RegistrationResultSchema = z.object({
 	}),
 }) satisfies z.ZodType<{ options: PublicKeyCredentialCreationOptionsJSON }>
 
-export default function PasskeysRoute() {
+export default function PasskeysRoute({
+	loaderData: { passkeys },
+}: Route.ComponentProps) {
 	const revalidator = useRevalidator()
-	const { passkeys } = useLoaderData<Route.ComponentProps['loaderData']>()
 
 	async function handleAddPasskey() {
 		const resp = await fetch(

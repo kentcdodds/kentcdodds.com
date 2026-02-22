@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, redirect, Form, useActionData, useLoaderData } from 'react-router';
+import { data as json, redirect, Form } from 'react-router';
 import { Button } from '#app/components/button.tsx'
 import { Field, InputError } from '#app/components/form-elements.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -275,9 +275,10 @@ function TeamOption({
 	)
 }
 
-export default function NewAccount() {
-	const data = useLoaderData<Route.ComponentProps['loaderData']>()
-	const actionData = useActionData<Route.ComponentProps['actionData']>()
+export default function NewAccount({
+	loaderData: data,
+	actionData,
+}: Route.ComponentProps) {
 	const [, setTeam] = useTeam()
 	const [formValues, setFormValues] = React.useState<{
 		firstName: string
