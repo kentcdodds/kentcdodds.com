@@ -5,10 +5,10 @@ import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Grimmacing } from '#app/components/kifs.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
+import { type RootLoaderType } from '#app/root.tsx'
 import { RecordingForm, type RecordingFormData } from '#app/routes/resources/calls/save.tsx'
 import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { type RootLoaderType } from '#app/root.tsx'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/new'
 
@@ -30,7 +30,7 @@ export default function RecordScreen({ loaderData, matches }: Route.ComponentPro
 	)
 	const [mode, setMode] = React.useState<'record' | 'text'>('record')
 
-	const rootMatch = matches.find((m) => m.id === 'root')
+	const rootMatch = matches.find((m) => m?.id === 'root')
 	const rootData = rootMatch?.data as SerializeFrom<RootLoaderType> | undefined
 	const { user, userInfo } = rootData ?? {}
 	// should be impossible...
