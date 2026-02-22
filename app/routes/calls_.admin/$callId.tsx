@@ -29,6 +29,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	const url = new URL(request.url)
 	const error = url.searchParams.get('error')
+	const shouldUseSampleAudio =
+		process.env.NODE_ENV === 'development' && url.searchParams.get('sampleAudio') === '1'
 
 	const call = await prisma.call.findFirst({
 		where: { id: params.callId },
@@ -66,6 +68,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	return json({
 		call: { ...call, formattedCreatedAt: formatDate(call.createdAt) },
 		error,
+		shouldUseSampleAudio,
 	})
 }
 
@@ -529,10 +532,34 @@ function RecordingDetailScreen({ data }: { data: Route.ComponentProps['loaderDat
 				) : responseAudio ? (
 					<ResponseAudioDraftForm audio={responseAudio} callId={data.call.id} />
 				) : (
-					<CallRecorder
-						onRecordingComplete={(recording) => setResponseAudio(recording)}
-						team={user.team}
-					/>
+					<div className="flex flex-col gap-6">
+						{data.shouldUseSampleAudio ? (
+							<div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
+								<Paragraph className="mb-4 text-sm text-gray-500 dark:text-slate-400">
+									{`Dev-only: use the caller's audio as a sample response (helpful in cloud VMs without microphones).`}
+								</Paragraph>
+								<Button
+									type="button"
+									variant="secondary"
+									onClick={() => {
+										const [meta, b64] = data.call.base64.split(',', 2)
+										const mime =
+											meta?.match(/^data:(.+);base64$/)?.[1] ?? 'audio/mpeg'
+										const bytes = Uint8Array.from(atob(b64 ?? ''), (c) =>
+											c.charCodeAt(0),
+										)
+										setResponseAudio(new Blob([bytes], { type: mime }))
+									}}
+								>
+									Use sample response audio
+								</Button>
+							</div>
+						) : null}
+						<CallRecorder
+							onRecordingComplete={(recording) => setResponseAudio(recording)}
+							team={user.team}
+						/>
+					</div>
 				)}
 			</div>
 		</div>
