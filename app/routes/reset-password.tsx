@@ -224,6 +224,10 @@ export async function action({ request }: Route.ActionArgs) {
 		loginSession.flashError('Verify your email before resetting your password.')
 		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
 	}
+	if (actionId !== actionIds.reset) {
+		loginSession.flashError('Something went wrong. Please try again.')
+		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+	}
 
 	const passwordEntry = formData.get('password')
 	const password = typeof passwordEntry === 'string' ? passwordEntry : ''
