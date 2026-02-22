@@ -1,7 +1,7 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it } from 'vitest'
+import { type Server } from 'node:http'
 import express from 'express'
-import type { Server } from 'node:http'
+import { afterEach, describe, expect, it } from 'vitest'
 import { createRateLimitingMiddleware } from '../rate-limiting.js'
 
 async function startTestServer() {
