@@ -87,11 +87,17 @@ const getHost = (req: { get: (key: string) => string | undefined }) =>
 
 const MODE = process.env.NODE_ENV
 
-if (MODE === 'production' && process.env.SENTRY_DSN) {
+const SHOULD_INIT_SENTRY =
+	MODE === 'production' &&
+	Boolean(process.env.SENTRY_DSN) &&
+	// `start:mocks` (used in CI + local e2e) runs with `MOCKS=true`.
+	process.env.MOCKS !== 'true'
+
+if (SHOULD_INIT_SENTRY) {
 	void import('./utils/monitoring.js').then(({ init }) => init())
 }
 
-if (MODE === 'production') {
+if (SHOULD_INIT_SENTRY) {
 	sentryInit({
 		dsn: process.env.SENTRY_DSN,
 		tracesSampleRate: 0.3,
