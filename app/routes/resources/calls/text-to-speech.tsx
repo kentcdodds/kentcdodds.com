@@ -151,7 +151,7 @@ export async function action({ request }: Route.ActionArgs) {
 		text: speechText,
 	})
 	const cacheKeyHash = createHash('sha256').update(cacheKeyPayload).digest('hex')
-	const cacheKey = `call-kent-tts:audio:v1:${cacheKeyHash}`
+	const cacheKey = `call-kent-tts:audio:v2:${cacheKeyHash}`
 
 	try {
 		const cached = await cachified({
