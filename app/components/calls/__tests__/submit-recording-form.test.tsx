@@ -298,17 +298,21 @@ describe('RecordingForm', () => {
 			expect(form).not.toBeNull()
 			expect(form).toHaveAttribute('novalidate')
 
-			// Submit should surface validation for untouched required fields, but
-			// should not attempt to upload audio when validation fails.
-			fireEvent.submit(form as HTMLFormElement)
-			await screen.findByText('Title is required')
-
 			const titleInput = screen.getByLabelText('Title')
 			expect(titleInput).toHaveAttribute('maxLength', '80')
 			expect(screen.getByText('80 characters left')).toBeInTheDocument()
 			const titleId = titleInput.getAttribute('id')
 			expect(titleId).toBeTruthy()
 			expect(titleInput).toHaveAttribute('aria-describedby', `${titleId}-countdown`)
+
+			// Submit should surface validation for untouched required fields, but
+			// should not attempt to upload audio when validation fails.
+			fireEvent.submit(form as HTMLFormElement)
+			await screen.findByText('Title is required')
+			expect(titleInput.getAttribute('aria-describedby')).toContain(`${titleId}-error`)
+			expect(titleInput.getAttribute('aria-describedby')).toContain(
+				`${titleId}-countdown`,
+			)
 
 			fireEvent.change(titleInput, { target: { value: 'abcd' } })
 			expect(screen.getByText('76 characters left')).toBeInTheDocument()
