@@ -106,7 +106,6 @@ export async function action({ request }: Route.ActionArgs) {
 	if (!email.match(/.+@.+/)) {
 		loginSession.flashError('A valid email is required')
 		return redirect(`/login`, {
-			status: 400,
 			headers: await loginSession.getHeaders(),
 		})
 	}
@@ -114,7 +113,6 @@ export async function action({ request }: Route.ActionArgs) {
 	if (!password) {
 		loginSession.flashError('Password is required')
 		return redirect(`/login`, {
-			status: 400,
 			headers: await loginSession.getHeaders(),
 		})
 	}
@@ -138,7 +136,6 @@ export async function action({ request }: Route.ActionArgs) {
 			'Invalid email or password. If you do not have a password yet, use "Reset password" to set one.',
 		)
 		return redirect(`/login`, {
-			status: 400,
 			headers: await loginSession.getHeaders(),
 		})
 	}

@@ -61,7 +61,6 @@ export async function action({ request }: Route.ActionArgs) {
 	if (!email.match(/.+@.+/)) {
 		loginSession.flashError('A valid email is required')
 		return redirect('/forgot-password', {
-			status: 400,
 			headers: await loginSession.getHeaders(),
 		})
 	}
