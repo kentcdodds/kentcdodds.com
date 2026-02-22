@@ -2,7 +2,6 @@ import 'dotenv/config'
 import { reactRouter } from '@react-router/dev/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
-import { glob } from 'glob'
 import { defineConfig } from 'vite'
 import { envOnlyMacros } from 'vite-env-only'
 import { cjsInterop } from 'vite-plugin-cjs-interop'
@@ -30,6 +29,12 @@ export default defineConfig(async () => {
 						authToken: process.env.SENTRY_AUTH_TOKEN,
 						org: process.env.SENTRY_ORG,
 						project: process.env.SENTRY_PROJECT,
+						// By default the bundler plugin logs and continues on upload/release
+						// errors. If we then also delete maps, Sentry ends up trying to fetch
+						// `*.map` and receiving our HTML 404 page instead.
+						errorHandler: (err) => {
+							throw err
+						},
 						release: {
 							name: process.env.COMMIT_SHA,
 							setCommits: {
@@ -37,10 +42,13 @@ export default defineConfig(async () => {
 							},
 						},
 						sourcemaps: {
-							filesToDeleteAfterUpload: await glob([
-								'./build/**/*.map',
-								'.server-build/**/*.map',
-							]),
+							// NOTE: This option expects globs (or a Promise resolving to globs),
+							// not the *result* of running glob at config-eval time.
+							//
+							// We only delete Vite/React Router client maps here. The `server-build`
+							// sourcemaps are produced by a separate esbuild step and are not uploaded
+							// by this plugin.
+							filesToDeleteAfterUpload: ['./build/client/**/*.map'],
 						},
 					})
 				: null,
