@@ -459,7 +459,7 @@ export function CallKentTextToSpeech({
 	return (
 		<div className="flex flex-col gap-6">
 			<Paragraph className="mb-2">
-				{`Type your question and we'll generate the audio for you. Tip: include a quick intro like "Hi Kent, my name is ..." so I know who you are.`}
+				{`Type your question and preview the audio before you submit it. Tip: include a quick intro like "Hi Kent, my name is ..." so I know who you are.`}
 			</Paragraph>
 
 			<div>
