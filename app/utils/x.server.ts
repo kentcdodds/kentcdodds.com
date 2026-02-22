@@ -19,8 +19,23 @@ type Metadata = {
 	description?: string
 	image?: string
 }
+
+// Note: We intentionally do NOT use AbortSignal/AbortController here.
+// Node.js v24 has a bug where aborting fetch requests can crash the process.
+function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		const id = setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+		id.unref?.()
+	})
+	return Promise.race([fetch(url), timeoutPromise])
+}
+
 async function getMetadata(url: string): Promise<Metadata> {
-	const html = await fetch(url).then((res) => res.text())
+	// In mocks mode we don't want to make arbitrary external HTTP requests for
+	// link metadata (it can hang CI / e2e test runs and adds nondeterminism).
+	if (process.env.MOCKS === 'true') return {}
+
+	const html = await fetchWithTimeout(url, 2_000).then((res) => res.text())
 	return metascraper({ html, url })
 }
 
