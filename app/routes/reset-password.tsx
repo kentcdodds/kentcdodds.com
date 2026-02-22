@@ -255,21 +255,29 @@ export async function action({ request }: Route.ActionArgs) {
 	const session = await getSession(request)
 	await session.signIn({ id: userRecord.id })
 
-	const clientSession = await getClientSession(request, null)
-	const clientId = clientSession.getClientId()
-	if (clientId) {
-		await prisma.postRead.updateMany({
-			data: { userId: userRecord.id, clientId: null },
-			where: { clientId },
-		})
-	}
-	clientSession.setUser({})
-
 	const headers = new Headers()
 	loginSession.clean()
 	await loginSession.getHeaders(headers)
 	await session.getHeaders(headers)
-	await clientSession.getHeaders(headers)
+	try {
+		const clientSession = await getClientSession(request, null)
+		try {
+			const clientId = clientSession.getClientId()
+			if (clientId) {
+				await ensurePrimary()
+				await prisma.postRead.updateMany({
+					data: { userId: userRecord.id, clientId: null },
+					where: { clientId },
+				})
+			}
+		} catch (error) {
+			console.error('Failed to migrate postReads on password reset', error)
+		}
+		clientSession.setUser({})
+		await clientSession.getHeaders(headers)
+	} catch (error) {
+		console.error('Failed to read client session on password reset', error)
+	}
 	return redirect('/me', { headers })
 }
 

@@ -7,7 +7,7 @@ import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getDomainUrl } from '#app/utils/misc.ts'
+import { getDomainUrl, isResponse } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { sendPasswordResetEmail } from '#app/utils/send-email.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
@@ -72,29 +72,43 @@ export async function action({ request }: Route.ActionArgs) {
 	})
 
 	if (user) {
-		void (async () => {
-			try {
-				const { verification, code } = await createVerification({
-					type: 'PASSWORD_RESET',
-					target: email,
-				})
+		const domainUrl = getDomainUrl(request)
+		let verificationId: string | null = null
+		try {
+			const { verification, code } = await createVerification({
+				type: 'PASSWORD_RESET',
+				target: email,
+			})
+			verificationId = verification.id
 
-				const domainUrl = getDomainUrl(request)
-				const verificationUrl = new URL('/reset-password', domainUrl)
-				verificationUrl.searchParams.set('verification', verification.id)
-				verificationUrl.searchParams.set('code', code)
+			const verificationUrl = new URL('/reset-password', domainUrl)
+			verificationUrl.searchParams.set('verification', verification.id)
+			verificationUrl.searchParams.set('code', code)
 
-				await sendPasswordResetEmail({
-					emailAddress: email,
-					verificationCode: code,
-					verificationUrl: verificationUrl.toString(),
-					domainUrl,
-					team: user.team,
-				})
-			} catch (error) {
-				console.error('Failed to send password reset email', error)
+			await sendPasswordResetEmail({
+				emailAddress: email,
+				verificationCode: code,
+				verificationUrl: verificationUrl.toString(),
+				domainUrl,
+				team: user.team,
+			})
+		} catch (error) {
+			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
+			// If we swallow it, the email will never get sent.
+			if (isResponse(error)) throw error
+			if (verificationId) {
+				try {
+					// Best effort: don't leave unused verifications around if email sending fails.
+					await prisma.verification.delete({ where: { id: verificationId } })
+				} catch (cleanupError) {
+					console.error(
+						'Failed to cleanup verification after password reset email failure',
+						cleanupError,
+					)
+				}
 			}
-		})()
+			console.error('Failed to send password reset email', error)
+		}
 	}
 
 	// Avoid leaking whether an account exists for the email address.
