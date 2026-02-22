@@ -28,7 +28,7 @@ function getNavigationPathFromResponse(response: Response) {
 	return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
 }
 
-export type RecordingFormData = {
+type RecordingFormData = {
 	fields: {
 		// audio is too big to include in the session
 		// hopefully it won't matter with fully client-side interactions though
