@@ -117,6 +117,7 @@ async function createEpisode({
 	user,
 	request,
 	isAnonymous,
+	transcriptText,
 }: {
 	audio: Buffer
 	title: string
@@ -126,10 +127,16 @@ async function createEpisode({
 	user: { firstName: string; email: string; team: string }
 	request: Request
 	isAnonymous?: boolean
+	/**
+	 * If provided, we upload this transcript to Transistor after publishing.
+	 * If omitted and Workers AI is configured, we will attempt to auto-transcribe.
+	 */
+	transcriptText?: string
 }) {
-	// Start transcription ASAP, but don't block the admin publish flow.
-	// If Workers AI isn't configured, this stays null and we just skip.
-	const transcriptionPromise = isCloudflareTranscriptionConfigured()
+	const shouldAutoTranscribe =
+		!transcriptText && isCloudflareTranscriptionConfigured()
+	// Start transcription ASAP, but don't block publishing.
+	const transcriptionPromise = shouldAutoTranscribe
 		? transcribeMp3WithWorkersAi({ mp3: audio })
 		: null
 
@@ -180,6 +187,21 @@ async function createEpisode({
 		},
 	})
 
+	// If we already have a transcript (draft workflow), upload it now.
+	if (transcriptText) {
+		try {
+			await updateEpisodeTranscriptText({
+				episodeId: created.data.id,
+				transcriptText,
+			})
+		} catch (error: unknown) {
+			console.error(
+				`Unable to upload transcript to Transistor for episode ${created.data.id}`,
+				error,
+			)
+		}
+	}
+
 	if (transcriptionPromise) {
 		void transcriptionPromise
 			.then(async (transcriptText) => {
@@ -197,81 +219,98 @@ async function createEpisode({
 			})
 	}
 
-	const returnValue: { episodeUrl?: string; imageUrl?: string } = {}
-	// set the alternate_url if we have enough info for it.
-	const { number } = created.data.attributes
+	const number = created.data.attributes.number
+	if (typeof number !== 'number') {
+		throw new Error('Transistor did not return an episode number.')
+	}
+
+	//reset episode to 1 if it exceeds episodesPerSeason (50)
 	let season = currentSeason
 	let episodeNumber = 1
-	if (typeof number === 'number' && typeof season === 'number') {
-		//reset episode to 1 if it exceeds episodesPerSeason (50)
-		if (number > episodesPerSeason) {
-			season += 1
-			episodeNumber = 1
-		} else {
-			episodeNumber = number
-		}
+	if (number > episodesPerSeason) {
+		season += 1
+		episodeNumber = 1
+	} else {
+		episodeNumber = number
+	}
 
-		const slug = slugify(created.data.attributes.title)
-		const episodePath = getEpisodePath({
-			episodeNumber,
-			seasonNumber: season,
-			slug,
+	const slug = slugify(created.data.attributes.title)
+	const episodePath = getEpisodePath({
+		episodeNumber,
+		seasonNumber: season,
+		slug,
+	})
+
+	// hard-coded because we're generating and uploading these images
+	// and ultimately we know the domain it will be...
+	const domainUrl = 'https://kentcdodds.com'
+
+	const shortEpisodePath = getEpisodePath({
+		episodeNumber: number,
+		seasonNumber: season,
+	})
+	const shortDomain = domainUrl.replace(/^https?:\/\//, '')
+
+	const avatarSize = 1400
+	let hasGravatar = false
+	let gravatarUrl: string | null = null
+	if (!isAnonymous) {
+		const result = await getDirectAvatarForUser(user, {
+			size: avatarSize,
+			request,
+			forceFresh: true,
 		})
+		hasGravatar = result.hasGravatar
+		gravatarUrl = result.hasGravatar ? result.avatar : null
+	}
+	const avatar = getCallKentEpisodeArtworkAvatar({
+		isAnonymous: isAnonymous ?? false,
+		team: user.team,
+		gravatarUrl,
+	})
 
-		// hard-coded because we're generating and uploading these images
-		// and ultimately we know the domain it will be...
-		const domainUrl = 'https://kentcdodds.com'
+	const imageUrl = getCallKentEpisodeArtworkUrl({
+		title,
+		url: `${shortDomain}${shortEpisodePath}`,
+		name: isAnonymous ? '- Anonymous' : `- ${user.firstName}`,
+		avatar,
+		avatarIsRound: hasGravatar,
+	})
 
-		const shortEpisodePath = getEpisodePath({
-			episodeNumber: number,
-			seasonNumber: season,
-		})
-		const shortDomain = domainUrl.replace(/^https?:\/\//, '')
+	const episodeUrl = `${domainUrl}${episodePath}`
+	const updateData: TransistorUpdateEpisodeData = {
+		id: created.data.id,
+		episode: {
+			alternate_url: episodeUrl,
+			image_url: imageUrl,
+			description: `${description}\n\n<a href="${episodeUrl}">${title}</a>`,
+			number: episodeNumber,
+			season,
+		},
+	}
 
-		const avatarSize = 1400
-		let hasGravatar = false
-		let gravatarUrl: string | null = null
-		if (!isAnonymous) {
-			const result = await getDirectAvatarForUser(user, {
-				size: avatarSize,
-				request,
-				forceFresh: true,
-			})
-			hasGravatar = result.hasGravatar
-			gravatarUrl = result.hasGravatar ? result.avatar : null
-		}
-		const avatar = getCallKentEpisodeArtworkAvatar({
-			isAnonymous: isAnonymous ?? false,
-			team: user.team,
-			gravatarUrl,
-		})
+	await fetchTransitor<TransistorPublishedJson>({
+		endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}`,
+		method: 'PATCH',
+		data: updateData,
+	})
 
-		const imageUrl = getCallKentEpisodeArtworkUrl({
-			title,
-			url: `${shortDomain}${shortEpisodePath}`,
-			name: isAnonymous ? '- Anonymous' : `- ${user.firstName}`,
-			avatar,
-			avatarIsRound: hasGravatar,
-		})
-
-		returnValue.episodeUrl = `${domainUrl}${episodePath}`
-		returnValue.imageUrl = imageUrl
-		const updateData: TransistorUpdateEpisodeData = {
-			id: created.data.id,
-			episode: {
-				alternate_url: returnValue.episodeUrl,
-				image_url: imageUrl,
-				description: `${description}\n\n<a href="${returnValue.episodeUrl}">${title}</a>`,
-				number: episodeNumber,
-				season,
-			},
-		}
-
-		await fetchTransitor<TransistorPublishedJson>({
-			endpoint: `/v1/episodes/${encodeURIComponent(created.data.id)}`,
-			method: 'PATCH',
-			data: updateData,
-		})
+	const returnValue: {
+		transistorEpisodeId: string
+		episodeUrl: string
+		episodePath: string
+		imageUrl: string
+		seasonNumber: number
+		episodeNumber: number
+		slug: string
+	} = {
+		transistorEpisodeId: created.data.id,
+		episodeUrl,
+		episodePath,
+		imageUrl,
+		seasonNumber: season,
+		episodeNumber,
+		slug,
 	}
 
 	// update the cache with the new episode
@@ -359,7 +398,8 @@ async function getCurrentSeason() {
 	})
 
 	const lastEpisode = episodesResponse.data[0]
-	return lastEpisode?.attributes.season
+	const season = lastEpisode?.attributes.season
+	return typeof season === 'number' ? season : 1
 }
 
 async function getCachedEpisodes({

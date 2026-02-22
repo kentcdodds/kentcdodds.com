@@ -73,7 +73,11 @@ export default function Screen({ loaderData: data }: Route.ComponentProps) {
 
 	return (
 		<section>
-			<Paragraph className="mb-8">{data.call.description}</Paragraph>
+			{data.call.notes ? (
+				<Paragraph className="mb-8 whitespace-pre-wrap">{data.call.notes}</Paragraph>
+			) : (
+				<Paragraph className="mb-8">{`Thanks for your call!`}</Paragraph>
+			)}
 			<div className="flex flex-wrap gap-4">
 				<div className="w-full flex-1" style={{ minWidth: '16rem' }}>
 					{audioURL ? (

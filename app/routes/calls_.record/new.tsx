@@ -9,7 +9,6 @@ import { type RootLoaderType } from '#app/root.tsx'
 import { RecordingForm, type RecordingFormData } from '#app/routes/resources/calls/save.tsx'
 import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { AI_VOICE_DISCLOSURE_PREFIX } from '#app/utils/call-kent-text-to-speech.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/new'
@@ -155,10 +154,7 @@ export default function RecordScreen({ loaderData, matches }: Route.ComponentPro
 									setPrefill({
 										fields: {
 											title: 'Call Kent question',
-											description: cleanedQuestion
-												? `${AI_VOICE_DISCLOSURE_PREFIX}\n\n${cleanedQuestion}`
-												: AI_VOICE_DISCLOSURE_PREFIX,
-											keywords: '',
+											notes: cleanedQuestion,
 										},
 										errors: {},
 									})

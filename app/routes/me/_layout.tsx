@@ -93,13 +93,28 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const user = await requireUser(request, { timings })
 
-	const [sessionCount, rawFavorites] = await Promise.all([
+	const [sessionCount, rawFavorites, callKentCallerEpisodes] = await Promise.all([
 		prisma.session.count({
 			where: { userId: user.id },
 		}),
 		prisma.favorite.findMany({
 			where: { userId: user.id },
 			select: { contentType: true, contentId: true, createdAt: true },
+			orderBy: { createdAt: 'desc' },
+		}),
+		prisma.callKentCallerEpisode.findMany({
+			where: { userId: user.id },
+			select: {
+				id: true,
+				seasonNumber: true,
+				episodeNumber: true,
+				slug: true,
+				episodeTitle: true,
+				episodePath: true,
+				imageUrl: true,
+				isAnonymous: true,
+				createdAt: true,
+			},
 			orderBy: { createdAt: 'desc' },
 		}),
 	])
@@ -221,6 +236,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			sessionCount,
 			teamType: activity,
 			favorites,
+			callKentCallerEpisodes,
 		} as const,
 		{
 			headers: {
@@ -581,6 +597,57 @@ function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 						No favorites yet. Open a blog post, talk, or podcast episode and hit
 						the star.
 					</Paragraph>
+				)}
+			</Grid>
+
+			<Spacer size="sm" />
+
+			<Grid>
+				<div className="col-span-full mb-12">
+					<H2>Your Call Kent episodes</H2>
+					<H2 variant="secondary" as="p">
+						Episodes where you're the caller.
+					</H2>
+				</div>
+				{data.callKentCallerEpisodes.length ? (
+					<ul className="col-span-full space-y-4">
+						{data.callKentCallerEpisodes.map((episode) => (
+							<li
+								key={episode.id}
+								className="border-b border-gray-200 pb-4 dark:border-gray-600"
+							>
+								<div className="flex items-start justify-between gap-4">
+									<div className="min-w-0">
+										<Link
+											to={episode.episodePath}
+											className="underlined text-primary hover:text-team-current focus:text-team-current block truncate text-lg font-medium focus:outline-none"
+										>
+											{episode.episodeTitle}
+										</Link>
+										<p className="text-secondary mt-1 text-sm">
+											{`Calls — Season ${episode.seasonNumber} Episode ${episode.episodeNumber}`}
+											{episode.isAnonymous ? ' • anonymous' : ''}
+										</p>
+									</div>
+									{episode.imageUrl ? (
+										<img
+											alt=""
+											src={episode.imageUrl}
+											className="h-12 w-12 flex-none rounded-lg object-cover"
+											loading="lazy"
+										/>
+									) : null}
+								</div>
+							</li>
+						))}
+					</ul>
+				) : (
+					<div className="col-span-full rounded-lg bg-gray-100 p-8 dark:bg-gray-800">
+						<Paragraph className="mb-4 text-gray-500 dark:text-slate-500">
+							{`No episodes yet. Record a call and Kent might answer it on the podcast.`}
+						</Paragraph>
+						<ButtonLink to="/calls/record/new">{`Record a call`}</ButtonLink>
+					</div>
 				)}
 			</Grid>
 

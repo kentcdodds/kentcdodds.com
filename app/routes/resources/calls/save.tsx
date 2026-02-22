@@ -13,9 +13,8 @@ import { Field } from '#app/components/form-elements.tsx'
 import {
 	callKentFieldConstraints,
 	getErrorForAudio,
-	getErrorForDescription,
-	getErrorForKeywords,
 	getErrorForTitle,
+	getErrorForNotes,
 } from '#app/utils/call-kent.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/save'
@@ -34,22 +33,20 @@ type RecordingFormData = {
 		// hopefully it won't matter with fully client-side interactions though
 		audio?: never
 		title?: string | null
-		description?: string | null
-		keywords?: string | null
+		notes?: string | null
 	}
 	errors: {
 		generalError?: string
 		audio?: string | null
 		title?: string | null
-		description?: string | null
-		keywords?: string | null
+		notes?: string | null
 	}
 }
 
 type ActionData = RecordingFormData
-type RecordingIntent = 'create-call' | 'publish-call' | 'delete-call'
+type RecordingIntent = 'create-call' | 'delete-call'
 type RecordingSubmitIntent = Exclude<RecordingIntent, 'delete-call'>
-type RecordingTextFieldName = 'title' | 'description' | 'keywords'
+type RecordingTextFieldName = 'title' | 'notes'
 
 function isRecordingFormDataEqual(
 	first?: RecordingFormData,
@@ -59,13 +56,11 @@ function isRecordingFormDataEqual(
 	if (!first || !second) return false
 	return (
 		first.fields.title === second.fields.title &&
-		first.fields.description === second.fields.description &&
-		first.fields.keywords === second.fields.keywords &&
+		first.fields.notes === second.fields.notes &&
 		first.errors.generalError === second.errors.generalError &&
 		first.errors.audio === second.errors.audio &&
 		first.errors.title === second.errors.title &&
-		first.errors.description === second.errors.description &&
-		first.errors.keywords === second.errors.keywords
+		first.errors.notes === second.errors.notes
 	)
 }
 
@@ -91,19 +86,15 @@ function RecordingForm({
 	const idBase = React.useId()
 	const titleId = `${idBase}-title`
 	const titleCountdownId = `${titleId}-countdown`
-	const descriptionId = `${idBase}-description`
-	const descriptionCountdownId = `${descriptionId}-countdown`
-	const keywordsId = `${idBase}-keywords`
-	const keywordsCountdownId = `${keywordsId}-countdown`
+	const notesId = `${idBase}-notes`
+	const notesCountdownId = `${notesId}-countdown`
 	const [fieldValues, setFieldValues] = React.useState(() => ({
 		title: data?.fields.title ?? '',
-		description: data?.fields.description ?? '',
-		keywords: data?.fields.keywords ?? '',
+		notes: data?.fields.notes ?? '',
 	}))
 	const [fieldInteracted, setFieldInteracted] = React.useState(() => ({
 		title: false,
-		description: false,
-		keywords: false,
+		notes: false,
 	}))
 	const [isAnonymous, setIsAnonymous] = React.useState(false)
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false)
@@ -122,10 +113,9 @@ function RecordingForm({
 		setSubmissionData(data)
 		setFieldValues({
 			title: data?.fields.title ?? '',
-			description: data?.fields.description ?? '',
-			keywords: data?.fields.keywords ?? '',
+			notes: data?.fields.notes ?? '',
 		})
-		setFieldInteracted({ title: false, description: false, keywords: false })
+		setFieldInteracted({ title: false, notes: false })
 		setHasAttemptedSubmit(false)
 	}, [data])
 
@@ -171,19 +161,16 @@ function RecordingForm({
 	const clientErrors = React.useMemo(
 		() => ({
 			title: getErrorForTitle(fieldValues.title),
-			description: getErrorForDescription(fieldValues.description),
-			keywords: getErrorForKeywords(fieldValues.keywords),
+			notes: getErrorForNotes(fieldValues.notes),
 		}),
-		[fieldValues.title, fieldValues.description, fieldValues.keywords],
+		[fieldValues.title, fieldValues.notes],
 	)
 
 	// Prefer client-side errors for the current value, but fall back to server
 	// errors from the last submission attempt when client validation passes.
 	const displayedErrors = {
 		title: clientErrors.title ?? submissionData?.errors.title ?? null,
-		description:
-			clientErrors.description ?? submissionData?.errors.description ?? null,
-		keywords: clientErrors.keywords ?? submissionData?.errors.keywords ?? null,
+		notes: clientErrors.notes ?? submissionData?.errors.notes ?? null,
 	}
 
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -193,15 +180,13 @@ function RecordingForm({
 
 		const form = new FormData(event.currentTarget)
 		const title = getStringFormValue(form, 'title') ?? ''
-		const description = getStringFormValue(form, 'description') ?? ''
-		const keywords = getStringFormValue(form, 'keywords') ?? ''
 		setHasAttemptedSubmit(true)
-		setFieldValues({ title, description, keywords })
+		const notes = getStringFormValue(form, 'notes') ?? ''
+		setFieldValues({ title, notes })
 
 		const preflightErrors = {
 			title: getErrorForTitle(title),
-			description: getErrorForDescription(description),
-			keywords: getErrorForKeywords(keywords),
+			notes: getErrorForNotes(notes),
 		}
 		if (Object.values(preflightErrors).some(Boolean)) {
 			// Client-side validation matches server rules; don't upload audio until valid.
@@ -367,61 +352,32 @@ function RecordingForm({
 				</div>
 				<div className="mb-8">
 					<Field
-						id={descriptionId}
-						name="description"
-						label="Description"
+						id={notesId}
+						name="notes"
+						label="Notes (optional)"
 						type="textarea"
-						maxLength={callKentFieldConstraints.description.maxLength}
-						onChange={handleTextFieldChange('description')}
-						onBlur={handleTextFieldBlur('description')}
-						value={fieldValues.description}
-						additionalAriaDescribedBy={descriptionCountdownId}
+						required={false}
+						maxLength={callKentFieldConstraints.notes.maxLength}
+						onChange={handleTextFieldChange('notes')}
+						onBlur={handleTextFieldBlur('notes')}
+						value={fieldValues.notes}
+						additionalAriaDescribedBy={notesCountdownId}
 						aria-invalid={
-							Boolean(displayedErrors.description) &&
-							(hasAttemptedSubmit || fieldInteracted.description)
+							Boolean(displayedErrors.notes) &&
+							(hasAttemptedSubmit || fieldInteracted.notes)
 						}
 						error={
-							hasAttemptedSubmit || fieldInteracted.description
-								? displayedErrors.description
+							hasAttemptedSubmit || fieldInteracted.notes
+								? displayedErrors.notes
 								: null
 						}
 						className="mb-2"
 					/>
 					<CharacterCountdown
-						id={descriptionCountdownId}
-						value={fieldValues.description}
-						maxLength={callKentFieldConstraints.description.maxLength}
+						id={notesCountdownId}
+						value={fieldValues.notes}
+						maxLength={callKentFieldConstraints.notes.maxLength}
 						warnAt={100}
-					/>
-				</div>
-
-				<div className="mb-8">
-					<Field
-						id={keywordsId}
-						label="Keywords"
-						description="comma separated values"
-						name="keywords"
-						maxLength={callKentFieldConstraints.keywords.maxLength}
-						onChange={handleTextFieldChange('keywords')}
-						onBlur={handleTextFieldBlur('keywords')}
-						value={fieldValues.keywords}
-						additionalAriaDescribedBy={keywordsCountdownId}
-						aria-invalid={
-							Boolean(displayedErrors.keywords) &&
-							(hasAttemptedSubmit || fieldInteracted.keywords)
-						}
-						error={
-							hasAttemptedSubmit || fieldInteracted.keywords
-								? displayedErrors.keywords
-								: null
-						}
-						className="mb-2"
-					/>
-					<CharacterCountdown
-						id={keywordsCountdownId}
-						value={fieldValues.keywords}
-						maxLength={callKentFieldConstraints.keywords.maxLength}
-						warnAt={10}
 					/>
 				</div>
 
@@ -448,21 +404,18 @@ function getActionData(formData: FormData) {
 	const fields = {
 		audio: getStringFormValue(formData, 'audio'),
 		title: getStringFormValue(formData, 'title'),
-		description: getStringFormValue(formData, 'description'),
-		keywords: getStringFormValue(formData, 'keywords'),
+		notes: getStringFormValue(formData, 'notes'),
 	}
 
 	const actionData: ActionData = {
 		fields: {
 			title: fields.title,
-			description: fields.description,
-			keywords: fields.keywords,
+			notes: fields.notes,
 		},
 		errors: {
 			audio: getErrorForAudio(fields.audio),
 			title: getErrorForTitle(fields.title),
-			description: getErrorForDescription(fields.description),
-			keywords: getErrorForKeywords(fields.keywords),
+			notes: getErrorForNotes(fields.notes),
 		},
 	}
 
@@ -512,16 +465,15 @@ async function createCall({
 
 		const user = await requireUser(request)
 		const domainUrl = getDomainUrl(request)
-		const { audio, title, description, keywords } = fields
-		if (!audio || !title || !description || !keywords) {
+		const { audio, title, notes } = fields
+		if (!audio || !title) {
 			return json(actionData, 400)
 		}
 
 		const createdCall = await prisma.call.create({
 			data: {
 				title,
-				description,
-				keywords,
+				notes: notes?.trim() || null,
 				userId: user.id,
 				base64: audio,
 				isAnonymous,
@@ -535,7 +487,10 @@ async function createCall({
 			const { firstName, team, discordId } = user
 			const userMention = discordId ? `<@!${discordId}>` : firstName
 			const emoji = teamEmoji[getOptionalTeam(team)]
-			const message = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"\n\n${description}\n\n${domainUrl}/calls/admin/${createdCall.id}`
+			const notesBlock = notes?.trim()
+				? `\n\nNotes:\n${notes.trim()}`
+				: ''
+			const message = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"${isAnonymous ? ' (anonymous)' : ''}${notesBlock}\n\n${domainUrl}/calls/admin/${createdCall.id}`
 			void sendMessageFromDiscordBot(channelId, message)
 		} catch (error: unknown) {
 			console.error('Problem sending a call message', error)
@@ -557,29 +512,15 @@ async function publishCall({
 	request: Request
 	formData: FormData
 }) {
-	const { actionData, fields } = getActionData(formData)
-	const callId = getStringFormValue(formData, 'callId')
-	if (!callId) {
-		actionData.errors.generalError = 'Call id is required.'
-		return json(actionData, 400)
-	}
-	if (hasActionErrors(actionData)) {
-		return json(actionData, 400)
-	}
-
 	try {
 		const [
-			{ createEpisodeAudio },
 			{ markdownToHtml },
-			{ getNonNull },
 			{ prisma },
 			{ sendEmail },
 			{ requireAdminUser },
 			{ createEpisode },
 		] = await Promise.all([
-			import('#app/utils/ffmpeg.server.ts'),
 			import('#app/utils/markdown.server.ts'),
-			import('#app/utils/misc.ts'),
 			import('#app/utils/prisma.server.ts'),
 			import('#app/utils/send-email.server.ts'),
 			import('#app/utils/session.server.ts'),
@@ -587,23 +528,66 @@ async function publishCall({
 		])
 
 		await requireAdminUser(request)
+		const callId = getStringFormValue(formData, 'callId')
+		if (!callId) return redirectCallNotFound()
+
 		const call = await prisma.call.findFirst({
 			where: { id: callId },
-			include: { user: true },
+			include: { user: true, episodeDraft: true },
 		})
 		if (!call) {
 			return redirectCallNotFound()
 		}
 
-		const {
-			audio: responseAudio,
-			title,
-			description,
-			keywords,
-		} = getNonNull(fields)
+		const draft = call.episodeDraft
+		if (!draft || draft.status !== 'READY') {
+			const searchParams = new URLSearchParams()
+			searchParams.set('error', 'Draft episode is not ready to publish yet.')
+			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		}
+
+		// Allow publishing directly from an edit form without requiring a separate
+		// "Save" click first.
+		const formTitle = getStringFormValue(formData, 'title')
+		const formDescription = getStringFormValue(formData, 'description')
+		const formKeywords = getStringFormValue(formData, 'keywords')
+		const formTranscript = getStringFormValue(formData, 'transcript')
+		const shouldUpdateFromForm =
+			formTitle !== null ||
+			formDescription !== null ||
+			formKeywords !== null ||
+			formTranscript !== null
+
+		if (shouldUpdateFromForm) {
+			await prisma.callKentEpisodeDraft.update({
+				where: { callId },
+				data: {
+					title: formTitle?.trim() || null,
+					description: formDescription?.trim() || null,
+					keywords: formKeywords?.trim() || null,
+					transcript: formTranscript?.trim() || null,
+				},
+			})
+		}
+
+		const title = (formTitle ?? draft.title ?? '').trim()
+		const description = (formDescription ?? draft.description ?? '').trim()
+		const keywords = (formKeywords ?? draft.keywords ?? '').trim()
+		const transcriptText = (formTranscript ?? draft.transcript ?? '').trim()
+		const episodeBase64 = draft.episodeBase64
+
+		if (!title || !description || !keywords || !transcriptText || !episodeBase64) {
+			const searchParams = new URLSearchParams()
+			searchParams.set(
+				'error',
+				'Draft is missing required fields (audio/transcript/title/description/keywords).',
+			)
+			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		}
+
+		const episodeAudio = Buffer.from(episodeBase64.split(',')[1]!, 'base64')
 		const summaryName = call.isAnonymous ? 'Anonymous' : call.user.firstName
-		const episodeAudio = await createEpisodeAudio(call.base64, responseAudio)
-		const { episodeUrl, imageUrl } = await createEpisode({
+		const published = await createEpisode({
 			request,
 			audio: episodeAudio,
 			title,
@@ -612,9 +596,10 @@ async function publishCall({
 			user: call.user,
 			keywords,
 			isAnonymous: call.isAnonymous,
+			transcriptText,
 		})
 
-		if (episodeUrl) {
+		if (published.episodeUrl) {
 			try {
 				void sendEmail({
 					to: call.user.email,
@@ -625,16 +610,34 @@ Hi ${call.user.firstName},
 
 Thanks for your call. Kent just replied and the episode has been published to the podcast!
 
-[![${title}](${imageUrl})](${episodeUrl})
+[![${title}](${published.imageUrl ?? ''})](${published.episodeUrl})
           `.trim(),
 				})
 			} catch (error: unknown) {
 				console.error(
-					`Problem sending email about a call: ${episodeUrl}`,
+					`Problem sending email about a call: ${published.episodeUrl}`,
 					error,
 				)
 			}
 		}
+
+		// Persist a per-caller record so users can see their episodes on /me even
+		// after the raw call record is removed.
+		await prisma.callKentCallerEpisode.create({
+			data: {
+				userId: call.userId,
+				callTitle: call.title,
+				callNotes: call.notes,
+				isAnonymous: call.isAnonymous,
+				transistorEpisodeId: published.transistorEpisodeId,
+				seasonNumber: published.seasonNumber,
+				episodeNumber: published.episodeNumber,
+				slug: published.slug,
+				episodeTitle: title,
+				episodePath: published.episodePath,
+				imageUrl: published.imageUrl,
+			},
+		})
 
 		await prisma.call.delete({
 			where: { id: call.id },
@@ -643,8 +646,113 @@ Thanks for your call. Kent just replied and the episode has been published to th
 		return redirect('/calls')
 	} catch (error: unknown) {
 		const { getErrorMessage } = await import('#app/utils/misc.ts')
-		actionData.errors.generalError = getErrorMessage(error)
-		return json(actionData, 500)
+		const callId = getStringFormValue(formData, 'callId')
+		const searchParams = new URLSearchParams()
+		searchParams.set('error', getErrorMessage(error))
+		return redirect(
+			callId ? `/calls/admin/${callId}?${searchParams.toString()}` : '/calls/admin',
+		)
+	}
+}
+
+async function createEpisodeDraft({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	const responseAudio = getStringFormValue(formData, 'audio')
+	if (!callId) return redirectCallNotFound()
+	if (getErrorForAudio(responseAudio)) {
+		const searchParams = new URLSearchParams()
+		searchParams.set('error', 'Response audio file is required.')
+		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+	}
+
+	const [{ prisma }, { requireAdminUser }] = await Promise.all([
+		import('#app/utils/prisma.server.ts'),
+		import('#app/utils/session.server.ts'),
+	])
+	await requireAdminUser(request)
+
+	const call = await prisma.call.findFirst({ where: { id: callId } })
+	if (!call) return redirectCallNotFound()
+
+	// Replace any existing draft so "re-record response" is safe and predictable.
+	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
+	const draft = await prisma.callKentEpisodeDraft.create({
+		data: {
+			callId,
+			responseBase64: responseAudio!,
+		},
+	})
+
+	const { startCallKentEpisodeDraftProcessing } = await import(
+		'#app/utils/call-kent-episode-draft.server.ts'
+	)
+	void startCallKentEpisodeDraftProcessing(draft.id)
+
+	return redirect(`/calls/admin/${callId}`)
+}
+
+async function undoEpisodeDraft({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	if (!callId) return redirectCallNotFound()
+
+	const [{ prisma }, { requireAdminUser }] = await Promise.all([
+		import('#app/utils/prisma.server.ts'),
+		import('#app/utils/session.server.ts'),
+	])
+	await requireAdminUser(request)
+	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
+	return redirect(`/calls/admin/${callId}`)
+}
+
+async function updateEpisodeDraft({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	if (!callId) return redirectCallNotFound()
+
+	const title = getStringFormValue(formData, 'title')
+	const description = getStringFormValue(formData, 'description')
+	const keywords = getStringFormValue(formData, 'keywords')
+	const transcript = getStringFormValue(formData, 'transcript')
+
+	const [{ prisma }, { requireAdminUser }] = await Promise.all([
+		import('#app/utils/prisma.server.ts'),
+		import('#app/utils/session.server.ts'),
+	])
+	await requireAdminUser(request)
+
+	try {
+		await prisma.callKentEpisodeDraft.update({
+			where: { callId },
+			data: {
+				title: title?.trim() || null,
+				description: description?.trim() || null,
+				keywords: keywords?.trim() || null,
+				transcript: transcript?.trim() || null,
+			},
+		})
+		return redirect(`/calls/admin/${callId}`)
+	} catch (error: unknown) {
+		const { getErrorMessage } = await import('#app/utils/misc.ts')
+		const searchParams = new URLSearchParams()
+		searchParams.set('error', getErrorMessage(error))
+		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 	}
 }
 
@@ -680,9 +788,10 @@ export async function action({ request }: Route.ActionArgs) {
 	if (intent === 'create-call') {
 		return createCall({ request, formData })
 	}
-	if (intent === 'publish-call') {
-		return publishCall({ request, formData })
-	}
+	if (intent === 'create-episode-draft') return createEpisodeDraft({ request, formData })
+	if (intent === 'undo-episode-draft') return undoEpisodeDraft({ request, formData })
+	if (intent === 'update-episode-draft') return updateEpisodeDraft({ request, formData })
+	if (intent === 'publish-episode-draft') return publishCall({ request, formData })
 	if (intent === 'delete-call') {
 		return deleteCall({ request, formData })
 	}

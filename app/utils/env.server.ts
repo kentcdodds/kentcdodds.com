@@ -83,12 +83,17 @@ const schemaBase = z.object({
 			.trim()
 			.optional()
 			.default('@cf/deepgram/aura-1'),
+		CLOUDFLARE_AI_TEXT_MODEL: z.string().trim().optional(),
+		CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL: z.string().trim().optional(),
 
 		// Optional: semantic search admin tooling (R2 manifests + ignore list).
 		R2_BUCKET: z.string().trim().optional().default('kcd-semantic-search'),
 		R2_ENDPOINT: z.string().trim().optional(),
 		R2_ACCESS_KEY_ID: z.string().trim().optional(),
 		R2_SECRET_ACCESS_KEY: z.string().trim().optional(),
+		// Call Kent audio storage bucket (used by R2-backed call audio storage and
+		// the disk-backed mock when MOCKS=true).
+		CALL_KENT_R2_BUCKET: nonEmptyString,
 		SEMANTIC_SEARCH_IGNORE_LIST_KEY: z
 			.string()
 			.trim()

@@ -57,12 +57,6 @@ describe('RecordingForm', () => {
 			fireEvent.change(screen.getByLabelText('Title'), {
 				target: { value: 'A valid title' },
 			})
-			fireEvent.change(screen.getByLabelText('Description'), {
-				target: { value: 'A sufficiently long description for this call.' },
-			})
-			fireEvent.change(screen.getByLabelText('Keywords'), {
-				target: { value: 'test,call' },
-			})
 
 			const submitButton = screen.getByRole('button', { name: 'Submit Recording' })
 			const form = container.querySelector('form')
@@ -150,12 +144,6 @@ describe('RecordingForm', () => {
 			fireEvent.change(screen.getByLabelText('Title'), {
 				target: { value: 'My First Call' },
 			})
-			fireEvent.change(screen.getByLabelText('Description'), {
-				target: { value: 'A sufficiently long description for this call.' },
-			})
-			fireEvent.change(screen.getByLabelText('Keywords'), {
-				target: { value: 'test,call' },
-			})
 			const form = container.querySelector('form')
 			expect(form).not.toBeNull()
 			fireEvent.submit(form as HTMLFormElement)
@@ -175,10 +163,7 @@ describe('RecordingForm', () => {
 			expect(requestBody.get('intent')).toBe('create-call')
 			expect(requestBody.get('audio')).toBe('data:audio/wav;base64,ZmFrZQ==')
 			expect(requestBody.get('title')).toBe('My First Call')
-			expect(requestBody.get('description')).toBe(
-				'A sufficiently long description for this call.',
-			)
-			expect(requestBody.get('keywords')).toBe('test,call')
+			expect(requestBody.get('notes')).toBe('')
 
 			await waitFor(() =>
 				expect(mockNavigate).toHaveBeenCalledWith(
@@ -228,8 +213,7 @@ describe('RecordingForm', () => {
 			json: vi.fn().mockResolvedValue({
 				fields: {
 					title: '',
-					description: 'desc',
-					keywords: 'a,b',
+					notes: '',
 				},
 				errors: {
 					title: 'Title is required',
@@ -250,8 +234,7 @@ describe('RecordingForm', () => {
 		const initialData = {
 			fields: {
 				title: 'Original title',
-				description: 'Original description',
-				keywords: 'test,call',
+				notes: 'Original notes',
 			},
 			errors: {},
 		}
@@ -261,8 +244,7 @@ describe('RecordingForm', () => {
 			const { container, rerender } = render(
 				<RecordingForm
 					audio={audio}
-					intent="publish-call"
-					callId="call-123"
+					intent="create-call"
 					data={{
 						fields: { ...initialData.fields },
 						errors: { ...initialData.errors },
@@ -281,8 +263,7 @@ describe('RecordingForm', () => {
 			rerender(
 				<RecordingForm
 					audio={audio}
-					intent="publish-call"
-					callId="call-123"
+					intent="create-call"
 					data={{
 						fields: { ...initialData.fields },
 						errors: { ...initialData.errors },
@@ -317,6 +298,11 @@ describe('RecordingForm', () => {
 			expect(form).not.toBeNull()
 			expect(form).toHaveAttribute('novalidate')
 
+			// Submit should surface validation for untouched required fields, but
+			// should not attempt to upload audio when validation fails.
+			fireEvent.submit(form as HTMLFormElement)
+			await screen.findByText('Title is required')
+
 			const titleInput = screen.getByLabelText('Title')
 			expect(titleInput).toHaveAttribute('maxLength', '80')
 			expect(screen.getByText('80 characters left')).toBeInTheDocument()
@@ -335,17 +321,8 @@ describe('RecordingForm', () => {
 				screen.getByText('Title must be at least 5 characters'),
 			).toBeInTheDocument()
 
-			fireEvent.change(titleInput, { target: { value: 'abcde' } })
-			await waitFor(() =>
-				expect(
-					screen.queryByText('Title must be at least 5 characters'),
-				).not.toBeInTheDocument(),
-			)
-
-			// Submit should surface validation for untouched fields.
-			fireEvent.submit(form as HTMLFormElement)
-			await screen.findByText('Description is required')
-			await screen.findByText('Keywords is required')
+			const notesInput = screen.getByLabelText('Notes (optional)')
+			expect(notesInput).toHaveAttribute('maxLength', '5000')
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()
