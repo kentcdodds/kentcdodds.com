@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { data as json, Link } from 'react-router'
 import { Button, LinkButton } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -8,27 +8,35 @@ import { H4, Paragraph } from '#app/components/typography.tsx'
 import { RecordingForm, type RecordingFormData } from '#app/routes/resources/calls/save.tsx'
 import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { useCapturedRouteError } from '#app/utils/misc-react.tsx'
-import { useRootData } from '#app/utils/use-root-data.ts'
+import { type RootLoaderType } from '#app/root.tsx'
+import { type SerializeFrom } from '#app/utils/serialize-from.ts'
+import { type Route } from './+types/new'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export default function RecordScreen() {
+export async function loader({ request }: Route.LoaderArgs) {
+	const url = new URL(request.url)
+	const shouldUseSampleAudio =
+		process.env.NODE_ENV === 'development' && url.searchParams.get('sampleAudio') === '1'
+	return json({ shouldUseSampleAudio } as const)
+}
+
+export default function RecordScreen({ loaderData, matches }: Route.ComponentProps) {
 	const [audio, setAudio] = React.useState<Blob | null>(null)
 	const [prefill, setPrefill] = React.useState<RecordingFormData | undefined>(
 		undefined,
 	)
 	const [mode, setMode] = React.useState<'record' | 'text'>('record')
-	const [searchParams] = useSearchParams()
-	const { user, userInfo } = useRootData()
+
+	const rootMatch = matches.find((m) => m.id === 'root')
+	const rootData = rootMatch?.data as SerializeFrom<RootLoaderType> | undefined
+	const { user, userInfo } = rootData ?? {}
 	// should be impossible...
 	if (!user || !userInfo) throw new Error('user and userInfo required')
 
-	const shouldUseSampleAudio =
-		process.env.NODE_ENV === 'development' &&
-		searchParams.get('sampleAudio') === '1'
+	const { shouldUseSampleAudio } = loaderData
 
 	React.useEffect(() => {
 		if (!shouldUseSampleAudio) return
@@ -147,8 +155,7 @@ export default function RecordScreen() {
 		</div>
 	)
 }
-export function ErrorBoundary() {
-	const error = useCapturedRouteError()
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 	console.error(error)
 	return (
 		<div>

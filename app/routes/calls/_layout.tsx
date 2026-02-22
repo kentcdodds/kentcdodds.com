@@ -1,7 +1,7 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, Outlet, useMatches, useNavigate, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import { Link, Outlet, useNavigate, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
@@ -112,7 +112,10 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	})
 }
 
-export default function CallHomeScreen({ loaderData: data }: Route.ComponentProps) {
+export default function CallHomeScreen({
+	loaderData: data,
+	matches,
+}: Route.ComponentProps) {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('desc')
 
 	const navigate = useNavigate()
@@ -129,7 +132,6 @@ export default function CallHomeScreen({ loaderData: data }: Route.ComponentProp
 	//show latest season first.
 	seasons.reverse()
 
-	const matches = useMatches()
 	const last = matches[matches.length - 1]
 
 	const seasonNumber = last?.params.season
