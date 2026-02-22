@@ -73,7 +73,7 @@ export async function getLatestPodcastSeasonLinks({
 		request,
 		timings,
 		key: 'podcasts:latest-season-links',
-		// Keep this fairly fresh; it’s used on every page load for nav links.
+		// Keep this fairly fresh; it's used on every page load for nav links.
 		ttl: 1000 * 60 * 5,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		checkValue: latestPodcastSeasonLinksSchema,
