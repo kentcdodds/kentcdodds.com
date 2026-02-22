@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
+import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 
 const BCRYPT_COST = 10
 // Precomputed bcrypt hash for timing-equal password comparisons.
@@ -22,20 +23,6 @@ export async function verifyPassword({
 	hash: string
 }) {
 	return bcrypt.compare(password, hash)
-}
-
-// Note: We intentionally do NOT use AbortSignal/AbortController here.
-// Node.js v24 has a bug where aborting fetch requests can crash the process.
-function fetchWithTimeout(
-	url: string,
-	options: RequestInit,
-	timeoutMs: number,
-): Promise<Response> {
-	const timeoutPromise = new Promise<never>((_, reject) => {
-		const id = setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
-		id.unref?.()
-	})
-	return Promise.race([fetch(url, options), timeoutPromise])
 }
 
 function getPasswordHashParts(password: string) {

@@ -5,6 +5,7 @@ import { cache, cachified } from './cache.server.ts'
 import * as discord from './discord.server.ts'
 import { getAvatar, getOptionalTeam } from './misc-react.tsx'
 import { type Timings } from './timing.server.ts'
+import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 
 type UserInfo = {
 	avatar: {
@@ -18,21 +19,6 @@ type UserInfo = {
 	discord: {
 		username: string
 	} | null
-}
-
-// Note: We intentionally do NOT use AbortSignal or AbortController here.
-// Node.js v24 has a bug where aborting fetch requests causes a crash:
-// "uv__stream_destroy: Assertion `!uv__io_active...` failed"
-// Instead, we use Promise.race to implement timeouts without aborting.
-async function fetchWithTimeout(
-	url: string,
-	options: RequestInit,
-	timeoutMs: number,
-): Promise<Response> {
-	const timeoutPromise = new Promise<never>((_, reject) => {
-		setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
-	})
-	return Promise.race([fetch(url, options), timeoutPromise])
 }
 
 export async function gravatarExistsForEmail({
