@@ -236,8 +236,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 		if (!episode) {
 			return {
 				id: entry.id,
-				seasonNumber: 0,
-				episodeNumber: 0,
+				seasonNumber: null,
+				episodeNumber: null,
 				slug: '',
 				episodeTitle: 'Call Kent episode (unavailable)',
 				episodePath: '/calls',
@@ -656,7 +656,10 @@ function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 											{episode.episodeTitle}
 										</Link>
 										<p className="text-secondary mt-1 text-sm">
-											{`Calls — Season ${episode.seasonNumber} Episode ${episode.episodeNumber}`}
+											{typeof episode.seasonNumber === 'number' &&
+											typeof episode.episodeNumber === 'number'
+												? `Calls — Season ${episode.seasonNumber} Episode ${episode.episodeNumber}`
+												: 'Calls — episode unavailable'}
 											{episode.isAnonymous ? ' • anonymous' : ''}
 										</p>
 									</div>

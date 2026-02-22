@@ -224,15 +224,13 @@ async function createEpisode({
 		throw new Error('Transistor did not return an episode number.')
 	}
 
-	//reset episode to 1 if it exceeds episodesPerSeason (50)
-	let season = currentSeason
-	let episodeNumber = 1
-	if (number > episodesPerSeason) {
-		season += 1
-		episodeNumber = 1
-	} else {
-		episodeNumber = number
-	}
+	// Transistor increments `number` within the season. If the season we used is
+	// stale (or multiple publishes happen quickly), `number` can exceed the
+	// per-season limit by more than 1. Wrap into the correct season/episode.
+	const zeroIndexed = number - 1
+	const seasonOffset = Math.floor(zeroIndexed / episodesPerSeason)
+	const season = currentSeason + seasonOffset
+	const episodeNumber = (zeroIndexed % episodesPerSeason) + 1
 
 	const slug = slugify(created.data.attributes.title)
 	const episodePath = getEpisodePath({
@@ -246,7 +244,7 @@ async function createEpisode({
 	const domainUrl = 'https://kentcdodds.com'
 
 	const shortEpisodePath = getEpisodePath({
-		episodeNumber: number,
+		episodeNumber,
 		seasonNumber: season,
 	})
 	const shortDomain = domainUrl.replace(/^https?:\/\//, '')

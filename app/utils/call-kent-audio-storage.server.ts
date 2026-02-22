@@ -29,6 +29,30 @@ type AudioStore = {
 	delete: (args: { key: string }) => Promise<void>
 }
 
+export function parseHttpByteRangeHeader(rangeHeader: string, size: number) {
+	const match = rangeHeader.match(/^bytes=(?<start>\d*)-(?<end>\d*)$/)
+	const startRaw = match?.groups?.start ?? null
+	const endRaw = match?.groups?.end ?? null
+	if (startRaw === null || endRaw === null) return null
+	if (!startRaw && !endRaw) return null
+
+	// Suffix range: bytes=-500
+	if (!startRaw) {
+		const suffixLength = Number(endRaw)
+		if (!Number.isFinite(suffixLength) || suffixLength <= 0) return null
+		const start = Math.max(0, size - suffixLength)
+		const end = size - 1
+		return { start, end }
+	}
+
+	const start = Number(startRaw)
+	const end = endRaw ? Number(endRaw) : size - 1
+	if (!Number.isFinite(start) || !Number.isFinite(end)) return null
+	if (start < 0 || end < start) return null
+	if (start >= size) return null
+	return { start, end: Math.min(end, size - 1) }
+}
+
 function getCacheRoot() {
 	return path.join(process.cwd(), '.cache', 'cloudflare-r2')
 }

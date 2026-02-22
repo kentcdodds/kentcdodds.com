@@ -316,13 +316,14 @@ function DraftPending({
 	callId: string
 	step: EpisodeDraft['step']
 }) {
-	const stepLabel = {
+	const stepLabel =
+		{
 		STARTED: 'Starting…',
 		GENERATING_AUDIO: 'Generating episode audio…',
 		TRANSCRIBING: 'Transcribing audio…',
 		GENERATING_METADATA: 'Writing title/description/keywords…',
 		DONE: 'Finalizing…',
-	}[step]
+		}[step] ?? 'Processing…'
 
 	return (
 		<div className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800">

@@ -140,7 +140,10 @@ export async function startCallKentEpisodeDraftProcessing(
 					'Cloudflare transcription is not configured. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_AI_TRANSCRIPTION_MODEL.',
 				)
 			}
-			transcript = await transcribeMp3WithWorkersAi({ mp3: episodeMp3 })
+			transcript = (await transcribeMp3WithWorkersAi({ mp3: episodeMp3 })).trim()
+			if (!transcript) {
+				throw new Error('Workers AI transcription returned an empty transcript.')
+			}
 
 			const step3 = await prisma.callKentEpisodeDraft.updateMany({
 				where: { id: draftId, status: 'PROCESSING' },
@@ -163,12 +166,19 @@ export async function startCallKentEpisodeDraftProcessing(
 				callerNotes: draft.call.notes,
 			})
 
+			const existingTitle = draft.title?.trim()
+			const existingDescription = draft.description?.trim()
+			const existingKeywords = draft.keywords?.trim()
+			const nextTitle = existingTitle || metadata.title.trim()
+			const nextDescription = existingDescription || metadata.description.trim()
+			const nextKeywords = existingKeywords || metadata.keywords.trim()
+
 			await prisma.callKentEpisodeDraft.updateMany({
 				where: { id: draftId, status: 'PROCESSING' },
 				data: {
-					title: draft.title ?? metadata.title,
-					description: draft.description ?? metadata.description,
-					keywords: draft.keywords ?? metadata.keywords,
+					title: nextTitle,
+					description: nextDescription,
+					keywords: nextKeywords,
 					status: 'READY',
 					step: 'DONE',
 				},

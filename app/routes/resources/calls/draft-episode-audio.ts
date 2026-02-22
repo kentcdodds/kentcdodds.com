@@ -3,34 +3,12 @@ import { createReadableStreamFromReadable } from '@react-router/node'
 import {
 	getAudioBuffer,
 	getAudioStream,
+	parseHttpByteRangeHeader,
 	parseBase64DataUrl,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/draft-episode-audio'
-
-function parseRangeHeader(rangeHeader: string, size: number) {
-	const match = rangeHeader.match(/^bytes=(?<start>\d*)-(?<end>\d*)$/)
-	const startRaw = match?.groups?.start ?? null
-	const endRaw = match?.groups?.end ?? null
-	if (startRaw === null || endRaw === null) return null
-	if (!startRaw && !endRaw) return null
-
-	if (!startRaw) {
-		const suffixLength = Number(endRaw)
-		if (!Number.isFinite(suffixLength) || suffixLength <= 0) return null
-		const start = Math.max(0, size - suffixLength)
-		const end = size - 1
-		return { start, end }
-	}
-
-	const start = Number(startRaw)
-	const end = endRaw ? Number(endRaw) : size - 1
-	if (!Number.isFinite(start) || !Number.isFinite(end)) return null
-	if (start < 0 || end < start) return null
-	if (start >= size) return null
-	return { start, end: Math.min(end, size - 1) }
-}
 
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
@@ -58,7 +36,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
 			const buffer = await getAudioBuffer({ key: draft.episodeAudioKey })
 			const totalSize = buffer.byteLength
-			const range = rangeHeader ? parseRangeHeader(rangeHeader, totalSize) : null
+			const range = rangeHeader
+				? parseHttpByteRangeHeader(rangeHeader, totalSize)
+				: null
 			const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
 			const stream = Readable.from(body)
 			return new Response(createReadableStreamFromReadable(stream), {
@@ -77,7 +57,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			})
 		}
 
-		const range = rangeHeader ? parseRangeHeader(rangeHeader, size) : null
+		const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
 		const { body } = await getAudioStream({
 			key: draft.episodeAudioKey,
 			range: range ?? undefined,
@@ -102,7 +82,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const parsed = parseBase64DataUrl(draft.episodeBase64)
 	const contentType = parsed.contentType
 	const size = parsed.buffer.byteLength
-	const range = rangeHeader ? parseRangeHeader(rangeHeader, size) : null
+	const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
 	const body = range ? parsed.buffer.subarray(range.start, range.end + 1) : parsed.buffer
 	const stream = Readable.from(body)
 	return new Response(createReadableStreamFromReadable(stream), {

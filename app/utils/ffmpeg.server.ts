@@ -49,8 +49,9 @@ async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Arr
 						[0][call]acrossfade=d=1:c2=nofade[a01];
 						[a01][2]acrossfade=d=1:c1=nofade[a02];
 						[a02][response]acrossfade=d=1:c2=nofade[a03];
-						[a03][4]acrossfade=d=1:c1=nofade
+						[a03][4]acrossfade=d=1:c1=nofade[out]
 					`,
+					'-map', '[out]',
 					outputPath,
 				]
 			: [
@@ -73,7 +74,7 @@ async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Arr
 	})
 
 	const buffer = await fs.promises.readFile(outputPath)
-	await fs.promises.rmdir(cacheDir, { recursive: true })
+	await fs.promises.rm(cacheDir, { recursive: true, force: true })
 	return buffer
 }
 
