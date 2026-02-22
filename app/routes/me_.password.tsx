@@ -95,14 +95,15 @@ export async function action({ request }: Route.ActionArgs) {
 	const passwordHash = await getPasswordHash(password)
 
 	await ensurePrimary()
-	await prisma.password.upsert({
-		where: { userId: user.id },
-		update: { hash: passwordHash },
-		create: { userId: user.id, hash: passwordHash },
-	})
-
-	// Invalidate all sessions (including this one) after a password change.
-	await prisma.session.deleteMany({ where: { userId: user.id } })
+	await prisma.$transaction([
+		prisma.password.upsert({
+			where: { userId: user.id },
+			update: { hash: passwordHash },
+			create: { userId: user.id, hash: passwordHash },
+		}),
+		// Invalidate all sessions (including this one) after a password change.
+		prisma.session.deleteMany({ where: { userId: user.id } }),
+	])
 	const session = await getSession(request)
 	await session.signIn({ id: user.id })
 
