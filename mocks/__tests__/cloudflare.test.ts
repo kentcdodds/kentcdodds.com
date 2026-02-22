@@ -18,12 +18,13 @@ afterAll(() => {
 
 describe('cloudflare MSW mocks', () => {
 	test('Workers AI embeddings endpoint returns { result: { data } }', async () => {
+		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
 			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/google/embeddinggemma-300m',
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ text: ['hello world'] }),
@@ -39,12 +40,13 @@ describe('cloudflare MSW mocks', () => {
 	})
 
 	test('Workers AI transcription endpoint returns { result: { text } }', async () => {
+		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
 			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/%40cf%2Fopenai%2Fwhisper',
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'audio/mpeg',
 				},
 				body: new Uint8Array([1, 2, 3, 4]),
@@ -59,12 +61,13 @@ describe('cloudflare MSW mocks', () => {
 	})
 
 	test('Workers AI text-to-speech endpoint returns audio bytes', async () => {
+		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
 			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/deepgram/aura-1',
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
@@ -82,6 +85,7 @@ describe('cloudflare MSW mocks', () => {
 	})
 
 	test('Vectorize query uses match-sorter when embedding text is known', async () => {
+		const apiToken = 'MOCK_test-token'
 		// Seed the expected doc so the test is independent of the filesystem.
 		const seedNdjson = `${JSON.stringify({
 			id: '/__mock__/about-mcp',
@@ -99,7 +103,7 @@ describe('cloudflare MSW mocks', () => {
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/x-ndjson',
 				},
 				body: seedNdjson,
@@ -112,7 +116,7 @@ describe('cloudflare MSW mocks', () => {
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ text: ['About KCD MCP'] }),
@@ -128,7 +132,7 @@ describe('cloudflare MSW mocks', () => {
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
@@ -150,12 +154,13 @@ describe('cloudflare MSW mocks', () => {
 	})
 
 	test('Vectorize query returns seeded matches with metadata', async () => {
+		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
 			'https://api.cloudflare.com/client/v4/accounts/acc123/vectorize/v2/indexes/semantic-index/query',
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
@@ -177,6 +182,7 @@ describe('cloudflare MSW mocks', () => {
 	})
 
 	test('Vectorize upsert + query + delete_by_ids works', async () => {
+		const apiToken = 'MOCK_test-token'
 		const accountId = 'acc999'
 		const indexName = 'upsert-index'
 		const id = '/mock/doc'
@@ -211,7 +217,7 @@ describe('cloudflare MSW mocks', () => {
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': `multipart/form-data; boundary=${boundary}`,
 				},
 				body: multipartBody,
@@ -224,7 +230,7 @@ describe('cloudflare MSW mocks', () => {
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
@@ -244,7 +250,7 @@ describe('cloudflare MSW mocks', () => {
 			{
 				method: 'POST',
 				headers: {
-					Authorization: 'Bearer test-token',
+					Authorization: `Bearer ${apiToken}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ ids: [id] }),

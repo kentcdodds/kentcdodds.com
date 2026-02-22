@@ -11,7 +11,8 @@ function getCloudflareWorkersAiAuth() {
 	if (process.env.MOCKS === 'true') {
 		return {
 			accountId: accountId ?? 'mock-account-id',
-			apiToken: apiToken ?? 'mock-api-token',
+			// Cloudflare MSW mocks only activate for tokens starting with `MOCK`.
+			apiToken: apiToken ?? 'MOCK_cloudflare_api_token',
 		}
 	}
 
@@ -52,9 +53,9 @@ export async function synthesizeSpeechWithWorkersAi({
 		)
 	}
 
-	const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}/ai/run/${encodeURIComponent(
-		model,
-	)}`
+	// Cloudflare's REST route expects the model as path segments (with `/`), so do
+	// not URL-encode the model string (encoding can yield "No route for that URI").
+	const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}/ai/run/${model}`
 
 	const lowerModel = model.toLowerCase()
 	const payload =

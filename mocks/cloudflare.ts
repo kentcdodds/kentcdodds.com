@@ -7,6 +7,7 @@ import { matchSorter } from 'match-sorter'
 import {
 	http,
 	HttpResponse,
+	passthrough,
 	type DefaultBodyType,
 	type DefaultRequestMultipartBody,
 	type HttpHandler,
@@ -15,6 +16,21 @@ import { mockTransistorEpisodes } from './transistor.ts'
 import { requiredHeader } from './utils.ts'
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
+
+function getBearerToken(request: Request) {
+	const raw = request.headers.get('authorization') ?? ''
+	const match = /^\s*bearer\s+(?<token>.+?)\s*$/iu.exec(raw)
+	const token = match?.groups?.token?.trim()
+	return token || null
+}
+
+function shouldMockCloudflare(request: Request) {
+	// Align with other mocks: only intercept when the token explicitly opts in.
+	// This makes it possible to run with `MOCKS=true` while still using real CF
+	// credentials by setting a non-MOCK token.
+	const token = getBearerToken(request)
+	return Boolean(token && token.startsWith('MOCK'))
+}
 
 // Keep vectors small to avoid wasting CPU/memory in local mocks.
 const DEFAULT_EMBEDDING_DIMS = 12
@@ -878,6 +894,7 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 	http.post<any, DefaultBodyType>(
 		/https:\/\/api\.cloudflare\.com\/client\/v4\/accounts\/[^/]+\/ai\/run\/.+/,
 		async ({ request }) => {
+			if (!shouldMockCloudflare(request)) return passthrough()
 			requiredHeader(request.headers, 'authorization')
 
 			const url = new URL(request.url)
@@ -970,48 +987,72 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 	// Vectorize query (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/query`,
-		handleVectorizeQuery,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeQuery(args)
+		},
 	),
 
 	// Vectorize query (legacy)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/query`,
-		handleVectorizeQuery,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeQuery(args)
+		},
 	),
 
 	// Vectorize write operations (v2): insert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/insert`,
-		handleVectorizeInsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeInsert(args)
+		},
 	),
 
 	// Vectorize write operations (v2): upsert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/upsert`,
-		handleVectorizeUpsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeUpsert(args)
+		},
 	),
 
 	// Vectorize write operations (legacy): insert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/insert`,
-		handleVectorizeInsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeInsert(args)
+		},
 	),
 
 	// Vectorize write operations (legacy): upsert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/upsert`,
-		handleVectorizeUpsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeUpsert(args)
+		},
 	),
 
 	// Vectorize delete_by_ids (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/delete_by_ids`,
-		handleVectorizeDeleteByIds,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeDeleteByIds(args)
+		},
 	),
 
 	// Vectorize delete_by_ids (legacy)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/delete_by_ids`,
-		handleVectorizeDeleteByIds,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeDeleteByIds(args)
+		},
 	),
 ]
