@@ -36,6 +36,7 @@ export function FavoriteToggle({
 	initialIsFavorite,
 	mode = 'button',
 	label = 'Favorite',
+	iconSize: iconSizeOverride,
 	className,
 }: {
 	contentType: FavoriteContentType
@@ -43,6 +44,7 @@ export function FavoriteToggle({
 	initialIsFavorite?: boolean
 	mode?: 'button' | 'icon'
 	label?: string
+	iconSize?: number
 	className?: string
 }) {
 	const user = useOptionalUser()
@@ -83,9 +85,7 @@ export function FavoriteToggle({
 	const nextIntent = isFavorite ? 'remove' : 'add'
 	const isBusy = fetcher.state !== 'idle'
 
-	// Icon-only buttons sit next to other 24px icons (ex: 𝕏 on calls pages),
-	// so bump the icon size in `mode="icon"` to match.
-	const iconSize = mode === 'icon' ? 24 : 18
+	const iconSize = mode === 'icon' ? (iconSizeOverride ?? 18) : 18
 	const icon = isBusy ? (
 		<SpinnerIcon size={iconSize} className="animate-spin" />
 	) : (

@@ -180,6 +180,7 @@ export default function Screen({ loaderData }: Route.ComponentProps) {
 				<div className="flex items-start gap-2">
 					<FavoriteToggle
 						mode="icon"
+						iconSize={24}
 						contentType="call-kent-episode"
 						contentId={getEpisodeFavoriteContentId({
 							seasonNumber: episode.seasonNumber,
