@@ -83,10 +83,13 @@ export function FavoriteToggle({
 	const nextIntent = isFavorite ? 'remove' : 'add'
 	const isBusy = fetcher.state !== 'idle'
 
+	// Icon-only buttons sit next to other 24px icons (ex: 𝕏 on calls pages),
+	// so bump the icon size in `mode="icon"` to match.
+	const iconSize = mode === 'icon' ? 24 : 18
 	const icon = isBusy ? (
-		<SpinnerIcon size={18} className="animate-spin" />
+		<SpinnerIcon size={iconSize} className="animate-spin" />
 	) : (
-		<StarIcon size={18} filled={isFavorite} />
+		<StarIcon size={iconSize} filled={isFavorite} />
 	)
 
 	const text = isFavorite ? 'Favorited' : label
