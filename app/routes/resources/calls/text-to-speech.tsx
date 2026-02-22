@@ -23,28 +23,50 @@ const textToSpeechResourceRoute = '/resources/calls/text-to-speech'
 
 const TTS_RATE_LIMIT_MAX = 20
 const TTS_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+// This caches *unsubmitted* call audio, so keep the TTL modest.
+const TTS_CACHE_TTL_MS = 1000 * 60 * 60 * 24 // 24 hours
 
 async function getTextToSpeechServerServices() {
 	const [
 		{ isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi },
+		{ cachified, cache },
 		{ rateLimit },
 		{ getUser },
+		{ createHash },
 	] = await Promise.all([
 		import('#app/utils/cloudflare-ai-text-to-speech.server.ts'),
+		import('#app/utils/cache.server.ts'),
 		import('#app/utils/rate-limit.server.ts'),
 		import('#app/utils/session.server.ts'),
+		import('node:crypto'),
 	])
 	return {
 		isCloudflareTextToSpeechConfigured,
 		synthesizeSpeechWithWorkersAi,
+		cachified,
+		cache,
 		rateLimit,
 		getUser,
+		createHash,
 	}
+}
+
+function normalizeTextForCache(text: string) {
+	// Normalize insignificant whitespace so repeated requests hit cache.
+	return text.trim().replace(/\s+/g, ' ')
 }
 
 export async function action({ request }: Route.ActionArgs) {
 	// This is a paid API call; require auth to limit abuse.
-	const { isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi, rateLimit, getUser } =
+	const {
+		isCloudflareTextToSpeechConfigured,
+		synthesizeSpeechWithWorkersAi,
+		cachified,
+		cache,
+		rateLimit,
+		getUser,
+		createHash,
+	} =
 		await getTextToSpeechServerServices()
 
 	const headers = { 'Cache-Control': 'no-store', Vary: 'Cookie' }
@@ -87,32 +109,70 @@ export async function action({ request }: Route.ActionArgs) {
 		return json({ error: 'Invalid voice' }, { status: 400, headers })
 	}
 
-	const limit = rateLimit({
-		key: `call-kent-tts:${user.id}`,
-		max: TTS_RATE_LIMIT_MAX,
-		windowMs: TTS_RATE_LIMIT_WINDOW_MS,
+	const normalizedText = normalizeTextForCache(text)
+	const model = process.env.CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL ?? '@cf/deepgram/aura-1'
+	// Aura defaults to "angus" when omitted; treat empty voice as that for caching.
+	const voiceForCache = voiceRaw || 'angus'
+	const cacheKeyPayload = JSON.stringify({
+		v: 1,
+		model,
+		voice: voiceForCache,
+		text: normalizedText,
 	})
-	if (!limit.allowed) {
-		const retryAfterSeconds = Math.ceil((limit.retryAfterMs ?? 0) / 1000)
-		return json(
-			{
-				error: `Too many text-to-speech requests. Try again in ${retryAfterSeconds}s.`,
-			},
-			{
-				status: 429,
-				headers: {
-					...headers,
-					'Retry-After': String(retryAfterSeconds),
-				},
-			},
-		)
-	}
+	const cacheKeyHash = createHash('sha256').update(cacheKeyPayload).digest('hex')
+	const cacheKey = `call-kent-tts:audio:v1:${cacheKeyHash}`
 
 	try {
-		const { bytes, contentType } = await synthesizeSpeechWithWorkersAi({
-			text: text.trim(),
-			voice: voiceRaw || undefined,
+		const cached = await cachified({
+			cache,
+			key: cacheKey,
+			ttl: TTS_CACHE_TTL_MS,
+			checkValue: (value: unknown) => {
+				if (!value || typeof value !== 'object') return false
+				const obj = value as Record<string, unknown>
+				const bytes = obj.bytes
+				const contentType = obj.contentType
+				if (!(bytes instanceof Uint8Array)) return false
+				if (typeof contentType !== 'string') return false
+				return true
+			},
+			getFreshValue: async () => {
+				// Only rate-limit *cache misses* (paid Workers AI calls).
+				const limit = rateLimit({
+					key: `call-kent-tts:${user.id}`,
+					max: TTS_RATE_LIMIT_MAX,
+					windowMs: TTS_RATE_LIMIT_WINDOW_MS,
+				})
+				if (!limit.allowed) {
+					const retryAfterSeconds = Math.ceil((limit.retryAfterMs ?? 0) / 1000)
+					throw json(
+						{
+							error: `Too many text-to-speech requests. Try again in ${retryAfterSeconds}s.`,
+						},
+						{
+							status: 429,
+							headers: {
+								...headers,
+								'Retry-After': String(retryAfterSeconds),
+							},
+						},
+					)
+				}
+
+				const { bytes, contentType } = await synthesizeSpeechWithWorkersAi({
+					text: normalizedText,
+					voice: voiceRaw || undefined,
+					model,
+				})
+				// Ensure we store a Buffer so the cache's base64 serializer works.
+				return {
+					bytes: Buffer.from(bytes),
+					contentType: contentType || 'audio/mpeg',
+				}
+			},
 		})
+
+		const { bytes, contentType } = cached
 		// Some TS `fetch`/`Response` typings don't accept all `Uint8Array` variants.
 		// Normalize into an `ArrayBuffer` body for broad compatibility.
 		const responseBody =
@@ -122,10 +182,13 @@ export async function action({ request }: Route.ActionArgs) {
 		return new Response(responseBody, {
 			headers: {
 				...headers,
-				'Content-Type': contentType || 'audio/mpeg',
+				'Content-Type': contentType,
 			},
 		})
 	} catch (error: unknown) {
+		if (error instanceof Response) {
+			return error
+		}
 		console.error('Call Kent TTS failed', error)
 		return json(
 			{ error: 'Unable to generate audio. Please try again.' },
