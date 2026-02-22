@@ -68,7 +68,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		if (result) {
 			loginSession.setResetPasswordEmail(result.target)
 			loginSession.setEmail(result.target)
-			loginSession.flashMessage('Verification successful. Choose a new password.')
+			loginSession.flashMessage('Verification successful. Choose a password.')
 			return redirect('/reset-password', { headers: await loginSession.getHeaders() })
 		}
 		loginSession.flashError(
@@ -78,12 +78,21 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 
 	const resetEmail = loginSession.getResetPasswordEmail()
+	let hasPassword: boolean | null = null
+	if (resetEmail) {
+		const userRecord = await prisma.user.findUnique({
+			where: { email: resetEmail },
+			select: { password: { select: { userId: true } } },
+		})
+		hasPassword = Boolean(userRecord?.password)
+	}
 	return json(
 		{
 			step: resetEmail ? 'set-password' : 'verify',
 			email: resetEmail ?? loginSession.getEmail() ?? '',
 			error: loginSession.getError(),
 			message: loginSession.getMessage(),
+			hasPassword,
 		} as const,
 		{ headers: await loginSession.getHeaders() },
 	)
@@ -205,7 +214,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 		loginSession.setResetPasswordEmail(result.target)
 		loginSession.setEmail(result.target)
-		loginSession.flashMessage('Verification successful. Choose a new password.')
+		loginSession.flashMessage('Verification successful. Choose a password.')
 		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
 	}
 
@@ -304,11 +313,19 @@ export default function ResetPassword() {
 		<div className="mt-24 pt-6">
 			<HeaderSection
 				as="header"
-				title="Reset your password."
+				title={
+					data.step === 'verify'
+						? 'Set or reset your password.'
+						: data.hasPassword
+							? 'Choose a new password.'
+							: 'Choose a password.'
+				}
 				subTitle={
 					data.step === 'verify'
 						? 'Use the code from your email.'
-						: 'Choose a new password.'
+						: data.hasPassword
+							? 'Choose a new password.'
+							: 'Choose a password.'
 				}
 				className="mb-16"
 			/>

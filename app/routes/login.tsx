@@ -135,7 +135,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (!userWithPassword?.password || !isValid) {
 		loginSession.flashError(
-			'Invalid email or password. If you previously used magic links, use "Reset password" to set one.',
+			'Invalid email or password. If you do not have a password yet, use "Reset password" to set one.',
 		)
 		return redirect(`/login`, {
 			status: 400,
@@ -320,7 +320,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 												prefetch="intent"
 												className="underlined text-secondary text-sm focus:outline-none"
 											>
-												Forgot password?
+												Reset password
 											</Link>
 										</div>
 										<Input
@@ -421,11 +421,17 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 			/>
 			<Grid>
 				<Paragraph className="col-span-full mb-10 md:col-span-4">
-					{`
-              To sign in to your account, use your email and password above (or
-              use a passkey if you've set one up). If you previously used magic
-              links, you'll need to set a password first.
-            `}
+					To sign in to your account, use your email and password above (or use
+					a passkey if you have set one up). If you do not have a password yet,
+					use{' '}
+					<Link
+						to="/forgot-password"
+						prefetch="intent"
+						className="underlined focus:outline-none"
+					>
+						Reset password
+					</Link>{' '}
+					to set one.
 				</Paragraph>
 
 				<Paragraph

@@ -125,7 +125,7 @@ export default function ForgotPassword() {
 		<div className="mt-24 pt-6">
 			<HeaderSection
 				as="header"
-				title="Reset your password."
+				title="Set or reset your password."
 				subTitle="We'll email you a verification code."
 				className="mb-16"
 			/>
