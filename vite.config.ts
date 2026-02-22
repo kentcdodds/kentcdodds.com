@@ -18,8 +18,8 @@ if (SENTRY_UPLOAD && MODE === 'production') {
 	const tokenImpliesOrg = Boolean(authToken?.startsWith('sntrys_'))
 
 	// If upload is "on" but required settings are missing, the Sentry plugin will
-	// skip upload but still run the delete-after-upload step, which results in
-	// `.map` URLs returning our HTML 404 page.
+	// just warn + skip the upload. Fail fast so we don't silently deploy without
+	// sourcemaps in Sentry.
 	if (!authToken) {
 		throw new Error('SENTRY_UPLOAD is enabled, but SENTRY_AUTH_TOKEN is missing')
 	}
@@ -52,8 +52,7 @@ export default defineConfig(async () => {
 						org: process.env.SENTRY_ORG,
 						project: process.env.SENTRY_PROJECT,
 						// By default the bundler plugin logs and continues on upload/release
-						// errors. If we then also delete maps, Sentry ends up trying to fetch
-						// `*.map` and receiving our HTML 404 page instead.
+						// errors. Fail the build so we don't deploy with broken symbolication.
 						errorHandler: (err) => {
 							throw err
 						},
@@ -62,15 +61,6 @@ export default defineConfig(async () => {
 							setCommits: {
 								auto: true,
 							},
-						},
-						sourcemaps: {
-							// NOTE: This option expects globs (or a Promise resolving to globs),
-							// not the *result* of running glob at config-eval time.
-							//
-							// We only delete Vite/React Router client maps here. The `server-build`
-							// sourcemaps are produced by a separate esbuild step and are not uploaded
-							// by this plugin.
-							filesToDeleteAfterUpload: ['./build/client/**/*.map'],
 						},
 					})
 				: null,
