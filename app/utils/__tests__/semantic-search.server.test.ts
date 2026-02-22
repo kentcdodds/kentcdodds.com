@@ -75,7 +75,7 @@ describe('semantic search result normalization', () => {
 		}
 		try {
 			const accountId = 'acc123'
-			const apiToken = 'test-token'
+			const apiToken = 'MOCK_test-token'
 			const indexName = 'semantic-index'
 
 			process.env.CLOUDFLARE_ACCOUNT_ID = accountId

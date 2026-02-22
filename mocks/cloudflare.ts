@@ -7,6 +7,7 @@ import { matchSorter } from 'match-sorter'
 import {
 	http,
 	HttpResponse,
+	passthrough,
 	type DefaultBodyType,
 	type DefaultRequestMultipartBody,
 	type HttpHandler,
@@ -15,6 +16,21 @@ import { mockTransistorEpisodes } from './transistor.ts'
 import { requiredHeader } from './utils.ts'
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
+
+function getBearerToken(request: Request) {
+	const raw = request.headers.get('authorization') ?? ''
+	const match = /^\s*bearer\s+(?<token>.+?)\s*$/iu.exec(raw)
+	const token = match?.groups?.token?.trim()
+	return token || null
+}
+
+function shouldMockCloudflare(request: Request) {
+	// Align with other mocks: only intercept when the token explicitly opts in.
+	// This makes it possible to run with `MOCKS=true` while still using real CF
+	// credentials by setting a non-MOCK token.
+	const token = getBearerToken(request)
+	return Boolean(token && token.startsWith('MOCK'))
+}
 
 // Keep vectors small to avoid wasting CPU/memory in local mocks.
 const DEFAULT_EMBEDDING_DIMS = 12
@@ -93,6 +109,61 @@ function jsonError(
 
 function clamp(n: number, min: number, max: number) {
 	return Math.min(max, Math.max(min, n))
+}
+
+function makePcm16SineWaveWav({
+	durationSeconds,
+	frequencyHz,
+	sampleRate = 8000,
+	amplitude = 0.25,
+}: {
+	durationSeconds: number
+	frequencyHz: number
+	sampleRate?: number
+	amplitude?: number
+}) {
+	const safeDuration = clamp(durationSeconds, 0.25, 30)
+	const numSamples = Math.floor(safeDuration * sampleRate)
+	const dataSize = numSamples * 2 // 16-bit mono
+	const buffer = Buffer.alloc(44 + dataSize)
+
+	// RIFF header
+	buffer.write('RIFF', 0, 'ascii')
+	buffer.writeUInt32LE(36 + dataSize, 4) // file size - 8
+	buffer.write('WAVE', 8, 'ascii')
+
+	// fmt chunk
+	buffer.write('fmt ', 12, 'ascii')
+	buffer.writeUInt32LE(16, 16) // PCM
+	buffer.writeUInt16LE(1, 20) // audio format (PCM)
+	buffer.writeUInt16LE(1, 22) // channels
+	buffer.writeUInt32LE(sampleRate, 24)
+	buffer.writeUInt32LE(sampleRate * 2, 28) // byte rate
+	buffer.writeUInt16LE(2, 32) // block align
+	buffer.writeUInt16LE(16, 34) // bits per sample
+
+	// data chunk
+	buffer.write('data', 36, 'ascii')
+	buffer.writeUInt32LE(dataSize, 40)
+
+	const twoPiF = 2 * Math.PI * frequencyHz
+	const scale = Math.max(0, Math.min(1, amplitude)) * 32767
+	for (let i = 0; i < numSamples; i++) {
+		const t = i / sampleRate
+		const sample = Math.round(Math.sin(twoPiF * t) * scale)
+		buffer.writeInt16LE(sample, 44 + i * 2)
+	}
+
+	return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
+}
+
+function frequencyFromSpeakerAndText(speaker: string, text: string) {
+	const hash = createHash('sha256')
+		.update(`${speaker}:${text.slice(0, 64)}`, 'utf8')
+		.digest()
+	const byte = hash[0] ?? 0
+	// 220Hz..880Hz
+	return 220 + Math.round((byte / 255) * 660)
 }
 
 function dot(a: number[], b: number[]) {
@@ -823,6 +894,7 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 	http.post<any, DefaultBodyType>(
 		/https:\/\/api\.cloudflare\.com\/client\/v4\/accounts\/[^/]+\/ai\/run\/.+/,
 		async ({ request }) => {
+			if (!shouldMockCloudflare(request)) return passthrough()
 			requiredHeader(request.headers, 'authorization')
 
 			const url = new URL(request.url)
@@ -839,7 +911,9 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				})
 			}
 
-			// Embeddings: { text: string[] }
+			const lowerModel = model.toLowerCase()
+
+			// Most Workers AI models take JSON bodies.
 			let body: any = null
 			try {
 				body = await request.json()
@@ -847,6 +921,44 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				// ignore
 			}
 
+			// Text-to-speech (e.g. @cf/deepgram/aura-1, @cf/myshell-ai/melotts).
+			if (
+				lowerModel.includes('deepgram/aura') ||
+				lowerModel.includes('aura-') ||
+				lowerModel.includes('melotts')
+			) {
+				const text =
+					typeof body?.text === 'string'
+						? body.text
+						: typeof body?.prompt === 'string'
+							? body.prompt
+							: ''
+				if (!text || !text.trim()) {
+					return jsonError(
+						400,
+						`Mock Workers AI expected JSON body { text: string } for TTS (model: ${model}).`,
+						10001,
+					)
+				}
+				const speaker =
+					typeof body?.speaker === 'string' && body.speaker.trim()
+						? body.speaker.trim()
+						: 'angus'
+				const frequencyHz = frequencyFromSpeakerAndText(speaker, text)
+				const wav = makePcm16SineWaveWav({
+					durationSeconds: 6,
+					frequencyHz,
+				})
+				return new HttpResponse(wav, {
+					status: 200,
+					headers: {
+						'Content-Type': 'audio/wav',
+						'Cache-Control': 'no-store',
+					},
+				})
+			}
+
+			// Embeddings: { text: string[] }
 			const textsRaw = body?.text
 			const texts = Array.isArray(textsRaw)
 				? textsRaw.filter((t: any) => typeof t === 'string')
@@ -875,48 +987,72 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 	// Vectorize query (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/query`,
-		handleVectorizeQuery,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeQuery(args)
+		},
 	),
 
 	// Vectorize query (legacy)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/query`,
-		handleVectorizeQuery,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeQuery(args)
+		},
 	),
 
 	// Vectorize write operations (v2): insert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/insert`,
-		handleVectorizeInsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeInsert(args)
+		},
 	),
 
 	// Vectorize write operations (v2): upsert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/upsert`,
-		handleVectorizeUpsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeUpsert(args)
+		},
 	),
 
 	// Vectorize write operations (legacy): insert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/insert`,
-		handleVectorizeInsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeInsert(args)
+		},
 	),
 
 	// Vectorize write operations (legacy): upsert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/upsert`,
-		handleVectorizeUpsert,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeUpsert(args)
+		},
 	),
 
 	// Vectorize delete_by_ids (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/delete_by_ids`,
-		handleVectorizeDeleteByIds,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeDeleteByIds(args)
+		},
 	),
 
 	// Vectorize delete_by_ids (legacy)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/delete_by_ids`,
-		handleVectorizeDeleteByIds,
+		async (args) => {
+			if (!shouldMockCloudflare(args.request)) return passthrough()
+			return handleVectorizeDeleteByIds(args)
+		},
 	),
 ]

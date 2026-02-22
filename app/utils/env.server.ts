@@ -52,6 +52,7 @@ const schema = z.object({
 	CLOUDFLARE_VECTORIZE_INDEX: z.string().optional(),
 	CLOUDFLARE_AI_EMBEDDING_MODEL: z.string().optional(),
 	CLOUDFLARE_AI_TRANSCRIPTION_MODEL: z.string().optional(),
+	CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL: z.string().optional(),
 
 	// Optional: semantic search admin tooling (R2 manifests + ignore list).
 	// Used by /search/admin and by maintenance scripts; not required for the site.
