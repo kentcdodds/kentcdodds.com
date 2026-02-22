@@ -37,6 +37,7 @@ import { getClientSession } from './utils/client.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
+import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
 import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
@@ -44,7 +45,6 @@ import { getTheme } from './utils/theme.server.ts'
 import { useTheme } from './utils/theme.tsx'
 import { getServerTimeHeader } from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
-import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'root',
