@@ -522,7 +522,9 @@ async function createCall({
 				if (maxNotesLength > 0) {
 					const truncatedNotes =
 						trimmedNotes.length > maxNotesLength
-							? `${trimmedNotes.slice(0, Math.max(0, maxNotesLength - 3))}...`
+							? maxNotesLength > 3
+								? `${trimmedNotes.slice(0, maxNotesLength - 3)}...`
+								: trimmedNotes.slice(0, maxNotesLength)
 							: trimmedNotes
 					message = `${baseMessage}${notesHeader}${truncatedNotes}\n\n${callAdminUrl}`
 				}
