@@ -1,9 +1,12 @@
+import { clsx } from 'clsx'
 import * as React from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import {
 	getCallKentEpisodeArtworkAvatar,
 	getCallKentEpisodeArtworkUrl,
 } from '#app/utils/call-kent-artwork.ts'
 import { getAvatar } from '#app/utils/misc-react.tsx'
+import { imgSrc } from '#app/utils/suspense-image.ts'
 
 const AVATAR_SIZE = 1400
 
@@ -87,6 +90,18 @@ export function EpisodeArtworkPreview({
 		return () => document.removeEventListener('pointerdown', onPointerDown)
 	}, [isTooltipOpen])
 
+	function handleTooltipPointerLeave() {
+		// If the button is focused (keyboard/touch), keep the tooltip open until blur.
+		const wrapper = tooltipWrapperRef.current
+		if (!wrapper) {
+			setIsTooltipOpen(false)
+			return
+		}
+		const active = document.activeElement
+		if (active instanceof Node && wrapper.contains(active)) return
+		setIsTooltipOpen(false)
+	}
+
 	return (
 		<section className="mb-10 rounded-lg bg-gray-100 p-6 dark:bg-gray-800">
 			<div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -133,6 +148,9 @@ export function EpisodeArtworkPreview({
 								<span
 									ref={tooltipWrapperRef}
 									className="relative inline-flex"
+									onPointerEnter={() => setIsTooltipOpen(true)}
+									onPointerLeave={handleTooltipPointerLeave}
+									onFocus={() => setIsTooltipOpen(true)}
 									onBlur={(event) => {
 										const wrapper = tooltipWrapperRef.current
 										if (!wrapper) return
@@ -151,7 +169,7 @@ export function EpisodeArtworkPreview({
 										aria-label="What does publish anonymously mean?"
 										aria-describedby={isTooltipOpen ? tooltipId : undefined}
 										aria-expanded={isTooltipOpen}
-										onClick={() => setIsTooltipOpen((v) => !v)}
+										onClick={() => setIsTooltipOpen(true)}
 										onKeyDown={(event) => {
 											if (event.key === 'Escape') setIsTooltipOpen(false)
 										}}
@@ -179,14 +197,78 @@ export function EpisodeArtworkPreview({
 
 				<div className="flex w-full flex-col gap-3 lg:w-[260px] lg:flex-none">
 					<p className="text-primary text-sm font-medium">Preview</p>
-					<img
-						src={artworkUrl}
-						alt="Episode artwork preview"
-						loading="lazy"
-						className="aspect-square w-full rounded-lg object-cover shadow-sm"
-					/>
+					<div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-200 shadow-sm dark:bg-gray-700">
+						<EpisodeArtworkImg
+							src={artworkUrl}
+							alt="Episode artwork preview"
+							loading="lazy"
+							className="h-full w-full object-cover"
+						/>
+					</div>
 				</div>
 			</div>
 		</section>
 	)
 }
+
+function EpisodeArtworkImg({
+	src,
+	className,
+	...props
+}: React.ComponentProps<'img'>) {
+	const safeSrc = src ?? ''
+	const [fallbackSrc, setFallbackSrc] = React.useState(safeSrc)
+	const latestSrcRef = React.useRef(safeSrc)
+
+	if (latestSrcRef.current !== safeSrc) {
+		latestSrcRef.current = safeSrc
+	}
+
+	const isPending = fallbackSrc !== safeSrc
+	const imgClassName = clsx(
+		className,
+		'transition-opacity',
+		isPending ? 'opacity-60' : 'opacity-100',
+	)
+
+	function handleResolved(resolvedSrc: string) {
+		if (resolvedSrc !== latestSrcRef.current) return
+		setFallbackSrc(resolvedSrc)
+	}
+
+	function handlePreloadError() {
+		handleResolved(safeSrc)
+	}
+
+	return (
+		<>
+			<img src={fallbackSrc} {...props} className={imgClassName} />
+			{isPending ? (
+				<ErrorBoundary
+					resetKeys={[safeSrc]}
+					onError={handlePreloadError}
+					fallback={null}
+				>
+					<React.Suspense fallback={null}>
+						<PreloadImage src={safeSrc} onResolved={handleResolved} />
+					</React.Suspense>
+				</ErrorBoundary>
+			) : null}
+		</>
+	)
+}
+
+function PreloadImage({
+	src,
+	onResolved,
+}: {
+	src: string
+	onResolved: (resolvedSrc: string) => void
+}) {
+	const loadedSrc = React.use(imgSrc(src))
+	React.useEffect(() => {
+		onResolved(loadedSrc)
+	}, [loadedSrc, onResolved])
+	return null
+}
+
