@@ -37,7 +37,7 @@ async function downloadFirstMdxFile(
 	const filesOnly = list.filter(({ type }) => type === 'file')
 	for (const extension of ['.mdx', '.md']) {
 		const file = filesOnly.find(({ name }) => name.endsWith(extension))
-		if (file) return downloadFileBySha(file.sha)
+		if (file) return { file, content: await downloadFileBySha(file.sha) }
 	}
 	return null
 }
@@ -59,35 +59,54 @@ async function downloadMdxFileOrDirectory(
 
 	const basename = nodePath.basename(mdxFileOrDirectory)
 	const mdxFileWithoutExt = nodePath.parse(mdxFileOrDirectory).name
-	const potentials = dirList.filter(({ name }) => name.startsWith(basename))
-	const exactMatch = potentials.find(
-		({ name }) => nodePath.parse(name).name === mdxFileWithoutExt,
-	)
-	const dirPotential = potentials.find(({ type }) => type === 'dir')
+	const requestedExt = nodePath.extname(basename).toLowerCase()
+	const isExplicitFileRequest = requestedExt === '.mdx' || requestedExt === '.md'
 
-	const content = await downloadFirstMdxFile(
-		exactMatch ? [exactMatch] : potentials,
-	)
 	let files: Array<GitHubFile> = []
 	let entry = mdxFileOrDirectory
-	if (content) {
+
+	if (isExplicitFileRequest) {
+		const exactFile = dirList.find(
+			(item) => item.type === 'file' && item.name === basename,
+		)
+		if (exactFile) {
+			const content = await downloadFileBySha(exactFile.sha)
+			entry = exactFile.path
+			files = [
+				{
+					path: safePath(nodePath.join(mdxFileOrDirectory, 'index.mdx')),
+					content,
+				},
+			]
+		}
+		return { entry, files }
+	}
+
+	const exactFiles = dirList.filter(
+		(item) => item.type === 'file' && nodePath.parse(item.name).name === mdxFileWithoutExt,
+	)
+	const fileResult = await downloadFirstMdxFile(exactFiles)
+	if (fileResult) {
 		// technically you can get the blog post by adding .mdx at the end... Weird
 		// but may as well handle it since that's easy...
-		entry = mdxFileOrDirectory.endsWith('.mdx')
-			? mdxFileOrDirectory
-			: `${mdxFileOrDirectory}.mdx`
+		entry = fileResult.file.path
 		// /content/about.mdx => entry is about.mdx, but compileMdx needs
 		// the entry to be called "/content/index.mdx" so we'll set it to that
 		// because this is the entry for this path
 		files = [
 			{
 				path: safePath(nodePath.join(mdxFileOrDirectory, 'index.mdx')),
-				content,
+				content: fileResult.content,
 			},
 		]
-	} else if (dirPotential) {
-		entry = dirPotential.path
-		files = await downloadDirectory(mdxFileOrDirectory)
+	} else {
+		const exactDir = dirList.find(
+			(item) => item.type === 'dir' && item.name === mdxFileWithoutExt,
+		)
+		if (exactDir) {
+			entry = exactDir.path
+			files = await downloadDirectory(exactDir.path)
+		}
 	}
 
 	return { entry, files }

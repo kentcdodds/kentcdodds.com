@@ -61,6 +61,31 @@ function setup() {
 }
 
 describe('/blog/:slug loader cache behavior', () => {
+	test('canonicalizes `.mdx`/`.md` slugs with a 301 redirect', async () => {
+		setup()
+
+		const request = new Request('http://localhost/blog/my-post.mdx')
+		const params = { slug: 'my-post.mdx' }
+
+		let thrown: unknown
+		try {
+			await loader({ request, params } as any)
+		} catch (error: unknown) {
+			thrown = error
+		}
+
+		expect(thrown).toBeInstanceOf(Response)
+		const response = thrown as Response
+		expect(response.status).toBe(301)
+		expect(response.headers.get('Location')).toBe('/blog/my-post')
+
+		expect(mdxServerMocks.getMdxPage).not.toHaveBeenCalled()
+		expect(sessionServerMocks.getUser).not.toHaveBeenCalled()
+		expect(blogServerMocks.getBlogRecommendations).not.toHaveBeenCalled()
+		expect(blogServerMocks.getBlogReadRankings).not.toHaveBeenCalled()
+		expect(blogServerMocks.getTotalPostReads).not.toHaveBeenCalled()
+	})
+
 	test('rejects invalid slugs (400) before doing any work', async () => {
 		setup()
 

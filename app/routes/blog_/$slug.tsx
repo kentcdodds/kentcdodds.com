@@ -4,6 +4,7 @@ import {
 	data as json,
 	type HeadersFunction,
 	Link,
+	redirect,
 	useParams,
 } from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
@@ -66,6 +67,12 @@ type CatchData = {
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	requireValidSlug(params.slug)
+	// Canonicalize MDX-looking slugs. Historically some content-fetching code
+	// accepted `.mdx`/`.md` suffixes, but the canonical public URL does not.
+	if (params.slug.endsWith('.mdx') || params.slug.endsWith('.md')) {
+		const canonicalSlug = params.slug.replace(/\.(mdx|md)$/i, '')
+		throw redirect(`/blog/${canonicalSlug}`, { status: 301 })
+	}
 	const timings = {}
 	const page = await getMdxPage(
 		{ contentDir: 'blog', slug: params.slug },
