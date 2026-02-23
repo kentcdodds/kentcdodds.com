@@ -94,7 +94,6 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		maxDelayMs = 1000 * 60 * 10,
 		label,
 		sleep = defaultSleep,
-		fetchImpl = fetch,
 		retryOn5xx = false,
 	}: {
 		headers?: Record<string, string>
@@ -103,12 +102,11 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		maxDelayMs?: number
 		label?: string
 		sleep?: Sleep
-		fetchImpl?: typeof fetch
 		retryOn5xx?: boolean
 	} = {},
 ): Promise<JsonResponse> {
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
-		const res = await fetchImpl(url, { headers })
+		const res = await fetch(url, { headers })
 
 		if (res.status === 429) {
 			if (attempt >= maxRetries) {

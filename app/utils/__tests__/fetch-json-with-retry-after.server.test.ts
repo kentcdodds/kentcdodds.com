@@ -1,38 +1,54 @@
-import { expect, test, vi } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import {
 	fetchJsonWithRetryAfter,
 	getRetryDelayMsFromResponse,
 } from '../fetch-json-with-retry-after.server.ts'
 
+let requestCount = 0
+const server = setupServer(
+	http.get('https://example.com/test', () => {
+		requestCount++
+		if (requestCount === 1) {
+			return HttpResponse.json(
+				{ error: 'too_many_requests' },
+				{
+					status: 429,
+					headers: { 'Retry-After': '2' },
+				},
+			)
+		}
+		return HttpResponse.json({ ok: true })
+	}),
+)
+
+beforeAll(() => {
+	server.listen({ onUnhandledRequest: 'error' })
+})
+
+beforeEach(() => {
+	requestCount = 0
+})
+
+afterAll(() => {
+	server.close()
+})
+
 test('fetchJsonWithRetryAfter waits Retry-After seconds on 429 then retries', async () => {
 	const sleep = vi.fn(async () => {})
-	const fetchImpl = vi
-		.fn()
-		.mockResolvedValueOnce(
-			new Response(JSON.stringify({ error: 'too_many_requests' }), {
-				status: 429,
-				headers: { 'Retry-After': '2', 'Content-Type': 'application/json' },
-			}),
-		)
-		.mockResolvedValueOnce(
-			new Response(JSON.stringify({ ok: true }), {
-				status: 200,
-				headers: { 'Content-Type': 'application/json' },
-			}),
-		)
 
 	const json = await fetchJsonWithRetryAfter<{ ok: boolean }>(
 		'https://example.com/test',
 		{
 			label: 'test',
 			maxRetries: 1,
-			fetchImpl: fetchImpl as any,
 			sleep,
 		},
 	)
 
 	expect(json.ok).toBe(true)
-	expect(fetchImpl).toHaveBeenCalledTimes(2)
+	expect(requestCount).toBe(2)
 	expect(sleep).toHaveBeenCalledTimes(1)
 	expect(sleep).toHaveBeenCalledWith(2000)
 })
