@@ -1,7 +1,6 @@
-
 import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import { formatDate, getDomainUrl } from '#app/utils/misc.ts'
-import  { type Route } from './+types/rss[.]xml'
+import { type Route } from './+types/rss[.]xml'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const posts = await getBlogMdxListItems({ request })

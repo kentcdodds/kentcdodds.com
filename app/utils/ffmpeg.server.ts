@@ -9,13 +9,18 @@ const asset = (...p: Array<string>) =>
 const cache = (...p: Array<string>) =>
 	path.join(process.cwd(), '.cache/calls', ...p)
 
-async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Array) {
+async function createEpisodeAudio(
+	callAudio: Uint8Array,
+	responseAudio: Uint8Array,
+) {
 	const id = uuid.v4()
 	const cacheDir = cache(id)
 	fsExtra.ensureDirSync(cacheDir)
 	const callPath = cache(id, 'call.mp3')
 	const responsePath = cache(id, 'response.mp3')
-	const outputPath = cache(id, 'output.mp3')
+	const callOutPath = cache(id, 'call.normalized.mp3')
+	const responseOutPath = cache(id, 'response.normalized.mp3')
+	const episodeOutPath = cache(id, 'episode.mp3')
 
 	await fs.promises.writeFile(callPath, callAudio)
 	await fs.promises.writeFile(responsePath, responseAudio)
@@ -24,8 +29,8 @@ async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Arr
 		const introPath = asset('call-kent/intro.mp3')
 		const interstitialPath = asset('call-kent/interstitial.mp3')
 		const outroPath = asset('call-kent/outro.mp3')
-		const hasStitchAssets = [introPath, interstitialPath, outroPath].every((p) =>
-			fs.existsSync(p),
+		const hasStitchAssets = [introPath, interstitialPath, outroPath].every(
+			(p) => fs.existsSync(p),
 		)
 
 		// prettier-ignore
@@ -43,16 +48,23 @@ async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Arr
 						[trimmedCall]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceCall];
 						[trimmedResponse]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceResponse];
 
-						[noSilenceCall]loudnorm=I=-16:LRA=11:TP=0.0[call];
-						[noSilenceResponse]loudnorm=I=-16:LRA=11:TP=0.0[response];
+						[noSilenceCall]loudnorm=I=-16:LRA=11:TP=0.0[call0];
+						[noSilenceResponse]loudnorm=I=-16:LRA=11:TP=0.0[response0];
 
-						[0][call]acrossfade=d=1:c2=nofade[a01];
+						[call0]asplit=2[callForEpisode][callForStandalone];
+						[response0]asplit=2[responseForEpisode][responseForStandalone];
+
+						[0][callForEpisode]acrossfade=d=1:c2=nofade[a01];
 						[a01][2]acrossfade=d=1:c1=nofade[a02];
-						[a02][response]acrossfade=d=1:c2=nofade[a03];
+						[a02][responseForEpisode]acrossfade=d=1:c2=nofade[a03];
 						[a03][4]acrossfade=d=1:c1=nofade[out]
 					`,
+					'-map', '[callForStandalone]',
+					callOutPath,
+					'-map', '[responseForStandalone]',
+					responseOutPath,
 					'-map', '[out]',
-					outputPath,
+					episodeOutPath,
 				]
 			: [
 					// Fallback for local/dev/CI environments where the intro/outro
@@ -60,12 +72,20 @@ async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Arr
 					'-i', callPath,
 					'-i', responsePath,
 					'-filter_complex', `
-						[0]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[call];
-						[1]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[response];
-						[call][response]acrossfade=d=1:c1=nofade:c2=nofade[out]
+						[0]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[call0];
+						[1]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[response0];
+
+						[call0]asplit=2[callForEpisode][callForStandalone];
+						[response0]asplit=2[responseForEpisode][responseForStandalone];
+
+						[callForEpisode][responseForEpisode]acrossfade=d=1:c1=nofade:c2=nofade[out]
 					`,
+					'-map', '[callForStandalone]',
+					callOutPath,
+					'-map', '[responseForStandalone]',
+					responseOutPath,
 					'-map', '[out]',
-					outputPath,
+					episodeOutPath,
 				]
 		spawn('ffmpeg', args, { stdio: 'inherit' }).on('close', (code) => {
 			if (code === 0) resolve(null)
@@ -73,9 +93,13 @@ async function createEpisodeAudio(callAudio: Uint8Array, responseAudio: Uint8Arr
 		})
 	})
 
-	const buffer = await fs.promises.readFile(outputPath)
+	const [callerMp3, responseMp3, episodeMp3] = await Promise.all([
+		fs.promises.readFile(callOutPath),
+		fs.promises.readFile(responseOutPath),
+		fs.promises.readFile(episodeOutPath),
+	])
 	await fs.promises.rm(cacheDir, { recursive: true, force: true })
-	return buffer
+	return { callerMp3, responseMp3, episodeMp3 }
 }
 
 export { createEpisodeAudio }

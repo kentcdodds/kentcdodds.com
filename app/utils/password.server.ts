@@ -81,4 +81,3 @@ export async function getPasswordStrengthError(password: string) {
 	}
 	return null
 }
-

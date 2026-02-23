@@ -46,7 +46,9 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
 		try {
@@ -58,7 +60,9 @@ describe('RecordingForm', () => {
 				target: { value: 'A valid title' },
 			})
 
-			const submitButton = screen.getByRole('button', { name: 'Submit Recording' })
+			const submitButton = screen.getByRole('button', {
+				name: 'Submit Recording',
+			})
 			const form = container.querySelector('form')
 			expect(form).not.toBeNull()
 			fireEvent.submit(form as HTMLFormElement)
@@ -110,7 +114,9 @@ describe('RecordingForm', () => {
 			) {
 				if (eventName === 'loadend') {
 					loadEndListener =
-						typeof listener === 'function' ? () => listener(new Event('loadend')) : null
+						typeof listener === 'function'
+							? () => listener(new Event('loadend'))
+							: null
 				}
 			}
 			removeEventListener() {}
@@ -134,7 +140,9 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 
 		try {
 			const { container } = render(
@@ -199,7 +207,9 @@ describe('RecordingForm', () => {
 			) {
 				if (eventName === 'loadend') {
 					loadEndListener =
-						typeof listener === 'function' ? () => listener(new Event('loadend')) : null
+						typeof listener === 'function'
+							? () => listener(new Event('loadend'))
+							: null
 				}
 			}
 			removeEventListener() {}
@@ -229,7 +239,9 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 
 		const initialData = {
 			fields: {
@@ -287,7 +299,9 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 
 		try {
 			const { container } = render(
@@ -303,7 +317,10 @@ describe('RecordingForm', () => {
 			expect(screen.getByText('80 characters left')).toBeInTheDocument()
 			const titleId = titleInput.getAttribute('id')
 			expect(titleId).toBeTruthy()
-			expect(titleInput).toHaveAttribute('aria-describedby', `${titleId}-countdown`)
+			expect(titleInput).toHaveAttribute(
+				'aria-describedby',
+				`${titleId}-countdown`,
+			)
 
 			fireEvent.change(titleInput, { target: { value: 'abcd' } })
 			expect(screen.getByText('76 characters left')).toBeInTheDocument()
@@ -324,7 +341,9 @@ describe('RecordingForm', () => {
 			fireEvent.change(titleInput, { target: { value: '' } })
 			fireEvent.submit(form as HTMLFormElement)
 			await screen.findByText('Title is required')
-			expect(titleInput.getAttribute('aria-describedby')).toContain(`${titleId}-error`)
+			expect(titleInput.getAttribute('aria-describedby')).toContain(
+				`${titleId}-error`,
+			)
 			expect(titleInput.getAttribute('aria-describedby')).toContain(
 				`${titleId}-countdown`,
 			)

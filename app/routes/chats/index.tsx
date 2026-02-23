@@ -1,6 +1,6 @@
-import { redirect } from 'react-router';
+import { redirect } from 'react-router'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
-import  { type Route } from './+types/index'
+import { type Route } from './+types/index'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const seasons = await getSeasonListItems({ request })

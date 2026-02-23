@@ -165,14 +165,11 @@ async function addUserToDiscordServer(
 	// there's no harm inviting someone who's already in the server,
 	// so we invite them without bothering to check whether they're in the
 	// server already
-	await fetchAsDiscordBot(
-		`guilds/${guildId}/members/${discordUser.id}`,
-		{
-			method: 'PUT',
-			body: JSON.stringify({ access_token: discordToken.access_token }),
-			headers: { 'Content-Type': 'application/json' },
-		},
-	)
+	await fetchAsDiscordBot(`guilds/${guildId}/members/${discordUser.id}`, {
+		method: 'PUT',
+		body: JSON.stringify({ access_token: discordToken.access_token }),
+		headers: { 'Content-Type': 'application/json' },
+	})
 }
 
 async function connectDiscord({

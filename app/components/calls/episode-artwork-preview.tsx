@@ -93,7 +93,9 @@ export function EpisodeArtworkPreview({
 				<div className="min-w-0 flex-1">
 					<div className="flex items-start justify-between gap-4">
 						<div className="min-w-0">
-							<p className="text-primary text-lg font-medium">Episode artwork</p>
+							<p className="text-primary text-lg font-medium">
+								Episode artwork
+							</p>
 							<p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
 								{`By default we use your avatar from `}
 								<a
@@ -135,7 +137,10 @@ export function EpisodeArtworkPreview({
 										const wrapper = tooltipWrapperRef.current
 										if (!wrapper) return
 										const nextFocused = event.relatedTarget
-										if (nextFocused instanceof Node && wrapper.contains(nextFocused)) {
+										if (
+											nextFocused instanceof Node &&
+											wrapper.contains(nextFocused)
+										) {
 											return
 										}
 										setIsTooltipOpen(false)
@@ -150,7 +155,7 @@ export function EpisodeArtworkPreview({
 										onKeyDown={(event) => {
 											if (event.key === 'Escape') setIsTooltipOpen(false)
 										}}
-										className="text-primary inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 text-xs leading-none opacity-80 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
+										className="text-primary inline-flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 text-xs leading-none opacity-80 hover:opacity-100 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600"
 									>
 										?
 									</button>
@@ -158,7 +163,7 @@ export function EpisodeArtworkPreview({
 										<span
 											id={tooltipId}
 											role="tooltip"
-											className="absolute left-0 top-full z-20 mt-2 w-72 rounded-md bg-white p-3 text-sm text-gray-700 shadow-lg ring-1 ring-black/5 dark:bg-gray-900 dark:text-slate-200 dark:ring-white/10"
+											className="absolute top-full left-0 z-20 mt-2 w-72 rounded-md bg-white p-3 text-sm text-gray-700 shadow-lg ring-1 ring-black/5 dark:bg-gray-900 dark:text-slate-200 dark:ring-white/10"
 										>
 											{tooltip}
 										</span>
@@ -185,4 +190,3 @@ export function EpisodeArtworkPreview({
 		</section>
 	)
 }
-

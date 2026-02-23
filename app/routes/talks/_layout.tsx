@@ -1,6 +1,14 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, useFetcher, useLocation, useSearchParams, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import {
+	Link,
+	useFetcher,
+	useLocation,
+	useSearchParams,
+	data as json,
+	type HeadersFunction,
+	type MetaFunction,
+} from 'react-router'
 import { Grid } from '#app/components/grid.tsx'
 import { YoutubeIcon } from '#app/components/icons.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
@@ -9,7 +17,10 @@ import { Tag } from '#app/components/tag.tsx'
 import { H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { FavoriteToggle, favoriteResourceRoute } from '#app/routes/resources/favorite.tsx'
+import {
+	FavoriteToggle,
+	favoriteResourceRoute,
+} from '#app/routes/resources/favorite.tsx'
 import {
 	formatDate,
 	getDisplayUrl,
@@ -23,7 +34,7 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { useOptionalUser } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/_layout'
+import { type Route } from './+types/_layout'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	data,
@@ -217,7 +228,9 @@ function Card({
 	)
 }
 
-export default function TalksScreen({ loaderData: data }: Route.ComponentProps) {
+export default function TalksScreen({
+	loaderData: data,
+}: Route.ComponentProps) {
 	const { pathname } = useLocation()
 	const [activeSlug] = pathname.split('/').slice(-1)
 	const user = useOptionalUser()

@@ -1,6 +1,17 @@
-import { Accordion, AccordionButton, AccordionItem, AccordionPanel, useAccordionItemContext, } from '@reach/accordion'
+import {
+	Accordion,
+	AccordionButton,
+	AccordionItem,
+	AccordionPanel,
+	useAccordionItemContext,
+} from '@reach/accordion'
 import { motion } from 'framer-motion'
-import { data as json, type HeadersFunction, type MetaFunction, Outlet } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	type MetaFunction,
+	Outlet,
+} from 'react-router'
 import { ButtonLink } from '#app/components/button.tsx'
 import { FeatureCard } from '#app/components/feature-card.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -36,7 +47,7 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/_layout'
+import { type Route } from './+types/_layout'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}

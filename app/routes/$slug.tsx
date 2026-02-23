@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { data as json, type HeadersFunction } from 'react-router';
+import { data as json, type HeadersFunction } from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -20,7 +20,7 @@ import {
 } from '#app/utils/mdx.tsx'
 import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
-import  { type Route } from './+types/$slug'
+import { type Route } from './+types/$slug'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {

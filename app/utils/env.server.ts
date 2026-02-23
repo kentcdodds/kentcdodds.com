@@ -3,108 +3,107 @@ import { z } from 'zod'
 const nonEmptyString = z.string().trim().min(1)
 
 const schemaBase = z.object({
-		NODE_ENV: z
-		.enum(['production', 'development', 'test'] as const),
-		PORT: nonEmptyString,
-		MOCKS: z.enum(['true', 'false']).optional(),
-		PLAYWRIGHT_TEST_BASE_URL: z.string().trim().optional(),
-		STARTUP_SHORTCUTS: z.enum(['true', 'false']).optional(),
-		EXPIRED_SESSIONS_CLEANUP_DISABLED: z.enum(['true', 'false']).optional(),
+	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
+	PORT: nonEmptyString,
+	MOCKS: z.enum(['true', 'false']).optional(),
+	PLAYWRIGHT_TEST_BASE_URL: z.string().trim().optional(),
+	STARTUP_SHORTCUTS: z.enum(['true', 'false']).optional(),
+	EXPIRED_SESSIONS_CLEANUP_DISABLED: z.enum(['true', 'false']).optional(),
 
-		ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
+	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
-		FLY_APP_NAME: nonEmptyString,
-		FLY_REGION: nonEmptyString,
-		// Optional for startup race when env may not be fully injected yet.
-		FLY_MACHINE_ID: z.string().trim().optional(),
-		LITEFS_DIR: nonEmptyString,
+	FLY_APP_NAME: nonEmptyString,
+	FLY_REGION: nonEmptyString,
+	// Optional for startup race when env may not be fully injected yet.
+	FLY_MACHINE_ID: z.string().trim().optional(),
+	LITEFS_DIR: nonEmptyString,
 
-		// Used by LiteFS + tooling. Optional because it can be derived from
-		// `DATABASE_URL` when using SQLite `file:` URLs.
-		DATABASE_PATH: z.string().trim().optional(),
-		DATABASE_URL: nonEmptyString,
-		CACHE_DATABASE_PATH: nonEmptyString,
+	// Used by LiteFS + tooling. Optional because it can be derived from
+	// `DATABASE_URL` when using SQLite `file:` URLs.
+	DATABASE_PATH: z.string().trim().optional(),
+	DATABASE_URL: nonEmptyString,
+	CACHE_DATABASE_PATH: nonEmptyString,
 
-		BOT_GITHUB_TOKEN: nonEmptyString,
-		CALL_KENT_PODCAST_ID: nonEmptyString,
-		CHATS_WITH_KENT_PODCAST_ID: nonEmptyString,
-		KIT_API_KEY: nonEmptyString,
-		KIT_API_SECRET: nonEmptyString,
-		DISCORD_ADMIN_USER_ID: nonEmptyString,
-		DISCORD_BLUE_CHANNEL: nonEmptyString,
-		DISCORD_BLUE_ROLE: nonEmptyString,
-		DISCORD_BOT_TOKEN: nonEmptyString,
-		DISCORD_CALL_KENT_CHANNEL: nonEmptyString,
-		DISCORD_CLIENT_ID: nonEmptyString,
-		DISCORD_CLIENT_SECRET: nonEmptyString,
-		DISCORD_GUILD_ID: nonEmptyString,
-		DISCORD_LEADERBOARD_CHANNEL: nonEmptyString,
-		DISCORD_MEMBER_ROLE: nonEmptyString,
-		DISCORD_PRIVATE_BOT_CHANNEL: nonEmptyString,
-		DISCORD_RED_CHANNEL: nonEmptyString,
-		DISCORD_RED_ROLE: nonEmptyString,
-		DISCORD_SCOPES: nonEmptyString,
-		DISCORD_YELLOW_CHANNEL: nonEmptyString,
-		DISCORD_YELLOW_ROLE: nonEmptyString,
-		INTERNAL_COMMAND_TOKEN: nonEmptyString,
-		MAGIC_LINK_SECRET: nonEmptyString,
-		MAILGUN_DOMAIN: nonEmptyString,
-		MAILGUN_SENDING_KEY: nonEmptyString,
-		REFRESH_CACHE_SECRET: nonEmptyString,
-		SENTRY_AUTH_TOKEN: z.string().trim().optional(),
-		// Sentry is optional; validate required combos in `superRefine`.
-		SENTRY_DSN: z.string().trim().optional(),
-		SENTRY_ORG: z.string().trim().optional(),
-		SENTRY_PROJECT: z.string().trim().optional(),
-		SENTRY_PROJECT_ID: z.string().trim().optional(),
-		SESSION_SECRET: nonEmptyString,
-		SIMPLECAST_KEY: nonEmptyString,
-		TRANSISTOR_API_SECRET: nonEmptyString,
-		TWITTER_BEARER_TOKEN: nonEmptyString,
-		VERIFIER_API_KEY: nonEmptyString,
-		CF_INTERNAL_SECRET: nonEmptyString,
+	BOT_GITHUB_TOKEN: nonEmptyString,
+	CALL_KENT_PODCAST_ID: nonEmptyString,
+	CHATS_WITH_KENT_PODCAST_ID: nonEmptyString,
+	KIT_API_KEY: nonEmptyString,
+	KIT_API_SECRET: nonEmptyString,
+	DISCORD_ADMIN_USER_ID: nonEmptyString,
+	DISCORD_BLUE_CHANNEL: nonEmptyString,
+	DISCORD_BLUE_ROLE: nonEmptyString,
+	DISCORD_BOT_TOKEN: nonEmptyString,
+	DISCORD_CALL_KENT_CHANNEL: nonEmptyString,
+	DISCORD_CLIENT_ID: nonEmptyString,
+	DISCORD_CLIENT_SECRET: nonEmptyString,
+	DISCORD_GUILD_ID: nonEmptyString,
+	DISCORD_LEADERBOARD_CHANNEL: nonEmptyString,
+	DISCORD_MEMBER_ROLE: nonEmptyString,
+	DISCORD_PRIVATE_BOT_CHANNEL: nonEmptyString,
+	DISCORD_RED_CHANNEL: nonEmptyString,
+	DISCORD_RED_ROLE: nonEmptyString,
+	DISCORD_SCOPES: nonEmptyString,
+	DISCORD_YELLOW_CHANNEL: nonEmptyString,
+	DISCORD_YELLOW_ROLE: nonEmptyString,
+	INTERNAL_COMMAND_TOKEN: nonEmptyString,
+	MAGIC_LINK_SECRET: nonEmptyString,
+	MAILGUN_DOMAIN: nonEmptyString,
+	MAILGUN_SENDING_KEY: nonEmptyString,
+	REFRESH_CACHE_SECRET: nonEmptyString,
+	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
+	// Sentry is optional; validate required combos in `superRefine`.
+	SENTRY_DSN: z.string().trim().optional(),
+	SENTRY_ORG: z.string().trim().optional(),
+	SENTRY_PROJECT: z.string().trim().optional(),
+	SENTRY_PROJECT_ID: z.string().trim().optional(),
+	SESSION_SECRET: nonEmptyString,
+	SIMPLECAST_KEY: nonEmptyString,
+	TRANSISTOR_API_SECRET: nonEmptyString,
+	TWITTER_BEARER_TOKEN: nonEmptyString,
+	VERIFIER_API_KEY: nonEmptyString,
+	CF_INTERNAL_SECRET: nonEmptyString,
 
-		// Optional: semantic search via Cloudflare Workers AI + Vectorize.
-		CLOUDFLARE_ACCOUNT_ID: z.string().trim().optional(),
-		CLOUDFLARE_API_TOKEN: z.string().trim().optional(),
-		CLOUDFLARE_VECTORIZE_INDEX: z.string().trim().optional(),
-		CLOUDFLARE_AI_EMBEDDING_MODEL: z
-			.string()
-			.trim()
-			.optional()
-			.default('@cf/google/embeddinggemma-300m'),
-		CLOUDFLARE_AI_TRANSCRIPTION_MODEL: z
-			.string()
-			.trim()
-			.optional()
-			.default('@cf/openai/whisper'),
-		CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL: z
-			.string()
-			.trim()
-			.optional()
-			.default('@cf/deepgram/aura-1'),
-		CLOUDFLARE_AI_TEXT_MODEL: z.string().trim().optional(),
-		CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL: z.string().trim().optional(),
+	// Optional: semantic search via Cloudflare Workers AI + Vectorize.
+	CLOUDFLARE_ACCOUNT_ID: z.string().trim().optional(),
+	CLOUDFLARE_API_TOKEN: z.string().trim().optional(),
+	CLOUDFLARE_VECTORIZE_INDEX: z.string().trim().optional(),
+	CLOUDFLARE_AI_EMBEDDING_MODEL: z
+		.string()
+		.trim()
+		.optional()
+		.default('@cf/google/embeddinggemma-300m'),
+	CLOUDFLARE_AI_TRANSCRIPTION_MODEL: z
+		.string()
+		.trim()
+		.optional()
+		.default('@cf/openai/whisper-large-v3-turbo'),
+	CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL: z
+		.string()
+		.trim()
+		.optional()
+		.default('@cf/deepgram/aura-2-en'),
+	CLOUDFLARE_AI_TEXT_MODEL: z.string().trim().optional(),
+	CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL: z.string().trim().optional(),
 
-		// Optional: semantic search admin tooling (R2 manifests + ignore list).
-		R2_BUCKET: z.string().trim().optional().default('kcd-semantic-search'),
-		R2_ENDPOINT: z.string().trim().optional(),
-		R2_ACCESS_KEY_ID: z.string().trim().optional(),
-		R2_SECRET_ACCESS_KEY: z.string().trim().optional(),
-		// Call Kent audio storage bucket (used by R2-backed call audio storage and
-		// the disk-backed mock when MOCKS=true).
-		CALL_KENT_R2_BUCKET: nonEmptyString,
-		SEMANTIC_SEARCH_IGNORE_LIST_KEY: z
-			.string()
-			.trim()
-			.optional()
-			.default('manifests/ignore-list.json'),
+	// Optional: semantic search admin tooling (R2 manifests + ignore list).
+	R2_BUCKET: z.string().trim().optional().default('kcd-semantic-search'),
+	R2_ENDPOINT: z.string().trim().optional(),
+	R2_ACCESS_KEY_ID: z.string().trim().optional(),
+	R2_SECRET_ACCESS_KEY: z.string().trim().optional(),
+	// Call Kent audio storage bucket (used by R2-backed call audio storage and
+	// the disk-backed mock when MOCKS=true).
+	CALL_KENT_R2_BUCKET: nonEmptyString,
+	SEMANTIC_SEARCH_IGNORE_LIST_KEY: z
+		.string()
+		.trim()
+		.optional()
+		.default('manifests/ignore-list.json'),
 
-		GITHUB_REF: z.string().trim().optional().default('main'),
+	GITHUB_REF: z.string().trim().optional().default('main'),
 
-		// Optional: /youtube route + indexing scripts.
-		YOUTUBE_PLAYLIST_ID: z.string().trim().optional(),
-	})
+	// Optional: /youtube route + indexing scripts.
+	YOUTUBE_PLAYLIST_ID: z.string().trim().optional(),
+})
 
 const schema = schemaBase.superRefine((values, ctx) => {
 	if (values.SENTRY_DSN && !values.SENTRY_PROJECT_ID) {
@@ -237,7 +236,9 @@ export function init() {
 		}
 
 		console.error('❌ Unexpected error while validating environment:', error)
-		throw new Error(`Unexpected error while validating environment: ${String(error)}`)
+		throw new Error(
+			`Unexpected error while validating environment: ${String(error)}`,
+		)
 	}
 	// Keep unused warning quiet (and make debugging easier if needed).
 	void parsedEnv

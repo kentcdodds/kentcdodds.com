@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import { motion, useReducedMotion, type Variant } from 'framer-motion'
-import { Link, type LinkProps } from 'react-router';
+import { Link, type LinkProps } from 'react-router'
 import {
 	useElementState,
 	type ElementState,

@@ -5,7 +5,11 @@ import { Grid } from '#app/components/grid.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
-import { getPasswordHash, getPasswordStrengthError, verifyPassword } from '#app/utils/password.server.ts'
+import {
+	getPasswordHash,
+	getPasswordStrengthError,
+	verifyPassword,
+} from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession, requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.password'
@@ -36,7 +40,10 @@ export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 
 	const currentPassword = formData.get('currentPassword')
-	const password = typeof formData.get('password') === 'string' ? String(formData.get('password')) : ''
+	const password =
+		typeof formData.get('password') === 'string'
+			? String(formData.get('password'))
+			: ''
 	const confirmPassword =
 		typeof formData.get('confirmPassword') === 'string'
 			? String(formData.get('confirmPassword'))
@@ -190,4 +197,3 @@ export default function PasswordRoute({
 		</div>
 	)
 }
-

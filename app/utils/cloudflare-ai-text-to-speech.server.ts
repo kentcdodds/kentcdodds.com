@@ -132,4 +132,3 @@ export async function synthesizeSpeechWithWorkersAi({
 	const bytes = new Uint8Array(Buffer.from(audioValue, 'base64'))
 	return { bytes, contentType: 'audio/mpeg', model }
 }
-

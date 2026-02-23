@@ -5,11 +5,13 @@ import { deleteUserByEmail, extractUrl, readEmail } from './utils.ts'
 
 test('A new user can create an account', async ({ page }) => {
 	const firstName = faker.person.firstName()
-	const emailAddress = faker.internet.email({
-		firstName,
-		lastName: faker.person.lastName(),
-		provider: 'example.com',
-	}).toLowerCase()
+	const emailAddress = faker.internet
+		.email({
+			firstName,
+			lastName: faker.person.lastName(),
+			provider: 'example.com',
+		})
+		.toLowerCase()
 	const password = faker.internet.password({ length: 16 })
 	await page.goto('/')
 	await page

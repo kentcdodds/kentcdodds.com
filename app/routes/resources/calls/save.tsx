@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { format } from 'date-fns'
 import * as React from 'react'
 import {
@@ -11,11 +12,30 @@ import { EpisodeArtworkPreview } from '#app/components/calls/episode-artwork-pre
 import { CharacterCountdown } from '#app/components/character-countdown.tsx'
 import { Field } from '#app/components/form-elements.tsx'
 import {
+	deleteAudioObject,
+	getAudioBuffer,
+	putCallAudioFromDataUrl,
+} from '#app/utils/call-kent-audio-storage.server.ts'
+import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
+import {
 	callKentFieldConstraints,
 	getErrorForAudio,
 	getErrorForTitle,
 	getErrorForNotes,
 } from '#app/utils/call-kent.ts'
+import { sendMessageFromDiscordBot } from '#app/utils/discord.server.ts'
+import { getEnv } from '#app/utils/env.server.ts'
+import { markdownToHtml } from '#app/utils/markdown.server.ts'
+import {
+	getDomainUrl,
+	getErrorMessage,
+	getOptionalTeam,
+} from '#app/utils/misc.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { sendEmail } from '#app/utils/send-email.server.ts'
+import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
+import { teamEmoji } from '#app/utils/team-provider.tsx'
+import { createEpisode } from '#app/utils/transistor.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/save'
 
@@ -447,34 +467,12 @@ async function createCall({
 	const isAnonymous = getCheckboxFormValue(formData, 'anonymous')
 
 	try {
-		const [
-			{ sendMessageFromDiscordBot },
-			{ getDomainUrl, getOptionalTeam },
-			{ getEnv },
-			{ prisma },
-			{ requireUser },
-			{ teamEmoji },
-		] = await Promise.all([
-			import('#app/utils/discord.server.ts'),
-			import('#app/utils/misc.ts'),
-			import('#app/utils/env.server.ts'),
-			import('#app/utils/prisma.server.ts'),
-			import('#app/utils/session.server.ts'),
-			import('#app/utils/team-provider.tsx'),
-		])
-
 		const user = await requireUser(request)
 		const domainUrl = getDomainUrl(request)
 		const { audio, title, notes } = fields
 		if (!audio || !title) {
 			return json(actionData, 400)
 		}
-
-		const [{ randomUUID }, { deleteAudioObject, putCallAudioFromDataUrl }] =
-			await Promise.all([
-			import('node:crypto'),
-			import('#app/utils/call-kent-audio-storage.server.ts'),
-		])
 
 		const callId = randomUUID()
 		const stored = await putCallAudioFromDataUrl({ callId, dataUrl: audio })
@@ -537,7 +535,6 @@ async function createCall({
 
 		return redirect(`/calls/record/${createdCall.id}`)
 	} catch (error: unknown) {
-		const { getErrorMessage } = await import('#app/utils/misc.ts')
 		actionData.errors.generalError = getErrorMessage(error)
 		return json(actionData, 500)
 	}
@@ -552,25 +549,11 @@ async function publishCall({
 }) {
 	let publishedTransistorEpisodeId: string | null = null
 	try {
-		const [
-			{ markdownToHtml },
-			{ prisma },
-			{ sendEmail },
-			{ requireAdminUser },
-			{ createEpisode },
-			{ deleteAudioObject, getAudioBuffer },
-		] = await Promise.all([
-			import('#app/utils/markdown.server.ts'),
-			import('#app/utils/prisma.server.ts'),
-			import('#app/utils/send-email.server.ts'),
-			import('#app/utils/session.server.ts'),
-			import('#app/utils/transistor.server.ts'),
-			import('#app/utils/call-kent-audio-storage.server.ts'),
-		])
-
 		await requireAdminUser(request)
 		const callId = getStringFormValue(formData, 'callId')
 		if (!callId) return redirectCallNotFound()
+		const formCallTitle = getStringFormValue(formData, 'callTitle')
+		const formNotes = getStringFormValue(formData, 'notes')
 
 		const call = await prisma.call.findFirst({
 			where: { id: callId },
@@ -578,6 +561,36 @@ async function publishCall({
 		})
 		if (!call) {
 			return redirectCallNotFound()
+		}
+
+		// Allow overriding call title from the admin UI submit.
+		let callTitle = call.title
+		if (formCallTitle !== null) {
+			const nextTitle = formCallTitle.trim()
+			if (!nextTitle) {
+				const searchParams = new URLSearchParams()
+				searchParams.set('error', 'Call title is required.')
+				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+			}
+			callTitle = nextTitle
+			await prisma.call.update({
+				where: { id: callId },
+				data: { title: callTitle },
+			})
+		}
+
+		// Allow overriding call notes from the admin UI submit.
+		const callNotes =
+			formNotes !== null
+				? formNotes.trim()
+					? formNotes.trim()
+					: null
+				: call.notes
+		if (formNotes !== null) {
+			await prisma.call.update({
+				where: { id: callId },
+				data: { notes: callNotes },
+			})
 		}
 
 		const draft = call.episodeDraft
@@ -628,9 +641,17 @@ async function publishCall({
 		}
 
 		const title = (formTitle?.trim() || draft.title || '').trim()
-		const description = (formDescription?.trim() || draft.description || '').trim()
+		const description = (
+			formDescription?.trim() ||
+			draft.description ||
+			''
+		).trim()
 		const keywords = (formKeywords?.trim() || draft.keywords || '').trim()
-		const transcriptText = (formTranscript?.trim() || draft.transcript || '').trim()
+		const transcriptText = (
+			formTranscript?.trim() ||
+			draft.transcript ||
+			''
+		).trim()
 		const episodeAudioKey = draft.episodeAudioKey
 
 		if (
@@ -695,8 +716,8 @@ ${episodeMarkdown}
 				prisma.callKentCallerEpisode.create({
 					data: {
 						userId: call.userId,
-						callTitle: call.title,
-						callNotes: call.notes,
+						callTitle,
+						callNotes,
 						isAnonymous: call.isAnonymous,
 						transistorEpisodeId: published.transistorEpisodeId,
 					},
@@ -720,7 +741,9 @@ ${episodeMarkdown}
 			(k): k is string => typeof k === 'string' && k.length > 0,
 		)
 		await Promise.all(
-			keysToDelete.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+			keysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
 		)
 
 		return redirect('/calls')
@@ -733,12 +756,13 @@ ${episodeMarkdown}
 				error,
 			)
 		}
-		const { getErrorMessage } = await import('#app/utils/misc.ts')
 		const callId = getStringFormValue(formData, 'callId')
 		const searchParams = new URLSearchParams()
 		searchParams.set('error', getErrorMessage(error))
 		return redirect(
-			callId ? `/calls/admin/${callId}?${searchParams.toString()}` : '/calls/admin',
+			callId
+				? `/calls/admin/${callId}?${searchParams.toString()}`
+				: '/calls/admin',
 		)
 	}
 }
@@ -752,6 +776,8 @@ async function createEpisodeDraft({
 }) {
 	const callId = getStringFormValue(formData, 'callId')
 	const responseAudio = getStringFormValue(formData, 'audio')
+	const formCallTitle = getStringFormValue(formData, 'callTitle')
+	const formNotes = getStringFormValue(formData, 'notes')
 	if (!callId) return redirectCallNotFound()
 	if (getErrorForAudio(responseAudio)) {
 		const searchParams = new URLSearchParams()
@@ -759,14 +785,33 @@ async function createEpisodeDraft({
 		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 	}
 
-	const [{ prisma }, { requireAdminUser }] = await Promise.all([
-		import('#app/utils/prisma.server.ts'),
-		import('#app/utils/session.server.ts'),
-	])
 	await requireAdminUser(request)
 
 	const call = await prisma.call.findFirst({ where: { id: callId } })
 	if (!call) return redirectCallNotFound()
+
+	// Allow overriding call title from the admin UI submit.
+	if (formCallTitle !== null) {
+		const nextTitle = formCallTitle.trim()
+		if (!nextTitle) {
+			const searchParams = new URLSearchParams()
+			searchParams.set('error', 'Call title is required.')
+			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		}
+		await prisma.call.update({
+			where: { id: callId },
+			data: { title: nextTitle },
+		})
+	}
+
+	// Allow overriding call notes from the admin UI submit.
+	if (formNotes !== null) {
+		const nextNotes = formNotes.trim()
+		await prisma.call.update({
+			where: { id: callId },
+			data: { notes: nextNotes ? nextNotes : null },
+		})
+	}
 
 	// If we're replacing a draft, clean up the old stored audio blob.
 	const existingDraft = await prisma.callKentEpisodeDraft.findFirst({
@@ -774,10 +819,9 @@ async function createEpisodeDraft({
 		select: { episodeAudioKey: true },
 	})
 	if (existingDraft?.episodeAudioKey) {
-		const { deleteAudioObject } = await import(
-			'#app/utils/call-kent-audio-storage.server.ts'
+		await deleteAudioObject({ key: existingDraft.episodeAudioKey }).catch(
+			() => {},
 		)
-		await deleteAudioObject({ key: existingDraft.episodeAudioKey }).catch(() => {})
 	}
 
 	// Replace any existing draft so "re-record response" is safe and predictable.
@@ -790,9 +834,6 @@ async function createEpisodeDraft({
 		}),
 	])
 
-	const { startCallKentEpisodeDraftProcessing } = await import(
-		'#app/utils/call-kent-episode-draft.server.ts'
-	)
 	void startCallKentEpisodeDraftProcessing(draft.id, {
 		responseBase64: responseAudio!,
 	})
@@ -810,10 +851,6 @@ async function undoEpisodeDraft({
 	const callId = getStringFormValue(formData, 'callId')
 	if (!callId) return redirectCallNotFound()
 
-	const [{ prisma }, { requireAdminUser }] = await Promise.all([
-		import('#app/utils/prisma.server.ts'),
-		import('#app/utils/session.server.ts'),
-	])
 	await requireAdminUser(request)
 
 	const drafts = await prisma.callKentEpisodeDraft.findMany({
@@ -821,9 +858,6 @@ async function undoEpisodeDraft({
 		select: { episodeAudioKey: true },
 	})
 	if (drafts.some((d) => d.episodeAudioKey)) {
-		const { deleteAudioObject } = await import(
-			'#app/utils/call-kent-audio-storage.server.ts'
-		)
 		await Promise.all(
 			drafts
 				.map((d) => d.episodeAudioKey)
@@ -845,18 +879,39 @@ async function updateEpisodeDraft({
 	const callId = getStringFormValue(formData, 'callId')
 	if (!callId) return redirectCallNotFound()
 
+	const callTitle = getStringFormValue(formData, 'callTitle')
+	const notes = getStringFormValue(formData, 'notes')
 	const title = getStringFormValue(formData, 'title')
 	const description = getStringFormValue(formData, 'description')
 	const keywords = getStringFormValue(formData, 'keywords')
 	const transcript = getStringFormValue(formData, 'transcript')
 
-	const [{ prisma }, { requireAdminUser }] = await Promise.all([
-		import('#app/utils/prisma.server.ts'),
-		import('#app/utils/session.server.ts'),
-	])
 	await requireAdminUser(request)
 
 	try {
+		// Allow overriding call title from the admin UI submit.
+		if (callTitle !== null) {
+			const nextTitle = callTitle.trim()
+			if (!nextTitle) {
+				const searchParams = new URLSearchParams()
+				searchParams.set('error', 'Call title is required.')
+				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+			}
+			await prisma.call.update({
+				where: { id: callId },
+				data: { title: nextTitle },
+			})
+		}
+
+		// Allow overriding call notes from the admin UI submit.
+		if (notes !== null) {
+			const nextNotes = notes.trim()
+			await prisma.call.update({
+				where: { id: callId },
+				data: { notes: nextNotes ? nextNotes : null },
+			})
+		}
+
 		const updateData: {
 			title?: string
 			description?: string
@@ -881,7 +936,6 @@ async function updateEpisodeDraft({
 		}
 		return redirect(`/calls/admin/${callId}`)
 	} catch (error: unknown) {
-		const { getErrorMessage } = await import('#app/utils/misc.ts')
 		const searchParams = new URLSearchParams()
 		searchParams.set('error', getErrorMessage(error))
 		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
@@ -900,10 +954,6 @@ async function deleteCall({
 		return redirectCallNotFound()
 	}
 
-	const [{ prisma }, { requireAdminUser }] = await Promise.all([
-		import('#app/utils/prisma.server.ts'),
-		import('#app/utils/session.server.ts'),
-	])
 	await requireAdminUser(request)
 	const call = await prisma.call.findFirst({
 		where: { id: callId },
@@ -918,15 +968,15 @@ async function deleteCall({
 	}
 	await prisma.call.delete({ where: { id: callId } })
 
-	const keysToDelete = [call.audioKey, call.episodeDraft?.episodeAudioKey].filter(
-		(k): k is string => typeof k === 'string' && k.length > 0,
-	)
+	const keysToDelete = [
+		call.audioKey,
+		call.episodeDraft?.episodeAudioKey,
+	].filter((k): k is string => typeof k === 'string' && k.length > 0)
 	if (keysToDelete.length) {
-		const { deleteAudioObject } = await import(
-			'#app/utils/call-kent-audio-storage.server.ts'
-		)
 		await Promise.all(
-			keysToDelete.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+			keysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
 		)
 	}
 	return redirect('/calls/admin')
@@ -939,10 +989,14 @@ export async function action({ request }: Route.ActionArgs) {
 	if (intent === 'create-call') {
 		return createCall({ request, formData })
 	}
-	if (intent === 'create-episode-draft') return createEpisodeDraft({ request, formData })
-	if (intent === 'undo-episode-draft') return undoEpisodeDraft({ request, formData })
-	if (intent === 'update-episode-draft') return updateEpisodeDraft({ request, formData })
-	if (intent === 'publish-episode-draft') return publishCall({ request, formData })
+	if (intent === 'create-episode-draft')
+		return createEpisodeDraft({ request, formData })
+	if (intent === 'undo-episode-draft')
+		return undoEpisodeDraft({ request, formData })
+	if (intent === 'update-episode-draft')
+		return updateEpisodeDraft({ request, formData })
+	if (intent === 'publish-episode-draft')
+		return publishCall({ request, formData })
 	if (intent === 'delete-call') {
 		return deleteCall({ request, formData })
 	}

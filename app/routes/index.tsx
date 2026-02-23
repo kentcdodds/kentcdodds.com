@@ -1,4 +1,4 @@
-import { data as json, type HeadersFunction } from 'react-router';
+import { data as json, type HeadersFunction } from 'react-router'
 import { ButtonLink } from '#app/components/button.tsx'
 import { ServerError } from '#app/components/errors.tsx'
 import { AboutSection } from '#app/components/sections/about-section.tsx'
@@ -27,7 +27,7 @@ import {
 } from '#app/utils/misc-react.tsx'
 import { getUser } from '#app/utils/session.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
-import  { type Route } from './+types/index'
+import { type Route } from './+types/index'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}

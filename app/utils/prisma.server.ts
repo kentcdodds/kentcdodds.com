@@ -60,9 +60,9 @@ async function createSession(
 	})
 }
 
-async function deleteExpiredSessions(
-	{ now = new Date() }: { now?: Date } = {},
-) {
+async function deleteExpiredSessions({
+	now = new Date(),
+}: { now?: Date } = {}) {
 	await ensurePrimary()
 	const result = await prisma.session.deleteMany({
 		where: { expirationDate: { lt: now } },
@@ -70,9 +70,9 @@ async function deleteExpiredSessions(
 	return result.count
 }
 
-async function deleteExpiredVerifications(
-	{ now = new Date() }: { now?: Date } = {},
-) {
+async function deleteExpiredVerifications({
+	now = new Date(),
+}: { now?: Date } = {}) {
 	await ensurePrimary()
 	const result = await prisma.verification.deleteMany({
 		where: { expiresAt: { lt: now } },

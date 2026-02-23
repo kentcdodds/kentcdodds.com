@@ -25,7 +25,10 @@ type AudioStore = {
 		body: Uint8Array
 		contentType: string
 	}) => Promise<PutAudioResult>
-	getStream: (args: { key: string; range?: { start: number; end: number } }) => Promise<GetAudioStreamResult>
+	getStream: (args: {
+		key: string
+		range?: { start: number; end: number }
+	}) => Promise<GetAudioStreamResult>
 	delete: (args: { key: string }) => Promise<void>
 }
 
@@ -57,7 +60,10 @@ function getCacheRoot() {
 	return path.join(process.cwd(), '.cache', 'cloudflare-r2')
 }
 
-function parseBase64DataUrl(dataUrl: string): { buffer: Buffer; contentType: string } {
+function parseBase64DataUrl(dataUrl: string): {
+	buffer: Buffer
+	contentType: string
+} {
 	// MediaRecorder often emits data URLs like:
 	// `data:audio/webm;codecs=opus;base64,...`
 	const match = dataUrl.match(/^data:(?<type>.+?);base64,(?<data>.+)$/)
@@ -94,14 +100,17 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 let _r2Client: S3Client | null = null
-let _r2ClientConfig:
-	| { endpoint: string; accessKeyId: string; secretAccessKey: string }
-	| null = null
+let _r2ClientConfig: {
+	endpoint: string
+	accessKeyId: string
+	secretAccessKey: string
+} | null = null
 
 function getR2Client() {
 	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()
 	if (!isNonEmptyString(endpoint)) throw new Error('R2_ENDPOINT is required')
-	if (!isNonEmptyString(accessKeyId)) throw new Error('R2_ACCESS_KEY_ID is required')
+	if (!isNonEmptyString(accessKeyId))
+		throw new Error('R2_ACCESS_KEY_ID is required')
 	if (!isNonEmptyString(secretAccessKey))
 		throw new Error('R2_SECRET_ACCESS_KEY is required')
 
@@ -182,7 +191,11 @@ function createR2Store({ bucket }: { bucket: string }): AudioStore {
 	}
 }
 
-function getStore(): { store: AudioStore; bucket: string; source: 'r2' | 'disk' } {
+function getStore(): {
+	store: AudioStore
+	bucket: string
+	source: 'r2' | 'disk'
+} {
 	const bucket = getCallKentBucketName()
 	// In local dev/CI we prefer disk to keep everything self-contained.
 	if (process.env.MOCKS === 'true') {
@@ -267,4 +280,3 @@ export async function getAudioBuffer({ key }: { key: string }) {
 }
 
 export { parseBase64DataUrl }
-

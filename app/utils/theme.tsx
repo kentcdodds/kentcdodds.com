@@ -1,6 +1,6 @@
 import { parseWithZod } from '@conform-to/zod/v4'
 import * as React from 'react'
-import { useFetcher } from 'react-router';
+import { useFetcher } from 'react-router'
 
 import { z } from 'zod'
 import { useHints } from './client-hints.tsx'

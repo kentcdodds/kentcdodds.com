@@ -1,5 +1,9 @@
 import * as React from 'react'
-import { data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	type MetaFunction,
+} from 'react-router'
 import { Grid } from '#app/components/grid.tsx'
 import {
 	BehanceIcon,
@@ -36,7 +40,7 @@ import {
 } from '#app/utils/misc.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
-import  { type Route } from './+types/credits'
+import { type Route } from './+types/credits'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const people = await getPeople({ request })

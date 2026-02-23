@@ -83,9 +83,8 @@ jobs:
     timeout-minutes: 15
     # Only run when we would actually deploy (keeps PRs fast).
     if:
-      ${{ github.ref == 'refs/heads/main' &&
-      github.event_name == 'push' && needs.changes.outputs.DEPLOYABLE == 'true'
-      }}
+      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+      needs.changes.outputs.DEPLOYABLE == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo

@@ -66,8 +66,9 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			},
 			avatarIsRound: false,
 		})
-		expect(url).toContain('l_kentcdodds.com:illustrations:kody:kody_profile_gray')
+		expect(url).toContain(
+			'l_kentcdodds.com:illustrations:kody:kody_profile_gray',
+		)
 		expect(url).not.toContain('l_fetch:')
 	})
 })
-

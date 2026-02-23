@@ -58,7 +58,10 @@ function useNavbarLinks(): {
 	)
 
 	const mobileLinks = React.useMemo(
-		() => [{ name: 'Home', to: '/' }, ...links.map((l) => ({ name: l.name, to: l.to }))],
+		() => [
+			{ name: 'Home', to: '/' },
+			...links.map((l) => ({ name: l.name, to: l.to })),
+		],
 		[links],
 	)
 

@@ -1,4 +1,10 @@
-import { data as json, redirect, type HeadersFunction, type MetaFunction, useParams } from 'react-router';
+import {
+	data as json,
+	redirect,
+	type HeadersFunction,
+	type MetaFunction,
+	useParams,
+} from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { IconLink } from '#app/components/icon-link.tsx'
 import { XIcon } from '#app/components/icons.tsx'
@@ -22,7 +28,7 @@ import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { useCallsData, type loader as callsLoader } from '../../_layout.tsx'
-import  { type Route } from './+types/$slug'
+import { type Route } from './+types/$slug'
 
 export const handle: KCDHandle = {
 	id: 'call-player',
@@ -45,9 +51,8 @@ export const meta: MetaFunction<
 > = ({ matches, params }) => {
 	const { requestInfo } = matches.find((m) => m.id === 'root')
 		?.data as SerializeFrom<typeof rootLoader>
-	const callsData = matches.find((m) => m.id === 'routes/calls/_layout')?.data as
-		| SerializeFrom<typeof callsLoader>
-		| undefined
+	const callsData = matches.find((m) => m.id === 'routes/calls/_layout')
+		?.data as SerializeFrom<typeof callsLoader> | undefined
 	if (!callsData) {
 		console.error(
 			`A call was unable to retrieve the parent's data by routes/calls/_layout`,

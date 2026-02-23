@@ -1066,7 +1066,9 @@ pre {
 	gap: 0.75rem;
 }
 
-.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-options {
+.prose
+	.demo-usememo-and-usecallback-poll
+	.usememo-and-usecallback-poll-options {
 	display: grid;
 	gap: 0.5rem;
 }
@@ -1082,7 +1084,9 @@ pre {
 	cursor: pointer;
 }
 
-.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-button:hover {
+.prose
+	.demo-usememo-and-usecallback-poll
+	.usememo-and-usecallback-poll-button:hover {
 	background: var(--bg-alt);
 }
 
@@ -1100,7 +1104,9 @@ pre {
 	outline-offset: 2px;
 }
 
-.prose .demo-usememo-and-usecallback-poll .usememo-and-usecallback-poll-feedback {
+.prose
+	.demo-usememo-and-usecallback-poll
+	.usememo-and-usecallback-poll-feedback {
 	padding: 0.75rem 1rem;
 	border-radius: 0.75rem;
 	border: 1px solid var(--border-secondary);

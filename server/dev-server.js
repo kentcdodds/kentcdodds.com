@@ -136,7 +136,7 @@ if (process.env.NODE_ENV === 'production') {
 				`  ${color('magenta', 'r')} - restart app`,
 				`  ${color('yellow', 'h')} - help`,
 				`  ${color('red', 'q')} - exit (or Ctrl+C)`,
-			].join('\n')
+			].join('\n'),
 		)
 	}
 

@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { Link } from 'react-router';
+import { Link } from 'react-router'
 import { getImageBuilder, getImgProps } from '#app/images.tsx'
 import { type MdxListItem, type Team } from '#app/types.ts'
 import { getBannerAltProp, getBannerTitleProp } from '#app/utils/mdx.tsx'

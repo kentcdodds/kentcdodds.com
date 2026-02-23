@@ -38,7 +38,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 			// Size should always be present for R2-backed audio; keep a safe fallback.
 			const buffer = await getAudioBuffer({ key: call.audioKey! })
 			size = buffer.byteLength
-			const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
+			const range = rangeHeader
+				? parseHttpByteRangeHeader(rangeHeader, size)
+				: null
 			const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
 			const stream = Readable.from(body)
 			return new Response(createReadableStreamFromReadable(stream), {
@@ -57,7 +59,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 			})
 		}
 
-		const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
+		const range = rangeHeader
+			? parseHttpByteRangeHeader(rangeHeader, size)
+			: null
 		const { body } = await getAudioStream({
 			key: call.audioKey,
 			range: range ?? undefined,
@@ -84,7 +88,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 	contentType = parsed.contentType
 	size = parsed.buffer.byteLength
 	const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
-	const body = range ? parsed.buffer.subarray(range.start, range.end + 1) : parsed.buffer
+	const body = range
+		? parsed.buffer.subarray(range.start, range.end + 1)
+		: parsed.buffer
 	const stream = Readable.from(body)
 	return new Response(createReadableStreamFromReadable(stream), {
 		status: range ? 206 : 200,
@@ -101,4 +107,3 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 	})
 }
-

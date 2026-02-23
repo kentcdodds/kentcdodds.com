@@ -16,10 +16,6 @@ import {
 	getCallKentEpisodeArtworkUrl,
 } from './call-kent-artwork.ts'
 import { getEpisodePath } from './call-kent.ts'
-import {
-	isCloudflareTranscriptionConfigured,
-	transcribeMp3WithWorkersAi,
-} from './cloudflare-ai-transcription.server.ts'
 import { getEnv } from './env.server.ts'
 import { stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
@@ -127,19 +123,8 @@ async function createEpisode({
 	user: { firstName: string; email: string; team: string }
 	request: Request
 	isAnonymous?: boolean
-	/**
-	 * If provided, we upload this transcript to Transistor after publishing.
-	 * If omitted and Workers AI is configured, we will attempt to auto-transcribe.
-	 */
-	transcriptText?: string
+	transcriptText: string
 }) {
-	const shouldAutoTranscribe =
-		!transcriptText && isCloudflareTranscriptionConfigured()
-	// Start transcription ASAP, but don't block publishing.
-	const transcriptionPromise = shouldAutoTranscribe
-		? transcribeMp3WithWorkersAi({ mp3: audio })
-		: null
-
 	const id = uuid.v4()
 	const authorized = await fetchTransitor<TransistorAuthorizedJson>({
 		endpoint: 'v1/episodes/authorize_upload',
@@ -168,6 +153,7 @@ async function createEpisode({
 			description,
 			keywords,
 			increment_number: true,
+			transcript_text: transcriptText,
 		},
 	}
 
@@ -186,38 +172,6 @@ async function createEpisode({
 			},
 		},
 	})
-
-	// If we already have a transcript (draft workflow), upload it now.
-	if (transcriptText) {
-		try {
-			await updateEpisodeTranscriptText({
-				episodeId: created.data.id,
-				transcriptText,
-			})
-		} catch (error: unknown) {
-			console.error(
-				`Unable to upload transcript to Transistor for episode ${created.data.id}`,
-				error,
-			)
-		}
-	}
-
-	if (transcriptionPromise) {
-		void transcriptionPromise
-			.then(async (transcriptText) => {
-				if (!transcriptText) return
-				await updateEpisodeTranscriptText({
-					episodeId: created.data.id,
-					transcriptText,
-				})
-			})
-			.catch((error: unknown) => {
-				console.error(
-					`Workers AI transcription failed for Transistor episode ${created.data.id}`,
-					error,
-				)
-			})
-	}
 
 	const number = created.data.attributes.number
 	if (typeof number !== 'number') {

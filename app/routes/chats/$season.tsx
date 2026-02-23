@@ -1,4 +1,10 @@
-import { data as json, type HeadersFunction, isRouteErrorResponse, Link, useParams } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	isRouteErrorResponse,
+	Link,
+	useParams,
+} from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -17,7 +23,7 @@ import {
 import { useChatsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
-import  { type Route } from './+types/$season'
+import { type Route } from './+types/$season'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {

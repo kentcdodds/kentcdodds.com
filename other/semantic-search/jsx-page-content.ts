@@ -168,7 +168,10 @@ function pruneNode(node: any): any | null {
 
 function findFirstElementByTagName(node: any, tagName: string): any | null {
 	if (!node || typeof node !== 'object') return null
-	if (node.type === 'element' && String(node.tagName ?? '').toLowerCase() === tagName)
+	if (
+		node.type === 'element' &&
+		String(node.tagName ?? '').toLowerCase() === tagName
+	)
 		return node
 	if (!Array.isArray(node.children)) return null
 	for (const child of node.children) {
@@ -222,7 +225,9 @@ export async function getMdxPageRoutes(repoRoot = process.cwd()) {
 				continue
 			}
 			if (!entry.isFile() || !entry.name.endsWith('.mdx')) continue
-			routes.add(`/${nextRelativePath.replace(/\\/g, '/').replace(/\.mdx$/, '')}`)
+			routes.add(
+				`/${nextRelativePath.replace(/\\/g, '/').replace(/\.mdx$/, '')}`,
+			)
 		}
 	}
 
@@ -247,7 +252,9 @@ export function shouldIndexJsxSitemapPath({
 	if (mdxRoutes.has(normalizedPathname)) return false
 	if (SKIPPED_STATIC_ROUTES.has(normalizedPathname)) return false
 	if (
-		SKIPPED_PREFIX_ROUTES.some((prefix) => normalizedPathname.startsWith(prefix))
+		SKIPPED_PREFIX_ROUTES.some((prefix) =>
+			normalizedPathname.startsWith(prefix),
+		)
 	) {
 		return false
 	}
@@ -299,7 +306,8 @@ async function requestTextDocument({
 	accept: string
 }): Promise<TextResponse> {
 	const targetUrl = new URL(url)
-	const requestFn = targetUrl.protocol === 'https:' ? https.request : http.request
+	const requestFn =
+		targetUrl.protocol === 'https:' ? https.request : http.request
 
 	return await new Promise<TextResponse>((resolve, reject) => {
 		const req = requestFn(
@@ -500,7 +508,10 @@ async function fetchHtml(pathname: string, origin: string) {
 		if (res.statusCode < 200 || res.statusCode >= 300) return null
 		const contentType = String(res.headers['content-type'] ?? '')
 		if (!contentType.includes('text/html')) return null
-		return { html: res.body, pathname: currentPathname } satisfies HtmlFetchResult
+		return {
+			html: res.body,
+			pathname: currentPathname,
+		} satisfies HtmlFetchResult
 	}
 
 	return null
@@ -545,7 +556,8 @@ export async function loadJsxPageItemsFromRunningSite({
 				slug,
 				url: normalizedOriginalPath,
 				title:
-					title || (normalizedOriginalPath === '/' ? 'Home' : normalizedOriginalPath),
+					title ||
+					(normalizedOriginalPath === '/' ? 'Home' : normalizedOriginalPath),
 				source: text,
 			}
 		},

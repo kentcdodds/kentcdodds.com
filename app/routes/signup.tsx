@@ -15,13 +15,22 @@ import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { getDomainUrl, getErrorStack, isResponse, isTeam, teams } from '#app/utils/misc.ts'
+import {
+	getDomainUrl,
+	getErrorStack,
+	isResponse,
+	isTeam,
+	teams,
+} from '#app/utils/misc.ts'
 import {
 	TEAM_ONEWHEELING_MAP,
 	TEAM_SKIING_MAP,
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
-import { getPasswordHash, getPasswordStrengthError } from '#app/utils/password.server.ts'
+import {
+	getPasswordHash,
+	getPasswordStrengthError,
+} from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
@@ -31,7 +40,7 @@ import {
 	consumeVerificationForTarget,
 	createVerification,
 } from '#app/utils/verification.server.ts'
-import  { type Route } from './+types/signup'
+import { type Route } from './+types/signup'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -110,7 +119,9 @@ export async function action({ request }: Route.ActionArgs) {
 			loginInfoSession.flashMessage(
 				'An account already exists for that email. Log in instead (or reset your password).',
 			)
-			return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+			return redirect('/login', {
+				headers: await loginInfoSession.getHeaders(),
+			})
 		}
 
 		const { verification, code } = await createVerification({
@@ -148,7 +159,9 @@ export async function action({ request }: Route.ActionArgs) {
 			loginInfoSession.flashError(
 				'Unable to send verification email right now. Please try again.',
 			)
-			return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+			return redirect('/signup', {
+				headers: await loginInfoSession.getHeaders(),
+			})
 		}
 
 		loginInfoSession.flashMessage(`Verification code sent to ${email}.`)
@@ -162,7 +175,9 @@ export async function action({ request }: Route.ActionArgs) {
 		const code = form.get('code')
 		if (typeof code !== 'string' || !code) {
 			loginInfoSession.flashError('Verification code required')
-			return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+			return redirect('/signup', {
+				headers: await loginInfoSession.getHeaders(),
+			})
 		}
 
 		const result =
@@ -197,7 +212,9 @@ export async function action({ request }: Route.ActionArgs) {
 
 		loginInfoSession.setSignupEmail(result.target)
 		loginInfoSession.setEmail(result.target)
-		loginInfoSession.flashMessage('Email verified. Finish creating your account.')
+		loginInfoSession.flashMessage(
+			'Email verified. Finish creating your account.',
+		)
 		return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
 	}
 
@@ -213,9 +230,13 @@ export async function action({ request }: Route.ActionArgs) {
 	const confirmPassword = form.get('confirmPassword')
 
 	const errors: ActionData['errors'] = {
-		firstName: getErrorForFirstName(typeof firstName === 'string' ? firstName : null),
+		firstName: getErrorForFirstName(
+			typeof firstName === 'string' ? firstName : null,
+		),
 		team: getErrorForTeam(typeof team === 'string' ? team : null),
-		password: await getErrorForPassword(typeof password === 'string' ? password : null),
+		password: await getErrorForPassword(
+			typeof password === 'string' ? password : null,
+		),
 		confirmPassword: (() => {
 			if (typeof confirmPassword !== 'string' || !confirmPassword) {
 				return 'Confirm your password'
@@ -259,12 +280,19 @@ export async function action({ request }: Route.ActionArgs) {
 			})
 		} catch (error: unknown) {
 			// If the account was created in another concurrent attempt, send the user to login.
-			if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+			if (
+				error &&
+				typeof error === 'object' &&
+				'code' in error &&
+				error.code === 'P2002'
+			) {
 				loginInfoSession.clean()
 				loginInfoSession.flashMessage(
 					'An account already exists for that email. Log in instead (or reset your password).',
 				)
-				return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+				return redirect('/login', {
+					headers: await loginInfoSession.getHeaders(),
+				})
 			}
 			throw error
 		}
@@ -298,10 +326,13 @@ export async function action({ request }: Route.ActionArgs) {
 			loginInfoSession.flashMessage(
 				'Your account was created. Please log in to continue.',
 			)
-			return redirect('/login', { headers: await loginInfoSession.getHeaders() })
+			return redirect('/login', {
+				headers: await loginInfoSession.getHeaders(),
+			})
 		}
 
-		let clientSession: Awaited<ReturnType<typeof getClientSession>> | null = null
+		let clientSession: Awaited<ReturnType<typeof getClientSession>> | null =
+			null
 		try {
 			clientSession = await getClientSession(request, null)
 			const clientId = clientSession.getClientId()
@@ -340,7 +371,8 @@ export async function action({ request }: Route.ActionArgs) {
 					team: null,
 					password: null,
 					confirmPassword: null,
-					generalError: 'There was a problem creating your account. Please try again.',
+					generalError:
+						'There was a problem creating your account. Please try again.',
 				},
 			} satisfies ActionData,
 			500,
@@ -368,8 +400,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 		if (result) {
 			loginInfoSession.setSignupEmail(result.target)
 			loginInfoSession.setEmail(result.target)
-			loginInfoSession.flashMessage('Email verified. Finish creating your account.')
-			return redirect('/signup', { headers: await loginInfoSession.getHeaders() })
+			loginInfoSession.flashMessage(
+				'Email verified. Finish creating your account.',
+			)
+			return redirect('/signup', {
+				headers: await loginInfoSession.getHeaders(),
+			})
 		}
 		loginInfoSession.flashError(
 			'Verification link invalid or expired. Please request a new one.',
@@ -466,7 +502,7 @@ function TeamOption({
 	return (
 		<div
 			className={clsx(
-				'focus-ring relative rounded-lg bg-gray-100 dark:bg-gray-800 lg:col-span-4',
+				'focus-ring relative rounded-lg bg-gray-100 lg:col-span-4 dark:bg-gray-800',
 				team.focusClassName,
 				{
 					'ring-2': selected,
@@ -493,7 +529,7 @@ function TeamOption({
 					aria-hidden="true"
 					className={teamImageClassName}
 				/>
-				<span className="text-sm font-medium leading-none text-black dark:text-white lg:text-lg">
+				<span className="text-sm leading-none font-medium text-black lg:text-lg dark:text-white">
 					<span className="lg:hidden" aria-hidden="true">
 						{team.label.replace(' Team', '')}
 					</span>
@@ -670,7 +706,9 @@ export default function NewAccount({
 						) : null}
 						{actionData?.errors.team ? (
 							<div className="col-span-full mb-4 text-right">
-								<InputError id="team-error">{actionData.errors.team}</InputError>
+								<InputError id="team-error">
+									{actionData.errors.team}
+								</InputError>
 							</div>
 						) : null}
 

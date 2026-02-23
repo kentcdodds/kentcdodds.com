@@ -1,5 +1,5 @@
 import { verifyRegistrationResponse } from '@simplewebauthn/server'
-import { data as json } from 'react-router';
+import { data as json } from 'react-router'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
@@ -8,7 +8,7 @@ import {
 	RegistrationResponseSchema,
 	passkeyCookie,
 } from '#app/utils/webauthn.server.js'
-import  { type Route } from './+types/verify-registration'
+import { type Route } from './+types/verify-registration'
 
 export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)

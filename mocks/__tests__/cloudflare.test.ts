@@ -63,7 +63,7 @@ describe('cloudflare MSW mocks', () => {
 	test('Workers AI text-to-speech endpoint returns audio bytes', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
-			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/deepgram/aura-1',
+			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/deepgram/aura-2-en',
 			{
 				method: 'POST',
 				headers: {

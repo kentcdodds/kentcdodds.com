@@ -1,7 +1,8 @@
 # Project context
 
 This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
-with Express, SQLite (via Prisma), and extensive MSW mocks for all external APIs.
+with Express, SQLite (via Prisma), and extensive MSW mocks for all external
+APIs.
 
 ## Prerequisites
 
@@ -24,8 +25,8 @@ reference:
 
 ## Non-obvious caveats
 
-- All external APIs are mocked via MSW when `MOCKS=true` (the default in dev). No
-  real API keys are needed for local development; `.env.example` values are
+- All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
+  No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
   external database server is required.
@@ -33,4 +34,3 @@ reference:
   It's populated on first request or via `npm run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
-

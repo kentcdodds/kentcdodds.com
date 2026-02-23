@@ -1,7 +1,14 @@
 import { MixedCheckbox } from '@reach/checkbox'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, useSearchParams, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
+import {
+	Link,
+	useSearchParams,
+	data as json,
+	type HeadersFunction,
+	type LinksFunction,
+	type MetaFunction,
+} from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ArticleCard } from '#app/components/article-card.tsx'
 import { Button } from '#app/components/button.tsx'
@@ -54,7 +61,7 @@ import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/blog'
+import { type Route } from './+types/blog'
 
 const handleId = 'blog'
 export const handle: KCDHandle = {
@@ -216,11 +223,7 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 	)
 
 	const effectiveSort =
-		sortState === 'auto'
-			? regularQuery
-				? 'relevance'
-				: 'newest'
-			: sortState
+		sortState === 'auto' ? (regularQuery ? 'relevance' : 'newest') : sortState
 
 	const matchingPosts = React.useMemo(() => {
 		const r = new RegExp(specialQueryRegex)
@@ -362,7 +365,7 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 				: `${q} ${tag}`
 
 			// trim and remove subsequent spaces (`react   node ` => `react node`)
-			return newQuery.replace(/\s+/g, ' ').trim();
+			return newQuery.replace(/\s+/g, ' ').trim()
 		})
 	}
 
@@ -633,7 +636,7 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 									onChange={(e) =>
 										setSortState(getSortStateFromParam(e.currentTarget.value))
 									}
-									className="peer text-primary bg-primary border-secondary focus:bg-secondary appearance-none rounded-full border pl-5 pr-11 py-2 hover:border-team-current focus:border-team-current focus:outline-none"
+									className="peer text-primary bg-primary border-secondary focus:bg-secondary hover:border-team-current focus:border-team-current appearance-none rounded-full border py-2 pr-11 pl-5 focus:outline-none"
 								>
 									<option value="auto">
 										{regularQuery ? 'Relevance' : 'Newest'}
@@ -644,7 +647,7 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 								</select>
 								<ChevronDownIcon
 									aria-hidden="true"
-									className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 peer-hover:text-team-current peer-focus:text-team-current"
+									className="peer-hover:text-team-current peer-focus:text-team-current pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-slate-500"
 								/>
 							</span>
 						</label>

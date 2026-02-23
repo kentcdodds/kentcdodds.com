@@ -1,7 +1,15 @@
 import { clsx } from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import * as React from 'react'
-import { isRouteErrorResponse, Link, Outlet, useMatches, useParams, data as json, type HeadersFunction } from 'react-router';
+import {
+	isRouteErrorResponse,
+	Link,
+	Outlet,
+	useMatches,
+	useParams,
+	data as json,
+	type HeadersFunction,
+} from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -24,7 +32,7 @@ import { useCallsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { getEpisodesBySeason } from '../_layout.tsx'
-import  { type Route } from './+types/_layout'
+import { type Route } from './+types/_layout'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: serverOnly$(async (request: Request) => {

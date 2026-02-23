@@ -1,6 +1,11 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, type HeadersFunction, Link, useParams } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	Link,
+	useParams,
+} from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -40,7 +45,7 @@ import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { markAsRead } from '../action/mark-as-read.tsx'
-import  { type Route } from './+types/$slug'
+import { type Route } from './+types/$slug'
 
 const handleId = 'blog-post'
 export const handle: KCDHandle = {
@@ -102,21 +107,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			: null,
 	)
 
-	const [recommendations, readRankings, totalReads, favorite] = await Promise.all([
-		getBlogRecommendations({
-			request,
-			timings,
-			limit: 3,
-			keywords: [
-				...(page.frontmatter.categories ?? []),
-				...(page.frontmatter.meta?.keywords ?? []),
-			],
-			exclude: [params.slug],
-		}),
-		getBlogReadRankings({ request, slug: params.slug, timings }),
-		getTotalPostReads({ request, slug: params.slug, timings }),
-		favoritePromise,
-	])
+	const [recommendations, readRankings, totalReads, favorite] =
+		await Promise.all([
+			getBlogRecommendations({
+				request,
+				timings,
+				limit: 3,
+				keywords: [
+					...(page.frontmatter.categories ?? []),
+					...(page.frontmatter.meta?.keywords ?? []),
+				],
+				exclude: [params.slug],
+			}),
+			getBlogReadRankings({ request, slug: params.slug, timings }),
+			getTotalPostReads({ request, slug: params.slug, timings }),
+			favoritePromise,
+		])
 
 	const headers = {
 		'Cache-Control': 'private, max-age=3600',

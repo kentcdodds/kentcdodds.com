@@ -1,5 +1,5 @@
 import path from 'path'
-import { data as json, redirect } from 'react-router';
+import { data as json, redirect } from 'react-router'
 import { cache } from '#app/utils/cache.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
@@ -12,7 +12,7 @@ import {
 import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
-import  { type Route } from './+types/refresh-cache'
+import { type Route } from './+types/refresh-cache'
 
 type Body =
 	| { keys: Array<string>; commitSha?: string }

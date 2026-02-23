@@ -139,4 +139,3 @@ describe('rate limiting (epic-stack style)', () => {
 		expect(r.headers.get('x-ratelimit-remaining')).toBeNull()
 	})
 })
-

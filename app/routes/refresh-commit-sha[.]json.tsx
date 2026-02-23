@@ -1,4 +1,4 @@
-import { data as json } from 'react-router';
+import { data as json } from 'react-router'
 import { cache } from '#app/utils/cache.server.ts'
 import {
 	isRefreshShaInfo,

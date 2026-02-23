@@ -1,8 +1,7 @@
 import { invariantResponse } from '@epic-web/invariant'
 import { getEnv } from '#app/utils/env.server.ts'
-import  { type Route } from './+types/lookout'
+import { type Route } from './+types/lookout'
 // this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
-
 
 export async function action({ request }: Route.ActionArgs) {
 	const env = getEnv()

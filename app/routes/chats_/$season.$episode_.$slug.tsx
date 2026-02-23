@@ -1,7 +1,14 @@
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
 import React, { useState } from 'react'
-import { isRouteErrorResponse, Link, useLocation, data as json, redirect, type HeadersFunction } from 'react-router';
+import {
+	isRouteErrorResponse,
+	Link,
+	useLocation,
+	data as json,
+	redirect,
+	type HeadersFunction,
+} from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
@@ -72,17 +79,12 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export const meta: Route.MetaFunction = ({
-	data,
-	matches,
-}) => {
+export const meta: Route.MetaFunction = ({ data, matches }) => {
 	const episode = data?.episode
 
 	const rootMatch = matches.find((match) => match?.id === 'root')
 	const requestInfo = (
-		rootMatch?.data as
-			| SerializeFrom<RootLoaderType>
-			| undefined
+		rootMatch?.data as SerializeFrom<RootLoaderType> | undefined
 	)?.requestInfo
 	if (!episode) {
 		return [{ title: 'Chats with Kent Episode not found' }]

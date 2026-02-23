@@ -1,11 +1,11 @@
 import { startRegistration } from '@simplewebauthn/browser'
 import { type PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server'
-import { data as json, Form, useRevalidator } from 'react-router';
+import { data as json, Form, useRevalidator } from 'react-router'
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/me_.passkeys'
+import { type Route } from './+types/me_.passkeys'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)

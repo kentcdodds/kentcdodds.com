@@ -1,3 +1,5 @@
+import { getEnv } from './env.server.ts'
+
 type CallKentEpisodeMetadata = {
 	title: string
 	description: string
@@ -6,30 +8,6 @@ type CallKentEpisodeMetadata = {
 
 function getCloudflareApiBaseUrl() {
 	return 'https://api.cloudflare.com/client/v4'
-}
-
-function getCloudflareWorkersAiAuth() {
-	const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
-	const apiToken = process.env.CLOUDFLARE_API_TOKEN
-
-	// In local dev we typically run with `MOCKS=true` and do not require real
-	// Cloudflare credentials; MSW only needs a non-empty Authorization header.
-	if (process.env.MOCKS === 'true') {
-		return {
-			accountId: accountId ?? 'mock-account-id',
-			// Cloudflare MSW mocks only activate for tokens starting with `MOCK`.
-			apiToken: apiToken ?? 'MOCK_cloudflare_api_token',
-		}
-	}
-
-	return { accountId: accountId ?? null, apiToken: apiToken ?? null }
-}
-
-export function isCloudflareCallKentMetadataConfigured() {
-	const { accountId, apiToken } = getCloudflareWorkersAiAuth()
-	// A model always resolves (hardcoded default in the generator), so only
-	// account credentials gate availability.
-	return Boolean(accountId && apiToken)
 }
 
 function extractJsonObjectFromText(text: string) {
@@ -76,41 +54,90 @@ function unwrapWorkersAiText(result: any): string | null {
 
 export async function generateCallKentEpisodeMetadataWithWorkersAi({
 	transcript,
+	callerTranscript,
+	responderTranscript,
 	callTitle,
 	callerNotes,
 	model = process.env.CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL ??
 		process.env.CLOUDFLARE_AI_TEXT_MODEL ??
 		'@cf/meta/llama-3.1-8b-instruct',
 }: {
-	transcript: string
+	/**
+	 * Optional; prefer using `callerTranscript` + `responderTranscript` when
+	 * available (e.g. when we transcribe segments separately).
+	 */
+	transcript?: string
+	callerTranscript?: string | null
+	responderTranscript?: string | null
 	callTitle?: string | null
 	callerNotes?: string | null
 	model?: string
 }): Promise<CallKentEpisodeMetadata> {
-	const { accountId, apiToken } = getCloudflareWorkersAiAuth()
+	const accountId = getEnv().CLOUDFLARE_ACCOUNT_ID
+	const apiToken = getEnv().CLOUDFLARE_API_TOKEN
 	if (!accountId || !apiToken) {
 		throw new Error(
 			'Cloudflare Workers AI is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.',
 		)
 	}
 
-	const system = [
-		'You write metadata for the "Call Kent" podcast.',
-		'Given an episode transcript, produce:',
-		'- title: <= 80 characters',
-		'- description: 2-6 sentences, plain text (no HTML), may include short bullet list',
-		'- keywords: 5-12 items, comma-separated',
-		'Output ONLY valid JSON with keys: title, description, keywords.',
-	].join('\n')
+	// Keep the model anchored on canonical details to reduce hallucinated links/names.
+	const canonicalSiteUrl = 'https://kentcdodds.com'
+	const canonicalCallsUrl = `${canonicalSiteUrl}/calls`
 
-	const user = [
-		callTitle ? `Caller-provided title: ${callTitle}` : null,
-		callerNotes?.trim() ? `Caller notes: ${callerNotes.trim()}` : null,
-		'Transcript:',
-		transcript.trim(),
-	]
-		.filter(Boolean)
-		.join('\n\n')
+	const system = `
+You write metadata for the "Call Kent Podcast", hosted by Kent C. Dodds.
+Only use information that is explicitly present in the provided transcripts and/or caller notes.
+Do NOT invent details (names, companies, sponsors, products, locations, links).
+If you are unsure about a detail, omit it rather than guessing.
+Canonical references (use these exactly; do not make up lookalike domains):
+- Kent C. Dodds website: ${canonicalSiteUrl}
+- Leave a call / listen to episodes: ${canonicalCallsUrl}
+If you include a URL/domain in the description, it must be copied verbatim from the transcript/caller notes OR be one of the canonical references above.
+You will usually receive two transcript sections:
+- Caller transcript (question / context)
+- Responder transcript (Kent's answer)
+Use both sections to craft accurate, specific metadata.
+Given the transcripts, produce:
+- title: <= 80 characters
+- description: 2-6 sentences, markdown is allowed; focus on what was asked + what Kent answered; avoid generic filler
+- description may optionally end with a single call-to-action sentence using the canonical references above
+- keywords: 1-5 items, comma-separated
+Output ONLY valid JSON with keys: title, description, keywords.
+`.trim()
+
+	const hasSegmentTranscripts = Boolean(
+		callerTranscript?.trim() && responderTranscript?.trim(),
+	)
+	const transcriptBlock = hasSegmentTranscripts
+		? `
+# Transcripts:
+
+## Caller transcript:
+
+${callerTranscript!.trim()}
+
+## Responder transcript (Kent's answer):
+
+${responderTranscript!.trim()}
+`.trim()
+		: transcript?.trim()
+			? `
+# Transcript:
+
+${transcript.trim()}
+`.trim()
+			: ''
+
+	if (!transcriptBlock) {
+		throw new Error(
+			'Missing transcript input: provide `callerTranscript` + `responderTranscript` or `transcript`.',
+		)
+	}
+
+	const user = `
+${callTitle ? `Caller-provided title: ${callTitle}\n\n` : ''}${callerNotes?.trim() ? `Caller notes: ${callerNotes.trim()}\n\n` : ''}${transcriptBlock}
+`.trim()
 
 	// Cloudflare's REST route expects the model as path segments (with `/`), so do
 	// not URL-encode the model string (encoding can yield "No route for that URI").
@@ -147,7 +174,8 @@ export async function generateCallKentEpisodeMetadataWithWorkersAi({
 
 	const obj = extractJsonObjectFromText(text) as any
 	const titleRaw = typeof obj?.title === 'string' ? obj.title : ''
-	const descriptionRaw = typeof obj?.description === 'string' ? obj.description : ''
+	const descriptionRaw =
+		typeof obj?.description === 'string' ? obj.description : ''
 	const keywordsRaw = normalizeKeywords(obj?.keywords)
 
 	const title = clampTitle(titleRaw)
@@ -163,4 +191,3 @@ export async function generateCallKentEpisodeMetadataWithWorkersAi({
 }
 
 export type { CallKentEpisodeMetadata }
-

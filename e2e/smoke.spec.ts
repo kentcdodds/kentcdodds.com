@@ -20,8 +20,12 @@ test('App loads and nav works', async ({ page }) => {
 
 	// Narrower desktop viewport: Discord + Chats hide (same behavior as Chats had).
 	await page.setViewportSize({ width: 1100, height: 900 })
-	await expect(page.locator('.navbar-links [data-nav-item="discord"]')).toBeHidden()
-	await expect(page.locator('.navbar-links [data-nav-item="chats"]')).toBeHidden()
+	await expect(
+		page.locator('.navbar-links [data-nav-item="discord"]'),
+	).toBeHidden()
+	await expect(
+		page.locator('.navbar-links [data-nav-item="chats"]'),
+	).toBeHidden()
 
 	const blogLink = nav.getByRole('link', { name: 'Blog' })
 	await blogLink.click()

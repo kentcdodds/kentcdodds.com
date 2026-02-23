@@ -40,7 +40,10 @@ export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 
 	const emailAddress = formData.get('email')
-	invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
+	invariantResponse(
+		typeof emailAddress === 'string',
+		'Form submitted incorrectly',
+	)
 	const email = emailAddress.trim().toLowerCase()
 
 	// honeypot
@@ -81,10 +84,14 @@ export async function action({ request }: Route.ActionArgs) {
 		'If an account exists for that email, you will receive a password reset email shortly.',
 	)
 
-	return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+	return redirect('/reset-password', {
+		headers: await loginSession.getHeaders(),
+	})
 }
 
-export default function ForgotPassword({ loaderData: data }: Route.ComponentProps) {
+export default function ForgotPassword({
+	loaderData: data,
+}: Route.ComponentProps) {
 	return (
 		<div className="mt-24 pt-6">
 			<HeaderSection
@@ -140,4 +147,3 @@ export default function ForgotPassword({ loaderData: data }: Route.ComponentProp
 		</div>
 	)
 }
-

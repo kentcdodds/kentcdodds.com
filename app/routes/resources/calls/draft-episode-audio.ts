@@ -35,7 +35,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
 		const buffer = await getAudioBuffer({ key: draft.episodeAudioKey })
 		const totalSize = buffer.byteLength
-		const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, totalSize) : null
+		const range = rangeHeader
+			? parseHttpByteRangeHeader(rangeHeader, totalSize)
+			: null
 		const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
 		const stream = Readable.from(body)
 		return new Response(createReadableStreamFromReadable(stream), {
@@ -74,4 +76,3 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 	})
 }
-

@@ -921,7 +921,7 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				// ignore
 			}
 
-			// Text-to-speech (e.g. @cf/deepgram/aura-1, @cf/myshell-ai/melotts).
+			// Text-to-speech (e.g. @cf/deepgram/aura-2-en, @cf/myshell-ai/melotts).
 			if (
 				lowerModel.includes('deepgram/aura') ||
 				lowerModel.includes('aura-') ||

@@ -104,7 +104,8 @@ export async function refreshChangedContent({
 		return { status: 'no-compare-sha' }
 	}
 
-	const changedFiles = (await getChangedFilesImpl(currentCommitSha, compareSha)) ?? []
+	const changedFiles =
+		(await getChangedFilesImpl(currentCommitSha, compareSha)) ?? []
 	const contentPaths = changedFiles
 		.filter((f) => f.filename.startsWith('content'))
 		.map((f) => f.filename.replace(/^content\//, ''))

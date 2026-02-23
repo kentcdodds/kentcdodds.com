@@ -1,6 +1,11 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, Link, useFetcher, type HeadersFunction } from 'react-router'
+import {
+	data as json,
+	Link,
+	useFetcher,
+	type HeadersFunction,
+} from 'react-router'
 import { z } from 'zod'
 import { SpinnerIcon, StarIcon } from '#app/components/icons.tsx'
 import {
@@ -21,7 +26,9 @@ type FavoriteStatusResponse = {
 	error?: string
 }
 
-function isFavoriteStatusResponse(data: unknown): data is FavoriteStatusResponse {
+function isFavoriteStatusResponse(
+	data: unknown,
+): data is FavoriteStatusResponse {
 	return (
 		typeof data === 'object' &&
 		data !== null &&
@@ -176,19 +183,17 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const user = await getUser(request)
 	if (!user) {
-		return json(
-			{ isFavorite: false, error: 'LOGIN_REQUIRED' } as const,
-			{ status: 401 },
-		)
+		return json({ isFavorite: false, error: 'LOGIN_REQUIRED' } as const, {
+			status: 401,
+		})
 	}
 
 	const formData = await request.formData()
 	const submission = FavoriteFormSchema.safeParse(Object.fromEntries(formData))
 	if (!submission.success) {
-		return json(
-			{ isFavorite: false, error: 'INVALID_FORM_DATA' } as const,
-			{ status: 400 },
-		)
+		return json({ isFavorite: false, error: 'INVALID_FORM_DATA' } as const, {
+			status: 400,
+		})
 	}
 
 	const { contentType, contentId, intent } = submission.data
@@ -199,10 +204,9 @@ export async function action({ request }: Route.ActionArgs) {
 		contentType === 'chats-with-kent-episode'
 	) {
 		if (!parseEpisodeFavoriteContentId(contentId)) {
-			return json(
-				{ isFavorite: false, error: 'INVALID_CONTENT_ID' } as const,
-				{ status: 400 },
-			)
+			return json({ isFavorite: false, error: 'INVALID_CONTENT_ID' } as const, {
+				status: 400,
+			})
 		}
 	}
 
@@ -244,12 +248,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	// When contentId is present we return a status payload.
 	if (contentId) {
-		const submission = FavoriteStatusQuerySchema.safeParse({ contentType, contentId })
+		const submission = FavoriteStatusQuerySchema.safeParse({
+			contentType,
+			contentId,
+		})
 		if (!submission.success) {
-			return json(
-				{ isFavorite: false, error: 'INVALID_QUERY' } as const,
-				{ status: 400, headers },
-			)
+			return json({ isFavorite: false, error: 'INVALID_QUERY' } as const, {
+				status: 400,
+				headers,
+			})
 		}
 
 		const parsed = submission.data
@@ -267,10 +274,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 		const user = await getUser(request)
 		if (!user) {
-			return json(
-				{ isFavorite: false, authenticated: false } as const,
-				{ headers },
-			)
+			return json({ isFavorite: false, authenticated: false } as const, {
+				headers,
+			})
 		}
 
 		const favorite = await prisma.favorite.findUnique({
@@ -307,13 +313,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 		select: { contentId: true },
 		orderBy: { createdAt: 'desc' },
 	})
-	return json(
-		{ contentIds: favorites.map((f) => f.contentId) } as const,
-		{ headers },
-	)
+	return json({ contentIds: favorites.map((f) => f.contentId) } as const, {
+		headers,
+	})
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export { favoriteResourceRoute }
-

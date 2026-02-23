@@ -1,6 +1,6 @@
 // this is a placeholder to make /routes/talks/_layout catch nested paths
 
-import { type MetaFunction } from 'react-router';
+import { type MetaFunction } from 'react-router'
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getDisplayUrl, getUrl } from '#app/utils/misc.ts'

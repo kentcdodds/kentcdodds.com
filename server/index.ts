@@ -3,7 +3,10 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createRequestHandler, type RequestHandler } from '@react-router/express'
+import {
+	createRequestHandler,
+	type RequestHandler,
+} from '@react-router/express'
 import {
 	init as sentryInit,
 	setContext as sentrySetContext,

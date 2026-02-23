@@ -48,7 +48,7 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await expect(page).toHaveURL(
 		/.*calls\/record\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
 		{
-		timeout: 10_000,
+			timeout: 10_000,
 		},
 	)
 	const callIdMatch = page
@@ -71,7 +71,9 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await page.getByRole('button', { name: /generate episode draft/i }).click()
 
 	// Wait for draft processing to finish and editor to appear.
-	await expect(page.getByLabel(/episode title/i)).toBeVisible({ timeout: 60_000 })
+	await expect(page.getByLabel(/episode title/i)).toBeVisible({
+		timeout: 60_000,
+	})
 
 	// Publish requires a double-confirmation click.
 	await page.getByRole('button', { name: /^publish episode$/i }).click()

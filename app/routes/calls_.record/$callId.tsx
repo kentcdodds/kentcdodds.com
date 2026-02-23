@@ -1,12 +1,20 @@
 import * as React from 'react'
-import { data as json, redirect, type HeadersFunction, Form } from 'react-router';
+import {
+	data as json,
+	redirect,
+	type HeadersFunction,
+	Form,
+} from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { reuseUsefulLoaderHeaders, useDoubleCheck } from '#app/utils/misc-react.tsx'
+import {
+	reuseUsefulLoaderHeaders,
+	useDoubleCheck,
+} from '#app/utils/misc-react.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/$callId'
+import { type Route } from './+types/$callId'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -39,15 +47,17 @@ export async function action({ params, request }: Route.ActionArgs) {
 		return redirect('/calls/record')
 	}
 	await prisma.call.delete({ where: { id: params.callId } })
-	const keysToDelete = [call.audioKey, call.episodeDraft?.episodeAudioKey].filter(
-		(k): k is string => typeof k === 'string' && k.length > 0,
-	)
+	const keysToDelete = [
+		call.audioKey,
+		call.episodeDraft?.episodeAudioKey,
+	].filter((k): k is string => typeof k === 'string' && k.length > 0)
 	if (keysToDelete.length) {
-		const { deleteAudioObject } = await import(
-			'#app/utils/call-kent-audio-storage.server.ts'
-		)
+		const { deleteAudioObject } =
+			await import('#app/utils/call-kent-audio-storage.server.ts')
 		await Promise.all(
-			keysToDelete.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+			keysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
 		)
 	}
 
@@ -89,7 +99,9 @@ export default function Screen({ loaderData: data }: Route.ComponentProps) {
 	return (
 		<section>
 			{data.call.notes ? (
-				<Paragraph className="mb-8 whitespace-pre-wrap">{data.call.notes}</Paragraph>
+				<Paragraph className="mb-8 whitespace-pre-wrap">
+					{data.call.notes}
+				</Paragraph>
 			) : (
 				<Paragraph className="mb-8">{`Thanks for your call!`}</Paragraph>
 			)}

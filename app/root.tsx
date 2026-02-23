@@ -1,11 +1,22 @@
-
 import { HotkeysProvider } from '@tanstack/react-hotkeys'
 
 import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import {
-    isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation, useNavigation, data as json, type HeadersFunction, type LinksFunction, type MetaFunction } from 'react-router';
+	isRouteErrorResponse,
+	Links,
+	Meta,
+	Outlet,
+	Scripts,
+	ScrollRestoration,
+	useLocation,
+	useNavigation,
+	data as json,
+	type HeadersFunction,
+	type LinksFunction,
+	type MetaFunction,
+} from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
 import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
@@ -16,7 +27,7 @@ import {
 	getUrl,
 	removeTrailingSlash,
 } from '#app/utils/misc-react.tsx'
-import  { type Route } from './+types/root'
+import { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
 import { ErrorPage, FourHundred } from './components/errors.tsx'
@@ -297,7 +308,11 @@ function CanonicalLink({
 	return <link rel="canonical" href={canonicalUrl} />
 }
 
-function App({ loaderData: data }: { loaderData: Route.ComponentProps['loaderData'] }) {
+function App({
+	loaderData: data,
+}: {
+	loaderData: Route.ComponentProps['loaderData']
+}) {
 	const nonce = useNonce()
 	const [team] = useTeam()
 	const theme = useTheme()

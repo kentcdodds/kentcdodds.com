@@ -1,7 +1,14 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { Link, Outlet, useNavigate, data as json, type HeadersFunction, type MetaFunction } from 'react-router';
+import {
+	Link,
+	Outlet,
+	useNavigate,
+	data as json,
+	type HeadersFunction,
+	type MetaFunction,
+} from 'react-router'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
@@ -35,7 +42,7 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
-import  { type Route } from './+types/_layout'
+import { type Route } from './+types/_layout'
 
 export const handle: KCDHandle & { id: string } = {
 	id: 'calls',

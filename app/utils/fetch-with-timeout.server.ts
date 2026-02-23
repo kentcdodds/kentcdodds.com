@@ -15,4 +15,3 @@ export function fetchWithTimeout(
 	})
 	return Promise.race([fetch(url, options), timeoutPromise])
 }
-

@@ -1,5 +1,12 @@
 import * as React from 'react'
-import { data as json, redirect, Form, useNavigate, useRevalidator } from 'react-router'
+import {
+	data as json,
+	redirect,
+	Form,
+	useLocation,
+	useNavigate,
+	useRevalidator,
+} from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import { useInterval } from '#app/components/hooks/use-interval.tsx'
@@ -31,7 +38,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const error = url.searchParams.get('error')
 	const shouldUseSampleAudio =
-		process.env.NODE_ENV === 'development' && url.searchParams.get('sampleAudio') === '1'
+		process.env.NODE_ENV === 'development' &&
+		url.searchParams.get('sampleAudio') === '1'
 
 	const call = await prisma.call.findFirst({
 		where: { id: params.callId },
@@ -93,6 +101,10 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 	const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
 	const [playbackRate, setPlaybackRate] = React.useState(2)
 	const dc = useDoubleCheck()
+	const mailtoHref = `mailto:${call.user.email}?${new URLSearchParams({
+		subject: `Re: Call Kent - ${call.title}`,
+		body: `I just wanted to talk about your call on the Call Kent podcast`,
+	}).toString()}`
 
 	React.useEffect(() => {
 		if (!audioEl) return
@@ -121,7 +133,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 							) : null}
 							<span>•</span>
 							<a
-								href={`mailto:${call.user.email}`}
+								href={mailtoHref}
 								className="inline-flex items-center gap-1 hover:underline"
 							>
 								<MailIcon size={14} />
@@ -196,16 +208,23 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 	)
 }
 
-type EpisodeDraft = NonNullable<SerializeFrom<typeof loader>['call']['episodeDraft']>
+type EpisodeDraft = NonNullable<
+	SerializeFrom<typeof loader>['call']['episodeDraft']
+>
 
 function ResponseAudioDraftForm({
 	audio,
 	callId,
+	callNotes,
+	callTitle,
 }: {
 	audio: Blob
 	callId: string
+	callNotes: string | null
+	callTitle: string
 }) {
 	const navigate = useNavigate()
+	const location = useLocation()
 	const revalidator = useRevalidator()
 	const { requestInfo } = useRootData()
 	const flyPrimaryInstance = requestInfo.flyPrimaryInstance
@@ -226,6 +245,10 @@ function ResponseAudioDraftForm({
 		if (isSubmitting) return
 		setError(null)
 
+		const formData = new FormData(event.currentTarget)
+		const callTitleValue = String(formData.get('callTitle') ?? '')
+		const notesValue = String(formData.get('notes') ?? '')
+
 		const reader = new FileReader()
 		const handleLoadEnd = async () => {
 			try {
@@ -238,6 +261,8 @@ function ResponseAudioDraftForm({
 				body.set('intent', 'create-episode-draft')
 				body.set('callId', callId)
 				body.set('audio', reader.result)
+				body.set('callTitle', callTitleValue)
+				body.set('notes', notesValue)
 
 				const headers = new Headers({
 					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -259,7 +284,13 @@ function ResponseAudioDraftForm({
 
 				const redirectPath = getNavigationPathFromResponse(response)
 				if (redirectPath) {
-					await navigate(redirectPath)
+					// Avoid scroll-to-top when the action redirects back to this page.
+					// (Also avoid unnecessary navigation if the redirect target is the same URL.)
+					if (redirectPath !== `${location.pathname}${location.search}`) {
+						await navigate(redirectPath, { preventScrollReset: true })
+					} else {
+						await revalidator.revalidate()
+					}
 					return
 				}
 
@@ -298,6 +329,36 @@ function ResponseAudioDraftForm({
 			) : null}
 			<audio src={audioURL} controls preload="metadata" className="w-full" />
 			<form method="post" onSubmit={handleSubmit} noValidate>
+				<div className="mb-4">
+					<label
+						htmlFor="call-title"
+						className="mb-2 inline-block text-lg text-gray-500 dark:text-slate-500"
+					>
+						Call title
+					</label>
+					<input
+						id="call-title"
+						name="callTitle"
+						defaultValue={callTitle}
+						className="focus-ring w-full rounded-lg bg-gray-100 px-6 py-4 text-lg font-medium text-black dark:bg-gray-800 dark:text-white"
+						required
+					/>
+				</div>
+				<div className="mb-4">
+					<label
+						htmlFor="call-notes"
+						className="mb-2 inline-block text-lg text-gray-500 dark:text-slate-500"
+					>
+						Caller notes
+					</label>
+					<textarea
+						id="call-notes"
+						name="notes"
+						defaultValue={callNotes ?? ''}
+						className="focus-ring w-full rounded-lg bg-gray-100 px-6 py-4 text-lg font-medium text-black dark:bg-gray-800 dark:text-white"
+						rows={4}
+					/>
+				</div>
 				<Button type="submit" disabled={isSubmitting}>
 					{isSubmitting ? 'Starting...' : 'Generate episode draft'}
 				</Button>
@@ -315,11 +376,11 @@ function DraftPending({
 }) {
 	const stepLabel =
 		{
-		STARTED: 'Starting…',
-		GENERATING_AUDIO: 'Generating episode audio…',
-		TRANSCRIBING: 'Transcribing audio…',
-		GENERATING_METADATA: 'Writing title/description/keywords…',
-		DONE: 'Finalizing…',
+			STARTED: 'Starting…',
+			GENERATING_AUDIO: 'Generating episode audio…',
+			TRANSCRIBING: 'Transcribing audio…',
+			GENERATING_METADATA: 'Writing title/description/keywords…',
+			DONE: 'Finalizing…',
 		}[step] ?? 'Processing…'
 
 	return (
@@ -345,9 +406,13 @@ function DraftPending({
 function DraftEditor({
 	callId,
 	draft,
+	callNotes,
+	callTitle,
 }: {
 	callId: string
 	draft: NonNullable<SerializeFrom<typeof loader>['call']['episodeDraft']>
+	callNotes: string | null
+	callTitle: string
 }) {
 	const dc = useDoubleCheck()
 	const disabled = draft.status !== 'READY'
@@ -376,6 +441,23 @@ function DraftEditor({
 					name="intent"
 					value="update-episode-draft"
 				/>
+
+				<div className="mb-8">
+					<label
+						htmlFor="draft-call-title"
+						className="mb-2 inline-block text-lg text-gray-500 dark:text-slate-500"
+					>
+						Call title
+					</label>
+					<input
+						id="draft-call-title"
+						name="callTitle"
+						defaultValue={callTitle}
+						className="focus-ring w-full rounded-lg bg-gray-100 px-6 py-4 text-lg font-medium text-black dark:bg-gray-800 dark:text-white"
+						required
+						disabled={disabled}
+					/>
+				</div>
 
 				<div className="mb-8">
 					<label
@@ -408,6 +490,23 @@ function DraftEditor({
 						className="focus-ring w-full rounded-lg bg-gray-100 px-6 py-4 text-lg font-medium text-black dark:bg-gray-800 dark:text-white"
 						rows={6}
 						required
+						disabled={disabled}
+					/>
+				</div>
+
+				<div className="mb-8">
+					<label
+						htmlFor="draft-notes"
+						className="mb-2 inline-block text-lg text-gray-500 dark:text-slate-500"
+					>
+						Caller notes
+					</label>
+					<textarea
+						id="draft-notes"
+						name="notes"
+						defaultValue={callNotes ?? ''}
+						className="focus-ring w-full rounded-lg bg-gray-100 px-6 py-4 text-lg font-medium text-black dark:bg-gray-800 dark:text-white"
+						rows={4}
 						disabled={disabled}
 					/>
 				</div>
@@ -479,16 +578,44 @@ function DraftEditor({
 	)
 }
 
-function RecordingDetailScreen({ data }: { data: Route.ComponentProps['loaderData'] }) {
+const draftStatusResourcePath = '/resources/calls/draft-status'
+
+function RecordingDetailScreen({
+	data,
+}: {
+	data: Route.ComponentProps['loaderData']
+}) {
 	const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
+	const [polledStatus, setPolledStatus] = React.useState<{
+		status: string
+		step: string
+		errorMessage: string | null
+	} | null>(null)
 	const user = useUser()
 	const draft = data.call.episodeDraft
 	const revalidator = useRevalidator()
 
+	// Use lightweight status-only endpoint when polling to avoid re-fetching
+	// transcript, title, description, keywords on every 1.5s poll.
 	useInterval(
-		() => {
-			if (revalidator.state === 'idle') {
-				void revalidator.revalidate()
+		async () => {
+			if (revalidator.state !== 'idle') return
+			try {
+				const res = await fetch(
+					`${draftStatusResourcePath}?callId=${data.call.id}`,
+				)
+				if (!res.ok) return
+				const json = (await res.json()) as {
+					status: string
+					step: string
+					errorMessage: string | null
+				}
+				setPolledStatus(json)
+				if (json.status !== 'PROCESSING') {
+					void revalidator.revalidate()
+				}
+			} catch {
+				// Ignore fetch errors; next poll will retry
 			}
 		},
 		draft?.status === 'PROCESSING' ? 1500 : 0,
@@ -513,17 +640,31 @@ function RecordingDetailScreen({ data }: { data: Route.ComponentProps['loaderDat
 				</Paragraph>
 
 				{draft ? (
-					draft.status === 'PROCESSING' ? (
-						<DraftPending callId={data.call.id} step={draft.step} />
-					) : draft.status === 'ERROR' ? (
+					(draft.status === 'PROCESSING' && polledStatus?.status !== 'ERROR') ||
+					(polledStatus?.status === 'READY' && draft.status !== 'READY') ? (
+						<DraftPending
+							callId={data.call.id}
+							step={
+								(polledStatus?.status === 'READY'
+									? 'DONE'
+									: (polledStatus?.step ?? draft.step)) as EpisodeDraft['step']
+							}
+						/>
+					) : draft.status === 'ERROR' || polledStatus?.status === 'ERROR' ? (
 						<div className="rounded-lg bg-red-50 p-6 dark:bg-red-950/30">
 							<H6 as="h3" className="mb-2">
 								{`Draft generation failed`}
 							</H6>
 							<Paragraph className="whitespace-pre-wrap text-red-700 dark:text-red-300">
-								{draft.errorMessage ?? 'Unknown error'}
+								{polledStatus?.errorMessage ??
+									draft.errorMessage ??
+									'Unknown error'}
 							</Paragraph>
-							<Form method="post" action={recordingFormActionPath} className="mt-6">
+							<Form
+								method="post"
+								action={recordingFormActionPath}
+								className="mt-6"
+							>
 								<input type="hidden" name="intent" value="undo-episode-draft" />
 								<input type="hidden" name="callId" value={data.call.id} />
 								<Button type="submit" variant="secondary">
@@ -532,10 +673,20 @@ function RecordingDetailScreen({ data }: { data: Route.ComponentProps['loaderDat
 							</Form>
 						</div>
 					) : (
-						<DraftEditor callId={data.call.id} draft={draft} />
+						<DraftEditor
+							callId={data.call.id}
+							draft={draft}
+							callNotes={data.call.notes}
+							callTitle={data.call.title}
+						/>
 					)
 				) : responseAudio ? (
-					<ResponseAudioDraftForm audio={responseAudio} callId={data.call.id} />
+					<ResponseAudioDraftForm
+						audio={responseAudio}
+						callId={data.call.id}
+						callNotes={data.call.notes}
+						callTitle={data.call.title}
+					/>
 				) : (
 					<div className="flex flex-col gap-6">
 						{data.shouldUseSampleAudio ? (
@@ -552,7 +703,8 @@ function RecordingDetailScreen({ data }: { data: Route.ComponentProps['loaderDat
 												`/resources/calls/call-audio?callId=${data.call.id}`,
 											)
 											if (!res.ok) return
-											const mime = res.headers.get('Content-Type') ?? 'audio/mpeg'
+											const mime =
+												res.headers.get('Content-Type') ?? 'audio/mpeg'
 											const bytes = await res.arrayBuffer()
 											setResponseAudio(new Blob([bytes], { type: mime }))
 										})()
