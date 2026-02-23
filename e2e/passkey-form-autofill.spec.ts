@@ -25,7 +25,9 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	// Register a passkey for the signed-in user.
 	await page.goto('/me/passkeys')
 	await page.getByRole('button', { name: 'Add Passkey' }).click()
-	await expect(page.getByText(/Passkey/)).toBeVisible()
+	await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible({
+		timeout: 15_000,
+	})
 
 	// Sign out (clear cookies) and load the login page.
 	await page.context().clearCookies()
