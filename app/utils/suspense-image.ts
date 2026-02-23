@@ -8,6 +8,9 @@ export function imgSrc(src: string) {
 
 	const promise = preloadImage(src)
 	imgCache.set(src, promise)
+	promise.catch(() => {
+		if (imgCache.get(src) === promise) imgCache.delete(src)
+	})
 
 	// Keep this cache bounded; artwork URLs can be unique per keystroke.
 	if (imgCache.size > MAX_CACHE_ENTRIES) {
