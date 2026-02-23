@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from './fetch-with-timeout.server'
+
 type Sleep = (ms: number) => Promise<void>
 
 const defaultSleep: Sleep = async (ms) => {
@@ -110,10 +112,9 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
 		let res: Response
 		try {
-			res = await fetch(url, {
-				headers,
-				signal: timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined,
-			})
+			res = timeoutMs
+				? await fetchWithTimeout(url, { headers }, timeoutMs)
+				: await fetch(url, { headers })
 		} catch (cause) {
 			if (attempt < maxRetries) {
 				const delayMs = clampMs(defaultDelayMs * (attempt + 1), maxDelayMs)
