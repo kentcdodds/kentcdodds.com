@@ -20,6 +20,21 @@ test('getPasswordSubmissionDelayMs uses an inclusive upper bound', () => {
 	expect(randomInt).toHaveBeenCalledWith(0, 251)
 })
 
+test('applyPasswordSubmissionDelay resolves immediately when maxMs is 0', async () => {
+	vi.useFakeTimers()
+	const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout')
+	setTimeoutSpy.mockClear()
+	try {
+		const randomInt = vi.fn()
+		await applyPasswordSubmissionDelay({ maxMs: 0, randomInt })
+		expect(randomInt).not.toHaveBeenCalled()
+		expect(setTimeoutSpy).not.toHaveBeenCalled()
+	} finally {
+		setTimeoutSpy.mockRestore()
+		vi.useRealTimers()
+	}
+})
+
 test('applyPasswordSubmissionDelay waits for the sampled delay', async () => {
 	vi.useFakeTimers()
 	try {
@@ -39,7 +54,6 @@ test('applyPasswordSubmissionDelay waits for the sampled delay', async () => {
 		expect(resolved).toBe(true)
 	} finally {
 		vi.useRealTimers()
-		vi.restoreAllMocks()
 	}
 })
 
