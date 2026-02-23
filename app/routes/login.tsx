@@ -197,6 +197,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 		React.useState(false)
 	const [passkeyAutofillResetKey, setPasskeyAutofillResetKey] =
 		React.useState(0)
+	const autofillCancelledRef = React.useRef(false)
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
@@ -206,12 +207,13 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 
 	React.useEffect(() => {
 		let isMounted = true
+		autofillCancelledRef.current = false
 
 		async function setupPasskeyAutofill() {
 			try {
 				const supports = await browserSupportsWebAuthnAutofill()
 				if (!supports) return
-				if (!isMounted) return
+				if (!isMounted || autofillCancelledRef.current) return
 				setPasskeyAutofillSupported(true)
 
 				// Fetch a challenge on page load and keep the request pending until
@@ -220,21 +222,21 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 					'/resources/webauthn/generate-authentication-options',
 					{ method: 'POST' },
 				)
-				if (!isMounted) return
+				if (!isMounted || autofillCancelledRef.current) return
 				if (!optionsResponse.ok) {
 					throw new Error('Failed to generate authentication options')
 				}
 				const json = await optionsResponse.json()
 				const { options } = AuthenticationOptionsSchema.parse(json)
 
-				if (!isMounted) return
+				if (!isMounted || autofillCancelledRef.current) return
 
 				const authResponse = await startAuthentication({
 					optionsJSON: options,
 					useBrowserAutofill: true,
 				})
 
-				if (!isMounted) return
+				if (!isMounted || autofillCancelledRef.current) return
 
 				setPasskeyMessage('Verifying your passkey')
 
@@ -246,7 +248,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 						body: JSON.stringify(authResponse),
 					},
 				)
-				if (!isMounted) return
+				if (!isMounted || autofillCancelledRef.current) return
 				const verificationJson = (await verificationResponse.json().catch(() => {
 					return null
 				})) as
@@ -291,6 +293,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 
 		return () => {
 			isMounted = false
+			autofillCancelledRef.current = true
 			WebAuthnAbortService.cancelCeremony()
 		}
 	}, [navigate, passkeyAutofillResetKey, revalidate])
@@ -298,6 +301,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 	async function handlePasskeyLogin() {
 		let didSucceed = false
 		try {
+			autofillCancelledRef.current = true
 			// Avoid collisions with a pending conditional UI ceremony.
 			WebAuthnAbortService.cancelCeremony()
 			setError(undefined)
