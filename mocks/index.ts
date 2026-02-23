@@ -54,8 +54,13 @@ const miscHandlers = [
 		},
 	),
 	http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {
-		// In mocks mode we want deterministic behavior and to avoid external HTTP
-		// requests that can flake in CI (even when DNS works).
+		// In development, allow real Gravatar lookups when possible.
+		// In tests/CI (and other non-dev modes), return 404 deterministically to
+		// avoid flaky external HTTP requests.
+		if (process.env.NODE_ENV !== 'development') {
+			return HttpResponse.json(null, { status: 404 })
+		}
+		if (await isConnectedToTheInternet()) return passthrough()
 		return HttpResponse.json(null, { status: 404 })
 	}),
 	http.get(/http:\/\/(localhost|127\.0\.0\.1):\d+\/.*/, async () =>
