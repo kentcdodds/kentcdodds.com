@@ -140,7 +140,20 @@ jobs:
           node-version: 24
 
       - name: 🎬 Setup ffmpeg
+        continue-on-error: true
         uses: FedericoCarboni/setup-ffmpeg@v3
+
+      - name: 🎬 Ensure ffmpeg installed
+        run: |
+          if command -v ffmpeg >/dev/null 2>&1; then
+            ffmpeg -version
+            exit 0
+          fi
+
+          # Fallback: if the setup action flakes (ex: fetch fails), install via apt.
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y ffmpeg
+          ffmpeg -version
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1.11.2
