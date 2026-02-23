@@ -15,7 +15,8 @@ const schemaBase = z.object({
 
 		FLY_APP_NAME: nonEmptyString,
 		FLY_REGION: nonEmptyString,
-		FLY_INSTANCE: nonEmptyString,
+		// Optional for startup race when env may not be fully injected yet.
+		FLY_MACHINE_ID: z.string().trim().optional(),
 		LITEFS_DIR: nonEmptyString,
 
 		// Used by LiteFS + tooling. Optional because it can be derived from
@@ -133,11 +134,13 @@ const schema = schemaBase.superRefine((values, ctx) => {
 type BaseEnv = z.infer<typeof schemaBase>
 type BaseEnvInput = z.input<typeof schemaBase>
 
-export type Env = Omit<BaseEnv, 'PORT' | 'MOCKS' | 'DATABASE_PATH'> & {
+export type Env = Omit<BaseEnv, 'PORT' | 'MOCKS' | 'DATABASE_PATH' | 'FLY_MACHINE_ID'> & {
 	PORT: number
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
+	/** Instance identifier; fallback for startup race when env may not be injected yet. */
+	FLY_MACHINE_ID: string
 }
 
 declare global {
@@ -198,6 +201,7 @@ export function getEnv(): Env {
 		MOCKS: values.MOCKS === 'true',
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
+		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 	}
 
 	_cache = { fingerprint, env }

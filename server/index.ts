@@ -82,7 +82,10 @@ if (SHOULD_INIT_SENTRY) {
 		tracesSampleRate: 0.3,
 		environment: env.NODE_ENV,
 	})
-	sentrySetContext('region', { name: env.FLY_INSTANCE })
+	sentrySetContext('fly', {
+		region: env.FLY_REGION,
+		machineId: env.FLY_MACHINE_ID,
+	})
 }
 
 const app = express()

@@ -12,7 +12,7 @@ describe('mdx not-found caching', () => {
 			CACHE_DATABASE_PATH: process.env.CACHE_DATABASE_PATH,
 			LITEFS_DIR: process.env.LITEFS_DIR,
 			FLY_REGION: process.env.FLY_REGION,
-			FLY_INSTANCE: process.env.FLY_INSTANCE,
+			FLY_MACHINE_ID: process.env.FLY_MACHINE_ID,
 		}
 
 		const cacheDbPath = path.join(os.tmpdir(), `kcd-cache-${randomUUID()}.db`)
@@ -22,7 +22,7 @@ describe('mdx not-found caching', () => {
 			// litefs-js requires these env vars to compute "primary instance" info.
 			process.env.LITEFS_DIR = path.resolve(process.cwd(), 'prisma')
 			process.env.FLY_REGION = 'test'
-			process.env.FLY_INSTANCE = 'test'
+			process.env.FLY_MACHINE_ID = 'test'
 
 			vi.resetModules()
 			// `cache.server.ts` imports `getUser` from `session.server.ts`, which pulls
