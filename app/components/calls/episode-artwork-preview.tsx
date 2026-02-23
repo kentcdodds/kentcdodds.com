@@ -6,8 +6,8 @@ import {
 	getCallKentEpisodeArtworkAvatar,
 	getCallKentEpisodeArtworkUrl,
 } from '#app/utils/call-kent-artwork.ts'
-import { imgSrc } from '#app/utils/suspense-image.ts'
 import { getAvatar } from '#app/utils/misc-react.tsx'
+import { imgSrc } from '#app/utils/suspense-image.ts'
 
 const AVATAR_SIZE = 1400
 
