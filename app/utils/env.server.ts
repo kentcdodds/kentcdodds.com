@@ -182,9 +182,7 @@ let _cache:
 	| undefined
 
 export function getEnv(): Env {
-	const keys = Object.keys((schemaBase as unknown as any).shape) as Array<
-		keyof BaseEnv
-	>
+	const keys = Object.keys(schemaBase.shape) as Array<keyof BaseEnv>
 	const fingerprint = keys
 		.map((k) => `${String(k)}=${process.env[String(k)] ?? ''}`)
 		.join('\0')
@@ -221,6 +219,8 @@ export function init() {
 				'❌ Invalid environment variables:',
 				z.flattenError(error).fieldErrors,
 			)
+		} else {
+			console.error('❌ Unexpected error while validating environment:', error)
 		}
 		throw new Error('Invalid environment variables')
 	}
