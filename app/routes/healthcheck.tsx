@@ -1,22 +1,11 @@
-import { getBlogReadRankings } from '#app/utils/blog.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { type Route } from './+types/healthcheck'
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const host =
-		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
-
 	try {
-		await Promise.all([
-			prisma.user.count(),
-			getBlogReadRankings({ request }),
-			fetch(`${new URL(request.url).protocol}${host}`, {
-				method: 'HEAD',
-				headers: { 'x-healthcheck': 'true' },
-			}).then((r) => {
-				if (!r.ok) return Promise.reject(r)
-			}),
-		])
+		// Minimal check: DB connectivity. Heavy checks (getBlogReadRankings, self-fetch)
+		// were causing 5s Fly healthcheck timeouts under load.
+		await prisma.user.count()
 		return new Response('OK')
 	} catch (error: unknown) {
 		console.error(request.url, 'healthcheck ❌', { error })
