@@ -11,12 +11,19 @@ const PASSWORD_MIN_LENGTH = 8
 // Enforcing this avoids giving users a false sense of security.
 const PASSWORD_MAX_BYTES = 72
 const PASSWORD_SUBMISSION_DELAY_MAX_MS = 250
+// `crypto.randomInt` requires (max - min) < 2**48 and both args are safe ints.
+// We call `randomInt(0, safeMaxMs + 1)` (exclusive upper bound), so cap `safeMaxMs`
+// to keep the exclusive max within range.
+const MAX_PASSWORD_SUBMISSION_DELAY_MS = 2 ** 48 - 2
 
 type RandomIntFunction = (min: number, max: number) => number
 
 function normalizeMaxDelayMs(maxMs: number) {
 	if (!Number.isFinite(maxMs)) return 0
-	return Math.max(0, Math.floor(maxMs))
+	return Math.min(
+		MAX_PASSWORD_SUBMISSION_DELAY_MS,
+		Math.max(0, Math.floor(maxMs)),
+	)
 }
 
 /**

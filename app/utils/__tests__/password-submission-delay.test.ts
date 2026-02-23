@@ -13,6 +13,26 @@ test('getPasswordSubmissionDelayMs clamps non-positive maxMs to 0', () => {
 	expect(randomInt).not.toHaveBeenCalled()
 })
 
+test('getPasswordSubmissionDelayMs treats non-finite maxMs as 0', () => {
+	const randomInt = vi.fn(() => 123)
+
+	expect(getPasswordSubmissionDelayMs({ maxMs: Number.NaN, randomInt })).toBe(0)
+	expect(
+		getPasswordSubmissionDelayMs({
+			maxMs: Number.POSITIVE_INFINITY,
+			randomInt,
+		}),
+	).toBe(0)
+
+	expect(randomInt).not.toHaveBeenCalled()
+})
+
+test('getPasswordSubmissionDelayMs caps maxMs to crypto.randomInt range', () => {
+	const randomInt = vi.fn(() => 0)
+	void getPasswordSubmissionDelayMs({ maxMs: 2 ** 48, randomInt })
+	expect(randomInt).toHaveBeenCalledWith(0, 2 ** 48 - 1)
+})
+
 test('getPasswordSubmissionDelayMs uses an inclusive upper bound', () => {
 	const randomInt = vi.fn(() => 42)
 
