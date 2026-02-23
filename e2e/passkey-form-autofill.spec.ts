@@ -85,9 +85,9 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	await page.context().clearCookies()
 
 	// Hold the verify request so we can assert markup while still on /login.
-	let releaseVerify: (() => void) | null = null
+	let releaseVerify = () => {}
 	const verifyGate = new Promise<void>((resolve) => {
-		releaseVerify = resolve
+		releaseVerify = () => resolve()
 	})
 	await page.route('**/resources/webauthn/verify-authentication', async (route) => {
 		await verifyGate
@@ -114,7 +114,7 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 		await page.waitForRequest('**/resources/webauthn/verify-authentication')
 	}
 
-	releaseVerify?.()
+	releaseVerify()
 
 	await page.waitForURL('**/me', { timeout: 10_000 })
 	await expect(page.getByRole('heading', { name: "Here's your profile." })).toBeVisible()
