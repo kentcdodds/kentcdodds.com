@@ -222,6 +222,8 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 				const json = await optionsResponse.json()
 				const { options } = AuthenticationOptionsSchema.parse(json)
 
+				if (!isMounted) return
+
 				const authResponse = await startAuthentication({
 					optionsJSON: options,
 					useBrowserAutofill: true,
@@ -243,6 +245,8 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 				const verificationJson = (await verificationResponse.json()) as
 					| { status: 'success' }
 					| { status: 'error'; error: string }
+
+				if (!isMounted) return
 
 				if (verificationJson.status === 'error') {
 					throw new Error(verificationJson.error)
