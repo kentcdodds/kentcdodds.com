@@ -86,6 +86,7 @@ const actionIds = {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+	await applyPasswordSubmissionDelay()
 	const loginInfoSession = await getLoginInfoSession(request)
 
 	const requestText = await request.text()
@@ -229,8 +230,6 @@ export async function action({ request }: Route.ActionArgs) {
 	const team = form.get('team')
 	const password = form.get('password')
 	const confirmPassword = form.get('confirmPassword')
-
-	await applyPasswordSubmissionDelay()
 
 	const errors: ActionData['errors'] = {
 		firstName: getErrorForFirstName(

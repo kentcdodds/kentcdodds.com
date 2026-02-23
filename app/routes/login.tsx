@@ -84,6 +84,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 }
 
 export async function action({ request }: Route.ActionArgs) {
+	await applyPasswordSubmissionDelay()
 	const formData = await request.formData()
 	const loginSession = await getLoginInfoSession(request)
 
@@ -109,7 +110,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	if (email) loginSession.setEmail(email)
-	await applyPasswordSubmissionDelay()
 
 	if (!email.match(/.+@.+/)) {
 		loginSession.flashError('A valid email is required')

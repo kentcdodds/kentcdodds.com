@@ -105,6 +105,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+	await applyPasswordSubmissionDelay()
 	const loginSession = await getLoginInfoSession(request)
 	const formData = await request.formData()
 	const actionId = formData.get('actionId')
@@ -215,8 +216,6 @@ export async function action({ request }: Route.ActionArgs) {
 			headers: await loginSession.getHeaders(),
 		})
 	}
-
-	await applyPasswordSubmissionDelay()
 
 	const passwordEntry = formData.get('password')
 	const password = typeof passwordEntry === 'string' ? passwordEntry : ''
