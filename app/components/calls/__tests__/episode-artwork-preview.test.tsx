@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, test } from 'vitest'
+import * as React from 'react'
+import { expect, test, vi } from 'vitest'
 import { EpisodeArtworkPreview } from '#app/components/calls/episode-artwork-preview.tsx'
 
 test('publish anonymously tooltip opens on hover', async () => {
@@ -29,30 +30,40 @@ test('publish anonymously tooltip opens on hover', async () => {
 	expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 })
 
-test('episode artwork preview dims while loading and resets when src changes', async () => {
-	const props = {
-		email: 'person@example.com',
-		firstName: 'Jane',
-		team: 'BLUE',
-		origin: 'https://kentcdodds.com',
-		hasGravatar: false,
-		onAnonymousChange: () => {},
-	} as const
+test('episode artwork preview dims while the next image suspends', async () => {
+	vi.useFakeTimers()
+	const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
-	const { rerender } = render(
-		<EpisodeArtworkPreview title="My episode title" isAnonymous={false} {...props} />,
-	)
+	function Example() {
+		const [isAnonymous, setIsAnonymous] = React.useState(false)
+		return (
+			<EpisodeArtworkPreview
+				title="My episode title"
+				email="person@example.com"
+				firstName="Jane"
+				team="BLUE"
+				origin="https://kentcdodds.com"
+				hasGravatar={false}
+				isAnonymous={isAnonymous}
+				onAnonymousChange={setIsAnonymous}
+			/>
+		)
+	}
 
-	const img = screen.getByAltText('Episode artwork preview')
-	expect(img).toHaveClass('opacity-60')
-	fireEvent.load(img)
-	await waitFor(() => expect(img).toHaveClass('opacity-100'))
+	try {
+		render(<Example />)
 
-	rerender(
-		<EpisodeArtworkPreview title="My episode title" isAnonymous={true} {...props} />,
-	)
-	await waitFor(() =>
-		expect(screen.getByAltText('Episode artwork preview')).toHaveClass('opacity-60'),
-	)
+		const checkbox = screen.getByRole('checkbox', { name: /publish anonymously/i })
+		const previewImg = screen.getByAltText('Episode artwork preview')
+		const previewWrapper = previewImg.parentElement
+		expect(previewWrapper).not.toBeNull()
+
+		await user.click(checkbox)
+		await vi.advanceTimersByTimeAsync(200)
+
+		expect(previewWrapper).toHaveClass('opacity-60')
+	} finally {
+		vi.useRealTimers()
+	}
 })
 

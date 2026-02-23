@@ -1,10 +1,13 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { useSpinDelay } from 'spin-delay'
 import {
 	getCallKentEpisodeArtworkAvatar,
 	getCallKentEpisodeArtworkUrl,
 } from '#app/utils/call-kent-artwork.ts'
-import { getAvatar, useSSRLayoutEffect } from '#app/utils/misc-react.tsx'
+import { imgSrc } from '#app/utils/suspense-image.ts'
+import { getAvatar } from '#app/utils/misc-react.tsx'
 
 const AVATAR_SIZE = 1400
 
@@ -37,10 +40,20 @@ export function EpisodeArtworkPreview({
 	onAnonymousChange: (next: boolean) => void
 }) {
 	const [debouncedTitle, setDebouncedTitle] = React.useState(title)
+	const [isTransitionPending, startTransition] = React.useTransition()
+	const showPending = useSpinDelay(isTransitionPending, {
+		delay: 150,
+		minDuration: 250,
+	})
+	const [enableSuspenseImage, setEnableSuspenseImage] = React.useState(false)
+
 	React.useEffect(() => {
-		const timeout = setTimeout(() => setDebouncedTitle(title), 350)
+		const timeout = setTimeout(
+			() => startTransition(() => setDebouncedTitle(title)),
+			350,
+		)
 		return () => clearTimeout(timeout)
-	}, [title])
+	}, [title, startTransition])
 
 	const host = getHost(origin)
 	const titleForPreview = debouncedTitle.trim() || 'Your Call Kent episode'
@@ -76,13 +89,6 @@ export function EpisodeArtworkPreview({
 	const tooltipWrapperRef = React.useRef<HTMLSpanElement>(null)
 	const [isTooltipOpen, setIsTooltipOpen] = React.useState(false)
 
-	const [isArtworkPending, setIsArtworkPending] = React.useState(true)
-	const latestArtworkSrcRef = React.useRef(artworkUrl)
-	useSSRLayoutEffect(() => {
-		latestArtworkSrcRef.current = artworkUrl
-		setIsArtworkPending(true)
-	}, [artworkUrl])
-
 	React.useEffect(() => {
 		if (!isTooltipOpen) return
 		function onPointerDown(event: PointerEvent) {
@@ -105,13 +111,6 @@ export function EpisodeArtworkPreview({
 		const active = document.activeElement
 		if (active instanceof Node && wrapper.contains(active)) return
 		setIsTooltipOpen(false)
-	}
-
-	function handleArtworkLoad(event: React.SyntheticEvent<HTMLImageElement>) {
-		// Avoid dropping the pending state for a stale `src` after rapid toggles.
-		const currentSrc = event.currentTarget.getAttribute('src')
-		if (!currentSrc || currentSrc !== latestArtworkSrcRef.current) return
-		setIsArtworkPending(false)
 	}
 
 	return (
@@ -152,7 +151,13 @@ export function EpisodeArtworkPreview({
 							name="anonymous"
 							className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
 							checked={isAnonymous}
-							onChange={(e) => onAnonymousChange(e.currentTarget.checked)}
+							onChange={(e) => {
+								const next = e.currentTarget.checked
+								startTransition(() => {
+									setEnableSuspenseImage(true)
+									onAnonymousChange(next)
+								})
+							}}
 						/>
 						<span className="min-w-0">
 							<span className="text-primary inline-flex items-center gap-2 text-sm font-medium">
@@ -210,20 +215,18 @@ export function EpisodeArtworkPreview({
 				<div className="flex w-full flex-col gap-3 lg:w-[260px] lg:flex-none">
 					<p className="text-primary text-sm font-medium">Preview</p>
 					<div
-						className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-200 shadow-sm dark:bg-gray-700"
-						aria-busy={isArtworkPending}
-						data-artwork-pending={isArtworkPending ? '' : undefined}
+						className={clsx(
+							'relative aspect-square w-full overflow-hidden rounded-lg bg-gray-200 shadow-sm transition-opacity dark:bg-gray-700',
+							showPending ? 'opacity-60' : 'opacity-100',
+						)}
+						aria-busy={showPending}
 					>
-						<img
+						<EpisodeArtworkImg
+							enableSuspense={enableSuspenseImage}
 							src={artworkUrl}
 							alt="Episode artwork preview"
 							loading="lazy"
-							onLoad={handleArtworkLoad}
-							onError={handleArtworkLoad}
-							className={clsx(
-								'h-full w-full object-cover transition-opacity',
-								isArtworkPending ? 'opacity-60' : 'opacity-100',
-							)}
+							className="h-full w-full object-cover"
 						/>
 					</div>
 				</div>
@@ -231,3 +234,28 @@ export function EpisodeArtworkPreview({
 		</section>
 	)
 }
+
+function EpisodeArtworkImg({
+	enableSuspense,
+	src,
+	...props
+}: { enableSuspense: boolean } & React.ComponentProps<'img'>) {
+	const safeSrc = src ?? ''
+	return (
+		<ErrorBoundary fallback={<img src={safeSrc} {...props} />} key={safeSrc}>
+			<React.Suspense fallback={<img src={safeSrc} {...props} />}>
+				{enableSuspense ? (
+					<Img src={safeSrc} {...props} />
+				) : (
+					<img src={safeSrc} {...props} />
+				)}
+			</React.Suspense>
+		</ErrorBoundary>
+	)
+}
+
+function Img({ src = '', ...props }: React.ComponentProps<'img'>) {
+	const loadedSrc = React.use(imgSrc(src))
+	return <img src={loadedSrc} {...props} />
+}
+
