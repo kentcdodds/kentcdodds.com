@@ -7,7 +7,6 @@ export function init() {
 	const env = getEnv()
 	Sentry.init({
 		dsn: env.SENTRY_DSN,
-		tunnel: '/lookout',
 		environment: env.NODE_ENV,
 		tracesSampleRate: env.NODE_ENV === 'production' ? 1 : 0,
 		denyUrls: [
@@ -51,7 +50,7 @@ export function init() {
 		},
 		ignoreErrors: [
 			// Add any other errors you want to ignore
-			'Request to /lookout failed',
+			'Request to /resources/lookout failed',
 		],
 		beforeSend(event) {
 			// Ignore events related to the /lookout endpoint
