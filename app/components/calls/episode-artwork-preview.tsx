@@ -40,13 +40,13 @@ export function EpisodeArtworkPreview({
 	onAnonymousChange: (next: boolean) => void
 }) {
 	const [debouncedTitle, setDebouncedTitle] = React.useState(title)
-	const [isTransitionPending, startTransition] = React.useTransition()
-	const showPending = useSpinDelay(isTransitionPending, {
+	const [, startTransition] = React.useTransition()
+	const [enableSuspenseImage, setEnableSuspenseImage] = React.useState(false)
+	const [previewIsAnonymous, setPreviewIsAnonymous] = React.useState(isAnonymous)
+	const showPending = useSpinDelay(previewIsAnonymous !== isAnonymous, {
 		delay: 150,
 		minDuration: 250,
 	})
-	const [enableSuspenseImage, setEnableSuspenseImage] = React.useState(false)
-	const [previewIsAnonymous, setPreviewIsAnonymous] = React.useState(isAnonymous)
 
 	React.useEffect(() => {
 		const timeout = setTimeout(() => {
