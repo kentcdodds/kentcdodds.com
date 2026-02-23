@@ -1,19 +1,10 @@
 import { getRandomFlyingKody } from '#app/images.tsx'
+import { getEnv } from '#app/utils/env.server.ts'
 import { markdownToHtmlDocument } from './markdown.server.ts'
 import { getOptionalTeam } from './misc.ts'
 
-let mailgunDomain = 'mg.example.com'
-if (process.env.MAILGUN_DOMAIN) {
-	mailgunDomain = process.env.MAILGUN_DOMAIN
-} else if (process.env.NODE_ENV === 'production') {
-	throw new Error('MAILGUN_DOMAIN is required')
-}
-let mailgunSendingKey = 'example_send_key'
-if (process.env.MAILGUN_SENDING_KEY) {
-	mailgunSendingKey = process.env.MAILGUN_SENDING_KEY
-} else if (process.env.NODE_ENV === 'production') {
-	throw new Error('MAILGUN_SENDING_KEY is required')
-}
+const { MAILGUN_DOMAIN: mailgunDomain, MAILGUN_SENDING_KEY: mailgunSendingKey } =
+	getEnv()
 
 type MailgunMessage = {
 	to: string

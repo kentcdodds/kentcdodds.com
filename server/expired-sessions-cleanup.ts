@@ -1,3 +1,4 @@
+import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
 import {
 	deleteExpiredSessions,
@@ -34,9 +35,11 @@ function randomInt(min: number, max: number) {
 export function scheduleExpiredDataCleanup({
 	intervalMs = DAY_MS,
 	startupDelayMs = randomInt(30_000, 5 * 60_000),
-	enabled = process.env.EXPIRED_SESSIONS_CLEANUP_DISABLED !== 'true', // enabled unless explicitly disabled
+	enabled,
 }: CleanupOptions = {}): CleanupController {
-	if (!enabled) {
+	const resolvedEnabled =
+		enabled ?? getEnv().EXPIRED_SESSIONS_CLEANUP_DISABLED !== 'true' // enabled unless explicitly disabled
+	if (!resolvedEnabled) {
 		return {
 			stop: async () => {},
 			runNow: async () => {},

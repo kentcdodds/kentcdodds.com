@@ -1,3 +1,4 @@
+import { getEnv } from './env.server.ts'
 import { getSemanticSearchPresentation } from './semantic-search-presentation.server.ts'
 
 type EmbeddingResponse = {
@@ -113,14 +114,13 @@ function getCanonicalResultId({
 }
 
 function getRequiredSemanticSearchEnv() {
-	const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
-	const apiToken = process.env.CLOUDFLARE_API_TOKEN
-	const indexName = process.env.CLOUDFLARE_VECTORIZE_INDEX
-	const embeddingModel =
-		process.env.CLOUDFLARE_AI_EMBEDDING_MODEL ??
-		'@cf/google/embeddinggemma-300m'
-
-	return { accountId, apiToken, indexName, embeddingModel }
+	const env = getEnv()
+	return {
+		accountId: env.CLOUDFLARE_ACCOUNT_ID,
+		apiToken: env.CLOUDFLARE_API_TOKEN,
+		indexName: env.CLOUDFLARE_VECTORIZE_INDEX,
+		embeddingModel: env.CLOUDFLARE_AI_EMBEDDING_MODEL,
+	}
 }
 
 export function isSemanticSearchConfigured() {

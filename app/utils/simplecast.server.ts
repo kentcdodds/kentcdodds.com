@@ -22,20 +22,19 @@ import {
 } from '#app/types.ts'
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
+import { getEnv } from './env.server.ts'
 import { markdownToHtml, stripHtml } from './markdown.server.ts'
-import { getRequiredServerEnvVar, typedBoolean } from './misc.ts'
+import { typedBoolean } from './misc.ts'
 import { type Timings } from './timing.server.ts'
 
-const SIMPLECAST_KEY = getRequiredServerEnvVar('SIMPLECAST_KEY')
-const CHATS_WITH_KENT_PODCAST_ID = getRequiredServerEnvVar(
-	'CHATS_WITH_KENT_PODCAST_ID',
-)
-
-const headers = {
-	authorization: `Bearer ${SIMPLECAST_KEY}`,
+function getSimplecastConfig() {
+	const env = getEnv()
+	return {
+		podcastId: env.CHATS_WITH_KENT_PODCAST_ID,
+		headers: { authorization: `Bearer ${env.SIMPLECAST_KEY}` },
+		seasonsCacheKey: `simplecast:seasons:${env.CHATS_WITH_KENT_PODCAST_ID}`,
+	}
 }
-
-const seasonsCacheKey = `simplecast:seasons:${CHATS_WITH_KENT_PODCAST_ID}`
 
 const cwkCachedLinkSchema = z
 	.object({
@@ -110,10 +109,10 @@ const getCachedSeasons = async ({
 	timings?: Timings
 }) =>
 	cachified({
+		key: getSimplecastConfig().seasonsCacheKey,
 		cache,
 		request,
 		timings,
-		key: seasonsCacheKey,
 		// while we're actively publishing the podcast, let's have the cache be
 		// shorter
 		ttl: 1000 * 60 * 5,
@@ -159,8 +158,9 @@ async function getSeasons({
 	forceFresh?: boolean
 	timings?: Timings
 }) {
+	const { podcastId, headers } = getSimplecastConfig()
 	const res = await fetch(
-		`https://api.simplecast.com/podcasts/${CHATS_WITH_KENT_PODCAST_ID}/seasons`,
+		`https://api.simplecast.com/podcasts/${podcastId}/seasons`,
 		{ headers },
 	)
 	const json = (await res.json()) as
@@ -206,6 +206,7 @@ async function getEpisodes(
 		timings?: Timings
 	},
 ) {
+	const { headers } = getSimplecastConfig()
 	const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
 	url.searchParams.set('limit', '300')
 	const res = await fetch(url.toString(), { headers })
@@ -226,6 +227,7 @@ async function getEpisodes(
 }
 
 async function getEpisode(episodeId: string) {
+	const { headers } = getSimplecastConfig()
 	const res = await fetch(`https://api.simplecast.com/episodes/${episodeId}`, {
 		headers,
 	})

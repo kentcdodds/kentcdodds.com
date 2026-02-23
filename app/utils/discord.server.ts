@@ -1,23 +1,23 @@
 import { type Team, type User } from '#app/types.ts'
-import { getRequiredServerEnvVar, getTeam } from './misc.ts'
+import { getEnv } from './env.server.ts'
+import { getTeam } from './misc.ts'
 import { prisma } from './prisma.server.ts'
 
-const DISCORD_CLIENT_ID = getRequiredServerEnvVar('DISCORD_CLIENT_ID')
-const DISCORD_CLIENT_SECRET = getRequiredServerEnvVar('DISCORD_CLIENT_SECRET')
-const DISCORD_SCOPES = getRequiredServerEnvVar('DISCORD_SCOPES')
-const DISCORD_BOT_TOKEN = getRequiredServerEnvVar('DISCORD_BOT_TOKEN')
-const DISCORD_GUILD_ID = getRequiredServerEnvVar('DISCORD_GUILD_ID')
-const DISCORD_RED_ROLE = getRequiredServerEnvVar('DISCORD_RED_ROLE')
-const DISCORD_YELLOW_ROLE = getRequiredServerEnvVar('DISCORD_YELLOW_ROLE')
-const DISCORD_BLUE_ROLE = getRequiredServerEnvVar('DISCORD_BLUE_ROLE')
-const DISCORD_MEMBER_ROLE = getRequiredServerEnvVar('DISCORD_MEMBER_ROLE')
-
-const discordRoleTeams: {
-	[Key in Team]: string
-} = {
-	RED: DISCORD_RED_ROLE,
-	YELLOW: DISCORD_YELLOW_ROLE,
-	BLUE: DISCORD_BLUE_ROLE,
+function getDiscordConfig() {
+	const env = getEnv()
+	return {
+		clientId: env.DISCORD_CLIENT_ID,
+		clientSecret: env.DISCORD_CLIENT_SECRET,
+		scopes: env.DISCORD_SCOPES,
+		botToken: env.DISCORD_BOT_TOKEN,
+		guildId: env.DISCORD_GUILD_ID,
+		memberRole: env.DISCORD_MEMBER_ROLE,
+		roleByTeam: {
+			RED: env.DISCORD_RED_ROLE,
+			YELLOW: env.DISCORD_YELLOW_ROLE,
+			BLUE: env.DISCORD_BLUE_ROLE,
+		} satisfies Record<Team, string>,
+	}
 }
 type DiscordUser = {
 	id: string
@@ -33,11 +33,12 @@ type DiscordToken = {
 type DiscordError = { message: string; code: number }
 
 async function fetchAsDiscordBot(endpoint: string, config?: RequestInit) {
+	const { botToken } = getDiscordConfig()
 	const url = new URL(`https://discord.com/api/${endpoint}`)
 	const res = await fetch(url.toString(), {
 		...config,
 		headers: {
-			Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+			Authorization: `Bot ${botToken}`,
 			...config?.headers,
 		},
 	})
@@ -74,14 +75,15 @@ async function getUserToken({
 	code: string
 	domainUrl: string
 }) {
+	const { clientId, clientSecret, scopes } = getDiscordConfig()
 	const tokenUrl = new URL('https://discord.com/api/oauth2/token')
 	const params = new URLSearchParams({
-		client_id: DISCORD_CLIENT_ID,
-		client_secret: DISCORD_CLIENT_SECRET,
+		client_id: clientId,
+		client_secret: clientSecret,
 		grant_type: 'authorization_code',
 		code,
 		redirect_uri: `${domainUrl}/discord/callback`,
-		scope: DISCORD_SCOPES,
+		scope: scopes,
 	})
 
 	const tokenRes = await fetch(tokenUrl.toString(), {
@@ -113,8 +115,9 @@ async function getDiscordUser(discordUserId: string) {
 }
 
 async function getMember(discordUserId: string) {
+	const { guildId } = getDiscordConfig()
 	const member = await fetchJsonAsDiscordBot<DiscordMember | DiscordError>(
-		`guilds/${DISCORD_GUILD_ID}/members/${discordUserId}`,
+		`guilds/${guildId}/members/${discordUserId}`,
 	)
 	return member
 }
@@ -132,16 +135,17 @@ async function updateDiscordRolesForUser(
 	if (!team) {
 		return
 	}
-	const teamRole = discordRoleTeams[team]
+	const { guildId, memberRole, roleByTeam } = getDiscordConfig()
+	const teamRole = roleByTeam[team]
 
 	if (!discordMember.roles.includes(teamRole)) {
 		await fetchAsDiscordBot(
-			`guilds/${DISCORD_GUILD_ID}/members/${discordMember.user.id}`,
+			`guilds/${guildId}/members/${discordMember.user.id}`,
 			{
 				method: 'PATCH',
 				body: JSON.stringify({
 					roles: Array.from(
-						new Set([...discordMember.roles, DISCORD_MEMBER_ROLE, teamRole]),
+						new Set([...discordMember.roles, memberRole, teamRole]),
 					),
 				}),
 				// note using fetchJsonAsDiscordBot because this API doesn't return JSON.
@@ -157,11 +161,12 @@ async function addUserToDiscordServer(
 	discordUser: DiscordUser,
 	discordToken: DiscordToken,
 ) {
+	const { guildId } = getDiscordConfig()
 	// there's no harm inviting someone who's already in the server,
 	// so we invite them without bothering to check whether they're in the
 	// server already
 	await fetchAsDiscordBot(
-		`guilds/${DISCORD_GUILD_ID}/members/${discordUser.id}`,
+		`guilds/${guildId}/members/${discordUser.id}`,
 		{
 			method: 'PUT',
 			body: JSON.stringify({ access_token: discordToken.access_token }),

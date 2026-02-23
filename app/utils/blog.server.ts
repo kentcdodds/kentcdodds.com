@@ -6,11 +6,11 @@ import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
 import { getClientSession } from './client.server.ts'
 import { sendMessageFromDiscordBot } from './discord.server.ts'
+import { getEnv } from './env.server.ts'
 import { getBlogMdxListItems } from './mdx.server.ts'
 import {
 	getDomainUrl,
 	getOptionalTeam,
-	getRequiredServerEnvVar,
 	teams,
 	typedBoolean,
 } from './misc.ts'
@@ -510,9 +510,7 @@ async function getPostJson(request: Request) {
 	})
 }
 
-const leaderboardChannelId = getRequiredServerEnvVar(
-	'DISCORD_LEADERBOARD_CHANNEL',
-)
+const leaderboardChannelId = getEnv().DISCORD_LEADERBOARD_CHANNEL
 
 const getUserDiscordMention = (user: User) =>
 	user.discordId ? `<@!${user.discordId}>` : user.firstName

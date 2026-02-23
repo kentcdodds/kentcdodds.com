@@ -84,7 +84,7 @@ function ErrorPage({
 				</div>
 			</noscript>
 			<main className="relative">
-				{error && process.env.NODE_ENV === 'development' ? (
+				{error && import.meta.env.MODE === 'development' ? (
 					<RedBox error={error} />
 				) : null}
 				<HeroSection {...heroProps} />

@@ -2,7 +2,7 @@ import { createCookieSessionStorage, redirect } from 'react-router';
 import { z } from 'zod'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { type User } from '#app/utils/prisma-generated.server/client.ts'
-import { getRequiredServerEnvVar } from './misc.ts'
+import { getEnv } from './env.server.ts'
 import {
 	createSession,
 	getUserFromSessionId,
@@ -17,7 +17,7 @@ const sessionStorage = createCookieSessionStorage({
 	cookie: {
 		name: 'KCD_root_session',
 		secure: true,
-		secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
+		secrets: [getEnv().SESSION_SECRET],
 		sameSite: 'lax',
 		path: '/',
 		maxAge: sessionExpirationTime / 1000,

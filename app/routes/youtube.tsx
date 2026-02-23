@@ -10,6 +10,7 @@ import {
 } from '#app/components/fullscreen-yt-embed.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
+import { getEnv } from '#app/utils/env.server.ts'
 import { type Route } from './+types/youtube'
 
 const DEFAULT_PLAYLIST_ID = 'PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
@@ -46,10 +47,9 @@ function parsePlaylistId(value: string | undefined) {
 }
 
 export async function loader() {
-	const playlistInput =
-		process.env.YOUTUBE_PLAYLIST_URL ?? process.env.YOUTUBE_PLAYLIST_ID
+	const env = getEnv()
 	const configuredPlaylistId =
-		parsePlaylistId(playlistInput) ?? DEFAULT_PLAYLIST_ID
+		parsePlaylistId(env.YOUTUBE_PLAYLIST_ID) ?? DEFAULT_PLAYLIST_ID
 	return json({
 		playlistId: configuredPlaylistId,
 	})

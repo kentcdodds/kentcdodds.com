@@ -21,6 +21,7 @@ import { type ServerBuild } from 'react-router'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
+import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
 import { scheduleExpiredDataCleanup } from './expired-sessions-cleanup.js'
 import { createRateLimitingMiddleware } from './rate-limiting.js'
@@ -33,8 +34,11 @@ import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
 
+const env = getEnv()
+const MODE = env.NODE_ENV
+
 const viteDevServer =
-	process.env.NODE_ENV === 'production'
+	MODE === 'production'
 		? undefined
 		: await import('vite').then((vite) =>
 				vite.createServer({
@@ -42,31 +46,8 @@ const viteDevServer =
 				}),
 			)
 
-function getAllowedActionOrigins() {
-	const configuredOrigins =
-		process.env.ALLOWED_ACTION_ORIGINS
-			?.split(',')
-			.map((origin) => origin.trim())
-			.filter(Boolean) ?? []
-
-	if (configuredOrigins.length > 0) {
-		return configuredOrigins
-	}
-
-	if (process.env.NODE_ENV !== 'production') {
-		return ['**']
-	}
-
-	const productionOrigins = ['kentcdodds.com', '*.kentcdodds.com']
-	if (process.env.FLY_APP_NAME) {
-		productionOrigins.push(`${process.env.FLY_APP_NAME}.fly.dev`)
-	}
-
-	return productionOrigins
-}
-
 const getBuild = async (): Promise<ServerBuild> => {
-	const allowedActionOrigins = getAllowedActionOrigins()
+	const allowedActionOrigins = env.allowedActionOrigins
 
 	if (viteDevServer) {
 		const build = (await viteDevServer.ssrLoadModule(
@@ -85,13 +66,11 @@ const primaryHost = 'kentcdodds.com'
 const getHost = (req: { get: (key: string) => string | undefined }) =>
 	req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
 
-const MODE = process.env.NODE_ENV
-
 const SHOULD_INIT_SENTRY =
 	MODE === 'production' &&
-	Boolean(process.env.SENTRY_DSN) &&
+	Boolean(env.SENTRY_DSN) &&
 	// `start:mocks` (used in CI + local e2e) runs with `MOCKS=true`.
-	process.env.MOCKS !== 'true'
+	!env.MOCKS
 
 if (SHOULD_INIT_SENTRY) {
 	void import('./utils/monitoring.js').then(({ init }) => init())
@@ -99,11 +78,11 @@ if (SHOULD_INIT_SENTRY) {
 
 if (SHOULD_INIT_SENTRY) {
 	sentryInit({
-		dsn: process.env.SENTRY_DSN,
+		dsn: env.SENTRY_DSN,
 		tracesSampleRate: 0.3,
-		environment: process.env.NODE_ENV,
+		environment: env.NODE_ENV,
 	})
-	sentrySetContext('region', { name: process.env.FLY_INSTANCE ?? 'unknown' })
+	sentrySetContext('region', { name: env.FLY_INSTANCE })
 }
 
 const app = express()
@@ -125,8 +104,8 @@ app.use((req, res, next) => {
 	getInstanceInfo()
 		.then(({ currentInstance, primaryInstance }) => {
 			res.set('X-Powered-By', 'Kody the Koala')
-			res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
-			res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
+			res.set('X-Fly-Region', env.FLY_REGION)
+			res.set('X-Fly-App', env.FLY_APP_NAME)
 			res.set('X-Fly-Instance', currentInstance)
 			res.set('X-Fly-Primary-Instance', primaryInstance)
 			res.set('X-Frame-Options', 'SAMEORIGIN')
@@ -268,7 +247,12 @@ app.use(
 	),
 )
 
-app.use(createRateLimitingMiddleware({ mode: MODE }))
+app.use(
+	createRateLimitingMiddleware({
+		mode: MODE,
+		playwrightTestBaseUrl: env.PLAYWRIGHT_TEST_BASE_URL,
+	}),
+)
 
 app.use((req, res, next) => {
 	res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
@@ -383,7 +367,7 @@ async function getRequestHandler(): Promise<RequestHandler> {
 
 app.all('{*splat}', await getRequestHandler())
 
-const desiredPort = Number(process.env.PORT || 3000)
+const desiredPort = env.PORT
 const portToUse = await getPort({
 	port: portNumbers(desiredPort, desiredPort + 100),
 })
@@ -472,7 +456,7 @@ const server = app.listen(portToUse, () => {
 })
 
 let wss: WebSocketServer | undefined
-if (process.env.NODE_ENV === 'development') {
+if (MODE === 'development') {
 	try {
 		const { contentWatcher } = await import('./content-watcher.js')
 		wss = contentWatcher(server)

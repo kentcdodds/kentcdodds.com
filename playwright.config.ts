@@ -1,6 +1,13 @@
 import { defineConfig, devices } from '@playwright/test'
 import 'dotenv/config'
 
+// The Playwright *test runner* imports server modules (see `e2e/utils.ts`), and
+// those modules now validate env via `getEnv()`. Ensure `NODE_ENV` is always a
+// valid value for the runner process.
+if (!process.env.NODE_ENV) {
+	process.env.NODE_ENV = process.env.CI ? 'test' : 'development'
+}
+
 const PORT = Number(process.env.PORT || 3000)
 
 if (!PORT) {

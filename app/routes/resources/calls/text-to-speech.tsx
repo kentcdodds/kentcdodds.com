@@ -31,12 +31,14 @@ async function getTextToSpeechServerServices() {
 		{ cachified, cache },
 		{ rateLimit },
 		{ getUser },
+		{ getEnv },
 		{ createHash },
 	] = await Promise.all([
 		import('#app/utils/cloudflare-ai-text-to-speech.server.ts'),
 		import('#app/utils/cache.server.ts'),
 		import('#app/utils/rate-limit.server.ts'),
 		import('#app/utils/session.server.ts'),
+		import('#app/utils/env.server.ts'),
 		import('node:crypto'),
 	])
 	return {
@@ -46,6 +48,7 @@ async function getTextToSpeechServerServices() {
 		cache,
 		rateLimit,
 		getUser,
+		getEnv,
 		createHash,
 	}
 }
@@ -92,6 +95,7 @@ export async function action({ request }: Route.ActionArgs) {
 		cache,
 		rateLimit,
 		getUser,
+		getEnv,
 		createHash,
 	} =
 		await getTextToSpeechServerServices()
@@ -141,7 +145,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const normalizedQuestionText = normalizeTextForCache(questionText)
 	const speechText = withAiDisclosurePrefix(normalizedQuestionText)
-	const model = process.env.CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL ?? '@cf/deepgram/aura-1'
+	const model = getEnv().CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL
 	// Aura defaults to "angus" when omitted; treat empty voice as that for caching.
 	const voiceForCache = voiceRaw || 'angus'
 	const cacheKeyPayload = JSON.stringify({

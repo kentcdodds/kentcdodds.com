@@ -1,9 +1,9 @@
 import crypto from 'crypto'
-import { getRequiredServerEnvVar } from './misc.ts'
+import { getEnv } from './env.server.ts'
 
 const algorithm = 'aes-256-gcm'
 
-const secret = getRequiredServerEnvVar('MAGIC_LINK_SECRET')
+const secret = getEnv().MAGIC_LINK_SECRET
 const ENCRYPTION_KEY = crypto.scryptSync(secret, 'salt', 32)
 const IV_LENGTH = 12
 const UTF8 = 'utf8'

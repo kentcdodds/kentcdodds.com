@@ -1,12 +1,12 @@
 import { createCookieSessionStorage } from 'react-router';
-import { getRequiredServerEnvVar } from './misc.ts'
+import { getEnv } from './env.server.ts'
 const authFlowExpirationTime = 1000 * 60 * 30
 
 const loginInfoStorage = createCookieSessionStorage({
 	cookie: {
 		name: 'KCD_login',
 		secure: true,
-		secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
+		secrets: [getEnv().SESSION_SECRET],
 		sameSite: 'lax',
 		path: '/',
 		maxAge: authFlowExpirationTime / 1000,

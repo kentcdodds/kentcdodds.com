@@ -1,32 +1,32 @@
 import { invariantResponse } from '@epic-web/invariant'
+import { getEnv } from '#app/utils/env.server.ts'
 import  { type Route } from './+types/lookout'
 // this is a Sentry tunnel to proxy sentry requests so we don't get blocked by ad-blockers
 
 
-const SENTRY_HOST = (() => {
-	const dsn = process.env.SENTRY_DSN
-	if (!dsn) return null
-	try {
-		return new URL(dsn).hostname
-	} catch {
-		return null
-	}
-})()
-const SENTRY_PROJECT_IDS = process.env.SENTRY_PROJECT_ID
-	? [process.env.SENTRY_PROJECT_ID]
-	: []
-
 export async function action({ request }: Route.ActionArgs) {
+	const env = getEnv()
 	// `start:mocks` (used in CI + local e2e) runs with `NODE_ENV=production` and
 	// `MOCKS=true`. In that mode we don't want/need to proxy Sentry envelopes to
 	// the real upstream ingest API.
-	if (process.env.MOCKS === 'true') {
+	if (env.MOCKS) {
 		// Drain the body to avoid hanging the underlying connection.
 		await request.text().catch(() => '')
 		return new Response(null, { status: 204 })
 	}
 
-	if (!SENTRY_HOST) {
+	const sentryHost = (() => {
+		const dsn = env.SENTRY_DSN
+		if (!dsn) return null
+		try {
+			return new URL(dsn).hostname
+		} catch {
+			return null
+		}
+	})()
+	const sentryProjectIds = env.SENTRY_PROJECT_ID ? [env.SENTRY_PROJECT_ID] : []
+
+	if (!sentryHost) {
 		throw new Response('Sentry is not configured', { status: 404 })
 	}
 
@@ -70,15 +70,15 @@ export async function action({ request }: Route.ActionArgs) {
 	const projectId = dsn.pathname.slice(1)
 
 	invariantResponse(
-		dsn.hostname === SENTRY_HOST,
+		dsn.hostname === sentryHost,
 		`Invalid sentry hostname: ${dsn.hostname}`,
 	)
 	invariantResponse(
-		projectId && SENTRY_PROJECT_IDS.includes(projectId),
+		projectId && sentryProjectIds.includes(projectId),
 		`Invalid sentry project id: ${projectId}`,
 	)
 
-	const upstreamSentryURL = `https://${SENTRY_HOST}/api/${projectId}/envelope/`
+	const upstreamSentryURL = `https://${sentryHost}/api/${projectId}/envelope/`
 	try {
 		return await fetch(upstreamSentryURL, {
 			method: 'POST',

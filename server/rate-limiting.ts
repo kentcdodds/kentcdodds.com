@@ -18,12 +18,10 @@ type CreateRateLimitingMiddlewareOptions = {
 export function createRateLimitingMiddleware(
 	options: CreateRateLimitingMiddlewareOptions = {},
 ): RequestHandler {
-	const mode = options.mode ?? process.env.NODE_ENV ?? 'development'
+	const mode = options.mode ?? 'development'
 	const isProd = mode === 'production'
 
-	const isPlaywright =
-		Boolean(options.playwrightTestBaseUrl) ||
-		Boolean(process.env.PLAYWRIGHT_TEST_BASE_URL)
+	const isPlaywright = Boolean(options.playwrightTestBaseUrl)
 
 	// When running tests or running in development, we want to effectively disable
 	// rate limiting because Playwright tests are very fast and we don't want to
