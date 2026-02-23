@@ -15,14 +15,18 @@ function BlurrableImage({
 	const [visible, setVisible] = React.useState(() => {
 		if (isServer) return false
 
+		// During hydration the element might not be in the DOM yet, so guard
+		// against null to avoid crashing and fall back to the blurred state.
+		const el = document.getElementById(id)
+		if (!(el instanceof HTMLImageElement)) return false
+
 		// on the client, it's possible the images has already finished loading.
 		// we've got the data-evt-onload attribute on the image
 		// (which our entry.server replaces with simply "onload") which will remove
 		// the class "opacity-0" from the image once it's loaded. So we'll check
 		// if the image is already loaded and if so, we know that visible should
 		// initialize to true.
-		const el = document.getElementById(id)
-		return el instanceof HTMLImageElement && !el.classList.contains('opacity-0')
+		return !el.classList.contains('opacity-0')
 	})
 	const jsImgElRef = React.useRef<HTMLImageElement>(null)
 
