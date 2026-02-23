@@ -2,13 +2,13 @@ import path from 'path'
 import { data as json, redirect } from 'react-router';
 import { cache } from '#app/utils/cache.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
+import { getEnv } from '#app/utils/env.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import {
 	getBlogMdxListItems,
 	getMdxDirList,
 	getMdxPage,
 } from '#app/utils/mdx.server.ts'
-import { getEnv } from '#app/utils/env.server.ts'
 import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'

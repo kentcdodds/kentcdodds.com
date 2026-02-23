@@ -1,5 +1,5 @@
-import { getSemanticSearchPresentation } from './semantic-search-presentation.server.ts'
 import { getEnv } from './env.server.ts'
+import { getSemanticSearchPresentation } from './semantic-search-presentation.server.ts'
 
 type EmbeddingResponse = {
 	shape?: number[]

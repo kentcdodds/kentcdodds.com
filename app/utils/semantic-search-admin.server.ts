@@ -6,6 +6,7 @@ import {
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3'
+import { getEnv } from '#app/utils/env.server.ts'
 import {
 	DEFAULT_IGNORE_LIST_KEY,
 	getIgnoreListKey,
@@ -13,7 +14,6 @@ import {
 	matchesIgnorePattern,
 	type SemanticSearchIgnoreList,
 } from '#other/semantic-search/ignore-list-patterns.ts'
-import { getEnv } from '#app/utils/env.server.ts'
 
 export {
 	DEFAULT_IGNORE_LIST_KEY,
