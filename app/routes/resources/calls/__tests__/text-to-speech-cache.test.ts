@@ -85,7 +85,7 @@ describe('/resources/calls/text-to-speech cache', () => {
 
 		const req1 = makeRequest({
 			text: 'Hello from the cache test message.',
-			voice: 'asteria',
+			voice: 'luna',
 		})
 		const res1 = (await action({ request: req1 } as any)) as Response
 		expect(res1.ok).toBe(true)
@@ -98,7 +98,7 @@ describe('/resources/calls/text-to-speech cache', () => {
 		// Same content, different whitespace: should hit cache.
 		const req2 = makeRequest({
 			text: '  Hello   from  the  cache   test message.  ',
-			voice: 'asteria',
+			voice: 'luna',
 		})
 		const res2 = (await action({ request: req2 } as any)) as Response
 		expect(res2.ok).toBe(true)

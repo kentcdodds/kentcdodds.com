@@ -72,7 +72,7 @@ describe('cloudflare MSW mocks', () => {
 				},
 				body: JSON.stringify({
 					text: 'Hello from the Call Kent TTS mock.',
-					speaker: 'asteria',
+					speaker: 'luna',
 					encoding: 'mp3',
 				}),
 			},

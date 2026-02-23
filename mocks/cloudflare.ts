@@ -943,7 +943,7 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				const speaker =
 					typeof body?.speaker === 'string' && body.speaker.trim()
 						? body.speaker.trim()
-						: 'angus'
+						: 'luna'
 				const frequencyHz = frequencyFromSpeakerAndText(speaker, text)
 				const wav = makePcm16SineWaveWav({
 					durationSeconds: 6,

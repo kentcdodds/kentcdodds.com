@@ -116,8 +116,8 @@ export async function action({ request }: Route.ActionArgs) {
 	const normalizedQuestionText = normalizeTextForCache(questionText)
 	const speechText = withAiDisclosurePrefix(normalizedQuestionText)
 	const model = getEnv().CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL
-	// Aura defaults to "angus" when omitted; treat empty voice as that for caching.
-	const voiceForCache = voiceRaw || 'angus'
+	// aura-2-en defaults to "luna" when omitted; treat empty voice as that for caching.
+	const voiceForCache = voiceRaw || 'luna'
 	const cacheKeyPayload = JSON.stringify({
 		v: 2,
 		model,
@@ -310,7 +310,7 @@ export function CallKentTextToSpeech({
 	const questionCountdownId = `${questionId}-countdown`
 
 	const defaultVoice = (callKentTextToSpeechVoices[0]?.id ??
-		'asteria') as CallKentTextToSpeechVoice
+		'luna') as CallKentTextToSpeechVoice
 	const [voice, setVoice] =
 		React.useState<CallKentTextToSpeechVoice>(defaultVoice)
 	const [questionText, setQuestionText] = React.useState('')

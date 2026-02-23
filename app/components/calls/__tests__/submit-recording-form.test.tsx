@@ -20,6 +20,11 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 	useRootData: () => mockUseRootData(),
 }))
 
+// In Vitest, the Vite macro plugin isn't installed, so mock the macro helper.
+vi.mock('vite-env-only/macros', () => ({
+	serverOnly$: (fn: unknown) => fn,
+}))
+
 import { RecordingForm } from '#app/routes/resources/calls/save.tsx'
 
 describe('RecordingForm', () => {
