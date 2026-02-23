@@ -32,7 +32,10 @@ export async function startCallKentEpisodeDraftProcessing(
 		const [
 			{ createEpisodeAudio },
 			{ transcribeMp3WithWorkersAi, isCloudflareTranscriptionConfigured },
-			{ generateCallKentEpisodeMetadataWithWorkersAi },
+			{
+				generateCallKentEpisodeMetadataWithWorkersAi,
+				isCloudflareCallKentMetadataConfigured,
+			},
 		] = await Promise.all([
 			import('#app/utils/ffmpeg.server.ts'),
 			import('#app/utils/cloudflare-ai-transcription.server.ts'),
@@ -137,6 +140,11 @@ export async function startCallKentEpisodeDraftProcessing(
 			})
 			if (stepMetadata.count !== 1) return
 
+			if (!isCloudflareCallKentMetadataConfigured()) {
+				throw new Error(
+					'Cloudflare metadata generation is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.',
+				)
+			}
 			const metadata = await generateCallKentEpisodeMetadataWithWorkersAi({
 				transcript,
 				callTitle: draft.call.title,
