@@ -46,12 +46,15 @@ export function EpisodeArtworkPreview({
 		minDuration: 250,
 	})
 	const [enableSuspenseImage, setEnableSuspenseImage] = React.useState(false)
+	const [previewIsAnonymous, setPreviewIsAnonymous] = React.useState(isAnonymous)
 
 	React.useEffect(() => {
-		const timeout = setTimeout(
-			() => startTransition(() => setDebouncedTitle(title)),
-			350,
-		)
+		const timeout = setTimeout(() => {
+			startTransition(() => {
+				setEnableSuspenseImage(true)
+				setDebouncedTitle(title)
+			})
+		}, 350)
 		return () => clearTimeout(timeout)
 	}, [title, startTransition])
 
@@ -61,26 +64,26 @@ export function EpisodeArtworkPreview({
 	const avatar = React.useMemo(
 		() =>
 			getCallKentEpisodeArtworkAvatar({
-				isAnonymous,
+				isAnonymous: previewIsAnonymous,
 				team,
 				gravatarUrl: hasGravatar
 					? getAvatar(email, { size: AVATAR_SIZE, fallback: null })
 					: null,
 			}),
-		[email, team, hasGravatar, isAnonymous],
+		[email, team, hasGravatar, previewIsAnonymous],
 	)
 
 	const artworkUrl = React.useMemo(() => {
 		return getCallKentEpisodeArtworkUrl({
 			title: titleForPreview,
 			url: `${host}/calls/00/00`,
-			name: isAnonymous ? '- Anonymous' : `- ${firstName}`,
+			name: previewIsAnonymous ? '- Anonymous' : `- ${firstName}`,
 			avatar,
-			avatarIsRound: hasGravatar && !isAnonymous,
+			avatarIsRound: hasGravatar && !previewIsAnonymous,
 			// 2x for a crisp UI preview (the element is ~260px wide).
 			size: 520,
 		})
-	}, [titleForPreview, host, firstName, avatar, hasGravatar, isAnonymous])
+	}, [titleForPreview, host, firstName, avatar, hasGravatar, previewIsAnonymous])
 
 	const tooltip = isAnonymous
 		? `Anonymous is enabled. Your call still shows up in Kent's admin with your info, but the published episode artwork uses a generic Kody avatar instead of your photo.`
@@ -153,9 +156,10 @@ export function EpisodeArtworkPreview({
 							checked={isAnonymous}
 							onChange={(e) => {
 								const next = e.currentTarget.checked
+								onAnonymousChange(next)
 								startTransition(() => {
 									setEnableSuspenseImage(true)
-									onAnonymousChange(next)
+									setPreviewIsAnonymous(next)
 								})
 							}}
 						/>
