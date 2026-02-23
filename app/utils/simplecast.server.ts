@@ -167,7 +167,9 @@ async function getSeasons({
 		| SimplecastCollectionResponse<SimpelcastSeasonListItem>
 		| SimplecastTooManyRequests
 	if (isTooManyRequests(json)) {
-		return []
+		throw new Error(
+			'Simplecast API rate limit exceeded. Please try again later.',
+		)
 	}
 	const { collection } = json
 
@@ -213,7 +215,9 @@ async function getEpisodes(
 		| SimplecastCollectionResponse<SimplecastEpisodeListItem>
 		| SimplecastTooManyRequests
 	if (isTooManyRequests(json)) {
-		return []
+		throw new Error(
+			'Simplecast API rate limit exceeded. Please try again later.',
+		)
 	}
 
 	const { collection } = json
@@ -233,7 +237,9 @@ async function getEpisode(episodeId: string) {
 		| SimplecastEpisode
 		| SimplecastTooManyRequests
 	if (isTooManyRequests(json)) {
-		return null
+		throw new Error(
+			'Simplecast API rate limit exceeded. Please try again later.',
+		)
 	}
 
 	const {
