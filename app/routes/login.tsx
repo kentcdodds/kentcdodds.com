@@ -194,6 +194,8 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 	)
 	const [passkeyAutofillSupported, setPasskeyAutofillSupported] =
 		React.useState(false)
+	const [passkeyAutofillResetKey, setPasskeyAutofillResetKey] =
+		React.useState(0)
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
@@ -275,9 +277,10 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 			isMounted = false
 			WebAuthnAbortService.cancelCeremony()
 		}
-	}, [navigate, revalidate])
+	}, [navigate, passkeyAutofillResetKey, revalidate])
 
 	async function handlePasskeyLogin() {
+		let didSucceed = false
 		try {
 			// Avoid collisions with a pending conditional UI ceremony.
 			WebAuthnAbortService.cancelCeremony()
@@ -314,6 +317,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 			}
 
 			setPasskeyMessage('Welcome back! Navigating to your account page.')
+			didSucceed = true
 
 			void revalidate()
 			void navigate('/me')
@@ -323,6 +327,10 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 			setError(
 				e instanceof Error ? e.message : 'Failed to authenticate with passkey',
 			)
+		} finally {
+			if (!didSucceed) {
+				setPasskeyAutofillResetKey((key) => key + 1)
+			}
 		}
 	}
 
