@@ -30,6 +30,7 @@ model User {
   password  Password?
   passkeys  Passkey[]
   calls     Call[]
+  callKentCallerEpisodes CallKentCallerEpisode[]
   sessions  Session[]
   postReads PostRead[]
   favorites Favorite[]
@@ -75,14 +76,79 @@ model Call {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   title       String
-  description String
-  keywords    String
+  notes       String?
   isAnonymous Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  base64      String
+  // Preferred: store audio in R2 and keep a small DB row.
+  audioKey         String?
+  audioContentType String?
+  audioSize        Int?
+  // Legacy fallback: base64 data URL stored in the DB (pre-R2 migration).
+  base64      String?
+  episodeDraft CallKentEpisodeDraft?
 
   @@index([createdAt])
+}
+
+enum CallKentEpisodeDraftStatus {
+  PROCESSING
+  READY
+  ERROR
+  CANCELLED
+}
+
+enum CallKentEpisodeDraftStep {
+  STARTED
+  GENERATING_AUDIO
+  TRANSCRIBING
+  GENERATING_METADATA
+  DONE
+}
+
+model CallKentEpisodeDraft {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  status        CallKentEpisodeDraftStatus @default(PROCESSING)
+  step          CallKentEpisodeDraftStep   @default(STARTED)
+  errorMessage  String?
+
+  // Episode audio is stored in R2 and proxied for playback/publish.
+  episodeAudioKey         String?
+  episodeAudioContentType String?
+  episodeAudioSize        Int?
+
+  // Generated before publish so AI can write metadata; admin can edit.
+  transcript    String?
+  title         String?
+  description   String?
+  keywords      String?
+
+  call          Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  callId        String   @unique
+
+  @@index([status, updatedAt])
+}
+
+model CallKentCallerEpisode {
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String
+
+  // Preserve what the caller set at the time of the call.
+  callTitle        String
+  callNotes        String?
+  isAnonymous      Boolean  @default(false)
+
+  // Episode identity on Transistor. Everything else is derived via cached Transistor lookups.
+  transistorEpisodeId String @unique
+
+  @@index([userId, createdAt])
 }
 
 model PostRead {

@@ -65,7 +65,7 @@ export async function synthesizeSpeechWithWorkersAi({
 		lowerModel.includes('deepgram/aura') || lowerModel.includes('aura-')
 			? {
 					text,
-					// Aura defaults to "angus", but allow callers to override.
+					// aura-2-en defaults to "luna", but allow callers to override.
 					...(voice ? { speaker: voice } : {}),
 					encoding: 'mp3',
 				}
@@ -132,4 +132,3 @@ export async function synthesizeSpeechWithWorkersAi({
 	const bytes = new Uint8Array(Buffer.from(audioValue, 'base64'))
 	return { bytes, contentType: 'audio/mpeg', model }
 }
-

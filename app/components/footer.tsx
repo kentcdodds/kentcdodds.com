@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router'
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
 import { AnchorOrLink } from '#app/utils/misc-react.tsx'
 import { useRootData } from '#app/utils/use-root-data.ts'

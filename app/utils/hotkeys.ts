@@ -21,8 +21,14 @@ export const HOTKEY_GOTO_COURSES = ['G', 'U'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_DISCORD = ['G', 'D'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_ABOUT = ['G', 'A'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_TALKS = ['G', 'T'] as const satisfies HotkeySequence
-export const HOTKEY_GOTO_TESTIMONY = ['G', 'F'] as const satisfies HotkeySequence
-export const HOTKEY_GOTO_TRANSPARENCY = ['G', 'M'] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_TESTIMONY = [
+	'G',
+	'F',
+] as const satisfies HotkeySequence
+export const HOTKEY_GOTO_TRANSPARENCY = [
+	'G',
+	'M',
+] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_RESUME = ['G', 'R'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_KODY = ['G', 'K'] as const satisfies HotkeySequence
 export const HOTKEY_GOTO_SEARCH = ['G', 'S'] as const satisfies HotkeySequence
@@ -76,59 +82,100 @@ export const HOTKEYS_HELP_GROUPS = [
 		items: [
 			{
 				description: 'Go to home',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_HOME) }],
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_HOME) },
+				],
 			},
 			{
 				description: 'Go to blog',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_BLOG) }],
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_BLOG) },
+				],
 			},
 			{
 				description: 'Go to Chats with Kent podcast',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_CHATS) }],
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_CHATS) },
+				],
 			},
 			{
 				description: 'Go to Call Kent podcast',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_CALLS) }],
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_CALLS) },
+				],
 			},
 			{
 				description: 'Go to courses',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_COURSES) }],
+				combos: [
+					{
+						kind: 'sequence',
+						keys: getSequenceDisplayKeys(HOTKEY_GOTO_COURSES),
+					},
+				],
 			},
 			{
 				description: 'Go to Discord',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_DISCORD) }],
+				combos: [
+					{
+						kind: 'sequence',
+						keys: getSequenceDisplayKeys(HOTKEY_GOTO_DISCORD),
+					},
+				],
 			},
 			{
 				description: 'Go to about',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_ABOUT) }],
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_ABOUT) },
+				],
 			},
 			{
 				description: 'Go to talks',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TALKS) }],
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TALKS) },
+				],
 			},
 			{
 				description: 'Go to testimony',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TESTIMONY) }],
+				combos: [
+					{
+						kind: 'sequence',
+						keys: getSequenceDisplayKeys(HOTKEY_GOTO_TESTIMONY),
+					},
+				],
 			},
 			{
 				description: 'Go to transparency',
 				combos: [
-					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_TRANSPARENCY) },
+					{
+						kind: 'sequence',
+						keys: getSequenceDisplayKeys(HOTKEY_GOTO_TRANSPARENCY),
+					},
 				],
 			},
 			{
 				description: 'Go to resume',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_RESUME) }],
+				combos: [
+					{
+						kind: 'sequence',
+						keys: getSequenceDisplayKeys(HOTKEY_GOTO_RESUME),
+					},
+				],
 			},
 			{
 				description: 'Go to Kody',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_KODY) }],
+				combos: [
+					{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_KODY) },
+				],
 			},
 			{
 				description: 'Go to search page',
-				combos: [{ kind: 'sequence', keys: getSequenceDisplayKeys(HOTKEY_GOTO_SEARCH) }],
+				combos: [
+					{
+						kind: 'sequence',
+						keys: getSequenceDisplayKeys(HOTKEY_GOTO_SEARCH),
+					},
+				],
 			},
 		],
 	},
 ] as const satisfies Array<HotkeysHelpGroup>
-

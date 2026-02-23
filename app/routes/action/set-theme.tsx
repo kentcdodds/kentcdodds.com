@@ -1,8 +1,8 @@
 import { parseWithZod } from '@conform-to/zod/v4'
-import { data as json, redirect } from 'react-router';
+import { data as json, redirect } from 'react-router'
 import { setTheme } from '#app/utils/theme.server.ts'
 import { ThemeFormSchema } from '#app/utils/theme.tsx'
-import  { type Route } from './+types/set-theme'
+import { type Route } from './+types/set-theme'
 
 export async function loader() {
 	return redirect('/')

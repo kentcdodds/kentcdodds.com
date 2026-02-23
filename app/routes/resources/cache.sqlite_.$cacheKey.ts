@@ -1,5 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { data as json } from 'react-router';
+import { data as json } from 'react-router'
 import { cache } from '#app/utils/cache.server.ts'
 import {
 	ensureInstance,
@@ -7,7 +7,7 @@ import {
 	getInstanceInfo,
 } from '#app/utils/litefs-js.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/cache.sqlite_.$cacheKey'
+import { type Route } from './+types/cache.sqlite_.$cacheKey'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	await requireAdminUser(request)

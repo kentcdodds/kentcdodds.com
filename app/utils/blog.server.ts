@@ -8,12 +8,7 @@ import { getClientSession } from './client.server.ts'
 import { sendMessageFromDiscordBot } from './discord.server.ts'
 import { getEnv } from './env.server.ts'
 import { getBlogMdxListItems } from './mdx.server.ts'
-import {
-	getDomainUrl,
-	getOptionalTeam,
-	teams,
-	typedBoolean,
-} from './misc.ts'
+import { getDomainUrl, getOptionalTeam, teams, typedBoolean } from './misc.ts'
 import { prisma } from './prisma.server.ts'
 import { getUser } from './session.server.ts'
 import { teamEmoji } from './team-provider.tsx'

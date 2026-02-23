@@ -27,10 +27,7 @@ function AddWithInput({ n1, initialN2 = 0 }) {
 function Rendered(props) {
 	const { className, ...rest } = props
 	return (
-		<div
-			className={['demo', className].filter(Boolean).join(' ')}
-			{...rest}
-		/>
+		<div className={['demo', className].filter(Boolean).join(' ')} {...rest} />
 	)
 }
 

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { data as json } from 'react-router'
@@ -9,6 +10,7 @@ import {
 	inputClassName,
 } from '#app/components/form-elements.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
+import { cachified, cache } from '#app/utils/cache.server.ts'
 import {
 	AI_VOICE_DISCLOSURE_PREFIX,
 	callKentTextToSpeechConstraints,
@@ -17,6 +19,13 @@ import {
 	getErrorForCallKentQuestionText,
 	isCallKentTextToSpeechVoice,
 } from '#app/utils/call-kent-text-to-speech.ts'
+import {
+	isCloudflareTextToSpeechConfigured,
+	synthesizeSpeechWithWorkersAi,
+} from '#app/utils/cloudflare-ai-text-to-speech.server.ts'
+import { getEnv } from '#app/utils/env.server.ts'
+import { rateLimit } from '#app/utils/rate-limit.server.ts'
+import { getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/text-to-speech'
 
 const textToSpeechResourceRoute = '/resources/calls/text-to-speech'
@@ -25,33 +34,6 @@ const TTS_RATE_LIMIT_MAX = 20
 const TTS_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
 // This caches *unsubmitted* call audio, so keep the TTL modest.
 const TTS_CACHE_TTL_MS = 1000 * 60 * 60 * 24 // 24 hours
-async function getTextToSpeechServerServices() {
-	const [
-		{ isCloudflareTextToSpeechConfigured, synthesizeSpeechWithWorkersAi },
-		{ cachified, cache },
-		{ rateLimit },
-		{ getUser },
-		{ getEnv },
-		{ createHash },
-	] = await Promise.all([
-		import('#app/utils/cloudflare-ai-text-to-speech.server.ts'),
-		import('#app/utils/cache.server.ts'),
-		import('#app/utils/rate-limit.server.ts'),
-		import('#app/utils/session.server.ts'),
-		import('#app/utils/env.server.ts'),
-		import('node:crypto'),
-	])
-	return {
-		isCloudflareTextToSpeechConfigured,
-		synthesizeSpeechWithWorkersAi,
-		cachified,
-		cache,
-		rateLimit,
-		getUser,
-		getEnv,
-		createHash,
-	}
-}
 
 function normalizeTextForCache(text: string) {
 	// Normalize insignificant whitespace so repeated requests hit cache.
@@ -88,18 +70,6 @@ function isDataWithResponseInit(value: unknown): value is {
 
 export async function action({ request }: Route.ActionArgs) {
 	// This is a paid API call; require auth to limit abuse.
-	const {
-		isCloudflareTextToSpeechConfigured,
-		synthesizeSpeechWithWorkersAi,
-		cachified,
-		cache,
-		rateLimit,
-		getUser,
-		getEnv,
-		createHash,
-	} =
-		await getTextToSpeechServerServices()
-
 	const headers = { 'Cache-Control': 'no-store', Vary: 'Cookie' }
 
 	const user = await getUser(request)
@@ -146,15 +116,17 @@ export async function action({ request }: Route.ActionArgs) {
 	const normalizedQuestionText = normalizeTextForCache(questionText)
 	const speechText = withAiDisclosurePrefix(normalizedQuestionText)
 	const model = getEnv().CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL
-	// Aura defaults to "angus" when omitted; treat empty voice as that for caching.
-	const voiceForCache = voiceRaw || 'angus'
+	// aura-2-en defaults to "luna" when omitted; treat empty voice as that for caching.
+	const voiceForCache = voiceRaw || 'luna'
 	const cacheKeyPayload = JSON.stringify({
 		v: 2,
 		model,
 		voice: voiceForCache,
 		text: speechText,
 	})
-	const cacheKeyHash = createHash('sha256').update(cacheKeyPayload).digest('hex')
+	const cacheKeyHash = createHash('sha256')
+		.update(cacheKeyPayload)
+		.digest('hex')
 	const cacheKey = `call-kent-tts:audio:v2:${cacheKeyHash}`
 
 	try {
@@ -212,7 +184,10 @@ export async function action({ request }: Route.ActionArgs) {
 		// Normalize into an `ArrayBuffer` body for broad compatibility.
 		const responseBody =
 			bytes.buffer instanceof ArrayBuffer
-				? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+				? bytes.buffer.slice(
+						bytes.byteOffset,
+						bytes.byteOffset + bytes.byteLength,
+					)
 				: Uint8Array.from(bytes).buffer
 		return new Response(responseBody, {
 			headers: {
@@ -266,7 +241,9 @@ async function getErrorMessageFromResponse(response: Response) {
 	return bodyText.trim() || `Request failed (${response.status})`
 }
 
-function useFiveSecondPreview(audioRef: React.RefObject<HTMLAudioElement | null>) {
+function useFiveSecondPreview(
+	audioRef: React.RefObject<HTMLAudioElement | null>,
+) {
 	const cleanupRef = React.useRef<(() => void) | null>(null)
 
 	React.useEffect(() => {
@@ -333,8 +310,9 @@ export function CallKentTextToSpeech({
 	const questionCountdownId = `${questionId}-countdown`
 
 	const defaultVoice = (callKentTextToSpeechVoices[0]?.id ??
-		'asteria') as CallKentTextToSpeechVoice
-	const [voice, setVoice] = React.useState<CallKentTextToSpeechVoice>(defaultVoice)
+		'luna') as CallKentTextToSpeechVoice
+	const [voice, setVoice] =
+		React.useState<CallKentTextToSpeechVoice>(defaultVoice)
 	const [questionText, setQuestionText] = React.useState('')
 	const [questionTouched, setQuestionTouched] = React.useState(false)
 	const [hasAttemptedPreview, setHasAttemptedPreview] = React.useState(false)
@@ -343,7 +321,9 @@ export function CallKentTextToSpeech({
 	const [serverError, setServerError] = React.useState<string | null>(null)
 	const [audioBlob, setAudioBlob] = React.useState<Blob | null>(null)
 	const [audioUrl, setAudioUrl] = React.useState<string | null>(null)
-	const [durationSeconds, setDurationSeconds] = React.useState<number | null>(null)
+	const [durationSeconds, setDurationSeconds] = React.useState<number | null>(
+		null,
+	)
 	const requestIdRef = React.useRef(0)
 	const abortControllerRef = React.useRef<AbortController | null>(null)
 
@@ -443,7 +423,9 @@ export function CallKentTextToSpeech({
 				return
 			}
 			if (requestIdRef.current !== requestId) return
-			setServerError(e instanceof Error ? e.message : 'Unable to generate audio.')
+			setServerError(
+				e instanceof Error ? e.message : 'Unable to generate audio.',
+			)
 		} finally {
 			if (abortControllerRef.current === abortController) {
 				abortControllerRef.current = null
@@ -592,4 +574,3 @@ export function CallKentTextToSpeech({
 		</div>
 	)
 }
-

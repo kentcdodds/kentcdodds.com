@@ -63,7 +63,7 @@ describe('cloudflare MSW mocks', () => {
 	test('Workers AI text-to-speech endpoint returns audio bytes', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
-			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/deepgram/aura-1',
+			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/deepgram/aura-2-en',
 			{
 				method: 'POST',
 				headers: {
@@ -72,7 +72,7 @@ describe('cloudflare MSW mocks', () => {
 				},
 				body: JSON.stringify({
 					text: 'Hello from the Call Kent TTS mock.',
-					speaker: 'asteria',
+					speaker: 'luna',
 					encoding: 'mp3',
 				}),
 			},
@@ -82,6 +82,35 @@ describe('cloudflare MSW mocks', () => {
 		expect(res.headers.get('content-type')).toMatch(/^audio\//i)
 		const buf = await res.arrayBuffer()
 		expect(buf.byteLength).toBeGreaterThan(1024)
+	})
+
+	test('Workers AI chat endpoint returns { result: { response } }', async () => {
+		const apiToken = 'MOCK_test-token'
+		const res = await fetch(
+			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/meta/llama-3.1-8b-instruct',
+			{
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${apiToken}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					messages: [
+						{ role: 'system', content: 'Return JSON.' },
+						{ role: 'user', content: 'Transcript: hello world' },
+					],
+				}),
+			},
+		)
+
+		expect(res.ok).toBe(true)
+		const json = (await res.json()) as any
+		expect(json.success).toBe(true)
+		expect(typeof json.result.response).toBe('string')
+		const parsed = JSON.parse(json.result.response)
+		expect(typeof parsed.title).toBe('string')
+		expect(typeof parsed.description).toBe('string')
+		expect(typeof parsed.keywords).toBe('string')
 	})
 
 	test('Vectorize query uses match-sorter when embedding text is known', async () => {

@@ -1,4 +1,4 @@
-import { data as json, Link } from 'react-router';
+import { data as json, Link } from 'react-router'
 import { Grid } from '#app/components/grid.tsx'
 import { RssIcon } from '#app/components/icons.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
@@ -7,7 +7,7 @@ import { H3 } from '#app/components/typography.tsx'
 import { images } from '#app/images.tsx'
 import { markdownToHtmlUnwrapped } from '#app/utils/markdown.server.ts'
 import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
-import  { type Route } from './+types/list'
+import { type Route } from './+types/list'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const posts = await getBlogMdxListItems({ request }).then((allPosts) =>
@@ -36,7 +36,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function BlogList({ loaderData: data }: Route.ComponentProps) {
-
 	return (
 		<div>
 			<HeroSection

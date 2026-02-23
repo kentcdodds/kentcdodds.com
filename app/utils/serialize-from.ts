@@ -10,7 +10,6 @@ type SerializeResult<Result> = Result extends Response
 		? Data
 		: Result
 
-export type SerializeFrom<T> =
-	T extends (...args: Array<any>) => infer Return
-		? SerializeResult<Awaited<Return>>
-		: T
+export type SerializeFrom<T> = T extends (...args: Array<any>) => infer Return
+	? SerializeResult<Awaited<Return>>
+	: T

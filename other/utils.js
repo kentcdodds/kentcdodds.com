@@ -19,7 +19,11 @@ function withStatusMessage(statusCode, body) {
 export async function postRefreshCache({
 	http,
 	postData,
-	options: { headers: headersOverrides, timeout: timeoutOverride, ...optionsOverrides } = {},
+	options: {
+		headers: headersOverrides,
+		timeout: timeoutOverride,
+		...optionsOverrides
+	} = {},
 }) {
 	if (!http) {
 		http = await import('https')
@@ -77,9 +81,7 @@ export async function postRefreshCache({
 				})
 				.on('error', reject)
 			const timeoutMs =
-				typeof timeoutOverride === 'number'
-					? timeoutOverride
-					: defaultTimeoutMs
+				typeof timeoutOverride === 'number' ? timeoutOverride : defaultTimeoutMs
 			req.setTimeout(timeoutMs, () => {
 				req.destroy(
 					new Error(`refresh-cache request timed out after ${timeoutMs}ms`),

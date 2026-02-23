@@ -1,15 +1,16 @@
 import { PassThrough, Transform } from 'stream'
 
-
-import { createReadableStreamFromReadable } from '@react-router/node';
+import { createReadableStreamFromReadable } from '@react-router/node'
 import * as Sentry from '@sentry/react-router'
 import chalk from 'chalk'
 import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
-import { ServerRouter,
-    type ActionFunctionArgs,
-    type LoaderFunctionArgs,
-    type HandleDocumentRequestFunction } from 'react-router';
+import {
+	ServerRouter,
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
+	type HandleDocumentRequestFunction,
+} from 'react-router'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
@@ -65,7 +66,7 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 			responseHeaders,
 			reactRouterContext,
 			loadContext,
-		);
+		)
 	}
 
 	return serveBrowsers(
@@ -74,7 +75,7 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		responseHeaders,
 		reactRouterContext,
 		loadContext,
-	);
+	)
 }
 
 function serveTheBots(...args: DocRequestArgs) {
@@ -127,7 +128,7 @@ function serveTheBots(...args: DocRequestArgs) {
 			},
 		)
 		setTimeout(() => stream.abort(), ABORT_DELAY)
-	});
+	})
 }
 
 function serveBrowsers(...args: DocRequestArgs) {
@@ -185,7 +186,7 @@ function serveBrowsers(...args: DocRequestArgs) {
 			},
 		)
 		setTimeout(() => stream.abort(), ABORT_DELAY)
-	});
+	})
 }
 
 export async function handleDataRequest(response: Response) {

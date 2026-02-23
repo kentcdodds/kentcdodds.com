@@ -1,4 +1,4 @@
-import { data as json, type MetaFunction, Link } from 'react-router';
+import { data as json, type MetaFunction, Link } from 'react-router'
 import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { MailIcon } from '#app/components/icons.tsx'
@@ -13,7 +13,7 @@ import { getDisplayUrl, getUrl } from '#app/utils/misc.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/subscribe'
+import { type Route } from './+types/subscribe'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,

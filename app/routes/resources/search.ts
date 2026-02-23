@@ -1,10 +1,10 @@
-import { data as json } from 'react-router';
+import { data as json } from 'react-router'
 import { getDomainUrl } from '#app/utils/misc.ts'
 import {
 	isSemanticSearchConfigured,
 	semanticSearchKCD,
 } from '#app/utils/semantic-search.server.ts'
-import  { type Route } from './+types/search'
+import { type Route } from './+types/search'
 
 function normalizeSummary(value: unknown) {
 	if (typeof value !== 'string') return undefined

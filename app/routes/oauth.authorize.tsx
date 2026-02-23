@@ -1,8 +1,8 @@
-import { data as json, redirect, Form } from 'react-router';
+import { data as json, redirect, Form } from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { getEnv } from '#app/utils/env.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/oauth.authorize'
+import { type Route } from './+types/oauth.authorize'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
@@ -103,7 +103,6 @@ export default function OAuthAuthorizeRoute({
 	loaderData: { clientId, user },
 	actionData,
 }: Route.ComponentProps) {
-
 	return (
 		<div className="mx-auto max-w-md py-8">
 			<h1 className="mb-4 text-2xl font-bold">Authorize Application</h1>

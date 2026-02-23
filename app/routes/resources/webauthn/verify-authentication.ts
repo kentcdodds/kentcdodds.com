@@ -1,10 +1,13 @@
-import { verifyAuthenticationResponse, type AuthenticationResponseJSON, } from '@simplewebauthn/server'
-import { data as json } from 'react-router';
+import {
+	verifyAuthenticationResponse,
+	type AuthenticationResponseJSON,
+} from '@simplewebauthn/server'
+import { data as json } from 'react-router'
 import { z } from 'zod'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
 import { getWebAuthnConfig, passkeyCookie } from '#app/utils/webauthn.server.ts'
-import  { type Route } from './+types/verify-authentication'
+import { type Route } from './+types/verify-authentication'
 
 const AuthenticationResponseSchema = z.object({
 	id: z.string(),

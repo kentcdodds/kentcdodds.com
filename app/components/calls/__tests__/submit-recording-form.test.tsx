@@ -20,6 +20,11 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 	useRootData: () => mockUseRootData(),
 }))
 
+// In Vitest, the Vite macro plugin isn't installed, so mock the macro helper.
+vi.mock('vite-env-only/macros', () => ({
+	serverOnly$: (fn: unknown) => fn,
+}))
+
 import { RecordingForm } from '#app/routes/resources/calls/save.tsx'
 
 describe('RecordingForm', () => {
@@ -46,7 +51,9 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
 		try {
@@ -57,14 +64,10 @@ describe('RecordingForm', () => {
 			fireEvent.change(screen.getByLabelText('Title'), {
 				target: { value: 'A valid title' },
 			})
-			fireEvent.change(screen.getByLabelText('Description'), {
-				target: { value: 'A sufficiently long description for this call.' },
-			})
-			fireEvent.change(screen.getByLabelText('Keywords'), {
-				target: { value: 'test,call' },
-			})
 
-			const submitButton = screen.getByRole('button', { name: 'Submit Recording' })
+			const submitButton = screen.getByRole('button', {
+				name: 'Submit Recording',
+			})
 			const form = container.querySelector('form')
 			expect(form).not.toBeNull()
 			fireEvent.submit(form as HTMLFormElement)
@@ -116,7 +119,9 @@ describe('RecordingForm', () => {
 			) {
 				if (eventName === 'loadend') {
 					loadEndListener =
-						typeof listener === 'function' ? () => listener(new Event('loadend')) : null
+						typeof listener === 'function'
+							? () => listener(new Event('loadend'))
+							: null
 				}
 			}
 			removeEventListener() {}
@@ -140,7 +145,9 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 
 		try {
 			const { container } = render(
@@ -149,12 +156,6 @@ describe('RecordingForm', () => {
 
 			fireEvent.change(screen.getByLabelText('Title'), {
 				target: { value: 'My First Call' },
-			})
-			fireEvent.change(screen.getByLabelText('Description'), {
-				target: { value: 'A sufficiently long description for this call.' },
-			})
-			fireEvent.change(screen.getByLabelText('Keywords'), {
-				target: { value: 'test,call' },
 			})
 			const form = container.querySelector('form')
 			expect(form).not.toBeNull()
@@ -175,10 +176,7 @@ describe('RecordingForm', () => {
 			expect(requestBody.get('intent')).toBe('create-call')
 			expect(requestBody.get('audio')).toBe('data:audio/wav;base64,ZmFrZQ==')
 			expect(requestBody.get('title')).toBe('My First Call')
-			expect(requestBody.get('description')).toBe(
-				'A sufficiently long description for this call.',
-			)
-			expect(requestBody.get('keywords')).toBe('test,call')
+			expect(requestBody.get('notes')).toBe('')
 
 			await waitFor(() =>
 				expect(mockNavigate).toHaveBeenCalledWith(
@@ -214,7 +212,9 @@ describe('RecordingForm', () => {
 			) {
 				if (eventName === 'loadend') {
 					loadEndListener =
-						typeof listener === 'function' ? () => listener(new Event('loadend')) : null
+						typeof listener === 'function'
+							? () => listener(new Event('loadend'))
+							: null
 				}
 			}
 			removeEventListener() {}
@@ -228,8 +228,7 @@ describe('RecordingForm', () => {
 			json: vi.fn().mockResolvedValue({
 				fields: {
 					title: '',
-					description: 'desc',
-					keywords: 'a,b',
+					notes: '',
 				},
 				errors: {
 					title: 'Title is required',
@@ -245,13 +244,14 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 
 		const initialData = {
 			fields: {
 				title: 'Original title',
-				description: 'Original description',
-				keywords: 'test,call',
+				notes: 'Original notes',
 			},
 			errors: {},
 		}
@@ -261,8 +261,7 @@ describe('RecordingForm', () => {
 			const { container, rerender } = render(
 				<RecordingForm
 					audio={audio}
-					intent="publish-call"
-					callId="call-123"
+					intent="create-call"
 					data={{
 						fields: { ...initialData.fields },
 						errors: { ...initialData.errors },
@@ -281,8 +280,7 @@ describe('RecordingForm', () => {
 			rerender(
 				<RecordingForm
 					audio={audio}
-					intent="publish-call"
-					callId="call-123"
+					intent="create-call"
 					data={{
 						fields: { ...initialData.fields },
 						errors: { ...initialData.errors },
@@ -306,7 +304,9 @@ describe('RecordingForm', () => {
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
-		const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+		const revokeObjectURL = vi
+			.spyOn(URL, 'revokeObjectURL')
+			.mockImplementation(() => {})
 
 		try {
 			const { container } = render(
@@ -322,7 +322,10 @@ describe('RecordingForm', () => {
 			expect(screen.getByText('80 characters left')).toBeInTheDocument()
 			const titleId = titleInput.getAttribute('id')
 			expect(titleId).toBeTruthy()
-			expect(titleInput).toHaveAttribute('aria-describedby', `${titleId}-countdown`)
+			expect(titleInput).toHaveAttribute(
+				'aria-describedby',
+				`${titleId}-countdown`,
+			)
 
 			fireEvent.change(titleInput, { target: { value: 'abcd' } })
 			expect(screen.getByText('76 characters left')).toBeInTheDocument()
@@ -335,17 +338,20 @@ describe('RecordingForm', () => {
 				screen.getByText('Title must be at least 5 characters'),
 			).toBeInTheDocument()
 
-			fireEvent.change(titleInput, { target: { value: 'abcde' } })
-			await waitFor(() =>
-				expect(
-					screen.queryByText('Title must be at least 5 characters'),
-				).not.toBeInTheDocument(),
-			)
+			const notesInput = screen.getByLabelText('Notes (optional)')
+			expect(notesInput).toHaveAttribute('maxLength', '5000')
 
-			// Submit should surface validation for untouched fields.
+			// Submit should surface validation and should not attempt to upload audio
+			// when validation fails.
+			fireEvent.change(titleInput, { target: { value: '' } })
 			fireEvent.submit(form as HTMLFormElement)
-			await screen.findByText('Description is required')
-			await screen.findByText('Keywords is required')
+			await screen.findByText('Title is required')
+			expect(titleInput.getAttribute('aria-describedby')).toContain(
+				`${titleId}-error`,
+			)
+			expect(titleInput.getAttribute('aria-describedby')).toContain(
+				`${titleId}-countdown`,
+			)
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()

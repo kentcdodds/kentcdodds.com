@@ -31,7 +31,9 @@ describe('hotkeys navigation mappings', () => {
 			navigationGroup.items.map((item) => [item.description, item]),
 		)
 
-		expect(itemByDescription.get('Go to Chats with Kent podcast')).toMatchObject({
+		expect(
+			itemByDescription.get('Go to Chats with Kent podcast'),
+		).toMatchObject({
 			combos: [{ kind: 'sequence', keys: ['g', 'c'] }],
 		})
 		expect(itemByDescription.get('Go to Call Kent podcast')).toMatchObject({

@@ -1,4 +1,9 @@
-import { data as json, type HeadersFunction, type MetaFunction, Link } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	type MetaFunction,
+	Link,
+} from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { CourseCard, SmallCourseCard } from '#app/components/course-card.tsx'
 import { Grid } from '#app/components/grid.tsx'
@@ -16,7 +21,7 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
-import  { type Route } from './+types/courses'
+import { type Route } from './+types/courses'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}

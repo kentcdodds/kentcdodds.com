@@ -111,7 +111,7 @@ describe('getTweetEmbedHTML', () => {
 			`https://x.com/kentcdodds/status/${truncatedTweetId}`,
 		)
 
-		expect(html).toContain("It's not <a class=\"tweet-read-more\"")
+		expect(html).toContain('It\'s not <a class="tweet-read-more"')
 		expect(html).toContain(
 			`href="https://x.com/kentcdodds/status/${truncatedTweetId}"`,
 		)

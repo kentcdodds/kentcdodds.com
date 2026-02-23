@@ -1,7 +1,7 @@
-import { data as json, redirect, Form } from 'react-router';
+import { data as json, redirect, Form } from 'react-router'
 import { type KCDHandle } from '#app/types.ts'
 import { useCapturedRouteError } from '#app/utils/misc-react.tsx'
-import  { type Route } from './+types/guest-info'
+import { type Route } from './+types/guest-info'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,

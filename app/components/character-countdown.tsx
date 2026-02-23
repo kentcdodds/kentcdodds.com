@@ -13,7 +13,8 @@ export function CharacterCountdown({
 	const remainingDisplay = Math.max(0, remaining)
 	let className = 'text-gray-500 dark:text-slate-400'
 	if (remaining <= 0) className = 'text-red-500'
-	else if (remaining <= warnAt) className = 'text-yellow-600 dark:text-yellow-500'
+	else if (remaining <= warnAt)
+		className = 'text-yellow-600 dark:text-yellow-500'
 
 	return (
 		<p

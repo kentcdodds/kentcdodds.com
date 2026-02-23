@@ -55,4 +55,5 @@ jobs:
           # Optional: force-index specific videos. Can be set either as a
           # workflow_dispatch input or as a repository variable.
           YOUTUBE_VIDEO_IDS:
-            ${{ github.event_name == 'workflow_dispatch' && inputs.youtube_video_ids || vars.YOUTUBE_VIDEO_IDS }}
+            ${{ github.event_name == 'workflow_dispatch' &&
+            inputs.youtube_video_ids || vars.YOUTUBE_VIDEO_IDS }}

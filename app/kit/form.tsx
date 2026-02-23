@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useFetcher } from 'react-router';
+import { useFetcher } from 'react-router'
 import { ArrowButton } from '#app/components/arrow-button.tsx'
 import { Field } from '#app/components/form-elements.tsx'
 import { CheckIcon } from '#app/components/icons.tsx'

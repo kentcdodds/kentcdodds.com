@@ -61,4 +61,3 @@ export async function createAndSendPasswordResetVerificationEmail({
 		console.error('Failed to send password reset email', error)
 	}
 }
-

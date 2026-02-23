@@ -62,16 +62,12 @@ function AppHotkeys() {
 		setDialogOpen(false)
 	}, [location.pathname])
 
-	useHotkey(
-		hk.HOTKEY_TOGGLE_HOTKEYS_DIALOG,
-		() => setDialogOpen((o) => !o),
-		{
-			ignoreInputs: true,
-			preventDefault: true,
-			requireReset: true,
-			stopPropagation: true,
-		},
-	)
+	useHotkey(hk.HOTKEY_TOGGLE_HOTKEYS_DIALOG, () => setDialogOpen((o) => !o), {
+		ignoreInputs: true,
+		preventDefault: true,
+		requireReset: true,
+		stopPropagation: true,
+	})
 
 	React.useEffect(() => {
 		const sequenceManager = getSequenceManager()
@@ -88,8 +84,13 @@ function AppHotkeys() {
 		document.addEventListener('keydown', resetSequencesIfTyping, true)
 		document.addEventListener('focusout', resetSequencesIfTyping, true)
 
-		const unregisterCallbacks = NAVIGATION_HOTKEY_ROUTES.map(({ sequence, path }) =>
-			sequenceManager.register([...sequence], () => navigateToPath(path), navSequenceOptions),
+		const unregisterCallbacks = NAVIGATION_HOTKEY_ROUTES.map(
+			({ sequence, path }) =>
+				sequenceManager.register(
+					[...sequence],
+					() => navigateToPath(path),
+					navSequenceOptions,
+				),
 		)
 
 		return () => {
@@ -109,4 +110,3 @@ function AppHotkeys() {
 }
 
 export { AppHotkeys }
-

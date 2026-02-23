@@ -1,5 +1,12 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { data as json, Form, isRouteErrorResponse, useFetcher, useSearchParams, useSubmit } from 'react-router';
+import {
+	data as json,
+	Form,
+	isRouteErrorResponse,
+	useFetcher,
+	useSearchParams,
+	useSubmit,
+} from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import {
 	Field,
@@ -26,7 +33,7 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
 import { requireAdminUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/cache.admin'
+import { type Route } from './+types/cache.admin'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
@@ -78,7 +85,9 @@ export async function action({ request }: Route.ActionArgs) {
 	return json({ success: true })
 }
 
-export default function CacheAdminRoute({ loaderData: data }: Route.ComponentProps) {
+export default function CacheAdminRoute({
+	loaderData: data,
+}: Route.ComponentProps) {
 	const [searchParams] = useSearchParams()
 	const submit = useSubmit()
 	const query = searchParams.get('query') ?? ''

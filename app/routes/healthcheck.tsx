@@ -1,7 +1,6 @@
-
 import { getBlogReadRankings } from '#app/utils/blog.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
-import  { type Route } from './+types/healthcheck'
+import { type Route } from './+types/healthcheck'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const host =

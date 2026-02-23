@@ -40,8 +40,7 @@ export function createRateLimitingMiddleware(
 		// specific header such as cf-connecting-ip
 		keyGenerator: (req: Parameters<RequestHandler>[0]) => {
 			const flyClientIp = req.get('fly-client-ip')
-			const ip =
-				flyClientIp ?? req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0'
+			const ip = flyClientIp ?? req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0'
 			return ipKeyGenerator(ip)
 		},
 	}
@@ -95,4 +94,3 @@ export function createRateLimitingMiddleware(
 		return generalRateLimit(req, res, next)
 	}
 }
-

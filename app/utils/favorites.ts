@@ -35,4 +35,3 @@ export function parseEpisodeFavoriteContentId(contentId: string) {
 	if (String(episodeNumber) !== episodeRaw) return null
 	return { seasonNumber, episodeNumber }
 }
-

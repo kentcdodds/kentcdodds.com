@@ -93,4 +93,3 @@ describe('useCountdown', () => {
 		expect(seen.length).toBeLessThan(10)
 	})
 })
-

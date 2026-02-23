@@ -84,9 +84,11 @@ export function isR2S3Configured() {
 }
 
 let _r2Client: S3Client | null = null
-let _r2ClientConfig:
-	| { endpoint: string; accessKeyId: string; secretAccessKey: string }
-	| null = null
+let _r2ClientConfig: {
+	endpoint: string
+	accessKeyId: string
+	secretAccessKey: string
+} | null = null
 
 function getR2Client() {
 	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()

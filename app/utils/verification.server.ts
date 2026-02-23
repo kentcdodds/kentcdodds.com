@@ -53,7 +53,13 @@ export async function consumeVerification({
 }) {
 	const verification = await prisma.verification.findUnique({
 		where: { id },
-		select: { id: true, type: true, target: true, codeHash: true, expiresAt: true },
+		select: {
+			id: true,
+			type: true,
+			target: true,
+			codeHash: true,
+			expiresAt: true,
+		},
 	})
 
 	if (!verification) return null
@@ -68,7 +74,12 @@ export async function consumeVerification({
 		await prisma.verification.delete({ where: { id: verification.id } })
 	} catch (error: unknown) {
 		// Another request may have consumed/deleted it first.
-		if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+		if (
+			error &&
+			typeof error === 'object' &&
+			'code' in error &&
+			error.code === 'P2025'
+		) {
 			return null
 		}
 		throw error
@@ -93,7 +104,13 @@ export async function consumeVerificationForTarget({
 			expiresAt: { gt: new Date() },
 		},
 		orderBy: { createdAt: 'desc' },
-		select: { id: true, type: true, target: true, codeHash: true, expiresAt: true },
+		select: {
+			id: true,
+			type: true,
+			target: true,
+			codeHash: true,
+			expiresAt: true,
+		},
 	})
 	if (!verification) return null
 
@@ -105,7 +122,12 @@ export async function consumeVerificationForTarget({
 		await prisma.verification.delete({ where: { id: verification.id } })
 	} catch (error: unknown) {
 		// Another request may have consumed/deleted it first.
-		if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+		if (
+			error &&
+			typeof error === 'object' &&
+			'code' in error &&
+			error.code === 'P2025'
+		) {
 			return null
 		}
 		throw error
@@ -113,4 +135,3 @@ export async function consumeVerificationForTarget({
 
 	return { target: verification.target }
 }
-

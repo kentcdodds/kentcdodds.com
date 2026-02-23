@@ -5,7 +5,7 @@
 // ensure the user gets the right status code and we can display a nicer error
 // message for them than the Remix and/or browser default.
 
-import { useLocation } from 'react-router';
+import { useLocation } from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorPage } from '#app/components/errors.tsx'

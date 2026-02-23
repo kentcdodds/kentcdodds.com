@@ -61,7 +61,10 @@ export function rateLimit({
 		}
 	}
 
-	const next: RateLimitEntry = { count: existing.count + 1, resetAt: existing.resetAt }
+	const next: RateLimitEntry = {
+		count: existing.count + 1,
+		resetAt: existing.resetAt,
+	}
 	limiter.set(key, next, { ttl: Math.max(1, existing.resetAt - now) })
 
 	return {
@@ -71,4 +74,3 @@ export function rateLimit({
 		resetAt: next.resetAt,
 	}
 }
-

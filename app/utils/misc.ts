@@ -20,10 +20,12 @@ export const optionalTeams: Array<OptionalTeam> = [...teams, 'UNKNOWN']
 
 const roles: Array<Role> = ['ADMIN', 'MEMBER']
 
-export const isTeam = (team?: string): team is Team => teams.includes(team as Team)
+export const isTeam = (team?: string): team is Team =>
+	teams.includes(team as Team)
 export const isRole = (role?: string): role is Role =>
 	roles.includes(role as Role)
-export const getTeam = (team?: string): Team | null => (isTeam(team) ? team : null)
+export const getTeam = (team?: string): Team | null =>
+	isTeam(team) ? team : null
 export const getOptionalTeam = (team?: string): OptionalTeam =>
 	isTeam(team) ? team : 'UNKNOWN'
 
@@ -77,13 +79,19 @@ export function formatDate(dateString: string | Date, format = 'PPP') {
 	return dateFormat(parseDate(dateString), format)
 }
 
-export function getErrorMessage(error: unknown, fallback: string = 'Unknown Error') {
+export function getErrorMessage(
+	error: unknown,
+	fallback: string = 'Unknown Error',
+) {
 	if (typeof error === 'string') return error
 	if (error instanceof Error) return error.message
 	return fallback
 }
 
-export function getErrorStack(error: unknown, fallback: string = 'Unknown Error') {
+export function getErrorStack(
+	error: unknown,
+	fallback: string = 'Unknown Error',
+) {
 	if (typeof error === 'string') return error
 	if (error instanceof Error) return error.stack
 	return fallback
@@ -156,7 +164,9 @@ export function getOrigin(requestInfo?: { origin?: string; path: string }) {
 }
 
 export function getUrl(requestInfo?: { origin: string; path: string }) {
-	return removeTrailingSlash(`${getOrigin(requestInfo)}${requestInfo?.path ?? ''}`)
+	return removeTrailingSlash(
+		`${getOrigin(requestInfo)}${requestInfo?.path ?? ''}`,
+	)
 }
 
 export function toBase64(string: string) {
@@ -205,4 +215,3 @@ export function requireValidSlug(slug: unknown): asserts slug is string {
 
 export { listify } from './listify.ts'
 export type { OptionalTeam } from '#app/types.ts'
-

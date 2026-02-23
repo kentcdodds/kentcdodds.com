@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from 'react-router';
+import { createCookieSessionStorage } from 'react-router'
 import { getEnv } from './env.server.ts'
 const authFlowExpirationTime = 1000 * 60 * 30
 
@@ -34,7 +34,8 @@ async function getLoginInfoSession(request: Request) {
 
 		getResetPasswordEmail: () =>
 			session.get('resetPasswordEmail') as string | undefined,
-		setResetPasswordEmail: (email: string) => session.set('resetPasswordEmail', email),
+		setResetPasswordEmail: (email: string) =>
+			session.set('resetPasswordEmail', email),
 		unsetResetPasswordEmail: () => session.unset('resetPasswordEmail'),
 
 		getError: () => session.get('error') as string | undefined,

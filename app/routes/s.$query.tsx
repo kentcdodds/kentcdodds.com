@@ -1,5 +1,5 @@
-import { redirect } from 'react-router';
-import  { type Route } from './+types/s.$query'
+import { redirect } from 'react-router'
+import { type Route } from './+types/s.$query'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const q = typeof params.query === 'string' ? params.query.trim() : ''

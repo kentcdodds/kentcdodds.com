@@ -17,7 +17,7 @@ const synthesizeSpeechWithWorkersAi = vi.fn(
 		return {
 			bytes: new TextEncoder().encode(payload),
 			contentType: 'audio/mpeg',
-			model: model ?? '@cf/deepgram/aura-1',
+			model: model ?? '@cf/deepgram/aura-2-en',
 		}
 	},
 )
@@ -55,7 +55,12 @@ vi.mock('#app/utils/session.server.ts', () => {
 })
 
 const rateLimit = vi.fn(() => {
-	return { allowed: true, remaining: 999, retryAfterMs: null, resetAt: Date.now() + 1000 }
+	return {
+		allowed: true,
+		remaining: 999,
+		retryAfterMs: null,
+		resetAt: Date.now() + 1000,
+	}
 })
 
 vi.mock('#app/utils/rate-limit.server.ts', () => {
@@ -80,18 +85,20 @@ describe('/resources/calls/text-to-speech cache', () => {
 
 		const req1 = makeRequest({
 			text: 'Hello from the cache test message.',
-			voice: 'asteria',
+			voice: 'luna',
 		})
 		const res1 = (await action({ request: req1 } as any)) as Response
 		expect(res1.ok).toBe(true)
 		const bytes1 = new Uint8Array(await res1.arrayBuffer())
 		const firstCallArgs = synthesizeSpeechWithWorkersAi.mock.calls[0]?.[0]
-		expect(firstCallArgs?.text?.startsWith(AI_VOICE_DISCLOSURE_PREFIX)).toBe(true)
+		expect(firstCallArgs?.text?.startsWith(AI_VOICE_DISCLOSURE_PREFIX)).toBe(
+			true,
+		)
 
 		// Same content, different whitespace: should hit cache.
 		const req2 = makeRequest({
 			text: '  Hello   from  the  cache   test message.  ',
-			voice: 'asteria',
+			voice: 'luna',
 		})
 		const res2 = (await action({ request: req2 } as any)) as Response
 		expect(res2.ok).toBe(true)
@@ -112,4 +119,3 @@ describe('/resources/calls/text-to-speech cache', () => {
 		expect(rateLimit).toHaveBeenCalledTimes(2)
 	})
 })
-

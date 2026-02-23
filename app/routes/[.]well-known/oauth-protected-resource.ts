@@ -1,4 +1,4 @@
-import { data as json } from 'react-router';
+import { data as json } from 'react-router'
 
 export async function loader() {
 	const result = await fetch(

@@ -39,13 +39,12 @@ function getBannerTitleProp(frontmatter: MdxPage['frontmatter']) {
 
 type ExtraMeta = Array<{ [key: string]: string }>
 
-type MetaLoader = () =>
-	Promise<
-		| {
-				page: MdxPage
-		  }
-		| Response
-	>
+type MetaLoader = () => Promise<
+	| {
+			page: MdxPage
+	  }
+	| Response
+>
 
 const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
 	data,

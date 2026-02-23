@@ -1,4 +1,10 @@
-import { data as json, type HeadersFunction, type LinksFunction, type MetaFunction, useSearchParams } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	type LinksFunction,
+	type MetaFunction,
+	useSearchParams,
+} from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { FeatureCard } from '#app/components/feature-card.tsx'
 import {
@@ -39,7 +45,7 @@ import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/about'
+import { type Route } from './+types/about'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}

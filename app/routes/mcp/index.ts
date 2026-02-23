@@ -1,6 +1,6 @@
-import { redirect } from 'react-router';
+import { redirect } from 'react-router'
 import { getAuthInfoFromOAuthFromRequest } from '#app/utils/session.server.js'
-import  { type Route } from './+types/index'
+import { type Route } from './+types/index'
 import { connect, requestStorage } from './mcp.server.ts'
 
 export async function loader({ request }: Route.LoaderArgs) {

@@ -60,9 +60,9 @@ async function createSession(
 	})
 }
 
-async function deleteExpiredSessions(
-	{ now = new Date() }: { now?: Date } = {},
-) {
+async function deleteExpiredSessions({
+	now = new Date(),
+}: { now?: Date } = {}) {
 	await ensurePrimary()
 	const result = await prisma.session.deleteMany({
 		where: { expirationDate: { lt: now } },
@@ -70,9 +70,9 @@ async function deleteExpiredSessions(
 	return result.count
 }
 
-async function deleteExpiredVerifications(
-	{ now = new Date() }: { now?: Date } = {},
-) {
+async function deleteExpiredVerifications({
+	now = new Date(),
+}: { now?: Date } = {}) {
 	await ensurePrimary()
 	const result = await prisma.verification.deleteMany({
 		where: { expiresAt: { lt: now } },
@@ -119,6 +119,9 @@ async function getAllUserData(userId: string) {
 	return pProps({
 		user: prisma.user.findUnique({ where: { id: userId } }),
 		calls: prisma.call.findMany({ where: { userId } }),
+		callKentCallerEpisodes: prisma.callKentCallerEpisode.findMany({
+			where: { userId },
+		}),
 		favorites: prisma.favorite.findMany({ where: { userId } }),
 		postReads: prisma.postRead.findMany({ where: { userId } }),
 		sessions: prisma.session.findMany({ where: { userId } }),

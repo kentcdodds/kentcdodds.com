@@ -23,7 +23,9 @@ if (SENTRY_UPLOAD && MODE === 'production') {
 	// just warn + skip the upload. Fail fast so we don't silently deploy without
 	// sourcemaps in Sentry.
 	if (!authToken) {
-		throw new Error('SENTRY_UPLOAD is enabled, but SENTRY_AUTH_TOKEN is missing')
+		throw new Error(
+			'SENTRY_UPLOAD is enabled, but SENTRY_AUTH_TOKEN is missing',
+		)
 	}
 	if (!project) {
 		throw new Error('SENTRY_UPLOAD is enabled, but SENTRY_PROJECT is missing')

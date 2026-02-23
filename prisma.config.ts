@@ -10,7 +10,9 @@ function getDatabaseUrl() {
 	// The runtime app still validates env via `getEnv()` and will fail-fast.
 	const databasePath = process.env.DATABASE_PATH?.trim()
 	if (databasePath) {
-		return databasePath.startsWith('file:') ? databasePath : `file:${databasePath}`
+		return databasePath.startsWith('file:')
+			? databasePath
+			: `file:${databasePath}`
 	}
 
 	const databaseFilename = process.env.DATABASE_FILENAME?.trim()

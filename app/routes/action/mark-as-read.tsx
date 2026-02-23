@@ -1,5 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { data as json } from 'react-router';
+import { data as json } from 'react-router'
 import {
 	getBlogReadRankings,
 	notifyOfOverallTeamLeaderChange,
@@ -9,7 +9,7 @@ import { getRankingLeader } from '#app/utils/blog.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { addPostRead } from '#app/utils/prisma.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/mark-as-read'
+import { type Route } from './+types/mark-as-read'
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()

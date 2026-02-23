@@ -1,7 +1,7 @@
 # AGENTS.md
 
-This file is included in full context for every agent conversation. Keep it
-tiny and stable.
+This file is included in full context for every agent conversation. Keep it tiny
+and stable.
 
 ## Editing policy
 

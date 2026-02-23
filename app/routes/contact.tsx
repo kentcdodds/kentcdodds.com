@@ -1,4 +1,10 @@
-import { data as json, type HeadersFunction, type MetaFunction, Link, useFetcher } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	type MetaFunction,
+	Link,
+	useFetcher,
+} from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import {
 	ButtonGroup,
@@ -19,7 +25,7 @@ import { sendEmail } from '#app/utils/send-email.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
-import  { type Route } from './+types/contact'
+import { type Route } from './+types/contact'
 
 function getErrorForSubject(subject: string | null) {
 	if (!subject) return `Subject is required`

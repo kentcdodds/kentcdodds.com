@@ -1,7 +1,15 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@reach/tabs'
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { data as json, type HeadersFunction, type MetaFunction, Link, Outlet, useMatches, useNavigate } from 'react-router';
+import {
+	data as json,
+	type HeadersFunction,
+	type MetaFunction,
+	Link,
+	Outlet,
+	useMatches,
+	useNavigate,
+} from 'react-router'
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
 import { PodcastSubs } from '#app/components/podcast-subs.tsx'
@@ -36,7 +44,7 @@ import { ChatsEpisodeUIStateProvider } from '#app/utils/providers.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
-import  { type Route } from './+types/_layout'
+import { type Route } from './+types/_layout'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}

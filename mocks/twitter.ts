@@ -23,7 +23,9 @@ const siteMetadataArray = Object.values(siteMetadata)
 
 type TweetLike = { id_str: string }
 function isTweetLike(t: unknown): t is TweetLike {
-	return Boolean(t && typeof t === 'object' && typeof (t as any).id_str === 'string')
+	return Boolean(
+		t && typeof t === 'object' && typeof (t as any).id_str === 'string',
+	)
 }
 
 function getSiteMetadata(tweetUrlId: string) {

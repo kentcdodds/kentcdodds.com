@@ -1,6 +1,6 @@
-import { redirect } from 'react-router';
+import { redirect } from 'react-router'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
-import  { type Route } from './+types/index'
+import { type Route } from './+types/index'
 import { getEpisodesBySeason } from './_layout.tsx'
 
 export async function loader({ request }: Route.LoaderArgs) {

@@ -94,4 +94,3 @@ describe('mdx not-found caching', () => {
 		}
 	})
 })
-

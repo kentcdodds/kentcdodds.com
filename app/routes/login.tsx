@@ -32,11 +32,14 @@ import {
 	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
-import { DUMMY_PASSWORD_HASH, verifyPassword } from '#app/utils/password.server.ts'
+import {
+	DUMMY_PASSWORD_HASH,
+	verifyPassword,
+} from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/login'
+import { type Route } from './+types/login'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
@@ -84,7 +87,10 @@ export async function action({ request }: Route.ActionArgs) {
 	const loginSession = await getLoginInfoSession(request)
 
 	const emailAddress = formData.get('email')
-	invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
+	invariantResponse(
+		typeof emailAddress === 'string',
+		'Form submitted incorrectly',
+	)
 	const email = emailAddress.trim().toLowerCase()
 
 	const password = formData.get('password')

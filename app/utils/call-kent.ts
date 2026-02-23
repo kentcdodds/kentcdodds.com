@@ -2,22 +2,9 @@ import { type CallKentEpisode } from '#app/types.ts'
 
 const callKentFieldConstraints = {
 	title: { minLength: 5, maxLength: 80 },
-	description: { minLength: 20, maxLength: 5000 },
-	keywords: { minLength: 2, maxLength: 100 },
+	// Optional caller-provided context; not required for submission.
+	notes: { maxLength: 5000 },
 } as const
-
-function getErrorForDescription(description: string | null) {
-	if (!description) return `Description is required`
-
-	const { minLength, maxLength } = callKentFieldConstraints.description
-	if (description.length < minLength) {
-		return `Description must be at least ${minLength} characters`
-	}
-	if (description.length > maxLength) {
-		return `Description must be no longer than ${maxLength} characters`
-	}
-	return null
-}
 
 function getErrorForTitle(title: string | null) {
 	if (!title) return `Title is required`
@@ -32,15 +19,14 @@ function getErrorForTitle(title: string | null) {
 	return null
 }
 
-function getErrorForKeywords(keywords: string | null) {
-	if (!keywords) return `Keywords is required`
-
-	const { minLength, maxLength } = callKentFieldConstraints.keywords
-	if (keywords.length < minLength) {
-		return `Keywords must be at least ${minLength} characters`
-	}
-	if (keywords.length > maxLength) {
-		return `Keywords must be no longer than ${maxLength} characters`
+function getErrorForNotes(notes: string | null) {
+	if (!notes) return null
+	// Treat whitespace-only notes as empty, but validate length on the raw value
+	// so validation matches `maxLength` + `CharacterCountdown` behavior.
+	if (!notes.trim()) return null
+	const { maxLength } = callKentFieldConstraints.notes
+	if (notes.length > maxLength) {
+		return `Notes must be no longer than ${maxLength} characters`
 	}
 	return null
 }
@@ -92,6 +78,5 @@ export {
 	getEpisodeFromParams,
 	getErrorForAudio,
 	getErrorForTitle,
-	getErrorForDescription,
-	getErrorForKeywords,
+	getErrorForNotes,
 }

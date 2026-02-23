@@ -1,12 +1,20 @@
 import * as React from 'react'
-import { data as json, redirect, type HeadersFunction, Form } from 'react-router';
+import {
+	data as json,
+	redirect,
+	type HeadersFunction,
+	Form,
+} from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { reuseUsefulLoaderHeaders, useDoubleCheck } from '#app/utils/misc-react.tsx'
+import {
+	reuseUsefulLoaderHeaders,
+	useDoubleCheck,
+} from '#app/utils/misc-react.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/$callId'
+import { type Route } from './+types/$callId'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -25,6 +33,11 @@ export async function action({ params, request }: Route.ActionArgs) {
 		// NOTE: this is how we ensure the user is the owner of the call
 		// and is therefore authorized to delete it.
 		where: { userId: user.id, id: params.callId },
+		select: {
+			id: true,
+			audioKey: true,
+			episodeDraft: { select: { episodeAudioKey: true } },
+		},
 	})
 	if (!call) {
 		// Maybe they tried to delete a call they don't own?
@@ -34,6 +47,19 @@ export async function action({ params, request }: Route.ActionArgs) {
 		return redirect('/calls/record')
 	}
 	await prisma.call.delete({ where: { id: params.callId } })
+	const keysToDelete = [
+		call.audioKey,
+		call.episodeDraft?.episodeAudioKey,
+	].filter((k): k is string => typeof k === 'string' && k.length > 0)
+	if (keysToDelete.length) {
+		const { deleteAudioObject } =
+			await import('#app/utils/call-kent-audio-storage.server.ts')
+		await Promise.all(
+			keysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
+		)
+	}
 
 	return redirect('/calls/record')
 }
@@ -47,6 +73,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		// NOTE: this is how we ensure the user is the owner of the call
 		// and is therefore authorized to delete it.
 		where: { userId: user.id, id: params.callId },
+		select: {
+			id: true,
+			notes: true,
+		},
 	})
 	if (!call) {
 		return redirect('/calls/record')
@@ -64,26 +94,25 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export default function Screen({ loaderData: data }: Route.ComponentProps) {
-	const [audioURL, setAudioURL] = React.useState<string | null>(null)
 	const dc = useDoubleCheck()
-	React.useEffect(() => {
-		const audio = new Audio(data.call.base64)
-		setAudioURL(audio.src)
-	}, [data.call.base64])
 
 	return (
 		<section>
-			<Paragraph className="mb-8">{data.call.description}</Paragraph>
+			{data.call.notes ? (
+				<Paragraph className="mb-8 whitespace-pre-wrap">
+					{data.call.notes}
+				</Paragraph>
+			) : (
+				<Paragraph className="mb-8">{`Thanks for your call!`}</Paragraph>
+			)}
 			<div className="flex flex-wrap gap-4">
 				<div className="w-full flex-1" style={{ minWidth: '16rem' }}>
-					{audioURL ? (
-						<audio
-							src={audioURL}
-							controls
-							preload="metadata"
-							className="w-full"
-						/>
-					) : null}
+					<audio
+						src={`/resources/calls/call-audio?callId=${data.call.id}`}
+						controls
+						preload="metadata"
+						className="w-full"
+					/>
 				</div>
 				<Form method="delete">
 					<input

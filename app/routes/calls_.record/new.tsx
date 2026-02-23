@@ -6,10 +6,12 @@ import { Grid } from '#app/components/grid.tsx'
 import { Grimmacing } from '#app/components/kifs.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { RecordingForm, type RecordingFormData } from '#app/routes/resources/calls/save.tsx'
+import {
+	RecordingForm,
+	type RecordingFormData,
+} from '#app/routes/resources/calls/save.tsx'
 import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { AI_VOICE_DISCLOSURE_PREFIX } from '#app/utils/call-kent-text-to-speech.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/new'
@@ -26,7 +28,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return json({ shouldUseSampleAudio } as const)
 }
 
-export default function RecordScreen({ loaderData, matches }: Route.ComponentProps) {
+export default function RecordScreen({
+	loaderData,
+	matches,
+}: Route.ComponentProps) {
 	const routeTopRef = React.useRef<HTMLDivElement | null>(null)
 	const [audio, setAudio] = React.useState<Blob | null>(null)
 	const [prefill, setPrefill] = React.useState<RecordingFormData | undefined>(
@@ -155,10 +160,7 @@ export default function RecordScreen({ loaderData, matches }: Route.ComponentPro
 									setPrefill({
 										fields: {
 											title: 'Call Kent question',
-											description: cleanedQuestion
-												? `${AI_VOICE_DISCLOSURE_PREFIX}\n\n${cleanedQuestion}`
-												: AI_VOICE_DISCLOSURE_PREFIX,
-											keywords: '',
+											notes: cleanedQuestion,
 										},
 										errors: {},
 									})

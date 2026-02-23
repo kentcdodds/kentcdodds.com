@@ -76,4 +76,3 @@ export function useCountdown(endTimeMs: number, intervalMs = 1000) {
 
 	return timeLeftMs
 }
-

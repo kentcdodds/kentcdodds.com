@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { format } from 'date-fns'
 import * as React from 'react'
 import {
@@ -11,18 +12,36 @@ import { EpisodeArtworkPreview } from '#app/components/calls/episode-artwork-pre
 import { CharacterCountdown } from '#app/components/character-countdown.tsx'
 import { Field } from '#app/components/form-elements.tsx'
 import {
+	deleteAudioObject,
+	getAudioBuffer,
+	putCallAudioFromDataUrl,
+} from '#app/utils/call-kent-audio-storage.server.ts'
+import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
+import {
 	callKentFieldConstraints,
 	getErrorForAudio,
-	getErrorForDescription,
-	getErrorForKeywords,
 	getErrorForTitle,
+	getErrorForNotes,
 } from '#app/utils/call-kent.ts'
+import { sendMessageFromDiscordBot } from '#app/utils/discord.server.ts'
+import { getEnv } from '#app/utils/env.server.ts'
+import { markdownToHtml } from '#app/utils/markdown.server.ts'
+import {
+	getDomainUrl,
+	getErrorMessage,
+	getOptionalTeam,
+} from '#app/utils/misc.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
+import { sendEmail } from '#app/utils/send-email.server.ts'
+import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
+import { teamEmoji } from '#app/utils/team-provider.tsx'
+import { createEpisode } from '#app/utils/transistor.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/save'
 
 const recordingFormActionPath = '/resources/calls/save'
 
-function getNavigationPathFromResponse(response: Response) {
+export function getNavigationPathFromResponse(response: Response) {
 	if (!response.redirected || !response.url) return null
 	const redirectUrl = new URL(response.url, window.location.origin)
 	return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
@@ -34,22 +53,20 @@ type RecordingFormData = {
 		// hopefully it won't matter with fully client-side interactions though
 		audio?: never
 		title?: string | null
-		description?: string | null
-		keywords?: string | null
+		notes?: string | null
 	}
 	errors: {
 		generalError?: string
 		audio?: string | null
 		title?: string | null
-		description?: string | null
-		keywords?: string | null
+		notes?: string | null
 	}
 }
 
 type ActionData = RecordingFormData
-type RecordingIntent = 'create-call' | 'publish-call' | 'delete-call'
+type RecordingIntent = 'create-call' | 'delete-call'
 type RecordingSubmitIntent = Exclude<RecordingIntent, 'delete-call'>
-type RecordingTextFieldName = 'title' | 'description' | 'keywords'
+type RecordingTextFieldName = 'title' | 'notes'
 
 function isRecordingFormDataEqual(
 	first?: RecordingFormData,
@@ -59,13 +76,11 @@ function isRecordingFormDataEqual(
 	if (!first || !second) return false
 	return (
 		first.fields.title === second.fields.title &&
-		first.fields.description === second.fields.description &&
-		first.fields.keywords === second.fields.keywords &&
+		first.fields.notes === second.fields.notes &&
 		first.errors.generalError === second.errors.generalError &&
 		first.errors.audio === second.errors.audio &&
 		first.errors.title === second.errors.title &&
-		first.errors.description === second.errors.description &&
-		first.errors.keywords === second.errors.keywords
+		first.errors.notes === second.errors.notes
 	)
 }
 
@@ -91,19 +106,15 @@ function RecordingForm({
 	const idBase = React.useId()
 	const titleId = `${idBase}-title`
 	const titleCountdownId = `${titleId}-countdown`
-	const descriptionId = `${idBase}-description`
-	const descriptionCountdownId = `${descriptionId}-countdown`
-	const keywordsId = `${idBase}-keywords`
-	const keywordsCountdownId = `${keywordsId}-countdown`
+	const notesId = `${idBase}-notes`
+	const notesCountdownId = `${notesId}-countdown`
 	const [fieldValues, setFieldValues] = React.useState(() => ({
 		title: data?.fields.title ?? '',
-		description: data?.fields.description ?? '',
-		keywords: data?.fields.keywords ?? '',
+		notes: data?.fields.notes ?? '',
 	}))
 	const [fieldInteracted, setFieldInteracted] = React.useState(() => ({
 		title: false,
-		description: false,
-		keywords: false,
+		notes: false,
 	}))
 	const [isAnonymous, setIsAnonymous] = React.useState(false)
 	const [hasAttemptedSubmit, setHasAttemptedSubmit] = React.useState(false)
@@ -122,10 +133,9 @@ function RecordingForm({
 		setSubmissionData(data)
 		setFieldValues({
 			title: data?.fields.title ?? '',
-			description: data?.fields.description ?? '',
-			keywords: data?.fields.keywords ?? '',
+			notes: data?.fields.notes ?? '',
 		})
-		setFieldInteracted({ title: false, description: false, keywords: false })
+		setFieldInteracted({ title: false, notes: false })
 		setHasAttemptedSubmit(false)
 	}, [data])
 
@@ -171,19 +181,16 @@ function RecordingForm({
 	const clientErrors = React.useMemo(
 		() => ({
 			title: getErrorForTitle(fieldValues.title),
-			description: getErrorForDescription(fieldValues.description),
-			keywords: getErrorForKeywords(fieldValues.keywords),
+			notes: getErrorForNotes(fieldValues.notes),
 		}),
-		[fieldValues.title, fieldValues.description, fieldValues.keywords],
+		[fieldValues.title, fieldValues.notes],
 	)
 
 	// Prefer client-side errors for the current value, but fall back to server
 	// errors from the last submission attempt when client validation passes.
 	const displayedErrors = {
 		title: clientErrors.title ?? submissionData?.errors.title ?? null,
-		description:
-			clientErrors.description ?? submissionData?.errors.description ?? null,
-		keywords: clientErrors.keywords ?? submissionData?.errors.keywords ?? null,
+		notes: clientErrors.notes ?? submissionData?.errors.notes ?? null,
 	}
 
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -193,15 +200,13 @@ function RecordingForm({
 
 		const form = new FormData(event.currentTarget)
 		const title = getStringFormValue(form, 'title') ?? ''
-		const description = getStringFormValue(form, 'description') ?? ''
-		const keywords = getStringFormValue(form, 'keywords') ?? ''
 		setHasAttemptedSubmit(true)
-		setFieldValues({ title, description, keywords })
+		const notes = getStringFormValue(form, 'notes') ?? ''
+		setFieldValues({ title, notes })
 
 		const preflightErrors = {
 			title: getErrorForTitle(title),
-			description: getErrorForDescription(description),
-			keywords: getErrorForKeywords(keywords),
+			notes: getErrorForNotes(notes),
 		}
 		if (Object.values(preflightErrors).some(Boolean)) {
 			// Client-side validation matches server rules; don't upload audio until valid.
@@ -367,61 +372,32 @@ function RecordingForm({
 				</div>
 				<div className="mb-8">
 					<Field
-						id={descriptionId}
-						name="description"
-						label="Description"
+						id={notesId}
+						name="notes"
+						label="Notes (optional)"
 						type="textarea"
-						maxLength={callKentFieldConstraints.description.maxLength}
-						onChange={handleTextFieldChange('description')}
-						onBlur={handleTextFieldBlur('description')}
-						value={fieldValues.description}
-						additionalAriaDescribedBy={descriptionCountdownId}
+						required={false}
+						maxLength={callKentFieldConstraints.notes.maxLength}
+						onChange={handleTextFieldChange('notes')}
+						onBlur={handleTextFieldBlur('notes')}
+						value={fieldValues.notes}
+						additionalAriaDescribedBy={notesCountdownId}
 						aria-invalid={
-							Boolean(displayedErrors.description) &&
-							(hasAttemptedSubmit || fieldInteracted.description)
+							Boolean(displayedErrors.notes) &&
+							(hasAttemptedSubmit || fieldInteracted.notes)
 						}
 						error={
-							hasAttemptedSubmit || fieldInteracted.description
-								? displayedErrors.description
+							hasAttemptedSubmit || fieldInteracted.notes
+								? displayedErrors.notes
 								: null
 						}
 						className="mb-2"
 					/>
 					<CharacterCountdown
-						id={descriptionCountdownId}
-						value={fieldValues.description}
-						maxLength={callKentFieldConstraints.description.maxLength}
+						id={notesCountdownId}
+						value={fieldValues.notes}
+						maxLength={callKentFieldConstraints.notes.maxLength}
 						warnAt={100}
-					/>
-				</div>
-
-				<div className="mb-8">
-					<Field
-						id={keywordsId}
-						label="Keywords"
-						description="comma separated values"
-						name="keywords"
-						maxLength={callKentFieldConstraints.keywords.maxLength}
-						onChange={handleTextFieldChange('keywords')}
-						onBlur={handleTextFieldBlur('keywords')}
-						value={fieldValues.keywords}
-						additionalAriaDescribedBy={keywordsCountdownId}
-						aria-invalid={
-							Boolean(displayedErrors.keywords) &&
-							(hasAttemptedSubmit || fieldInteracted.keywords)
-						}
-						error={
-							hasAttemptedSubmit || fieldInteracted.keywords
-								? displayedErrors.keywords
-								: null
-						}
-						className="mb-2"
-					/>
-					<CharacterCountdown
-						id={keywordsCountdownId}
-						value={fieldValues.keywords}
-						maxLength={callKentFieldConstraints.keywords.maxLength}
-						warnAt={10}
 					/>
 				</div>
 
@@ -448,21 +424,18 @@ function getActionData(formData: FormData) {
 	const fields = {
 		audio: getStringFormValue(formData, 'audio'),
 		title: getStringFormValue(formData, 'title'),
-		description: getStringFormValue(formData, 'description'),
-		keywords: getStringFormValue(formData, 'keywords'),
+		notes: getStringFormValue(formData, 'notes'),
 	}
 
 	const actionData: ActionData = {
 		fields: {
 			title: fields.title,
-			description: fields.description,
-			keywords: fields.keywords,
+			notes: fields.notes,
 		},
 		errors: {
 			audio: getErrorForAudio(fields.audio),
 			title: getErrorForTitle(fields.title),
-			description: getErrorForDescription(fields.description),
-			keywords: getErrorForKeywords(fields.keywords),
+			notes: getErrorForNotes(fields.notes),
 		},
 	}
 
@@ -494,39 +467,36 @@ async function createCall({
 	const isAnonymous = getCheckboxFormValue(formData, 'anonymous')
 
 	try {
-		const [
-			{ sendMessageFromDiscordBot },
-			{ getDomainUrl, getOptionalTeam },
-			{ getEnv },
-			{ prisma },
-			{ requireUser },
-			{ teamEmoji },
-		] = await Promise.all([
-			import('#app/utils/discord.server.ts'),
-			import('#app/utils/misc.ts'),
-			import('#app/utils/env.server.ts'),
-			import('#app/utils/prisma.server.ts'),
-			import('#app/utils/session.server.ts'),
-			import('#app/utils/team-provider.tsx'),
-		])
-
 		const user = await requireUser(request)
 		const domainUrl = getDomainUrl(request)
-		const { audio, title, description, keywords } = fields
-		if (!audio || !title || !description || !keywords) {
+		const { audio, title, notes } = fields
+		if (!audio || !title) {
 			return json(actionData, 400)
 		}
 
-		const createdCall = await prisma.call.create({
-			data: {
-				title,
-				description,
-				keywords,
-				userId: user.id,
-				base64: audio,
-				isAnonymous,
-			},
-		})
+		const callId = randomUUID()
+		const stored = await putCallAudioFromDataUrl({ callId, dataUrl: audio })
+		let createdCall: { id: string }
+		try {
+			createdCall = await prisma.call.create({
+				data: {
+					id: callId,
+					title,
+					notes: notes?.trim() || null,
+					userId: user.id,
+					isAnonymous,
+					audioKey: stored.key,
+					audioContentType: stored.contentType,
+					audioSize: stored.size,
+					base64: null,
+				},
+				select: { id: true },
+			})
+		} catch (error: unknown) {
+			// Best-effort cleanup so we don't orphan R2 objects.
+			await deleteAudioObject({ key: stored.key }).catch(() => {})
+			throw error
+		}
 
 		try {
 			const env = getEnv()
@@ -535,7 +505,28 @@ async function createCall({
 			const { firstName, team, discordId } = user
 			const userMention = discordId ? `<@!${discordId}>` : firstName
 			const emoji = teamEmoji[getOptionalTeam(team)]
-			const message = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"\n\n${description}\n\n${domainUrl}/calls/admin/${createdCall.id}`
+			const baseMessage = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"${isAnonymous ? ' (anonymous)' : ''}`
+			const callAdminUrl = `${domainUrl}/calls/admin/${createdCall.id}`
+			const discordMaxLength = 2000
+			const notesHeader = `\n\nNotes:\n`
+			const trimmedNotes = notes?.trim()
+
+			let message = `${baseMessage}\n\n${callAdminUrl}`
+			if (trimmedNotes) {
+				// Keep under Discord's hard 2000-character limit by truncating notes.
+				const maxNotesLength =
+					discordMaxLength -
+					(baseMessage.length + notesHeader.length + 2 + callAdminUrl.length) // +2 for "\n\n" before URL
+				if (maxNotesLength > 0) {
+					const truncatedNotes =
+						trimmedNotes.length > maxNotesLength
+							? maxNotesLength > 3
+								? `${trimmedNotes.slice(0, maxNotesLength - 3)}...`
+								: trimmedNotes.slice(0, maxNotesLength)
+							: trimmedNotes
+					message = `${baseMessage}${notesHeader}${truncatedNotes}\n\n${callAdminUrl}`
+				}
+			}
 			void sendMessageFromDiscordBot(channelId, message)
 		} catch (error: unknown) {
 			console.error('Problem sending a call message', error)
@@ -544,7 +535,6 @@ async function createCall({
 
 		return redirect(`/calls/record/${createdCall.id}`)
 	} catch (error: unknown) {
-		const { getErrorMessage } = await import('#app/utils/misc.ts')
 		actionData.errors.generalError = getErrorMessage(error)
 		return json(actionData, 500)
 	}
@@ -557,53 +547,131 @@ async function publishCall({
 	request: Request
 	formData: FormData
 }) {
-	const { actionData, fields } = getActionData(formData)
-	const callId = getStringFormValue(formData, 'callId')
-	if (!callId) {
-		actionData.errors.generalError = 'Call id is required.'
-		return json(actionData, 400)
-	}
-	if (hasActionErrors(actionData)) {
-		return json(actionData, 400)
-	}
-
+	let publishedTransistorEpisodeId: string | null = null
 	try {
-		const [
-			{ createEpisodeAudio },
-			{ markdownToHtml },
-			{ getNonNull },
-			{ prisma },
-			{ sendEmail },
-			{ requireAdminUser },
-			{ createEpisode },
-		] = await Promise.all([
-			import('#app/utils/ffmpeg.server.ts'),
-			import('#app/utils/markdown.server.ts'),
-			import('#app/utils/misc.ts'),
-			import('#app/utils/prisma.server.ts'),
-			import('#app/utils/send-email.server.ts'),
-			import('#app/utils/session.server.ts'),
-			import('#app/utils/transistor.server.ts'),
-		])
-
 		await requireAdminUser(request)
+		const callId = getStringFormValue(formData, 'callId')
+		if (!callId) return redirectCallNotFound()
+		const formCallTitle = getStringFormValue(formData, 'callTitle')
+		const formNotes = getStringFormValue(formData, 'notes')
+
 		const call = await prisma.call.findFirst({
 			where: { id: callId },
-			include: { user: true },
+			include: { user: true, episodeDraft: true },
 		})
 		if (!call) {
 			return redirectCallNotFound()
 		}
 
-		const {
-			audio: responseAudio,
-			title,
-			description,
-			keywords,
-		} = getNonNull(fields)
+		// Allow overriding call title from the admin UI submit.
+		let callTitle = call.title
+		if (formCallTitle !== null) {
+			const nextTitle = formCallTitle.trim()
+			if (!nextTitle) {
+				const searchParams = new URLSearchParams()
+				searchParams.set('error', 'Call title is required.')
+				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+			}
+			callTitle = nextTitle
+			await prisma.call.update({
+				where: { id: callId },
+				data: { title: callTitle },
+			})
+		}
+
+		// Allow overriding call notes from the admin UI submit.
+		const callNotes =
+			formNotes !== null
+				? formNotes.trim()
+					? formNotes.trim()
+					: null
+				: call.notes
+		if (formNotes !== null) {
+			await prisma.call.update({
+				where: { id: callId },
+				data: { notes: callNotes },
+			})
+		}
+
+		const draft = call.episodeDraft
+		if (!draft || draft.status !== 'READY') {
+			const searchParams = new URLSearchParams()
+			searchParams.set('error', 'Draft episode is not ready to publish yet.')
+			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		}
+
+		// Allow publishing directly from an edit form without requiring a separate
+		// "Save" click first.
+		const formTitle = getStringFormValue(formData, 'title')
+		const formDescription = getStringFormValue(formData, 'description')
+		const formKeywords = getStringFormValue(formData, 'keywords')
+		const formTranscript = getStringFormValue(formData, 'transcript')
+		const shouldUpdateFromForm =
+			formTitle !== null ||
+			formDescription !== null ||
+			formKeywords !== null ||
+			formTranscript !== null
+
+		if (shouldUpdateFromForm) {
+			const updateData: {
+				title?: string
+				description?: string
+				keywords?: string
+				transcript?: string
+			} = {}
+
+			const nextTitle = formTitle?.trim()
+			const nextDescription = formDescription?.trim()
+			const nextKeywords = formKeywords?.trim()
+			const nextTranscript = formTranscript?.trim()
+
+			// Only update when a non-empty value is provided; avoids wiping the draft
+			// if someone clicks Publish with an empty field.
+			if (nextTitle) updateData.title = nextTitle
+			if (nextDescription) updateData.description = nextDescription
+			if (nextKeywords) updateData.keywords = nextKeywords
+			if (nextTranscript) updateData.transcript = nextTranscript
+
+			if (Object.keys(updateData).length) {
+				await prisma.callKentEpisodeDraft.update({
+					where: { callId },
+					data: updateData,
+				})
+			}
+		}
+
+		const title = (formTitle?.trim() || draft.title || '').trim()
+		const description = (
+			formDescription?.trim() ||
+			draft.description ||
+			''
+		).trim()
+		const keywords = (formKeywords?.trim() || draft.keywords || '').trim()
+		const transcriptText = (
+			formTranscript?.trim() ||
+			draft.transcript ||
+			''
+		).trim()
+		const episodeAudioKey = draft.episodeAudioKey
+
+		if (
+			!title ||
+			!description ||
+			!keywords ||
+			!transcriptText ||
+			!episodeAudioKey
+		) {
+			const searchParams = new URLSearchParams()
+			searchParams.set(
+				'error',
+				'Draft is missing required fields (audio/transcript/title/description/keywords).',
+			)
+			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		}
+
+		const episodeAudio = await getAudioBuffer({ key: episodeAudioKey })
 		const summaryName = call.isAnonymous ? 'Anonymous' : call.user.firstName
-		const episodeAudio = await createEpisodeAudio(call.base64, responseAudio)
-		const { episodeUrl, imageUrl } = await createEpisode({
+		const published = await createEpisode({
 			request,
 			audio: episodeAudio,
 			title,
@@ -612,10 +680,15 @@ async function publishCall({
 			user: call.user,
 			keywords,
 			isAnonymous: call.isAnonymous,
+			transcriptText,
 		})
+		publishedTransistorEpisodeId = published.transistorEpisodeId
 
-		if (episodeUrl) {
+		if (published.episodeUrl) {
 			try {
+				const episodeMarkdown = published.imageUrl
+					? `[![${title}](${published.imageUrl})](${published.episodeUrl})`
+					: `[${title}](${published.episodeUrl})`
 				void sendEmail({
 					to: call.user.email,
 					from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
@@ -625,26 +698,247 @@ Hi ${call.user.firstName},
 
 Thanks for your call. Kent just replied and the episode has been published to the podcast!
 
-[![${title}](${imageUrl})](${episodeUrl})
+${episodeMarkdown}
           `.trim(),
 				})
 			} catch (error: unknown) {
 				console.error(
-					`Problem sending email about a call: ${episodeUrl}`,
+					`Problem sending email about a call: ${published.episodeUrl}`,
 					error,
 				)
 			}
 		}
 
-		await prisma.call.delete({
-			where: { id: call.id },
-		})
+		// Persist a per-caller record so users can see their episodes on /me even
+		// after the raw call record is removed.
+		try {
+			await prisma.$transaction([
+				prisma.callKentCallerEpisode.create({
+					data: {
+						userId: call.userId,
+						callTitle,
+						callNotes,
+						isAnonymous: call.isAnonymous,
+						transistorEpisodeId: published.transistorEpisodeId,
+					},
+				}),
+				prisma.call.delete({ where: { id: call.id } }),
+			])
+		} catch (error: unknown) {
+			console.error(
+				'Transistor episode already created but DB cleanup failed.',
+				{
+					transistorEpisodeId: published.transistorEpisodeId,
+					callId: call.id,
+				},
+				error,
+			)
+			throw error
+		}
+
+		// Best-effort cleanup of stored audio blobs after publish.
+		const keysToDelete = [call.audioKey, draft.episodeAudioKey].filter(
+			(k): k is string => typeof k === 'string' && k.length > 0,
+		)
+		await Promise.all(
+			keysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
+		)
 
 		return redirect('/calls')
 	} catch (error: unknown) {
-		const { getErrorMessage } = await import('#app/utils/misc.ts')
-		actionData.errors.generalError = getErrorMessage(error)
-		return json(actionData, 500)
+		// If createEpisode already ran, log the episode ID for manual cleanup.
+		if (publishedTransistorEpisodeId) {
+			console.error(
+				'Publish failed after Transistor episode creation.',
+				{ transistorEpisodeId: publishedTransistorEpisodeId },
+				error,
+			)
+		}
+		const callId = getStringFormValue(formData, 'callId')
+		const searchParams = new URLSearchParams()
+		searchParams.set('error', getErrorMessage(error))
+		return redirect(
+			callId
+				? `/calls/admin/${callId}?${searchParams.toString()}`
+				: '/calls/admin',
+		)
+	}
+}
+
+async function createEpisodeDraft({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	const responseAudio = getStringFormValue(formData, 'audio')
+	const formCallTitle = getStringFormValue(formData, 'callTitle')
+	const formNotes = getStringFormValue(formData, 'notes')
+	if (!callId) return redirectCallNotFound()
+	if (getErrorForAudio(responseAudio)) {
+		const searchParams = new URLSearchParams()
+		searchParams.set('error', 'Response audio file is required.')
+		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+	}
+
+	await requireAdminUser(request)
+
+	const call = await prisma.call.findFirst({ where: { id: callId } })
+	if (!call) return redirectCallNotFound()
+
+	// Allow overriding call title from the admin UI submit.
+	if (formCallTitle !== null) {
+		const nextTitle = formCallTitle.trim()
+		if (!nextTitle) {
+			const searchParams = new URLSearchParams()
+			searchParams.set('error', 'Call title is required.')
+			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+		}
+		await prisma.call.update({
+			where: { id: callId },
+			data: { title: nextTitle },
+		})
+	}
+
+	// Allow overriding call notes from the admin UI submit.
+	if (formNotes !== null) {
+		const nextNotes = formNotes.trim()
+		await prisma.call.update({
+			where: { id: callId },
+			data: { notes: nextNotes ? nextNotes : null },
+		})
+	}
+
+	// If we're replacing a draft, clean up the old stored audio blob.
+	const existingDraft = await prisma.callKentEpisodeDraft.findFirst({
+		where: { callId },
+		select: { episodeAudioKey: true },
+	})
+	if (existingDraft?.episodeAudioKey) {
+		await deleteAudioObject({ key: existingDraft.episodeAudioKey }).catch(
+			() => {},
+		)
+	}
+
+	// Replace any existing draft so "re-record response" is safe and predictable.
+	const [, draft] = await prisma.$transaction([
+		prisma.callKentEpisodeDraft.deleteMany({ where: { callId } }),
+		prisma.callKentEpisodeDraft.create({
+			data: {
+				callId,
+			},
+		}),
+	])
+
+	void startCallKentEpisodeDraftProcessing(draft.id, {
+		responseBase64: responseAudio!,
+	})
+
+	return redirect(`/calls/admin/${callId}`)
+}
+
+async function undoEpisodeDraft({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	if (!callId) return redirectCallNotFound()
+
+	await requireAdminUser(request)
+
+	const drafts = await prisma.callKentEpisodeDraft.findMany({
+		where: { callId },
+		select: { episodeAudioKey: true },
+	})
+	if (drafts.some((d) => d.episodeAudioKey)) {
+		await Promise.all(
+			drafts
+				.map((d) => d.episodeAudioKey)
+				.filter((k): k is string => typeof k === 'string' && k.length > 0)
+				.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+		)
+	}
+	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
+	return redirect(`/calls/admin/${callId}`)
+}
+
+async function updateEpisodeDraft({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	if (!callId) return redirectCallNotFound()
+
+	const callTitle = getStringFormValue(formData, 'callTitle')
+	const notes = getStringFormValue(formData, 'notes')
+	const title = getStringFormValue(formData, 'title')
+	const description = getStringFormValue(formData, 'description')
+	const keywords = getStringFormValue(formData, 'keywords')
+	const transcript = getStringFormValue(formData, 'transcript')
+
+	await requireAdminUser(request)
+
+	try {
+		// Allow overriding call title from the admin UI submit.
+		if (callTitle !== null) {
+			const nextTitle = callTitle.trim()
+			if (!nextTitle) {
+				const searchParams = new URLSearchParams()
+				searchParams.set('error', 'Call title is required.')
+				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+			}
+			await prisma.call.update({
+				where: { id: callId },
+				data: { title: nextTitle },
+			})
+		}
+
+		// Allow overriding call notes from the admin UI submit.
+		if (notes !== null) {
+			const nextNotes = notes.trim()
+			await prisma.call.update({
+				where: { id: callId },
+				data: { notes: nextNotes ? nextNotes : null },
+			})
+		}
+
+		const updateData: {
+			title?: string
+			description?: string
+			keywords?: string
+			transcript?: string
+		} = {}
+		const nextTitle = title?.trim()
+		const nextDescription = description?.trim()
+		const nextKeywords = keywords?.trim()
+		const nextTranscript = transcript?.trim()
+
+		if (nextTitle) updateData.title = nextTitle
+		if (nextDescription) updateData.description = nextDescription
+		if (nextKeywords) updateData.keywords = nextKeywords
+		if (nextTranscript) updateData.transcript = nextTranscript
+
+		if (Object.keys(updateData).length) {
+			await prisma.callKentEpisodeDraft.update({
+				where: { callId },
+				data: updateData,
+			})
+		}
+		return redirect(`/calls/admin/${callId}`)
+	} catch (error: unknown) {
+		const searchParams = new URLSearchParams()
+		searchParams.set('error', getErrorMessage(error))
+		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 	}
 }
 
@@ -660,16 +954,31 @@ async function deleteCall({
 		return redirectCallNotFound()
 	}
 
-	const [{ prisma }, { requireAdminUser }] = await Promise.all([
-		import('#app/utils/prisma.server.ts'),
-		import('#app/utils/session.server.ts'),
-	])
 	await requireAdminUser(request)
-	const call = await prisma.call.findFirst({ where: { id: callId } })
+	const call = await prisma.call.findFirst({
+		where: { id: callId },
+		select: {
+			id: true,
+			audioKey: true,
+			episodeDraft: { select: { episodeAudioKey: true } },
+		},
+	})
 	if (!call) {
 		return redirectCallNotFound()
 	}
 	await prisma.call.delete({ where: { id: callId } })
+
+	const keysToDelete = [
+		call.audioKey,
+		call.episodeDraft?.episodeAudioKey,
+	].filter((k): k is string => typeof k === 'string' && k.length > 0)
+	if (keysToDelete.length) {
+		await Promise.all(
+			keysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
+		)
+	}
 	return redirect('/calls/admin')
 }
 
@@ -680,9 +989,14 @@ export async function action({ request }: Route.ActionArgs) {
 	if (intent === 'create-call') {
 		return createCall({ request, formData })
 	}
-	if (intent === 'publish-call') {
+	if (intent === 'create-episode-draft')
+		return createEpisodeDraft({ request, formData })
+	if (intent === 'undo-episode-draft')
+		return undoEpisodeDraft({ request, formData })
+	if (intent === 'update-episode-draft')
+		return updateEpisodeDraft({ request, formData })
+	if (intent === 'publish-episode-draft')
 		return publishCall({ request, formData })
-	}
 	if (intent === 'delete-call') {
 		return deleteCall({ request, formData })
 	}

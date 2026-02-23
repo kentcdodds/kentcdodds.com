@@ -152,4 +152,3 @@ describe('/blog/:slug loader cache behavior', () => {
 		expect(blogServerMocks.getTotalPostReads).toHaveBeenCalledTimes(1)
 	})
 })
-

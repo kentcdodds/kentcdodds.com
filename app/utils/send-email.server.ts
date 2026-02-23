@@ -3,8 +3,10 @@ import { getEnv } from '#app/utils/env.server.ts'
 import { markdownToHtmlDocument } from './markdown.server.ts'
 import { getOptionalTeam } from './misc.ts'
 
-const { MAILGUN_DOMAIN: mailgunDomain, MAILGUN_SENDING_KEY: mailgunSendingKey } =
-	getEnv()
+const {
+	MAILGUN_DOMAIN: mailgunDomain,
+	MAILGUN_SENDING_KEY: mailgunSendingKey,
+} = getEnv()
 
 type MailgunMessage = {
 	to: string

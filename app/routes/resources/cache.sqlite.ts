@@ -1,4 +1,4 @@
-import { data as json, redirect } from 'react-router';
+import { data as json, redirect } from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { cache } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
@@ -6,7 +6,7 @@ import {
 	getInstanceInfo,
 	getInternalInstanceDomain,
 } from '#app/utils/litefs-js.server.ts'
-import  { type Route } from './+types/cache.sqlite'
+import { type Route } from './+types/cache.sqlite'
 
 export async function action({ request }: Route.ActionArgs) {
 	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()

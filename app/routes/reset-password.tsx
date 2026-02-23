@@ -10,7 +10,10 @@ import { getClientSession } from '#app/utils/client.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { createAndSendPasswordResetVerificationEmail } from '#app/utils/password-reset.server.ts'
-import { getPasswordStrengthError, getPasswordHash } from '#app/utils/password.server.ts'
+import {
+	getPasswordStrengthError,
+	getPasswordHash,
+} from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import {
@@ -67,12 +70,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 			loginSession.setResetPasswordEmail(result.target)
 			loginSession.setEmail(result.target)
 			loginSession.flashMessage('Verification successful. Choose a password.')
-			return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+			return redirect('/reset-password', {
+				headers: await loginSession.getHeaders(),
+			})
 		}
 		loginSession.flashError(
 			'Verification link invalid or expired. Please request a new one.',
 		)
-		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+		return redirect('/reset-password', {
+			headers: await loginSession.getHeaders(),
+		})
 	}
 
 	const resetEmail = loginSession.getResetPasswordEmail()
@@ -108,7 +115,10 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (actionId === actionIds.resend) {
 		const emailAddress = formData.get('email')
-		invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
+		invariantResponse(
+			typeof emailAddress === 'string',
+			'Form submitted incorrectly',
+		)
 		const email = emailAddress.trim().toLowerCase()
 		if (email) loginSession.setEmail(email)
 
@@ -134,13 +144,18 @@ export async function action({ request }: Route.ActionArgs) {
 		loginSession.flashMessage(
 			'If an account exists for that email, you will receive a password reset email shortly.',
 		)
-		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+		return redirect('/reset-password', {
+			headers: await loginSession.getHeaders(),
+		})
 	}
 
 	if (actionId === actionIds.verify) {
 		const emailAddress = formData.get('email')
 		const code = formData.get('code')
-		invariantResponse(typeof emailAddress === 'string', 'Form submitted incorrectly')
+		invariantResponse(
+			typeof emailAddress === 'string',
+			'Form submitted incorrectly',
+		)
 		invariantResponse(typeof code === 'string', 'Form submitted incorrectly')
 		const email = emailAddress.trim().toLowerCase()
 		if (email) loginSession.setEmail(email)
@@ -180,18 +195,24 @@ export async function action({ request }: Route.ActionArgs) {
 		loginSession.setResetPasswordEmail(result.target)
 		loginSession.setEmail(result.target)
 		loginSession.flashMessage('Verification successful. Choose a password.')
-		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+		return redirect('/reset-password', {
+			headers: await loginSession.getHeaders(),
+		})
 	}
 
 	// Password set/reset step
 	const resetEmail = loginSession.getResetPasswordEmail()
 	if (!resetEmail) {
 		loginSession.flashError('Verify your email before resetting your password.')
-		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+		return redirect('/reset-password', {
+			headers: await loginSession.getHeaders(),
+		})
 	}
 	if (actionId !== actionIds.reset) {
 		loginSession.flashError('Something went wrong. Please try again.')
-		return redirect('/reset-password', { headers: await loginSession.getHeaders() })
+		return redirect('/reset-password', {
+			headers: await loginSession.getHeaders(),
+		})
 	}
 
 	const passwordEntry = formData.get('password')
@@ -228,7 +249,9 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (!userRecord) {
 		loginSession.clean()
-		loginSession.flashError('No account found for that email. Create one instead.')
+		loginSession.flashError(
+			'No account found for that email. Create one instead.',
+		)
 		return redirect('/signup', { headers: await loginSession.getHeaders() })
 	}
 
@@ -306,7 +329,8 @@ export default function ResetPassword({
 								<InputError id="reset-password-error">{data.error}</InputError>
 							</div>
 						) : null}
-						{actionData?.status === 'error' && actionData.errors.generalError ? (
+						{actionData?.status === 'error' &&
+						actionData.errors.generalError ? (
 							<div className="mb-8">
 								<InputError id="reset-password-general-error">
 									{actionData.errors.generalError}
@@ -332,7 +356,9 @@ export default function ResetPassword({
 										autoComplete="email"
 										defaultValue={data.email}
 										error={
-											actionData?.status === 'error' ? actionData.errors.email : null
+											actionData?.status === 'error'
+												? actionData.errors.email
+												: null
 										}
 									/>
 									<Field
@@ -342,7 +368,9 @@ export default function ResetPassword({
 										autoComplete="one-time-code"
 										placeholder="123456"
 										error={
-											actionData?.status === 'error' ? actionData.errors.code : null
+											actionData?.status === 'error'
+												? actionData.errors.code
+												: null
 										}
 									/>
 									<Button type="submit">Verify code</Button>
@@ -416,4 +444,3 @@ export default function ResetPassword({
 		</div>
 	)
 }
-

@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { addDays, format, startOfDay, subDays } from 'date-fns'
 import * as React from 'react'
-import { Form, useSearchParams, data as json, redirect } from 'react-router';
+import { Form, useSearchParams, data as json, redirect } from 'react-router'
 import { useTable, type Column } from 'react-table'
 import { Button } from '#app/components/button.tsx'
 import { Field } from '#app/components/form-elements.tsx'
@@ -27,7 +27,7 @@ import {
 import { prisma } from '#app/utils/prisma.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
-import  { type Route } from './+types/me_.admin'
+import { type Route } from './+types/me_.admin'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
