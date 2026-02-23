@@ -54,8 +54,8 @@ const miscHandlers = [
 		},
 	),
 	http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {
-		if (await isConnectedToTheInternet()) return passthrough()
-
+		// In mocks mode we want deterministic behavior and to avoid external HTTP
+		// requests that can flake in CI (even when DNS works).
 		return HttpResponse.json(null, { status: 404 })
 	}),
 	http.get(/http:\/\/(localhost|127\.0\.0\.1):\d+\/.*/, async () =>
