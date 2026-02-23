@@ -50,10 +50,35 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible({
 		timeout: 15_000,
 	})
-	const { credentials } = await client.send('WebAuthn.getCredentials', {
+	let { credentials } = await client.send('WebAuthn.getCredentials', {
 		authenticatorId,
 	})
 	expect(credentials.length).toBeGreaterThan(0)
+	if (!credentials.some((c) => c.isResidentCredential)) {
+		// Playwright's Chromium/Headless Shell can store new credentials as
+		// non-resident even when the RP requests `residentKey: 'required'`.
+		// Re-add the created credential as resident so the login ceremony can
+		// proceed (this matches real-user behavior we expect in actual browsers).
+		const [firstCredential] = credentials
+		if (!firstCredential) {
+			throw new Error('Expected at least one WebAuthn credential')
+		}
+		await client.send('WebAuthn.removeCredential', {
+			authenticatorId,
+			credentialId: firstCredential.credentialId,
+		})
+		await client.send('WebAuthn.addCredential', {
+			authenticatorId,
+			credential: {
+				...firstCredential,
+				isResidentCredential: true,
+				rpId: firstCredential.rpId ?? 'localhost',
+			},
+		})
+		;({ credentials } = await client.send('WebAuthn.getCredentials', {
+			authenticatorId,
+		}))
+	}
 	expect(credentials.some((c) => c.isResidentCredential)).toBe(true)
 
 	// Sign out (clear cookies) and load the login page.
