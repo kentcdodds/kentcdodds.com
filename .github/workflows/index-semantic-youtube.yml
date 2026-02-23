@@ -47,9 +47,8 @@ jobs:
             ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
 
-          # Prefer setting one of these as repository variables.
-          # If neither is set, the script uses a built-in default playlist ID.
-          YOUTUBE_PLAYLIST_URL: ${{ vars.YOUTUBE_PLAYLIST_URL }}
+          # Prefer setting this as a repository variable.
+          # If it is not set, the script uses a built-in default playlist ID.
           YOUTUBE_PLAYLIST_ID: ${{ vars.YOUTUBE_PLAYLIST_ID }}
 
           # Optional: force-index specific videos. Can be set either as a

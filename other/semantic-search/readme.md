@@ -35,7 +35,6 @@ For podcast indexing:
 
 For YouTube playlist indexing (optional but recommended as repo variables):
 
-- `YOUTUBE_PLAYLIST_URL` (full URL with `list=...`) **or**
 - `YOUTUBE_PLAYLIST_ID` (playlist ID only)
 - Optional (helps when YouTube returns anti-bot `LOGIN_REQUIRED`):
   - `YOUTUBE_COOKIE` (cookie header value from a logged-in browser session)
@@ -89,8 +88,8 @@ Script:
 
 Optional flags:
 
-- `--playlist "<url-or-id>"` (defaults to `YOUTUBE_PLAYLIST_URL`,
-  `YOUTUBE_PLAYLIST_ID`, or a built-in default playlist ID)
+- `--playlist "<url-or-id>"` (defaults to `YOUTUBE_PLAYLIST_ID` or a built-in
+  default playlist ID)
 - `--max-videos 50` (helpful for staged/backfill runs)
 - `--include-auto-captions false` (manual captions only)
 - `--manifest-key manifests/youtube-my-playlist.json`

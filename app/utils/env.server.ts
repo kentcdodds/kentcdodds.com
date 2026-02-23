@@ -97,10 +97,7 @@ const schemaBase = z.object({
 		GITHUB_REF: z.string().trim().optional().default('main'),
 
 		// Optional: /youtube route + indexing scripts.
-		YOUTUBE_PLAYLIST_URL: z.string().trim().optional(),
 		YOUTUBE_PLAYLIST_ID: z.string().trim().optional(),
-		YOUTUBE_COOKIE: z.string().trim().optional(),
-		YOUTUBE_USER_AGENT: z.string().trim().optional(),
 	})
 
 const schema = schemaBase.superRefine((values, ctx) => {
@@ -217,10 +214,21 @@ export function init() {
 				'❌ Invalid environment variables:',
 				z.flattenError(error).fieldErrors,
 			)
-		} else {
-			console.error('❌ Unexpected error while validating environment:', error)
+			throw new Error('Invalid environment variables')
 		}
-		throw new Error('Invalid environment variables')
+
+		// Preserve non-Zod failures from `getEnv()` so callers see the real cause.
+		if (error instanceof Error) {
+			console.error(
+				'❌ Unexpected error while validating environment:',
+				error.message,
+			)
+			if (error.stack) console.error(error.stack)
+			throw error
+		}
+
+		console.error('❌ Unexpected error while validating environment:', error)
+		throw new Error(`Unexpected error while validating environment: ${String(error)}`)
 	}
 	// Keep unused warning quiet (and make debugging easier if needed).
 	void parsedEnv

@@ -830,7 +830,8 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 				? event.tStartMs
 				: 0
 		const durationMs =
-			typeof event.dDurationMs === 'number' && Number.isFinite(event.dDurationMs)
+			typeof event.dDurationMs === 'number' &&
+			Number.isFinite(event.dDurationMs)
 				? event.dDurationMs
 				: 0
 		const line = (event.segs ?? [])
@@ -904,10 +905,7 @@ function chunkTranscriptEvents(
 		}
 
 		if (startMs === null) startMs = Math.max(0, Math.floor(e.startMs))
-		const eventEnd = Math.max(
-			0,
-			Math.floor(e.startMs + (e.durationMs || 0)),
-		)
+		const eventEnd = Math.max(0, Math.floor(e.startMs + (e.durationMs || 0)))
 		endMs = Math.max(endMs, eventEnd)
 		currentLines.push(line)
 		currentLen = currentLen + (currentLines.length > 1 ? 1 : 0) + line.length
@@ -1198,10 +1196,7 @@ async function main() {
 		dryRun,
 	} = parseArgs()
 	const playlistInput =
-		playlistArg ??
-		process.env.YOUTUBE_PLAYLIST_URL ??
-		process.env.YOUTUBE_PLAYLIST_ID ??
-		DEFAULT_PLAYLIST_ID
+		playlistArg ?? process.env.YOUTUBE_PLAYLIST_ID ?? DEFAULT_PLAYLIST_ID
 	const playlistId = getPlaylistId(playlistInput)
 	if (!playlistId) {
 		throw new Error(
@@ -1275,8 +1270,9 @@ async function main() {
 	const appearancesSourceCount = videos.filter((video) =>
 		video.sources.includes('appearances'),
 	).length
-	const talksSourceCount = videos.filter((video) => video.sources.includes('talks'))
-		.length
+	const talksSourceCount = videos.filter((video) =>
+		video.sources.includes('talks'),
+	).length
 	console.log(
 		`Total unique videos to process: ${videos.length} (playlist: ${playlistSourceCount}, appearances: ${appearancesSourceCount}, talks: ${talksSourceCount})${maxVideos ? `, capped by --max-videos=${maxVideos}` : ''}`,
 	)
@@ -1515,12 +1511,14 @@ async function main() {
 			? chunkTranscriptEvents(details.transcriptEvents, {
 					targetChars: 3500,
 					maxChunkChars: 5500,
-				}).map((c): YoutubeChunkItem => ({
-					kind: 'transcript',
-					body: c.body,
-					startSeconds: Math.floor(c.startMs / 1000),
-					endSeconds: Math.ceil(c.endMs / 1000),
-				}))
+				}).map(
+					(c): YoutubeChunkItem => ({
+						kind: 'transcript',
+						body: c.body,
+						startSeconds: Math.floor(c.startMs / 1000),
+						endSeconds: Math.ceil(c.endMs / 1000),
+					}),
+				)
 			: transcript
 				? chunkText(transcript, {
 						targetChars: 3500,
@@ -1550,13 +1548,16 @@ async function main() {
 				chunkIndex: index,
 				chunkCount,
 				kind: item.kind,
-				startSeconds: item.kind === 'transcript' ? item.startSeconds : undefined,
+				startSeconds:
+					item.kind === 'transcript' ? item.startSeconds : undefined,
 				endSeconds: item.kind === 'transcript' ? item.endSeconds : undefined,
 			})
 			if (oldChunksById.get(vectorId)?.hash === hash) continue
 
-			const startSeconds = item.kind === 'transcript' ? item.startSeconds : undefined
-			const endSeconds = item.kind === 'transcript' ? item.endSeconds : undefined
+			const startSeconds =
+				item.kind === 'transcript' ? item.startSeconds : undefined
+			const endSeconds =
+				item.kind === 'transcript' ? item.endSeconds : undefined
 
 			toUpsert.push({
 				vectorId,

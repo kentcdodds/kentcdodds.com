@@ -48,9 +48,8 @@ function parsePlaylistId(value: string | undefined) {
 
 export async function loader() {
 	const env = getEnv()
-	const playlistInput = env.YOUTUBE_PLAYLIST_URL ?? env.YOUTUBE_PLAYLIST_ID
 	const configuredPlaylistId =
-		parsePlaylistId(playlistInput) ?? DEFAULT_PLAYLIST_ID
+		parsePlaylistId(env.YOUTUBE_PLAYLIST_ID) ?? DEFAULT_PLAYLIST_ID
 	return json({
 		playlistId: configuredPlaylistId,
 	})
