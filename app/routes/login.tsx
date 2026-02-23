@@ -33,6 +33,7 @@ import {
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
 import {
+	applyPasswordSubmissionDelay,
 	DUMMY_PASSWORD_HASH,
 	verifyPassword,
 } from '#app/utils/password.server.ts'
@@ -141,9 +142,9 @@ export async function action({ request }: Route.ActionArgs) {
 		loginSession.flashError(
 			'Invalid email or password. If you do not have a password yet, use "Reset password" to set one.',
 		)
-		return redirect(`/login`, {
-			headers: await loginSession.getHeaders(),
-		})
+		const headers = await loginSession.getHeaders()
+		await applyPasswordSubmissionDelay()
+		return redirect(`/login`, { headers })
 	}
 
 	const session = await getSession(request)
@@ -172,6 +173,7 @@ export async function action({ request }: Route.ActionArgs) {
 	} catch (error) {
 		console.error('Failed to read client session on login', error)
 	}
+	await applyPasswordSubmissionDelay()
 	return redirect('/me', { headers })
 }
 

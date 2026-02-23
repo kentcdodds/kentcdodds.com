@@ -28,6 +28,7 @@ import {
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
 import {
+	applyPasswordSubmissionDelay,
 	getPasswordHash,
 	getPasswordStrengthError,
 } from '#app/utils/password.server.ts'
@@ -247,6 +248,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	if (Object.values(errors).some((e) => e !== null)) {
+		await applyPasswordSubmissionDelay()
 		return json(
 			{
 				status: 'error',
@@ -290,6 +292,7 @@ export async function action({ request }: Route.ActionArgs) {
 				loginInfoSession.flashMessage(
 					'An account already exists for that email. Log in instead (or reset your password).',
 				)
+				await applyPasswordSubmissionDelay()
 				return redirect('/login', {
 					headers: await loginInfoSession.getHeaders(),
 				})
@@ -326,6 +329,7 @@ export async function action({ request }: Route.ActionArgs) {
 			loginInfoSession.flashMessage(
 				'Your account was created. Please log in to continue.',
 			)
+			await applyPasswordSubmissionDelay()
 			return redirect('/login', {
 				headers: await loginInfoSession.getHeaders(),
 			})
@@ -354,11 +358,13 @@ export async function action({ request }: Route.ActionArgs) {
 		if (clientSession) await clientSession.getHeaders(headers)
 		loginInfoSession.clean()
 		await loginInfoSession.getHeaders(headers)
+		await applyPasswordSubmissionDelay()
 		return redirect('/me', { headers })
 	} catch (error: unknown) {
 		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
 		if (isResponse(error)) throw error
 		console.error(getErrorStack(error))
+		await applyPasswordSubmissionDelay()
 		return json(
 			{
 				status: 'error',

@@ -11,8 +11,9 @@ import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { createAndSendPasswordResetVerificationEmail } from '#app/utils/password-reset.server.ts'
 import {
-	getPasswordStrengthError,
+	applyPasswordSubmissionDelay,
 	getPasswordHash,
+	getPasswordStrengthError,
 } from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
@@ -230,6 +231,7 @@ export async function action({ request }: Route.ActionArgs) {
 	})()
 
 	if (passwordError || confirmPasswordError) {
+		await applyPasswordSubmissionDelay()
 		return json<ActionData>(
 			{
 				status: 'error',
@@ -252,6 +254,7 @@ export async function action({ request }: Route.ActionArgs) {
 		loginSession.flashError(
 			'No account found for that email. Create one instead.',
 		)
+		await applyPasswordSubmissionDelay()
 		return redirect('/signup', { headers: await loginSession.getHeaders() })
 	}
 
@@ -294,6 +297,7 @@ export async function action({ request }: Route.ActionArgs) {
 	} catch (error) {
 		console.error('Failed to read client session on password reset', error)
 	}
+	await applyPasswordSubmissionDelay()
 	return redirect('/me', { headers })
 }
 

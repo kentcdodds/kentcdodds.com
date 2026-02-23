@@ -10,6 +10,39 @@ const PASSWORD_MIN_LENGTH = 8
 // NOTE: bcrypt only uses the first 72 bytes of the password.
 // Enforcing this avoids giving users a false sense of security.
 const PASSWORD_MAX_BYTES = 72
+const PASSWORD_SUBMISSION_DELAY_MAX_MS = 250
+
+type RandomIntFunction = (min: number, max: number) => number
+
+function normalizeMaxDelayMs(maxMs: number) {
+	if (!Number.isFinite(maxMs)) return 0
+	return Math.max(0, Math.floor(maxMs))
+}
+
+/**
+ * Adds random jitter to password submission handling to make timing attacks
+ * noisier. Keep the upper bound small to avoid noticeable UX regressions.
+ */
+export function getPasswordSubmissionDelayMs({
+	maxMs = PASSWORD_SUBMISSION_DELAY_MAX_MS,
+	randomInt = crypto.randomInt,
+}: {
+	maxMs?: number
+	randomInt?: RandomIntFunction
+} = {}) {
+	const safeMaxMs = normalizeMaxDelayMs(maxMs)
+	// `crypto.randomInt` uses an exclusive upper bound.
+	return safeMaxMs === 0 ? 0 : randomInt(0, safeMaxMs + 1)
+}
+
+export async function applyPasswordSubmissionDelay(options?: {
+	maxMs?: number
+	randomInt?: RandomIntFunction
+}) {
+	const delayMs = getPasswordSubmissionDelayMs(options)
+	if (delayMs <= 0) return
+	await new Promise<void>((resolve) => setTimeout(resolve, delayMs))
+}
 
 export async function getPasswordHash(password: string) {
 	return bcrypt.hash(password, BCRYPT_COST)
