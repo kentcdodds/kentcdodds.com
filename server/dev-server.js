@@ -1,5 +1,8 @@
 import * as readline from 'node:readline'
+import { stripVTControlCharacters, styleText } from 'node:util'
 import { execa } from 'execa'
+
+process.env.NODE_ENV ??= 'development'
 
 const tryRunCommand = async (command, args, input) => {
 	try {
@@ -38,7 +41,8 @@ const copyToClipboard = async (value) => {
 	return tryRunCommand('xclip', ['-selection', 'clipboard'], value)
 }
 
-const stripAnsi = (value) => value.replace(/\x1b\[[0-9;]*m/g, '')
+const canStyle = Boolean(process.stdout.isTTY && process.stdout.hasColors?.())
+const color = (style, text) => (canStyle ? styleText(style, text) : text)
 
 if (process.env.NODE_ENV === 'production') {
 	// the file may not be there yet
@@ -52,7 +56,7 @@ if (process.env.NODE_ENV === 'production') {
 	let lastLocalUrl = `http://localhost:${process.env.PORT || 3000}`
 
 	const extractLocalUrl = (text) => {
-		const cleaned = stripAnsi(text)
+		const cleaned = stripVTControlCharacters(text)
 		const localMatch = cleaned.match(/Local:\s+(\S+)/)
 		if (localMatch?.[1]) {
 			return localMatch[1]
@@ -123,22 +127,25 @@ if (process.env.NODE_ENV === 'production') {
 		startChild()
 	}
 
-	const printHelp = () => {
+	function printHelp() {
 		console.log(
 			[
 				'Supported keys:',
-				`  o - open app (${lastLocalUrl})`,
-				`  c - copy url (${lastLocalUrl})`,
-				'  r - restart app',
-				'  h - help',
-				'  q - exit (or Ctrl+C)',
-			].join('\n'),
+				`  ${color('green', 'o')} - open app (${lastLocalUrl})`,
+				`  ${color('cyan', 'c')} - copy url (${lastLocalUrl})`,
+				`  ${color('magenta', 'r')} - restart app`,
+				`  ${color('yellow', 'h')} - help`,
+				`  ${color('red', 'q')} - exit (or Ctrl+C)`,
+			].join('\n')
 		)
 	}
 
 	startChild()
 
-	if (process.stdin.isTTY && process.stdout.isTTY) {
+	const shortcutsEnabled = Boolean(process.stdin.isTTY && process.stdout.isTTY)
+
+	if (shortcutsEnabled) {
+		printHelp()
 		readline.emitKeypressEvents(process.stdin)
 		process.stdin.setRawMode(true)
 		process.stdin.resume()

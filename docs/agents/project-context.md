@@ -1,0 +1,36 @@
+# Project context
+
+This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
+with Express, SQLite (via Prisma), and extensive MSW mocks for all external APIs.
+
+## Prerequisites
+
+- Node.js 24 is required (`engines` in `package.json`).
+  - Install via `nvm install 24 && nvm alias default 24`.
+
+## Key commands
+
+Standard dev commands are documented in `README.md` and `CONTRIBUTING.md`. Quick
+reference:
+
+| Task            | Command                                                                           |
+| --------------- | --------------------------------------------------------------------------------- |
+| Dev server      | `npm run dev` (starts on port 3000 with `MOCKS=true`)                             |
+| Lint            | `npm run lint`                                                                    |
+| Typecheck       | `npm run typecheck`                                                               |
+| Unit tests      | `npm run test`                                                                    |
+| E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
+| DB reset + seed | `npx prisma@7 migrate reset --force` then `npm run runfile -- prisma/seed.ts`     |
+
+## Non-obvious caveats
+
+- All external APIs are mocked via MSW when `MOCKS=true` (the default in dev). No
+  real API keys are needed for local development; `.env.example` values are
+  sufficient.
+- SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
+  external database server is required.
+- Cache database: a separate SQLite cache DB is created at `other/cache.db`.
+  It's populated on first request or via `npm run prime-cache:mocks`.
+- Content is filesystem-based: blog posts are MDX files in `content/blog/`.
+  Changes to content files are auto-detected by the dev server's file watcher.
+
