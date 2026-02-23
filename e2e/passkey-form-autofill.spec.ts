@@ -38,7 +38,7 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	await expect(page).toHaveURL(/\/login$/)
 
 	// Markup requirement for passkey form-autofill (per web.dev article).
-	await expect(page.locator('input[name="email"]')).toHaveAttribute(
+	await expect(page.locator('#email-address')).toHaveAttribute(
 		'autocomplete',
 		'username webauthn',
 	)
