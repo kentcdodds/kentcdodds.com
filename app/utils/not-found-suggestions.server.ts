@@ -1,9 +1,6 @@
 import { sortNotFoundMatches, type NotFoundMatch } from './not-found-matches.ts'
 import { notFoundQueryFromPathname } from './not-found-query.ts'
-import {
-	isSemanticSearchConfigured,
-	semanticSearchKCD,
-} from './semantic-search.server.ts'
+import { semanticSearchKCD } from './semantic-search.server.ts'
 
 function requestWantsHtml(request: Request) {
 	// Avoid expensive semantic search for asset/API requests.
@@ -48,7 +45,6 @@ export async function getNotFoundSuggestions({
 	if (process.env.NODE_ENV === 'test') return null
 	if (request.method.toUpperCase() !== 'GET') return null
 	if (!requestWantsHtml(request)) return null
-	if (!isSemanticSearchConfigured()) return null
 
 	const resolvedPathname = normalizePathname(
 		typeof pathname === 'string' && pathname ? pathname : new URL(request.url).pathname,
