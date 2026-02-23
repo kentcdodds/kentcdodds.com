@@ -19,6 +19,7 @@ import {
 } from '#app/routes/resources/calls/save.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { formatDate, useDoubleCheck } from '#app/utils/misc-react.tsx'
+import { getEnv } from '#app/utils/env.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
@@ -38,7 +39,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const error = url.searchParams.get('error')
 	const shouldUseSampleAudio =
-		process.env.NODE_ENV === 'development' &&
+		getEnv().NODE_ENV === 'development' &&
 		url.searchParams.get('sampleAudio') === '1'
 
 	const call = await prisma.call.findFirst({

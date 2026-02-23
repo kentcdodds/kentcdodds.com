@@ -17,10 +17,10 @@ afterAll(() => {
 })
 
 describe('cloudflare MSW mocks', () => {
-	test('Workers AI embeddings endpoint returns { result: { data } }', async () => {
+	test('Workers AI (AI Gateway) embeddings endpoint returns { result: { data } }', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
-			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/google/embeddinggemma-300m',
+			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/@cf/google/embeddinggemma-300m',
 			{
 				method: 'POST',
 				headers: {
@@ -39,10 +39,10 @@ describe('cloudflare MSW mocks', () => {
 		expect(json.result.data[0].length).toBeGreaterThan(0)
 	})
 
-	test('Workers AI transcription endpoint returns { result: { text } }', async () => {
+	test('Workers AI (AI Gateway) transcription endpoint returns { result: { text } }', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
-			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/%40cf%2Fopenai%2Fwhisper',
+			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/%40cf%2Fopenai%2Fwhisper',
 			{
 				method: 'POST',
 				headers: {
@@ -60,10 +60,10 @@ describe('cloudflare MSW mocks', () => {
 		expect(json.result.text.toLowerCase()).toContain('mock transcription')
 	})
 
-	test('Workers AI text-to-speech endpoint returns audio bytes', async () => {
+	test('Workers AI (AI Gateway) text-to-speech endpoint returns audio bytes', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
-			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/deepgram/aura-2-en',
+			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/@cf/deepgram/aura-2-en',
 			{
 				method: 'POST',
 				headers: {
@@ -84,10 +84,10 @@ describe('cloudflare MSW mocks', () => {
 		expect(buf.byteLength).toBeGreaterThan(1024)
 	})
 
-	test('Workers AI chat endpoint returns { result: { response } }', async () => {
+	test('Workers AI (AI Gateway) chat endpoint returns { result: { response } }', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
-			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/meta/llama-3.1-8b-instruct',
+			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/@cf/meta/llama-3.1-8b-instruct',
 			{
 				method: 'POST',
 				headers: {
@@ -141,7 +141,7 @@ describe('cloudflare MSW mocks', () => {
 		expect(seedRes.ok).toBe(true)
 
 		const embedRes = await fetch(
-			'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/google/embeddinggemma-300m',
+			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/@cf/google/embeddinggemma-300m',
 			{
 				method: 'POST',
 				headers: {

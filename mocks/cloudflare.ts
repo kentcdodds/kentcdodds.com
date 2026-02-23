@@ -699,15 +699,14 @@ function parseNdjsonVectorsText(ndjson: string) {
 	return { ok: true as const, vectors }
 }
 
-function modelFromAiRunPathname(pathname: string) {
-	const marker = '/ai/run/'
+function modelFromWorkersAiGatewayPathname(pathname: string) {
+	const marker = '/workers-ai/'
 	const idx = pathname.indexOf(marker)
 	if (idx === -1) return null
 	const raw = pathname.slice(idx + marker.length)
 	if (!raw) return null
-
 	// `raw` may include slashes (e.g. @cf/google/embeddinggemma-300m) or be a
-	// single encoded segment (e.g. %40cf%2Fopenai%2Fwhisper).
+	// single encoded segment.
 	return decodeURIComponent(raw)
 }
 
@@ -889,16 +888,17 @@ const handleVectorizeDeleteByIds = async ({
 }
 
 export const cloudflareHandlers: Array<HttpHandler> = [
-	// Workers AI (REST): https://api.cloudflare.com/client/v4/accounts/:accountId/ai/run/<model>
+	// Workers AI via AI Gateway: https://gateway.ai.cloudflare.com/v1/:accountId/:gatewayId/workers-ai/<model>
 	// Model names commonly contain `/`, so use a regex instead of path params.
 	http.post<any, DefaultBodyType>(
-		/https:\/\/api\.cloudflare\.com\/client\/v4\/accounts\/[^/]+\/ai\/run\/.+/,
+		/https:\/\/gateway\.ai\.cloudflare\.com\/v1\/[^/]+\/[^/]+\/workers-ai\/.+/,
 		async ({ request }) => {
 			if (!shouldMockCloudflare(request)) return passthrough()
 			requiredHeader(request.headers, 'authorization')
 
 			const url = new URL(request.url)
-			const model = modelFromAiRunPathname(url.pathname) ?? 'unknown-model'
+			const model =
+				modelFromWorkersAiGatewayPathname(url.pathname) ?? 'unknown-model'
 			const contentType = (
 				request.headers.get('content-type') ?? ''
 			).toLowerCase()

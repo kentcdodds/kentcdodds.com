@@ -1,9 +1,6 @@
 import { data as json } from 'react-router'
 import { getDomainUrl } from '#app/utils/misc.ts'
-import {
-	isSemanticSearchConfigured,
-	semanticSearchKCD,
-} from '#app/utils/semantic-search.server.ts'
+import { semanticSearchKCD } from '#app/utils/semantic-search.server.ts'
 import { type Route } from './+types/search'
 
 function normalizeSummary(value: unknown) {
@@ -22,16 +19,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 
 	const headers = { 'Cache-Control': 'no-store' }
-
-	if (!isSemanticSearchConfigured()) {
-		return json(
-			{
-				error:
-					'Semantic search is not configured. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
-			},
-			{ status: 503, headers },
-		)
-	}
 
 	const results = await semanticSearchKCD({ query, topK: 15 })
 	return json(

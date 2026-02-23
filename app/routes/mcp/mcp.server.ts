@@ -10,10 +10,7 @@ import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
 import { prisma } from '#app/utils/prisma.server.js'
-import {
-	isSemanticSearchConfigured,
-	semanticSearchKCD,
-} from '#app/utils/semantic-search.server.js'
+import { semanticSearchKCD } from '#app/utils/semantic-search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
 
@@ -199,18 +196,6 @@ function createServer() {
 				throw new Error('No request found')
 			}
 			const domainUrl = getDomainUrl(request)
-
-			if (!isSemanticSearchConfigured()) {
-				return {
-					isError: true,
-					content: [
-						{
-							type: 'text',
-							text: 'Semantic search is not configured on this environment. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
-						},
-					],
-				}
-			}
 
 			const allowedTypesByCategory: Record<
 				NonNullable<typeof category>,

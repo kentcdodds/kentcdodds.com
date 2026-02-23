@@ -13,8 +13,6 @@ import { Paragraph } from '#app/components/typography.tsx'
 import { getEnv } from '#app/utils/env.server.ts'
 import { type Route } from './+types/youtube'
 
-const DEFAULT_PLAYLIST_ID = 'PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
-
 function parseVideoId(value: string | null) {
 	if (!value) return null
 	return /^[A-Za-z0-9_-]{11}$/.test(value) ? value : null
@@ -48,8 +46,12 @@ function parsePlaylistId(value: string | undefined) {
 
 export async function loader() {
 	const env = getEnv()
-	const configuredPlaylistId =
-		parsePlaylistId(env.YOUTUBE_PLAYLIST_ID) ?? DEFAULT_PLAYLIST_ID
+	const configuredPlaylistId = parsePlaylistId(env.YOUTUBE_PLAYLIST_ID)
+	if (!configuredPlaylistId) {
+		throw new Error(
+			`Invalid YOUTUBE_PLAYLIST_ID: "${env.YOUTUBE_PLAYLIST_ID}". Expected a playlist ID or URL.`,
+		)
+	}
 	return json({
 		playlistId: configuredPlaylistId,
 	})

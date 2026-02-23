@@ -20,7 +20,6 @@ import {
 	isCallKentTextToSpeechVoice,
 } from '#app/utils/call-kent-text-to-speech.ts'
 import {
-	isCloudflareTextToSpeechConfigured,
 	synthesizeSpeechWithWorkersAi,
 } from '#app/utils/cloudflare-ai-text-to-speech.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
@@ -77,16 +76,6 @@ export async function action({ request }: Route.ActionArgs) {
 		return json(
 			{ error: 'Login required to generate audio.' },
 			{ status: 401, headers },
-		)
-	}
-
-	if (!isCloudflareTextToSpeechConfigured()) {
-		return json(
-			{
-				error:
-					'Text-to-speech is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (and optionally CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL).',
-			},
-			{ status: 503, headers },
 		)
 	}
 

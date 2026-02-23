@@ -6,8 +6,15 @@ type CallKentEpisodeMetadata = {
 	keywords: string
 }
 
-function getCloudflareApiBaseUrl() {
-	return 'https://api.cloudflare.com/client/v4'
+function getWorkersAiRunUrl({
+	model,
+}: {
+	model: string
+}) {
+	// Cloudflare's REST route expects the model as path segments (with `/`), so do
+	// not URL-encode the model string (encoding can yield "No route for that URI").
+	const env = getEnv()
+	return `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/workers-ai/${model}`
 }
 
 function extractJsonObjectFromText(text: string) {
@@ -58,9 +65,7 @@ export async function generateCallKentEpisodeMetadataWithWorkersAi({
 	responderTranscript,
 	callTitle,
 	callerNotes,
-	model = process.env.CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL ??
-		process.env.CLOUDFLARE_AI_TEXT_MODEL ??
-		'@cf/meta/llama-3.1-8b-instruct',
+	model,
 }: {
 	/**
 	 * Optional; prefer using `callerTranscript` + `responderTranscript` when
@@ -73,13 +78,9 @@ export async function generateCallKentEpisodeMetadataWithWorkersAi({
 	callerNotes?: string | null
 	model?: string
 }): Promise<CallKentEpisodeMetadata> {
-	const accountId = getEnv().CLOUDFLARE_ACCOUNT_ID
-	const apiToken = getEnv().CLOUDFLARE_API_TOKEN
-	if (!accountId || !apiToken) {
-		throw new Error(
-			'Cloudflare Workers AI is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.',
-		)
-	}
+	const env = getEnv()
+	const apiToken = env.CLOUDFLARE_API_TOKEN
+	const modelToUse = model ?? env.CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL
 
 	// Keep the model anchored on canonical details to reduce hallucinated links/names.
 	const canonicalSiteUrl = 'https://kentcdodds.com'
@@ -139,9 +140,7 @@ ${transcript.trim()}
 ${callTitle ? `Caller-provided title: ${callTitle}\n\n` : ''}${callerNotes?.trim() ? `Caller notes: ${callerNotes.trim()}\n\n` : ''}${transcriptBlock}
 `.trim()
 
-	// Cloudflare's REST route expects the model as path segments (with `/`), so do
-	// not URL-encode the model string (encoding can yield "No route for that URI").
-	const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}/ai/run/${model}`
+	const url = getWorkersAiRunUrl({ model: modelToUse })
 
 	const res = await fetch(url, {
 		method: 'POST',

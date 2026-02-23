@@ -4,10 +4,7 @@ import {
 	cloudflareHandlers,
 	resetCloudflareMockState,
 } from '../../../mocks/cloudflare.ts'
-import {
-	isSemanticSearchConfigured,
-	semanticSearchKCD,
-} from '../semantic-search.server.ts'
+import { semanticSearchKCD } from '../semantic-search.server.ts'
 
 const server = setupServer(...cloudflareHandlers)
 
@@ -23,64 +20,27 @@ afterAll(() => {
 	server.close()
 })
 
-describe('semantic search env gating', () => {
-	test('isSemanticSearchConfigured is false without env vars', () => {
-		const original = {
-			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
-			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			CLOUDFLARE_VECTORIZE_INDEX: process.env.CLOUDFLARE_VECTORIZE_INDEX,
-		}
-		try {
-			delete process.env.CLOUDFLARE_ACCOUNT_ID
-			delete process.env.CLOUDFLARE_API_TOKEN
-			delete process.env.CLOUDFLARE_VECTORIZE_INDEX
-			expect(isSemanticSearchConfigured()).toBe(false)
-		} finally {
-			for (const [key, value] of Object.entries(original)) {
-				if (typeof value === 'string') process.env[key] = value
-				else delete process.env[key]
-			}
-		}
-	})
-
-	test('semanticSearchKCD throws a helpful error when unconfigured', async () => {
-		const original = {
-			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
-			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			CLOUDFLARE_VECTORIZE_INDEX: process.env.CLOUDFLARE_VECTORIZE_INDEX,
-		}
-		try {
-			delete process.env.CLOUDFLARE_ACCOUNT_ID
-			delete process.env.CLOUDFLARE_API_TOKEN
-			delete process.env.CLOUDFLARE_VECTORIZE_INDEX
-			await expect(semanticSearchKCD({ query: 'react' })).rejects.toThrow(
-				/Semantic search is not configured/i,
-			)
-		} finally {
-			for (const [key, value] of Object.entries(original)) {
-				if (typeof value === 'string') process.env[key] = value
-				else delete process.env[key]
-			}
-		}
-	})
-})
-
 describe('semantic search result normalization', () => {
 	test('dedupes chunk-level matches into unique docs', async () => {
 		const originalEnv = {
 			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+			CLOUDFLARE_AI_GATEWAY_ID: process.env.CLOUDFLARE_AI_GATEWAY_ID,
 			CLOUDFLARE_VECTORIZE_INDEX: process.env.CLOUDFLARE_VECTORIZE_INDEX,
 			CLOUDFLARE_AI_EMBEDDING_MODEL: process.env.CLOUDFLARE_AI_EMBEDDING_MODEL,
+			CLOUDFLARE_AI_TEXT_MODEL: process.env.CLOUDFLARE_AI_TEXT_MODEL,
 		}
 		try {
 			const accountId = 'acc123'
 			const apiToken = 'MOCK_test-token'
 			const indexName = 'semantic-index'
+			const gatewayId = 'test-gateway'
 
 			process.env.CLOUDFLARE_ACCOUNT_ID = accountId
 			process.env.CLOUDFLARE_API_TOKEN = apiToken
+			process.env.CLOUDFLARE_AI_GATEWAY_ID = gatewayId
 			process.env.CLOUDFLARE_VECTORIZE_INDEX = indexName
+			process.env.CLOUDFLARE_AI_TEXT_MODEL = '@cf/meta/llama-3.1-8b-instruct'
 			delete process.env.CLOUDFLARE_AI_EMBEDDING_MODEL
 
 			// Use a query that's unlikely to match any seeded doc titles/snippets,
@@ -89,7 +49,7 @@ describe('semantic search result normalization', () => {
 			const query = 'zz_semantic_dedupe_test_02157475'
 
 			const embedRes = await fetch(
-				`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/google/embeddinggemma-300m`,
+				`https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/@cf/google/embeddinggemma-300m`,
 				{
 					method: 'POST',
 					headers: {

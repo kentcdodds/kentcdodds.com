@@ -1,30 +1,10 @@
 import { getEnv } from './env.server.ts'
 
-function getCloudflareApiBaseUrl() {
-	return 'https://api.cloudflare.com/client/v4'
-}
-
-function getCloudflareWorkersAiAuth() {
+function getWorkersAiRunUrl(model: string) {
+	// Cloudflare's REST route expects the model as path segments (with `/`), so do
+	// not URL-encode the model string (encoding can yield "No route for that URI").
 	const env = getEnv()
-	const accountId = env.CLOUDFLARE_ACCOUNT_ID
-	const apiToken = env.CLOUDFLARE_API_TOKEN
-
-	// In local dev we typically run with `MOCKS=true` and do not require real
-	// Cloudflare credentials; MSW only needs a non-empty Authorization header.
-	if (env.MOCKS) {
-		return {
-			accountId: accountId ?? 'mock-account-id',
-			// Cloudflare MSW mocks only activate for tokens starting with `MOCK`.
-			apiToken: apiToken ?? 'MOCK_cloudflare_api_token',
-		}
-	}
-
-	return { accountId: accountId ?? null, apiToken: apiToken ?? null }
-}
-
-export function isCloudflareTextToSpeechConfigured() {
-	const { accountId, apiToken } = getCloudflareWorkersAiAuth()
-	return Boolean(accountId && apiToken)
+	return `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/workers-ai/${model}`
 }
 
 type WorkersAiTextToSpeechResponse = {
@@ -49,16 +29,9 @@ export async function synthesizeSpeechWithWorkersAi({
 	voice?: string
 	model?: string
 }): Promise<{ bytes: Uint8Array; contentType: string; model: string }> {
-	const { accountId, apiToken } = getCloudflareWorkersAiAuth()
-	if (!accountId || !apiToken) {
-		throw new Error(
-			'Cloudflare Workers AI text-to-speech is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.',
-		)
-	}
-
-	// Cloudflare's REST route expects the model as path segments (with `/`), so do
-	// not URL-encode the model string (encoding can yield "No route for that URI").
-	const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}/ai/run/${model}`
+	const env = getEnv()
+	const apiToken = env.CLOUDFLARE_API_TOKEN
+	const url = getWorkersAiRunUrl(model)
 
 	const lowerModel = model.toLowerCase()
 	const payload =

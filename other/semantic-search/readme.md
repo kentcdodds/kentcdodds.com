@@ -62,10 +62,9 @@ Indexed sources (via `index-repo-content.ts`):
 
 ## Ignore list (prevent re-indexing)
 
-All indexers support an optional ignore list stored in R2 (JSON):
+All indexers support an ignore list stored in R2 (JSON):
 
-- Key: `manifests/ignore-list.json` (override with
-  `SEMANTIC_SEARCH_IGNORE_LIST_KEY`)
+- Key: `SEMANTIC_SEARCH_IGNORE_LIST_KEY` (example: `manifests/ignore-list.json`)
 - Shape:
   - `{ "version": 1, "patterns": ["youtube:dQw4w9WgXcQ", "youtube:*", "blog:secret-post"] }`
 
@@ -89,7 +88,7 @@ Script:
 Optional flags:
 
 - `--playlist "<url-or-id>"` (defaults to `YOUTUBE_PLAYLIST_ID` or a built-in
-  default playlist ID)
+  `YOUTUBE_PLAYLIST_ID`)
 - `--max-videos 50` (helpful for staged/backfill runs)
 - `--include-auto-captions false` (manual captions only)
 - `--manifest-key manifests/youtube-my-playlist.json`

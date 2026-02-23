@@ -8,19 +8,11 @@ import {
 } from '@aws-sdk/client-s3'
 import { getEnv } from '#app/utils/env.server.ts'
 import {
-	DEFAULT_IGNORE_LIST_KEY,
-	getIgnoreListKey,
 	isDocIdIgnored,
 	matchesIgnorePattern,
 	type SemanticSearchIgnoreList,
 } from '#other/semantic-search/ignore-list-patterns.ts'
-
-export {
-	DEFAULT_IGNORE_LIST_KEY,
-	getIgnoreListKey,
-	isDocIdIgnored,
-	matchesIgnorePattern,
-}
+export { isDocIdIgnored, matchesIgnorePattern }
 export type { SemanticSearchIgnoreList }
 
 export type SemanticSearchManifestChunk = {
@@ -47,10 +39,6 @@ export type SemanticSearchManifest = {
 
 export const DEFAULT_MANIFEST_PREFIX = 'manifests/'
 
-function isNonEmptyString(value: unknown): value is string {
-	return typeof value === 'string' && value.trim().length > 0
-}
-
 export type SemanticSearchAdminStore = {
 	source: 'r2' | 'fixtures'
 	bucket: string
@@ -74,15 +62,6 @@ function getR2ConfigFromEnv() {
 	return { endpoint, accessKeyId, secretAccessKey }
 }
 
-export function isR2S3Configured() {
-	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()
-	return Boolean(
-		isNonEmptyString(endpoint) &&
-		isNonEmptyString(accessKeyId) &&
-		isNonEmptyString(secretAccessKey),
-	)
-}
-
 let _r2Client: S3Client | null = null
 let _r2ClientConfig: {
 	endpoint: string
@@ -92,11 +71,6 @@ let _r2ClientConfig: {
 
 function getR2Client() {
 	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()
-	if (!isNonEmptyString(endpoint)) throw new Error('R2_ENDPOINT is required')
-	if (!isNonEmptyString(accessKeyId))
-		throw new Error('R2_ACCESS_KEY_ID is required')
-	if (!isNonEmptyString(secretAccessKey))
-		throw new Error('R2_SECRET_ACCESS_KEY is required')
 
 	if (
 		_r2Client &&
@@ -235,7 +209,7 @@ function getDefaultIgnoreList(): SemanticSearchIgnoreList {
 function createR2AdminStore(): SemanticSearchAdminStore {
 	const client = getR2Client()
 	const bucket = getR2Bucket()
-	const ignoreListKey = getIgnoreListKey()
+	const ignoreListKey = getEnv().SEMANTIC_SEARCH_IGNORE_LIST_KEY
 
 	return {
 		source: 'r2',
@@ -277,7 +251,7 @@ function createR2AdminStore(): SemanticSearchAdminStore {
 	}
 }
 
-const FIXTURE_R2_OBJECTS: Record<string, unknown> = {
+const FIXTURE_MANIFEST_OBJECTS: Record<string, unknown> = {
 	'manifests/repo-content.json': {
 		version: 1,
 		docs: {
@@ -373,11 +347,6 @@ const FIXTURE_R2_OBJECTS: Record<string, unknown> = {
 			},
 		},
 	},
-	[DEFAULT_IGNORE_LIST_KEY]: {
-		version: 1,
-		updatedAt: '2026-02-20T00:00:00.000Z',
-		patterns: [],
-	},
 }
 
 let _fixtureStore: SemanticSearchAdminStore | null = null
@@ -386,9 +355,16 @@ function createFixtureAdminStore(): SemanticSearchAdminStore {
 	if (isProd && _fixtureStore) return _fixtureStore
 
 	const bucket = getR2Bucket()
-	const ignoreListKey = getIgnoreListKey()
+	const ignoreListKey = getEnv().SEMANTIC_SEARCH_IGNORE_LIST_KEY
 	const objects = new Map<string, unknown>(
-		Object.entries(FIXTURE_R2_OBJECTS).map(([k, v]) => [k, structuredClone(v)]),
+		Object.entries({
+			...FIXTURE_MANIFEST_OBJECTS,
+			[ignoreListKey]: {
+				version: 1,
+				updatedAt: '2026-02-20T00:00:00.000Z',
+				patterns: [],
+			},
+		}).map(([k, v]) => [k, structuredClone(v)]),
 	)
 
 	const store: SemanticSearchAdminStore = {
@@ -428,21 +404,12 @@ export function getSemanticSearchAdminStore(): {
 	configured: boolean
 	message?: string
 } {
-	if (isR2S3Configured()) {
-		return { store: createR2AdminStore(), configured: true }
-	}
 	if (getEnv().MOCKS) {
 		return {
 			store: createFixtureAdminStore(),
 			configured: true,
-			message:
-				'Using fixture semantic-search manifests (read-only). Set R2_ENDPOINT/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY to use real R2.',
+			message: 'Using fixture semantic-search manifests (read-only).',
 		}
 	}
-	return {
-		store: null,
-		configured: false,
-		message:
-			'R2 is not configured. Set R2_ENDPOINT, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY to enable /search/admin.',
-	}
+	return { store: createR2AdminStore(), configured: true }
 }

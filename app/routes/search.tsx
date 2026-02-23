@@ -22,40 +22,23 @@ import {
 	useUpdateQueryStringValueWithoutNavigation,
 } from '#app/utils/misc-react.tsx'
 import {
-	isSemanticSearchConfigured,
 	semanticSearchKCD,
 	type SemanticSearchResult,
 } from '#app/utils/semantic-search.server.ts'
 import { type Route } from './+types/search'
 
-const semanticSearchNotConfiguredMessage =
-	'Semantic search is not configured on this environment yet. Try again later.'
-
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const q = (url.searchParams.get('q') ?? '').trim()
-	const configured = isSemanticSearchConfigured()
 	const headers = { 'Cache-Control': 'no-store' }
 
 	if (!q) {
 		return defer(
 			{
 				q: '',
-				configured,
+				configured: true,
 				results: [] as Array<SemanticSearchResult>,
 				error: undefined as string | undefined,
-			},
-			{ headers },
-		)
-	}
-
-	if (!configured) {
-		return defer(
-			{
-				q,
-				configured: false,
-				results: [] as Array<SemanticSearchResult>,
-				error: semanticSearchNotConfiguredMessage,
 			},
 			{ headers },
 		)
@@ -110,7 +93,6 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 	const debouncedRequestSearch = useDebounce((nextQuery: string) => {
 		if (nextQuery === requestedQuery) return
 		setRequestedQuery(nextQuery)
-		if (!loaderData.configured) return
 		if (!nextQuery) return
 		// If the loader already fetched this query (e.g. initial page load), reuse it.
 		if (nextQuery === loaderData.q) return
@@ -132,12 +114,9 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 				? fetcher.data
 				: null
 
-	const error =
-		!loaderData.configured && trimmedQuery
-			? semanticSearchNotConfiguredMessage
-			: activeData?.error
+	const error = activeData?.error
 
-	const showResultsSection = trimmedQuery && loaderData.configured && !error
+	const showResultsSection = trimmedQuery && !error
 	const isPending =
 		Boolean(showResultsSection) &&
 		(isQueryPending || (resolved ? resolved.q !== requestedQuery : false))
@@ -163,7 +142,6 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 						className="w-full"
 						onSubmit={(event) => {
 							event.preventDefault()
-							if (!loaderData.configured) return
 							if (!trimmedQuery) return
 							if (trimmedQuery === requestedQuery) return
 							setRequestedQuery(trimmedQuery)

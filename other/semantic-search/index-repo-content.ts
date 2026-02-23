@@ -696,7 +696,10 @@ async function main() {
 	const { before, after, manifestKey, only } = parseArgs()
 	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
 		getCloudflareConfig()
-	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
+	const r2Bucket = (process.env.R2_BUCKET ?? '').trim()
+	if (!r2Bucket) {
+		throw new Error('Missing R2_BUCKET (required for manifest storage).')
+	}
 
 	const manifest = (await getJsonObject<Manifest>({
 		bucket: r2Bucket,

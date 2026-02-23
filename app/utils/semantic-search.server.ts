@@ -118,18 +118,28 @@ function getRequiredSemanticSearchEnv() {
 	return {
 		accountId: env.CLOUDFLARE_ACCOUNT_ID,
 		apiToken: env.CLOUDFLARE_API_TOKEN,
+		gatewayId: env.CLOUDFLARE_AI_GATEWAY_ID,
 		indexName: env.CLOUDFLARE_VECTORIZE_INDEX,
 		embeddingModel: env.CLOUDFLARE_AI_EMBEDDING_MODEL,
 	}
 }
 
-export function isSemanticSearchConfigured() {
-	const { accountId, apiToken, indexName } = getRequiredSemanticSearchEnv()
-	return Boolean(accountId && apiToken && indexName)
-}
-
 function getCloudflareApiBaseUrl() {
 	return 'https://api.cloudflare.com/client/v4'
+}
+
+function getWorkersAiRunUrl({
+	accountId,
+	gatewayId,
+	model,
+}: {
+	accountId: string
+	gatewayId: string
+	model: string
+}) {
+	// Cloudflare's REST route expects the model as path segments (with `/`), so do
+	// not URL-encode the model string (encoding can yield "No route for that URI").
+	return `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/${model}`
 }
 
 async function cloudflareFetch(
@@ -164,19 +174,36 @@ async function cloudflareFetch(
 async function getEmbedding({
 	accountId,
 	apiToken,
+	gatewayId,
 	model,
 	text,
 }: {
 	accountId: string
 	apiToken: string
+	gatewayId: string
 	model: string
 	text: string
 }) {
-	const res = await cloudflareFetch(accountId, apiToken, `/ai/run/${model}`, {
+	const url = getWorkersAiRunUrl({ accountId, gatewayId, model })
+	const res = await fetch(url, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			Authorization: `Bearer ${apiToken}`,
+			'Content-Type': 'application/json',
+		},
 		body: JSON.stringify({ text: [text] }),
 	})
+	if (!res.ok) {
+		let bodyText = ''
+		try {
+			bodyText = await res.text()
+		} catch {
+			// ignore
+		}
+		throw new Error(
+			`Cloudflare API request failed: ${res.status} ${res.statusText} (/ai/run/${model})${bodyText ? `\n${bodyText}` : ''}`,
+		)
+	}
 	const json = (await res.json()) as any
 
 	// REST responses typically wrap in { result: ... }, whereas Workers runtime
@@ -251,11 +278,6 @@ export async function vectorizeDeleteByIds({
 	ids: string[]
 }): Promise<unknown> {
 	const { accountId, apiToken, indexName } = getRequiredSemanticSearchEnv()
-	if (!accountId || !apiToken || !indexName) {
-		throw new Error(
-			'Semantic search is not configured. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
-		)
-	}
 	if (!Array.isArray(ids) || ids.length === 0) {
 		return { result: { deleted: 0 } }
 	}
@@ -368,14 +390,8 @@ export async function semanticSearchKCD({
 	 */
 	topK?: number
 }): Promise<Array<SemanticSearchResult>> {
-	const { accountId, apiToken, indexName, embeddingModel } =
+	const { accountId, apiToken, gatewayId, indexName, embeddingModel } =
 		getRequiredSemanticSearchEnv()
-
-	if (!accountId || !apiToken || !indexName) {
-		throw new Error(
-			'Semantic search is not configured. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_VECTORIZE_INDEX.',
-		)
-	}
 
 	const safeTopK =
 		typeof topK === 'number' && Number.isFinite(topK)
@@ -389,6 +405,7 @@ export async function semanticSearchKCD({
 	const vector = await getEmbedding({
 		accountId,
 		apiToken,
+		gatewayId,
 		model: embeddingModel,
 		text: query,
 	})

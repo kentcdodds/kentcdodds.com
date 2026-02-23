@@ -17,6 +17,7 @@ export function getCloudflareConfig() {
 	return {
 		accountId: getRequiredEnv('CLOUDFLARE_ACCOUNT_ID'),
 		apiToken: getRequiredEnv('CLOUDFLARE_API_TOKEN'),
+		gatewayId: getRequiredEnv('CLOUDFLARE_AI_GATEWAY_ID'),
 		vectorizeIndex: getRequiredEnv('CLOUDFLARE_VECTORIZE_INDEX'),
 		embeddingModel:
 			process.env.CLOUDFLARE_AI_EMBEDDING_MODEL ??
@@ -25,11 +26,22 @@ export function getCloudflareConfig() {
 }
 
 async function cfFetch(
-	{ accountId, apiToken }: { accountId: string; apiToken: string },
+	{
+		accountId,
+		apiToken,
+		gatewayId,
+	}: { accountId: string; apiToken: string; gatewayId: string },
 	path: string,
 	init: RequestInit,
 ) {
-	const url = `${getApiBaseUrl()}/accounts/${accountId}${path}`
+	const workersAiPrefix = '/ai/run/'
+	const url = path.startsWith(workersAiPrefix)
+		? // Cloudflare expects the model as path segments (with `/`), so do not
+			// URL-encode the model string.
+			`https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/${path.slice(
+				workersAiPrefix.length,
+			)}`
+		: `${getApiBaseUrl()}/accounts/${accountId}${path}`
 	const timeoutMs =
 		typeof process.env.CLOUDFLARE_API_TIMEOUT_MS === 'string'
 			? Number(process.env.CLOUDFLARE_API_TIMEOUT_MS)

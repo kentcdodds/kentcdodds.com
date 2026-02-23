@@ -63,8 +63,6 @@ type VideoEnrichedData = {
 	transcriptSource: TranscriptSource
 }
 
-const DEFAULT_PLAYLIST_ID = 'PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'
-
 type TranscriptEvent = {
 	startMs: number
 	durationMs: number
@@ -1203,8 +1201,12 @@ async function main() {
 	} = parseArgs()
 	const playlistInput =
 		nonEmptyTrimmed(playlistArg) ??
-		nonEmptyTrimmed(process.env.YOUTUBE_PLAYLIST_ID) ??
-		DEFAULT_PLAYLIST_ID
+		nonEmptyTrimmed(process.env.YOUTUBE_PLAYLIST_ID)
+	if (!playlistInput) {
+		throw new Error(
+			'Missing YouTube playlist input. Use --playlist with a playlist URL or ID, or set YOUTUBE_PLAYLIST_ID.',
+		)
+	}
 	const playlistId = getPlaylistId(playlistInput)
 	if (!playlistId) {
 		throw new Error(
@@ -1298,7 +1300,10 @@ async function main() {
 
 	// Load the existing manifest early so incremental runs can skip already-indexed
 	// videos (avoids talking to YouTube for old content).
-	const r2Bucket = process.env.R2_BUCKET ?? 'kcd-semantic-search'
+	const r2Bucket = nonEmptyTrimmed(process.env.R2_BUCKET)
+	if (!r2Bucket) {
+		throw new Error('Missing R2_BUCKET (required for manifest storage).')
+	}
 	const manifest = (await getJsonObject<Manifest>({
 		bucket: r2Bucket,
 		key: manifestKey,

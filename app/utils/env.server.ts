@@ -14,8 +14,7 @@ const schemaBase = z.object({
 
 	FLY_APP_NAME: nonEmptyString,
 	FLY_REGION: nonEmptyString,
-	// Optional for startup race when env may not be fully injected yet.
-	FLY_MACHINE_ID: z.string().trim().optional(),
+	FLY_MACHINE_ID: nonEmptyString,
 	LITEFS_DIR: nonEmptyString,
 
 	// Used by LiteFS + tooling. Optional because it can be derived from
@@ -63,10 +62,12 @@ const schemaBase = z.object({
 	VERIFIER_API_KEY: nonEmptyString,
 	CF_INTERNAL_SECRET: nonEmptyString,
 
-	// Optional: semantic search via Cloudflare Workers AI + Vectorize.
-	CLOUDFLARE_ACCOUNT_ID: z.string().trim().optional(),
-	CLOUDFLARE_API_TOKEN: z.string().trim().optional(),
-	CLOUDFLARE_VECTORIZE_INDEX: z.string().trim().optional(),
+	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
+	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,
+	CLOUDFLARE_API_TOKEN: nonEmptyString,
+	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
+	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,
+	CLOUDFLARE_VECTORIZE_INDEX: nonEmptyString,
 	CLOUDFLARE_AI_EMBEDDING_MODEL: z
 		.string()
 		.trim()
@@ -82,14 +83,19 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('@cf/deepgram/aura-2-en'),
-	CLOUDFLARE_AI_TEXT_MODEL: z.string().trim().optional(),
+	CLOUDFLARE_AI_TEXT_MODEL: z
+		.string()
+		.trim()
+		.optional()
+		.default('@cf/meta/llama-3.1-8b-instruct'),
 	CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL: z.string().trim().optional(),
 
-	// Optional: semantic search admin tooling (R2 manifests + ignore list).
-	R2_BUCKET: z.string().trim().optional().default('kcd-semantic-search'),
+	// Semantic search admin tooling (R2 manifests + ignore list).
+	R2_BUCKET: nonEmptyString,
+	// Optional: derived from CLOUDFLARE_ACCOUNT_ID when omitted.
 	R2_ENDPOINT: z.string().trim().optional(),
-	R2_ACCESS_KEY_ID: z.string().trim().optional(),
-	R2_SECRET_ACCESS_KEY: z.string().trim().optional(),
+	R2_ACCESS_KEY_ID: nonEmptyString,
+	R2_SECRET_ACCESS_KEY: nonEmptyString,
 	// Call Kent audio storage bucket (used by R2-backed call audio storage and
 	// the disk-backed mock when MOCKS=true).
 	CALL_KENT_R2_BUCKET: nonEmptyString,
@@ -102,7 +108,10 @@ const schemaBase = z.object({
 	GITHUB_REF: z.string().trim().optional().default('main'),
 
 	// Optional: /youtube route + indexing scripts.
-	YOUTUBE_PLAYLIST_ID: z.string().trim().optional(),
+	YOUTUBE_PLAYLIST_ID: z
+		.string()
+		.trim()
+		.default('PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf'),
 })
 
 const schema = schemaBase.superRefine((values, ctx) => {
@@ -138,13 +147,24 @@ const schema = schemaBase.superRefine((values, ctx) => {
 type BaseEnv = z.infer<typeof schemaBase>
 type BaseEnvInput = z.input<typeof schemaBase>
 
-export type Env = Omit<BaseEnv, 'PORT' | 'MOCKS' | 'DATABASE_PATH' | 'FLY_MACHINE_ID'> & {
+export type Env = Omit<
+	BaseEnv,
+	'PORT' | 'MOCKS' | 'DATABASE_PATH' | 'FLY_MACHINE_ID'
+> & {
 	PORT: number
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
 	/** Instance identifier; fallback for startup race when env may not be injected yet. */
 	FLY_MACHINE_ID: string
+	/**
+	 * Defaults to `CLOUDFLARE_AI_TEXT_MODEL` when not explicitly set.
+	 * This keeps Call Kent metadata generation aligned with the site's configured
+	 * text model by default.
+	 */
+	CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL: string
+	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */
+	R2_ENDPOINT: string
 }
 
 declare global {
@@ -199,6 +219,10 @@ export function getEnv(): Env {
 	}
 
 	const values = parsed.data
+	const derivedR2Endpoint =
+		typeof values.R2_ENDPOINT === 'string' && values.R2_ENDPOINT.trim()
+			? values.R2_ENDPOINT.trim()
+			: `https://${values.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`
 	const env: Env = {
 		...values,
 		PORT: Number(values.PORT),
@@ -206,6 +230,10 @@ export function getEnv(): Env {
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
 		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
+		R2_ENDPOINT: derivedR2Endpoint,
+		CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL:
+			values.CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL ??
+			values.CLOUDFLARE_AI_TEXT_MODEL,
 	}
 
 	_cache = { fingerprint, env }

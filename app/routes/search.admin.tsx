@@ -30,10 +30,7 @@ import {
 	type SemanticSearchIgnoreList,
 	type SemanticSearchManifest,
 } from '#app/utils/semantic-search-admin.server.ts'
-import {
-	isSemanticSearchConfigured,
-	vectorizeDeleteByIds,
-} from '#app/utils/semantic-search.server.ts'
+import { vectorizeDeleteByIds } from '#app/utils/semantic-search.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/search.admin'
 
@@ -128,7 +125,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 				message:
 					message ??
 					'Semantic search admin is not configured on this environment.',
-				semanticSearchConfigured: isSemanticSearchConfigured(),
+				semanticSearchConfigured: true,
 				manifestKeys: [] as string[],
 				selectedManifest: manifestParam,
 				selectedKeys: [] as string[],
@@ -221,7 +218,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		{
 			configured: true,
 			message,
-			semanticSearchConfigured: isSemanticSearchConfigured(),
+			semanticSearchConfigured: true,
 			manifestKeys,
 			selectedManifest: manifestParam,
 			selectedKeys,
@@ -372,14 +369,10 @@ export async function action({ request }: Route.ActionArgs) {
 		let vectorDeleteSkipped = false
 		let vectorDeleteError: string | null = null
 		if (vectorIdsToDelete.length) {
-			if (!isSemanticSearchConfigured()) {
-				vectorDeleteSkipped = true
-			} else {
-				try {
-					deletedVectors = await deleteVectorsInBatches(vectorIdsToDelete)
-				} catch (error) {
-					vectorDeleteError = getErrorMessage(error)
-				}
+			try {
+				deletedVectors = await deleteVectorsInBatches(vectorIdsToDelete)
+			} catch (error) {
+				vectorDeleteError = getErrorMessage(error)
 			}
 		}
 

@@ -7,7 +7,6 @@ import {
 import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-template.ts'
 import { generateCallKentEpisodeMetadataWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-metadata.server.ts'
 import {
-	isCloudflareTranscriptionConfigured,
 	transcribeMp3WithWorkersAi,
 } from '#app/utils/cloudflare-ai-transcription.server.ts'
 import { createEpisodeAudio } from '#app/utils/ffmpeg.server.ts'
@@ -122,12 +121,6 @@ export async function startCallKentEpisodeDraftProcessing(
 				data: { step: 'TRANSCRIBING', errorMessage: null },
 			})
 			if (stepTranscribe.count !== 1) return
-
-			if (!isCloudflareTranscriptionConfigured()) {
-				throw new Error(
-					'Cloudflare transcription is not configured. Set CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and CLOUDFLARE_AI_TRANSCRIPTION_MODEL.',
-				)
-			}
 			const callerName = draft.call.isAnonymous
 				? undefined
 				: draft.call.user.firstName

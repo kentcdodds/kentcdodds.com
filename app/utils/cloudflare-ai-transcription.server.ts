@@ -6,13 +6,11 @@ type WhisperTranscriptionResponse = {
 import { Buffer } from 'node:buffer'
 import { getEnv } from './env.server.ts'
 
-function getCloudflareApiBaseUrl() {
-	return 'https://api.cloudflare.com/client/v4'
-}
-
-export function isCloudflareTranscriptionConfigured() {
+function getWorkersAiRunUrl(model: string) {
+	// Cloudflare's REST route expects the model as path segments (with `/`), so do
+	// not URL-encode the model string (encoding can yield "No route for that URI").
 	const env = getEnv()
-	return Boolean(env.CLOUDFLARE_ACCOUNT_ID && env.CLOUDFLARE_API_TOKEN)
+	return `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/workers-ai/${model}`
 }
 
 export async function transcribeMp3WithWorkersAi({
@@ -47,17 +45,8 @@ export async function transcribeMp3WithWorkersAi({
 	model?: string
 }): Promise<string> {
 	const env = getEnv()
-	const accountId = env.CLOUDFLARE_ACCOUNT_ID
 	const apiToken = env.CLOUDFLARE_API_TOKEN
-	if (!accountId || !apiToken) {
-		throw new Error(
-			'Cloudflare Workers AI transcription is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.',
-		)
-	}
-
-	// Cloudflare's REST route expects the model as path segments (with `/`), so do
-	// not URL-encode the model string (encoding can yield "No route for that URI").
-	const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}/ai/run/${model}`
+	const url = getWorkersAiRunUrl(model)
 
 	// Some TS `fetch` typings only accept `ArrayBufferView` backed by `ArrayBuffer`
 	// (not `ArrayBufferLike`). Convert to an `ArrayBuffer`-backed view without

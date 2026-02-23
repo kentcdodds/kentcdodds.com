@@ -8,6 +8,7 @@ import {
 	S3Client,
 } from '@aws-sdk/client-s3'
 import fsExtra from 'fs-extra'
+import { getEnv } from '#app/utils/env.server.ts'
 
 type PutAudioResult = {
 	key: string
@@ -85,13 +86,14 @@ function extFromContentType(contentType: string) {
 }
 
 function getCallKentBucketName() {
-	return process.env.CALL_KENT_R2_BUCKET
+	return getEnv().CALL_KENT_R2_BUCKET
 }
 
 function getR2ConfigFromEnv() {
-	const endpoint = process.env.R2_ENDPOINT
-	const accessKeyId = process.env.R2_ACCESS_KEY_ID
-	const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
+	const env = getEnv()
+	const endpoint = env.R2_ENDPOINT
+	const accessKeyId = env.R2_ACCESS_KEY_ID
+	const secretAccessKey = env.R2_SECRET_ACCESS_KEY
 	return { endpoint, accessKeyId, secretAccessKey }
 }
 
@@ -198,7 +200,7 @@ function getStore(): {
 } {
 	const bucket = getCallKentBucketName()
 	// In local dev/CI we prefer disk to keep everything self-contained.
-	if (process.env.MOCKS === 'true') {
+	if (getEnv().MOCKS) {
 		return { store: createDiskStore({ bucket }), bucket, source: 'disk' }
 	}
 

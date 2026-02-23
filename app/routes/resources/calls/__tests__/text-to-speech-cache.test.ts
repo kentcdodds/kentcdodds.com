@@ -24,7 +24,6 @@ const synthesizeSpeechWithWorkersAi = vi.fn(
 
 vi.mock('#app/utils/cloudflare-ai-text-to-speech.server.ts', () => {
 	return {
-		isCloudflareTextToSpeechConfigured: () => true,
 		synthesizeSpeechWithWorkersAi,
 	}
 })
