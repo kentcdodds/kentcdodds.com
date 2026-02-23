@@ -27,6 +27,8 @@ import {
 	getBlogRecommendations,
 	getTotalPostReads,
 } from '#app/utils/blog.server.ts'
+import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
+import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
 import { getRankingLeader } from '#app/utils/blog.ts'
 import { getBlogMdxListItems, getMdxPage } from '#app/utils/mdx.server.ts'
 import {
@@ -63,6 +65,8 @@ export const handle: KCDHandle = {
 
 type CatchData = {
 	recommendations: Array<MdxListItem>
+	possibleMatches?: Array<NotFoundMatch>
+	possibleMatchesQuery?: string
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -81,13 +85,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	if (!page) {
 		// Avoid caching/creating per-slug stats entries for random 404 slugs. (issue #461)
-		const recommendations = await getBlogRecommendations({
-			request,
-			timings,
-			limit: 3,
-			keywords: [],
-			exclude: [params.slug],
-		})
+		const pathname = new URL(request.url).pathname
+		const [recommendations, suggestions] = await Promise.all([
+			getBlogRecommendations({
+				request,
+				timings,
+				limit: 3,
+				keywords: [],
+				exclude: [params.slug],
+			}),
+			getNotFoundSuggestions({ request, pathname, limit: 8 }),
+		])
 		const headers = {
 			// Don't cache speculative 404 slugs for long.
 			'Cache-Control': 'private, max-age=60',
@@ -95,6 +103,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			'Server-Timing': getServerTimeHeader(timings),
 		}
 		const catchData: CatchData = { recommendations }
+		if (suggestions) {
+			catchData.possibleMatches = suggestions.matches
+			catchData.possibleMatchesQuery = suggestions.query
+		}
 		throw json(catchData, { status: 404, headers })
 	}
 
@@ -629,7 +641,11 @@ export function ErrorBoundary() {
 			statusHandlers={{
 				400: ({ error }) => <FourHundred error={error.statusText} />,
 				404: ({ error }) => (
-					<FourOhFour articles={error.data.recommendations} />
+					<FourOhFour
+						articles={error.data.recommendations}
+						possibleMatches={error.data.possibleMatches}
+						possibleMatchesQuery={error.data.possibleMatchesQuery}
+					/>
 				),
 			}}
 		/>

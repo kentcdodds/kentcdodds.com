@@ -18,7 +18,9 @@ import {
 	mdxPageMeta,
 	useMdxComponent,
 } from '#app/utils/mdx.tsx'
+import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
 import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
+import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/$slug'
 
@@ -42,24 +44,47 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	}
 
 	const timings = {}
+	const pathname = new URL(request.url).pathname
 	const page = await getMdxPage(
 		{ contentDir: 'pages', slug: params.slug },
 		{ request, timings },
 	).catch(() => null)
 
-	const headers = {
-		'Cache-Control': 'private, max-age=3600',
-		Vary: 'Cookie',
-		'Server-Timing': getServerTimeHeader(timings),
-	}
 	if (!page) {
-		const blogRecommendations = await getBlogRecommendations({
-			request,
-			timings,
+		const [recommendations, suggestions] = await Promise.all([
+			getBlogRecommendations({ request, timings }),
+			getNotFoundSuggestions({ request, pathname, limit: 8 }),
+		])
+		const data: {
+			recommendations: Array<unknown>
+			possibleMatches?: Array<NotFoundMatch>
+			possibleMatchesQuery?: string
+		} = { recommendations }
+		if (suggestions) {
+			data.possibleMatches = suggestions.matches
+			data.possibleMatchesQuery = suggestions.query
+		}
+		throw json(data, {
+			status: 404,
+			headers: {
+				// Don't cache speculative 404 slugs for long.
+				'Cache-Control': 'private, max-age=60',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
 		})
-		throw json({ blogRecommendations }, { status: 404, headers })
 	}
-	return json({ page }, { status: 200, headers })
+	return json(
+		{ page },
+		{
+			status: 200,
+			headers: {
+				'Cache-Control': 'private, max-age=3600',
+				Vary: 'Cookie',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
+		},
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -154,7 +179,11 @@ export function ErrorBoundary() {
 			statusHandlers={{
 				400: ({ error }) => <FourHundred error={error.data} />,
 				404: ({ error }) => (
-					<FourOhFour articles={error.data.recommendations} />
+					<FourOhFour
+						articles={error.data.recommendations}
+						possibleMatches={error.data.possibleMatches}
+						possibleMatchesQuery={error.data.possibleMatchesQuery}
+					/>
 				),
 			}}
 		/>
