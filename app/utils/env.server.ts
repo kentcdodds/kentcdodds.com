@@ -3,7 +3,10 @@ import { z } from 'zod'
 const nonEmptyString = z.string().trim().min(1)
 
 const schemaBase = z.object({
-		NODE_ENV: z.enum(['production', 'development', 'test'] as const),
+		NODE_ENV: z
+			.enum(['production', 'development', 'test'] as const)
+			.optional()
+			.default('development'),
 		PORT: nonEmptyString,
 		MOCKS: z.enum(['true', 'false']).optional(),
 		PLAYWRIGHT_TEST_BASE_URL: z.string().trim().optional(),
