@@ -594,6 +594,9 @@ function RecordingDetailScreen({
 	const user = useUser()
 	const draft = data.call.episodeDraft
 	const revalidator = useRevalidator()
+	React.useEffect(() => {
+		setPolledStatus(null)
+	}, [draft?.id])
 
 	// Use lightweight status-only endpoint when polling to avoid re-fetching
 	// transcript, title, description, keywords on every 1.5s poll.
