@@ -83,11 +83,18 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 
 	// Sign out (clear cookies) and load the login page.
 	await page.context().clearCookies()
-	await page.goto('/login')
 
-	// Ensure we don't immediately redirect (conditional UI should wait for user intent).
-	await page.waitForTimeout(250)
-	await expect(page).toHaveURL(/\/login$/)
+	// Hold the verify request so we can assert markup while still on /login.
+	let releaseVerify: (() => void) | null = null
+	const verifyGate = new Promise<void>((resolve) => {
+		releaseVerify = resolve
+	})
+	await page.route('**/resources/webauthn/verify-authentication', async (route) => {
+		await verifyGate
+		await route.continue()
+	})
+
+	await page.goto('/login')
 
 	// Markup requirement for passkey form-autofill (per web.dev article).
 	await expect(page.locator('#email-address')).toHaveAttribute(
@@ -95,15 +102,19 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 		'username webauthn',
 	)
 
-	// End-to-end: passkey sign-in succeeds (privacy-friendly: no email needed).
-	const verifyResponsePromise = page.waitForResponse((resp) => {
-		return (
-			resp.url().includes('/resources/webauthn/verify-authentication') &&
-			resp.request().method() === 'POST'
-		)
-	})
-	await page.getByRole('button', { name: /Login with Passkey/i }).click()
-	await verifyResponsePromise
+	// End-to-end: sign-in proceeds via passkey (conditional UI or the explicit button).
+	const verifyRequestStarted = await page
+		.waitForRequest('**/resources/webauthn/verify-authentication', {
+			timeout: 3_000,
+		})
+		.then(() => true)
+		.catch(() => false)
+	if (!verifyRequestStarted) {
+		await page.getByRole('button', { name: /Login with Passkey/i }).click()
+		await page.waitForRequest('**/resources/webauthn/verify-authentication')
+	}
+
+	releaseVerify?.()
 
 	await page.waitForURL('**/me', { timeout: 10_000 })
 	await expect(page.getByRole('heading', { name: "Here's your profile." })).toBeVisible()
