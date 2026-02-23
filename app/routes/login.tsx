@@ -1,5 +1,9 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { startAuthentication } from '@simplewebauthn/browser'
+import {
+	WebAuthnAbortService,
+	browserSupportsWebAuthnAutofill,
+	startAuthentication,
+} from '@simplewebauthn/browser'
 import { type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server'
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -188,6 +192,8 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 	const [passkeyMessage, setPasskeyMessage] = React.useState<null | string>(
 		null,
 	)
+	const [passkeyAutofillSupported, setPasskeyAutofillSupported] =
+		React.useState(false)
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
@@ -195,8 +201,81 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 
 	const formIsValid = formValues.email.match(/.+@.+/)
 
+	React.useEffect(() => {
+		let isMounted = true
+
+		async function setupPasskeyAutofill() {
+			try {
+				const supports = await browserSupportsWebAuthnAutofill()
+				if (!supports) return
+				if (!isMounted) return
+				setPasskeyAutofillSupported(true)
+
+				// Fetch a challenge on page load and keep the request pending until
+				// the user selects a passkey from the browser's autofill UI.
+				const optionsResponse = await fetch(
+					'/resources/webauthn/generate-authentication-options',
+					{ method: 'POST' },
+				)
+				const json = await optionsResponse.json()
+				const { options } = AuthenticationOptionsSchema.parse(json)
+
+				const authResponse = await startAuthentication({
+					optionsJSON: options,
+					useBrowserAutofill: true,
+				})
+
+				if (!isMounted) return
+
+				setPasskeyMessage('Verifying your passkey')
+
+				const verificationResponse = await fetch(
+					'/resources/webauthn/verify-authentication',
+					{
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(authResponse),
+					},
+				)
+
+				const verificationJson = (await verificationResponse.json()) as
+					| { status: 'success' }
+					| { status: 'error'; error: string }
+
+				if (verificationJson.status === 'error') {
+					throw new Error(verificationJson.error)
+				}
+
+				setPasskeyMessage('Welcome back! Navigating to your account page.')
+				void revalidate()
+				void navigate('/me')
+			} catch (e) {
+				if (!isMounted) return
+
+				// Autofill flow should fail silently when the user cancels or chooses a
+				// password instead.
+				if (
+					e instanceof Error &&
+					(e.name === 'NotAllowedError' || e.name === 'AbortError')
+				) {
+					return
+				}
+
+				console.error(e)
+			}
+		}
+
+		void setupPasskeyAutofill()
+
+		return () => {
+			isMounted = false
+			WebAuthnAbortService.cancelCeremony()
+		}
+	}, [navigate, revalidate])
+
 	async function handlePasskeyLogin() {
 		try {
+			setError(undefined)
 			setPasskeyMessage('Generating Authentication Options')
 			// Get authentication options from the server
 			const optionsResponse = await fetch(
@@ -228,7 +307,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 				throw new Error(verificationJson.error)
 			}
 
-			setPasskeyMessage("You're logged in! Navigating to your account page.")
+			setPasskeyMessage('Welcome back! Navigating to your account page.')
 
 			void revalidate()
 			void navigate('/me')
@@ -259,6 +338,12 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 							>
 								Login with Passkey <PasskeyIcon />
 							</Button>
+							{passkeyAutofillSupported ? (
+								<p className="text-secondary mt-2 text-sm">
+									Tip: You can also sign in with a passkey from the email field
+									autofill prompt.
+								</p>
+							) : null}
 							{error ? (
 								<div className="mt-2">
 									<InputError id="passkey-login-error">{error}</InputError>
@@ -308,7 +393,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 											id="email-address"
 											name="email"
 											type="email"
-											autoComplete="email"
+											autoComplete="username webauthn"
 											defaultValue={formValues.email}
 											required
 											placeholder="Email address"

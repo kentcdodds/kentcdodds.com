@@ -1,9 +1,10 @@
 import {
-	verifyAuthenticationResponse,
 	type AuthenticationResponseJSON,
+	verifyAuthenticationResponse,
 } from '@simplewebauthn/server'
 import { data as json } from 'react-router'
 import { z } from 'zod'
+import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
 import { getWebAuthnConfig, passkeyCookie } from '#app/utils/webauthn.server.ts'
@@ -80,9 +81,16 @@ export async function action({ request }: Route.ActionArgs) {
 		const session = await getSession(request)
 		await session.signIn(passkey.user)
 
-		return json({ status: 'success' } as const, {
-			headers: await session.getHeaders({ 'Set-Cookie': deletePasskeyCookie }),
-		})
+		const headers = new Headers({ 'Set-Cookie': deletePasskeyCookie })
+
+		// Passkey sign-in should also clear any stored email/error from the traditional
+		// password login flow.
+		const loginSession = await getLoginInfoSession(request)
+		loginSession.clean()
+		await loginSession.getHeaders(headers)
+		await session.getHeaders(headers)
+
+		return json({ status: 'success' } as const, { headers })
 	} catch (error) {
 		console.error('Error during authentication verification:', error)
 		return json(
