@@ -21,10 +21,11 @@ function getErrorForTitle(title: string | null) {
 
 function getErrorForNotes(notes: string | null) {
 	if (!notes) return null
-	const trimmed = notes.trim()
-	if (!trimmed) return null
+	// Treat whitespace-only notes as empty, but validate length on the raw value
+	// so validation matches `maxLength` + `CharacterCountdown` behavior.
+	if (!notes.trim()) return null
 	const { maxLength } = callKentFieldConstraints.notes
-	if (trimmed.length > maxLength) {
+	if (notes.length > maxLength) {
 		return `Notes must be no longer than ${maxLength} characters`
 	}
 	return null
