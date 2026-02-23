@@ -42,6 +42,13 @@ export async function gravatarExistsForEmail({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 365,
 		checkValue: (prevValue) => typeof prevValue === 'boolean',
 		getFreshValue: async (context) => {
+			// In mocks mode we should not make external HTTP requests (can hang/flake
+			// CI/e2e runs, especially with Node v24 fetch abort issues).
+			if (process.env.MOCKS === 'true') {
+				context.metadata.ttl = 1000 * 60 * 60 * 24 * 365
+				return false
+			}
+
 			const gravatarUrl = getAvatar(email, { fallback: '404' })
 			try {
 				const timeoutMs = context.background || forceFresh ? 1000 * 10 : 100

@@ -75,6 +75,10 @@ function getPasswordHashParts(password: string) {
 }
 
 async function checkIsCommonPassword(password: string) {
+	// In mocks mode we don't want to make external HTTP requests for password
+	// strength checks (it can hang CI / e2e test runs and adds nondeterminism).
+	if (process.env.MOCKS === 'true') return false
+
 	const [prefix, suffix] = getPasswordHashParts(password)
 	try {
 		const response = await fetchWithTimeout(
