@@ -38,6 +38,10 @@ function getSimplecastConfig() {
 	}
 }
 
+// Episodes can be fetched concurrently from multiple seasons (and from multiple
+// requests). Cap the total in-flight episode-detail requests to reduce 429s.
+const simplecastEpisodeDetailsLimit = pLimit(3)
+
 const cwkCachedLinkSchema = z
 	.object({
 		name: z.string().min(1),
@@ -230,13 +234,15 @@ async function getEpisodes(
 async function getEpisode(episodeId: string) {
 	const { headers } = getSimplecastConfig()
 	const json = simplecastEpisodeSchema.parse(
-		await fetchJsonWithRetryAfter<unknown>(
-			`https://api.simplecast.com/episodes/${episodeId}`,
-			{
-				headers,
-				label: `simplecast episode ${episodeId}`,
-				retryOn5xx: true,
-			},
+		await simplecastEpisodeDetailsLimit(() =>
+			fetchJsonWithRetryAfter<unknown>(
+				`https://api.simplecast.com/episodes/${episodeId}`,
+				{
+					headers,
+					label: `simplecast episode ${episodeId}`,
+					retryOn5xx: true,
+				},
+			),
 		),
 	)
 

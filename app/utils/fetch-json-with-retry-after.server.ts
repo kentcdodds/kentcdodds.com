@@ -92,6 +92,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		maxRetries = 5,
 		defaultDelayMs = 750,
 		maxDelayMs = 1000 * 60 * 10,
+		timeoutMs = 30_000,
 		label,
 		sleep = defaultSleep,
 		retryOn5xx = false,
@@ -100,13 +101,32 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		maxRetries?: number
 		defaultDelayMs?: number
 		maxDelayMs?: number
+		timeoutMs?: number
 		label?: string
 		sleep?: Sleep
 		retryOn5xx?: boolean
 	} = {},
 ): Promise<JsonResponse> {
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
-		const res = await fetch(url, { headers })
+		let res: Response
+		try {
+			res = await fetch(url, {
+				headers,
+				signal: timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined,
+			})
+		} catch (cause) {
+			if (attempt < maxRetries) {
+				const delayMs = clampMs(defaultDelayMs * (attempt + 1), maxDelayMs)
+				console.warn(
+					`${label ?? 'request'}: fetch failed (attempt ${attempt + 1}/${
+						maxRetries + 1
+					}), waiting ${Math.round(delayMs)}ms`,
+				)
+				await sleep(delayMs)
+				continue
+			}
+			throw new Error(`${label ?? 'request'}: fetch failed`, { cause })
+		}
 
 		if (res.status === 429) {
 			if (attempt >= maxRetries) {
@@ -152,7 +172,14 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 			)
 		}
 
-		return (await res.json()) as JsonResponse
+		try {
+			return (await res.json()) as JsonResponse
+		} catch (cause) {
+			throw new Error(
+				`${label ?? 'request'}: failed to parse JSON (${res.status} ${res.statusText})`,
+				{ cause },
+			)
+		}
 	}
 
 	// This should be unreachable, but keep a deterministic error.
