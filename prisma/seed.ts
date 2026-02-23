@@ -1,6 +1,7 @@
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { subMonths } from 'date-fns'
 import { PrismaClient } from '#app/utils/prisma-generated.server/client.ts'
+import { getPasswordHash } from '#app/utils/password.server.ts'
 
 import 'dotenv/config'
 
@@ -13,14 +14,24 @@ const prisma = new PrismaClient({
 })
 
 async function main() {
+	const kentPasswordHash = await getPasswordHash('iliketwix')
+
 	const kent = await prisma.user.upsert({
 		where: { email: 'me@kentcdodds.com' },
-		update: {},
+		update: {
+			password: {
+				upsert: {
+					create: { hash: kentPasswordHash },
+					update: { hash: kentPasswordHash },
+				},
+			},
+		},
 		create: {
 			email: `me@kentcdodds.com`,
 			firstName: 'Kent',
 			team: 'BLUE',
 			role: 'ADMIN',
+			password: { create: { hash: kentPasswordHash } },
 		},
 	})
 
