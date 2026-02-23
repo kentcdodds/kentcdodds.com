@@ -23,6 +23,8 @@ type KitTag = {
 async function getKitSubscriber(email: string) {
 	const { apiSecret } = getKitAuth()
 	const url = new URL('https://api.kit.com/v3/subscribers')
+	// Kit API v3 expects `api_secret` as a query param for these endpoints.
+	// Avoid logging this URL to prevent leaking credentials.
 	url.searchParams.set('api_secret', apiSecret)
 	url.searchParams.set('email_address', email)
 
@@ -38,6 +40,8 @@ async function getKitSubscriber(email: string) {
 async function getKitSubscriberTags(subscriberId: KitSubscriber['id']) {
 	const { apiSecret } = getKitAuth()
 	const url = new URL(`https://api.kit.com/v3/subscribers/${subscriberId}/tags`)
+	// Kit API v3 expects `api_secret` as a query param for these endpoints.
+	// Avoid logging this URL to prevent leaking credentials.
 	url.searchParams.set('api_secret', apiSecret)
 
 	const resp = await fetch(url.toString())
