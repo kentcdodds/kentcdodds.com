@@ -236,11 +236,19 @@ function EpisodeArtworkImg({
 		setFallbackSrc(resolvedSrc)
 	}
 
+	function handlePreloadError() {
+		handleResolved(safeSrc)
+	}
+
 	return (
 		<>
 			<img src={fallbackSrc} {...props} className={imgClassName} />
 			{isPending ? (
-				<ErrorBoundary resetKeys={[safeSrc]} fallback={null}>
+				<ErrorBoundary
+					resetKeys={[safeSrc]}
+					onError={handlePreloadError}
+					fallback={null}
+				>
 					<React.Suspense fallback={null}>
 						<PreloadImage src={safeSrc} onResolved={handleResolved} />
 					</React.Suspense>
