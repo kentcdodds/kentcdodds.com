@@ -54,7 +54,7 @@ export function getRetryDelayMsFromResponse(
 	{
 		nowMs = Date.now(),
 		defaultDelayMs = 1000,
-		maxDelayMs = 1000 * 60,
+		maxDelayMs = 1000 * 60 * 10,
 	}: {
 		nowMs?: number
 		defaultDelayMs?: number
@@ -91,7 +91,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		headers,
 		maxRetries = 5,
 		defaultDelayMs = 750,
-		maxDelayMs = 1000 * 60,
+		maxDelayMs = 1000 * 60 * 10,
 		label,
 		sleep = defaultSleep,
 		fetchImpl = fetch,
