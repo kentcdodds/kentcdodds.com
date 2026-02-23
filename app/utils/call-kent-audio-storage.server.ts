@@ -79,7 +79,7 @@ function extFromContentType(contentType: string) {
 }
 
 function getCallKentBucketName() {
-	return process.env.CALL_KENT_R2_BUCKET ?? null
+	return process.env.CALL_KENT_R2_BUCKET
 }
 
 function getR2ConfigFromEnv() {
@@ -184,14 +184,6 @@ function createR2Store({ bucket }: { bucket: string }): AudioStore {
 
 function getStore(): { store: AudioStore; bucket: string; source: 'r2' | 'disk' } {
 	const bucket = getCallKentBucketName()
-	if (!bucket) {
-		// In MOCKS mode we can still use disk storage without a bucket.
-		if (process.env.MOCKS === 'true') {
-			return { store: createDiskStore({ bucket: 'mock-call-kent' }), bucket: 'mock-call-kent', source: 'disk' }
-		}
-		throw new Error('CALL_KENT_R2_BUCKET is required for call audio storage')
-	}
-
 	// In local dev/CI we prefer disk to keep everything self-contained.
 	if (process.env.MOCKS === 'true') {
 		return { store: createDiskStore({ bucket }), bucket, source: 'disk' }
