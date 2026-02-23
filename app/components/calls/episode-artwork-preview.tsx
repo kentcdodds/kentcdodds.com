@@ -224,67 +224,43 @@ function EpisodeArtworkImg({
 		latestSrcRef.current = safeSrc
 	}
 
-	const isReplacing = fallbackSrc !== safeSrc
-	const fallbackClassName = clsx(
+	const isPending = fallbackSrc !== safeSrc
+	const imgClassName = clsx(
 		className,
 		'transition-opacity',
-		isReplacing ? 'opacity-60' : 'opacity-100',
+		isPending ? 'opacity-60' : 'opacity-100',
 	)
-	const loadedClassName = clsx(className, 'transition-opacity', 'opacity-100')
 
 	function handleResolved(resolvedSrc: string) {
 		if (resolvedSrc !== latestSrcRef.current) return
 		setFallbackSrc(resolvedSrc)
 	}
 
-	if (!isReplacing) {
-		return <img src={safeSrc} {...props} className={loadedClassName} />
-	}
-
 	return (
-		<ErrorBoundary
-			resetKeys={[safeSrc]}
-			fallback={
-				<img
-					src={fallbackSrc || safeSrc}
-					{...props}
-					className={fallbackClassName}
-				/>
-			}
-		>
-			<React.Suspense
-				fallback={
-					<img
-						src={fallbackSrc || safeSrc}
-						{...props}
-						className={fallbackClassName}
-					/>
-				}
-			>
-				<Img
-					src={safeSrc}
-					{...props}
-					className={loadedClassName}
-					onSrcResolved={handleResolved}
-				/>
-			</React.Suspense>
-		</ErrorBoundary>
+		<>
+			<img src={fallbackSrc} {...props} className={imgClassName} />
+			{isPending ? (
+				<ErrorBoundary resetKeys={[safeSrc]} fallback={null}>
+					<React.Suspense fallback={null}>
+						<PreloadImage src={safeSrc} onResolved={handleResolved} />
+					</React.Suspense>
+				</ErrorBoundary>
+			) : null}
+		</>
 	)
 }
 
-function Img({
-	src = '',
-	onSrcResolved,
-	...props
-}: React.ComponentProps<'img'> & {
-	onSrcResolved?: (resolvedSrc: string) => void
+function PreloadImage({
+	src,
+	onResolved,
+}: {
+	src: string
+	onResolved: (resolvedSrc: string) => void
 }) {
-	const isServer = typeof document === 'undefined'
-	const loadedSrc = isServer ? src : React.use(imgSrc(src))
+	const loadedSrc = React.use(imgSrc(src))
 	React.useEffect(() => {
-		if (isServer) return
-		onSrcResolved?.(loadedSrc)
-	}, [isServer, loadedSrc, onSrcResolved])
-	return <img src={loadedSrc} {...props} />
+		onResolved(loadedSrc)
+	}, [loadedSrc, onResolved])
+	return null
 }
 
