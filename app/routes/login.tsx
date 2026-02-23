@@ -261,6 +261,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 					return
 				}
 
+				setPasskeyMessage(null)
 				console.error(e)
 			}
 		}
