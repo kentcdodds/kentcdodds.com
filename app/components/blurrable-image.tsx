@@ -2,9 +2,6 @@ import { clsx } from 'clsx'
 import * as React from 'react'
 
 const isServer = typeof document === 'undefined'
-const useIsomorphicLayoutEffect = isServer
-	? React.useEffect
-	: React.useLayoutEffect
 
 function BlurrableImage({
 	img,
@@ -15,40 +12,41 @@ function BlurrableImage({
 	blurDataUrl?: string
 } & React.HTMLAttributes<HTMLDivElement>) {
 	const id = React.useId()
-	const [visible, setVisible] = React.useState(false)
+	const [visible, setVisible] = React.useState(() => {
+		if (isServer) return false
+
+		// During hydration the element might not be in the DOM yet, so guard
+		// against null to avoid crashing and fall back to the blurred state.
+		const el = document.getElementById(id)
+		if (!(el instanceof HTMLImageElement)) return false
+
+		// on the client, it's possible the images has already finished loading.
+		// we've got the data-evt-onload attribute on the image
+		// (which our entry.server replaces with simply "onload") which will remove
+		// the class "opacity-0" from the image once it's loaded. So we'll check
+		// if the image is already loaded and if so, we know that visible should
+		// initialize to true.
+		return !el.classList.contains('opacity-0')
+	})
 	const jsImgElRef = React.useRef<HTMLImageElement>(null)
 
-	useIsomorphicLayoutEffect(() => {
-		const imageEl = jsImgElRef.current
-		if (!imageEl) return
-
-		// On the client, the image might have already loaded before hydration,
-		// which removes the opacity class via the server-rendered onload handler.
-		if (imageEl.complete || !imageEl.classList.contains('opacity-0')) {
-			setVisible(true)
-		}
-	}, [])
-
 	React.useEffect(() => {
-		const imageEl = jsImgElRef.current
-		if (!imageEl) return
-		if (imageEl.complete) {
+		if (!jsImgElRef.current) return
+		if (jsImgElRef.current.complete) {
 			setVisible(true)
 			return
 		}
 
 		let current = true
-		const handleLoad = () => {
+		jsImgElRef.current.addEventListener('load', () => {
 			if (!jsImgElRef.current || !current) return
 			setTimeout(() => {
 				setVisible(true)
 			}, 0)
-		}
-		imageEl.addEventListener('load', handleLoad)
+		})
 
 		return () => {
 			current = false
-			imageEl.removeEventListener('load', handleLoad)
 		}
 	}, [])
 
