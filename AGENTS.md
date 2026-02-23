@@ -2,6 +2,9 @@
 
 ## Cloud-specific instructions
 
+If you're fixing a bug, always attempt to reproduce it with an automated test or
+manually first. This is the only way to be sure you've actually fixed the bug.
+
 ### Overview
 
 This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
