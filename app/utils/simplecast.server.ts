@@ -206,6 +206,7 @@ async function getEpisodes(
 		timings?: Timings
 	},
 ) {
+	const { headers } = getSimplecastConfig()
 	const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
 	url.searchParams.set('limit', '300')
 	const res = await fetch(url.toString(), { headers })
@@ -226,6 +227,7 @@ async function getEpisodes(
 }
 
 async function getEpisode(episodeId: string) {
+	const { headers } = getSimplecastConfig()
 	const res = await fetch(`https://api.simplecast.com/episodes/${episodeId}`, {
 		headers,
 	})

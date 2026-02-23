@@ -145,9 +145,10 @@ async function tagKCDSiteSubscriber({
 	const subscriber = await getKitSubscriber(email)
 	const kcdTagId = '2466369'
 	const kcdSiteForm = '2393887'
+	const { apiKey, apiSecret } = getKitAuth()
 	const subscriberData = {
-		api_key: KIT_API_KEY,
-		api_secret: KIT_API_SECRET,
+		api_key: apiKey,
+		api_secret: apiSecret,
 		first_name: firstName,
 		email,
 		fields,

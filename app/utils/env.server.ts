@@ -133,6 +133,7 @@ const schema = schemaBase.superRefine((values, ctx) => {
 })
 
 type BaseEnv = z.infer<typeof schemaBase>
+type BaseEnvInput = z.input<typeof schemaBase>
 
 export type Env = Omit<BaseEnv, 'PORT' | 'MOCKS' | 'DATABASE_PATH'> & {
 	PORT: number
@@ -143,7 +144,7 @@ export type Env = Omit<BaseEnv, 'PORT' | 'MOCKS' | 'DATABASE_PATH'> & {
 
 declare global {
 	namespace NodeJS {
-		interface ProcessEnv extends BaseEnv {}
+		interface ProcessEnv extends BaseEnvInput {}
 	}
 }
 
