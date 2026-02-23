@@ -237,6 +237,10 @@ function EpisodeArtworkImg({
 		setFallbackSrc(resolvedSrc)
 	}
 
+	if (!isReplacing) {
+		return <img src={safeSrc} {...props} className={loadedClassName} />
+	}
+
 	return (
 		<ErrorBoundary
 			resetKeys={[safeSrc]}
@@ -275,13 +279,12 @@ function Img({
 }: React.ComponentProps<'img'> & {
 	onSrcResolved?: (resolvedSrc: string) => void
 }) {
-	if (typeof document === 'undefined') {
-		return <img src={src} {...props} />
-	}
-	const loadedSrc = React.use(imgSrc(src))
+	const isServer = typeof document === 'undefined'
+	const loadedSrc = isServer ? src : React.use(imgSrc(src))
 	React.useEffect(() => {
+		if (isServer) return
 		onSrcResolved?.(loadedSrc)
-	}, [loadedSrc, onSrcResolved])
+	}, [isServer, loadedSrc, onSrcResolved])
 	return <img src={loadedSrc} {...props} />
 }
 
