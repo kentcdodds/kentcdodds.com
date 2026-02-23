@@ -79,31 +79,18 @@ function extFromContentType(contentType: string) {
 }
 
 function getCallKentBucketName() {
-	// Separate bucket from semantic-search manifests (which uses R2_BUCKET).
-	// Allow falling back to R2_BUCKET for setups that share a bucket.
-	return process.env.CALL_KENT_R2_BUCKET ?? process.env.R2_BUCKET ?? null
+	return process.env.CALL_KENT_R2_BUCKET ?? null
 }
 
 function getR2ConfigFromEnv() {
 	const endpoint = process.env.R2_ENDPOINT
 	const accessKeyId = process.env.R2_ACCESS_KEY_ID
 	const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
-	const bucket = getCallKentBucketName()
-	return { endpoint, accessKeyId, secretAccessKey, bucket }
+	return { endpoint, accessKeyId, secretAccessKey }
 }
 
 function isNonEmptyString(value: unknown): value is string {
 	return typeof value === 'string' && value.trim().length > 0
-}
-
-function isCallKentR2Configured() {
-	const { endpoint, accessKeyId, secretAccessKey, bucket } = getR2ConfigFromEnv()
-	return Boolean(
-		isNonEmptyString(endpoint) &&
-			isNonEmptyString(accessKeyId) &&
-			isNonEmptyString(secretAccessKey) &&
-			isNonEmptyString(bucket),
-	)
 }
 
 let _r2Client: S3Client | null = null
@@ -202,7 +189,7 @@ function getStore(): { store: AudioStore; bucket: string; source: 'r2' | 'disk' 
 		if (process.env.MOCKS === 'true') {
 			return { store: createDiskStore({ bucket: 'mock-call-kent' }), bucket: 'mock-call-kent', source: 'disk' }
 		}
-		throw new Error('CALL_KENT_R2_BUCKET (or R2_BUCKET) is required for call audio storage')
+		throw new Error('CALL_KENT_R2_BUCKET is required for call audio storage')
 	}
 
 	// In local dev/CI we prefer disk to keep everything self-contained.
@@ -210,16 +197,8 @@ function getStore(): { store: AudioStore; bucket: string; source: 'r2' | 'disk' 
 		return { store: createDiskStore({ bucket }), bucket, source: 'disk' }
 	}
 
-	if (isCallKentR2Configured()) {
-		return { store: createR2Store({ bucket }), bucket, source: 'r2' }
-	}
-
-	if (process.env.NODE_ENV === 'production') {
-		throw new Error('R2 is not configured for call audio storage in production')
-	}
-
-	// Dev escape hatch when R2 is not configured.
-	return { store: createDiskStore({ bucket }), bucket, source: 'disk' }
+	// Not mocked: always use R2 and fail fast if env vars are missing.
+	return { store: createR2Store({ bucket }), bucket, source: 'r2' }
 }
 
 export function getCallAudioKey(callId: string, contentType: string) {
