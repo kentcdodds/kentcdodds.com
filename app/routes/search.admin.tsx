@@ -283,16 +283,6 @@ export async function action({ request }: Route.ActionArgs) {
 			{ status: 503 },
 		)
 	}
-	if (store.source === 'fixtures') {
-		return json(
-			{
-				ok: false,
-				error:
-					'Fixture semantic-search manifests are read-only. Configure R2 to modify manifests or the ignore list.',
-			},
-			{ status: 503 },
-		)
-	}
 
 	const formData = await request.formData()
 	const intent = formData.get('intent')

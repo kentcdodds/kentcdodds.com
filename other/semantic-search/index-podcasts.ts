@@ -343,7 +343,7 @@ async function fetchSimplecastEpisodes() {
 
 async function main() {
 	const { manifestKey } = parseArgs()
-	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
+	const { accountId, apiToken, gatewayId, vectorizeIndex, embeddingModel } =
 		getCloudflareConfig()
 	const r2Bucket = (process.env.R2_BUCKET ?? '').trim()
 	if (!r2Bucket) {
@@ -532,6 +532,7 @@ async function main() {
 		await vectorizeDeleteByIds({
 			accountId,
 			apiToken,
+			gatewayId,
 			indexName: vectorizeIndex,
 			ids: idBatch,
 		})
@@ -553,6 +554,7 @@ async function main() {
 			const embeddings = await getEmbeddings({
 				accountId,
 				apiToken,
+				gatewayId,
 				model: embeddingModel,
 				texts: items.map((b) => b.text),
 			})
@@ -601,6 +603,7 @@ async function main() {
 		await vectorizeUpsert({
 			accountId,
 			apiToken,
+			gatewayId,
 			indexName: vectorizeIndex,
 			vectors: vecBatch,
 		})

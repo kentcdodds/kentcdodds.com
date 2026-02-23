@@ -26,6 +26,17 @@ describe('github mdx resolution', () => {
 		})
 	})
 
+	test('explicit `.mdx` file requests also produce a canonical virtual index path', async () => {
+		// This repo has posts stored as `content/blog/<slug>.mdx`.
+		const result = await downloadMdxFileOrDirectory('blog/why-i-love-remix.mdx')
+		expect(result.entry).toBe('content/blog/why-i-love-remix.mdx')
+		expect(
+			result.files.some(
+				(f) => f.path === 'content/blog/why-i-love-remix/index.mdx',
+			),
+		).toBe(true)
+	})
+
 	test('downloads a real directory-backed post', async () => {
 		const result = await downloadMdxFileOrDirectory(
 			'blog/use-react-error-boundary-to-handle-errors-in-react',

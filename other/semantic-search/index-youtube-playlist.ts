@@ -1130,11 +1130,13 @@ async function mapWithConcurrency<Item, Result>(
 async function embedItemsSafely({
 	accountId,
 	apiToken,
+	gatewayId,
 	model,
 	items,
 }: {
 	accountId: string
 	apiToken: string
+	gatewayId: string
 	model: string
 	items: Array<{
 		vectorId: string
@@ -1148,6 +1150,7 @@ async function embedItemsSafely({
 		const embeddings = await getEmbeddings({
 			accountId,
 			apiToken,
+			gatewayId,
 			model,
 			texts: items.map((item) => item.text),
 		})
@@ -1170,12 +1173,14 @@ async function embedItemsSafely({
 		const left = await embedItemsSafely({
 			accountId,
 			apiToken,
+			gatewayId,
 			model,
 			items: items.slice(0, mid),
 		})
 		const right = await embedItemsSafely({
 			accountId,
 			apiToken,
+			gatewayId,
 			model,
 			items: items.slice(mid),
 		})
@@ -1447,7 +1452,7 @@ async function main() {
 		return
 	}
 
-	const { accountId, apiToken, vectorizeIndex, embeddingModel } =
+	const { accountId, apiToken, gatewayId, vectorizeIndex, embeddingModel } =
 		getCloudflareConfig()
 
 	const idsToDelete: string[] = []
@@ -1643,6 +1648,7 @@ async function main() {
 		await vectorizeDeleteByIds({
 			accountId,
 			apiToken,
+			gatewayId,
 			indexName: vectorizeIndex,
 			ids: idBatch,
 		})
@@ -1663,6 +1669,7 @@ async function main() {
 		const vectors = await embedItemsSafely({
 			accountId,
 			apiToken,
+			gatewayId,
 			model: embeddingModel,
 			items: embedBatch,
 		})
@@ -1682,6 +1689,7 @@ async function main() {
 		await vectorizeUpsert({
 			accountId,
 			apiToken,
+			gatewayId,
 			indexName: vectorizeIndex,
 			vectors: vectorBatch,
 		})

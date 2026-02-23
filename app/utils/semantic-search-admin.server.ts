@@ -40,7 +40,7 @@ export type SemanticSearchManifest = {
 export const DEFAULT_MANIFEST_PREFIX = 'manifests/'
 
 export type SemanticSearchAdminStore = {
-	source: 'r2' | 'fixtures'
+	source: 'r2'
 	bucket: string
 	ignoreListKey: string
 	listManifestKeys: () => Promise<string[]>
@@ -251,165 +251,10 @@ function createR2AdminStore(): SemanticSearchAdminStore {
 	}
 }
 
-const FIXTURE_MANIFEST_OBJECTS: Record<string, unknown> = {
-	'manifests/repo-content.json': {
-		version: 1,
-		docs: {
-			'blog:super-simple-start-to-remix': {
-				type: 'blog',
-				url: '/blog/super-simple-start-to-remix',
-				title: 'Super Simple Start to Remix',
-				chunks: [
-					{
-						id: 'blog:super-simple-start-to-remix:chunk:0',
-						hash: 'fixture-hash-blog-0',
-						snippet: 'Fixture snippet: this represents indexed blog content…',
-						chunkIndex: 0,
-						chunkCount: 2,
-					},
-					{
-						id: 'blog:super-simple-start-to-remix:chunk:1',
-						hash: 'fixture-hash-blog-1',
-						snippet: 'Fixture snippet: second chunk…',
-						chunkIndex: 1,
-						chunkCount: 2,
-					},
-				],
-			},
-			'page:uses': {
-				type: 'page',
-				url: '/uses',
-				title: 'Uses',
-				chunks: [
-					{
-						id: 'page:uses:chunk:0',
-						hash: 'fixture-hash-page-0',
-						snippet: 'Fixture snippet: page content…',
-						chunkIndex: 0,
-						chunkCount: 1,
-					},
-				],
-			},
-		},
-	},
-	'manifests/podcasts.json': {
-		version: 1,
-		docs: {
-			'ck:s01e01': {
-				type: 'ck',
-				url: '/calls/1/1',
-				title: 'Fixture Call Kent Episode',
-				sourceUpdatedAt: '2026-02-01T00:00:00.000Z',
-				chunks: [
-					{
-						id: 'ck:s01e01:chunk:0',
-						hash: 'fixture-hash-ck-0',
-						snippet: 'Fixture snippet: podcast summary…',
-						chunkIndex: 0,
-						chunkCount: 1,
-					},
-				],
-			},
-		},
-	},
-	'manifests/youtube-PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf.json': {
-		version: 1,
-		docs: {
-			'youtube:dQw4w9WgXcQ': {
-				type: 'youtube',
-				url: '/youtube?video=dQw4w9WgXcQ',
-				title: 'Fixture YouTube Video',
-				sourceUpdatedAt: '2026-02-01',
-				transcriptSource: 'manual',
-				chunks: [
-					{
-						id: 'youtube:dQw4w9WgXcQ:chunk:0',
-						hash: 'fixture-hash-yt-0',
-						snippet: 'Fixture snippet: transcript chunk…',
-						chunkIndex: 0,
-						chunkCount: 3,
-					},
-					{
-						id: 'youtube:dQw4w9WgXcQ:chunk:1',
-						hash: 'fixture-hash-yt-1',
-						snippet: 'Fixture snippet: another transcript chunk…',
-						chunkIndex: 1,
-						chunkCount: 3,
-					},
-					{
-						id: 'youtube:dQw4w9WgXcQ:chunk:2',
-						hash: 'fixture-hash-yt-2',
-						snippet: 'Fixture snippet: third transcript chunk…',
-						chunkIndex: 2,
-						chunkCount: 3,
-					},
-				],
-			},
-		},
-	},
-}
-
-let _fixtureStore: SemanticSearchAdminStore | null = null
-function createFixtureAdminStore(): SemanticSearchAdminStore {
-	const isProd = getEnv().NODE_ENV === 'production'
-	if (isProd && _fixtureStore) return _fixtureStore
-
-	const bucket = getR2Bucket()
-	const ignoreListKey = getEnv().SEMANTIC_SEARCH_IGNORE_LIST_KEY
-	const objects = new Map<string, unknown>(
-		Object.entries({
-			...FIXTURE_MANIFEST_OBJECTS,
-			[ignoreListKey]: {
-				version: 1,
-				updatedAt: '2026-02-20T00:00:00.000Z',
-				patterns: [],
-			},
-		}).map(([k, v]) => [k, structuredClone(v)]),
-	)
-
-	const store: SemanticSearchAdminStore = {
-		source: 'fixtures',
-		bucket,
-		ignoreListKey,
-		listManifestKeys: async () => {
-			return [...objects.keys()]
-				.filter((k) => k.startsWith(DEFAULT_MANIFEST_PREFIX))
-				.filter((k) => k.endsWith('.json'))
-				.filter((k) => k !== ignoreListKey)
-				.sort((a, b) => a.localeCompare(b))
-		},
-		getManifest: async (key) => {
-			const value = objects.get(key)
-			return value ? (structuredClone(value) as SemanticSearchManifest) : null
-		},
-		putManifest: async (key, value) => {
-			objects.set(key, structuredClone(value))
-		},
-		getIgnoreList: async () => {
-			const value = objects.get(ignoreListKey)
-			return value
-				? (structuredClone(value) as SemanticSearchIgnoreList)
-				: getDefaultIgnoreList()
-		},
-		putIgnoreList: async (value) => {
-			objects.set(ignoreListKey, structuredClone(value))
-		},
-	}
-	if (isProd) _fixtureStore = store
-	return store
-}
-
 export function getSemanticSearchAdminStore(): {
 	store: SemanticSearchAdminStore | null
 	configured: boolean
 	message?: string
 } {
-	if (getEnv().MOCKS) {
-		return {
-			store: createFixtureAdminStore(),
-			configured: true,
-			message: 'Using fixture semantic-search manifests (read-only).',
-		}
-	}
 	return { store: createR2AdminStore(), configured: true }
 }

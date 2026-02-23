@@ -1,6 +1,8 @@
 # Fly.io Scale-Down Recovery Plan
 
-Recovery plan for kcd production when LiteFS/deployment issues cause cascading failures. Scale to a single instance, deploy the fix, verify, then scale back up.
+Recovery plan for kcd production when LiteFS/deployment issues cause cascading
+failures. Scale to a single instance, deploy the fix, verify, then scale back
+up.
 
 ## Prerequisites
 
@@ -26,7 +28,8 @@ fly machine destroy e822040fee7398 -a kcd  # cdg
 
 ## Step 2: Deploy the Fix
 
-The build requires `SENTRY_AUTH_TOKEN` as a build secret and `COMMIT_SHA` as a build arg:
+The build requires `SENTRY_AUTH_TOKEN` as a build secret and `COMMIT_SHA` as a
+build arg:
 
 ```bash
 fly deploy -a kcd \
@@ -34,9 +37,11 @@ fly deploy -a kcd \
   --build-secret SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 ```
 
-Or push to `main` and let the GitHub Action deploy (it has access to the secret).
+Or push to `main` and let the GitHub Action deploy (it has access to the
+secret).
 
-This updates the single remaining machine with the new image (including the FLY_MACHINE_ID fix).
+This updates the single remaining machine with the new image (including the
+FLY_MACHINE_ID fix).
 
 ## Step 3: Verify
 
@@ -53,10 +58,14 @@ Run deploy again to recreate replicas:
 fly deploy -a kcd
 ```
 
-Fly may recreate machines based on previous configuration. If replicas are not recreated, you may need to clone the primary to other regions via the Fly dashboard or `fly machine clone`.
+Fly may recreate machines based on previous configuration. If replicas are not
+recreated, you may need to clone the primary to other regions via the Fly
+dashboard or `fly machine clone`.
 
 ## Notes
 
 - **Downtime**: Brief downtime during scale-down and deploy is expected.
-- **Primary**: The primary holds the LiteFS volume; it must stay in dfw (primary_region in fly.toml).
-- **Machine IDs**: Run `fly machines list -a kcd` to get current IDs before scaling down — they may change between runs.
+- **Primary**: The primary holds the LiteFS volume; it must stay in dfw
+  (primary_region in fly.toml).
+- **Machine IDs**: Run `fly machines list -a kcd` to get current IDs before
+  scaling down — they may change between runs.

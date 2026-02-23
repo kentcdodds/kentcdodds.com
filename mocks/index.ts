@@ -1,5 +1,6 @@
 import { http, passthrough, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
+import { cloudflareR2Handlers } from './cloudflare-r2.ts'
 import { cloudflareHandlers } from './cloudflare.ts'
 import { discordHandlers } from './discord.ts'
 import { githubHandlers } from './github.ts'
@@ -85,6 +86,7 @@ const server = setupServer(
 	...kitHandlers,
 	...simplecastHandlers,
 	...cloudflareHandlers,
+	...cloudflareR2Handlers,
 	...miscHandlers,
 )
 

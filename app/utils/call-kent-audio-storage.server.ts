@@ -1,5 +1,3 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import { Readable } from 'node:stream'
 import {
 	DeleteObjectCommand,
@@ -7,7 +5,6 @@ import {
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3'
-import fsExtra from 'fs-extra'
 import { getEnv } from '#app/utils/env.server.ts'
 
 type PutAudioResult = {
@@ -55,10 +52,6 @@ export function parseHttpByteRangeHeader(rangeHeader: string, size: number) {
 	if (start < 0 || end < start) return null
 	if (start >= size) return null
 	return { start, end: Math.min(end, size - 1) }
-}
-
-function getCacheRoot() {
-	return path.join(process.cwd(), '.cache', 'cloudflare-r2')
 }
 
 function parseBase64DataUrl(dataUrl: string): {
@@ -136,29 +129,6 @@ function getR2Client() {
 	return _r2Client
 }
 
-function createDiskStore({ bucket }: { bucket: string }): AudioStore {
-	return {
-		async put({ key, body, contentType }) {
-			const fullPath = path.join(getCacheRoot(), bucket, key)
-			fsExtra.ensureDirSync(path.dirname(fullPath))
-			await fs.promises.writeFile(fullPath, body)
-			return { key, contentType, size: body.byteLength }
-		},
-		async getStream({ key, range }) {
-			const fullPath = path.join(getCacheRoot(), bucket, key)
-			const stream = fs.createReadStream(
-				fullPath,
-				range ? { start: range.start, end: range.end } : undefined,
-			)
-			return { body: stream }
-		},
-		async delete({ key }) {
-			const fullPath = path.join(getCacheRoot(), bucket, key)
-			await fsExtra.remove(fullPath)
-		},
-	}
-}
-
 function createR2Store({ bucket }: { bucket: string }): AudioStore {
 	const client = getR2Client()
 	return {
@@ -196,15 +166,9 @@ function createR2Store({ bucket }: { bucket: string }): AudioStore {
 function getStore(): {
 	store: AudioStore
 	bucket: string
-	source: 'r2' | 'disk'
+	source: 'r2'
 } {
 	const bucket = getCallKentBucketName()
-	// In local dev/CI we prefer disk to keep everything self-contained.
-	if (getEnv().MOCKS) {
-		return { store: createDiskStore({ bucket }), bucket, source: 'disk' }
-	}
-
-	// Not mocked: always use R2 and fail fast if env vars are missing.
 	return { store: createR2Store({ bucket }), bucket, source: 'r2' }
 }
 

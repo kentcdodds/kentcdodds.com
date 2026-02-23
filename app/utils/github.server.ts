@@ -72,7 +72,15 @@ async function downloadMdxFileOrDirectory(
 		if (exactFile) {
 			const content = await downloadFileBySha(exactFile.sha)
 			entry = exactFile.path
+			// `compileMdx` expects content to look like `<slug>/index.mdx`. Historically,
+			// callers could pass slugs with or without a `.mdx` suffix. To avoid 404s
+			// due to path-shape mismatch, we provide both virtual paths.
+			const virtualDirWithoutExt = nodePath.join(parentDir, mdxFileWithoutExt)
 			files = [
+				{
+					path: safePath(nodePath.join(virtualDirWithoutExt, 'index.mdx')),
+					content,
+				},
 				{
 					path: safePath(nodePath.join(mdxFileOrDirectory, 'index.mdx')),
 					content,
