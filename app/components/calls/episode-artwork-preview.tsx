@@ -1,7 +1,6 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { useSpinDelay } from 'spin-delay'
 import {
 	getCallKentEpisodeArtworkAvatar,
 	getCallKentEpisodeArtworkUrl,
@@ -40,23 +39,10 @@ export function EpisodeArtworkPreview({
 	onAnonymousChange: (next: boolean) => void
 }) {
 	const [debouncedTitle, setDebouncedTitle] = React.useState(title)
-	const [, startTransition] = React.useTransition()
-	const [enableSuspenseImage, setEnableSuspenseImage] = React.useState(false)
-	const [previewIsAnonymous, setPreviewIsAnonymous] = React.useState(isAnonymous)
-	const showPending = useSpinDelay(previewIsAnonymous !== isAnonymous, {
-		delay: 150,
-		minDuration: 250,
-	})
-
 	React.useEffect(() => {
-		const timeout = setTimeout(() => {
-			startTransition(() => {
-				setEnableSuspenseImage(true)
-				setDebouncedTitle(title)
-			})
-		}, 350)
+		const timeout = setTimeout(() => setDebouncedTitle(title), 350)
 		return () => clearTimeout(timeout)
-	}, [title, startTransition])
+	}, [title])
 
 	const host = getHost(origin)
 	const titleForPreview = debouncedTitle.trim() || 'Your Call Kent episode'
@@ -64,26 +50,26 @@ export function EpisodeArtworkPreview({
 	const avatar = React.useMemo(
 		() =>
 			getCallKentEpisodeArtworkAvatar({
-				isAnonymous: previewIsAnonymous,
+				isAnonymous,
 				team,
 				gravatarUrl: hasGravatar
 					? getAvatar(email, { size: AVATAR_SIZE, fallback: null })
 					: null,
 			}),
-		[email, team, hasGravatar, previewIsAnonymous],
+		[email, team, hasGravatar, isAnonymous],
 	)
 
 	const artworkUrl = React.useMemo(() => {
 		return getCallKentEpisodeArtworkUrl({
 			title: titleForPreview,
 			url: `${host}/calls/00/00`,
-			name: previewIsAnonymous ? '- Anonymous' : `- ${firstName}`,
+			name: isAnonymous ? '- Anonymous' : `- ${firstName}`,
 			avatar,
-			avatarIsRound: hasGravatar && !previewIsAnonymous,
+			avatarIsRound: hasGravatar && !isAnonymous,
 			// 2x for a crisp UI preview (the element is ~260px wide).
 			size: 520,
 		})
-	}, [titleForPreview, host, firstName, avatar, hasGravatar, previewIsAnonymous])
+	}, [titleForPreview, host, firstName, avatar, hasGravatar, isAnonymous])
 
 	const tooltip = isAnonymous
 		? `Anonymous is enabled. Your call still shows up in Kent's admin with your info, but the published episode artwork uses a generic Kody avatar instead of your photo.`
@@ -154,14 +140,7 @@ export function EpisodeArtworkPreview({
 							name="anonymous"
 							className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600"
 							checked={isAnonymous}
-							onChange={(e) => {
-								const next = e.currentTarget.checked
-								onAnonymousChange(next)
-								startTransition(() => {
-									setEnableSuspenseImage(true)
-									setPreviewIsAnonymous(next)
-								})
-							}}
+							onChange={(e) => onAnonymousChange(e.currentTarget.checked)}
 						/>
 						<span className="min-w-0">
 							<span className="text-primary inline-flex items-center gap-2 text-sm font-medium">
@@ -218,15 +197,8 @@ export function EpisodeArtworkPreview({
 
 				<div className="flex w-full flex-col gap-3 lg:w-[260px] lg:flex-none">
 					<p className="text-primary text-sm font-medium">Preview</p>
-					<div
-						className={clsx(
-							'relative aspect-square w-full overflow-hidden rounded-lg bg-gray-200 shadow-sm transition-opacity dark:bg-gray-700',
-							showPending ? 'opacity-60' : 'opacity-100',
-						)}
-						aria-busy={showPending}
-					>
+					<div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-200 shadow-sm dark:bg-gray-700">
 						<EpisodeArtworkImg
-							enableSuspense={enableSuspenseImage}
 							src={artworkUrl}
 							alt="Episode artwork preview"
 							loading="lazy"
@@ -240,26 +212,76 @@ export function EpisodeArtworkPreview({
 }
 
 function EpisodeArtworkImg({
-	enableSuspense,
 	src,
+	className,
 	...props
-}: { enableSuspense: boolean } & React.ComponentProps<'img'>) {
+}: React.ComponentProps<'img'>) {
 	const safeSrc = src ?? ''
+	const [fallbackSrc, setFallbackSrc] = React.useState(safeSrc)
+	const latestSrcRef = React.useRef(safeSrc)
+
+	React.useEffect(() => {
+		latestSrcRef.current = safeSrc
+	}, [safeSrc])
+
+	const isReplacing = fallbackSrc !== safeSrc
+	const fallbackClassName = clsx(
+		className,
+		'transition-opacity',
+		isReplacing ? 'opacity-60' : 'opacity-100',
+	)
+	const loadedClassName = clsx(className, 'transition-opacity', 'opacity-100')
+
+	function handleResolved(resolvedSrc: string) {
+		if (resolvedSrc !== latestSrcRef.current) return
+		setFallbackSrc(resolvedSrc)
+	}
+
 	return (
-		<ErrorBoundary fallback={<img src={safeSrc} {...props} />} resetKeys={[safeSrc]}>
-			<React.Suspense fallback={<img src={safeSrc} {...props} />}>
-				{enableSuspense ? (
-					<Img src={safeSrc} {...props} />
-				) : (
-					<img src={safeSrc} {...props} />
-				)}
+		<ErrorBoundary
+			resetKeys={[safeSrc]}
+			fallback={
+				<img
+					src={fallbackSrc || safeSrc}
+					{...props}
+					className={fallbackClassName}
+				/>
+			}
+		>
+			<React.Suspense
+				fallback={
+					<img
+						src={fallbackSrc || safeSrc}
+						{...props}
+						className={fallbackClassName}
+					/>
+				}
+			>
+				<Img
+					src={safeSrc}
+					{...props}
+					className={loadedClassName}
+					onSrcResolved={handleResolved}
+				/>
 			</React.Suspense>
 		</ErrorBoundary>
 	)
 }
 
-function Img({ src = '', ...props }: React.ComponentProps<'img'>) {
+function Img({
+	src = '',
+	onSrcResolved,
+	...props
+}: React.ComponentProps<'img'> & {
+	onSrcResolved?: (resolvedSrc: string) => void
+}) {
+	if (typeof document === 'undefined') {
+		return <img src={src} {...props} />
+	}
 	const loadedSrc = React.use(imgSrc(src))
+	React.useEffect(() => {
+		onSrcResolved?.(loadedSrc)
+	}, [loadedSrc, onSrcResolved])
 	return <img src={loadedSrc} {...props} />
 }
 

@@ -63,18 +63,23 @@ test('episode artwork preview dims while the next image suspends', async () => {
 		render(<Example />)
 
 		const checkbox = screen.getByRole('checkbox', { name: /publish anonymously/i })
-		const previewImg = screen.getByAltText('Episode artwork preview')
-		const previewWrapper = previewImg.parentElement
-		expect(previewWrapper).not.toBeNull()
+		const initialImg = screen.getByAltText('Episode artwork preview')
+		const initialSrc = initialImg.getAttribute('src')
+		expect(initialSrc).toBeTruthy()
 
 		await act(async () => {
 			fireEvent.click(checkbox)
 			expect(checkbox).toBeChecked()
-			await vi.advanceTimersByTimeAsync(200)
-			expect(previewWrapper).toHaveClass('opacity-60')
+
+			const pendingImg = screen.getByAltText('Episode artwork preview')
+			expect(pendingImg).toHaveClass('opacity-60')
+			expect(pendingImg).toHaveAttribute('src', initialSrc)
+
 			await vi.advanceTimersByTimeAsync(1500)
 		})
-		expect(previewWrapper).toHaveClass('opacity-100')
+		const loadedImg = screen.getByAltText('Episode artwork preview')
+		expect(loadedImg).toHaveClass('opacity-100')
+		expect(loadedImg.getAttribute('src')).not.toBe(initialSrc)
 	} finally {
 		vi.unstubAllGlobals()
 		vi.useRealTimers()
