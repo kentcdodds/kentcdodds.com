@@ -2,6 +2,11 @@ import { expect, test } from './utils.ts'
 
 test('passkey form autofill signs in via conditional UI', async ({ page, login }) => {
 	await page.setViewportSize({ width: 1400, height: 900 })
+	const demoPause = async (ms: number) => {
+		if (process.env.PW_DEMO === 'true') {
+			await page.waitForTimeout(ms)
+		}
+	}
 
 	// Configure a virtual authenticator that automatically simulates user presence.
 	// This makes WebAuthn ceremonies deterministic in automation (no OS dialog / no
@@ -32,6 +37,7 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 
 	// Register a passkey for the signed-in user.
 	await page.goto('/me/passkeys')
+	await demoPause(750)
 	const regOptionsResponsePromise = page.waitForResponse((resp) => {
 		return (
 			resp.url().includes('/resources/webauthn/generate-registration-options') &&
@@ -50,6 +56,7 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible({
 		timeout: 15_000,
 	})
+	await demoPause(750)
 	let { credentials } = await client.send('WebAuthn.getCredentials', {
 		authenticatorId,
 	})
@@ -95,6 +102,7 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	})
 
 	await page.goto('/login')
+	await demoPause(750)
 
 	// Markup requirement for passkey form-autofill (per web.dev article).
 	await expect(page.locator('#email-address')).toHaveAttribute(
@@ -118,5 +126,6 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 
 	await page.waitForURL('**/me', { timeout: 10_000 })
 	await expect(page.getByRole('heading', { name: "Here's your profile." })).toBeVisible()
+	await demoPause(1_250)
 })
 
