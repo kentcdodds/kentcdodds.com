@@ -32,7 +32,21 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 
 	// Register a passkey for the signed-in user.
 	await page.goto('/me/passkeys')
+	const regOptionsResponsePromise = page.waitForResponse((resp) => {
+		return (
+			resp.url().includes('/resources/webauthn/generate-registration-options') &&
+			resp.request().method() === 'GET'
+		)
+	})
 	await page.getByRole('button', { name: 'Add Passkey' }).click()
+	const regOptionsJson = (await regOptionsResponsePromise.then((r) =>
+		r.json(),
+	)) as {
+		options?: { authenticatorSelection?: { residentKey?: string } }
+	}
+	expect(regOptionsJson.options?.authenticatorSelection?.residentKey).toBe(
+		'required',
+	)
 	await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible({
 		timeout: 15_000,
 	})
