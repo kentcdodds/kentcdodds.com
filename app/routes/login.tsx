@@ -180,7 +180,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 const AuthenticationOptionsSchema = z.object({
-	options: z.object({ challenge: z.string() }),
+	// Preserve all server-sent fields (rpId, userVerification, timeout, etc.).
+	options: z.object({ challenge: z.string() }).passthrough(),
 }) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
 
 function Login({ loaderData: data }: Route.ComponentProps) {
@@ -219,6 +220,10 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 					'/resources/webauthn/generate-authentication-options',
 					{ method: 'POST' },
 				)
+				if (!isMounted) return
+				if (!optionsResponse.ok) {
+					throw new Error('Failed to generate authentication options')
+				}
 				const json = await optionsResponse.json()
 				const { options } = AuthenticationOptionsSchema.parse(json)
 
@@ -241,15 +246,22 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 						body: JSON.stringify(authResponse),
 					},
 				)
-
-				const verificationJson = (await verificationResponse.json()) as
+				if (!isMounted) return
+				const verificationJson = (await verificationResponse.json().catch(() => {
+					return null
+				})) as
 					| { status: 'success' }
 					| { status: 'error'; error: string }
+					| null
 
-				if (!isMounted) return
-
+				if (!verificationJson) {
+					throw new Error('Failed to verify passkey')
+				}
 				if (verificationJson.status === 'error') {
 					throw new Error(verificationJson.error)
+				}
+				if (!verificationResponse.ok) {
+					throw new Error('Failed to verify passkey')
 				}
 
 				setPasskeyMessage('Welcome back! Navigating to your account page.')
@@ -295,6 +307,9 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 				'/resources/webauthn/generate-authentication-options',
 				{ method: 'POST' },
 			)
+			if (!optionsResponse.ok) {
+				throw new Error('Failed to generate authentication options')
+			}
 			const json = await optionsResponse.json()
 			const { options } = AuthenticationOptionsSchema.parse(json)
 
@@ -312,12 +327,22 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 				},
 			)
 
-			const verificationJson = (await verificationResponse.json()) as {
-				status: 'error'
-				error: string
+			const verificationJson = (await verificationResponse.json().catch(() => {
+				return null
+			})) as
+				| { status: 'success' }
+				| { status: 'error'; error: string }
+				| null
+
+			if (!verificationJson) {
+				throw new Error('Failed to verify passkey')
 			}
+
 			if (verificationJson.status === 'error') {
 				throw new Error(verificationJson.error)
+			}
+			if (!verificationResponse.ok) {
+				throw new Error('Failed to verify passkey')
 			}
 
 			setPasskeyMessage('Welcome back! Navigating to your account page.')
@@ -327,6 +352,13 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 			void navigate('/me')
 		} catch (e) {
 			setPasskeyMessage(null)
+			if (
+				e instanceof Error &&
+				(e.name === 'NotAllowedError' || e.name === 'AbortError')
+			) {
+				// User dismissed the prompt or the ceremony was intentionally aborted.
+				return
+			}
 			console.error(e)
 			setError(
 				e instanceof Error ? e.message : 'Failed to authenticate with passkey',
