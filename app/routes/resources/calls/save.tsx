@@ -496,13 +496,15 @@ async function createCall({
 	try {
 		const [
 			{ sendMessageFromDiscordBot },
-			{ getDomainUrl, getOptionalTeam, getRequiredServerEnvVar },
+			{ getDomainUrl, getOptionalTeam },
+			{ getEnv },
 			{ prisma },
 			{ requireUser },
 			{ teamEmoji },
 		] = await Promise.all([
 			import('#app/utils/discord.server.ts'),
 			import('#app/utils/misc.ts'),
+			import('#app/utils/env.server.ts'),
 			import('#app/utils/prisma.server.ts'),
 			import('#app/utils/session.server.ts'),
 			import('#app/utils/team-provider.tsx'),
@@ -527,8 +529,9 @@ async function createCall({
 		})
 
 		try {
-			const channelId = getRequiredServerEnvVar('DISCORD_PRIVATE_BOT_CHANNEL')
-			const adminUserId = getRequiredServerEnvVar('DISCORD_ADMIN_USER_ID')
+			const env = getEnv()
+			const channelId = env.DISCORD_PRIVATE_BOT_CHANNEL
+			const adminUserId = env.DISCORD_ADMIN_USER_ID
 			const { firstName, team, discordId } = user
 			const userMention = discordId ? `<@!${discordId}>` : firstName
 			const emoji = teamEmoji[getOptionalTeam(team)]

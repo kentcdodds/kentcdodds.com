@@ -12,11 +12,11 @@ import { ServerRouter,
     type HandleDocumentRequestFunction } from 'react-router';
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
-import { getEnv, init } from './utils/env.server.ts'
+import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
 
 init()
-global.ENV = getEnv()
+global.ENV = getPublicEnv()
 
 const ABORT_DELAY = 5000
 
@@ -30,6 +30,7 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		reactRouterContext,
 		loadContext,
 	] = args
+	const env = getEnv()
 	if (responseStatusCode >= 500) {
 		// if we had an error, let's just send this over to the primary and see
 		// if it can handle it.
@@ -41,11 +42,11 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		if (otherRouteResponse) return otherRouteResponse
 	}
 
-	if (process.env.NODE_ENV !== 'production') {
+	if (env.NODE_ENV !== 'production') {
 		responseHeaders.set('Cache-Control', 'no-store')
 	}
 
-	if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+	if (env.NODE_ENV === 'production' && env.SENTRY_DSN) {
 		responseHeaders.append('Document-Policy', 'js-profiling')
 	}
 

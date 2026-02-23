@@ -8,7 +8,7 @@ import {
 	getMdxDirList,
 	getMdxPage,
 } from '#app/utils/mdx.server.ts'
-import { getRequiredServerEnvVar } from '#app/utils/misc.ts'
+import { getEnv } from '#app/utils/env.server.ts'
 import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
@@ -38,10 +38,7 @@ export const commitShaKey = 'meta:last-refresh-commit-sha'
 
 export async function action({ request }: Route.ActionArgs) {
 	await ensurePrimary()
-	if (
-		request.headers.get('auth') !==
-		getRequiredServerEnvVar('REFRESH_CACHE_SECRET')
-	) {
+	if (request.headers.get('auth') !== getEnv().REFRESH_CACHE_SECRET) {
 		return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
 	}
 

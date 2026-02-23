@@ -2,15 +2,16 @@ import nodePath from 'path'
 import { throttling } from '@octokit/plugin-throttling'
 import { Octokit as createOctokit } from '@octokit/rest'
 import { type GitHubFile } from '#app/types.ts'
+import { getEnv } from '#app/utils/env.server.ts'
 
-const ref = process.env.GITHUB_REF ?? 'main'
+const ref = getEnv().GITHUB_REF
 
 const safePath = (s: string) => s.replace(/\\/g, '/')
 
 const Octokit = createOctokit.plugin(throttling)
 
 const octokit = new Octokit({
-	auth: process.env.BOT_GITHUB_TOKEN,
+	auth: getEnv().BOT_GITHUB_TOKEN,
 	throttle: {
 		onRateLimit: (retryAfter, options) => {
 			const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'

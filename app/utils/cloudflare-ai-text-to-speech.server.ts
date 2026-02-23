@@ -1,14 +1,17 @@
+import { getEnv } from './env.server.ts'
+
 function getCloudflareApiBaseUrl() {
 	return 'https://api.cloudflare.com/client/v4'
 }
 
 function getCloudflareWorkersAiAuth() {
-	const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
-	const apiToken = process.env.CLOUDFLARE_API_TOKEN
+	const env = getEnv()
+	const accountId = env.CLOUDFLARE_ACCOUNT_ID
+	const apiToken = env.CLOUDFLARE_API_TOKEN
 
 	// In local dev we typically run with `MOCKS=true` and do not require real
 	// Cloudflare credentials; MSW only needs a non-empty Authorization header.
-	if (process.env.MOCKS === 'true') {
+	if (env.MOCKS) {
 		return {
 			accountId: accountId ?? 'mock-account-id',
 			// Cloudflare MSW mocks only activate for tokens starting with `MOCK`.
@@ -40,7 +43,7 @@ function looksLikeBase64(value: string) {
 export async function synthesizeSpeechWithWorkersAi({
 	text,
 	voice,
-	model = process.env.CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL ?? '@cf/deepgram/aura-1',
+	model = getEnv().CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL,
 }: {
 	text: string
 	voice?: string

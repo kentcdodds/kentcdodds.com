@@ -13,19 +13,18 @@ import {
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import { updatePrimaryCacheValue } from '#app/routes/resources/cache.sqlite.ts'
+import { getEnv } from '#app/utils/env.server.ts'
 import { getInstanceInfo, getInstanceInfoSync } from './litefs-js.server.js'
-import { getRequiredServerEnvVar } from './misc.ts'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
-
-const CACHE_DATABASE_PATH = getRequiredServerEnvVar('CACHE_DATABASE_PATH')
 
 const cacheDb = remember('cacheDb', createDatabase)
 
 function createDatabase(tryAgain = true): DatabaseSync {
-	const parentDir = path.dirname(CACHE_DATABASE_PATH)
+	const cacheDatabasePath = getEnv().CACHE_DATABASE_PATH
+	const parentDir = path.dirname(cacheDatabasePath)
 	fs.mkdirSync(parentDir, { recursive: true })
-	const db = new DatabaseSync(CACHE_DATABASE_PATH)
+	const db = new DatabaseSync(cacheDatabasePath)
 	const { currentIsPrimary } = getInstanceInfoSync()
 	if (!currentIsPrimary) return db
 
@@ -39,10 +38,10 @@ function createDatabase(tryAgain = true): DatabaseSync {
       )
     `)
 	} catch (error: unknown) {
-		fs.unlinkSync(CACHE_DATABASE_PATH)
+		fs.unlinkSync(cacheDatabasePath)
 		if (tryAgain) {
 			console.error(
-				`Error creating cache database, deleting the file at "${CACHE_DATABASE_PATH}" and trying again...`,
+				`Error creating cache database, deleting the file at "${cacheDatabasePath}" and trying again...`,
 			)
 			return createDatabase(false)
 		}

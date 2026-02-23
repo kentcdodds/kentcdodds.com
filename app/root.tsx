@@ -34,7 +34,7 @@ import tailwindStyles from './styles/tailwind.css?url'
 import vendorStyles from './styles/vendors.css?url'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { getClientSession } from './utils/client.server.ts'
-import { getEnv } from './utils/env.server.ts'
+import { getPublicEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
 import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
@@ -134,7 +134,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		latestPodcastSeasonLinks,
-		ENV: getEnv(),
+		ENV: getPublicEnv(),
 		randomFooterImageKey,
 		requestInfo: {
 			hints: getHints(request),

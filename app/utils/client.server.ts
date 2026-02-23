@@ -3,13 +3,13 @@
 
 import { createCookieSessionStorage } from 'react-router';
 import * as uuid from 'uuid'
-import { getRequiredServerEnvVar } from './misc.ts'
+import { getEnv } from './env.server.ts'
 
 const clientStorage = createCookieSessionStorage({
 	cookie: {
 		name: 'KCD_client_id',
 		secure: true,
-		secrets: [getRequiredServerEnvVar('SESSION_SECRET')],
+		secrets: [getEnv().SESSION_SECRET],
 		sameSite: 'lax',
 		path: '/',
 		httpOnly: true,

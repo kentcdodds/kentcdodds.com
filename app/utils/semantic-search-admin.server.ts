@@ -13,6 +13,7 @@ import {
 	matchesIgnorePattern,
 	type SemanticSearchIgnoreList,
 } from '#other/semantic-search/ignore-list-patterns.ts'
+import { getEnv } from '#app/utils/env.server.ts'
 
 export {
 	DEFAULT_IGNORE_LIST_KEY,
@@ -62,13 +63,14 @@ export type SemanticSearchAdminStore = {
 }
 
 function getR2Bucket() {
-	return process.env.R2_BUCKET ?? 'kcd-semantic-search'
+	return getEnv().R2_BUCKET
 }
 
 function getR2ConfigFromEnv() {
-	const endpoint = process.env.R2_ENDPOINT
-	const accessKeyId = process.env.R2_ACCESS_KEY_ID
-	const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
+	const env = getEnv()
+	const endpoint = env.R2_ENDPOINT
+	const accessKeyId = env.R2_ACCESS_KEY_ID
+	const secretAccessKey = env.R2_SECRET_ACCESS_KEY
 	return { endpoint, accessKeyId, secretAccessKey }
 }
 
@@ -376,9 +378,9 @@ const FIXTURE_R2_OBJECTS: Record<string, unknown> = {
 	},
 }
 
-const isProd = process.env.NODE_ENV === 'production'
 let _fixtureStore: SemanticSearchAdminStore | null = null
 function createFixtureAdminStore(): SemanticSearchAdminStore {
+	const isProd = getEnv().NODE_ENV === 'production'
 	if (isProd && _fixtureStore) return _fixtureStore
 
 	const bucket = getR2Bucket()
@@ -427,7 +429,7 @@ export function getSemanticSearchAdminStore(): {
 	if (isR2S3Configured()) {
 		return { store: createR2AdminStore(), configured: true }
 	}
-	if (process.env.MOCKS === 'true') {
+	if (getEnv().MOCKS) {
 		return {
 			store: createFixtureAdminStore(),
 			configured: true,

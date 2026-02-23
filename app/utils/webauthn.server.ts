@@ -1,6 +1,7 @@
 import { type RegistrationResponseJSON } from '@simplewebauthn/server'
 import { createCookie } from 'react-router';
 import { z } from 'zod'
+import { getEnv } from './env.server.ts'
 import { getDomainUrl } from './misc.ts'
 
 export const passkeyCookie = createCookie('webauthn-challenge', {
@@ -8,8 +9,8 @@ export const passkeyCookie = createCookie('webauthn-challenge', {
 	sameSite: 'lax',
 	httpOnly: true,
 	maxAge: 60 * 60 * 2,
-	secure: process.env.NODE_ENV === 'production',
-	secrets: [process.env.SESSION_SECRET],
+	secure: getEnv().NODE_ENV === 'production',
+	secrets: [getEnv().SESSION_SECRET],
 })
 
 export const PasskeyCookieSchema = z.object({

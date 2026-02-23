@@ -5,7 +5,7 @@ import {
 	getInstanceInfo,
 	getInternalInstanceDomain,
 } from '#app/utils/litefs-js.server.ts'
-import { getRequiredServerEnvVar } from '#app/utils/misc.ts'
+import { getEnv } from '#app/utils/env.server.ts'
 import  { type Route } from './+types/cache.sqlite'
 
 export async function action({ request }: Route.ActionArgs) {
@@ -15,7 +15,7 @@ export async function action({ request }: Route.ActionArgs) {
 			`${request.url} should only be called on the primary instance (${primaryInstance})}`,
 		)
 	}
-	const token = getRequiredServerEnvVar('INTERNAL_COMMAND_TOKEN')
+	const token = getEnv().INTERNAL_COMMAND_TOKEN
 	const isAuthorized =
 		request.headers.get('Authorization') === `Bearer ${token}`
 	if (!isAuthorized) {
@@ -45,7 +45,7 @@ export const updatePrimaryCacheValue = serverOnly$(
 			)
 		}
 		const domain = getInternalInstanceDomain(primaryInstance)
-		const token = getRequiredServerEnvVar('INTERNAL_COMMAND_TOKEN')
+		const token = getEnv().INTERNAL_COMMAND_TOKEN
 		return fetch(`${domain}/resources/cache/sqlite`, {
 			method: 'POST',
 			headers: {

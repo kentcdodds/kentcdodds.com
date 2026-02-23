@@ -21,12 +21,9 @@ import {
 	transcribeMp3WithWorkersAi,
 } from './cloudflare-ai-transcription.server.ts'
 import { stripHtml } from './markdown.server.ts'
-import { getRequiredServerEnvVar } from './misc.ts'
+import { getEnv } from './env.server.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
-
-const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
-const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID')
 
 async function fetchTransitor<JsonResponse>({
 	endpoint,
@@ -39,6 +36,7 @@ async function fetchTransitor<JsonResponse>({
 	query?: Record<string, string>
 	data?: Record<string, unknown>
 }) {
+	const env = getEnv()
 	const url = new URL(endpoint, 'https://api.transistor.fm')
 	for (const [key, value] of Object.entries(query)) {
 		url.searchParams.set(key, value)
@@ -46,7 +44,7 @@ async function fetchTransitor<JsonResponse>({
 	const config: RequestInit = {
 		method,
 		headers: {
-			'x-api-key': transistorApiSecret,
+			'x-api-key': env.TRANSISTOR_API_SECRET,
 		},
 	}
 	if (data) {
@@ -152,9 +150,10 @@ async function createEpisode({
 		headers: { 'Content-Type': content_type },
 	})
 
+	const env = getEnv()
 	const createData: TransistorCreateEpisodeData = {
 		episode: {
-			show_id: podcastId,
+			show_id: env.CALL_KENT_PODCAST_ID,
 			season: currentSeason,
 			audio_url,
 			title,
@@ -363,8 +362,6 @@ async function getCurrentSeason() {
 	return lastEpisode?.attributes.season
 }
 
-const episodesCacheKey = `transistor:episodes:${podcastId}`
-
 async function getCachedEpisodes({
 	request,
 	forceFresh,
@@ -374,6 +371,7 @@ async function getCachedEpisodes({
 	forceFresh?: boolean
 	timings?: Timings
 }) {
+	const episodesCacheKey = `transistor:episodes:${getEnv().CALL_KENT_PODCAST_ID}`
 	return cachified({
 		cache,
 		request,

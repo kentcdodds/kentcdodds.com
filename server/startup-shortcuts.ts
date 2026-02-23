@@ -3,6 +3,7 @@ import * as readline from 'node:readline'
 import { type Key } from 'node:readline'
 import * as tty from 'node:tty'
 import { execa } from 'execa'
+import { getEnv } from '../app/utils/env.server.ts'
 
 type ShortcutHandlers = {
 	openApp: () => void | Promise<void>
@@ -83,7 +84,7 @@ const createDefaultHandlers = ({
 			return
 		}
 
-		if (process.env.NODE_ENV === 'development') {
+		if (getEnv().NODE_ENV === 'development') {
 			process.kill(process.pid, 'SIGTERM')
 			return
 		}
@@ -139,11 +140,12 @@ export const registerStartupShortcuts = ({
 	helpMessage,
 	restartEnabled,
 }: StartupShortcutOptions) => {
-	if (process.env.STARTUP_SHORTCUTS === 'false') {
+	const env = getEnv()
+	if (env.STARTUP_SHORTCUTS === 'false') {
 		return
 	}
 
-	if (process.env.NODE_ENV === 'production') {
+	if (env.NODE_ENV === 'production') {
 		return
 	}
 

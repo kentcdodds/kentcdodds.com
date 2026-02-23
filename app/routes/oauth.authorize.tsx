@@ -1,5 +1,6 @@
 import { data as json, redirect, Form } from 'react-router';
 import { Button } from '#app/components/button.tsx'
+import { getEnv } from '#app/utils/env.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import  { type Route } from './+types/oauth.authorize'
 
@@ -40,7 +41,7 @@ export async function action({ request }: Route.ActionArgs) {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					authorization: `Bearer ${process.env.CF_INTERNAL_SECRET}`,
+					authorization: `Bearer ${getEnv().CF_INTERNAL_SECRET}`,
 				},
 				body: JSON.stringify({
 					requestParams: {

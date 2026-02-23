@@ -1,7 +1,9 @@
-import { getRequiredServerEnvVar } from '../utils/misc.ts'
+import { getEnv } from '../utils/env.server.ts'
 
-const KIT_API_SECRET = getRequiredServerEnvVar('KIT_API_SECRET')
-const KIT_API_KEY = getRequiredServerEnvVar('KIT_API_KEY')
+function getKitAuth() {
+	const env = getEnv()
+	return { apiSecret: env.KIT_API_SECRET, apiKey: env.KIT_API_KEY }
+}
 
 type KitSubscriber = {
 	id: number
@@ -19,8 +21,9 @@ type KitTag = {
 }
 
 async function getKitSubscriber(email: string) {
+	const { apiSecret } = getKitAuth()
 	const url = new URL('https://api.kit.com/v3/subscribers')
-	url.searchParams.set('api_secret', KIT_API_SECRET)
+	url.searchParams.set('api_secret', apiSecret)
 	url.searchParams.set('email_address', email)
 
 	const resp = await fetch(url.toString())
@@ -33,8 +36,9 @@ async function getKitSubscriber(email: string) {
 }
 
 async function getKitSubscriberTags(subscriberId: KitSubscriber['id']) {
+	const { apiSecret } = getKitAuth()
 	const url = new URL(`https://api.kit.com/v3/subscribers/${subscriberId}/tags`)
-	url.searchParams.set('api_secret', KIT_API_SECRET)
+	url.searchParams.set('api_secret', apiSecret)
 
 	const resp = await fetch(url.toString())
 	const json = (await resp.json()) as {
@@ -73,9 +77,10 @@ async function addSubscriberToForm({
 	firstName: string
 	kitFormId: string
 }) {
+	const { apiKey, apiSecret } = getKitAuth()
 	const subscriberData = {
-		api_key: KIT_API_KEY,
-		api_secret: KIT_API_SECRET,
+		api_key: apiKey,
+		api_secret: apiSecret,
 		first_name: firstName,
 		email,
 	}
@@ -106,9 +111,10 @@ async function addTagToSubscriber({
 	kitTagId: string
 }) {
 	await ensureSubscriber({ email, firstName })
+	const { apiKey, apiSecret } = getKitAuth()
 	const subscriberData = {
-		api_key: KIT_API_KEY,
-		api_secret: KIT_API_SECRET,
+		api_key: apiKey,
+		api_secret: apiSecret,
 		first_name: firstName,
 		email,
 	}

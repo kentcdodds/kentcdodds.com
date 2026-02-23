@@ -1,10 +1,11 @@
 // verifier is an email verification service
 
 import { getKitSubscriber } from '#app/kit/kit.server.js'
-import { getErrorMessage, getRequiredServerEnvVar } from './misc.ts'
+import { getEnv } from './env.server.ts'
+import { getErrorMessage } from './misc.ts'
 import { prisma } from './prisma.server.ts'
 
-const VERIFIER_API_KEY = getRequiredServerEnvVar('VERIFIER_API_KEY')
+const VERIFIER_API_KEY = getEnv().VERIFIER_API_KEY
 
 type VerifierResult =
 	| { status: true; email: string; domain: string }

@@ -3,27 +3,20 @@ type WhisperTranscriptionResponse = {
 	// Other fields exist (words/vtt/etc) but we only need `text` for Transistor.
 }
 
-function getRequiredEnv(name: string) {
-	const value = process.env[name]
-	if (!value) throw new Error(`Missing required env var: ${name}`)
-	return value
-}
+import { getEnv } from './env.server.ts'
 
 function getCloudflareApiBaseUrl() {
 	return 'https://api.cloudflare.com/client/v4'
 }
 
 export function isCloudflareTranscriptionConfigured() {
-	return Boolean(
-		process.env.CLOUDFLARE_ACCOUNT_ID &&
-		process.env.CLOUDFLARE_API_TOKEN &&
-		process.env.CLOUDFLARE_AI_TRANSCRIPTION_MODEL,
-	)
+	const env = getEnv()
+	return Boolean(env.CLOUDFLARE_ACCOUNT_ID && env.CLOUDFLARE_API_TOKEN)
 }
 
 export async function transcribeMp3WithWorkersAi({
 	mp3,
-	model = getRequiredEnv('CLOUDFLARE_AI_TRANSCRIPTION_MODEL'),
+	model = getEnv().CLOUDFLARE_AI_TRANSCRIPTION_MODEL,
 }: {
 	// Accept Buffers and other Uint8Array views.
 	mp3: Uint8Array
@@ -34,8 +27,14 @@ export async function transcribeMp3WithWorkersAi({
 	 */
 	model?: string
 }): Promise<string> {
-	const accountId = getRequiredEnv('CLOUDFLARE_ACCOUNT_ID')
-	const apiToken = getRequiredEnv('CLOUDFLARE_API_TOKEN')
+	const env = getEnv()
+	const accountId = env.CLOUDFLARE_ACCOUNT_ID
+	const apiToken = env.CLOUDFLARE_API_TOKEN
+	if (!accountId || !apiToken) {
+		throw new Error(
+			'Cloudflare Workers AI transcription is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.',
+		)
+	}
 
 	// Cloudflare's REST route expects the model as path segments (with `/`), so do
 	// not URL-encode the model string (encoding can yield "No route for that URI").

@@ -10,7 +10,6 @@ import {
 	type Role,
 	type Team,
 } from '#app/types.ts'
-import { type getEnv } from './env.server.ts'
 
 // NOTE: Keep this file free of JSX/TSX dependencies.
 // It is safe to import in plain Node (ex: pre-deploy healthcheck startup),
@@ -112,33 +111,9 @@ export function typedBoolean<T>(
 	return Boolean(value)
 }
 
-function getRequiredEnvVarFromObj(
-	obj: Record<string, string | undefined>,
-	key: string,
-) {
-	const envVal = obj[key]
-	if (typeof envVal === 'string' && envVal.trim().length > 0) {
-		return envVal
-	}
-	throw new Error(`${key} is a required env variable`)
-}
-
-export function getRequiredServerEnvVar(key: string) {
-	return getRequiredEnvVarFromObj(process.env, key)
-}
-
-export function getRequiredGlobalEnvVar(
-	key: keyof ReturnType<typeof getEnv>,
-) {
-	return getRequiredEnvVarFromObj(
-		ENV as unknown as Record<string, string | undefined>,
-		key as string,
-	)
-}
-
 export function getDiscordAuthorizeURL(domainUrl: string) {
 	const url = new URL('https://discord.com/api/oauth2/authorize')
-	url.searchParams.set('client_id', getRequiredGlobalEnvVar('DISCORD_CLIENT_ID'))
+	url.searchParams.set('client_id', ENV.DISCORD_CLIENT_ID)
 	url.searchParams.set('redirect_uri', `${domainUrl}/discord/callback`)
 	url.searchParams.set('response_type', 'code')
 	url.searchParams.set('scope', 'identify guilds.join email guilds')

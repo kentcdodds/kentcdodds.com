@@ -1,13 +1,15 @@
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import * as Sentry from '@sentry/react-router'
+import { getEnv } from '../../app/utils/env.server.ts'
 import { isModernBrowserByUA } from './browser-support.js'
 
 export function init() {
+	const env = getEnv()
 	Sentry.init({
-		dsn: process.env.SENTRY_DSN,
+		dsn: env.SENTRY_DSN,
 		tunnel: '/lookout',
-		environment: process.env.NODE_ENV,
-		tracesSampleRate: process.env.NODE_ENV === 'production' ? 1 : 0,
+		environment: env.NODE_ENV,
+		tracesSampleRate: env.NODE_ENV === 'production' ? 1 : 0,
 		denyUrls: [
 			/\/healthcheck/,
 			// TODO: be smarter about the public assets...
