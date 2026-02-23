@@ -292,6 +292,12 @@ function collectObjectsByKey(
 	return result
 }
 
+function nonEmptyTrimmed(value: string | undefined | null): string | undefined {
+	if (typeof value !== 'string') return undefined
+	const trimmed = value.trim()
+	return trimmed ? trimmed : undefined
+}
+
 function getPlaylistId(input: string | undefined) {
 	if (!input) return null
 	const trimmed = input.trim()
@@ -1196,11 +1202,13 @@ async function main() {
 		dryRun,
 	} = parseArgs()
 	const playlistInput =
-		playlistArg ?? process.env.YOUTUBE_PLAYLIST_ID ?? DEFAULT_PLAYLIST_ID
+		nonEmptyTrimmed(playlistArg) ??
+		nonEmptyTrimmed(process.env.YOUTUBE_PLAYLIST_ID) ??
+		DEFAULT_PLAYLIST_ID
 	const playlistId = getPlaylistId(playlistInput)
 	if (!playlistId) {
 		throw new Error(
-			`Invalid YouTube playlist input: "${playlistInput}". Use --playlist with a playlist URL or ID.`,
+			`Invalid YouTube playlist input: "${playlistInput}". Use --playlist with a playlist URL or ID, or set YOUTUBE_PLAYLIST_ID.`,
 		)
 	}
 
