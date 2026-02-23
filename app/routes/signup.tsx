@@ -230,6 +230,8 @@ export async function action({ request }: Route.ActionArgs) {
 	const password = form.get('password')
 	const confirmPassword = form.get('confirmPassword')
 
+	await applyPasswordSubmissionDelay()
+
 	const errors: ActionData['errors'] = {
 		firstName: getErrorForFirstName(
 			typeof firstName === 'string' ? firstName : null,
@@ -248,7 +250,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	if (Object.values(errors).some((e) => e !== null)) {
-		await applyPasswordSubmissionDelay()
 		return json(
 			{
 				status: 'error',
@@ -292,10 +293,7 @@ export async function action({ request }: Route.ActionArgs) {
 				loginInfoSession.flashMessage(
 					'An account already exists for that email. Log in instead (or reset your password).',
 				)
-				await applyPasswordSubmissionDelay()
-				return redirect('/login', {
-					headers: await loginInfoSession.getHeaders(),
-				})
+				return redirect('/login', { headers: await loginInfoSession.getHeaders() })
 			}
 			throw error
 		}
@@ -329,10 +327,7 @@ export async function action({ request }: Route.ActionArgs) {
 			loginInfoSession.flashMessage(
 				'Your account was created. Please log in to continue.',
 			)
-			await applyPasswordSubmissionDelay()
-			return redirect('/login', {
-				headers: await loginInfoSession.getHeaders(),
-			})
+			return redirect('/login', { headers: await loginInfoSession.getHeaders() })
 		}
 
 		let clientSession: Awaited<ReturnType<typeof getClientSession>> | null =
@@ -358,13 +353,11 @@ export async function action({ request }: Route.ActionArgs) {
 		if (clientSession) await clientSession.getHeaders(headers)
 		loginInfoSession.clean()
 		await loginInfoSession.getHeaders(headers)
-		await applyPasswordSubmissionDelay()
 		return redirect('/me', { headers })
 	} catch (error: unknown) {
 		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
 		if (isResponse(error)) throw error
 		console.error(getErrorStack(error))
-		await applyPasswordSubmissionDelay()
 		return json(
 			{
 				status: 'error',

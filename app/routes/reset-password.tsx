@@ -216,6 +216,8 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
+	await applyPasswordSubmissionDelay()
+
 	const passwordEntry = formData.get('password')
 	const password = typeof passwordEntry === 'string' ? passwordEntry : ''
 	const confirmPassword =
@@ -231,7 +233,6 @@ export async function action({ request }: Route.ActionArgs) {
 	})()
 
 	if (passwordError || confirmPasswordError) {
-		await applyPasswordSubmissionDelay()
 		return json<ActionData>(
 			{
 				status: 'error',
@@ -251,10 +252,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (!userRecord) {
 		loginSession.clean()
-		loginSession.flashError(
-			'No account found for that email. Create one instead.',
-		)
-		await applyPasswordSubmissionDelay()
+		loginSession.flashError('No account found for that email. Create one instead.')
 		return redirect('/signup', { headers: await loginSession.getHeaders() })
 	}
 
@@ -297,7 +295,6 @@ export async function action({ request }: Route.ActionArgs) {
 	} catch (error) {
 		console.error('Failed to read client session on password reset', error)
 	}
-	await applyPasswordSubmissionDelay()
 	return redirect('/me', { headers })
 }
 

@@ -109,6 +109,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	if (email) loginSession.setEmail(email)
+	await applyPasswordSubmissionDelay()
 
 	if (!email.match(/.+@.+/)) {
 		loginSession.flashError('A valid email is required')
@@ -142,9 +143,7 @@ export async function action({ request }: Route.ActionArgs) {
 		loginSession.flashError(
 			'Invalid email or password. If you do not have a password yet, use "Reset password" to set one.',
 		)
-		const headers = await loginSession.getHeaders()
-		await applyPasswordSubmissionDelay()
-		return redirect(`/login`, { headers })
+		return redirect(`/login`, { headers: await loginSession.getHeaders() })
 	}
 
 	const session = await getSession(request)
@@ -173,7 +172,6 @@ export async function action({ request }: Route.ActionArgs) {
 	} catch (error) {
 		console.error('Failed to read client session on login', error)
 	}
-	await applyPasswordSubmissionDelay()
 	return redirect('/me', { headers })
 }
 

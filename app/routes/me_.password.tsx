@@ -39,6 +39,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
 	const user = await requireUser(request)
 	const formData = await request.formData()
+	await applyPasswordSubmissionDelay()
 
 	const currentPassword = formData.get('currentPassword')
 	const password =
@@ -57,7 +58,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (existingPassword) {
 		if (typeof currentPassword !== 'string' || !currentPassword) {
-			await applyPasswordSubmissionDelay()
 			return json<ActionData>(
 				{
 					status: 'error',
@@ -71,7 +71,6 @@ export async function action({ request }: Route.ActionArgs) {
 			hash: existingPassword.hash,
 		})
 		if (!ok) {
-			await applyPasswordSubmissionDelay()
 			return json<ActionData>(
 				{
 					status: 'error',
@@ -90,7 +89,6 @@ export async function action({ request }: Route.ActionArgs) {
 	})()
 
 	if (passwordError || confirmPasswordError) {
-		await applyPasswordSubmissionDelay()
 		return json<ActionData>(
 			{
 				status: 'error',
@@ -120,7 +118,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const headers = new Headers()
 	await session.getHeaders(headers)
-	await applyPasswordSubmissionDelay()
 	return redirect(`/me?message=${encodeURIComponent('✅ Password updated')}`, {
 		headers,
 	})
