@@ -37,15 +37,20 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	await page.waitForTimeout(250)
 	await expect(page).toHaveURL(/\/login$/)
 
-	// Focusing the username/email field should resolve the pending conditional
-	// WebAuthn request and complete login.
+	// Markup requirement for passkey form-autofill (per web.dev article).
+	await expect(page.locator('input[name="email"]')).toHaveAttribute(
+		'autocomplete',
+		'username webauthn',
+	)
+
+	// End-to-end: passkey sign-in succeeds (privacy-friendly: no email needed).
 	const verifyResponsePromise = page.waitForResponse((resp) => {
 		return (
 			resp.url().includes('/resources/webauthn/verify-authentication') &&
 			resp.request().method() === 'POST'
 		)
 	})
-	await page.getByLabel('Email address').click()
+	await page.getByRole('button', { name: /Login with Passkey/i }).click()
 	await verifyResponsePromise
 
 	await page.waitForURL('**/me', { timeout: 10_000 })
