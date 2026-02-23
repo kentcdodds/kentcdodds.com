@@ -69,6 +69,7 @@ test('episode artwork preview dims while the next image suspends', async () => {
 
 		await act(async () => {
 			fireEvent.click(checkbox)
+			expect(checkbox).toBeChecked()
 			await vi.advanceTimersByTimeAsync(200)
 			expect(previewWrapper).toHaveClass('opacity-60')
 			await vi.advanceTimersByTimeAsync(1500)
