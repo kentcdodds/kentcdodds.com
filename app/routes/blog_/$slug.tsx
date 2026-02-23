@@ -27,8 +27,6 @@ import {
 	getBlogRecommendations,
 	getTotalPostReads,
 } from '#app/utils/blog.server.ts'
-import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
-import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
 import { getRankingLeader } from '#app/utils/blog.ts'
 import { getBlogMdxListItems, getMdxPage } from '#app/utils/mdx.server.ts'
 import {
@@ -42,6 +40,8 @@ import {
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
+import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
+import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'

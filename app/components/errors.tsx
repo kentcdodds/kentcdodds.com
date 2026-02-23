@@ -3,9 +3,9 @@ import errorStack from 'error-stack-parser'
 import * as React from 'react'
 import { useFetcher, useMatches } from 'react-router'
 import { type MdxListItem } from '#app/types.ts'
+import { getErrorMessage } from '#app/utils/misc.ts'
 import { type NotFoundMatch, sortNotFoundMatches } from '#app/utils/not-found-matches.ts'
 import { notFoundQueryFromPathname } from '#app/utils/not-found-query.ts'
-import { getErrorMessage } from '#app/utils/misc.ts'
 import { ArrowLink } from './arrow-button.tsx'
 import { Grid } from './grid.tsx'
 import { Facepalm, Grimmacing, MissingSomething } from './kifs.tsx'
@@ -246,7 +246,9 @@ function FourOhFour({
 		if (!effectiveQuery) return
 		if (requestedQueryRef.current === effectiveQuery) return
 		requestedQueryRef.current = effectiveQuery
-		fetcher.load(`/resources/search?query=${encodeURIComponent(effectiveQuery)}`)
+		void fetcher.load(
+			`/resources/search?query=${encodeURIComponent(effectiveQuery)}`,
+		)
 	}, [effectiveQuery, fetcher, possibleMatchesProp])
 
 	const fetchedMatches = React.useMemo(() => {

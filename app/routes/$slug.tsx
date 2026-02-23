@@ -18,8 +18,8 @@ import {
 	mdxPageMeta,
 	useMdxComponent,
 } from '#app/utils/mdx.tsx'
-import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
 import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
+import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
 import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/$slug'

@@ -1,5 +1,5 @@
-import { notFoundQueryFromPathname } from './not-found-query.ts'
 import { sortNotFoundMatches, type NotFoundMatch } from './not-found-matches.ts'
+import { notFoundQueryFromPathname } from './not-found-query.ts'
 import {
 	isSemanticSearchConfigured,
 	semanticSearchKCD,
