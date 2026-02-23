@@ -219,14 +219,12 @@ async function getEpisodes(
 	)
 	const { collection } = listJson
 
-	// Fetch episode details with limited concurrency to reduce 429s.
-	const limit = pLimit(3)
+	// Fetch episode details. Cached reads are fast; network refreshes are capped
+	// globally in `getEpisode` via `simplecastEpisodeDetailsLimit`.
 	const episodes = await Promise.all(
 		collection
 			.filter(({ status, is_hidden }) => status === 'published' && !is_hidden)
-			.map(({ id }) =>
-				limit(() => getCachedEpisode(id, { request, forceFresh, timings })),
-			),
+			.map(({ id }) => getCachedEpisode(id, { request, forceFresh, timings })),
 	)
 	return episodes.filter(typedBoolean)
 }
