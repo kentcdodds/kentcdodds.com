@@ -78,15 +78,6 @@ declare global {
 }
 
 export function init() {
-	// Back-compat: historically we only configured `DATABASE_URL` locally.
-	// Epic Stack expects `DATABASE_PATH` too, and it's useful for tooling.
-	if (!process.env.DATABASE_PATH) {
-		const url = process.env.DATABASE_URL
-		if (typeof url === 'string' && url.startsWith('file:')) {
-			process.env.DATABASE_PATH = url.slice('file:'.length)
-		}
-	}
-
 	const parsed = schema.safeParse(process.env)
 
 	if (parsed.success === false) {

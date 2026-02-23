@@ -115,31 +115,24 @@ export function typedBoolean<T>(
 function getRequiredEnvVarFromObj(
 	obj: Record<string, string | undefined>,
 	key: string,
-	devValue: string = `${key}-dev-value`,
 ) {
-	const mode = obj.MODE ?? obj.NODE_ENV
-	let value = devValue
 	const envVal = obj[key]
-	if (envVal) {
-		value = envVal
-	} else if (mode === 'production') {
-		throw new Error(`${key} is a required env variable`)
+	if (typeof envVal === 'string' && envVal.trim().length > 0) {
+		return envVal
 	}
-	return value
+	throw new Error(`${key} is a required env variable`)
 }
 
-export function getRequiredServerEnvVar(key: string, devValue?: string) {
-	return getRequiredEnvVarFromObj(process.env, key, devValue)
+export function getRequiredServerEnvVar(key: string) {
+	return getRequiredEnvVarFromObj(process.env, key)
 }
 
 export function getRequiredGlobalEnvVar(
 	key: keyof ReturnType<typeof getEnv>,
-	devValue?: string,
 ) {
 	return getRequiredEnvVarFromObj(
 		ENV as unknown as Record<string, string | undefined>,
 		key as string,
-		devValue,
 	)
 }
 

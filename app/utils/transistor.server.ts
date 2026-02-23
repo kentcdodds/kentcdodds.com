@@ -26,7 +26,7 @@ import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
 
 const transistorApiSecret = getRequiredServerEnvVar('TRANSISTOR_API_SECRET')
-const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID', '67890')
+const podcastId = getRequiredServerEnvVar('CALL_KENT_PODCAST_ID')
 
 async function fetchTransitor<JsonResponse>({
 	endpoint,
