@@ -1,9 +1,10 @@
 import * as React from 'react'
+import { clsx } from 'clsx'
 import {
 	getCallKentEpisodeArtworkAvatar,
 	getCallKentEpisodeArtworkUrl,
 } from '#app/utils/call-kent-artwork.ts'
-import { getAvatar } from '#app/utils/misc-react.tsx'
+import { getAvatar, useSSRLayoutEffect } from '#app/utils/misc-react.tsx'
 
 const AVATAR_SIZE = 1400
 
@@ -75,6 +76,13 @@ export function EpisodeArtworkPreview({
 	const tooltipWrapperRef = React.useRef<HTMLSpanElement>(null)
 	const [isTooltipOpen, setIsTooltipOpen] = React.useState(false)
 
+	const [isArtworkPending, setIsArtworkPending] = React.useState(true)
+	const latestArtworkSrcRef = React.useRef(artworkUrl)
+	useSSRLayoutEffect(() => {
+		latestArtworkSrcRef.current = artworkUrl
+		setIsArtworkPending(true)
+	}, [artworkUrl])
+
 	React.useEffect(() => {
 		if (!isTooltipOpen) return
 		function onPointerDown(event: PointerEvent) {
@@ -86,6 +94,25 @@ export function EpisodeArtworkPreview({
 		document.addEventListener('pointerdown', onPointerDown)
 		return () => document.removeEventListener('pointerdown', onPointerDown)
 	}, [isTooltipOpen])
+
+	function handleTooltipPointerLeave() {
+		// If the button is focused (keyboard/touch), keep the tooltip open until blur.
+		const wrapper = tooltipWrapperRef.current
+		if (!wrapper) {
+			setIsTooltipOpen(false)
+			return
+		}
+		const active = document.activeElement
+		if (active instanceof Node && wrapper.contains(active)) return
+		setIsTooltipOpen(false)
+	}
+
+	function handleArtworkLoad(event: React.SyntheticEvent<HTMLImageElement>) {
+		// Avoid dropping the pending state for a stale `src` after rapid toggles.
+		const currentSrc = event.currentTarget.getAttribute('src')
+		if (!currentSrc || currentSrc !== latestArtworkSrcRef.current) return
+		setIsArtworkPending(false)
+	}
 
 	return (
 		<section className="mb-10 rounded-lg bg-gray-100 p-6 dark:bg-gray-800">
@@ -133,6 +160,9 @@ export function EpisodeArtworkPreview({
 								<span
 									ref={tooltipWrapperRef}
 									className="relative inline-flex"
+									onPointerEnter={() => setIsTooltipOpen(true)}
+									onPointerLeave={handleTooltipPointerLeave}
+									onFocus={() => setIsTooltipOpen(true)}
 									onBlur={(event) => {
 										const wrapper = tooltipWrapperRef.current
 										if (!wrapper) return
@@ -151,7 +181,7 @@ export function EpisodeArtworkPreview({
 										aria-label="What does publish anonymously mean?"
 										aria-describedby={isTooltipOpen ? tooltipId : undefined}
 										aria-expanded={isTooltipOpen}
-										onClick={() => setIsTooltipOpen((v) => !v)}
+										onClick={() => setIsTooltipOpen(true)}
 										onKeyDown={(event) => {
 											if (event.key === 'Escape') setIsTooltipOpen(false)
 										}}
@@ -179,12 +209,23 @@ export function EpisodeArtworkPreview({
 
 				<div className="flex w-full flex-col gap-3 lg:w-[260px] lg:flex-none">
 					<p className="text-primary text-sm font-medium">Preview</p>
-					<img
-						src={artworkUrl}
-						alt="Episode artwork preview"
-						loading="lazy"
-						className="aspect-square w-full rounded-lg object-cover shadow-sm"
-					/>
+					<div
+						className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-200 shadow-sm dark:bg-gray-700"
+						aria-busy={isArtworkPending}
+						data-artwork-pending={isArtworkPending ? '' : undefined}
+					>
+						<img
+							src={artworkUrl}
+							alt="Episode artwork preview"
+							loading="lazy"
+							onLoad={handleArtworkLoad}
+							onError={handleArtworkLoad}
+							className={clsx(
+								'h-full w-full object-cover transition-opacity',
+								isArtworkPending ? 'opacity-60' : 'opacity-100',
+							)}
+						/>
+					</div>
 				</div>
 			</div>
 		</section>
