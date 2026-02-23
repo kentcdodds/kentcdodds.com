@@ -11,6 +11,7 @@ import { unified } from 'unified'
 import type * as U from 'unist'
 import { visit } from 'unist-util-visit'
 import { z } from 'zod'
+import pLimit from 'p-limit'
 import {
 	type CWKEpisode,
 	type CWKSeason,
@@ -18,11 +19,11 @@ import {
 	type SimplecastCollectionResponse,
 	type SimplecastEpisode,
 	type SimplecastEpisodeListItem,
-	type SimplecastTooManyRequests,
 } from '#app/types.ts'
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
 import { getEnv } from './env.server.ts'
+import { fetchJsonWithRetryAfter } from './fetch-json-with-retry-after.server.ts'
 import { markdownToHtml, stripHtml } from './markdown.server.ts'
 import { typedBoolean } from './misc.ts'
 import { type Timings } from './timing.server.ts'
@@ -91,14 +92,6 @@ const cwkCachedSeasonsSchema = z.array(
 		.passthrough(),
 )
 
-function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
-	return (
-		typeof json === 'object' &&
-		json !== null &&
-		json.hasOwnProperty('too_many_requests')
-	)
-}
-
 const getCachedSeasons = async ({
 	request,
 	forceFresh,
@@ -159,36 +152,35 @@ async function getSeasons({
 	timings?: Timings
 }) {
 	const { podcastId, headers } = getSimplecastConfig()
-	const res = await fetch(
-		`https://api.simplecast.com/podcasts/${podcastId}/seasons`,
-		{ headers },
-	)
-	const json = (await res.json()) as
-		| SimplecastCollectionResponse<SimpelcastSeasonListItem>
-		| SimplecastTooManyRequests
-	if (isTooManyRequests(json)) {
-		return []
-	}
-	const { collection } = json
+	const { collection } = await fetchJsonWithRetryAfter<
+		SimplecastCollectionResponse<SimpelcastSeasonListItem>
+	>(`https://api.simplecast.com/podcasts/${podcastId}/seasons`, {
+		headers,
+		label: `simplecast seasons (${podcastId})`,
+		retryOn5xx: true,
+	})
 
+	const limit = pLimit(2)
 	const seasons = await Promise.all(
-		collection.map(async ({ href, number }) => {
-			const seasonId = new URL(href).pathname.split('/').slice(-1)[0]
-			if (!seasonId) {
-				console.error(
-					`Could not determine seasonId from ${href} for season ${number}`,
-				)
-				return
-			}
-			const episodes = await getEpisodes(seasonId, {
-				request,
-				forceFresh,
-				timings,
-			})
-			if (!episodes.length) return null
+		collection.map(({ href, number }) =>
+			limit(async () => {
+				const seasonId = new URL(href).pathname.split('/').slice(-1)[0]
+				if (!seasonId) {
+					console.error(
+						`Could not determine seasonId from ${href} for season ${number}`,
+					)
+					return
+				}
+				const episodes = await getEpisodes(seasonId, {
+					request,
+					forceFresh,
+					timings,
+				})
+				if (!episodes.length) return null
 
-			return { seasonNumber: number, episodes }
-		}),
+				return { seasonNumber: number, episodes }
+			}),
+		),
 	).then((s) => s.filter(typedBoolean))
 
 	return sortBy(seasons, (s) => Number(s.seasonNumber))
@@ -209,34 +201,36 @@ async function getEpisodes(
 	const { headers } = getSimplecastConfig()
 	const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
 	url.searchParams.set('limit', '300')
-	const res = await fetch(url.toString(), { headers })
-	const json = (await res.json()) as
-		| SimplecastCollectionResponse<SimplecastEpisodeListItem>
-		| SimplecastTooManyRequests
-	if (isTooManyRequests(json)) {
-		return []
-	}
+	const { collection } = await fetchJsonWithRetryAfter<
+		SimplecastCollectionResponse<SimplecastEpisodeListItem>
+	>(url.toString(), {
+		headers,
+		label: `simplecast season ${seasonId} episodes list`,
+		retryOn5xx: true,
+	})
 
-	const { collection } = json
+	// Fetch episode details with limited concurrency to reduce 429s.
+	const limit = pLimit(3)
 	const episodes = await Promise.all(
 		collection
 			.filter(({ status, is_hidden }) => status === 'published' && !is_hidden)
-			.map(({ id }) => getCachedEpisode(id, { request, forceFresh, timings })),
+			.map(({ id }) =>
+				limit(() => getCachedEpisode(id, { request, forceFresh, timings })),
+			),
 	)
 	return episodes.filter(typedBoolean)
 }
 
 async function getEpisode(episodeId: string) {
 	const { headers } = getSimplecastConfig()
-	const res = await fetch(`https://api.simplecast.com/episodes/${episodeId}`, {
-		headers,
-	})
-	const json = (await res.json()) as
-		| SimplecastEpisode
-		| SimplecastTooManyRequests
-	if (isTooManyRequests(json)) {
-		return null
-	}
+	const json = await fetchJsonWithRetryAfter<SimplecastEpisode>(
+		`https://api.simplecast.com/episodes/${episodeId}`,
+		{
+			headers,
+			label: `simplecast episode ${episodeId}`,
+			retryOn5xx: true,
+		},
+	)
 
 	const {
 		id,
