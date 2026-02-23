@@ -8,7 +8,7 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	// manual "touch security key" steps).
 	const client = await page.context().newCDPSession(page)
 	await client.send('WebAuthn.enable', { enableUI: false })
-	await client.send('WebAuthn.addVirtualAuthenticator', {
+	const { authenticatorId } = await client.send('WebAuthn.addVirtualAuthenticator', {
 		options: {
 			protocol: 'ctap2',
 			transport: 'internal',
@@ -17,6 +17,14 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 			isUserVerified: true,
 			automaticPresenceSimulation: true,
 		},
+	})
+	await client.send('WebAuthn.setAutomaticPresenceSimulation', {
+		authenticatorId,
+		enabled: true,
+	})
+	await client.send('WebAuthn.setUserVerified', {
+		authenticatorId,
+		isUserVerified: true,
 	})
 
 	// Seed a signed-in user (no UI signup needed).
@@ -28,6 +36,11 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible({
 		timeout: 15_000,
 	})
+	const { credentials } = await client.send('WebAuthn.getCredentials', {
+		authenticatorId,
+	})
+	expect(credentials.length).toBeGreaterThan(0)
+	expect(credentials.some((c) => c.isResidentCredential)).toBe(true)
 
 	// Sign out (clear cookies) and load the login page.
 	await page.context().clearCookies()
