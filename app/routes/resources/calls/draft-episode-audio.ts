@@ -4,7 +4,6 @@ import {
 	getAudioBuffer,
 	getAudioStream,
 	parseHttpByteRangeHeader,
-	parseBase64DataUrl,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
@@ -22,70 +21,45 @@ export async function loader({ request }: Route.LoaderArgs) {
 			episodeAudioKey: true,
 			episodeAudioContentType: true,
 			episodeAudioSize: true,
-			episodeBase64: true, // legacy fallback
 		},
 	})
 	if (!draft) throw new Response('Not found', { status: 404 })
 
 	const rangeHeader = request.headers.get('range')
 
-	if (draft.episodeAudioKey) {
-		const contentType = draft.episodeAudioContentType ?? 'audio/mpeg'
-		const size = draft.episodeAudioSize
+	if (!draft.episodeAudioKey) throw new Response('Not found', { status: 404 })
 
-		if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
-			const buffer = await getAudioBuffer({ key: draft.episodeAudioKey })
-			const totalSize = buffer.byteLength
-			const range = rangeHeader
-				? parseHttpByteRangeHeader(rangeHeader, totalSize)
-				: null
-			const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
-			const stream = Readable.from(body)
-			return new Response(createReadableStreamFromReadable(stream), {
-				status: range ? 206 : 200,
-				headers: {
-					'Content-Type': contentType,
-					'Accept-Ranges': 'bytes',
-					...(range
-						? {
-								'Content-Range': `bytes ${range.start}-${range.end}/${totalSize}`,
-								'Content-Length': String(range.end - range.start + 1),
-							}
-						: { 'Content-Length': String(totalSize) }),
-					'Cache-Control': 'private, max-age=3600',
-				},
-			})
-		}
+	const contentType = draft.episodeAudioContentType ?? 'audio/mpeg'
+	const size = draft.episodeAudioSize
 
-		const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
-		const { body } = await getAudioStream({
-			key: draft.episodeAudioKey,
-			range: range ?? undefined,
-		})
-		return new Response(createReadableStreamFromReadable(body), {
+	if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
+		const buffer = await getAudioBuffer({ key: draft.episodeAudioKey })
+		const totalSize = buffer.byteLength
+		const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, totalSize) : null
+		const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
+		const stream = Readable.from(body)
+		return new Response(createReadableStreamFromReadable(stream), {
 			status: range ? 206 : 200,
 			headers: {
 				'Content-Type': contentType,
 				'Accept-Ranges': 'bytes',
 				...(range
 					? {
-							'Content-Range': `bytes ${range.start}-${range.end}/${size}`,
+							'Content-Range': `bytes ${range.start}-${range.end}/${totalSize}`,
 							'Content-Length': String(range.end - range.start + 1),
 						}
-					: { 'Content-Length': String(size) }),
+					: { 'Content-Length': String(totalSize) }),
 				'Cache-Control': 'private, max-age=3600',
 			},
 		})
 	}
 
-	if (!draft.episodeBase64) throw new Response('Not found', { status: 404 })
-	const parsed = parseBase64DataUrl(draft.episodeBase64)
-	const contentType = parsed.contentType
-	const size = parsed.buffer.byteLength
 	const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
-	const body = range ? parsed.buffer.subarray(range.start, range.end + 1) : parsed.buffer
-	const stream = Readable.from(body)
-	return new Response(createReadableStreamFromReadable(stream), {
+	const { body } = await getAudioStream({
+		key: draft.episodeAudioKey,
+		range: range ?? undefined,
+	})
+	return new Response(createReadableStreamFromReadable(body), {
 		status: range ? 206 : 200,
 		headers: {
 			'Content-Type': contentType,

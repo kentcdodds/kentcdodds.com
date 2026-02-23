@@ -48,7 +48,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					step: true,
 					errorMessage: true,
 					episodeAudioKey: true,
-					episodeBase64: true,
 					transcript: true,
 					title: true,
 					description: true,
@@ -67,7 +66,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		return redirect(`/calls/admin?${searchParams.toString()}`)
 	}
 	const episodeDraft = call.episodeDraft
-	const hasEpisodeAudio = Boolean(episodeDraft?.episodeAudioKey || episodeDraft?.episodeBase64)
+	const hasEpisodeAudio = Boolean(episodeDraft?.episodeAudioKey)
 	const episodeAudioUrl = hasEpisodeAudio
 		? `/resources/calls/draft-episode-audio?callId=${call.id}`
 		: null
@@ -80,8 +79,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 						...episodeDraft,
 						// Don’t send the storage key to the client.
 						episodeAudioKey: null,
-						// Don’t send the legacy base64 audio to the client either.
-						episodeBase64: null,
 						hasEpisodeAudio,
 						episodeAudioUrl,
 					}

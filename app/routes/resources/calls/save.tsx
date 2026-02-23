@@ -556,7 +556,7 @@ async function publishCall({
 			{ sendEmail },
 			{ requireAdminUser },
 			{ createEpisode },
-			{ deleteAudioObject, getAudioBuffer, parseBase64DataUrl },
+			{ deleteAudioObject, getAudioBuffer },
 		] = await Promise.all([
 			import('#app/utils/markdown.server.ts'),
 			import('#app/utils/prisma.server.ts'),
@@ -630,14 +630,13 @@ async function publishCall({
 		const keywords = (formKeywords?.trim() || draft.keywords || '').trim()
 		const transcriptText = (formTranscript?.trim() || draft.transcript || '').trim()
 		const episodeAudioKey = draft.episodeAudioKey
-		const episodeBase64 = draft.episodeBase64
 
 		if (
 			!title ||
 			!description ||
 			!keywords ||
 			!transcriptText ||
-			(!episodeAudioKey && !episodeBase64)
+			!episodeAudioKey
 		) {
 			const searchParams = new URLSearchParams()
 			searchParams.set(
@@ -647,21 +646,7 @@ async function publishCall({
 			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 		}
 
-		let episodeAudio: Buffer
-		if (episodeAudioKey) {
-			episodeAudio = await getAudioBuffer({ key: episodeAudioKey })
-		} else {
-			try {
-				episodeAudio = parseBase64DataUrl(episodeBase64!).buffer
-			} catch {
-				const searchParams = new URLSearchParams()
-				searchParams.set(
-					'error',
-					'Draft episode audio is invalid. Please undo and re-record your response.',
-				)
-				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
-			}
-		}
+		const episodeAudio = await getAudioBuffer({ key: episodeAudioKey })
 		const summaryName = call.isAnonymous ? 'Anonymous' : call.user.firstName
 		const published = await createEpisode({
 			request,

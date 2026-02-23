@@ -115,10 +115,7 @@ model CallKentEpisodeDraft {
   step          CallKentEpisodeDraftStep   @default(STARTED)
   errorMessage  String?
 
-  // The final stitched mp3 (base64 data URL), generated before publish.
-  // Note: we do not persist the raw admin response audio; re-record to regenerate.
-  episodeBase64  String?
-  // Preferred: store episode audio in R2 and proxy it for playback/publish.
+  // Episode audio is stored in R2 and proxied for playback/publish.
   episodeAudioKey         String?
   episodeAudioContentType String?
   episodeAudioSize        Int?

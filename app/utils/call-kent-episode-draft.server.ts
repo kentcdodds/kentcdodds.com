@@ -6,14 +6,6 @@ import {
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 
-function mp3DataUrlToBuffer(mp3DataUrl: string) {
-	const [, b64] = mp3DataUrl.split(',', 2)
-	if (!b64) {
-		throw new Error('Invalid mp3 data URL')
-	}
-	return Buffer.from(b64, 'base64')
-}
-
 export async function startCallKentEpisodeDraftProcessing(
 	draftId: string,
 	{ responseBase64 }: { responseBase64?: string | null } = {},
@@ -82,20 +74,6 @@ export async function startCallKentEpisodeDraftProcessing(
 		let episodeMp3: Buffer
 		if (draft.episodeAudioKey) {
 			episodeMp3 = await getAudioBuffer({ key: draft.episodeAudioKey })
-		} else if (draft.episodeBase64) {
-			episodeMp3 = mp3DataUrlToBuffer(draft.episodeBase64)
-
-			// Opportunistically migrate legacy episodeBase64 into R2 storage.
-			const stored = await putEpisodeDraftAudioFromBuffer({ draftId, mp3: episodeMp3 })
-			await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING', episodeAudioKey: null },
-				data: {
-					episodeAudioKey: stored.key,
-					episodeAudioContentType: stored.contentType,
-					episodeAudioSize: stored.size,
-					episodeBase64: null,
-				},
-			})
 		} else {
 			if (!responseBase64) {
 				throw new Error(
@@ -119,7 +97,6 @@ export async function startCallKentEpisodeDraftProcessing(
 					episodeAudioKey: stored.key,
 					episodeAudioContentType: stored.contentType,
 					episodeAudioSize: stored.size,
-					episodeBase64: null,
 					step: 'TRANSCRIBING',
 				},
 			})
