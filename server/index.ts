@@ -103,7 +103,7 @@ if (SHOULD_INIT_SENTRY) {
 		tracesSampleRate: 0.3,
 		environment: process.env.NODE_ENV,
 	})
-	sentrySetContext('region', { name: process.env.FLY_INSTANCE ?? 'unknown' })
+	sentrySetContext('region', { name: process.env.FLY_INSTANCE })
 }
 
 const app = express()
@@ -125,8 +125,8 @@ app.use((req, res, next) => {
 	getInstanceInfo()
 		.then(({ currentInstance, primaryInstance }) => {
 			res.set('X-Powered-By', 'Kody the Koala')
-			res.set('X-Fly-Region', process.env.FLY_REGION ?? 'unknown')
-			res.set('X-Fly-App', process.env.FLY_APP_NAME ?? 'unknown')
+			res.set('X-Fly-Region', process.env.FLY_REGION)
+			res.set('X-Fly-App', process.env.FLY_APP_NAME)
 			res.set('X-Fly-Instance', currentInstance)
 			res.set('X-Fly-Primary-Instance', primaryInstance)
 			res.set('X-Frame-Options', 'SAMEORIGIN')
@@ -383,7 +383,7 @@ async function getRequestHandler(): Promise<RequestHandler> {
 
 app.all('{*splat}', await getRequestHandler())
 
-const desiredPort = Number(process.env.PORT || 3000)
+const desiredPort = Number(process.env.PORT)
 const portToUse = await getPort({
 	port: portNumbers(desiredPort, desiredPort + 100),
 })

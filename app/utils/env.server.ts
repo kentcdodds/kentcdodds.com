@@ -2,6 +2,11 @@ import { z } from 'zod'
 
 const schema = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
+	PORT: z.string(),
+	FLY_APP_NAME: z.string(),
+	FLY_REGION: z.string(),
+	FLY_INSTANCE: z.string(),
+	LITEFS_DIR: z.string(),
 	DATABASE_PATH: z.string(),
 	DATABASE_URL: z.string(),
 	CACHE_DATABASE_PATH: z.string(),
