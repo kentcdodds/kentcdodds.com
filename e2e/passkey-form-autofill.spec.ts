@@ -1,5 +1,11 @@
 import { expect, test } from './utils.ts'
 
+test.use({
+	// Useful for producing a walkthrough artifact in environments where headed
+	// browsers aren't reliably visible on the VM desktop.
+	video: process.env.PW_VIDEO === 'true' ? 'on' : 'off',
+})
+
 test('passkey form autofill signs in via conditional UI', async ({ page, login }) => {
 	await page.setViewportSize({ width: 1400, height: 900 })
 	const demoPause = async (ms: number) => {
