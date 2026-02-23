@@ -103,6 +103,12 @@ function ErrorPage({
 				) : null}
 				<HeroSection {...heroProps} />
 
+				{possibleMatchesQuery && !possibleMatches?.length ? (
+					// Ensure in-page links to `#possible-matches` have a target even
+					// before semantic results load.
+					<div id="possible-matches" />
+				) : null}
+
 				{possibleMatches?.length ? (
 					<PossibleMatchesSection
 						matches={possibleMatches}
@@ -270,7 +276,7 @@ function FourOhFour({
 				title: "404 - Oh no, you found a page that's missing stuff.",
 				subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 				image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-				action: <ArrowLink href="/">Go home</ArrowLink>,
+				action: <ArrowLink to="#possible-matches">Possible matches</ArrowLink>,
 			}}
 		/>
 	)
