@@ -1,9 +1,24 @@
 import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
 
-const databaseUrl = process.env.DATABASE_URL?.trim()
-if (!databaseUrl) {
-	throw new Error('DATABASE_URL is required (no default fallback)')
+function getDatabaseUrl() {
+	const url = process.env.DATABASE_URL?.trim()
+	if (url) return url
+
+	// Keep Prisma CLI (generate/migrate) usable in CI and tooling even when
+	// `DATABASE_URL` isn't explicitly set (for example: lint/typecheck jobs).
+	// The runtime app still validates env via `getEnv()` and will fail-fast.
+	const databasePath = process.env.DATABASE_PATH?.trim()
+	if (databasePath) {
+		return databasePath.startsWith('file:') ? databasePath : `file:${databasePath}`
+	}
+
+	const databaseFilename = process.env.DATABASE_FILENAME?.trim()
+	if (databaseFilename) {
+		return `file:./prisma/${databaseFilename}`
+	}
+
+	return 'file:./prisma/sqlite.db'
 }
 
 export default defineConfig({
@@ -13,6 +28,6 @@ export default defineConfig({
 		seed: 'tsx other/runfile prisma/seed.ts',
 	},
 	datasource: {
-		url: databaseUrl,
+		url: getDatabaseUrl(),
 	},
 })
