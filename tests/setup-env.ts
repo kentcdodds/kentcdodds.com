@@ -11,8 +11,8 @@ import { afterEach } from 'vitest'
 const cwd = process.cwd()
 const dotenvPath = path.join(cwd, '.env')
 if (fs.existsSync(dotenvPath)) {
-	loadDotenv({ path: dotenvPath, override: false })
+	loadDotenv({ path: dotenvPath, override: false, quiet: true })
 }
-loadDotenv({ path: path.join(cwd, '.env.example'), override: false })
+loadDotenv({ path: path.join(cwd, '.env.example'), override: false, quiet: true })
 
 afterEach(cleanup)
