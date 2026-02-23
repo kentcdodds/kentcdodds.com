@@ -15,10 +15,6 @@ import pLimit from 'p-limit'
 import {
 	type CWKEpisode,
 	type CWKSeason,
-	type SimpelcastSeasonListItem,
-	type SimplecastCollectionResponse,
-	type SimplecastEpisode,
-	type SimplecastEpisodeListItem,
 } from '#app/types.ts'
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
@@ -26,6 +22,11 @@ import { getEnv } from './env.server.ts'
 import { fetchJsonWithRetryAfter } from './fetch-json-with-retry-after.server.ts'
 import { markdownToHtml, stripHtml } from './markdown.server.ts'
 import { typedBoolean } from './misc.ts'
+import {
+	simplecastEpisodeSchema,
+	simplecastEpisodesListResponseSchema,
+	simplecastSeasonsResponseSchema,
+} from './simplecast-api-schema.server.ts'
 import { type Timings } from './timing.server.ts'
 
 function getSimplecastConfig() {
@@ -152,13 +153,17 @@ async function getSeasons({
 	timings?: Timings
 }) {
 	const { podcastId, headers } = getSimplecastConfig()
-	const { collection } = await fetchJsonWithRetryAfter<
-		SimplecastCollectionResponse<SimpelcastSeasonListItem>
-	>(`https://api.simplecast.com/podcasts/${podcastId}/seasons`, {
-		headers,
-		label: `simplecast seasons (${podcastId})`,
-		retryOn5xx: true,
-	})
+	const seasonsJson = simplecastSeasonsResponseSchema.parse(
+		await fetchJsonWithRetryAfter<unknown>(
+			`https://api.simplecast.com/podcasts/${podcastId}/seasons`,
+			{
+				headers,
+				label: `simplecast seasons (${podcastId})`,
+				retryOn5xx: true,
+			},
+		),
+	)
+	const { collection } = seasonsJson
 
 	const limit = pLimit(2)
 	const seasons = await Promise.all(
@@ -201,13 +206,14 @@ async function getEpisodes(
 	const { headers } = getSimplecastConfig()
 	const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
 	url.searchParams.set('limit', '300')
-	const { collection } = await fetchJsonWithRetryAfter<
-		SimplecastCollectionResponse<SimplecastEpisodeListItem>
-	>(url.toString(), {
-		headers,
-		label: `simplecast season ${seasonId} episodes list`,
-		retryOn5xx: true,
-	})
+	const listJson = simplecastEpisodesListResponseSchema.parse(
+		await fetchJsonWithRetryAfter<unknown>(url.toString(), {
+			headers,
+			label: `simplecast season ${seasonId} episodes list`,
+			retryOn5xx: true,
+		}),
+	)
+	const { collection } = listJson
 
 	// Fetch episode details with limited concurrency to reduce 429s.
 	const limit = pLimit(3)
@@ -223,13 +229,15 @@ async function getEpisodes(
 
 async function getEpisode(episodeId: string) {
 	const { headers } = getSimplecastConfig()
-	const json = await fetchJsonWithRetryAfter<SimplecastEpisode>(
-		`https://api.simplecast.com/episodes/${episodeId}`,
-		{
-			headers,
-			label: `simplecast episode ${episodeId}`,
-			retryOn5xx: true,
-		},
+	const json = simplecastEpisodeSchema.parse(
+		await fetchJsonWithRetryAfter<unknown>(
+			`https://api.simplecast.com/episodes/${episodeId}`,
+			{
+				headers,
+				label: `simplecast episode ${episodeId}`,
+				retryOn5xx: true,
+			},
+		),
 	)
 
 	const {
@@ -240,7 +248,7 @@ async function getEpisode(episodeId: string) {
 		slug,
 		transcription: transcriptMarkdown,
 		long_description: summaryMarkdown,
-		description: descriptionMarkdown = '',
+		description: descriptionMarkdown,
 		image_url,
 		number,
 		duration,
@@ -254,7 +262,7 @@ async function getEpisode(episodeId: string) {
 		return null
 	}
 
-	const keywords = keywordsData.collection.map(({ value }) => value)
+	const keywords = keywordsData?.collection?.map(({ value }) => value) ?? []
 	const [
 		transcriptHTML,
 		descriptionHTML,
