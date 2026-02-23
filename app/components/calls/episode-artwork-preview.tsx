@@ -246,7 +246,7 @@ function EpisodeArtworkImg({
 }: { enableSuspense: boolean } & React.ComponentProps<'img'>) {
 	const safeSrc = src ?? ''
 	return (
-		<ErrorBoundary fallback={<img src={safeSrc} {...props} />} key={safeSrc}>
+		<ErrorBoundary fallback={<img src={safeSrc} {...props} />} resetKeys={[safeSrc]}>
 			<React.Suspense fallback={<img src={safeSrc} {...props} />}>
 				{enableSuspense ? (
 					<Img src={safeSrc} {...props} />
