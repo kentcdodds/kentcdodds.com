@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as React from 'react'
 import { expect, test, vi } from 'vitest'
@@ -32,8 +32,6 @@ test('publish anonymously tooltip opens on hover', async () => {
 
 test('episode artwork preview dims while the next image suspends', async () => {
 	vi.useFakeTimers()
-	const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-
 	class TestImage {
 		onload: null | (() => void) = null
 		onerror: null | ((error: unknown) => void) = null
@@ -69,12 +67,12 @@ test('episode artwork preview dims while the next image suspends', async () => {
 		const previewWrapper = previewImg.parentElement
 		expect(previewWrapper).not.toBeNull()
 
-		const clickPromise = user.click(checkbox)
-		await vi.advanceTimersByTimeAsync(200)
-
-		expect(previewWrapper).toHaveClass('opacity-60')
-		await vi.advanceTimersByTimeAsync(1500)
-		await clickPromise
+		await act(async () => {
+			fireEvent.click(checkbox)
+			await vi.advanceTimersByTimeAsync(200)
+			expect(previewWrapper).toHaveClass('opacity-60')
+			await vi.advanceTimersByTimeAsync(1500)
+		})
 		expect(previewWrapper).toHaveClass('opacity-100')
 	} finally {
 		vi.unstubAllGlobals()
