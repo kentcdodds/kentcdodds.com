@@ -263,6 +263,9 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 
 				setPasskeyMessage(null)
 				console.error(e)
+				setError(
+					e instanceof Error ? e.message : 'Failed to authenticate with passkey',
+				)
 			}
 		}
 
@@ -276,6 +279,8 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 
 	async function handlePasskeyLogin() {
 		try {
+			// Avoid collisions with a pending conditional UI ceremony.
+			WebAuthnAbortService.cancelCeremony()
 			setError(undefined)
 			setPasskeyMessage('Generating Authentication Options')
 			// Get authentication options from the server
