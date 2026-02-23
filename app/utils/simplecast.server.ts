@@ -11,20 +11,22 @@ import { unified } from 'unified'
 import type * as U from 'unist'
 import { visit } from 'unist-util-visit'
 import { z } from 'zod'
+import pLimit from 'p-limit'
 import {
 	type CWKEpisode,
 	type CWKSeason,
-	type SimpelcastSeasonListItem,
-	type SimplecastCollectionResponse,
-	type SimplecastEpisode,
-	type SimplecastEpisodeListItem,
-	type SimplecastTooManyRequests,
 } from '#app/types.ts'
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
 import { getEnv } from './env.server.ts'
+import { fetchJsonWithRetryAfter } from './fetch-json-with-retry-after.server.ts'
 import { markdownToHtml, stripHtml } from './markdown.server.ts'
 import { typedBoolean } from './misc.ts'
+import {
+	simplecastEpisodeSchema,
+	simplecastEpisodesListResponseSchema,
+	simplecastSeasonsResponseSchema,
+} from './simplecast-api-schema.server.ts'
 import { type Timings } from './timing.server.ts'
 
 function getSimplecastConfig() {
@@ -35,6 +37,10 @@ function getSimplecastConfig() {
 		seasonsCacheKey: `simplecast:seasons:${env.CHATS_WITH_KENT_PODCAST_ID}`,
 	}
 }
+
+// Episodes can be fetched concurrently from multiple seasons (and from multiple
+// requests). Cap the total in-flight episode-detail requests to reduce 429s.
+const simplecastEpisodeDetailsLimit = pLimit(3)
 
 const cwkCachedLinkSchema = z
 	.object({
@@ -90,14 +96,6 @@ const cwkCachedSeasonsSchema = z.array(
 		})
 		.passthrough(),
 )
-
-function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
-	return (
-		typeof json === 'object' &&
-		json !== null &&
-		json.hasOwnProperty('too_many_requests')
-	)
-}
 
 const getCachedSeasons = async ({
 	request,
@@ -159,36 +157,39 @@ async function getSeasons({
 	timings?: Timings
 }) {
 	const { podcastId, headers } = getSimplecastConfig()
-	const res = await fetch(
-		`https://api.simplecast.com/podcasts/${podcastId}/seasons`,
-		{ headers },
+	const seasonsJson = simplecastSeasonsResponseSchema.parse(
+		await fetchJsonWithRetryAfter<unknown>(
+			`https://api.simplecast.com/podcasts/${podcastId}/seasons`,
+			{
+				headers,
+				label: `simplecast seasons (${podcastId})`,
+				retryOn5xx: true,
+			},
+		),
 	)
-	const json = (await res.json()) as
-		| SimplecastCollectionResponse<SimpelcastSeasonListItem>
-		| SimplecastTooManyRequests
-	if (isTooManyRequests(json)) {
-		return []
-	}
-	const { collection } = json
+	const { collection } = seasonsJson
 
+	const limit = pLimit(2)
 	const seasons = await Promise.all(
-		collection.map(async ({ href, number }) => {
-			const seasonId = new URL(href).pathname.split('/').slice(-1)[0]
-			if (!seasonId) {
-				console.error(
-					`Could not determine seasonId from ${href} for season ${number}`,
-				)
-				return
-			}
-			const episodes = await getEpisodes(seasonId, {
-				request,
-				forceFresh,
-				timings,
-			})
-			if (!episodes.length) return null
+		collection.map(({ href, number }) =>
+			limit(async () => {
+				const seasonId = new URL(href).pathname.split('/').slice(-1)[0]
+				if (!seasonId) {
+					console.error(
+						`Could not determine seasonId from ${href} for season ${number}`,
+					)
+					return
+				}
+				const episodes = await getEpisodes(seasonId, {
+					request,
+					forceFresh,
+					timings,
+				})
+				if (!episodes.length) return null
 
-			return { seasonNumber: number, episodes }
-		}),
+				return { seasonNumber: number, episodes }
+			}),
+		),
 	).then((s) => s.filter(typedBoolean))
 
 	return sortBy(seasons, (s) => Number(s.seasonNumber))
@@ -209,15 +210,17 @@ async function getEpisodes(
 	const { headers } = getSimplecastConfig()
 	const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
 	url.searchParams.set('limit', '300')
-	const res = await fetch(url.toString(), { headers })
-	const json = (await res.json()) as
-		| SimplecastCollectionResponse<SimplecastEpisodeListItem>
-		| SimplecastTooManyRequests
-	if (isTooManyRequests(json)) {
-		return []
-	}
+	const listJson = simplecastEpisodesListResponseSchema.parse(
+		await fetchJsonWithRetryAfter<unknown>(url.toString(), {
+			headers,
+			label: `simplecast season ${seasonId} episodes list`,
+			retryOn5xx: true,
+		}),
+	)
+	const { collection } = listJson
 
-	const { collection } = json
+	// Fetch episode details. Cached reads are fast; network refreshes are capped
+	// globally in `getEpisode` via `simplecastEpisodeDetailsLimit`.
 	const episodes = await Promise.all(
 		collection
 			.filter(({ status, is_hidden }) => status === 'published' && !is_hidden)
@@ -228,15 +231,18 @@ async function getEpisodes(
 
 async function getEpisode(episodeId: string) {
 	const { headers } = getSimplecastConfig()
-	const res = await fetch(`https://api.simplecast.com/episodes/${episodeId}`, {
-		headers,
-	})
-	const json = (await res.json()) as
-		| SimplecastEpisode
-		| SimplecastTooManyRequests
-	if (isTooManyRequests(json)) {
-		return null
-	}
+	const json = simplecastEpisodeSchema.parse(
+		await simplecastEpisodeDetailsLimit(() =>
+			fetchJsonWithRetryAfter<unknown>(
+				`https://api.simplecast.com/episodes/${episodeId}`,
+				{
+					headers,
+					label: `simplecast episode ${episodeId}`,
+					retryOn5xx: true,
+				},
+			),
+		),
+	)
 
 	const {
 		id,
@@ -246,7 +252,7 @@ async function getEpisode(episodeId: string) {
 		slug,
 		transcription: transcriptMarkdown,
 		long_description: summaryMarkdown,
-		description: descriptionMarkdown = '',
+		description: descriptionMarkdown,
 		image_url,
 		number,
 		duration,
@@ -260,7 +266,7 @@ async function getEpisode(episodeId: string) {
 		return null
 	}
 
-	const keywords = keywordsData.collection.map(({ value }) => value)
+	const keywords = keywordsData?.collection?.map(({ value }) => value) ?? []
 	const [
 		transcriptHTML,
 		descriptionHTML,
