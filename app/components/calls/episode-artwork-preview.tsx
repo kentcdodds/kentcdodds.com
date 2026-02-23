@@ -220,9 +220,9 @@ function EpisodeArtworkImg({
 	const [fallbackSrc, setFallbackSrc] = React.useState(safeSrc)
 	const latestSrcRef = React.useRef(safeSrc)
 
-	React.useEffect(() => {
+	if (latestSrcRef.current !== safeSrc) {
 		latestSrcRef.current = safeSrc
-	}, [safeSrc])
+	}
 
 	const isReplacing = fallbackSrc !== safeSrc
 	const fallbackClassName = clsx(
