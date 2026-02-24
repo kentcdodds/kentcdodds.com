@@ -100,7 +100,7 @@ function ProfileCard({ person }: { person: Person }) {
 			<div className="mb-8 aspect-square w-full flex-none">
 				<img
 					{...getImgProps(getImageBuilder(person.cloudinaryId, person.name), {
-						className: 'rounded-lg object-cover',
+						className: 'rounded-lg object-contain',
 						widths: [280, 560, 840, 1100, 1300, 1650],
 						sizes: [
 							'(max-width:639px) 80vw',
@@ -111,9 +111,10 @@ function ProfileCard({ person }: { person: Person }) {
 						transformations: {
 							resize: {
 								aspectRatio: '1:1',
-								type: 'crop',
+								type: 'pad',
 							},
-							gravity: 'face',
+							gravity: 'face:center',
+							background: 'auto',
 						},
 					})}
 				/>
