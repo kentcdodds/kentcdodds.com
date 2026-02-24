@@ -1,10 +1,10 @@
+import {
+	defaultSleep,
+	throwIfAborted,
+	waitForDelay,
+	type Sleep,
+} from './abort-utils.server.ts'
 import { fetchWithTimeout } from './fetch-with-timeout.server'
-
-type Sleep = (ms: number) => Promise<void>
-
-const defaultSleep: Sleep = async (ms) => {
-	await new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 type RetryDelayReason = 'retry-after' | 'rate-limit-reset' | 'default'
 
@@ -101,6 +101,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		label,
 		sleep = defaultSleep,
 		retryOn5xx = false,
+		signal,
 	}: {
 		headers?: Record<string, string>
 		maxRetries?: number
@@ -110,14 +111,17 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		label?: string
 		sleep?: Sleep
 		retryOn5xx?: boolean
+		signal?: AbortSignal
 	} = {},
 ): Promise<JsonResponse> {
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		throwIfAborted(signal)
 		let res: Response
 		try {
 			res = timeoutMs
-				? await fetchWithTimeout(url, { headers }, timeoutMs)
-				: await fetch(url, { headers })
+				? await fetchWithTimeout(url, { headers, signal }, timeoutMs)
+				: await fetch(url, { headers, signal })
+			throwIfAborted(signal)
 		} catch (cause) {
 			if (attempt < maxRetries) {
 				const delayMs = clampMs(defaultDelayMs * (attempt + 1), maxDelayMs)
@@ -126,7 +130,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 						maxRetries + 1
 					}), waiting ${Math.round(delayMs)}ms`,
 				)
-				await sleep(delayMs)
+				await waitForDelay({ sleep, delayMs, signal })
 				continue
 			}
 			throw new Error(`${label ?? 'request'}: fetch failed`, { cause })
@@ -146,7 +150,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 					delayMs,
 				)}ms (${reason})`,
 			)
-			await sleep(delayMs)
+			await waitForDelay({ sleep, delayMs, signal })
 			continue
 		}
 
@@ -159,7 +163,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 						maxRetries + 1
 					}), waiting ${Math.round(delayMs)}ms`,
 				)
-				await sleep(delayMs)
+				await waitForDelay({ sleep, delayMs, signal })
 				continue
 			}
 

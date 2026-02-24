@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isAbortError, throwIfAborted } from './abort-utils.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import { type Timings } from './timing.server.ts'
 
@@ -20,20 +21,24 @@ function formatSeasonParam(seasonNumber: number) {
 async function getLatestChatsSeasonNumber({
 	request,
 	timings,
+	signal,
 }: {
 	request: Request
 	timings?: Timings
+	signal?: AbortSignal
 }) {
 	try {
+		throwIfAborted(signal)
 		// Dynamic import so missing podcast env vars don't crash the whole app.
 		const { getSeasonListItems } = await import('./simplecast.server.ts')
-		const seasons = await getSeasonListItems({ request, timings })
+		const seasons = await getSeasonListItems({ request, timings, signal })
 		const latestSeasonNumber = seasons.reduce(
 			(max, s) => Math.max(max, s.seasonNumber ?? 0),
 			0,
 		)
 		return latestSeasonNumber || null
 	} catch (error: unknown) {
+		if (isAbortError(error)) return null
 		console.error('podcast-latest-season: failed to load chats seasons', error)
 		return null
 	}
@@ -42,20 +47,24 @@ async function getLatestChatsSeasonNumber({
 async function getLatestCallsSeasonNumber({
 	request,
 	timings,
+	signal,
 }: {
 	request: Request
 	timings?: Timings
+	signal?: AbortSignal
 }) {
 	try {
+		throwIfAborted(signal)
 		// Dynamic import so missing podcast env vars don't crash the whole app.
 		const { getEpisodes } = await import('./transistor.server.ts')
-		const episodes = await getEpisodes({ request, timings })
+		const episodes = await getEpisodes({ request, timings, signal })
 		const latestSeasonNumber = episodes.reduce(
 			(max, e) => Math.max(max, e.seasonNumber ?? 0),
 			0,
 		)
 		return latestSeasonNumber || null
 	} catch (error: unknown) {
+		if (isAbortError(error)) return null
 		console.error('podcast-latest-season: failed to load calls episodes', error)
 		return null
 	}
@@ -64,9 +73,11 @@ async function getLatestCallsSeasonNumber({
 export async function getLatestPodcastSeasonLinks({
 	request,
 	timings,
+	signal,
 }: {
 	request: Request
 	timings?: Timings
+	signal?: AbortSignal
 }) {
 	return cachified({
 		cache,
@@ -78,10 +89,11 @@ export async function getLatestPodcastSeasonLinks({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		checkValue: latestPodcastSeasonLinksSchema,
 		getFreshValue: async () => {
+			throwIfAborted(signal)
 			const [latestChatsSeasonNumber, latestCallsSeasonNumber] =
 				await Promise.all([
-					getLatestChatsSeasonNumber({ request, timings }),
-					getLatestCallsSeasonNumber({ request, timings }),
+					getLatestChatsSeasonNumber({ request, timings, signal }),
+					getLatestCallsSeasonNumber({ request, timings, signal }),
 				])
 
 			return {

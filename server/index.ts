@@ -96,6 +96,23 @@ const app = express()
 app.set('trust proxy', true)
 app.use(serverTiming())
 
+type ServerTimingResponse = {
+	startTime?: (name: string, description: string) => void
+	endTime?: (name: string) => void
+}
+
+const startServerMetric = (
+	res: ServerTimingResponse,
+	name: string,
+	description: string,
+) => {
+	res.startTime?.(name, description)
+}
+
+const endServerMetric = (res: ServerTimingResponse, name: string) => {
+	res.endTime?.(name)
+}
+
 const expiredDataCleanup = scheduleExpiredDataCleanup()
 
 app.get('/img/social', oldImgSocial)
@@ -107,6 +124,8 @@ app.post('/__metronome', (req: any, res: any) => {
 })
 
 app.use((req, res, next) => {
+	const metricName = 'middleware-get-instance-info'
+	startServerMetric(res, metricName, 'populate fly response headers')
 	getInstanceInfo()
 		.then(({ currentInstance, primaryInstance }) => {
 			res.set('X-Powered-By', 'Kody the Koala')
@@ -128,9 +147,10 @@ app.use((req, res, next) => {
 				'Strict-Transport-Security',
 				`max-age=${60 * 60 * 24 * 365 * 100}`,
 			)
-			next()
 		})
+		.then(() => next())
 		.catch(next)
+		.finally(() => endServerMetric(res, metricName))
 })
 
 app.use((req, res, next) => {
@@ -370,6 +390,24 @@ async function getRequestHandler(): Promise<RequestHandler> {
 		getLoadContext,
 	})
 }
+
+app.use((req, res, next) => {
+	const metricName = 'middleware-request-handler'
+	startServerMetric(
+		res,
+		metricName,
+		'time spent in react-router request handling',
+	)
+	let metricEnded = false
+	const finishMetric = () => {
+		if (metricEnded) return
+		metricEnded = true
+		endServerMetric(res, metricName)
+	}
+	res.once('finish', finishMetric)
+	res.once('close', finishMetric)
+	next()
+})
 
 app.all('{*splat}', await getRequestHandler())
 

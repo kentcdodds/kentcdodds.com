@@ -14,6 +14,7 @@ import { visit } from 'unist-util-visit'
 import { z } from 'zod'
 import { type CWKEpisode, type CWKSeason } from '#app/types.ts'
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
+import { isAbortError, throwIfAborted } from './abort-utils.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import { getEnv } from './env.server.ts'
 import { fetchJsonWithRetryAfter } from './fetch-json-with-retry-after.server.ts'
@@ -98,10 +99,12 @@ const getCachedSeasons = async ({
 	request,
 	forceFresh,
 	timings,
+	signal,
 }: {
 	request: Request
 	forceFresh?: boolean
 	timings?: Timings
+	signal?: AbortSignal
 }) => {
 	try {
 		return await cachified({
@@ -114,11 +117,13 @@ const getCachedSeasons = async ({
 			ttl: 1000 * 60 * 5,
 			// ttl: 1000 * 60 * 60 * 24 * 7,
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-			getFreshValue: () => getSeasons({ request, forceFresh, timings }),
+			getFreshValue: () =>
+				getSeasons({ request, forceFresh, timings, signal }),
 			forceFresh,
 			checkValue: cwkCachedSeasonsSchema,
 		})
 	} catch (error: unknown) {
+		if (isAbortError(error)) return []
 		console.error(
 			`simplecast: cachified failed to resolve seasons, returning empty fallback`,
 			error,
@@ -133,10 +138,12 @@ async function getCachedEpisode(
 		request,
 		forceFresh,
 		timings,
+		signal,
 	}: {
 		request: Request
 		forceFresh?: boolean
 		timings?: Timings
+		signal?: AbortSignal
 	},
 ) {
 	const key = `simplecast:episode:${episodeId}`
@@ -148,11 +155,12 @@ async function getCachedEpisode(
 			key,
 			ttl: 1000 * 60 * 60 * 24 * 7,
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-			getFreshValue: () => getEpisode(episodeId),
+			getFreshValue: () => getEpisode(episodeId, { signal }),
 			forceFresh,
 			checkValue: cwkCachedEpisodeSchema,
 		})
 	} catch (error: unknown) {
+		if (isAbortError(error)) return null
 		console.error(
 			`simplecast: failed to load episode ${episodeId}, omitting from results`,
 			error,
@@ -165,11 +173,14 @@ async function getSeasons({
 	request,
 	forceFresh,
 	timings,
+	signal,
 }: {
 	request: Request
 	forceFresh?: boolean
 	timings?: Timings
+	signal?: AbortSignal
 }) {
+	throwIfAborted(signal)
 	const { podcastId, headers } = getSimplecastConfig()
 	const seasonsJson = simplecastSeasonsResponseSchema.parse(
 		await fetchJsonWithRetryAfter<unknown>(
@@ -178,6 +189,7 @@ async function getSeasons({
 				headers,
 				label: `simplecast seasons (${podcastId})`,
 				retryOn5xx: true,
+				signal,
 			},
 		),
 	)
@@ -187,6 +199,7 @@ async function getSeasons({
 	const seasons = await Promise.all(
 		collection.map(({ href, number }) =>
 			limit(async () => {
+				throwIfAborted(signal)
 				const seasonId = new URL(href).pathname.split('/').slice(-1)[0]
 				if (!seasonId) {
 					console.error(
@@ -198,6 +211,7 @@ async function getSeasons({
 					request,
 					forceFresh,
 					timings,
+					signal,
 				})
 				if (!episodes.length) return null
 
@@ -215,12 +229,15 @@ async function getEpisodes(
 		request,
 		forceFresh,
 		timings,
+		signal,
 	}: {
 		request: Request
 		forceFresh?: boolean
 		timings?: Timings
+		signal?: AbortSignal
 	},
 ) {
+	throwIfAborted(signal)
 	const { headers } = getSimplecastConfig()
 	const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
 	url.searchParams.set('limit', '300')
@@ -229,6 +246,7 @@ async function getEpisodes(
 			headers,
 			label: `simplecast season ${seasonId} episodes list`,
 			retryOn5xx: true,
+			signal,
 		}),
 	)
 	const { collection } = listJson
@@ -238,12 +256,18 @@ async function getEpisodes(
 	const episodes = await Promise.all(
 		collection
 			.filter(({ status, is_hidden }) => status === 'published' && !is_hidden)
-			.map(({ id }) => getCachedEpisode(id, { request, forceFresh, timings })),
+			.map(({ id }) =>
+				getCachedEpisode(id, { request, forceFresh, timings, signal }),
+			),
 	)
 	return episodes.filter(typedBoolean)
 }
 
-async function getEpisode(episodeId: string) {
+async function getEpisode(
+	episodeId: string,
+	{ signal }: { signal?: AbortSignal } = {},
+) {
+	throwIfAborted(signal)
 	const { headers } = getSimplecastConfig()
 	const json = simplecastEpisodeSchema.parse(
 		await simplecastEpisodeDetailsLimit(() =>
@@ -253,6 +277,7 @@ async function getEpisode(episodeId: string) {
 					headers,
 					label: `simplecast episode ${episodeId}`,
 					retryOn5xx: true,
+					signal,
 				},
 			),
 		),
@@ -567,12 +592,14 @@ async function getSeasonListItems({
 	request,
 	forceFresh,
 	timings,
+	signal,
 }: {
 	request: Request
 	forceFresh?: boolean
 	timings?: Timings
+	signal?: AbortSignal
 }) {
-	const seasons = await getCachedSeasons({ request, forceFresh, timings })
+	const seasons = await getCachedSeasons({ request, forceFresh, timings, signal })
 	const listItemSeasons: Array<CWKSeason> = []
 	for (const season of seasons) {
 		listItemSeasons.push({
