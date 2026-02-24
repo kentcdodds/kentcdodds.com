@@ -1,24 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { describe, expect, test, vi } from 'vitest'
-
-const memory = new Map<string, unknown>()
-const testCache = {
-	name: 'test-cache',
-	get(key: string) {
-		return (memory.get(key) as any) ?? null
-	},
-	async set(key: string, entry: unknown) {
-		memory.set(key, entry)
-	},
-	async delete(key: string) {
-		memory.delete(key)
-	},
-}
-
-vi.mock('#app/utils/cache.server.ts', async () => {
-	const { cachified } = await import('@epic-web/cachified')
-	return { cachified, cache: testCache }
-})
+import { describe, expect, test } from 'vitest'
+import { memory } from '#tests/semantic-search-test-cache.ts'
 
 describe('semantic search result normalization', () => {
 	test('dedupes chunk-level matches into unique docs', async () => {

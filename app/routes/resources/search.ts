@@ -20,7 +20,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	const headers = { 'Cache-Control': 'no-store' }
 
-	const results = await semanticSearchKCD({ query, topK: 15 })
+	const results = await semanticSearchKCD({ query, topK: 15, request })
 	return json(
 		results.map((r) => {
 			const url = r.url ?? (r.id.startsWith('/') ? r.id : '')

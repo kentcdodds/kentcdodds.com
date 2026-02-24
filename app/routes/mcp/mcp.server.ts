@@ -221,7 +221,7 @@ function createServer() {
 				}
 			}
 
-			const results = await semanticSearchKCD({ query, topK: 15 })
+			const results = await semanticSearchKCD({ query, topK: 15, request })
 			const filteredResults =
 				category && allowedTypesByCategory[category].length
 					? results.filter((r) =>

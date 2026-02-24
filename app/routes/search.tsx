@@ -44,7 +44,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		)
 	}
 
-	const resultsPromise = semanticSearchKCD({ query: q, topK: 20 }).catch(
+	const resultsPromise = semanticSearchKCD({ query: q, topK: 20, request }).catch(
 		(e) => {
 			console.error(e)
 			throw e

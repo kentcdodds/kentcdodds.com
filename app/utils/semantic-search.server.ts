@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { getSemanticSearchPresentation } from '#app/utils/semantic-search-presentation.server.ts'
+import { type Timings } from '#app/utils/timing.server.ts'
 
 type EmbeddingResponse = {
 	shape?: number[]
@@ -21,11 +22,17 @@ type VectorizeQueryResponse = {
 const SEMANTIC_SEARCH_CACHE_TTL_MS = 1000 * 60 * 60 * 12 // 12 hours
 const SEMANTIC_SEARCH_CACHE_SWR_MS = 1000 * 60 * 60 * 24 * 3 // 3 days
 
+/**
+ * Normalize a user-provided query into a stable cache key input.
+ */
 function normalizeSemanticSearchQueryForCache(query: string) {
 	// Normalize insignificant whitespace so repeated requests hit cache.
 	return query.trim().replace(/\s+/g, ' ')
 }
 
+/**
+ * Build a stable, privacy-preserving cache key for semantic search results.
+ */
 function makeSemanticSearchCacheKey({
 	query,
 	topK,
@@ -443,13 +450,19 @@ function addYoutubeTimestampToUrl({
 export async function semanticSearchKCD({
 	query,
 	topK = 15,
+	request,
+	timings,
 }: {
 	query: string
 	/**
 	 * Requested number of unique docs to return.
 	 * Clamped to 20 because Vectorize metadata queries cap `topK` at 20.
+	 * Because chunk overfetch is capped at 20 as well, very high `topK` values
+	 * may return fewer than requested unique docs after de-duping chunk hits.
 	 */
 	topK?: number
+	request?: Request
+	timings?: Timings
 }): Promise<Array<SemanticSearchResult>> {
 	const cleanedQuery = normalizeSemanticSearchQueryForCache(query)
 	if (!cleanedQuery) return []
@@ -478,11 +491,14 @@ export async function semanticSearchKCD({
 
 	// Vectorize returns chunk-level matches and overlapping chunks commonly score
 	// highly together. Overfetch and then de-dupe down to unique docs.
-	// When requesting metadata, Vectorize caps topK at 20.
+	// Vectorize metadata queries cap topK at 20, so rawTopK is capped too (this
+	// can limit overfetch headroom for de-dupe at high `topK` values).
 	const rawTopK = Math.min(20, safeTopK * 5)
 
-	return cachified({
+	const baseResults = await cachified({
 		cache,
+		request,
+		timings,
 		key: cacheKey,
 		ttl: SEMANTIC_SEARCH_CACHE_TTL_MS,
 		staleWhileRevalidate: SEMANTIC_SEARCH_CACHE_SWR_MS,
@@ -606,15 +622,17 @@ export async function semanticSearchKCD({
 				})
 			}
 
-			// Add UI-ready presentation fields (summary + image) with graceful fallbacks.
-			// This is derived from local repo content when possible, so it doesn't require
-			// storing additional fields during indexing.
-			return await Promise.all(
-				baseResults.map(async (r) => {
-					const presentation = await getSemanticSearchPresentation(r)
-					return { ...r, ...presentation }
-				}),
-			)
+			return baseResults
 		},
 	})
+
+	// Add UI-ready presentation fields (summary + image) per-request. This is
+	// derived from local repo content when possible, so caching it would delay
+	// reflecting content updates until TTL/SWR expiry.
+	return await Promise.all(
+		baseResults.map(async (r) => {
+			const presentation = await getSemanticSearchPresentation(r)
+			return { ...r, ...presentation }
+		}),
+	)
 }

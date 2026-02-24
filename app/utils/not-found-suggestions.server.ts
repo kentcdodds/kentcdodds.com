@@ -74,7 +74,7 @@ export async function getNotFoundSuggestions({
 			)
 		})
 		const results = await Promise.race([
-			semanticSearchKCD({ query, topK }),
+			semanticSearchKCD({ query, topK, request }),
 			timeoutPromise,
 		]).finally(() => {
 			if (timeoutId) clearTimeout(timeoutId)
