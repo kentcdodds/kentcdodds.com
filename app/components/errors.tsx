@@ -140,14 +140,15 @@ function PossibleMatchesSection({
 	const q = typeof query === 'string' ? query.trim() : ''
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const sorted = sortNotFoundMatches(matches)
-	const hasMatches = sorted.length > 0
 
 	return (
 		<>
 			<div id="possible-matches" />
 			<HeaderSection
 				title="Possible matches"
-				subTitle={q ? `Deterministic matches for "${q}"` : 'Deterministic matches.'}
+				subTitle={
+					q ? `Deterministic matches for "${q}"` : 'Deterministic matches.'
+				}
 			/>
 			<Spacer size="2xs" />
 			<Grid>
@@ -168,7 +169,7 @@ function PossibleMatchesSection({
 												loading="lazy"
 											/>
 										) : (
-											<div className="h-12 w-12 rounded-lg bg-gray-200 dark:bg-gray-700 sm:h-16 sm:w-16" />
+											<div className="h-12 w-12 rounded-lg bg-gray-200 sm:h-16 sm:w-16 dark:bg-gray-700" />
 										)}
 									</div>
 									<div className="min-w-0 flex-1">
@@ -192,9 +193,7 @@ function PossibleMatchesSection({
 						))}
 					</ul>
 					<p className="mt-4 text-sm text-slate-500">
-						{hasMatches
-							? 'None of these match? '
-							: 'No deterministic matches found. '}
+						None of these match?{' '}
 						<a href={searchUrl} className="underlined">
 							Try semantic search
 						</a>

@@ -252,6 +252,7 @@ async function walkPagesDir({
 	for (const entry of entries) {
 		const name = entry.name
 		if (!name || name.startsWith('.')) continue
+		if (entry.isSymbolicLink()) continue
 		const absolute = path.join(dir, name)
 		if (entry.isDirectory()) {
 			const nextRelativeSlug = relativeSlug
@@ -294,7 +295,8 @@ async function getPageIndexItems(
 }
 
 let cachedIndex: Array<NotFoundDeterministicIndexItem> | null = null
-let cachedIndexPromise: Promise<Array<NotFoundDeterministicIndexItem>> | null = null
+let cachedIndexPromise: Promise<Array<NotFoundDeterministicIndexItem>> | null =
+	null
 
 async function getNotFoundDeterministicIndex(): Promise<
 	Array<NotFoundDeterministicIndexItem>
@@ -398,7 +400,12 @@ function filterIndexItems(
 	if (!searchString) return items
 
 	const allResults = matchSorter(items, searchString, matchSorterOptions)
-	const searches = new Set(searchString.split(' ').map((s) => s.trim()).filter(Boolean))
+	const searches = new Set(
+		searchString
+			.split(' ')
+			.map((s) => s.trim())
+			.filter(Boolean),
+	)
 	if (searches.size < 2) return allResults
 
 	const [firstWord, ...restWords] = searches.values()
@@ -415,7 +422,11 @@ function filterIndexItems(
 		}),
 	}
 
-	let individualWordResults = matchSorter(items, firstWord, individualWordOptions)
+	let individualWordResults = matchSorter(
+		items,
+		firstWord,
+		individualWordOptions,
+	)
 	for (const word of restWords) {
 		const searchResult = matchSorter(
 			individualWordResults,
@@ -512,7 +523,10 @@ export async function getNotFoundSuggestions({
 		}
 
 		if (!matches.length) return null
-		const sorted = sortNotFoundMatches(matches, { priorities }).slice(0, safeLimit)
+		const sorted = sortNotFoundMatches(matches, { priorities }).slice(
+			0,
+			safeLimit,
+		)
 		return sorted.length ? { query, matches: sorted } : null
 	} catch (error: unknown) {
 		// 404 pages should never fail the request because suggestions failed.
