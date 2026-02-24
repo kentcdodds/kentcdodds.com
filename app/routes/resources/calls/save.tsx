@@ -20,6 +20,7 @@ import {
 	getDomainUrl,
 	getErrorMessage,
 	getOptionalTeam,
+	getStringFormValue,
 } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
@@ -29,11 +30,6 @@ import { createEpisode } from '#app/utils/transistor.server.ts'
 import { type Route } from './+types/save'
 
 type ActionData = RecordingFormData
-
-function getStringFormValue(formData: FormData, key: string) {
-	const value = formData.get(key)
-	return typeof value === 'string' ? value : null
-}
 
 function getCheckboxFormValue(formData: FormData, key: string) {
 	const value = formData.get(key)

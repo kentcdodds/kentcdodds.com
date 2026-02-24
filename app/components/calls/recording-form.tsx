@@ -9,6 +9,7 @@ import {
 	getErrorForNotes,
 	getErrorForTitle,
 } from '#app/utils/call-kent.ts'
+import { getStringFormValue } from '#app/utils/misc.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 
 export const recordingFormActionPath = '/resources/calls/save'
@@ -379,9 +380,3 @@ export function RecordingForm({
 		</div>
 	)
 }
-
-function getStringFormValue(formData: FormData, key: string) {
-	const value = formData.get(key)
-	return typeof value === 'string' ? value : null
-}
-
