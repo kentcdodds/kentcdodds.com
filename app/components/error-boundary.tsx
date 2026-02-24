@@ -43,7 +43,8 @@ export function GeneralErrorBoundary({
 				// The 404 UI renders a full page layout (hero, matches, etc). Wrapping it
 				// in a centered container + huge padding makes mobile feel extremely narrow.
 				'p-4': isNotFound,
-				'container mx-auto flex items-center justify-center p-20': !isNotFound,
+				'container mx-auto flex items-center justify-center p-4 lg:p-20':
+					!isNotFound,
 			})}
 		>
 			{routeError
