@@ -168,6 +168,7 @@ export default function YouTubePage({
 								id={selectedVideoId}
 								title={videoTitle ?? `YouTube video ${selectedVideoId}`}
 								announce="Play video"
+								alwaysLoadIframe={true}
 								params={new URLSearchParams({
 									rel: '0',
 									modestbranding: '1',
