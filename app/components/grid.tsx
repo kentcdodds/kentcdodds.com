@@ -29,7 +29,7 @@ const Grid = function Grid({
 			ref={ref}
 			id={id}
 			className={clsx('relative', {
-				'mx-10vw': !nested,
+				'mx-5vw lg:mx-10vw': !nested,
 				'w-full': nested,
 				'py-10 md:py-24 lg:pt-36 lg:pb-40': featured,
 			})}

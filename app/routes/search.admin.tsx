@@ -933,7 +933,7 @@ export function ErrorBoundary() {
 		}
 		const statusLine = `${error.status} ${error.statusText}`.trim()
 		return (
-			<div className="mx-10vw mt-10">
+			<div className="mx-5vw mt-10 lg:mx-10vw">
 				<h2>Search admin error</h2>
 				<pre className="whitespace-pre-wrap">
 					{statusLine}
@@ -943,7 +943,7 @@ export function ErrorBoundary() {
 		)
 	}
 	return (
-		<div className="mx-10vw mt-10">
+		<div className="mx-5vw mt-10 lg:mx-10vw">
 			<h2>Search admin error</h2>
 			<pre className="whitespace-pre-wrap">{getErrorMessage(error)}</pre>
 		</div>

@@ -536,7 +536,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 			categoriesAndKeywords.includes('testing') ||
 			categoriesAndKeywords.includes('remix') ||
 			categoriesAndKeywords.includes('ai') ? (
-				<div className="px-10vw mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 md:max-w-none md:flex-row">
+				<div className="px-5vw mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 md:max-w-none md:flex-row lg:px-10vw">
 					{categoriesAndKeywords.includes('react') ? (
 						<div className="@container w-full max-w-lg">
 							<CourseCard

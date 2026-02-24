@@ -17,7 +17,7 @@ function TestimonialSection({
 
 	return (
 		<div
-			className={`${className} mx-10vw mb-14 grid grid-cols-4 gap-6 lg:grid-cols-8 xl:grid-cols-12`}
+			className={`${className} mx-5vw mb-14 grid grid-cols-4 gap-6 lg:mx-10vw lg:grid-cols-8 xl:grid-cols-12`}
 		>
 			<div className="col-span-full mb-20 flex flex-col space-y-10 lg:flex-row lg:items-end lg:justify-between lg:space-y-0">
 				<div className="space-y-2 lg:space-y-0">

@@ -169,7 +169,7 @@ function Footer({ image }: { image: ImageBuilder }) {
 	)
 	return (
 		<footer className="border-t border-gray-200 pt-48 pb-16 dark:border-gray-600">
-			<div className="mx-10vw relative">
+			<div className="mx-5vw relative lg:mx-10vw">
 				<div className="relative mx-auto grid max-w-7xl grid-cols-4 grid-rows-[max-content] gap-x-4 md:grid-cols-8 xl:grid-cols-12 xl:gap-x-6">
 					<div className="col-span-full md:col-span-3 xl:row-span-2">
 						<AboutSection />
