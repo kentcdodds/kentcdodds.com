@@ -30,11 +30,19 @@ export async function action({ request }: Route.ActionArgs) {
 	const passkeyId = formData.get('passkeyId')
 
 	if (intent === 'delete' && typeof passkeyId === 'string') {
+		// First verify the passkey exists and belongs to the user
+		const passkey = await prisma.passkey.findUnique({
+			where: { id: passkeyId },
+			select: { userId: true },
+		})
+
+		if (!passkey || passkey.userId !== user.id) {
+			throw new Response('Passkey not found', { status: 404 })
+		}
+
+		// Delete using only the unique identifier
 		await prisma.passkey.delete({
-			where: {
-				id: passkeyId,
-				userId: user.id, // Ensure the passkey belongs to the user
-			},
+			where: { id: passkeyId },
 		})
 	}
 
