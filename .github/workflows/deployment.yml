@@ -11,9 +11,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Prefer setting `SITE_CACHE_VERSION` as a repository variable so all workflows
-  # share one knob for invalidation (fallback keeps forks working).
-  SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION || 'v2' }}
+  # Set `SITE_CACHE_VERSION` as a repository variable so all workflows share one
+  # knob for invalidation.
+  SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION }}
   NODE_VERSION: 24
 
 jobs:
