@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto'
+import { remember } from '@epic-web/remember'
+import { LRUCache } from 'lru-cache'
 import { getEnv } from './env.server.ts'
 import { getSemanticSearchPresentation } from './semantic-search-presentation.server.ts'
 
@@ -340,6 +343,46 @@ export type SemanticSearchResult = {
 	imageAlt?: string
 }
 
+const SEMANTIC_SEARCH_RESULTS_CACHE_TTL_MS = 1000 * 60 * 10 // 10 minutes
+const SEMANTIC_SEARCH_RESULTS_CACHE_MAX_ENTRIES = 750
+
+const semanticSearchResultsCache = remember(
+	'semantic-search:results-cache',
+	() =>
+		new LRUCache<string, Array<SemanticSearchResult>>({
+			max: SEMANTIC_SEARCH_RESULTS_CACHE_MAX_ENTRIES,
+			ttl: SEMANTIC_SEARCH_RESULTS_CACHE_TTL_MS,
+		}),
+)
+
+function normalizeSemanticSearchQuery(query: string) {
+	// Keep cache keys stable for typical user-input whitespace changes.
+	return query.replace(/\s+/g, ' ').trim()
+}
+
+function getSemanticSearchResultsCacheKey({
+	query,
+	topK,
+	indexName,
+	embeddingModel,
+}: {
+	query: string
+	topK: number
+	indexName: string
+	embeddingModel: string
+}) {
+	const payload = JSON.stringify({
+		v: 1,
+		query,
+		topK,
+		indexName,
+		embeddingModel,
+	})
+	const hash = createHash('sha256').update(payload).digest('hex')
+	// Hash query/model/index so we don't persist user text in keys.
+	return `semantic-search:kcd:results:v1:${hash}`
+}
+
 function parseYoutubeVideoIdFromUrl(url: string | undefined) {
 	if (!url) return null
 	try {
@@ -383,28 +426,24 @@ function addYoutubeTimestampToUrl({
 	}
 }
 
-export async function semanticSearchKCD({
+type SemanticSearchEnv = ReturnType<typeof getRequiredSemanticSearchEnv>
+
+async function semanticSearchKCDUncached({
+	env,
 	query,
-	topK = 15,
+	topK,
 }: {
+	env: SemanticSearchEnv
 	query: string
-	/**
-	 * Requested number of unique docs to return.
-	 * Clamped to 20 because Vectorize metadata queries cap `topK` at 20.
-	 */
-	topK?: number
+	topK: number
 }): Promise<Array<SemanticSearchResult>> {
 	const { accountId, apiToken, gatewayId, gatewayAuthToken, indexName, embeddingModel } =
-		getRequiredSemanticSearchEnv()
+		env
 
-	const safeTopK =
-		typeof topK === 'number' && Number.isFinite(topK)
-			? Math.max(1, Math.min(20, Math.floor(topK)))
-			: 15
 	// Vectorize returns chunk-level matches and overlapping chunks commonly score
 	// highly together. Overfetch and then de-dupe down to unique docs.
 	// When requesting metadata, Vectorize caps topK at 20.
-	const rawTopK = Math.min(20, safeTopK * 5)
+	const rawTopK = Math.min(20, topK * 5)
 
 	const vector = await getEmbedding({
 		accountId,
@@ -507,7 +546,7 @@ export async function semanticSearchKCD({
 			if (scoreDiff) return scoreDiff
 			return a.rank - b.rank
 		})
-		.slice(0, safeTopK)
+		.slice(0, topK)
 		.map((x) => x.result)
 
 	// If a YouTube chunk match includes a timestamp, deep-link the result URL.
@@ -535,4 +574,45 @@ export async function semanticSearchKCD({
 	)
 
 	return enriched
+}
+
+export async function semanticSearchKCD({
+	query,
+	topK = 15,
+}: {
+	query: string
+	/**
+	 * Requested number of unique docs to return.
+	 * Clamped to 20 because Vectorize metadata queries cap `topK` at 20.
+	 */
+	topK?: number
+}): Promise<Array<SemanticSearchResult>> {
+	const normalizedQuery = normalizeSemanticSearchQuery(query)
+	if (!normalizedQuery) return []
+
+	const env = getRequiredSemanticSearchEnv()
+	const safeTopK =
+		typeof topK === 'number' && Number.isFinite(topK)
+			? Math.max(1, Math.min(20, Math.floor(topK)))
+			: 15
+
+	const cacheKey = getSemanticSearchResultsCacheKey({
+		query: normalizedQuery,
+		topK: safeTopK,
+		indexName: env.indexName,
+		embeddingModel: env.embeddingModel,
+	})
+
+	const cached = semanticSearchResultsCache.get(cacheKey)
+	if (cached) return structuredClone(cached)
+
+	const enriched = await semanticSearchKCDUncached({
+		env,
+		query: normalizedQuery,
+		topK: safeTopK,
+	})
+	semanticSearchResultsCache.set(cacheKey, enriched)
+	// Preserve the old "fresh objects per call" behavior to reduce accidental
+	// cross-request mutation risk.
+	return structuredClone(enriched)
 }
