@@ -405,7 +405,7 @@ function parseYoutubeVideoIdFromUrl(url: string | undefined) {
 
 function normalizeYoutubeTimestampSeconds({
 	startSeconds,
-	endSeconds,
+	endSeconds: _endSeconds,
 }: {
 	startSeconds: number | undefined
 	endSeconds: number | undefined
@@ -415,24 +415,11 @@ function normalizeYoutubeTimestampSeconds({
 	}
 
 	const safeStart = Math.max(0, startSeconds)
-	const safeEnd =
-		typeof endSeconds === 'number' && Number.isFinite(endSeconds)
-			? Math.max(0, endSeconds)
-			: undefined
-
-	// Some older/legacy indexes stored milliseconds in `startSeconds`/`endSeconds`.
-	// Detect by looking at the chunk span: transcript chunks should never span
-	// tens of minutes, but millisecond values will make the delta look enormous.
-	if (
-		typeof safeEnd === 'number' &&
-		safeEnd >= safeStart &&
-		safeEnd - safeStart > 1_000
-	) {
-		return Math.max(0, Math.floor(safeStart / 1000))
-	}
 
 	// Fallback: if `startSeconds` looks like milliseconds (e.g. `123000` for 2:03),
 	// normalize defensively. We assume videos in this index aren't 4 hours long.
+	// Ambiguous spans (like long chunks in seconds) are left as seconds to avoid
+	// false positives from span-only heuristics.
 	if (safeStart > 60 * 60 * 4) {
 		return Math.max(0, Math.floor(safeStart / 1000))
 	}
