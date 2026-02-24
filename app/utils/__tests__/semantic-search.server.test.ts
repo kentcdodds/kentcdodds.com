@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { semanticSearchKCD } from '../semantic-search.server.ts'
 
 vi.mock('#app/utils/cache.server.ts', () => ({
@@ -84,15 +84,17 @@ function mockSemanticSearchNetwork({
 	vi.stubGlobal('fetch', fetchMock)
 }
 
-beforeEach(() => {
-	vi.restoreAllMocks()
-})
-
-afterEach(() => {
-	vi.unstubAllGlobals()
-})
+function createTestCleanup() {
+	return {
+		[Symbol.dispose]() {
+			vi.unstubAllGlobals()
+			vi.restoreAllMocks()
+		},
+	}
+}
 
 test('keeps long transcript chunk timestamps in seconds', async () => {
+	using _cleanup = createTestCleanup()
 	mockSemanticSearchNetwork({
 		startSeconds: 3600,
 		endSeconds: 5000,
@@ -109,6 +111,7 @@ test('keeps long transcript chunk timestamps in seconds', async () => {
 })
 
 test('normalizes obvious millisecond timestamps to seconds', async () => {
+	using _cleanup = createTestCleanup()
 	mockSemanticSearchNetwork({
 		startSeconds: 123_000,
 		endSeconds: 129_000,
