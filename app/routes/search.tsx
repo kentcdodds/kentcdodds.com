@@ -22,6 +22,7 @@ import {
 	useUpdateQueryStringValueWithoutNavigation,
 } from '#app/utils/misc-react.tsx'
 import {
+	SEMANTIC_SEARCH_MAX_QUERY_CHARS,
 	semanticSearchKCD,
 	type SemanticSearchResult,
 } from '#app/utils/semantic-search.server.ts'
@@ -39,6 +40,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 				configured: true,
 				results: [] as Array<SemanticSearchResult>,
 				error: undefined as string | undefined,
+			},
+			{ headers },
+		)
+	}
+	const normalizedQ = q.trim().replace(/\s+/g, ' ')
+	if (normalizedQ.length > SEMANTIC_SEARCH_MAX_QUERY_CHARS) {
+		return defer(
+			{
+				q,
+				configured: true,
+				results: [] as Array<SemanticSearchResult>,
+				error: `Query too long (${normalizedQ.length} chars). Max is ${SEMANTIC_SEARCH_MAX_QUERY_CHARS}.`,
 			},
 			{ headers },
 		)

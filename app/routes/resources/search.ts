@@ -1,6 +1,9 @@
 import { data as json } from 'react-router'
 import { getDomainUrl } from '#app/utils/misc.ts'
-import { semanticSearchKCD } from '#app/utils/semantic-search.server.ts'
+import {
+	semanticSearchKCD,
+	SemanticSearchQueryTooLongError,
+} from '#app/utils/semantic-search.server.ts'
 import { type Route } from './+types/search'
 
 function normalizeSummary(value: unknown) {
@@ -20,7 +23,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	const headers = { 'Cache-Control': 'no-store' }
 
-	const results = await semanticSearchKCD({ query, topK: 15, request })
+	let results
+	try {
+		results = await semanticSearchKCD({ query, topK: 15, request })
+	} catch (error) {
+		if (error instanceof SemanticSearchQueryTooLongError) {
+			return json({ error: error.message }, { status: 400, headers })
+		}
+		throw error
+	}
 	return json(
 		results.map((r) => {
 			const url = r.url ?? (r.id.startsWith('/') ? r.id : '')

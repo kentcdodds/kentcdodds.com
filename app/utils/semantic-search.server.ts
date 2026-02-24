@@ -22,6 +22,19 @@ type VectorizeQueryResponse = {
 
 const SEMANTIC_SEARCH_CACHE_TTL_MS = 1000 * 60 * 60 * 12 // 12 hours
 const SEMANTIC_SEARCH_CACHE_SWR_MS = 1000 * 60 * 60 * 24 * 3 // 3 days
+export const SEMANTIC_SEARCH_MAX_QUERY_CHARS = 1000
+
+export class SemanticSearchQueryTooLongError extends Error {
+	length: number
+	max: number
+
+	constructor(length: number, max: number) {
+		super(`Semantic search query too long (${length} chars). Max is ${max}.`)
+		this.name = 'SemanticSearchQueryTooLongError'
+		this.length = length
+		this.max = max
+	}
+}
 
 /**
  * Normalize a user-provided query into a stable cache key input.
@@ -490,6 +503,12 @@ export async function semanticSearchKCD({
 }): Promise<Array<SemanticSearchResult>> {
 	const cleanedQuery = normalizeSemanticSearchQueryForCache(query)
 	if (!cleanedQuery) return []
+	if (cleanedQuery.length > SEMANTIC_SEARCH_MAX_QUERY_CHARS) {
+		throw new SemanticSearchQueryTooLongError(
+			cleanedQuery.length,
+			SEMANTIC_SEARCH_MAX_QUERY_CHARS,
+		)
+	}
 	const {
 		accountId,
 		apiToken,
