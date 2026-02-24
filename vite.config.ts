@@ -33,6 +33,9 @@ if (SENTRY_UPLOAD && MODE === 'production') {
 	if (!org && !tokenImpliesOrg) {
 		throw new Error('SENTRY_UPLOAD is enabled, but SENTRY_ORG is missing')
 	}
+	if (!process.env.COMMIT_SHA) {
+		throw new Error('SENTRY_UPLOAD is enabled, but COMMIT_SHA is missing')
+	}
 }
 
 export default defineConfig(async () => {

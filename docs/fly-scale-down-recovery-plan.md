@@ -28,8 +28,16 @@ fly machine destroy e822040fee7398 -a kcd  # cdg
 
 ## Step 2: Deploy the Fix
 
-The build requires `SENTRY_AUTH_TOKEN` as a build secret and `COMMIT_SHA` as a
-build arg:
+The build now supports missing Sentry upload inputs. If `SENTRY_AUTH_TOKEN` or
+`COMMIT_SHA` is missing, deploy still succeeds and skips sourcemap upload.
+
+Basic deploy (no sourcemap upload):
+
+```bash
+fly deploy -a kcd
+```
+
+Deploy with sourcemap upload enabled:
 
 ```bash
 fly deploy -a kcd \
@@ -37,8 +45,8 @@ fly deploy -a kcd \
   --build-secret SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 ```
 
-Or push to `main` and let the GitHub Action deploy (it has access to the
-secret).
+GitHub Actions can also deploy with upload enabled since it provides both
+values.
 
 This updates the single remaining machine with the new image (including the
 FLY_MACHINE_ID fix).

@@ -35,7 +35,7 @@ FROM base as build
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
-ENV SENTRY_UPLOAD="true"
+ENV SENTRY_UPLOAD="false"
 
 RUN mkdir /app/
 WORKDIR /app/
@@ -56,9 +56,16 @@ ADD . .
 ENV SENTRY_ORG="kent-c-dodds-tech-llc"
 ENV SENTRY_PROJECT="kcd-node"
 
-# Mount the secret and set it as an environment variable and run the build
-RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
+# Enable Sentry upload only when both COMMIT_SHA and SENTRY_AUTH_TOKEN exist.
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN,required=false \
+    if [ -f /run/secrets/SENTRY_AUTH_TOKEN ] && [ -n "$COMMIT_SHA" ]; then \
+      export SENTRY_AUTH_TOKEN="$(cat /run/secrets/SENTRY_AUTH_TOKEN)"; \
+      export SENTRY_UPLOAD="true"; \
+      echo "Sentry sourcemap upload enabled"; \
+    else \
+      export SENTRY_UPLOAD="false"; \
+      echo "Sentry sourcemap upload disabled (missing SENTRY_AUTH_TOKEN or COMMIT_SHA)"; \
+    fi && \
     npm run build
 
 # build smaller image for running
