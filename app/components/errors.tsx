@@ -72,19 +72,23 @@ function ErrorPage({
 	possibleMatchesQuery?: string
 	heroProps: HeroSectionProps
 }) {
-	const resolvedHeroProps: HeroSectionProps = possibleMatches?.length
-		? {
-				...heroProps,
-				arrowUrl: '#possible-matches',
-				arrowLabel: 'Possible matches',
-			}
-		: articles?.length
+	// Only inject the "arrow down" helper link when the caller didn't provide an
+	// explicit action. Otherwise, it can create duplicate CTAs (notably on 404s).
+	const resolvedHeroProps: HeroSectionProps = heroProps.action
+		? heroProps
+		: possibleMatches?.length
 			? {
 					...heroProps,
-					arrowUrl: '#articles',
-					arrowLabel: 'But wait, there is more!',
+					arrowUrl: '#possible-matches',
+					arrowLabel: 'Possible matches',
 				}
-			: heroProps
+			: articles?.length
+				? {
+						...heroProps,
+						arrowUrl: '#articles',
+						arrowLabel: 'But wait, there is more!',
+					}
+				: heroProps
 	return (
 		<>
 			<noscript>
