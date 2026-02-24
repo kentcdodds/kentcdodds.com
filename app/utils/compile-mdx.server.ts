@@ -3,7 +3,6 @@ import remarkEmbedder, { type TransformerInfo } from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type * as H from 'hast'
 import type * as M from 'mdast'
-import { type MdxJsxAttribute, type MdxJsxFlowElement } from 'mdast-util-mdx-jsx'
 import { bundleMDX } from 'mdx-bundler'
 import lz from 'lz-string'
 import PQueue from 'p-queue'
@@ -15,6 +14,20 @@ import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
 import { type GitHubFile } from '#app/types.ts'
 import * as x from './x.server.ts'
+
+// Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
+type MdxJsxAttribute = {
+	type: 'mdxJsxAttribute'
+	name: string
+	value?: unknown
+}
+
+type MdxJsxFlowElement = {
+	type: 'mdxJsxFlowElement'
+	name: string
+	attributes: Array<MdxJsxAttribute>
+	children: Array<unknown>
+}
 
 function handleEmbedderError({ url }: { url: string }) {
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`
