@@ -1,9 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
 import { config as loadDotenv } from 'dotenv'
-import { afterEach } from 'vitest'
 
 // Many server modules now use `getEnv()` (validated runtime env) instead of
 // reading `process.env` ad-hoc. Load `.env` (if present) and then `.env.example`
@@ -19,4 +16,5 @@ loadDotenv({
 	quiet: true,
 })
 
-afterEach(cleanup)
+// Many libs (and our own env helpers) assume `NODE_ENV` is present.
+if (!process.env.NODE_ENV) process.env.NODE_ENV = 'test'

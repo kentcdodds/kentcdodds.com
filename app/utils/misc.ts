@@ -88,6 +88,11 @@ export function getErrorMessage(
 	return fallback
 }
 
+export function getStringFormValue(formData: FormData, key: string) {
+	const value = formData.get(key)
+	return typeof value === 'string' ? value : null
+}
+
 export function getErrorStack(
 	error: unknown,
 	fallback: string = 'Unknown Error',

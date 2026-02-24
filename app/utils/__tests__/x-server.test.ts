@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
-import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
+import { mswServer } from '#tests/msw-server.ts'
 import { type Tweet } from '../twitter/types/index.ts'
 import { getTweetEmbedHTML } from '../x.server.ts'
 
@@ -88,25 +88,19 @@ const tweetById = new Map<string, Tweet>([
 	],
 ])
 
-const server = setupServer(
-	http.get('https://cdn.syndication.twimg.com/tweet-result', ({ request }) => {
+const tweetResultHandler = http.get(
+	'https://cdn.syndication.twimg.com/tweet-result',
+	({ request }) => {
 		const id = new URL(request.url).searchParams.get('id')
 		const tweet = id ? tweetById.get(id) : undefined
 		if (!tweet) return HttpResponse.json({}, { status: 404 })
 		return HttpResponse.json(tweet)
-	}),
+	},
 )
-
-beforeAll(() => {
-	server.listen({ onUnhandledRequest: 'error' })
-})
-
-afterAll(() => {
-	server.close()
-})
 
 describe('getTweetEmbedHTML', () => {
 	test('adds linked ellipsis when longform content is truncated', async () => {
+		mswServer.use(tweetResultHandler)
 		const html = await getTweetEmbedHTML(
 			`https://x.com/kentcdodds/status/${truncatedTweetId}`,
 		)
@@ -119,6 +113,7 @@ describe('getTweetEmbedHTML', () => {
 	})
 
 	test('prefers full note tweet text when available', async () => {
+		mswServer.use(tweetResultHandler)
 		const html = await getTweetEmbedHTML(
 			`https://x.com/kentcdodds/status/${fullNoteTweetId}`,
 		)

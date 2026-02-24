@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
-import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, beforeEach, expect, test, vi } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
+import { mswServer } from '#tests/msw-server.ts'
 import {
 	fetchJsonWithRetryAfter,
 	getRetryDelayMsFromResponse,
@@ -10,7 +10,7 @@ let requestCount = 0
 let always429Count = 0
 let flaky500Count = 0
 let networkErrorCount = 0
-const server = setupServer(
+const handlers = [
 	http.get('https://example.com/test', () => {
 		requestCount++
 		if (requestCount === 1) {
@@ -54,21 +54,14 @@ const server = setupServer(
 			headers: { 'Content-Type': 'application/json' },
 		})
 	}),
-)
-
-beforeAll(() => {
-	server.listen({ onUnhandledRequest: 'error' })
-})
+]
 
 beforeEach(() => {
+	mswServer.use(...handlers)
 	requestCount = 0
 	always429Count = 0
 	flaky500Count = 0
 	networkErrorCount = 0
-})
-
-afterAll(() => {
-	server.close()
 })
 
 test('fetchJsonWithRetryAfter waits Retry-After seconds on 429 then retries', async () => {

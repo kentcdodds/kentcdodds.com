@@ -2,13 +2,18 @@
 /// <reference types="vite/client" />
 
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import tsconfigPaths from 'vite-tsconfig-paths'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
-	plugins: [react()],
+	plugins: [react(), tsconfigPaths()],
 	test: {
 		include: ['**/__tests__/**.{js,jsx,ts,tsx}'],
-		environment: 'jsdom',
-		setupFiles: ['./tests/setup-env.ts'],
+		exclude: [
+			...configDefaults.exclude,
+			'**/*.test.browser.{js,jsx,ts,tsx}',
+		],
+		environment: 'node',
+		setupFiles: ['./tests/setup-backend.ts'],
 	},
 })

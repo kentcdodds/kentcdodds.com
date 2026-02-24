@@ -1,9 +1,9 @@
-import { renderHook, act } from '@testing-library/react'
 import { test, expect } from 'vitest'
+import { renderHook } from 'vitest-browser-react'
 import useUndo from '../use-undo.js'
 
-test('allows you to undo and redo', () => {
-	const { result } = renderHook(() => useUndo('one'))
+test('allows you to undo and redo', async () => {
+	const { result, act } = await renderHook(() => useUndo('one'))
 
 	// assert initial state
 	expect(result.current.canUndo).toBe(false)
@@ -13,7 +13,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.future).toEqual([])
 
 	// add second value
-	act(() => {
+	await act(() => {
 		result.current.set('two')
 	})
 
@@ -25,7 +25,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.future).toEqual([])
 
 	// add third value
-	act(() => {
+	await act(() => {
 		result.current.set('three')
 	})
 
@@ -37,7 +37,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.future).toEqual([])
 
 	// undo
-	act(() => {
+	await act(() => {
 		result.current.undo()
 	})
 
@@ -49,7 +49,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.future).toEqual(['three'])
 
 	// undo again
-	act(() => {
+	await act(() => {
 		result.current.undo()
 	})
 
@@ -61,7 +61,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.future).toEqual(['two', 'three'])
 
 	// redo
-	act(() => {
+	await act(() => {
 		result.current.redo()
 	})
 
@@ -73,7 +73,7 @@ test('allows you to undo and redo', () => {
 	expect(result.current.future).toEqual(['three'])
 
 	// add fourth value
-	act(() => {
+	await act(() => {
 		result.current.set('four')
 	})
 
@@ -84,8 +84,3 @@ test('allows you to undo and redo', () => {
 	expect(result.current.present).toBe('four')
 	expect(result.current.future).toEqual([])
 })
-
-/*
-eslint
-  max-statements: "off",
-*/

@@ -1,0 +1,2 @@
+import 'vitest-browser-react'
+

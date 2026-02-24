@@ -42,8 +42,12 @@
     "pretest:e2e:run": "npm run build",
     "test:e2e:run": "cross-env CI=1 PORT=8811 playwright test",
     "test:e2e:install": "npx playwright install chromium --with-deps",
-    "test": "vitest --run",
-    "test:watch": "vitest",
+    "test": "run-s test:backend test:browser",
+    "test:backend": "vitest --run --config vitest.config.ts",
+    "test:backend:watch": "vitest --config vitest.config.ts",
+    "test:browser": "vitest --run --config vitest.browser.config.ts",
+    "test:browser:watch": "vitest --config vitest.browser.config.ts",
+    "test:watch": "npm run test:backend:watch",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "react-router typegen && tsc -b .",
@@ -170,10 +174,6 @@
     "@faker-js/faker": "^10.3.0",
     "@playwright/test": "^1.58.2",
     "@react-router/dev": "^7.0.0",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
     "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/compression": "^1.8.1",
@@ -194,6 +194,7 @@
     "@types/source-map-support": "^0.5.10",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
+    "@vitest/browser-playwright": "^4.0.18",
     "concurrently": "^9.2.1",
     "cookie": "^1.1.1",
     "esbuild-jest": "^0.5.0",
@@ -213,7 +214,8 @@
     "vite": "^7.3.1",
     "vite-env-only": "^3.0.3",
     "vite-plugin-cjs-interop": "^2.4.2",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest-browser-react": "^2.0.5"
   },
   "prettier": "@epic-web/config/prettier"
 }

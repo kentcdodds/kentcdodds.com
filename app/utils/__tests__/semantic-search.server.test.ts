@@ -1,24 +1,5 @@
-import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
-import {
-	cloudflareHandlers,
-	resetCloudflareMockState,
-} from '../../../mocks/cloudflare.ts'
+import { describe, expect, test } from 'vitest'
 import { semanticSearchKCD } from '../semantic-search.server.ts'
-
-const server = setupServer(...cloudflareHandlers)
-
-beforeAll(() => {
-	server.listen({ onUnhandledRequest: 'error' })
-})
-
-beforeEach(() => {
-	resetCloudflareMockState()
-})
-
-afterAll(() => {
-	server.close()
-})
 
 describe('semantic search result normalization', () => {
 	test('dedupes chunk-level matches into unique docs', async () => {
