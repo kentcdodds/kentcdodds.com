@@ -94,7 +94,7 @@ function createTestCleanup() {
 }
 
 test('keeps long transcript chunk timestamps in seconds', async () => {
-	using _cleanup = createTestCleanup()
+	using ignoredCleanup = createTestCleanup()
 	mockSemanticSearchNetwork({
 		startSeconds: 3600,
 		endSeconds: 5000,
@@ -111,7 +111,7 @@ test('keeps long transcript chunk timestamps in seconds', async () => {
 })
 
 test('normalizes obvious millisecond timestamps to seconds', async () => {
-	using _cleanup = createTestCleanup()
+	using ignoredCleanup = createTestCleanup()
 	mockSemanticSearchNetwork({
 		startSeconds: 123_000,
 		endSeconds: 129_000,
