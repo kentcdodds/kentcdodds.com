@@ -14,10 +14,15 @@ function getRequiredEnv(name: string) {
 }
 
 export function getCloudflareConfig() {
+	const defaultGatewayId = getRequiredEnv('CLOUDFLARE_AI_GATEWAY_ID')
+	const embeddingGatewayId =
+		process.env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID?.trim() || defaultGatewayId
+
 	return {
 		accountId: getRequiredEnv('CLOUDFLARE_ACCOUNT_ID'),
 		apiToken: getRequiredEnv('CLOUDFLARE_API_TOKEN'),
-		gatewayId: getRequiredEnv('CLOUDFLARE_AI_GATEWAY_ID'),
+		// Embedding jobs can use a dedicated gateway without guardrails.
+		gatewayId: embeddingGatewayId,
 		gatewayAuthToken: getRequiredEnv('CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN'),
 		vectorizeIndex: getRequiredEnv('CLOUDFLARE_VECTORIZE_INDEX'),
 		embeddingModel:
