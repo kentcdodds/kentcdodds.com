@@ -7,7 +7,7 @@ function safeDecodeURIComponent(value: string) {
 }
 
 /**
- * Convert a missing pathname into a semantic-search-friendly query string.
+ * Convert a missing pathname into a search-friendly query string.
  *
  * Example: `/blog/react-testing-library` -> `blog react testing library`
  */
@@ -28,6 +28,6 @@ export function notFoundQueryFromPathname(pathname: string) {
 		.replace(/\s+/g, ' ')
 		.trim()
 
-	// Keep queries reasonably small; embeddings don't benefit from very long URL-ish strings.
+	// Keep queries reasonably small; search doesn't benefit from very long URL-ish strings.
 	return words.length > 120 ? words.slice(0, 120).trim() : words
 }

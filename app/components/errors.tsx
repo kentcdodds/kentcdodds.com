@@ -146,8 +146,8 @@ function PossibleMatchesSection({
 			<div id="possible-matches" />
 			<HeaderSection
 				title="Possible matches"
-				subTitle={q ? `Semantic search for "${q}"` : 'Semantic search results.'}
-				cta="Search the site"
+				subTitle={q ? `Deterministic matches for "${q}"` : 'Deterministic matches.'}
+				cta="Try semantic search"
 				ctaUrl={searchUrl}
 			/>
 			<Spacer size="2xs" />
@@ -192,13 +192,13 @@ function PossibleMatchesSection({
 							</li>
 						))}
 					</ul>
-					{sorted.length > 8 ? (
-						<p className="mt-4 text-sm text-slate-500">
-							<a href={searchUrl} className="underlined">
-								See all results
-							</a>
-						</p>
-					) : null}
+					<p className="mt-4 text-sm text-slate-500">
+						Not what you were looking for?{' '}
+						<a href={searchUrl} className="underlined">
+							Try semantic search
+						</a>
+						.
+					</p>
 				</div>
 			</Grid>
 		</>
@@ -228,10 +228,12 @@ function FourOhFour({
 
 	const q = effectiveQuery ? effectiveQuery.trim() : ''
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
-	const heroActionTo =
+	const hasPossibleMatches =
 		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
-			? '#possible-matches'
-			: searchUrl
+	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
+	const heroActionLabel = hasPossibleMatches
+		? 'Possible matches'
+		: 'Try semantic search'
 
 	return (
 		<ErrorPage
@@ -242,7 +244,7 @@ function FourOhFour({
 				title: "404 - Oh no, you found a page that's missing stuff.",
 				subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 				image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-				action: <ArrowLink to={heroActionTo}>Possible matches</ArrowLink>,
+				action: <ArrowLink to={heroActionTo}>{heroActionLabel}</ArrowLink>,
 			}}
 		/>
 	)
