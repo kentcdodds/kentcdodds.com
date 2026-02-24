@@ -125,7 +125,6 @@ function ProfileCard({ person }: { person: Person }) {
 					{person.role}
 				</div>
 				<div className="mb-6 flex items-center gap-2">
-					<H3 className="mb-0">{person.name}</H3>
 					<a
 						href={`#${person.id}`}
 						aria-label={`Permalink to contributor ${person.id}`}
@@ -134,6 +133,7 @@ function ProfileCard({ person }: { person: Person }) {
 					>
 						#
 					</a>
+					<H3 className="mb-0">{person.name}</H3>
 				</div>
 				<Paragraph className="mb-8">{person.description}</Paragraph>
 			</div>
