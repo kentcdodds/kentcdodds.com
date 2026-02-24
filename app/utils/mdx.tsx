@@ -3,6 +3,7 @@ import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { type MetaFunction } from 'react-router'
 import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
+import { MermaidDiagram } from '#app/components/mermaid.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
@@ -122,6 +123,7 @@ const mdxComponents = {
 	table: MdxTable,
 	Themed,
 	CloudinaryVideo,
+	MermaidDiagram,
 	ThemedBlogImage,
 	BlogImage,
 	SubscribeForm,

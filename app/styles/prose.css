@@ -365,6 +365,54 @@ pre {
 	font-size: inherit;
 }
 
+/* Mermaid diagrams are pre-rendered to SVG at MDX compile time (SSR). */
+.prose .mermaid {
+	/* Match code blocks/embeds: full-bleed on mobile. */
+	margin-left: -10vw;
+	margin-right: -10vw;
+}
+
+.prose .mermaid-svg {
+	overflow-x: auto;
+	padding: 1.25rem;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-secondary);
+}
+
+.prose .mermaid-svg svg {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+.prose .mermaid pre.mermaid-fallback {
+	/* Override `.prose pre` so fallback doesn't go full-bleed twice. */
+	margin: 0;
+	overflow-x: auto;
+	padding: 1.25rem;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-secondary);
+	color: var(--text-primary);
+}
+
+.prose .mermaid pre.mermaid-fallback code {
+	display: block;
+	white-space: pre;
+}
+
+@media (min-width: 1024px) {
+	.prose .mermaid {
+		margin-left: 0;
+		margin-right: 0;
+		grid-column: 2 / span 10;
+	}
+
+	.prose .mermaid-svg,
+	.prose .mermaid pre.mermaid-fallback {
+		border-radius: 0.5rem;
+	}
+}
+
 .codeblock-line {
 	display: block;
 	position: relative;
