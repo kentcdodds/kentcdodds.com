@@ -147,7 +147,7 @@ function PossibleMatchesSection({
 			<HeaderSection
 				title="Possible matches"
 				subTitle={q ? `Deterministic matches for "${q}"` : 'Deterministic matches.'}
-				cta="Try semantic search"
+				cta="Semantic search"
 				ctaUrl={searchUrl}
 			/>
 			<Spacer size="2xs" />
@@ -157,19 +157,19 @@ function PossibleMatchesSection({
 						{sorted.slice(0, 8).map((m) => (
 							<li
 								key={`${m.type}:${m.url}`}
-								className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
+								className="rounded-lg bg-gray-100 p-4 sm:p-6 dark:bg-gray-800"
 							>
-								<div className="flex items-start gap-4">
+								<div className="flex items-start gap-3 sm:gap-4">
 									<div className="shrink-0">
 										{m.imageUrl ? (
 											<img
 												src={m.imageUrl}
 												alt={m.imageAlt ?? ''}
-												className="h-16 w-16 rounded-lg object-cover"
+												className="h-12 w-12 rounded-lg object-cover sm:h-16 sm:w-16"
 												loading="lazy"
 											/>
 										) : (
-											<div className="h-16 w-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
+											<div className="h-12 w-12 rounded-lg bg-gray-200 dark:bg-gray-700 sm:h-16 sm:w-16" />
 										)}
 									</div>
 									<div className="min-w-0 flex-1">
@@ -183,7 +183,7 @@ function PossibleMatchesSection({
 											<span className="truncate">{m.url}</span>
 										</div>
 										{m.summary ? (
-											<p className="mt-3 line-clamp-3 text-base text-slate-600 dark:text-slate-400">
+											<p className="mt-2 line-clamp-3 text-base text-slate-600 sm:mt-3 dark:text-slate-400">
 												{m.summary}
 											</p>
 										) : null}
@@ -233,7 +233,7 @@ function FourOhFour({
 	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
 	const heroActionLabel = hasPossibleMatches
 		? 'Possible matches'
-		: 'Try semantic search'
+		: 'Semantic search'
 
 	return (
 		<ErrorPage
