@@ -21,7 +21,7 @@ reference:
 | Typecheck       | `npm run typecheck`                                                               |
 | Unit tests      | `npm run test` (runs backend + browser-mode tests)                                |
 | Backend tests   | `npm run test:backend`                                                            |
-| Browser tests   | `npm run test:browser`                                                            |
+| Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
 | E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
 | DB reset + seed | `npx prisma@7 migrate reset --force` then `npm run runfile -- prisma/seed.ts`     |
 
