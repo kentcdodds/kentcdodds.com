@@ -108,7 +108,7 @@ function Card({
 			{/* place the scroll marker a bit above the element to act as view margin */}
 			<div data-talk={slug} className="absolute -top-8" />
 
-			<div className="mb-8 flex flex-none flex-col justify-between md:flex-row">
+			<div className="mb-8 flex flex-none flex-col items-center justify-between md:flex-row">
 				<div className="inline-flex items-baseline">
 					{isInFuture ? (
 						<div className="block h-3 w-3 flex-none rounded-full bg-green-600" />
@@ -122,9 +122,9 @@ function Card({
 					) : null}
 				</div>
 
-				<div className="mt-8 flex items-center space-x-2 md:mt-0">
+				<div className="flex items-center gap-2 md:mt-0">
 					{tag ? (
-						<div className="-my-4 -mr-8 inline-block self-start rounded-full bg-white px-8 py-4 text-lg whitespace-nowrap text-black dark:bg-gray-600 dark:text-white">
+						<div className="inline-block self-start rounded-full bg-white px-8 py-4 text-lg whitespace-nowrap text-black dark:bg-gray-600 dark:text-white">
 							{tag}
 						</div>
 					) : null}

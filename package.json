@@ -69,6 +69,7 @@
     "@octokit/rest": "^22.0.1",
     "@prisma/adapter-better-sqlite3": "^7.4.1",
     "@prisma/client": "^7.4.1",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@reach/accordion": "^0.18.0",
     "@reach/auto-id": "^0.18.0",
     "@reach/checkbox": "^0.18.0",

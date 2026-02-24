@@ -9,6 +9,12 @@ import {
 import { z } from 'zod'
 import { SpinnerIcon, StarIcon } from '#app/components/icons.tsx'
 import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '#app/components/ui/tooltip.tsx'
+import {
 	favoriteContentTypes,
 	favoriteIntents,
 	parseEpisodeFavoriteContentId,
@@ -103,7 +109,7 @@ export function FavoriteToggle({
 	const iconAriaLabel = isFavorite ? 'Unfavorite' : label
 
 	if (!user) {
-		return (
+		const link = (
 			<Link
 				to="/login"
 				className={clsx(
@@ -113,13 +119,57 @@ export function FavoriteToggle({
 					className,
 				)}
 				aria-label="Login to favorite"
-				title="Login to favorite"
+				title={mode === 'icon' ? undefined : 'Login to favorite'}
 			>
 				{icon}
 				{mode === 'button' ? <span>Login to favorite</span> : null}
 			</Link>
 		)
+
+		return (
+			<TooltipProvider>
+				{mode === 'icon' ? (
+					<Tooltip>
+						<TooltipTrigger asChild>{link}</TooltipTrigger>
+						<TooltipContent>Login to favorite</TooltipContent>
+					</Tooltip>
+				) : (
+					link
+				)}
+			</TooltipProvider>
+		)
 	}
+
+	const button = (
+		<button
+			type="submit"
+			disabled={isBusy}
+			aria-pressed={isFavorite}
+			aria-label={mode === 'icon' ? iconAriaLabel : undefined}
+			className={clsx(
+				mode === 'icon'
+					? clsx(
+							'focus-ring inline-flex items-center justify-center rounded-md transition focus:outline-none',
+							{
+								'text-team-current': isFavorite,
+								'text-secondary hover:text-team-current focus:text-team-current':
+									!isFavorite,
+							},
+						)
+					: clsx(
+							'focus-ring inline-flex items-center gap-2 rounded-full px-6 py-3 text-lg font-medium transition focus:outline-none',
+							{
+								'bg-inverse text-inverse': isFavorite,
+								'bg-secondary text-primary hover:text-team-current focus:text-team-current':
+									!isFavorite,
+							},
+						),
+			)}
+		>
+			{icon}
+			{mode === 'button' ? <span>{text}</span> : null}
+		</button>
+	)
 
 	return (
 		<fetcher.Form
@@ -130,35 +180,16 @@ export function FavoriteToggle({
 			<input type="hidden" name="contentType" value={contentType} />
 			<input type="hidden" name="contentId" value={contentId} />
 			<input type="hidden" name="intent" value={nextIntent} />
-			<button
-				type="submit"
-				disabled={isBusy}
-				aria-pressed={isFavorite}
-				aria-label={mode === 'icon' ? iconAriaLabel : undefined}
-				title={mode === 'icon' ? iconAriaLabel : undefined}
-				className={clsx(
-					mode === 'icon'
-						? clsx(
-								'focus-ring inline-flex items-center justify-center rounded-md p-2 transition focus:outline-none',
-								{
-									'text-team-current': isFavorite,
-									'text-secondary hover:text-team-current focus:text-team-current':
-										!isFavorite,
-								},
-							)
-						: clsx(
-								'focus-ring inline-flex items-center gap-2 rounded-full px-6 py-3 text-lg font-medium transition focus:outline-none',
-								{
-									'bg-inverse text-inverse': isFavorite,
-									'bg-secondary text-primary hover:text-team-current focus:text-team-current':
-										!isFavorite,
-								},
-							),
+			<TooltipProvider>
+				{mode === 'icon' ? (
+					<Tooltip>
+						<TooltipTrigger asChild>{button}</TooltipTrigger>
+						<TooltipContent>{iconAriaLabel}</TooltipContent>
+					</Tooltip>
+				) : (
+					button
 				)}
-			>
-				{icon}
-				{mode === 'button' ? <span>{text}</span> : null}
-			</button>
+			</TooltipProvider>
 		</fetcher.Form>
 	)
 }
