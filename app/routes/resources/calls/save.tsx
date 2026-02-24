@@ -105,7 +105,6 @@ async function createCall({
 					audioKey: stored.key,
 					audioContentType: stored.contentType,
 					audioSize: stored.size,
-					base64: null,
 				},
 				select: { id: true },
 			})
