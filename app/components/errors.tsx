@@ -108,7 +108,7 @@ function ErrorPage({
 				) : null}
 				<HeroSection {...resolvedHeroProps} />
 
-				{possibleMatches?.length ? (
+				{possibleMatches ? (
 					<PossibleMatchesSection
 						matches={possibleMatches}
 						query={possibleMatchesQuery}
@@ -194,7 +194,7 @@ function PossibleMatchesSection({
 						))}
 					</ul>
 					<p className="mt-4 text-sm text-slate-500">
-						{hasMatches ? 'None of these match? ' : 'No deterministic matches found. '}
+						{hasMatches ? 'None of these match? ' : 'No close matches found. '}
 						<a href={searchUrl} className="underlined">
 							Try semantic search
 						</a>

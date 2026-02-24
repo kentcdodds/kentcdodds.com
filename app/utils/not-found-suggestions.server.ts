@@ -472,10 +472,6 @@ export async function getNotFoundSuggestions({
 	// Keep tests fast; this can walk the repo content tree.
 	if (process.env.NODE_ENV === 'test') return null
 	if (request.method.toUpperCase() !== 'GET') return null
-	const accept = request.headers.get('accept') ?? ''
-	const wantsHtml =
-		accept.includes('text/html') || accept.includes('application/xhtml+xml')
-	if (!wantsHtml) return null
 
 	const resolvedPathname = normalizePathname(
 		typeof pathname === 'string' && pathname
@@ -518,12 +514,8 @@ export async function getNotFoundSuggestions({
 			}
 		}
 
-		if (!matches.length) return null
-		const sorted = sortNotFoundMatches(matches, { priorities }).slice(
-			0,
-			safeLimit,
-		)
-		return sorted.length ? { query, matches: sorted } : null
+		const sorted = sortNotFoundMatches(matches, { priorities }).slice(0, safeLimit)
+		return { query, matches: sorted }
 	} catch (error: unknown) {
 		// 404 pages should never fail the request because suggestions failed.
 		console.error('Deterministic 404 suggestions failed', error)
