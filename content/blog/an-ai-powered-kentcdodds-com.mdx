@@ -31,7 +31,11 @@ Now the tools we have are so much more powerful and it makes building something 
 
 You can try it right now using the hotkey <kbd>/</kbd> to open the search bar and type "How did Kent get his first job?" or "What's the best way to learn React?" and hit <kbd>?</kbd> to see the keyboard shortcuts.
 
-Here's an outline of the architecture I used to build semantic search.
+## Indexing
+
+Here's an outline of the architecture I used to build indexing for semantic search. To do semantic search you have to index things into a [vector database](https://www.cloudflare.com/learning/ai/what-is-vector-database/) and I selected [Vectorize](https://developers.cloudflare.com/vectorize/) because Cloudflare has just put together the premium platform for building AI applications
+
+Here's how I index the content (youtube videos, blog posts, pages, podcasts, etc.):
 
 ```mermaid
 sequenceDiagram
@@ -73,7 +77,11 @@ sequenceDiagram
   end
 ```
 
-So I index using GitHub actions. And then when you search, I query the vector database:
+So I index using GitHub actions.
+
+## Searching
+
+And then when you search, I query the vector database:
 
 ```mermaid
 sequenceDiagram
