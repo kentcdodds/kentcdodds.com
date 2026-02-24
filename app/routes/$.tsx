@@ -5,14 +5,40 @@
 // ensure the user gets the right status code and we can display a nicer error
 // message for them than the Remix and/or browser default.
 
-import { useLocation } from 'react-router'
+import { data as json } from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ErrorPage } from '#app/components/errors.tsx'
-import { Facepalm, MissingSomething } from '#app/components/kifs.tsx'
+import { ErrorPage, FourOhFour } from '#app/components/errors.tsx'
+import { Facepalm } from '#app/components/kifs.tsx'
+import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
+import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
 
-export async function loader() {
-	throw new Response('Not found', { status: 404 })
+export async function loader({ request }: { request: Request }) {
+	const accept = request.headers.get('accept') ?? ''
+	const wantsHtml =
+		accept.includes('text/html') || accept.includes('application/xhtml+xml')
+	if (!wantsHtml || request.method.toUpperCase() !== 'GET') {
+		throw new Response('Not found', { status: 404 })
+	}
+
+	const pathname = new URL(request.url).pathname
+	const suggestions = await getNotFoundSuggestions({ request, pathname, limit: 8 })
+
+	const data: {
+		possibleMatches?: Array<NotFoundMatch>
+		possibleMatchesQuery?: string
+	} = {}
+	if (suggestions) {
+		data.possibleMatches = suggestions.matches
+		data.possibleMatchesQuery = suggestions.query
+	}
+
+	throw json(data, {
+		status: 404,
+		headers: {
+			'Cache-Control': 'private, max-age=60',
+		},
+	})
 }
 
 export default function NotFound() {
@@ -22,7 +48,6 @@ export default function NotFound() {
 }
 
 export function ErrorBoundary() {
-	const location = useLocation()
 	return (
 		<GeneralErrorBoundary
 			statusHandlers={{
@@ -36,16 +61,10 @@ export function ErrorBoundary() {
 						}}
 					/>
 				),
-				404: () => (
-					<ErrorPage
-						heroProps={{
-							title: "404 - Oh no, you found a page that's missing stuff.",
-							subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
-							image: (
-								<MissingSomething className="rounded-lg" aspectRatio="3:4" />
-							),
-							action: <ArrowLink href="/">Go home</ArrowLink>,
-						}}
+				404: ({ error }) => (
+					<FourOhFour
+						possibleMatches={error.data.possibleMatches}
+						possibleMatchesQuery={error.data.possibleMatchesQuery}
 					/>
 				),
 			}}

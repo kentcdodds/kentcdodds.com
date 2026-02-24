@@ -30,9 +30,9 @@ import {
 import { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
-import { ErrorPage, FourHundred } from './components/errors.tsx'
+import { ErrorPage, FourHundred, FourOhFour } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
-import { Grimmacing, MissingSomething } from './components/kifs.tsx'
+import { Grimmacing } from './components/kifs.tsx'
 import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
 import { Spacer } from './components/spacer.tsx'
@@ -437,16 +437,7 @@ export function ErrorBoundary() {
 		if (error.status === 404) {
 			return (
 				<ErrorDoc>
-					<ErrorPage
-						heroProps={{
-							title: "404 - Oh no, you found a page that's missing stuff.",
-							subtitle: `"${location.pathname}" is not a page on kentcdodds.com. So sorry.`,
-							image: (
-								<MissingSomething className="rounded-lg" aspectRatio="3:4" />
-							),
-							action: <ArrowLink href="/">Go home</ArrowLink>,
-						}}
-					/>
+					<FourOhFour pathname={location.pathname} />
 				</ErrorDoc>
 			)
 		}

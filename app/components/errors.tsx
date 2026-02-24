@@ -4,11 +4,19 @@ import * as React from 'react'
 import { useMatches } from 'react-router'
 import { type MdxListItem } from '#app/types.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
+import {
+	type NotFoundMatch,
+	sortNotFoundMatches,
+} from '#app/utils/not-found-matches.ts'
+import { notFoundQueryFromPathname } from '#app/utils/not-found-query.ts'
 import { ArrowLink } from './arrow-button.tsx'
+import { Grid } from './grid.tsx'
 import { Facepalm, Grimmacing, MissingSomething } from './kifs.tsx'
 import { BlogSection } from './sections/blog-section.tsx'
+import { HeaderSection } from './sections/header-section.tsx'
 import { HeroSection, type HeroSectionProps } from './sections/hero-section.tsx'
-import { H2, H6 } from './typography.tsx'
+import { Spacer } from './spacer.tsx'
+import { H2, H4, H6 } from './typography.tsx'
 
 function RedBox({ error }: { error: Error }) {
 	const [isVisible, setIsVisible] = React.useState(true)
@@ -54,18 +62,21 @@ function RedBox({ error }: { error: Error }) {
 function ErrorPage({
 	error,
 	articles,
+	possibleMatches,
+	possibleMatchesQuery,
 	heroProps,
 }: {
 	error?: Error
 	articles?: Array<MdxListItem>
+	possibleMatches?: Array<NotFoundMatch>
+	possibleMatchesQuery?: string
 	heroProps: HeroSectionProps
 }) {
-	if (articles?.length) {
-		Object.assign(heroProps, {
-			arrowUrl: '#articles',
-			arrowLabel: 'But wait, there is more!',
-		})
-	}
+	const resolvedHeroProps: HeroSectionProps = possibleMatches?.length
+		? { ...heroProps, arrowUrl: '#possible-matches', arrowLabel: 'Possible matches' }
+		: articles?.length
+			? { ...heroProps, arrowUrl: '#articles', arrowLabel: 'But wait, there is more!' }
+			: heroProps
 	return (
 		<>
 			<noscript>
@@ -87,7 +98,14 @@ function ErrorPage({
 				{error && import.meta.env.MODE === 'development' ? (
 					<RedBox error={error} />
 				) : null}
-				<HeroSection {...heroProps} />
+				<HeroSection {...resolvedHeroProps} />
+
+				{possibleMatches?.length ? (
+					<PossibleMatchesSection
+						matches={possibleMatches}
+						query={possibleMatchesQuery}
+					/>
+				) : null}
 
 				{articles?.length ? (
 					<>
@@ -104,19 +122,118 @@ function ErrorPage({
 	)
 }
 
-function FourOhFour({ articles }: { articles?: Array<MdxListItem> }) {
-	const matches = useMatches()
-	const last = matches[matches.length - 1]
-	const pathname = last?.pathname
+function PossibleMatchesSection({
+	matches,
+	query,
+}: {
+	matches: Array<NotFoundMatch>
+	query?: string
+}) {
+	const q = typeof query === 'string' ? query.trim() : ''
+	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
+	const sorted = sortNotFoundMatches(matches)
+
+	return (
+		<>
+			<div id="possible-matches" />
+			<HeaderSection
+				title="Possible matches"
+				subTitle={q ? `Semantic search for "${q}"` : 'Semantic search results.'}
+				cta="Search the site"
+				ctaUrl={searchUrl}
+			/>
+			<Spacer size="2xs" />
+			<Grid>
+				<div className="col-span-full lg:col-span-8 lg:col-start-3">
+					<ul className="space-y-6">
+						{sorted.slice(0, 8).map((m) => (
+							<li
+								key={`${m.type}:${m.url}`}
+								className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
+							>
+								<div className="flex items-start gap-4">
+									<div className="shrink-0">
+										{m.imageUrl ? (
+											<img
+												src={m.imageUrl}
+												alt={m.imageAlt ?? ''}
+												className="h-16 w-16 rounded-lg object-cover"
+												loading="lazy"
+											/>
+										) : (
+											<div className="h-16 w-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
+										)}
+									</div>
+									<div className="min-w-0 flex-1">
+										<H4 className="truncate">
+											<a href={m.url} className="hover:underline">
+												{m.title}
+											</a>
+										</H4>
+										<div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-slate-500">
+											<span>{m.type}</span>
+											<span className="truncate">{m.url}</span>
+										</div>
+										{m.summary ? (
+											<p className="mt-3 line-clamp-3 text-base text-slate-600 dark:text-slate-400">
+												{m.summary}
+											</p>
+										) : null}
+									</div>
+								</div>
+							</li>
+						))}
+					</ul>
+					{sorted.length > 8 ? (
+						<p className="mt-4 text-sm text-slate-500">
+							<a href={searchUrl} className="underlined">
+								See all results
+							</a>
+						</p>
+					) : null}
+				</div>
+			</Grid>
+		</>
+	)
+}
+
+function FourOhFour({
+	articles,
+	possibleMatches: possibleMatchesProp,
+	possibleMatchesQuery,
+	pathname: pathnameProp,
+}: {
+	articles?: Array<MdxListItem>
+	possibleMatches?: Array<NotFoundMatch>
+	possibleMatchesQuery?: string
+	pathname?: string
+}) {
+	const routeMatches = useMatches()
+	const last = routeMatches[routeMatches.length - 1]
+	const pathname = typeof pathnameProp === 'string' ? pathnameProp : last?.pathname
+	const derivedQuery = notFoundQueryFromPathname(pathname ?? '/')
+	const effectiveQuery =
+		typeof possibleMatchesQuery === 'string' && possibleMatchesQuery.trim()
+			? possibleMatchesQuery.trim()
+			: derivedQuery
+
+	const q = effectiveQuery ? effectiveQuery.trim() : ''
+	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
+	const heroActionTo =
+		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
+			? '#possible-matches'
+			: searchUrl
 
 	return (
 		<ErrorPage
 			articles={articles}
+			possibleMatches={possibleMatchesProp}
+			possibleMatchesQuery={effectiveQuery}
 			heroProps={{
 				title: "404 - Oh no, you found a page that's missing stuff.",
 				subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 				image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-				action: <ArrowLink href="/">Go home</ArrowLink>,
+				action: <ArrowLink to={heroActionTo}>Possible matches</ArrowLink>,
 			}}
 		/>
 	)
