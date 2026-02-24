@@ -119,9 +119,10 @@ function ErrorPage({
 					/>
 				) : null}
 
+				{possibleMatches?.length === 0 ? <Spacer size="lg" /> : null}
+
 				{articles?.length ? (
 					<>
-						{possibleMatches?.length === 0 ? <Spacer size="lg" /> : null}
 						<div id="articles" />
 						<BlogSection
 							articles={articles}
