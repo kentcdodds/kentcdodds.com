@@ -1,14 +1,14 @@
 /// <reference types="vitest" />
 /// <reference types="vite/client" />
 
-import { reactRouter } from '@react-router/dev/vite'
+import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { envOnlyMacros } from 'vite-env-only'
 import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
-	plugins: [envOnlyMacros(), reactRouter(), tsconfigPaths()],
+	plugins: [envOnlyMacros(), react(), tsconfigPaths()],
 	test: {
 		include: ['**/*.test.browser.{js,jsx,ts,tsx}'],
 		exclude: [...configDefaults.exclude],

@@ -9,7 +9,7 @@ import { type RootLoaderType } from '#app/root.tsx'
 import {
 	RecordingForm,
 	type RecordingFormData,
-} from '#app/routes/resources/calls/save.tsx'
+} from '#app/components/calls/recording-form.tsx'
 import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'

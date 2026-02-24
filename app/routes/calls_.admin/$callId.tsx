@@ -16,7 +16,7 @@ import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import {
 	getNavigationPathFromResponse,
 	recordingFormActionPath,
-} from '#app/routes/resources/calls/save.tsx'
+} from '#app/components/calls/recording-form.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { formatDate, useDoubleCheck } from '#app/utils/misc-react.tsx'
 import { getEnv } from '#app/utils/env.server.ts'

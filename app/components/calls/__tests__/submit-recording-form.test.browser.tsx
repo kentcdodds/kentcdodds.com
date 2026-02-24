@@ -20,7 +20,7 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 	useRootData: () => mockUseRootData(),
 }))
 
-import { RecordingForm } from '#app/routes/resources/calls/save.tsx'
+import { RecordingForm } from '#app/components/calls/recording-form.tsx'
 
 describe('RecordingForm', () => {
 	it('recovers when FileReader.readAsDataURL throws synchronously', async () => {
