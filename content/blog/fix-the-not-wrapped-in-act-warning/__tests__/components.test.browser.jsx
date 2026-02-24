@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react'
 import { test, expect, vi } from 'vitest'
+import { render } from 'vitest-browser-react'
 import { UsernameForm } from '../components.jsx'
 
 vi.mock('../api')
@@ -52,15 +52,14 @@ test('calls updateUsername with the new username', async () => {
 		await screen.getByLabelText(/username/i).fill(fakeUsername)
 		await screen.getByRole('button', { name: /submit/i }).click()
 
-		await expect.element(screen.getByText(/saving/i)).toBeVisible()
+		const saving = screen.getByText(/saving/i)
+		await expect.element(saving).toBeVisible()
 		await expect.poll(() => handleUpdateUsername.mock.calls[0]?.[0]).toBe(
 			fakeUsername,
 		)
 
 		defer.resolve()
-		await expect
-			.poll(() => document.body.textContent?.toLowerCase().includes('saving'))
-			.toBe(false)
+		await expect.poll(() => saving.query()).toBeNull()
 	} finally {
 		consoleError.mockRestore()
 	}
@@ -88,8 +87,3 @@ test('calls updateUsername with the new username (with manual act and promise)',
 		consoleError.mockRestore()
 	}
 })
-
-/*
-eslint
-  no-console: "off"
-*/

@@ -285,6 +285,8 @@ describe('RecordingForm', () => {
 		mockUseRootData.mockReturnValue({
 			requestInfo: { flyPrimaryInstance: null },
 		})
+		const fetchMock = vi.fn()
+		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
@@ -335,12 +337,14 @@ describe('RecordingForm', () => {
 			await screen.getByLabelText('Title').fill('')
 			await screen.getByRole('button', { name: 'Submit Recording' }).click()
 			await expect.element(screen.getByText('Title is required')).toBeVisible()
+			expect(fetchMock).not.toHaveBeenCalled()
 			const describedBy = titleInput?.getAttribute('aria-describedby') ?? ''
 			expect(describedBy).toContain(`${titleId}-error`)
 			expect(describedBy).toContain(`${titleId}-countdown`)
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()
+			vi.unstubAllGlobals()
 		}
 	})
 })

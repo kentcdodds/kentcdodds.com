@@ -65,15 +65,10 @@ test.skip('polling backend on an interval', async () => {
 	await expect.element(screen.getByText(/\.\.\./i)).toBeVisible()
 	expect(checkStatus).toHaveBeenCalledTimes(0)
 
-	vi.advanceTimersByTime(10000)
+	await vi.advanceTimersByTimeAsync(10000)
 
 	await expect.element(screen.getByText(orderStatus)).toBeVisible()
 
 	expect(checkStatus).toHaveBeenCalledWith(orderId)
 	expect(checkStatus).toHaveBeenCalledTimes(1)
 })
-
-/*
-eslint
-  no-console: "off"
-*/

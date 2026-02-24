@@ -9,20 +9,12 @@ function useCount() {
 	return { count, increment, decrement }
 }
 
-test('increment and decrement updates the count', () => {
-	return (async () => {
-		const { result, act } = await renderHook(() => useCount())
+test('increment and decrement updates the count', async () => {
+	const { result, act } = await renderHook(() => useCount())
 
-		expect(result.current.count).toBe(0)
-		await act(() => result.current.increment())
-		expect(result.current.count).toBe(1)
-		await act(() => result.current.decrement())
-		expect(result.current.count).toBe(0)
-	})()
+	expect(result.current.count).toBe(0)
+	await act(() => result.current.increment())
+	expect(result.current.count).toBe(1)
+	await act(() => result.current.decrement())
+	expect(result.current.count).toBe(0)
 })
-
-/*
-eslint
-  no-console: "off",
-  no-func-assign: "off"
-*/

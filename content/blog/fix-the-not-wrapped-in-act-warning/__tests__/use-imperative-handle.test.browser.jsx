@@ -11,21 +11,13 @@ function ImperativeCounter(props) {
 	return <div>The count is: {count}</div>
 }
 
-test('can call imperative methods on counter component', () => {
+test('can call imperative methods on counter component', async () => {
 	const counterRef = React.createRef()
-	return (async () => {
-		const screen = await render(<ImperativeCounter ref={counterRef} />)
+	const screen = await render(<ImperativeCounter ref={counterRef} />)
 
-		await expect.element(screen.getByText('The count is: 0')).toBeVisible()
-		counterRef.current.increment()
-		await expect.element(screen.getByText('The count is: 1')).toBeVisible()
-		counterRef.current.decrement()
-		await expect.element(screen.getByText('The count is: 0')).toBeVisible()
-	})()
+	await expect.element(screen.getByText('The count is: 0')).toBeVisible()
+	counterRef.current.increment()
+	await expect.element(screen.getByText('The count is: 1')).toBeVisible()
+	counterRef.current.decrement()
+	await expect.element(screen.getByText('The count is: 0')).toBeVisible()
 })
-
-/*
-eslint
-  no-console: "off",
-  no-func-assign: "off"
-*/
