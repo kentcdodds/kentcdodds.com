@@ -23,6 +23,7 @@ import {
 	getStringFormValue,
 } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
+import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
 import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
 import { teamEmoji } from '#app/utils/team-provider.tsx'
@@ -302,20 +303,18 @@ async function publishCall({
 
 		if (published.episodeUrl) {
 			try {
-				const episodeMarkdown = published.imageUrl
-					? `[![${title}](${published.imageUrl})](${published.episodeUrl})`
-					: `[${title}](${published.episodeUrl})`
+				const email = getPublishedCallKentEpisodeEmail({
+					firstName: call.user.firstName,
+					episodeTitle: title,
+					episodeUrl: published.episodeUrl,
+					imageUrl: published.imageUrl,
+				})
 				void sendEmail({
 					to: call.user.email,
 					from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
 					subject: `Your "Call Kent" episode has been published`,
-					text: `
-Hi ${call.user.firstName},
-
-Thanks for your call. Kent just replied and the episode has been published to the podcast!
-
-${episodeMarkdown}
-          `.trim(),
+					text: email.text,
+					html: email.html,
 				})
 			} catch (error: unknown) {
 				console.error(
