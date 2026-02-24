@@ -28,6 +28,21 @@ function toUrlKey(url: string) {
 	}
 }
 
+function normalizeNotFoundUrl(rawUrl: string) {
+	const url = rawUrl.trim()
+	if (!url) return ''
+	if (url.startsWith('/')) return url
+	if (/^https?:\/\//i.test(url)) {
+		try {
+			const u = new URL(url)
+			return `${u.pathname}${u.search}${u.hash}`
+		} catch {
+			return ''
+		}
+	}
+	return ''
+}
+
 export async function getNotFoundSuggestions({
 	request,
 	pathname,
@@ -57,12 +72,13 @@ export async function getNotFoundSuggestions({
 		const byUrl = new Map<string, NotFoundMatch>()
 
 		for (const r of results) {
-			const url =
+			const rawUrl =
 				typeof r.url === 'string' && r.url.trim()
 					? r.url.trim()
 					: typeof r.id === 'string' && r.id.startsWith('/')
 						? r.id
 						: ''
+			const url = rawUrl ? normalizeNotFoundUrl(rawUrl) : ''
 			if (!url) continue
 
 			// Skip suggesting the missing URL itself.

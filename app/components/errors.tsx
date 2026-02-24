@@ -209,7 +209,8 @@ function PossibleMatchesSection({
 function asNotFoundMatchFromResourceSearch(value: unknown): NotFoundMatch | null {
 	if (!value || typeof value !== 'object') return null
 	const v = value as Record<string, unknown>
-	const url = typeof v.url === 'string' ? v.url.trim() : ''
+	const url =
+		typeof v.url === 'string' ? normalizeNotFoundUrl(v.url.trim()) : ''
 	if (!url) return null
 	const titleRaw = typeof v.title === 'string' ? v.title.trim() : ''
 	const segmentRaw = typeof v.segment === 'string' ? v.segment.trim() : ''
@@ -224,6 +225,23 @@ function asNotFoundMatchFromResourceSearch(value: unknown): NotFoundMatch | null
 		imageUrl: imageUrlRaw || undefined,
 		imageAlt: imageAltRaw || undefined,
 	}
+}
+
+function normalizeNotFoundUrl(rawUrl: string) {
+	const url = rawUrl.trim()
+	if (!url) return ''
+	// Only allow internal app paths. This also keeps client/server rendering consistent
+	// when `/resources/search` returns absolute URLs.
+	if (url.startsWith('/')) return url
+	if (/^https?:\/\//i.test(url)) {
+		try {
+			const u = new URL(url)
+			return `${u.pathname}${u.search}${u.hash}`
+		} catch {
+			return ''
+		}
+	}
+	return ''
 }
 
 function FourOhFour({
@@ -248,7 +266,8 @@ function FourOhFour({
 	const requestedQueryRef = React.useRef<string>('')
 
 	React.useEffect(() => {
-		if (possibleMatchesProp != null) return
+		// Treat `[]` as "no server data" so we still allow client fallback.
+		if (Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0) return
 		if (!effectiveQuery) return
 		if (requestedQueryRef.current === effectiveQuery) return
 		requestedQueryRef.current = effectiveQuery
@@ -265,7 +284,11 @@ function FourOhFour({
 			.filter((v): v is NotFoundMatch => Boolean(v))
 	}, [fetcher.data])
 
-	const possibleMatches = possibleMatchesProp ?? fetchedMatches
+	const possibleMatches =
+		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
+			? possibleMatchesProp
+			: fetchedMatches
+	const heroActionTo = effectiveQuery ? '#possible-matches' : '/search'
 
 	return (
 		<ErrorPage
@@ -276,7 +299,7 @@ function FourOhFour({
 				title: "404 - Oh no, you found a page that's missing stuff.",
 				subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 				image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-				action: <ArrowLink to="#possible-matches">Possible matches</ArrowLink>,
+				action: <ArrowLink to={heroActionTo}>Possible matches</ArrowLink>,
 			}}
 		/>
 	)
