@@ -3,6 +3,7 @@ import {
 	isRouteErrorResponse,
 	useParams,
 } from 'react-router'
+import { clsx } from 'clsx'
 import {
 	getErrorMessage,
 	useCapturedRouteError,
@@ -33,11 +34,21 @@ export function GeneralErrorBoundary({
 		console.error(error)
 	}
 
+	const routeError = isRouteErrorResponse(error) ? error : null
+	const isNotFound = routeError?.status === 404
+
 	return (
-		<div className="text-h2 container mx-auto flex items-center justify-center p-20">
-			{isRouteErrorResponse(error)
-				? (statusHandlers?.[error.status] ?? defaultStatusHandler)({
-						error,
+		<div
+			className={clsx('text-h2', {
+				// The 404 UI renders a full page layout (hero, matches, etc). Wrapping it
+				// in a centered container + huge padding makes mobile feel extremely narrow.
+				'p-4': isNotFound,
+				'container mx-auto flex items-center justify-center p-20': !isNotFound,
+			})}
+		>
+			{routeError
+				? (statusHandlers?.[routeError.status] ?? defaultStatusHandler)({
+						error: routeError,
 						params,
 					})
 				: unexpectedErrorHandler(error)}

@@ -140,6 +140,7 @@ function PossibleMatchesSection({
 	const q = typeof query === 'string' ? query.trim() : ''
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const sorted = sortNotFoundMatches(matches)
+	const hasMatches = sorted.length > 0
 
 	return (
 		<>
@@ -147,9 +148,6 @@ function PossibleMatchesSection({
 			<HeaderSection
 				title="Possible matches"
 				subTitle={q ? `Deterministic matches for "${q}"` : 'Deterministic matches.'}
-				cta="Semantic search"
-				ctaClassName="whitespace-nowrap"
-				ctaUrl={searchUrl}
 			/>
 			<Spacer size="2xs" />
 			<Grid>
@@ -194,7 +192,9 @@ function PossibleMatchesSection({
 						))}
 					</ul>
 					<p className="mt-4 text-sm text-slate-500">
-						Not what you were looking for?{' '}
+						{hasMatches
+							? 'None of these match? '
+							: 'No deterministic matches found. '}
 						<a href={searchUrl} className="underlined">
 							Try semantic search
 						</a>
