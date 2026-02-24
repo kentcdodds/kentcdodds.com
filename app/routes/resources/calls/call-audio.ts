@@ -37,6 +37,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		// Size should always be present for stored audio; keep a safe fallback.
 		const buffer = await getAudioBuffer({ key: audioKey })
 		size = buffer.byteLength
+		console.warn(
+			`call-audio: missing/invalid audioSize for callId=${callId} audioKey=${audioKey} resolvedSize=${size}`,
+		)
 		const range = rangeHeader ? parseHttpByteRangeHeader(rangeHeader, size) : null
 		const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
 		const stream = Readable.from(body)
