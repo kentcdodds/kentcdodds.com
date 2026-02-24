@@ -72,9 +72,10 @@ function ErrorPage({
 	possibleMatchesQuery?: string
 	heroProps: HeroSectionProps
 }) {
-	// Only inject the "arrow down" helper link when the caller didn't provide an
-	// explicit action. Otherwise, it can create duplicate CTAs (notably on 404s).
-	const resolvedHeroProps: HeroSectionProps = heroProps.action
+	// Only inject the "arrow down" helper link when the caller leaves `action`
+	// undefined. This lets callers intentionally pass `null` to suppress all
+	// hero CTAs for specific states (for example, 404 no-match).
+	const resolvedHeroProps: HeroSectionProps = heroProps.action !== undefined
 		? heroProps
 		: possibleMatches?.length
 			? {
@@ -232,14 +233,13 @@ function FourOhFour({
 			? possibleMatchesQuery.trim()
 			: derivedQuery
 
-	const q = effectiveQuery ? effectiveQuery.trim() : ''
-	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const hasPossibleMatches =
 		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
-	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
-	const heroActionLabel = hasPossibleMatches
-		? 'Possible matches'
-		: 'Search the site'
+	const heroAction = hasPossibleMatches ? (
+		<ArrowLink to="#possible-matches" className="whitespace-nowrap">
+			Possible matches
+		</ArrowLink>
+	) : null
 
 	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
 	// overall site layout). The 404 view reads better on mobile when it’s a bit
@@ -258,11 +258,7 @@ function FourOhFour({
 					title: "404 - Oh no, you found a page that's missing stuff.",
 					subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 					image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-					action: (
-						<ArrowLink to={heroActionTo} className="whitespace-nowrap">
-							{heroActionLabel}
-						</ArrowLink>
-					),
+					action: heroAction,
 				}}
 			/>
 		</div>
