@@ -7,14 +7,6 @@ import { getImageBuilder } from '#app/images.tsx'
 import { sortNotFoundMatches, type NotFoundMatch } from './not-found-matches.ts'
 import { notFoundQueryFromPathname } from './not-found-query.ts'
 
-function requestWantsHtml(request: Request) {
-	// Avoid expensive semantic search for asset/API requests.
-	const accept = request.headers.get('accept') ?? ''
-	return (
-		accept.includes('text/html') || accept.includes('application/xhtml+xml')
-	)
-}
-
 function normalizePathname(pathname: string) {
 	const cleaned = (pathname.split(/[?#]/)[0] ?? '').trim()
 	if (!cleaned) return '/'
@@ -479,7 +471,6 @@ export async function getNotFoundSuggestions({
 	// Keep tests fast; this can walk the repo content tree.
 	if (process.env.NODE_ENV === 'test') return null
 	if (request.method.toUpperCase() !== 'GET') return null
-	if (!requestWantsHtml(request)) return null
 
 	const resolvedPathname = normalizePathname(
 		typeof pathname === 'string' && pathname
