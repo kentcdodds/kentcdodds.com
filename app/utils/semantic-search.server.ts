@@ -521,7 +521,8 @@ export async function semanticSearchKCD({
 				topK: rawTopK,
 			})
 			const result = (responseJson as any).result ?? responseJson
-			const matches = (result?.matches ?? []) as VectorizeQueryResponse['matches']
+			const matches = (result?.matches ??
+				[]) as VectorizeQueryResponse['matches']
 
 			type RankedResult = { rank: number; result: SemanticSearchResult }
 			const byCanonicalId = new Map<string, RankedResult>()

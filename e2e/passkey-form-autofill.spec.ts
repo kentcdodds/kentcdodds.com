@@ -6,7 +6,10 @@ test.use({
 	video: process.env.PW_VIDEO === 'true' ? 'on' : 'off',
 })
 
-test('passkey form autofill signs in via conditional UI', async ({ page, login }) => {
+test('passkey form autofill signs in via conditional UI', async ({
+	page,
+	login,
+}) => {
 	await page.setViewportSize({ width: 1400, height: 900 })
 	const demoPause = async (ms: number) => {
 		if (process.env.PW_DEMO === 'true') {
@@ -19,16 +22,19 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	// manual "touch security key" steps).
 	const client = await page.context().newCDPSession(page)
 	await client.send('WebAuthn.enable', { enableUI: false })
-	const { authenticatorId } = await client.send('WebAuthn.addVirtualAuthenticator', {
-		options: {
-			protocol: 'ctap2',
-			transport: 'internal',
-			hasResidentKey: true,
-			hasUserVerification: true,
-			isUserVerified: true,
-			automaticPresenceSimulation: true,
+	const { authenticatorId } = await client.send(
+		'WebAuthn.addVirtualAuthenticator',
+		{
+			options: {
+				protocol: 'ctap2',
+				transport: 'internal',
+				hasResidentKey: true,
+				hasUserVerification: true,
+				isUserVerified: true,
+				automaticPresenceSimulation: true,
+			},
 		},
-	})
+	)
 	await client.send('WebAuthn.setAutomaticPresenceSimulation', {
 		authenticatorId,
 		enabled: true,
@@ -46,7 +52,9 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	await demoPause(750)
 	const regOptionsResponsePromise = page.waitForResponse((resp) => {
 		return (
-			resp.url().includes('/resources/webauthn/generate-registration-options') &&
+			resp
+				.url()
+				.includes('/resources/webauthn/generate-registration-options') &&
 			resp.request().method() === 'GET'
 		)
 	})
@@ -102,10 +110,13 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	const verifyGate = new Promise<void>((resolve) => {
 		releaseVerify = () => resolve()
 	})
-	await page.route('**/resources/webauthn/verify-authentication', async (route) => {
-		await verifyGate
-		await route.continue()
-	})
+	await page.route(
+		'**/resources/webauthn/verify-authentication',
+		async (route) => {
+			await verifyGate
+			await route.continue()
+		},
+	)
 
 	await page.goto('/login')
 	await demoPause(750)
@@ -131,7 +142,8 @@ test('passkey form autofill signs in via conditional UI', async ({ page, login }
 	releaseVerify()
 
 	await page.waitForURL('**/me', { timeout: 10_000 })
-	await expect(page.getByRole('heading', { name: "Here's your profile." })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: "Here's your profile." }),
+	).toBeVisible()
 	await demoPause(1_250)
 })
-

@@ -60,7 +60,8 @@ async function downloadMdxFileOrDirectory(
 	const basename = nodePath.basename(mdxFileOrDirectory)
 	const mdxFileWithoutExt = nodePath.parse(mdxFileOrDirectory).name
 	const requestedExt = nodePath.extname(basename).toLowerCase()
-	const isExplicitFileRequest = requestedExt === '.mdx' || requestedExt === '.md'
+	const isExplicitFileRequest =
+		requestedExt === '.mdx' || requestedExt === '.md'
 
 	let files: Array<GitHubFile> = []
 	let entry = mdxFileOrDirectory
@@ -91,7 +92,9 @@ async function downloadMdxFileOrDirectory(
 	}
 
 	const exactFiles = dirList.filter(
-		(item) => item.type === 'file' && nodePath.parse(item.name).name === mdxFileWithoutExt,
+		(item) =>
+			item.type === 'file' &&
+			nodePath.parse(item.name).name === mdxFileWithoutExt,
 	)
 	const fileResult = await downloadFirstMdxFile(exactFiles)
 	if (fileResult) {

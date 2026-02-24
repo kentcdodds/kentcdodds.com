@@ -22,7 +22,11 @@ export async function loader({ request }: { request: Request }) {
 	}
 
 	const pathname = new URL(request.url).pathname
-	const suggestions = await getNotFoundSuggestions({ request, pathname, limit: 8 })
+	const suggestions = await getNotFoundSuggestions({
+		request,
+		pathname,
+		limit: 8,
+	})
 
 	const data: {
 		possibleMatches?: Array<NotFoundMatch>

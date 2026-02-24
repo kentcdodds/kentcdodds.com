@@ -77,7 +77,10 @@ export function getRetryDelayMsFromResponse(
 	if (resetHeader) {
 		const parsed = parseRateLimitResetMs(resetHeader, nowMs)
 		if (parsed !== null) {
-			return { delayMs: clampMs(parsed, maxDelayMs), reason: 'rate-limit-reset' }
+			return {
+				delayMs: clampMs(parsed, maxDelayMs),
+				reason: 'rate-limit-reset',
+			}
 		}
 	}
 
@@ -186,4 +189,3 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 	// This should be unreachable, but keep a deterministic error.
 	throw new Error(`${label ?? 'request'}: exceeded max retries`)
 }
-

@@ -15,4 +15,3 @@ afterEach(() => {
 afterAll(() => {
 	mswServer.close()
 })
-

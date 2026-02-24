@@ -33,7 +33,8 @@ For podcast indexing:
 - `SIMPLECAST_KEY`
 - `CHATS_WITH_KENT_PODCAST_ID`
 
-For YouTube playlist indexing (optional but recommended as repo variables or secrets):
+For YouTube playlist indexing (optional but recommended as repo variables or
+secrets):
 
 - `YOUTUBE_PLAYLIST_ID` (playlist ID only)
 - Optional (helps when YouTube returns anti-bot `LOGIN_REQUIRED`):

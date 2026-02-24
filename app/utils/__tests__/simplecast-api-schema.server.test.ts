@@ -8,7 +8,11 @@ import {
 test('simplecastSeasonsResponseSchema parses collection items we use', () => {
 	const parsed = simplecastSeasonsResponseSchema.parse({
 		collection: [
-			{ href: 'https://api.simplecast.com/seasons/abc123', number: 7, extra: 1 },
+			{
+				href: 'https://api.simplecast.com/seasons/abc123',
+				number: 7,
+				extra: 1,
+			},
 		],
 		ignoredTopLevel: true,
 	})
@@ -63,4 +67,3 @@ test('simplecastEpisodeSchema allows optional/nullable fields we handle', () => 
 	expect(parsed.season.number).toBe(2)
 	expect(parsed.keywords?.collection.map((k) => k.value)).toEqual(['react'])
 })
-

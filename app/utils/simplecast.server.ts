@@ -12,10 +12,7 @@ import { unified } from 'unified'
 import type * as U from 'unist'
 import { visit } from 'unist-util-visit'
 import { z } from 'zod'
-import {
-	type CWKEpisode,
-	type CWKSeason,
-} from '#app/types.ts'
+import { type CWKEpisode, type CWKSeason } from '#app/types.ts'
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
 import { getEnv } from './env.server.ts'

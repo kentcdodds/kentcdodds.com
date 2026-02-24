@@ -118,7 +118,8 @@ jobs:
           # `other/cache.db` is a derived artifact. Key it off the inputs that can
           # make it stale (content + cache/MDX code + deps), not `github.sha`.
           key: >-
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
+            }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
               'package-lock.json',
               'app/utils/cache.server.ts',
               'app/utils/compile-mdx.server.ts',
@@ -188,7 +189,8 @@ jobs:
           # `other/cache.db` is a derived artifact. Key it off the inputs that can
           # make it stale (content + cache/MDX code + deps), not `github.sha`.
           key: >-
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
+            }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
               'package-lock.json',
               'app/utils/cache.server.ts',
               'app/utils/compile-mdx.server.ts',

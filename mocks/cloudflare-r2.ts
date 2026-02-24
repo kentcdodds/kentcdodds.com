@@ -1,10 +1,5 @@
 import { createHash } from 'node:crypto'
-import {
-	http,
-	HttpResponse,
-	passthrough,
-	type HttpHandler,
-} from 'msw'
+import { http, HttpResponse, passthrough, type HttpHandler } from 'msw'
 
 type StoredObject = {
 	body: Uint8Array
@@ -211,10 +206,10 @@ function getOrCreateBucketStore(bucket: string) {
 		const semanticSearchBucket = process.env.R2_BUCKET?.trim() || null
 		if (semanticSearchBucket && bucket === semanticSearchBucket) {
 			const ignoreListKey =
-				(typeof process.env.SEMANTIC_SEARCH_IGNORE_LIST_KEY === 'string' &&
+				typeof process.env.SEMANTIC_SEARCH_IGNORE_LIST_KEY === 'string' &&
 				process.env.SEMANTIC_SEARCH_IGNORE_LIST_KEY.trim()
 					? process.env.SEMANTIC_SEARCH_IGNORE_LIST_KEY.trim()
-					: 'manifests/ignore-list.json')
+					: 'manifests/ignore-list.json'
 
 			const now = new Date().toUTCString()
 			for (const [key, value] of Object.entries(FIXTURE_MANIFEST_OBJECTS)) {
@@ -265,130 +260,144 @@ function isR2Host(url: URL) {
 }
 
 export const cloudflareR2Handlers: Array<HttpHandler> = [
-	http.all(/https?:\/\/[^/]*r2\.cloudflarestorage\.com\/.*/, async ({ request }) => {
-		const url = new URL(request.url)
-		if (!isR2Host(url)) return passthrough()
-		if (!shouldMockR2(request)) return passthrough()
+	http.all(
+		/https?:\/\/[^/]*r2\.cloudflarestorage\.com\/.*/,
+		async ({ request }) => {
+			const url = new URL(request.url)
+			if (!isR2Host(url)) return passthrough()
+			if (!shouldMockR2(request)) return passthrough()
 
-		const { bucket, key } = parsePathStyleBucketAndKey(url.pathname)
-		if (!bucket) return passthrough()
+			const { bucket, key } = parsePathStyleBucketAndKey(url.pathname)
+			if (!bucket) return passthrough()
 
-		const store = getOrCreateBucketStore(bucket)
+			const store = getOrCreateBucketStore(bucket)
 
-		// ListObjectsV2: GET /:bucket?list-type=2&prefix=...
-		if (request.method === 'GET' && url.searchParams.get('list-type') === '2') {
-			const prefix = url.searchParams.get('prefix') ?? ''
-			const keys = [...store.keys()]
-				.filter((k) => k.startsWith(prefix))
-				.sort((a, b) => a.localeCompare(b))
-			return new HttpResponse(listObjectsV2Xml({ bucket, prefix, keys, store }), {
-				status: 200,
-				headers: {
-					'Content-Type': 'application/xml; charset=utf-8',
-					'Cache-Control': 'no-store',
-				},
-			})
-		}
-
-		// DeleteObject: DELETE /:bucket/:key
-		if (request.method === 'DELETE') {
-			if (key) store.delete(key)
-			return new HttpResponse('', { status: 204 })
-		}
-
-		// GetObject: GET /:bucket/:key
-		if (request.method === 'GET') {
-			if (!key) {
-				return new HttpResponse(errorXml({ code: 'NoSuchKey', message: 'Missing Key' }), {
-					status: 404,
-					headers: { 'Content-Type': 'application/xml; charset=utf-8' },
-				})
-			}
-			const obj = store.get(key)
-			if (!obj) {
+			// ListObjectsV2: GET /:bucket?list-type=2&prefix=...
+			if (
+				request.method === 'GET' &&
+				url.searchParams.get('list-type') === '2'
+			) {
+				const prefix = url.searchParams.get('prefix') ?? ''
+				const keys = [...store.keys()]
+					.filter((k) => k.startsWith(prefix))
+					.sort((a, b) => a.localeCompare(b))
 				return new HttpResponse(
-					errorXml({ code: 'NoSuchKey', message: 'The specified key does not exist.' }),
+					listObjectsV2Xml({ bucket, prefix, keys, store }),
 					{
-						status: 404,
-						headers: { 'Content-Type': 'application/xml; charset=utf-8' },
-					},
-				)
-			}
-			const range = request.headers.get('range')
-			if (range) {
-				const match = /^bytes=(?<start>\d+)-(?<end>\d+)$/i.exec(range)
-				const start = match?.groups?.start ? Number(match.groups.start) : NaN
-				const end = match?.groups?.end ? Number(match.groups.end) : NaN
-				if (
-					Number.isFinite(start) &&
-					Number.isFinite(end) &&
-					start >= 0 &&
-					end >= start &&
-					start < obj.size
-				) {
-					const safeEnd = Math.min(end, obj.size - 1)
-					const chunk = obj.body.slice(start, safeEnd + 1)
-					return new HttpResponse(chunk, {
-						status: 206,
+						status: 200,
 						headers: {
-							'Content-Type': obj.contentType,
-							'Content-Length': String(chunk.byteLength),
-							'Content-Range': `bytes ${start}-${safeEnd}/${obj.size}`,
-							'Accept-Ranges': 'bytes',
-							ETag: `"${obj.etag}"`,
-							'Last-Modified': obj.lastModified,
+							'Content-Type': 'application/xml; charset=utf-8',
 							'Cache-Control': 'no-store',
 						},
-					})
-				}
-			}
-			return new HttpResponse(obj.body, {
-				status: 200,
-				headers: {
-					'Content-Type': obj.contentType,
-					'Content-Length': String(obj.size),
-					'Accept-Ranges': 'bytes',
-					ETag: `"${obj.etag}"`,
-					'Last-Modified': obj.lastModified,
-					'Cache-Control': 'no-store',
-				},
-			})
-		}
-
-		// PutObject: PUT /:bucket/:key
-		if (request.method === 'PUT') {
-			if (!key) {
-				return new HttpResponse(
-					errorXml({ code: 'InvalidRequest', message: 'Missing Key' }),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/xml; charset=utf-8' },
 					},
 				)
 			}
-			const bytes = new Uint8Array(await request.arrayBuffer())
-			const contentType =
-				(request.headers.get('content-type') ?? '').trim() ||
-				'application/octet-stream'
-			const etag = md5HexBytes(bytes)
-			const lastModified = new Date().toUTCString()
-			store.set(key, {
-				body: bytes,
-				contentType,
-				etag,
-				lastModified,
-				size: bytes.byteLength,
-			})
-			return new HttpResponse('', {
-				status: 200,
-				headers: {
-					ETag: `"${etag}"`,
-					'Last-Modified': lastModified,
-				},
-			})
-		}
 
-		return passthrough()
-	}),
+			// DeleteObject: DELETE /:bucket/:key
+			if (request.method === 'DELETE') {
+				if (key) store.delete(key)
+				return new HttpResponse('', { status: 204 })
+			}
+
+			// GetObject: GET /:bucket/:key
+			if (request.method === 'GET') {
+				if (!key) {
+					return new HttpResponse(
+						errorXml({ code: 'NoSuchKey', message: 'Missing Key' }),
+						{
+							status: 404,
+							headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+						},
+					)
+				}
+				const obj = store.get(key)
+				if (!obj) {
+					return new HttpResponse(
+						errorXml({
+							code: 'NoSuchKey',
+							message: 'The specified key does not exist.',
+						}),
+						{
+							status: 404,
+							headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+						},
+					)
+				}
+				const range = request.headers.get('range')
+				if (range) {
+					const match = /^bytes=(?<start>\d+)-(?<end>\d+)$/i.exec(range)
+					const start = match?.groups?.start ? Number(match.groups.start) : NaN
+					const end = match?.groups?.end ? Number(match.groups.end) : NaN
+					if (
+						Number.isFinite(start) &&
+						Number.isFinite(end) &&
+						start >= 0 &&
+						end >= start &&
+						start < obj.size
+					) {
+						const safeEnd = Math.min(end, obj.size - 1)
+						const chunk = obj.body.slice(start, safeEnd + 1)
+						return new HttpResponse(chunk, {
+							status: 206,
+							headers: {
+								'Content-Type': obj.contentType,
+								'Content-Length': String(chunk.byteLength),
+								'Content-Range': `bytes ${start}-${safeEnd}/${obj.size}`,
+								'Accept-Ranges': 'bytes',
+								ETag: `"${obj.etag}"`,
+								'Last-Modified': obj.lastModified,
+								'Cache-Control': 'no-store',
+							},
+						})
+					}
+				}
+				return new HttpResponse(obj.body, {
+					status: 200,
+					headers: {
+						'Content-Type': obj.contentType,
+						'Content-Length': String(obj.size),
+						'Accept-Ranges': 'bytes',
+						ETag: `"${obj.etag}"`,
+						'Last-Modified': obj.lastModified,
+						'Cache-Control': 'no-store',
+					},
+				})
+			}
+
+			// PutObject: PUT /:bucket/:key
+			if (request.method === 'PUT') {
+				if (!key) {
+					return new HttpResponse(
+						errorXml({ code: 'InvalidRequest', message: 'Missing Key' }),
+						{
+							status: 400,
+							headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+						},
+					)
+				}
+				const bytes = new Uint8Array(await request.arrayBuffer())
+				const contentType =
+					(request.headers.get('content-type') ?? '').trim() ||
+					'application/octet-stream'
+				const etag = md5HexBytes(bytes)
+				const lastModified = new Date().toUTCString()
+				store.set(key, {
+					body: bytes,
+					contentType,
+					etag,
+					lastModified,
+					size: bytes.byteLength,
+				})
+				return new HttpResponse('', {
+					status: 200,
+					headers: {
+						ETag: `"${etag}"`,
+						'Last-Modified': lastModified,
+					},
+				})
+			}
+
+			return passthrough()
+		},
+	),
 ]
-

@@ -6,11 +6,7 @@ type CallKentEpisodeMetadata = {
 	keywords: string
 }
 
-function getWorkersAiRunUrl({
-	model,
-}: {
-	model: string
-}) {
+function getWorkersAiRunUrl({ model }: { model: string }) {
 	// Cloudflare's REST route expects the model as path segments (with `/`), so do
 	// not URL-encode the model string (encoding can yield "No route for that URI").
 	const env = getEnv()

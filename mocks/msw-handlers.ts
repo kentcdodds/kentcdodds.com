@@ -64,10 +64,7 @@ const miscHandlers: Array<HttpHandler> = [
 		},
 	),
 	http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {
-		if (
-			process.env.NODE_ENV !== 'test' &&
-			(await isConnectedToTheInternet())
-		) {
+		if (process.env.NODE_ENV !== 'test' && (await isConnectedToTheInternet())) {
 			return passthrough()
 		}
 
@@ -104,4 +101,3 @@ export const mswHandlers: Array<HttpHandler> = [
 	...cloudflareR2Handlers,
 	...miscHandlers,
 ]
-

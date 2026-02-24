@@ -271,4 +271,3 @@ function PreloadImage({
 	}, [loadedSrc, onResolved])
 	return null
 }
-

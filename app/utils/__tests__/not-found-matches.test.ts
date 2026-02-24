@@ -22,4 +22,3 @@ describe('normalizeNotFoundUrl', () => {
 		expect(normalizeNotFoundUrl('data:text/html;base64,PHNjcmlwdD4=')).toBe('')
 	})
 })
-

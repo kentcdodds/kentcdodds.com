@@ -19,7 +19,7 @@ export const TooltipContent = React.forwardRef<
 				ref={forwardedRef}
 				sideOffset={sideOffset}
 				className={clsx(
-					'z-50 whitespace-nowrap rounded-md bg-white px-3 py-2 text-sm text-gray-700 shadow-lg ring-1 ring-black/5 dark:bg-gray-900 dark:text-slate-200 dark:ring-white/10',
+					'z-50 rounded-md bg-white px-3 py-2 text-sm whitespace-nowrap text-gray-700 shadow-lg ring-1 ring-black/5 dark:bg-gray-900 dark:text-slate-200 dark:ring-white/10',
 					className,
 				)}
 				{...props}
@@ -27,4 +27,3 @@ export const TooltipContent = React.forwardRef<
 		</TooltipPrimitive.Portal>
 	)
 })
-

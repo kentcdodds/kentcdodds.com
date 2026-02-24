@@ -40,4 +40,3 @@ function preloadImage(src: string) {
 		}
 	})
 }
-

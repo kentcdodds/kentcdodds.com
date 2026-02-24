@@ -7,7 +7,13 @@ import { synthesizeSpeechWithWorkersAi } from '#app/utils/cloudflare-ai-text-to-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const outputDir = path.join(__dirname, '..', 'public', 'audio', 'call-kent-voices')
+const outputDir = path.join(
+	__dirname,
+	'..',
+	'public',
+	'audio',
+	'call-kent-voices',
+)
 
 function looksLikeBase64(value: string) {
 	return /^[A-Za-z0-9+/]+=*$/u.test(value) && value.length >= 64
@@ -100,7 +106,11 @@ async function synthesizeSpeechDirect({
 			: typeof unwrapped?.result === 'string'
 				? (unwrapped.result as string)
 				: null
-	if (!audioValue || typeof audioValue !== 'string' || !looksLikeBase64(audioValue)) {
+	if (
+		!audioValue ||
+		typeof audioValue !== 'string' ||
+		!looksLikeBase64(audioValue)
+	) {
 		throw new Error(
 			`Direct Workers AI returned unexpected JSON for text-to-speech (model: ${model})`,
 		)
@@ -156,7 +166,9 @@ async function synthesizeSpeechWithFallback({
 	} catch (err: unknown) {
 		const msg = err instanceof Error ? err.message : String(err)
 		if (msg.includes('401 Unauthorized') || msg.includes('"Unauthorized"')) {
-			console.warn(`gateway unauthorized for ${voice}; falling back to direct...`)
+			console.warn(
+				`gateway unauthorized for ${voice}; falling back to direct...`,
+			)
 			return await synthesizeSpeechDirect({ text, voice, model })
 		}
 		throw err

@@ -704,8 +704,14 @@ async function embedItemsSafely({
 
 async function main() {
 	const { before, after, manifestKey, only } = parseArgs()
-	const { accountId, apiToken, gatewayId, gatewayAuthToken, vectorizeIndex, embeddingModel } =
-		getCloudflareConfig()
+	const {
+		accountId,
+		apiToken,
+		gatewayId,
+		gatewayAuthToken,
+		vectorizeIndex,
+		embeddingModel,
+	} = getCloudflareConfig()
 	const r2Bucket = (process.env.R2_BUCKET ?? '').trim()
 	if (!r2Bucket) {
 		throw new Error('Missing R2_BUCKET (required for manifest storage).')

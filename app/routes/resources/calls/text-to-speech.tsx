@@ -371,7 +371,8 @@ export function CallKentTextToSpeech({
 
 				if (
 					Number.isFinite(durationSeconds) &&
-					durationSeconds > callKentTextToSpeechConstraints.maxAudioDurationSeconds
+					durationSeconds >
+						callKentTextToSpeechConstraints.maxAudioDurationSeconds
 				) {
 					setServerError(
 						`Generated audio is longer than ${callKentTextToSpeechConstraints.maxAudioDurationSeconds}s. Please shorten your question and try again.`,

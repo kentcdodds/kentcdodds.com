@@ -58,4 +58,3 @@ describe('semantic search admin store (R2 via MSW)', () => {
 		expect(manifest?.docs?.['test:doc']?.title).toBe('Test doc')
 	})
 })
-

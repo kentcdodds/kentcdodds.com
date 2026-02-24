@@ -314,9 +314,7 @@ describe('RecordingForm', () => {
 			)
 
 			await screen.getByLabelText('Title').fill('abcd')
-			await expect
-				.element(screen.getByText('76 characters left'))
-				.toBeVisible()
+			await expect.element(screen.getByText('76 characters left')).toBeVisible()
 			expect(document.body.textContent).not.toContain(
 				'Title must be at least 5 characters',
 			)

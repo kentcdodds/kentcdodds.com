@@ -182,7 +182,7 @@ export default function Screen({ loaderData }: Route.ComponentProps) {
 					</H6>
 					<Paragraph className="mb-8 flex">{keywords.join(', ')}</Paragraph>
 				</div>
-				<div className="flex items-start gap-2">
+				<div className="flex items-start gap-4">
 					<FavoriteToggle
 						mode="icon"
 						contentType="call-kent-episode"

@@ -13,11 +13,12 @@ export const simplecastSeasonListItemSchema = z.object({
 	number: z.number(),
 })
 
-export const simplecastSeasonsResponseSchema = simplecastCollectionResponseSchema(
-	simplecastSeasonListItemSchema,
-)
+export const simplecastSeasonsResponseSchema =
+	simplecastCollectionResponseSchema(simplecastSeasonListItemSchema)
 
-export type SimplecastSeasonListItem = z.infer<typeof simplecastSeasonListItemSchema>
+export type SimplecastSeasonListItem = z.infer<
+	typeof simplecastSeasonListItemSchema
+>
 
 // --- /seasons/:seasonId/episodes ---
 export const simplecastEpisodeListItemSchema = z.object({
@@ -29,7 +30,9 @@ export const simplecastEpisodeListItemSchema = z.object({
 export const simplecastEpisodesListResponseSchema =
 	simplecastCollectionResponseSchema(simplecastEpisodeListItemSchema)
 
-export type SimplecastEpisodeListItem = z.infer<typeof simplecastEpisodeListItemSchema>
+export type SimplecastEpisodeListItem = z.infer<
+	typeof simplecastEpisodeListItemSchema
+>
 
 // --- /episodes/:episodeId ---
 export const simplecastEpisodeSchema = z.object({
@@ -61,4 +64,3 @@ export const simplecastEpisodeSchema = z.object({
 })
 
 export type SimplecastEpisode = z.infer<typeof simplecastEpisodeSchema>
-

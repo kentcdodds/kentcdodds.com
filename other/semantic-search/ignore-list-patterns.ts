@@ -39,6 +39,7 @@ export function isDocIdIgnored({
 }
 
 export function getIgnoreListKey() {
-	return (process.env.SEMANTIC_SEARCH_IGNORE_LIST_KEY ?? DEFAULT_IGNORE_LIST_KEY)
-		.trim()
+	return (
+		process.env.SEMANTIC_SEARCH_IGNORE_LIST_KEY ?? DEFAULT_IGNORE_LIST_KEY
+	).trim()
 }

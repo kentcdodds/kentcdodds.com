@@ -85,7 +85,10 @@ test('fetchJsonWithRetryAfter waits Retry-After seconds on 429 then retries', as
 test('getRetryDelayMsFromResponse parses Retry-After HTTP-date', () => {
 	const nowMs = Date.parse('2026-02-23T00:00:00.000Z')
 	const retryAfter = new Date(nowMs + 5000).toUTCString()
-	const res = new Response(null, { status: 429, headers: { 'Retry-After': retryAfter } })
+	const res = new Response(null, {
+		status: 429,
+		headers: { 'Retry-After': retryAfter },
+	})
 
 	const delay = getRetryDelayMsFromResponse(res, { nowMs })
 	expect(delay.reason).toBe('retry-after')
@@ -175,4 +178,3 @@ test('fetchJsonWithRetryAfter throws a labeled error on malformed JSON', async (
 
 	expect(sleep).not.toHaveBeenCalled()
 })
-

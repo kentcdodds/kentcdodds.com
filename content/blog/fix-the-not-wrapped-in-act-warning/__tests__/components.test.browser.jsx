@@ -21,9 +21,9 @@ test('calls updateUsername with the new username (with act warning)', async () =
 		await screen.getByLabelText(/username/i).fill(fakeUsername)
 		await screen.getByRole('button', { name: /submit/i }).click()
 
-		await expect.poll(() => handleUpdateUsername.mock.calls[0]?.[0]).toBe(
-			fakeUsername,
-		)
+		await expect
+			.poll(() => handleUpdateUsername.mock.calls[0]?.[0])
+			.toBe(fakeUsername)
 	} finally {
 		consoleError.mockRestore()
 	}
@@ -54,9 +54,9 @@ test('calls updateUsername with the new username', async () => {
 
 		const saving = screen.getByText(/saving/i)
 		await expect.element(saving).toBeVisible()
-		await expect.poll(() => handleUpdateUsername.mock.calls[0]?.[0]).toBe(
-			fakeUsername,
-		)
+		await expect
+			.poll(() => handleUpdateUsername.mock.calls[0]?.[0])
+			.toBe(fakeUsername)
 
 		defer.resolve()
 		await expect.poll(() => saving.query()).toBeNull()
@@ -79,9 +79,9 @@ test('calls updateUsername with the new username (with manual act and promise)',
 		await screen.getByLabelText(/username/i).fill(fakeUsername)
 		await screen.getByRole('button', { name: /submit/i }).click()
 
-		await expect.poll(() => handleUpdateUsername.mock.calls[0]?.[0]).toBe(
-			fakeUsername,
-		)
+		await expect
+			.poll(() => handleUpdateUsername.mock.calls[0]?.[0])
+			.toBe(fakeUsername)
 		await promise
 	} finally {
 		consoleError.mockRestore()

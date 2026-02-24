@@ -1457,8 +1457,14 @@ async function main() {
 		return
 	}
 
-	const { accountId, apiToken, gatewayId, gatewayAuthToken, vectorizeIndex, embeddingModel } =
-		getCloudflareConfig()
+	const {
+		accountId,
+		apiToken,
+		gatewayId,
+		gatewayAuthToken,
+		vectorizeIndex,
+		embeddingModel,
+	} = getCloudflareConfig()
 
 	const idsToDelete: string[] = []
 	const toUpsert: Array<{

@@ -18,7 +18,11 @@ describe('call kent audio storage (R2 via MSW)', () => {
 		const original = new Uint8Array([0, 1, 2, 3, 4, 5, 250, 251, 252, 253])
 		const contentType = 'audio/webm;codecs=opus'
 
-		const putRes = await putCallAudioFromBuffer({ callId, audio: original, contentType })
+		const putRes = await putCallAudioFromBuffer({
+			callId,
+			audio: original,
+			contentType,
+		})
 		expect(putRes.size).toBe(original.byteLength)
 		expect(putRes.key).toContain(`call-kent/calls/${callId}/`)
 
@@ -40,4 +44,3 @@ describe('call kent audio storage (R2 via MSW)', () => {
 		await expect(getAudioBuffer({ key: putRes.key })).rejects.toThrow()
 	})
 })
-

@@ -73,9 +73,17 @@ function ErrorPage({
 	heroProps: HeroSectionProps
 }) {
 	const resolvedHeroProps: HeroSectionProps = possibleMatches?.length
-		? { ...heroProps, arrowUrl: '#possible-matches', arrowLabel: 'Possible matches' }
+		? {
+				...heroProps,
+				arrowUrl: '#possible-matches',
+				arrowLabel: 'Possible matches',
+			}
 		: articles?.length
-			? { ...heroProps, arrowUrl: '#articles', arrowLabel: 'But wait, there is more!' }
+			? {
+					...heroProps,
+					arrowUrl: '#articles',
+					arrowLabel: 'But wait, there is more!',
+				}
 			: heroProps
 	return (
 		<>
@@ -210,7 +218,8 @@ function FourOhFour({
 }) {
 	const routeMatches = useMatches()
 	const last = routeMatches[routeMatches.length - 1]
-	const pathname = typeof pathnameProp === 'string' ? pathnameProp : last?.pathname
+	const pathname =
+		typeof pathnameProp === 'string' ? pathnameProp : last?.pathname
 	const derivedQuery = notFoundQueryFromPathname(pathname ?? '/')
 	const effectiveQuery =
 		typeof possibleMatchesQuery === 'string' && possibleMatchesQuery.trim()

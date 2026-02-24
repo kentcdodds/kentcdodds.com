@@ -21,7 +21,9 @@ test('publish anonymously tooltip opens on hover', async () => {
 		name: 'What does publish anonymously mean?',
 	})
 	const tooltip = screen.getByRole('tooltip')
-	const checkbox = screen.getByRole('checkbox', { name: /publish anonymously/i })
+	const checkbox = screen.getByRole('checkbox', {
+		name: /publish anonymously/i,
+	})
 
 	await expect.poll(() => tooltip.query()).toBeNull()
 	await tooltipButton.hover()
@@ -84,4 +86,3 @@ test('episode artwork preview dims while the next image suspends', async () => {
 		vi.useRealTimers()
 	}
 })
-

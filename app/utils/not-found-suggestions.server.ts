@@ -17,8 +17,7 @@ function requestWantsHtml(request: Request) {
 	// Avoid expensive semantic search for asset/API requests.
 	const accept = request.headers.get('accept') ?? ''
 	return (
-		accept.includes('text/html') ||
-		accept.includes('application/xhtml+xml')
+		accept.includes('text/html') || accept.includes('application/xhtml+xml')
 	)
 }
 
@@ -58,7 +57,9 @@ export async function getNotFoundSuggestions({
 	if (!requestWantsHtml(request)) return null
 
 	const resolvedPathname = normalizePathname(
-		typeof pathname === 'string' && pathname ? pathname : new URL(request.url).pathname,
+		typeof pathname === 'string' && pathname
+			? pathname
+			: new URL(request.url).pathname,
 	)
 	const query = notFoundQueryFromPathname(resolvedPathname)
 	if (!query || query.length < 3) return null
@@ -100,11 +101,12 @@ export async function getNotFoundSuggestions({
 
 			byUrl.set(key, {
 				url,
-				type: typeof r.type === 'string' && r.type.trim() ? r.type.trim() : 'result',
+				type:
+					typeof r.type === 'string' && r.type.trim()
+						? r.type.trim()
+						: 'result',
 				title:
-					typeof r.title === 'string' && r.title.trim()
-						? r.title.trim()
-						: url,
+					typeof r.title === 'string' && r.title.trim() ? r.title.trim() : url,
 				summary:
 					typeof r.summary === 'string' && r.summary.trim()
 						? r.summary.trim()
@@ -122,17 +124,18 @@ export async function getNotFoundSuggestions({
 			})
 		}
 
-		const matches = sortNotFoundMatches([...byUrl.values()], { priorities }).slice(
-			0,
-			Math.max(0, Math.floor(limit)),
-		)
+		const matches = sortNotFoundMatches([...byUrl.values()], {
+			priorities,
+		}).slice(0, Math.max(0, Math.floor(limit)))
 
 		return { query, matches }
 	} catch (error: unknown) {
 		if (error instanceof LocalTimeoutError) return null
 		// 404 pages should never fail the request because semantic search failed.
-		console.error('Semantic search failed while rendering 404 suggestions', error)
+		console.error(
+			'Semantic search failed while rendering 404 suggestions',
+			error,
+		)
 		return null
 	}
 }
-

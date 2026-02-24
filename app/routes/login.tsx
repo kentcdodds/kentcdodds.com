@@ -306,7 +306,9 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 				setPasskeyMessage(null)
 				console.error(e)
 				setError(
-					e instanceof Error ? e.message : 'Failed to authenticate with passkey',
+					e instanceof Error
+						? e.message
+						: 'Failed to authenticate with passkey',
 				)
 			}
 		}

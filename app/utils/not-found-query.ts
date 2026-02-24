@@ -31,4 +31,3 @@ export function notFoundQueryFromPathname(pathname: string) {
 	// Keep queries reasonably small; embeddings don't benefit from very long URL-ish strings.
 	return words.length > 120 ? words.slice(0, 120).trim() : words
 }
-

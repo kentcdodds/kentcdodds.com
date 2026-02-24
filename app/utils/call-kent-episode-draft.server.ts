@@ -6,9 +6,7 @@ import {
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-template.ts'
 import { generateCallKentEpisodeMetadataWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-metadata.server.ts'
-import {
-	transcribeMp3WithWorkersAi,
-} from '#app/utils/cloudflare-ai-transcription.server.ts'
+import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcription.server.ts'
 import { createEpisodeAudio } from '#app/utils/ffmpeg.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'

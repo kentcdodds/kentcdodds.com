@@ -52,4 +52,3 @@ describe('semantic search caching', () => {
 		}
 	})
 })
-

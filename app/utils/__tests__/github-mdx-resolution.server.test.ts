@@ -43,4 +43,3 @@ describe('github mdx resolution', () => {
 		).toBe(true)
 	})
 })
-
