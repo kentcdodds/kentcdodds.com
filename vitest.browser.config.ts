@@ -9,6 +9,10 @@ import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
 	plugins: [envOnlyMacros(), react(), tsconfigPaths()],
+	optimizeDeps: {
+		// Avoid Vite optimizing deps mid-test, which triggers reloads/flakiness.
+		include: ['react-error-boundary'],
+	},
 	test: {
 		include: ['**/*.test.browser.{js,jsx,ts,tsx}'],
 		exclude: [...configDefaults.exclude],

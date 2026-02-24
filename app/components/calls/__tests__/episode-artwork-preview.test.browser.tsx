@@ -23,11 +23,11 @@ test('publish anonymously tooltip opens on hover', async () => {
 	const tooltip = screen.getByRole('tooltip')
 	const checkbox = screen.getByRole('checkbox', { name: /publish anonymously/i })
 
-	await expect.element(tooltip).toBeHidden()
+	await expect.poll(() => tooltip.query()).toBeNull()
 	await tooltipButton.hover()
 	await expect.element(tooltip).toHaveTextContent('If you check this')
 	await checkbox.hover()
-	await expect.element(tooltip).toBeHidden()
+	await expect.poll(() => tooltip.query()).toBeNull()
 })
 
 test('episode artwork preview dims while the next image suspends', async () => {
