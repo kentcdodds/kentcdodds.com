@@ -233,13 +233,21 @@ function FourOhFour({
 			? possibleMatchesQuery.trim()
 			: derivedQuery
 
+	const hasPossibleMatchesList = Array.isArray(possibleMatchesProp)
 	const hasPossibleMatches =
-		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
+		hasPossibleMatchesList && possibleMatchesProp.length > 0
+	const searchUrl = effectiveQuery
+		? `/search?q=${encodeURIComponent(effectiveQuery)}`
+		: '/search'
 	const heroAction = hasPossibleMatches ? (
 		<ArrowLink to="#possible-matches" className="whitespace-nowrap">
 			Possible matches
 		</ArrowLink>
-	) : null
+	) : hasPossibleMatchesList ? null : (
+		<ArrowLink to={searchUrl} className="whitespace-nowrap">
+			Search the site
+		</ArrowLink>
+	)
 
 	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
 	// overall site layout). The 404 view reads better on mobile when it’s a bit
