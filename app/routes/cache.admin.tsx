@@ -99,7 +99,7 @@ export default function CacheAdminRoute({
 	}, 400)
 
 	return (
-		<div className="mx-5vw lg:mx-10vw">
+		<div className="mx-10vw">
 			<H2 className="mt-3">Cache Admin</H2>
 			<Spacer size="2xs" />
 			<Form

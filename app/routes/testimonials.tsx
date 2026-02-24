@@ -98,7 +98,7 @@ export default function Testimonials({
 			/>
 
 			<div
-				className="mx-5vw mb-14 grid grid-cols-4 gap-6 lg:mx-10vw lg:grid-cols-8 xl:grid-cols-12"
+				className="mx-10vw mb-14 grid grid-cols-4 gap-6 lg:grid-cols-8 xl:grid-cols-12"
 				id="list"
 			>
 				{data.testimonials.map((testimonial) => (
