@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isAbortError, throwIfAborted } from './abort-utils.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import { type Timings } from './timing.server.ts'
 
@@ -12,17 +13,6 @@ const latestPodcastSeasonLinksSchema = z.object({
 		latestSeasonPath: z.string().min(1),
 	}),
 })
-
-function isAbortError(error: unknown) {
-	return error instanceof Error && error.name === 'AbortError'
-}
-
-function throwIfAborted(signal?: AbortSignal) {
-	if (!signal?.aborted) return
-	const error = new Error('Operation aborted')
-	error.name = 'AbortError'
-	throw error
-}
 
 function formatSeasonParam(seasonNumber: number) {
 	return String(seasonNumber).padStart(2, '0')

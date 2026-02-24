@@ -14,6 +14,7 @@ import { visit } from 'unist-util-visit'
 import { z } from 'zod'
 import { type CWKEpisode, type CWKSeason } from '#app/types.ts'
 import { omit, sortBy } from '#app/utils/cjs/lodash.ts'
+import { isAbortError, throwIfAborted } from './abort-utils.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import { getEnv } from './env.server.ts'
 import { fetchJsonWithRetryAfter } from './fetch-json-with-retry-after.server.ts'
@@ -38,21 +39,6 @@ function getSimplecastConfig() {
 // Episodes can be fetched concurrently from multiple seasons (and from multiple
 // requests). Cap the total in-flight episode-detail requests to reduce 429s.
 const simplecastEpisodeDetailsLimit = pLimit(3)
-
-function createAbortError() {
-	const error = new Error('Operation aborted')
-	error.name = 'AbortError'
-	return error
-}
-
-function throwIfAborted(signal?: AbortSignal) {
-	if (!signal?.aborted) return
-	throw createAbortError()
-}
-
-function isAbortError(error: unknown) {
-	return error instanceof Error && error.name === 'AbortError'
-}
 
 const cwkCachedLinkSchema = z
 	.object({

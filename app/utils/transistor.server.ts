@@ -10,6 +10,11 @@ import {
 	type TransistorPublishedJson,
 	type TransistorUpdateEpisodeData,
 } from '#app/types.ts'
+import {
+	isAbortError,
+	throwIfAborted,
+	waitForDelay,
+} from './abort-utils.server.ts'
 import { cache, cachified, shouldForceFresh } from './cache.server.ts'
 import {
 	getCallKentEpisodeArtworkAvatar,
@@ -61,41 +66,6 @@ function isTransientNetworkError(error: unknown) {
 	return false
 }
 
-function createAbortError() {
-	const error = new Error('Operation aborted')
-	error.name = 'AbortError'
-	return error
-}
-
-function throwIfAborted(signal?: AbortSignal) {
-	if (!signal?.aborted) return
-	throw createAbortError()
-}
-
-function isAbortError(error: unknown) {
-	return error instanceof Error && error.name === 'AbortError'
-}
-
-async function waitForDelayWithSignal(delayMs: number, signal?: AbortSignal) {
-	if (!signal) {
-		await new Promise((resolve) => setTimeout(resolve, delayMs))
-		return
-	}
-	throwIfAborted(signal)
-	await new Promise<void>((resolve, reject) => {
-		const timeoutId = setTimeout(() => {
-			signal.removeEventListener('abort', onAbort)
-			resolve()
-		}, delayMs)
-		const onAbort = () => {
-			clearTimeout(timeoutId)
-			signal.removeEventListener('abort', onAbort)
-			reject(createAbortError())
-		}
-		signal.addEventListener('abort', onAbort, { once: true })
-	})
-}
-
 async function fetchTransitor<JsonResponse>({
 	endpoint,
 	method = 'GET',
@@ -119,6 +89,7 @@ async function fetchTransitor<JsonResponse>({
 		headers: {
 			'x-api-key': env.TRANSISTOR_API_SECRET,
 		},
+		signal,
 	}
 	if (data) {
 		config.body = JSON.stringify(data)
@@ -143,12 +114,12 @@ async function fetchTransitor<JsonResponse>({
 					retryAfterHeader && !Number.isNaN(Number(retryAfterHeader))
 						? Number(retryAfterHeader)
 						: 10
-				await waitForDelayWithSignal(retryAfterSeconds * 1000, signal)
+				await waitForDelay({ delayMs: retryAfterSeconds * 1000, signal })
 				continue
 			}
 			if (res.status >= 500 && attempt < maxRetries) {
 				attempt++
-				await waitForDelayWithSignal(attempt * 1000, signal)
+				await waitForDelay({ delayMs: attempt * 1000, signal })
 				continue
 			}
 
@@ -174,7 +145,7 @@ async function fetchTransitor<JsonResponse>({
 			if (isAbortError(error)) throw error
 			if (isTransientNetworkError(error) && attempt < maxRetries) {
 				attempt++
-				await waitForDelayWithSignal(attempt * 1000, signal)
+				await waitForDelay({ delayMs: attempt * 1000, signal })
 				continue
 			}
 			throw error

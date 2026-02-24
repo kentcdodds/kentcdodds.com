@@ -1,61 +1,10 @@
+import {
+	defaultSleep,
+	throwIfAborted,
+	waitForDelay,
+	type Sleep,
+} from './abort-utils.server.ts'
 import { fetchWithTimeout } from './fetch-with-timeout.server'
-
-type Sleep = (ms: number) => Promise<void>
-
-const defaultSleep: Sleep = async (ms) => {
-	await new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function createAbortError() {
-	const error = new Error('Request aborted')
-	error.name = 'AbortError'
-	return error
-}
-
-function throwIfAborted(signal?: AbortSignal) {
-	if (!signal?.aborted) return
-	throw createAbortError()
-}
-
-async function waitForDelay({
-	sleep,
-	delayMs,
-	signal,
-}: {
-	sleep: Sleep
-	delayMs: number
-	signal?: AbortSignal
-}) {
-	if (!signal) {
-		await sleep(delayMs)
-		return
-	}
-	throwIfAborted(signal)
-	await new Promise<void>((resolve, reject) => {
-		let settled = false
-		const onAbort = () => {
-			if (settled) return
-			settled = true
-			signal.removeEventListener('abort', onAbort)
-			reject(createAbortError())
-		}
-		signal.addEventListener('abort', onAbort, { once: true })
-		sleep(delayMs).then(
-			() => {
-				if (settled) return
-				settled = true
-				signal.removeEventListener('abort', onAbort)
-				resolve()
-			},
-			(error) => {
-				if (settled) return
-				settled = true
-				signal.removeEventListener('abort', onAbort)
-				reject(error)
-			},
-		)
-	})
-}
 
 type RetryDelayReason = 'retry-after' | 'rate-limit-reset' | 'default'
 
@@ -170,8 +119,8 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		let res: Response
 		try {
 			res = timeoutMs
-				? await fetchWithTimeout(url, { headers }, timeoutMs)
-				: await fetch(url, { headers })
+				? await fetchWithTimeout(url, { headers, signal }, timeoutMs)
+				: await fetch(url, { headers, signal })
 			throwIfAborted(signal)
 		} catch (cause) {
 			if (attempt < maxRetries) {
