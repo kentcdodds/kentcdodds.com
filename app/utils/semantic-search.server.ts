@@ -574,7 +574,10 @@ export async function semanticSearchKCD({
 				const url = asNonEmptyString(md.url)
 				const snippet = asNonEmptyString(md.snippet)
 				// For media (YouTube), chunk metadata can include a start time.
-				const timestampSeconds = asFiniteNumber(md.startSeconds)
+				const timestampSeconds = normalizeYoutubeTimestampSeconds({
+					startSeconds: asFiniteNumber(md.startSeconds),
+					endSeconds: asFiniteNumber(md.endSeconds),
+				})
 				const imageUrl = asNonEmptyString(md.imageUrl)
 				const imageAlt = asNonEmptyString(md.imageAlt)
 
