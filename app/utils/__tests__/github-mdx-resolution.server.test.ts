@@ -1,17 +1,5 @@
-import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { githubHandlers } from '../../../mocks/github.ts'
+import { describe, expect, test } from 'vitest'
 import { downloadMdxFileOrDirectory } from '../github.server.ts'
-
-const server = setupServer(...githubHandlers)
-
-beforeAll(() => {
-	server.listen({ onUnhandledRequest: 'error' })
-})
-
-afterAll(() => {
-	server.close()
-})
 
 describe('github mdx resolution', () => {
 	test('does not prefix-match directory names for missing slugs', async () => {

@@ -1,20 +1,4 @@
-import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
-import { cloudflareHandlers, resetCloudflareMockState } from '../cloudflare.ts'
-
-const server = setupServer(...cloudflareHandlers)
-
-beforeAll(() => {
-	server.listen({ onUnhandledRequest: 'error' })
-})
-
-beforeEach(() => {
-	resetCloudflareMockState()
-})
-
-afterAll(() => {
-	server.close()
-})
+import { describe, expect, test } from 'vitest'
 
 describe('cloudflare MSW mocks', () => {
 	test('Workers AI (AI Gateway) embeddings endpoint returns { result: { data } }', async () => {
@@ -228,9 +212,8 @@ describe('cloudflare MSW mocks', () => {
 			},
 		})}\n`
 
-		// Vitest runs in `jsdom` by default in this repo; the `FormData` impl from
-		// jsdom is not always compatible with Node's `fetch` (undici). Use a tiny,
-		// hand-crafted multipart body to exercise the mock parser reliably.
+		// Keep this deterministic across runtime environments by avoiding any
+		// `FormData` multipart nuances (the mock parser expects a specific shape).
 		const boundary = '----vitest-multipart-boundary'
 		const multipartBody = [
 			`--${boundary}\r\n`,

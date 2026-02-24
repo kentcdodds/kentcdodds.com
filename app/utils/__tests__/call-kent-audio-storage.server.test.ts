@@ -1,6 +1,4 @@
-import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { cloudflareR2Handlers } from '../../../mocks/cloudflare-r2.ts'
+import { describe, expect, test } from 'vitest'
 import {
 	deleteAudioObject,
 	getAudioBuffer,
@@ -8,21 +6,11 @@ import {
 	putCallAudioFromBuffer,
 } from '../call-kent-audio-storage.server.ts'
 
-const server = setupServer(...cloudflareR2Handlers)
-
-beforeAll(() => {
-	process.env.R2_BUCKET = 'mock-r2-bucket'
-	process.env.R2_ENDPOINT = 'https://mock.r2.cloudflarestorage.com'
-	process.env.R2_ACCESS_KEY_ID = 'MOCKR2ACCESSKEYID'
-	process.env.R2_SECRET_ACCESS_KEY = 'MOCKR2SECRETACCESSKEY'
-	process.env.CALL_KENT_R2_BUCKET = 'mock-call-kent-audio'
-
-	server.listen({ onUnhandledRequest: 'error' })
-})
-
-afterAll(() => {
-	server.close()
-})
+process.env.R2_BUCKET = 'mock-r2-bucket'
+process.env.R2_ENDPOINT = 'https://mock.r2.cloudflarestorage.com'
+process.env.R2_ACCESS_KEY_ID = 'MOCKR2ACCESSKEYID'
+process.env.R2_SECRET_ACCESS_KEY = 'MOCKR2SECRETACCESSKEY'
+process.env.CALL_KENT_R2_BUCKET = 'mock-call-kent-audio'
 
 describe('call kent audio storage (R2 via MSW)', () => {
 	test('round-trips audio bytes and supports range reads', async () => {

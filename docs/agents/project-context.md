@@ -19,7 +19,9 @@ reference:
 | Dev server      | `npm run dev` (starts on port 3000 with `MOCKS=true`)                             |
 | Lint            | `npm run lint`                                                                    |
 | Typecheck       | `npm run typecheck`                                                               |
-| Unit tests      | `npm run test`                                                                    |
+| Unit tests      | `npm run test` (runs backend + browser-mode tests)                                |
+| Backend tests   | `npm run test:backend`                                                            |
+| Browser tests   | `npm run test:browser`                                                            |
 | E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
 | DB reset + seed | `npx prisma@7 migrate reset --force` then `npm run runfile -- prisma/seed.ts`     |
 

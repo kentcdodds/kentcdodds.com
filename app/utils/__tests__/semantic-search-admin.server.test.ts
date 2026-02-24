@@ -1,24 +1,12 @@
-import { setupServer } from 'msw/node'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { cloudflareR2Handlers } from '../../../mocks/cloudflare-r2.ts'
+import { describe, expect, test } from 'vitest'
 import { getSemanticSearchAdminStore } from '../semantic-search-admin.server.ts'
 
-const server = setupServer(...cloudflareR2Handlers)
-
-beforeAll(() => {
-	// Tests load `.env` first (override=false), so keep this test self-contained
-	// in case the local `.env` has placeholder values like `MOCK_R2_ENDPOINT`.
-	process.env.R2_BUCKET = 'mock-r2-bucket'
-	process.env.R2_ENDPOINT = 'https://mock.r2.cloudflarestorage.com'
-	process.env.R2_ACCESS_KEY_ID = 'MOCKR2ACCESSKEYID'
-	process.env.R2_SECRET_ACCESS_KEY = 'MOCKR2SECRETACCESSKEY'
-
-	server.listen({ onUnhandledRequest: 'error' })
-})
-
-afterAll(() => {
-	server.close()
-})
+// Tests load `.env` first (override=false), so keep this test self-contained in
+// case the local `.env` has placeholder values like `MOCK_R2_ENDPOINT`.
+process.env.R2_BUCKET = 'mock-r2-bucket'
+process.env.R2_ENDPOINT = 'https://mock.r2.cloudflarestorage.com'
+process.env.R2_ACCESS_KEY_ID = 'MOCKR2ACCESSKEYID'
+process.env.R2_SECRET_ACCESS_KEY = 'MOCKR2SECRETACCESSKEY'
 
 describe('semantic search admin store (R2 via MSW)', () => {
 	test('lists and reads seeded manifests', async () => {

@@ -79,10 +79,6 @@ describe('useCountdown', () => {
 		vi.setSystemTime(new Date(start.getTime() + 55 * 1000))
 
 		// Coming back should immediately reflect the current remaining time.
-		Object.defineProperty(document, 'hidden', {
-			value: false,
-			configurable: true,
-		})
 		act(() => {
 			document.dispatchEvent(new Event('visibilitychange'))
 		})
