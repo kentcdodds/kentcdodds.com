@@ -245,7 +245,11 @@ function FourOhFour({
 				title: "404 - Oh no, you found a page that's missing stuff.",
 				subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 				image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-				action: <ArrowLink to={heroActionTo}>{heroActionLabel}</ArrowLink>,
+				action: (
+					<ArrowLink to={heroActionTo} className="whitespace-nowrap">
+						{heroActionLabel}
+					</ArrowLink>
+				),
 			}}
 		/>
 	)
