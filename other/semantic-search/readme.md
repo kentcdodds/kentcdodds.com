@@ -24,6 +24,7 @@ and shared utilities.
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_VECTORIZE_INDEX`
 - `CLOUDFLARE_AI_EMBEDDING_MODEL` (optional; defaults in code)
+- `CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID` (optional; defaults to `CLOUDFLARE_AI_GATEWAY_ID`)
 
 - `R2_BUCKET`
 

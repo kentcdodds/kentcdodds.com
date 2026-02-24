@@ -68,6 +68,11 @@ const schemaBase = z.object({
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,
 	/**
+	 * Optional embedding-specific AI Gateway id.
+	 * Falls back to `CLOUDFLARE_AI_GATEWAY_ID` when omitted.
+	 */
+	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: z.string().trim().optional(),
+	/**
 	 * AI Gateway authenticated gateway token (used as `cf-aig-authorization`).
 	 */
 	CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: nonEmptyString,
@@ -154,7 +159,11 @@ type BaseEnvInput = z.input<typeof schemaBase>
 
 export type Env = Omit<
 	BaseEnv,
-	'PORT' | 'MOCKS' | 'DATABASE_PATH' | 'FLY_MACHINE_ID'
+	| 'PORT'
+	| 'MOCKS'
+	| 'DATABASE_PATH'
+	| 'FLY_MACHINE_ID'
+	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
 	PORT: number
 	MOCKS: boolean
@@ -173,6 +182,11 @@ export type Env = Omit<
 	 * Used to format generated Call Kent transcripts into readable paragraphs.
 	 */
 	CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: string
+	/**
+	 * Embeddings can be routed through a separate gateway (for example, with
+	 * guardrails disabled) without affecting other AI routes.
+	 */
+	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: string
 	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */
 	R2_ENDPOINT: string
 }
@@ -241,6 +255,9 @@ export function getEnv(): Env {
 		allowedActionOrigins: computeAllowedActionOrigins(values),
 		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
+		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:
+			values.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID ||
+			values.CLOUDFLARE_AI_GATEWAY_ID,
 		CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL:
 			values.CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL ??
 			values.CLOUDFLARE_AI_TEXT_MODEL,
