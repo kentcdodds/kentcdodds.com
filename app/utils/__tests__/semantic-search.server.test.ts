@@ -1,8 +1,10 @@
+import { randomUUID } from 'node:crypto'
 import { describe, expect, test } from 'vitest'
-import { semanticSearchKCD } from '../semantic-search.server.ts'
+import { memory } from '#tests/semantic-search-test-cache.ts'
 
 describe('semantic search result normalization', () => {
 	test('dedupes chunk-level matches into unique docs', async () => {
+		memory.clear()
 		const originalEnv = {
 			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
@@ -31,7 +33,7 @@ describe('semantic search result normalization', () => {
 			// Use a query that's unlikely to match any seeded doc titles/snippets,
 			// so the Cloudflare Vectorize mock falls back to cosine similarity rather
 			// than match-sorter ranking.
-			const query = 'zz_semantic_dedupe_test_02157475'
+			const query = `zz_semantic_dedupe_test_${randomUUID()}`
 
 			const embedRes = await fetch(
 				`https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/@cf/google/embeddinggemma-300m`,
@@ -137,6 +139,7 @@ describe('semantic search result normalization', () => {
 			)
 			expect(upsertRes.ok).toBe(true)
 
+			const { semanticSearchKCD } = await import('../semantic-search.server.ts')
 			const results = await semanticSearchKCD({ query, topK: 5 })
 			expect(results).toHaveLength(5)
 

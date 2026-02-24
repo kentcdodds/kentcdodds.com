@@ -1,5 +1,9 @@
-import { getEnv } from './env.server.ts'
-import { getSemanticSearchPresentation } from './semantic-search-presentation.server.ts'
+import { createHash } from 'node:crypto'
+import { z } from 'zod'
+import { cache, cachified } from '#app/utils/cache.server.ts'
+import { getEnv } from '#app/utils/env.server.ts'
+import { getSemanticSearchPresentation } from '#app/utils/semantic-search-presentation.server.ts'
+import { type Timings } from '#app/utils/timing.server.ts'
 
 type EmbeddingResponse = {
 	shape?: number[]
@@ -13,6 +17,48 @@ type VectorizeQueryResponse = {
 		score: number
 		metadata?: Record<string, unknown>
 	}>
+}
+
+const SEMANTIC_SEARCH_CACHE_TTL_MS = 1000 * 60 * 60 * 12 // 12 hours
+const SEMANTIC_SEARCH_CACHE_SWR_MS = 1000 * 60 * 60 * 24 * 3 // 3 days
+
+/**
+ * Normalize a user-provided query into a stable cache key input.
+ */
+function normalizeSemanticSearchQueryForCache(query: string) {
+	// Normalize insignificant whitespace so repeated requests hit cache.
+	return query.trim().replace(/\s+/g, ' ')
+}
+
+/**
+ * Build a stable, privacy-preserving cache key for semantic search results.
+ */
+function makeSemanticSearchCacheKey({
+	query,
+	topK,
+	accountId,
+	indexName,
+	embeddingModel,
+}: {
+	query: string
+	topK: number
+	accountId: string
+	indexName: string
+	embeddingModel: string
+}) {
+	// Hash the query payload to:
+	// - avoid massive cache keys for long queries
+	// - avoid storing potentially sensitive user queries in plaintext keys
+	const payload = JSON.stringify({
+		v: 1,
+		accountId,
+		indexName,
+		embeddingModel,
+		topK,
+		query,
+	})
+	const hash = createHash('sha256').update(payload).digest('hex')
+	return `semantic-search:kcd:v1:${hash}`
 }
 
 function asFiniteNumber(value: unknown): number | undefined {
@@ -340,6 +386,24 @@ export type SemanticSearchResult = {
 	imageAlt?: string
 }
 
+const semanticSearchResultsSchema = z.array(
+	z
+		.object({
+			id: z.string(),
+			score: z.number(),
+			type: z.string().optional(),
+			slug: z.string().optional(),
+			title: z.string().optional(),
+			url: z.string().optional(),
+			snippet: z.string().optional(),
+			timestampSeconds: z.number().optional(),
+			summary: z.string().optional(),
+			imageUrl: z.string().optional(),
+			imageAlt: z.string().optional(),
+		})
+		.passthrough(),
+)
+
 function parseYoutubeVideoIdFromUrl(url: string | undefined) {
 	if (!url) return null
 	try {
@@ -386,153 +450,189 @@ function addYoutubeTimestampToUrl({
 export async function semanticSearchKCD({
 	query,
 	topK = 15,
+	request,
+	timings,
 }: {
 	query: string
 	/**
 	 * Requested number of unique docs to return.
 	 * Clamped to 20 because Vectorize metadata queries cap `topK` at 20.
+	 * Because chunk overfetch is capped at 20 as well, very high `topK` values
+	 * may return fewer than requested unique docs after de-duping chunk hits.
 	 */
 	topK?: number
+	request?: Request
+	timings?: Timings
 }): Promise<Array<SemanticSearchResult>> {
-	const { accountId, apiToken, gatewayId, gatewayAuthToken, indexName, embeddingModel } =
-		getRequiredSemanticSearchEnv()
+	const cleanedQuery = normalizeSemanticSearchQueryForCache(query)
+	if (!cleanedQuery) return []
+
+	const {
+		accountId,
+		apiToken,
+		gatewayId,
+		gatewayAuthToken,
+		indexName,
+		embeddingModel,
+	} = getRequiredSemanticSearchEnv()
 
 	const safeTopK =
 		typeof topK === 'number' && Number.isFinite(topK)
 			? Math.max(1, Math.min(20, Math.floor(topK)))
 			: 15
+
+	const cacheKey = makeSemanticSearchCacheKey({
+		query: cleanedQuery,
+		topK: safeTopK,
+		accountId,
+		indexName,
+		embeddingModel,
+	})
+
 	// Vectorize returns chunk-level matches and overlapping chunks commonly score
 	// highly together. Overfetch and then de-dupe down to unique docs.
-	// When requesting metadata, Vectorize caps topK at 20.
+	// Vectorize metadata queries cap topK at 20, so rawTopK is capped too (this
+	// can limit overfetch headroom for de-dupe at high `topK` values).
 	const rawTopK = Math.min(20, safeTopK * 5)
 
-	const vector = await getEmbedding({
-		accountId,
-		apiToken,
-		gatewayId,
-		gatewayAuthToken,
-		model: embeddingModel,
-		text: query,
+	const baseResults = await cachified({
+		cache,
+		request,
+		timings,
+		key: cacheKey,
+		ttl: SEMANTIC_SEARCH_CACHE_TTL_MS,
+		staleWhileRevalidate: SEMANTIC_SEARCH_CACHE_SWR_MS,
+		checkValue: semanticSearchResultsSchema,
+		getFreshValue: async () => {
+			const vector = await getEmbedding({
+				accountId,
+				apiToken,
+				gatewayId,
+				gatewayAuthToken,
+				model: embeddingModel,
+				text: cleanedQuery,
+			})
+
+			const responseJson = await queryVectorize({
+				accountId,
+				apiToken,
+				indexName,
+				vector,
+				topK: rawTopK,
+			})
+			const result = (responseJson as any).result ?? responseJson
+			const matches = (result?.matches ?? []) as VectorizeQueryResponse['matches']
+
+			type RankedResult = { rank: number; result: SemanticSearchResult }
+			const byCanonicalId = new Map<string, RankedResult>()
+
+			for (let i = 0; i < matches.length; i++) {
+				const m = matches[i]
+				if (!m) continue
+				const md = (m.metadata ?? {}) as Record<string, unknown>
+				const type = asNonEmptyString(md.type)
+				const slug = asNonEmptyString(md.slug)
+				const title = asNonEmptyString(md.title)
+				const url = asNonEmptyString(md.url)
+				const snippet = asNonEmptyString(md.snippet)
+				// For media (YouTube), chunk metadata can include a start time.
+				const timestampSeconds = asFiniteNumber(md.startSeconds)
+				const imageUrl = asNonEmptyString(md.imageUrl)
+				const imageAlt = asNonEmptyString(md.imageAlt)
+
+				const canonicalId = getCanonicalResultId({
+					vectorId: m.id,
+					type,
+					slug,
+					url,
+					title,
+				})
+
+				const next: SemanticSearchResult = {
+					id: canonicalId,
+					score: m.score,
+					type,
+					slug,
+					title,
+					url,
+					snippet,
+					timestampSeconds,
+					imageUrl,
+					imageAlt,
+				}
+
+				const existing = byCanonicalId.get(canonicalId)
+				if (!existing) {
+					byCanonicalId.set(canonicalId, { rank: i, result: next })
+					continue
+				}
+
+				const prev = existing.result
+				const prevScore =
+					typeof prev.score === 'number' && Number.isFinite(prev.score)
+						? prev.score
+						: -Infinity
+				const nextScore =
+					typeof next.score === 'number' && Number.isFinite(next.score)
+						? next.score
+						: -Infinity
+				const bestScore = Math.max(prevScore, nextScore)
+				const nextIsBetter = nextScore > prevScore
+
+				existing.result = {
+					id: canonicalId,
+					score: bestScore,
+					type: prev.type ?? next.type,
+					slug: prev.slug ?? next.slug,
+					title: prev.title ?? next.title,
+					url: prev.url ?? next.url,
+					// Prefer the snippet from the highest-scoring chunk, but fall back to any snippet.
+					snippet: nextIsBetter
+						? (next.snippet ?? prev.snippet)
+						: (prev.snippet ?? next.snippet),
+					// Keep the timestamp from the highest-scoring chunk when present.
+					timestampSeconds: nextIsBetter
+						? (next.timestampSeconds ?? prev.timestampSeconds)
+						: (prev.timestampSeconds ?? next.timestampSeconds),
+					imageUrl: prev.imageUrl ?? next.imageUrl,
+					imageAlt: prev.imageAlt ?? next.imageAlt,
+				}
+			}
+
+			const baseResults = [...byCanonicalId.values()]
+				.sort((a, b) => {
+					const scoreDiff = (b.result.score ?? 0) - (a.result.score ?? 0)
+					if (scoreDiff) return scoreDiff
+					return a.rank - b.rank
+				})
+				.slice(0, safeTopK)
+				.map((x) => x.result)
+
+			// If a YouTube chunk match includes a timestamp, deep-link the result URL.
+			for (const r of baseResults) {
+				if (r.type !== 'youtube') continue
+				const videoId =
+					typeof r.slug === 'string' && /^[A-Za-z0-9_-]{11}$/.test(r.slug)
+						? r.slug
+						: null
+				r.url = addYoutubeTimestampToUrl({
+					url: r.url,
+					videoId,
+					timestampSeconds: r.timestampSeconds,
+				})
+			}
+
+			return baseResults
+		},
 	})
 
-	const responseJson = await queryVectorize({
-		accountId,
-		apiToken,
-		indexName,
-		vector,
-		topK: rawTopK,
-	})
-	const result = (responseJson as any).result ?? responseJson
-	const matches = (result?.matches ?? []) as VectorizeQueryResponse['matches']
-
-	type RankedResult = { rank: number; result: SemanticSearchResult }
-	const byCanonicalId = new Map<string, RankedResult>()
-
-	for (let i = 0; i < matches.length; i++) {
-		const m = matches[i]
-		if (!m) continue
-		const md = (m.metadata ?? {}) as Record<string, unknown>
-		const type = asNonEmptyString(md.type)
-		const slug = asNonEmptyString(md.slug)
-		const title = asNonEmptyString(md.title)
-		const url = asNonEmptyString(md.url)
-		const snippet = asNonEmptyString(md.snippet)
-		// For media (YouTube), chunk metadata can include a start time.
-		const timestampSeconds = asFiniteNumber(md.startSeconds)
-		const imageUrl = asNonEmptyString(md.imageUrl)
-		const imageAlt = asNonEmptyString(md.imageAlt)
-
-		const canonicalId = getCanonicalResultId({
-			vectorId: m.id,
-			type,
-			slug,
-			url,
-			title,
-		})
-
-		const next: SemanticSearchResult = {
-			id: canonicalId,
-			score: m.score,
-			type,
-			slug,
-			title,
-			url,
-			snippet,
-			timestampSeconds,
-			imageUrl,
-			imageAlt,
-		}
-
-		const existing = byCanonicalId.get(canonicalId)
-		if (!existing) {
-			byCanonicalId.set(canonicalId, { rank: i, result: next })
-			continue
-		}
-
-		const prev = existing.result
-		const prevScore =
-			typeof prev.score === 'number' && Number.isFinite(prev.score)
-				? prev.score
-				: -Infinity
-		const nextScore =
-			typeof next.score === 'number' && Number.isFinite(next.score)
-				? next.score
-				: -Infinity
-		const bestScore = Math.max(prevScore, nextScore)
-		const nextIsBetter = nextScore > prevScore
-
-		existing.result = {
-			id: canonicalId,
-			score: bestScore,
-			type: prev.type ?? next.type,
-			slug: prev.slug ?? next.slug,
-			title: prev.title ?? next.title,
-			url: prev.url ?? next.url,
-			// Prefer the snippet from the highest-scoring chunk, but fall back to any snippet.
-			snippet: nextIsBetter
-				? (next.snippet ?? prev.snippet)
-				: (prev.snippet ?? next.snippet),
-			// Keep the timestamp from the highest-scoring chunk when present.
-			timestampSeconds: nextIsBetter
-				? (next.timestampSeconds ?? prev.timestampSeconds)
-				: (prev.timestampSeconds ?? next.timestampSeconds),
-			imageUrl: prev.imageUrl ?? next.imageUrl,
-			imageAlt: prev.imageAlt ?? next.imageAlt,
-		}
-	}
-
-	const baseResults = [...byCanonicalId.values()]
-		.sort((a, b) => {
-			const scoreDiff = (b.result.score ?? 0) - (a.result.score ?? 0)
-			if (scoreDiff) return scoreDiff
-			return a.rank - b.rank
-		})
-		.slice(0, safeTopK)
-		.map((x) => x.result)
-
-	// If a YouTube chunk match includes a timestamp, deep-link the result URL.
-	for (const r of baseResults) {
-		if (r.type !== 'youtube') continue
-		const videoId =
-			typeof r.slug === 'string' && /^[A-Za-z0-9_-]{11}$/.test(r.slug)
-				? r.slug
-				: null
-		r.url = addYoutubeTimestampToUrl({
-			url: r.url,
-			videoId,
-			timestampSeconds: r.timestampSeconds,
-		})
-	}
-
-	// Add UI-ready presentation fields (summary + image) with graceful fallbacks.
-	// This is derived from local repo content when possible, so it doesn't require
-	// storing additional fields during indexing.
-	const enriched = await Promise.all(
+	// Add UI-ready presentation fields (summary + image) per-request. This is
+	// derived from local repo content when possible, so caching it would delay
+	// reflecting content updates until TTL/SWR expiry.
+	return await Promise.all(
 		baseResults.map(async (r) => {
 			const presentation = await getSemanticSearchPresentation(r)
 			return { ...r, ...presentation }
 		}),
 	)
-
-	return enriched
 }
