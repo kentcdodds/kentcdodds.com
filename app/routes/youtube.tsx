@@ -35,8 +35,16 @@ function parseTimestampSeconds(value: string | null) {
 	if (!trimmed) return null
 	// Keep it simple: `t=123` (seconds). This is what our semantic search deep links emit.
 	if (!/^\d+$/.test(trimmed)) return null
-	const n = Number(trimmed)
+	let n = Number(trimmed)
 	if (!Number.isFinite(n)) return null
+
+	// Legacy/buggy deep links sometimes used milliseconds. These show up as huge
+	// integer values (e.g. `t=123000` for 2:03) which would otherwise jump to the
+	// end of most videos.
+	if (n > 60 * 60 * 4) {
+		n = Math.floor(n / 1000)
+	}
+
 	// Cap to something reasonable just to avoid nonsense inputs.
 	return Math.max(0, Math.min(n, 60 * 60 * 24))
 }
