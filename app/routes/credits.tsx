@@ -111,9 +111,9 @@ function ProfileCard({ person }: { person: Person }) {
 						transformations: {
 							resize: {
 								aspectRatio: '1:1',
-								type: 'pad',
+								type: 'fill_pad',
 							},
-							gravity: 'face:center',
+							gravity: 'auto',
 							background: 'auto',
 						},
 					})}
