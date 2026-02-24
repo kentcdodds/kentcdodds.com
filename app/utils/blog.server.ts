@@ -225,13 +225,18 @@ async function getTotalPostReads({
 	return cachified({
 		key,
 		cache: lruCache,
-		ttl: 1000 * 60,
+		ttl: 1000 * 60 * 30,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		request,
 		timings,
 		checkValue: (value: unknown) => typeof value === 'number',
-		getFreshValue: () =>
-			prisma.postRead.count(slug ? { where: { postSlug: slug } } : undefined),
+		getFreshValue: async () => {
+			// Reuse the grouped read-count cache so we avoid expensive per-slug
+			// COUNT(*) scans on large PostRead tables.
+			const readCounts = await getBlogPostReadCounts({ request, timings })
+			if (slug) return readCounts[slug] ?? 0
+			return Object.values(readCounts).reduce((sum, count) => sum + count, 0)
+		},
 	})
 }
 
