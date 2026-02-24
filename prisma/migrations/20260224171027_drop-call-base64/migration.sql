@@ -1,3 +1,18 @@
+-- Preflight: refuse to drop legacy DB base64 audio unless backfill is complete.
+-- If any calls still have `base64` audio but no `audioKey`, dropping the column
+-- would permanently remove their audio.
+CREATE TEMP TABLE "__prisma_migrate_call_base64_backfill_guard" (
+    ok INTEGER NOT NULL,
+    CONSTRAINT "call_base64_backfill_required" CHECK (ok = 1)
+);
+INSERT INTO "__prisma_migrate_call_base64_backfill_guard" ("ok")
+SELECT 0
+WHERE EXISTS (
+    SELECT 1 FROM "Call"
+    WHERE "audioKey" IS NULL AND "base64" IS NOT NULL
+);
+DROP TABLE "__prisma_migrate_call_base64_backfill_guard";
+
 -- RedefineTables
 PRAGMA defer_foreign_keys=ON;
 PRAGMA foreign_keys=OFF;

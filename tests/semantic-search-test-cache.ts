@@ -2,6 +2,10 @@ import { vi } from 'vitest'
 
 export const memory = new Map<string, unknown>()
 
+export function resetTestCache() {
+	memory.clear()
+}
+
 export const testCache = {
 	name: 'test-cache',
 	get(key: string) {
