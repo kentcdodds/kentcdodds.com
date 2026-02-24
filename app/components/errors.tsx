@@ -204,13 +204,9 @@ function PossibleMatchesSection({
 							</li>
 						))}
 					</ul>
-					<p className="mt-4 text-sm text-slate-500">
-						{hasMatches ? 'None of these match? ' : 'No close matches found. '}
-						<a href={searchUrl} className="underlined">
-							Try semantic search
-						</a>
-						.
-					</p>
+					<div className="mt-8">
+						<ArrowLink to={searchUrl}>Try semantic search</ArrowLink>
+					</div>
 				</div>
 			</Grid>
 		</>
