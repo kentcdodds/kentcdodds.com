@@ -7,6 +7,23 @@ export type NotFoundMatch = {
 	imageAlt?: string
 }
 
+export function normalizeNotFoundUrl(rawUrl: string) {
+	const url = rawUrl.trim()
+	if (!url) return ''
+	// Only allow internal app paths. This also keeps client/server rendering consistent
+	// when `/resources/search` returns absolute URLs.
+	if (url.startsWith('/')) return url
+	if (/^https?:\/\//i.test(url)) {
+		try {
+			const u = new URL(url)
+			return `${u.pathname}${u.search}${u.hash}`
+		} catch {
+			return ''
+		}
+	}
+	return ''
+}
+
 function normalizeType(type: string) {
 	// Keep UI labels simple and consistent.
 	if (type === 'jsx-page') return 'page'

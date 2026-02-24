@@ -4,7 +4,11 @@ import * as React from 'react'
 import { useFetcher, useMatches } from 'react-router'
 import { type MdxListItem } from '#app/types.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
-import { type NotFoundMatch, sortNotFoundMatches } from '#app/utils/not-found-matches.ts'
+import {
+	normalizeNotFoundUrl,
+	type NotFoundMatch,
+	sortNotFoundMatches,
+} from '#app/utils/not-found-matches.ts'
 import { notFoundQueryFromPathname } from '#app/utils/not-found-query.ts'
 import { ArrowLink } from './arrow-button.tsx'
 import { Grid } from './grid.tsx'
@@ -219,23 +223,6 @@ function asNotFoundMatchFromResourceSearch(value: unknown): NotFoundMatch | null
 		imageUrl: imageUrlRaw || undefined,
 		imageAlt: imageAltRaw || undefined,
 	}
-}
-
-function normalizeNotFoundUrl(rawUrl: string) {
-	const url = rawUrl.trim()
-	if (!url) return ''
-	// Only allow internal app paths. This also keeps client/server rendering consistent
-	// when `/resources/search` returns absolute URLs.
-	if (url.startsWith('/')) return url
-	if (/^https?:\/\//i.test(url)) {
-		try {
-			const u = new URL(url)
-			return `${u.pathname}${u.search}${u.hash}`
-		} catch {
-			return ''
-		}
-	}
-	return ''
 }
 
 function FourOhFour({

@@ -1,4 +1,8 @@
-import { sortNotFoundMatches, type NotFoundMatch } from './not-found-matches.ts'
+import {
+	normalizeNotFoundUrl,
+	sortNotFoundMatches,
+	type NotFoundMatch,
+} from './not-found-matches.ts'
 import { notFoundQueryFromPathname } from './not-found-query.ts'
 import { semanticSearchKCD } from './semantic-search.server.ts'
 
@@ -26,21 +30,6 @@ function toUrlKey(url: string) {
 	} catch {
 		return url
 	}
-}
-
-function normalizeNotFoundUrl(rawUrl: string) {
-	const url = rawUrl.trim()
-	if (!url) return ''
-	if (url.startsWith('/')) return url
-	if (/^https?:\/\//i.test(url)) {
-		try {
-			const u = new URL(url)
-			return `${u.pathname}${u.search}${u.hash}`
-		} catch {
-			return ''
-		}
-	}
-	return ''
 }
 
 export async function getNotFoundSuggestions({
