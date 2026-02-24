@@ -4,6 +4,28 @@ import {
 } from './cloudflare-ai-utils.server.ts'
 import { getEnv } from './env.server.ts'
 
+function clampNumber(value: number, min: number, max: number) {
+	return Math.min(max, Math.max(min, value))
+}
+
+function normalizeForComparison(text: string) {
+	return text.trim().replace(/\s+/g, ' ')
+}
+
+function countWords(text: string) {
+	const normalized = normalizeForComparison(text)
+	if (!normalized) return 0
+	return normalized.split(' ').length
+}
+
+function estimateMaxTokensForTranscriptFormatting(transcript: string) {
+	const normalized = normalizeForComparison(transcript)
+	// Rough heuristic: ~4 characters per token for English-ish text.
+	const approxTokens = Math.ceil(normalized.length / 4)
+	// Output is usually similar length to input, with a bit of overhead.
+	return clampNumber(Math.ceil(approxTokens * 1.2) + 128, 512, 8192)
+}
+
 function stripSingleMarkdownCodeFence(text: string) {
 	const trimmed = text.trim()
 	const match = /^```(?:text|markdown)?\s*\n([\s\S]*?)\n```$/i.exec(trimmed)
@@ -36,12 +58,18 @@ export async function formatCallKentTranscriptWithWorkersAi({
 	callerNotes,
 	callerName,
 	model,
+	maxTokens,
 }: {
 	transcript: string
 	callTitle?: string | null
 	callerNotes?: string | null
 	callerName?: string
 	model?: string
+	/**
+	 * Optional override for Workers AI `max_tokens` output budget.
+	 * Defaults to a heuristic based on the input transcript length.
+	 */
+	maxTokens?: number
 }): Promise<string> {
 	const env = getEnv()
 	const apiToken = env.CLOUDFLARE_API_TOKEN
@@ -55,6 +83,10 @@ export async function formatCallKentTranscriptWithWorkersAi({
 
 	const startMarker = '<<<TRANSCRIPT>>>'
 	const endMarker = '<<<END TRANSCRIPT>>>'
+	const maxTokensToUse =
+		typeof maxTokens === 'number' && Number.isFinite(maxTokens) && maxTokens > 0
+			? clampNumber(Math.floor(maxTokens), 256, 8192)
+			: estimateMaxTokensForTranscriptFormatting(input)
 
 	const system = `
 You format transcripts for the "Call Kent Podcast", hosted by Kent C. Dodds.
@@ -95,9 +127,7 @@ ${endMarker}
 				{ role: 'system', content: system },
 				{ role: 'user', content: user },
 			],
-			// Needs to be large enough to return the full transcript, but still keep
-			// Workers AI outputs bounded.
-			max_tokens: 4096,
+			max_tokens: maxTokensToUse,
 		}),
 	})
 
@@ -145,6 +175,25 @@ ${endMarker}
 		if (formattedSepCount !== originalSepCount) {
 			throw new Error(
 				`Transcript formatter changed separator count (${originalSepCount} -> ${formattedSepCount}).`,
+			)
+		}
+	}
+
+	// Catch likely truncation/omissions (e.g. too-low max_tokens or model limits).
+	// Prefer throwing so callers can fall back to the raw transcript.
+	const inputNormalized = normalizeForComparison(input)
+	const formattedNormalized = normalizeForComparison(formatted)
+	const minLengthForTruncationCheck = 1000
+	if (inputNormalized.length >= minLengthForTruncationCheck) {
+		const lengthRatio = formattedNormalized.length / inputNormalized.length
+		const inputWords = countWords(inputNormalized)
+		const formattedWords = countWords(formattedNormalized)
+		const wordRatio = inputWords ? formattedWords / inputWords : 1
+		if (lengthRatio < 0.95 || wordRatio < 0.95) {
+			throw new Error(
+				`Transcript formatter output appears truncated (max_tokens=${maxTokensToUse}, lengthRatio=${lengthRatio.toFixed(
+					2,
+				)}, wordRatio=${wordRatio.toFixed(2)}).`,
 			)
 		}
 	}
