@@ -54,7 +54,7 @@ import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
 import { getTheme } from './utils/theme.server.ts'
 import { useTheme } from './utils/theme.tsx'
-import { getServerTimeHeader } from './utils/timing.server.ts'
+import { getServerTimeHeader, time, withTimeout } from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
@@ -116,8 +116,14 @@ export const links: LinksFunction = () => {
 	]
 }
 
+const PODCAST_LINKS_FALLBACK = {
+	chats: { latestSeasonNumber: null, latestSeasonPath: '/chats' },
+	calls: { latestSeasonNumber: null, latestSeasonPath: '/calls' },
+} as const
+
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
+	const loaderStart = performance.now()
 	const session = await getSession(request)
 	const [
 		user,
@@ -130,10 +136,23 @@ export async function loader({ request }: Route.LoaderArgs) {
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
 		getInstanceInfo().then((i) => i.primaryInstance),
-		getLatestPodcastSeasonLinks({ request, timings }).catch(() => ({
-			chats: { latestSeasonNumber: null, latestSeasonPath: '/chats' },
-			calls: { latestSeasonNumber: null, latestSeasonPath: '/calls' },
-		})),
+		time(
+			withTimeout(
+				getLatestPodcastSeasonLinks({ request, timings }).catch(
+					() => PODCAST_LINKS_FALLBACK,
+				),
+				{
+					timeoutMs: 2000,
+					fallback: PODCAST_LINKS_FALLBACK,
+					label: 'root:podcast-season-links',
+				},
+			),
+			{
+				timings,
+				type: 'root:podcast-season-links',
+				desc: 'podcast nav links (Simplecast + Transistor)',
+			},
+		),
 	])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
@@ -170,7 +189,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 	await session.getHeaders(headers)
 	await clientSession.getHeaders(headers)
 	await loginInfoSession.getHeaders(headers)
-	headers.append('Server-Timing', getServerTimeHeader(timings))
+	// Add root loader total for production diagnostics (visible in Server-Timing)
+	const rootLoaderTotal = performance.now() - loaderStart
+	const rootTimings = {
+		...timings,
+		'root:loader': [
+			{ type: 'root:loader', desc: 'root loader total', time: rootLoaderTotal },
+		],
+	}
+	headers.append('Server-Timing', getServerTimeHeader(rootTimings))
 
 	return json(data, { headers })
 }

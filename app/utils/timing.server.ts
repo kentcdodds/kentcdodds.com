@@ -28,6 +28,39 @@ export async function time<ReturnType>(
 	return result
 }
 
+/**
+ * Race a promise against a timeout. On timeout, returns the fallback value
+ * instead of rejecting. Used to cap blocking time for non-critical data.
+ */
+export async function withTimeout<T>(
+	promise: Promise<T>,
+	{
+		timeoutMs,
+		fallback,
+		label = 'operation',
+	}: {
+		timeoutMs: number
+		fallback: T
+		label?: string
+	},
+): Promise<T> {
+	let timeoutId: ReturnType<typeof setTimeout> | undefined
+	const timeoutPromise = new Promise<never>((_, reject) => {
+		timeoutId = setTimeout(() => {
+			reject(new Error(`${label} timed out after ${timeoutMs}ms`))
+		}, timeoutMs)
+	})
+	try {
+		const result = await Promise.race([promise, timeoutPromise])
+		clearTimeout(timeoutId)
+		return result
+	} catch (error) {
+		clearTimeout(timeoutId)
+		console.warn(`${label}: timeout or error, using fallback`, error)
+		return fallback
+	}
+}
+
 export function getServerTimeHeader(timings: Timings) {
 	return Object.entries(timings)
 		.map(([key, timingInfos]) => {
