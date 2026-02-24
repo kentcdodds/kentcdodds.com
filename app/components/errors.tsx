@@ -72,10 +72,9 @@ function ErrorPage({
 	possibleMatchesQuery?: string
 	heroProps: HeroSectionProps
 }) {
-	// Only inject the "arrow down" helper link when the caller leaves `action`
-	// undefined. This lets callers intentionally pass `null` to suppress all
-	// hero CTAs for specific states (for example, 404 no-match).
-	const resolvedHeroProps: HeroSectionProps = heroProps.action !== undefined
+	// Only inject the "arrow down" helper link when the caller didn't provide an
+	// explicit action. Otherwise, it can create duplicate CTAs (notably on 404s).
+	const resolvedHeroProps: HeroSectionProps = heroProps.action
 		? heroProps
 		: possibleMatches?.length
 			? {
@@ -113,7 +112,7 @@ function ErrorPage({
 				) : null}
 				<HeroSection {...resolvedHeroProps} />
 
-				{possibleMatches ? (
+				{possibleMatches?.length ? (
 					<PossibleMatchesSection
 						matches={possibleMatches}
 						query={possibleMatchesQuery}
@@ -144,22 +143,14 @@ function PossibleMatchesSection({
 	query?: string
 }) {
 	const q = typeof query === 'string' ? query.trim() : ''
-	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const sorted = sortNotFoundMatches(matches)
-	const hasMatches = sorted.length > 0
 
 	return (
 		<>
 			<div id="possible-matches" />
 			<HeaderSection
-				title={hasMatches ? 'Possible matches' : 'No close matches found'}
-				subTitle={
-					hasMatches
-						? q
-							? `Closest matches for "${q}"`
-							: 'Closest matches.'
-						: undefined
-				}
+				title="Possible matches"
+				subTitle={q ? `Closest matches for "${q}"` : 'Closest matches.'}
 			/>
 			<Spacer size="2xs" />
 			<Grid>
@@ -203,9 +194,6 @@ function PossibleMatchesSection({
 							</li>
 						))}
 					</ul>
-					<div className="mt-8">
-						<ArrowLink to={searchUrl}>Try semantic search</ArrowLink>
-					</div>
 				</div>
 			</Grid>
 		</>
@@ -233,21 +221,14 @@ function FourOhFour({
 			? possibleMatchesQuery.trim()
 			: derivedQuery
 
-	const hasPossibleMatchesList = Array.isArray(possibleMatchesProp)
+	const q = effectiveQuery ? effectiveQuery.trim() : ''
+	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const hasPossibleMatches =
-		hasPossibleMatchesList && possibleMatchesProp.length > 0
-	const searchUrl = effectiveQuery
-		? `/search?q=${encodeURIComponent(effectiveQuery)}`
-		: '/search'
-	const heroAction = hasPossibleMatches ? (
-		<ArrowLink to="#possible-matches" className="whitespace-nowrap">
-			Possible matches
-		</ArrowLink>
-	) : hasPossibleMatchesList ? null : (
-		<ArrowLink to={searchUrl} className="whitespace-nowrap">
-			Search the site
-		</ArrowLink>
-	)
+		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
+	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
+	const heroActionLabel = hasPossibleMatches
+		? 'Possible matches'
+		: 'Search the site'
 
 	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
 	// overall site layout). The 404 view reads better on mobile when it’s a bit
@@ -266,7 +247,11 @@ function FourOhFour({
 					title: "404 - Oh no, you found a page that's missing stuff.",
 					subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 					image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-					action: heroAction,
+					action: (
+						<ArrowLink to={heroActionTo} className="whitespace-nowrap">
+							{heroActionLabel}
+						</ArrowLink>
+					),
 				}}
 			/>
 		</div>
