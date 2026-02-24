@@ -1,6 +1,5 @@
+import { generateTOTP, verifyTOTP, type HashAlgorithm } from '@epic-web/totp'
 import bcrypt from 'bcrypt'
-import { generateTOTP, verifyTOTP } from '@epic-web/totp'
-import type { HashAlgorithm } from '@epic-web/totp'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 

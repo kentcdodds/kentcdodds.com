@@ -1,5 +1,5 @@
-import bcrypt from 'bcrypt'
 import { generateTOTP } from '@epic-web/totp'
+import bcrypt from 'bcrypt'
 import { describe, expect, test, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => {
