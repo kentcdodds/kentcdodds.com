@@ -58,7 +58,7 @@ function parseTimestampSeconds(value: string | null) {
 	}
 
 	// Cap to something reasonable just to avoid nonsense inputs.
-	return Math.max(0, Math.min(n, 60 * 60 * 24))
+	return Math.max(0, Math.min(n, msHeuristicThresholdSeconds))
 }
 
 function formatTimestamp(totalSeconds: number) {
