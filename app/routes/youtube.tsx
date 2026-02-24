@@ -42,9 +42,9 @@ function parseTimestampSeconds(value: string | null) {
 	const trimmed = value.trim()
 	if (!trimmed) return null
 	// Semantic search deep links emit seconds (`t=123`), but older/buggy links
-	// sometimes used milliseconds (`t=123000`). We assume Kent videos aren't 4h+
-	// and treat values above that threshold as milliseconds. This mirrors the
-	// server-side normalization in `normalizeYoutubeTimestampSeconds`.
+	// sometimes used milliseconds (`t=123000`). We only coerce values above 24h to
+	// avoid misclassifying legitimate long-form/livestream timestamps. This
+	// mirrors the server-side normalization in `normalizeYoutubeTimestampSeconds`.
 	if (!/^\d+$/.test(trimmed)) return null
 	let n = Number(trimmed)
 	if (!Number.isFinite(n)) return null
@@ -52,7 +52,8 @@ function parseTimestampSeconds(value: string | null) {
 	// Legacy/buggy deep links sometimes used milliseconds. These show up as huge
 	// integer values (e.g. `t=123000` for 2:03) which would otherwise jump to the
 	// end of most videos.
-	if (n > 60 * 60 * 4) {
+	const msHeuristicThresholdSeconds = 60 * 60 * 24
+	if (n > msHeuristicThresholdSeconds) {
 		n = Math.floor(n / 1000)
 	}
 

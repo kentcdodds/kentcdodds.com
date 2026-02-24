@@ -412,7 +412,12 @@ function normalizeYoutubeTimestampSeconds({
 		return undefined
 	}
 
-	return Math.max(0, Math.floor(startSeconds))
+	let safeStart = Math.max(0, Math.floor(startSeconds))
+	const msHeuristicThresholdSeconds = 60 * 60 * 24
+	if (safeStart > msHeuristicThresholdSeconds) {
+		safeStart = Math.floor(safeStart / 1000)
+	}
+	return safeStart
 }
 
 function addYoutubeTimestampToUrl({
