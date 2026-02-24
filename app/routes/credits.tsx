@@ -129,7 +129,8 @@ function ProfileCard({ person }: { person: Person }) {
 					<a
 						href={`#${person.id}`}
 						aria-label={`Permalink to contributor ${person.id}`}
-						className="text-secondary hover:text-primary focus:text-primary"
+						tabIndex={0}
+						className="focus-ring text-secondary hover:text-primary focus:text-primary rounded-sm focus:outline-none"
 					>
 						#
 					</a>
