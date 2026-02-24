@@ -1,10 +1,12 @@
 import { cachified, verboseReporter } from '@epic-web/cachified'
+import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { cache, shouldForceFresh } from './cache.server.ts'
 import { downloadFile } from './github.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.ts'
 
 export type Person = {
+	id: string
 	name: string
 	cloudinaryId: string
 	role: string
@@ -44,11 +46,18 @@ const isString = (v: unknown): v is string => typeof v === 'string'
 
 function mapPerson(rawPerson: UnknownObj) {
 	try {
+		const name = getValueWithFallback(rawPerson, 'name', {
+			fallback: 'Unnamed',
+			validateType: isString,
+		})
+		const id = getValueWithFallback(rawPerson, 'id', {
+			fallback: slugify(name),
+			validateType: isString,
+		})
+
 		return {
-			name: getValueWithFallback(rawPerson, 'name', {
-				fallback: 'Unnamed',
-				validateType: isString,
-			}),
+			id,
+			name,
 			cloudinaryId: getValueWithFallback(rawPerson, 'cloudinaryId', {
 				fallback: 'kentcdodds.com/illustrations/kody_profile_white',
 				validateType: isString,

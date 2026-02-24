@@ -79,7 +79,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 type Person = SerializeFrom<typeof loader>['people'][number]
 type Socials = keyof Omit<
 	Person,
-	'name' | 'role' | 'cloudinaryId' | 'description'
+	'id' | 'name' | 'role' | 'cloudinaryId' | 'description'
 >
 
 const icons = {
@@ -96,11 +96,11 @@ const icons = {
 
 function ProfileCard({ person }: { person: Person }) {
 	return (
-		<div className="relative flex w-full flex-col">
-			<div className="mb-8 aspect-[3/4] w-full flex-none">
+		<div id={person.id} className="relative flex w-full scroll-mt-24 flex-col">
+			<div className="mb-8 aspect-square w-full flex-none">
 				<img
-					{...getImgProps(getImageBuilder(person.cloudinaryId), {
-						className: 'rounded-lg object-cover',
+					{...getImgProps(getImageBuilder(person.cloudinaryId, person.name), {
+						className: 'rounded-lg object-contain',
 						widths: [280, 560, 840, 1100, 1300, 1650],
 						sizes: [
 							'(max-width:639px) 80vw',
@@ -108,6 +108,14 @@ function ProfileCard({ person }: { person: Person }) {
 							'(min-width:1024px) and (max-width:1620px) 25vw',
 							'410px',
 						],
+						transformations: {
+							resize: {
+								aspectRatio: '1:1',
+								type: 'fill_pad',
+							},
+							gravity: 'auto',
+							background: 'auto',
+						},
 					})}
 				/>
 			</div>
@@ -214,7 +222,7 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 
 			<Grid className="gap-y-20 lg:gap-y-32">
 				{data.people.map((person) => (
-					<div key={person.name} className="col-span-4">
+					<div key={person.id} className="col-span-4">
 						<ProfileCard person={person} />
 					</div>
 				))}
