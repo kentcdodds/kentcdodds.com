@@ -30,6 +30,8 @@ reference:
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
   external database server is required.
+- If Playwright E2E tests fail with Prisma "table does not exist" errors, run the
+  DB reset + seed command from the table above to apply migrations and seed data.
 - Cache database: a separate SQLite cache DB is created at `other/cache.db`.
   It's populated on first request or via `npm run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.

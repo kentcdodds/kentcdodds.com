@@ -1,5 +1,9 @@
 import { invariantResponse } from '@epic-web/invariant'
-import { startAuthentication } from '@simplewebauthn/browser'
+import {
+	WebAuthnAbortService,
+	browserSupportsWebAuthnAutofill,
+	startAuthentication,
+} from '@simplewebauthn/browser'
 import { type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server'
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -176,8 +180,53 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 const AuthenticationOptionsSchema = z.object({
-	options: z.object({ challenge: z.string() }),
+	// Preserve all server-sent fields (rpId, userVerification, timeout, etc.).
+	options: z.object({ challenge: z.string() }).passthrough(),
 }) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
+
+type PasskeyVerificationJson =
+	| { status: 'success' }
+	| { status: 'error'; error: string }
+
+async function verifyPasskeyWithServer(
+	authResponse: unknown,
+	{
+		shouldAbort,
+	}: {
+		shouldAbort?: () => boolean
+	} = {},
+) {
+	const verificationResponse = await fetch(
+		'/resources/webauthn/verify-authentication',
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(authResponse),
+		},
+	)
+
+	// Used by the autofill effect to bail out silently on unmount/cancel without
+	// parsing/throwing.
+	if (shouldAbort?.()) return { type: 'aborted' as const }
+
+	const verificationJson = (await verificationResponse.json().catch(() => {
+		return null
+	})) as PasskeyVerificationJson | null
+
+	// Keep validation order stable to avoid behavior drift:
+	// 1) JSON parse success 2) server "error" status 3) HTTP ok.
+	if (!verificationJson) {
+		throw new Error('Failed to verify passkey')
+	}
+	if (verificationJson.status === 'error') {
+		throw new Error(verificationJson.error)
+	}
+	if (!verificationResponse.ok) {
+		throw new Error('Failed to verify passkey')
+	}
+
+	return { type: 'success' as const }
+}
 
 function Login({ loaderData: data }: Route.ComponentProps) {
 	const inputRef = React.useRef<HTMLInputElement>(null)
@@ -188,6 +237,11 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 	const [passkeyMessage, setPasskeyMessage] = React.useState<null | string>(
 		null,
 	)
+	const [passkeyAutofillSupported, setPasskeyAutofillSupported] =
+		React.useState(false)
+	const [passkeyAutofillResetKey, setPasskeyAutofillResetKey] =
+		React.useState(0)
+	const autofillCancelledRef = React.useRef(false)
 
 	const [formValues, setFormValues] = React.useState({
 		email: data.email ?? '',
@@ -195,14 +249,93 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 
 	const formIsValid = formValues.email.match(/.+@.+/)
 
+	React.useEffect(() => {
+		let isMounted = true
+		autofillCancelledRef.current = false
+
+		async function setupPasskeyAutofill() {
+			try {
+				const supports = await browserSupportsWebAuthnAutofill()
+				if (!supports) return
+				if (!isMounted || autofillCancelledRef.current) return
+				setPasskeyAutofillSupported(true)
+
+				// Fetch a challenge on page load and keep the request pending until
+				// the user selects a passkey from the browser's autofill UI.
+				const optionsResponse = await fetch(
+					'/resources/webauthn/generate-authentication-options',
+					{ method: 'POST' },
+				)
+				if (!isMounted || autofillCancelledRef.current) return
+				if (!optionsResponse.ok) {
+					throw new Error('Failed to generate authentication options')
+				}
+				const json = await optionsResponse.json()
+				const { options } = AuthenticationOptionsSchema.parse(json)
+
+				if (!isMounted || autofillCancelledRef.current) return
+
+				const authResponse = await startAuthentication({
+					optionsJSON: options,
+					useBrowserAutofill: true,
+				})
+
+				if (!isMounted || autofillCancelledRef.current) return
+
+				setPasskeyMessage('Verifying your passkey')
+				const verificationResult = await verifyPasskeyWithServer(authResponse, {
+					shouldAbort: () => !isMounted || autofillCancelledRef.current,
+				})
+				if (verificationResult.type === 'aborted') return
+
+				setPasskeyMessage('Welcome back! Navigating to your account page.')
+				void revalidate()
+				void navigate('/me')
+			} catch (e) {
+				if (!isMounted) return
+
+				// Autofill flow should fail silently when the user cancels or chooses a
+				// password instead.
+				if (
+					e instanceof Error &&
+					(e.name === 'NotAllowedError' || e.name === 'AbortError')
+				) {
+					return
+				}
+
+				setPasskeyMessage(null)
+				console.error(e)
+				setError(
+					e instanceof Error ? e.message : 'Failed to authenticate with passkey',
+				)
+			}
+		}
+
+		void setupPasskeyAutofill()
+
+		return () => {
+			isMounted = false
+			autofillCancelledRef.current = true
+			WebAuthnAbortService.cancelCeremony()
+		}
+	}, [navigate, passkeyAutofillResetKey, revalidate])
+
 	async function handlePasskeyLogin() {
+		let didSucceed = false
 		try {
+			autofillCancelledRef.current = true
+			// Avoid collisions with a pending conditional UI ceremony.
+			WebAuthnAbortService.cancelCeremony()
+			setError(undefined)
 			setPasskeyMessage('Generating Authentication Options')
 			// Get authentication options from the server
 			const optionsResponse = await fetch(
 				'/resources/webauthn/generate-authentication-options',
 				{ method: 'POST' },
 			)
+			if (!optionsResponse.ok) {
+				throw new Error('Failed to generate authentication options')
+			}
 			const json = await optionsResponse.json()
 			const { options } = AuthenticationOptionsSchema.parse(json)
 
@@ -210,34 +343,30 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 			const authResponse = await startAuthentication({ optionsJSON: options })
 			setPasskeyMessage('Verifying your passkey')
 
-			// Verify the authentication with the server
-			const verificationResponse = await fetch(
-				'/resources/webauthn/verify-authentication',
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(authResponse),
-				},
-			)
+			await verifyPasskeyWithServer(authResponse)
 
-			const verificationJson = (await verificationResponse.json()) as {
-				status: 'error'
-				error: string
-			}
-			if (verificationJson.status === 'error') {
-				throw new Error(verificationJson.error)
-			}
-
-			setPasskeyMessage("You're logged in! Navigating to your account page.")
+			setPasskeyMessage('Welcome back! Navigating to your account page.')
+			didSucceed = true
 
 			void revalidate()
 			void navigate('/me')
 		} catch (e) {
 			setPasskeyMessage(null)
+			if (
+				e instanceof Error &&
+				(e.name === 'NotAllowedError' || e.name === 'AbortError')
+			) {
+				// User dismissed the prompt or the ceremony was intentionally aborted.
+				return
+			}
 			console.error(e)
 			setError(
 				e instanceof Error ? e.message : 'Failed to authenticate with passkey',
 			)
+		} finally {
+			if (!didSucceed) {
+				setPasskeyAutofillResetKey((key) => key + 1)
+			}
 		}
 	}
 
@@ -259,6 +388,12 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 							>
 								Login with Passkey <PasskeyIcon />
 							</Button>
+							{passkeyAutofillSupported ? (
+								<p className="text-secondary mt-2 text-sm">
+									Tip: You can also sign in with a passkey from the email field
+									autofill prompt.
+								</p>
+							) : null}
 							{error ? (
 								<div className="mt-2">
 									<InputError id="passkey-login-error">{error}</InputError>
@@ -308,7 +443,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 											id="email-address"
 											name="email"
 											type="email"
-											autoComplete="email"
+											autoComplete="username webauthn"
 											defaultValue={formValues.email}
 											required
 											placeholder="Email address"

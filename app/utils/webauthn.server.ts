@@ -57,7 +57,9 @@ export function getWebAuthnConfig(request: Request) {
 		origin: url.origin,
 		// Common options for both registration and authentication
 		authenticatorSelection: {
-			residentKey: 'preferred',
+			// Required for discoverable credentials, which enables privacy-friendly
+			// passkey sign-in via form autofill / conditional UI.
+			residentKey: 'required',
 			userVerification: 'preferred',
 		},
 	} as const
