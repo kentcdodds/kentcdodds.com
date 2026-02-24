@@ -29,6 +29,14 @@ function asNonEmptyString(value: unknown) {
 	return trimmed ? trimmed : null
 }
 
+function parseDisplayText(value: string | null, maxLen: number) {
+	if (!value) return null
+	const trimmed = value.trim()
+	if (!trimmed) return null
+	if (trimmed.length <= maxLen) return trimmed
+	return `${trimmed.slice(0, Math.max(0, maxLen - 3))}...`
+}
+
 function parseTimestampSeconds(value: string | null) {
 	if (!value) return null
 	const trimmed = value.trim()
@@ -127,10 +135,21 @@ export default function YouTubePage({
 	const semanticTitle = asNonEmptyString(semanticSearchState?.title)
 	const semanticDescription = asNonEmptyString(semanticSearchState?.description)
 
+	const queryTitle = parseDisplayText(searchParams.get('title'), 220)
+	const queryDescription = parseDisplayText(searchParams.get('desc'), 1_000)
+
 	const videoTitle =
-		(selectedVideoId ? semanticTitle : null) ??
+		(selectedVideoId ? (queryTitle ?? semanticTitle) : null) ??
 		(selectedVideoId ? `YouTube video ${selectedVideoId}` : null)
-	const shareUrl = `${requestInfo.origin}${location.pathname}${location.search}`
+	const videoDescription = selectedVideoId
+		? queryDescription ?? semanticDescription
+		: null
+	const shareUrl = selectedVideoId
+		? `${requestInfo.origin}/youtube?${new URLSearchParams({
+				video: selectedVideoId,
+				...(startSeconds ? { t: String(startSeconds) } : {}),
+			}).toString()}`
+		: `${requestInfo.origin}/youtube`
 	const shareText = selectedVideoId
 		? startSeconds
 			? `Check out "${videoTitle ?? `YouTube video ${selectedVideoId}`}" at ${formatTimestamp(
@@ -174,9 +193,9 @@ export default function YouTubePage({
 									{videoTitle ?? `YouTube video ${selectedVideoId}`}
 								</a>
 							</H3>
-							{semanticDescription ? (
+							{videoDescription ? (
 								<Paragraph prose={false} className="line-clamp-4">
-									{semanticDescription}
+									{videoDescription}
 								</Paragraph>
 							) : null}
 
