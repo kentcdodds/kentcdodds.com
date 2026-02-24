@@ -1,6 +1,6 @@
-import { act, render, screen } from '@testing-library/react'
 import * as React from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { render } from 'vitest-browser-react'
 import { useCountdown } from '../use-countdown.ts'
 
 function CountdownProbe({
@@ -26,7 +26,7 @@ describe('useCountdown', () => {
 		vi.restoreAllMocks()
 	})
 
-	it('jumps to current remaining time on focus (no rapid catch-up)', () => {
+	it('jumps to current remaining time on focus (no rapid catch-up)', async () => {
 		vi.useFakeTimers()
 
 		const start = new Date('2026-02-21T00:00:00.000Z')
@@ -34,31 +34,33 @@ describe('useCountdown', () => {
 		vi.setSystemTime(start)
 
 		const seen: Array<number> = []
-		render(
+		const screen = await render(
 			<CountdownProbe
 				endTimeMs={end.getTime()}
 				onSeconds={(s) => seen.push(s)}
 			/>,
 		)
 
-		expect(screen.getByTestId('seconds-left')).toHaveTextContent('120')
+		await expect
+			.element(screen.getByTestId('seconds-left'))
+			.toHaveTextContent('120')
 
 		// Simulate leaving the tab for ~55s (timers do not run while hidden).
 		vi.setSystemTime(new Date(start.getTime() + 55 * 1000))
 
 		// Coming back should immediately reflect the current remaining time
 		// (it should not tick down rapidly 55 times).
-		act(() => {
-			window.dispatchEvent(new Event('focus'))
-		})
+		window.dispatchEvent(new Event('focus'))
 
-		expect(screen.getByTestId('seconds-left')).toHaveTextContent('65')
+		await expect
+			.element(screen.getByTestId('seconds-left'))
+			.toHaveTextContent('65')
 		expect(seen[0]).toBe(120)
-		expect(seen.at(-1)).toBe(65)
+		await expect.poll(() => seen.at(-1)).toBe(65)
 		expect(seen.length).toBeLessThan(10)
 	})
 
-	it('jumps to current remaining time on visibilitychange (no rapid catch-up)', () => {
+	it('jumps to current remaining time on visibilitychange (no rapid catch-up)', async () => {
 		vi.useFakeTimers()
 
 		const start = new Date('2026-02-21T00:00:00.000Z')
@@ -66,26 +68,28 @@ describe('useCountdown', () => {
 		vi.setSystemTime(start)
 
 		const seen: Array<number> = []
-		render(
+		const screen = await render(
 			<CountdownProbe
 				endTimeMs={end.getTime()}
 				onSeconds={(s) => seen.push(s)}
 			/>,
 		)
 
-		expect(screen.getByTestId('seconds-left')).toHaveTextContent('120')
+		await expect
+			.element(screen.getByTestId('seconds-left'))
+			.toHaveTextContent('120')
 
 		// Simulate leaving the tab for ~55s (timers do not run while hidden).
 		vi.setSystemTime(new Date(start.getTime() + 55 * 1000))
 
 		// Coming back should immediately reflect the current remaining time.
-		act(() => {
-			document.dispatchEvent(new Event('visibilitychange'))
-		})
+		document.dispatchEvent(new Event('visibilitychange'))
 
-		expect(screen.getByTestId('seconds-left')).toHaveTextContent('65')
+		await expect
+			.element(screen.getByTestId('seconds-left'))
+			.toHaveTextContent('65')
 		expect(seen[0]).toBe(120)
-		expect(seen.at(-1)).toBe(65)
+		await expect.poll(() => seen.at(-1)).toBe(65)
 		expect(seen.length).toBeLessThan(10)
 	})
 })

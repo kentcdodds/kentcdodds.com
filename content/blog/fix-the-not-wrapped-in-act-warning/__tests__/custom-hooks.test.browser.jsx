@@ -1,6 +1,6 @@
-import { renderHook, act } from '@testing-library/react'
 import * as React from 'react'
 import { test, expect } from 'vitest'
+import { renderHook } from 'vitest-browser-react'
 
 function useCount() {
 	const [count, setCount] = React.useState(0)
@@ -10,13 +10,15 @@ function useCount() {
 }
 
 test('increment and decrement updates the count', () => {
-	const { result } = renderHook(() => useCount())
+	return (async () => {
+		const { result, act } = await renderHook(() => useCount())
 
-	expect(result.current.count).toBe(0)
-	act(() => result.current.increment())
-	expect(result.current.count).toBe(1)
-	act(() => result.current.decrement())
-	expect(result.current.count).toBe(0)
+		expect(result.current.count).toBe(0)
+		await act(() => result.current.increment())
+		expect(result.current.count).toBe(1)
+		await act(() => result.current.decrement())
+		expect(result.current.count).toBe(0)
+	})()
 })
 
 /*

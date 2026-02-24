@@ -1,6 +1,6 @@
-import { render, screen, act } from '@testing-library/react'
 import * as React from 'react'
 import { test, expect, vi, beforeAll, afterAll } from 'vitest'
+import { render } from 'vitest-browser-react'
 import { checkStatus } from '../api.js'
 
 function OrderStatus({ orderId }) {
@@ -60,14 +60,14 @@ test.skip('polling backend on an interval', async () => {
 	const orderStatus = 'Order Received'
 	checkStatus.mockResolvedValue({ orderStatus })
 
-	render(<OrderStatus orderId={orderId} />)
+	const screen = await render(<OrderStatus orderId={orderId} />)
 
-	expect(screen.getByText(/\.\.\./i)).toBeInTheDocument()
+	await expect.element(screen.getByText(/\.\.\./i)).toBeVisible()
 	expect(checkStatus).toHaveBeenCalledTimes(0)
 
-	act(() => vi.advanceTimersByTime(10000))
+	vi.advanceTimersByTime(10000)
 
-	expect(await screen.findByText(orderStatus)).toBeInTheDocument()
+	await expect.element(screen.getByText(orderStatus)).toBeVisible()
 
 	expect(checkStatus).toHaveBeenCalledWith(orderId)
 	expect(checkStatus).toHaveBeenCalledTimes(1)

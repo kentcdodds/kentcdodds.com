@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { render } from 'vitest-browser-react'
 
 const { mockNavigate, mockRevalidate, mockUseRootData } = vi.hoisted(() => ({
 	mockNavigate: vi.fn(),
@@ -52,26 +52,23 @@ describe('RecordingForm', () => {
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
 		try {
-			const { container } = render(
+			const screen = await render(
 				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
 			)
+			await screen.getByLabelText('Title').fill('A valid title')
+			await screen.getByRole('button', { name: 'Submit Recording' }).click()
 
-			fireEvent.change(screen.getByLabelText('Title'), {
-				target: { value: 'A valid title' },
-			})
-
-			const submitButton = screen.getByRole('button', {
-				name: 'Submit Recording',
-			})
-			const form = container.querySelector('form')
-			expect(form).not.toBeNull()
-			fireEvent.submit(form as HTMLFormElement)
-
-			await waitFor(() => expect(submitButton).toBeEnabled())
-			expect(submitButton).toHaveTextContent('Submit Recording')
-			expect(
-				screen.getByText('Unable to read recording. Please try again.'),
-			).toBeInTheDocument()
+			await expect
+				.element(screen.getByRole('button', { name: 'Submit Recording' }))
+				.toBeEnabled()
+			await expect
+				.element(screen.getByRole('button', { name: 'Submit Recording' }))
+				.toHaveTextContent('Submit Recording')
+			await expect
+				.element(
+					screen.getByText('Unable to read recording. Please try again.'),
+				)
+				.toBeVisible()
 			expect(readAsDataURL).toHaveBeenCalledTimes(1)
 			expect(addEventListener).toHaveBeenCalledWith(
 				'loadend',
@@ -145,18 +142,13 @@ describe('RecordingForm', () => {
 			.mockImplementation(() => {})
 
 		try {
-			const { container } = render(
+			const screen = await render(
 				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
 			)
+			await screen.getByLabelText('Title').fill('My First Call')
+			await screen.getByRole('button', { name: 'Submit Recording' }).click()
 
-			fireEvent.change(screen.getByLabelText('Title'), {
-				target: { value: 'My First Call' },
-			})
-			const form = container.querySelector('form')
-			expect(form).not.toBeNull()
-			fireEvent.submit(form as HTMLFormElement)
-
-			await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+			await expect.poll(() => fetchMock.mock.calls.length).toBe(1)
 			const [requestUrl, requestInit] = fetchMock.mock.calls[0] ?? []
 			expect(requestUrl).toBe('/resources/calls/save')
 			expect(requestInit?.method).toBe('POST')
@@ -173,10 +165,9 @@ describe('RecordingForm', () => {
 			expect(requestBody.get('title')).toBe('My First Call')
 			expect(requestBody.get('notes')).toBe('')
 
-			await waitFor(() =>
-				expect(mockNavigate).toHaveBeenCalledWith(
-					'/calls/record/fake-call-id?ok=1#done',
-				),
+			await expect.poll(() => mockNavigate.mock.calls.length).toBe(1)
+			expect(mockNavigate).toHaveBeenCalledWith(
+				'/calls/record/fake-call-id?ok=1#done',
 			)
 			expect(mockRevalidate).not.toHaveBeenCalled()
 			expect(jsonMock).not.toHaveBeenCalled()
@@ -253,7 +244,7 @@ describe('RecordingForm', () => {
 		const audio = new Blob(['audio'])
 
 		try {
-			const { container, rerender } = render(
+			const screen = await render(
 				<RecordingForm
 					audio={audio}
 					intent="create-call"
@@ -264,15 +255,13 @@ describe('RecordingForm', () => {
 				/>,
 			)
 
-			const form = container.querySelector('form')
-			expect(form).not.toBeNull()
-			fireEvent.submit(form as HTMLFormElement)
+			await screen.getByRole('button', { name: 'Submit Recording' }).click()
 
-			await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-			await screen.findByText('Title is required')
+			await expect.poll(() => fetchMock.mock.calls.length).toBe(1)
+			await expect.element(screen.getByText('Title is required')).toBeVisible()
 
 			// Simulate parent rerendering with a fresh but equivalent data object.
-			rerender(
+			await screen.rerender(
 				<RecordingForm
 					audio={audio}
 					intent="create-call"
@@ -283,7 +272,7 @@ describe('RecordingForm', () => {
 				/>,
 			)
 
-			await screen.findByText('Title is required')
+			await expect.element(screen.getByText('Title is required')).toBeVisible()
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()
@@ -304,49 +293,50 @@ describe('RecordingForm', () => {
 			.mockImplementation(() => {})
 
 		try {
-			const { container } = render(
+			const screen = await render(
 				<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
 			)
 
-			const form = container.querySelector('form')
-			expect(form).not.toBeNull()
-			expect(form).toHaveAttribute('novalidate')
+			const form = document.querySelector('form')
+			expect(form?.hasAttribute('novalidate')).toBe(true)
 
-			const titleInput = screen.getByLabelText('Title')
-			expect(titleInput).toHaveAttribute('maxLength', '80')
-			expect(screen.getByText('80 characters left')).toBeInTheDocument()
-			const titleId = titleInput.getAttribute('id')
+			const titleInput = document.querySelector(
+				'input[name="title"]',
+			) as HTMLInputElement | null
+			expect(titleInput?.maxLength).toBe(80)
+			await expect.element(screen.getByText('80 characters left')).toBeVisible()
+			const titleId = titleInput?.getAttribute('id')
 			expect(titleId).toBeTruthy()
-			expect(titleInput).toHaveAttribute(
-				'aria-describedby',
+			expect(titleInput?.getAttribute('aria-describedby')).toBe(
 				`${titleId}-countdown`,
 			)
 
-			fireEvent.change(titleInput, { target: { value: 'abcd' } })
-			expect(screen.getByText('76 characters left')).toBeInTheDocument()
-			expect(
-				screen.queryByText('Title must be at least 5 characters'),
-			).not.toBeInTheDocument()
+			await screen.getByLabelText('Title').fill('abcd')
+			await expect
+				.element(screen.getByText('76 characters left'))
+				.toBeVisible()
+			expect(document.body.textContent).not.toContain(
+				'Title must be at least 5 characters',
+			)
 
-			fireEvent.blur(titleInput)
-			expect(
-				screen.getByText('Title must be at least 5 characters'),
-			).toBeInTheDocument()
+			await screen.getByLabelText('Notes (optional)').focus()
+			await expect
+				.element(screen.getByText('Title must be at least 5 characters'))
+				.toBeVisible()
 
-			const notesInput = screen.getByLabelText('Notes (optional)')
-			expect(notesInput).toHaveAttribute('maxLength', '5000')
+			const notesInput = document.querySelector(
+				'textarea[name="notes"]',
+			) as HTMLTextAreaElement | null
+			expect(notesInput?.maxLength).toBe(5000)
 
 			// Submit should surface validation and should not attempt to upload audio
 			// when validation fails.
-			fireEvent.change(titleInput, { target: { value: '' } })
-			fireEvent.submit(form as HTMLFormElement)
-			await screen.findByText('Title is required')
-			expect(titleInput.getAttribute('aria-describedby')).toContain(
-				`${titleId}-error`,
-			)
-			expect(titleInput.getAttribute('aria-describedby')).toContain(
-				`${titleId}-countdown`,
-			)
+			await screen.getByLabelText('Title').fill('')
+			await screen.getByRole('button', { name: 'Submit Recording' }).click()
+			await expect.element(screen.getByText('Title is required')).toBeVisible()
+			const describedBy = titleInput?.getAttribute('aria-describedby') ?? ''
+			expect(describedBy).toContain(`${titleId}-error`)
+			expect(describedBy).toContain(`${titleId}-countdown`)
 		} finally {
 			createObjectURL.mockRestore()
 			revokeObjectURL.mockRestore()

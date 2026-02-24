@@ -1,5 +1,4 @@
-import { render, screen, act } from '@testing-library/react'
-import user from '@testing-library/user-event'
+import { render } from 'vitest-browser-react'
 import { test, expect, vi } from 'vitest'
 import { UsernameForm } from '../components.jsx'
 
@@ -15,13 +14,16 @@ test('calls updateUsername with the new username (with act warning)', async () =
 		const handleUpdateUsername = vi.fn()
 		const fakeUsername = 'sonicthehedgehog'
 
-		render(<UsernameForm updateUsername={handleUpdateUsername} />)
+		const screen = await render(
+			<UsernameForm updateUsername={handleUpdateUsername} />,
+		)
 
-		const usernameInput = screen.getByLabelText(/username/i)
-		await user.type(usernameInput, fakeUsername)
-		await user.click(screen.getByText(/submit/i))
+		await screen.getByLabelText(/username/i).fill(fakeUsername)
+		await screen.getByRole('button', { name: /submit/i }).click()
 
-		expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
+		await expect.poll(() => handleUpdateUsername.mock.calls[0]?.[0]).toBe(
+			fakeUsername,
+		)
 	} finally {
 		consoleError.mockRestore()
 	}
@@ -43,18 +45,22 @@ test('calls updateUsername with the new username', async () => {
 		const handleUpdateUsername = vi.fn(() => defer.promise)
 		const fakeUsername = 'sonicthehedgehog'
 
-		render(<UsernameForm updateUsername={handleUpdateUsername} />)
+		const screen = await render(
+			<UsernameForm updateUsername={handleUpdateUsername} />,
+		)
 
-		const usernameInput = screen.getByLabelText(/username/i)
-		await user.type(usernameInput, fakeUsername)
-		const clickPromise = user.click(screen.getByText(/submit/i))
-		expect(await screen.findByText(/saving/i)).toBeInTheDocument()
-		expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
-		await defer.resolve()
-		await clickPromise
-		// TODO: figure out why this is necessary with the latest testing lib version 😵
-		await new Promise((res) => setTimeout(res, 0))
-		expect(screen.queryByText(/saving/i)).not.toBeInTheDocument()
+		await screen.getByLabelText(/username/i).fill(fakeUsername)
+		await screen.getByRole('button', { name: /submit/i }).click()
+
+		await expect.element(screen.getByText(/saving/i)).toBeVisible()
+		await expect.poll(() => handleUpdateUsername.mock.calls[0]?.[0]).toBe(
+			fakeUsername,
+		)
+
+		defer.resolve()
+		await expect
+			.poll(() => document.body.textContent?.toLowerCase().includes('saving'))
+			.toBe(false)
 	} finally {
 		consoleError.mockRestore()
 	}
@@ -67,14 +73,17 @@ test('calls updateUsername with the new username (with manual act and promise)',
 		const handleUpdateUsername = vi.fn(() => promise)
 		const fakeUsername = 'sonicthehedgehog'
 
-		render(<UsernameForm updateUsername={handleUpdateUsername} />)
+		const screen = await render(
+			<UsernameForm updateUsername={handleUpdateUsername} />,
+		)
 
-		const usernameInput = screen.getByLabelText(/username/i)
-		await user.type(usernameInput, fakeUsername)
-		await user.click(screen.getByText(/submit/i))
+		await screen.getByLabelText(/username/i).fill(fakeUsername)
+		await screen.getByRole('button', { name: /submit/i }).click()
 
-		expect(handleUpdateUsername).toHaveBeenCalledWith(fakeUsername)
-		await act(() => promise)
+		await expect.poll(() => handleUpdateUsername.mock.calls[0]?.[0]).toBe(
+			fakeUsername,
+		)
+		await promise
 	} finally {
 		consoleError.mockRestore()
 	}

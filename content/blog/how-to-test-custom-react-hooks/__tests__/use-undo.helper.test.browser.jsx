@@ -1,98 +1,90 @@
-import { render, act } from '@testing-library/react'
 import { test, expect } from 'vitest'
+import { renderHook } from 'vitest-browser-react'
 import useUndo from '../use-undo.js'
 
-function setup(...args) {
-	const returnVal = {}
-	function TestComponent() {
-		Object.assign(returnVal, useUndo(...args))
-		return null
-	}
-	render(<TestComponent />)
-	return returnVal
-}
-
 test('allows you to undo and redo', () => {
-	const undoData = setup('one')
+	return (async () => {
+		const { result, act } = await renderHook(() => useUndo('one'))
 
-	// assert initial state
-	expect(undoData.canUndo).toBe(false)
-	expect(undoData.canRedo).toBe(false)
-	expect(undoData.past).toEqual([])
-	expect(undoData.present).toBe('one')
-	expect(undoData.future).toEqual([])
+		// assert initial state
+		expect(result.current.canUndo).toBe(false)
+		expect(result.current.canRedo).toBe(false)
+		expect(result.current.past).toEqual([])
+		expect(result.current.present).toBe('one')
+		expect(result.current.future).toEqual([])
 
-	// add second value
-	act(() => {
-		undoData.set('two')
-	})
+		// add second value
+		await act(() => {
+			result.current.set('two')
+		})
 
-	// assert new state
-	expect(undoData.canUndo).toBe(true)
-	expect(undoData.canRedo).toBe(false)
-	expect(undoData.past).toEqual(['one'])
-	expect(undoData.present).toBe('two')
-	expect(undoData.future).toEqual([])
+		// assert new state
+		expect(result.current.canUndo).toBe(true)
+		expect(result.current.canRedo).toBe(false)
+		expect(result.current.past).toEqual(['one'])
+		expect(result.current.present).toBe('two')
+		expect(result.current.future).toEqual([])
 
-	// add third value
-	act(() => {
-		undoData.set('three')
-	})
+		// add third value
+		await act(() => {
+			result.current.set('three')
+		})
 
-	// assert new state
-	expect(undoData.canUndo).toBe(true)
-	expect(undoData.canRedo).toBe(false)
-	expect(undoData.past).toEqual(['one', 'two'])
-	expect(undoData.present).toBe('three')
-	expect(undoData.future).toEqual([])
+		// assert new state
+		expect(result.current.canUndo).toBe(true)
+		expect(result.current.canRedo).toBe(false)
+		expect(result.current.past).toEqual(['one', 'two'])
+		expect(result.current.present).toBe('three')
+		expect(result.current.future).toEqual([])
 
-	// undo
-	act(() => {
-		undoData.undo()
-	})
+		// undo
+		await act(() => {
+			result.current.undo()
+		})
 
-	// assert "undone" state
-	expect(undoData.canUndo).toBe(true)
-	expect(undoData.canRedo).toBe(true)
-	expect(undoData.past).toEqual(['one'])
-	expect(undoData.present).toBe('two')
-	expect(undoData.future).toEqual(['three'])
+		// assert "undone" state
+		expect(result.current.canUndo).toBe(true)
+		expect(result.current.canRedo).toBe(true)
+		expect(result.current.past).toEqual(['one'])
+		expect(result.current.present).toBe('two')
+		expect(result.current.future).toEqual(['three'])
 
-	// undo again
-	act(() => {
-		undoData.undo()
-	})
+		// undo again
+		await act(() => {
+			result.current.undo()
+		})
 
-	// assert "double-undone" state
-	expect(undoData.canUndo).toBe(false)
-	expect(undoData.canRedo).toBe(true)
-	expect(undoData.past).toEqual([])
-	expect(undoData.present).toBe('one')
-	expect(undoData.future).toEqual(['two', 'three'])
+		// assert "double-undone" state
+		expect(result.current.canUndo).toBe(false)
+		expect(result.current.canRedo).toBe(true)
+		expect(result.current.past).toEqual([])
+		expect(result.current.present).toBe('one')
+		expect(result.current.future).toEqual(['two', 'three'])
 
-	// redo
-	act(() => {
-		undoData.redo()
-	})
+		// redo
+		await act(() => {
+			result.current.redo()
+		})
 
-	// assert undo + undo + redo state
-	expect(undoData.canUndo).toBe(true)
-	expect(undoData.canRedo).toBe(true)
-	expect(undoData.past).toEqual(['one'])
-	expect(undoData.present).toBe('two')
-	expect(undoData.future).toEqual(['three'])
+		// assert undo + undo + redo state
+		expect(result.current.canUndo).toBe(true)
+		expect(result.current.canRedo).toBe(true)
+		expect(result.current.past).toEqual(['one'])
+		expect(result.current.present).toBe('two')
+		expect(result.current.future).toEqual(['three'])
 
-	// add fourth value
-	act(() => {
-		undoData.set('four')
-	})
+		// add fourth value
+		await act(() => {
+			result.current.set('four')
+		})
 
-	// assert final state (note the lack of "third")
-	expect(undoData.canUndo).toBe(true)
-	expect(undoData.canRedo).toBe(false)
-	expect(undoData.past).toEqual(['one', 'two'])
-	expect(undoData.present).toBe('four')
-	expect(undoData.future).toEqual([])
+		// assert final state (note the lack of "third")
+		expect(result.current.canUndo).toBe(true)
+		expect(result.current.canRedo).toBe(false)
+		expect(result.current.past).toEqual(['one', 'two'])
+		expect(result.current.present).toBe('four')
+		expect(result.current.future).toEqual([])
+	})()
 })
 
 /*

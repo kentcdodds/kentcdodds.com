@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { render } from 'vitest-browser-react'
 
 const { mockCaptureException, mockIsRouteErrorResponse, mockUseRouteError } =
 	vi.hoisted(() => ({
@@ -37,7 +37,7 @@ describe('useCapturedRouteError', () => {
 		vi.clearAllMocks()
 	})
 
-	it('captures 5xx route error responses as Error instances', () => {
+	it('captures 5xx route error responses as Error instances', async () => {
 		const routeErrorResponse = {
 			status: 503,
 			statusText: 'Service Unavailable',
@@ -48,9 +48,9 @@ describe('useCapturedRouteError', () => {
 			(error: unknown) => error === routeErrorResponse,
 		)
 
-		render(<TestComponent />)
+		await render(<TestComponent />)
 
-		expect(mockCaptureException).toHaveBeenCalledTimes(1)
+		await expect.poll(() => mockCaptureException.mock.calls.length).toBe(1)
 		const [capturedError, context] = mockCaptureException.mock.calls[0] as [
 			Error,
 			{ extra: { route_error_response: unknown } },
@@ -70,7 +70,7 @@ describe('useCapturedRouteError', () => {
 		})
 	})
 
-	it('does not capture non-5xx route error responses', () => {
+	it('does not capture non-5xx route error responses', async () => {
 		const routeErrorResponse = {
 			status: 404,
 			statusText: 'Not Found',
@@ -81,18 +81,19 @@ describe('useCapturedRouteError', () => {
 			(error: unknown) => error === routeErrorResponse,
 		)
 
-		render(<TestComponent />)
+		await render(<TestComponent />)
 
 		expect(mockCaptureException).not.toHaveBeenCalled()
 	})
 
-	it('captures non-route errors as-is', () => {
+	it('captures non-route errors as-is', async () => {
 		const thrownError = new Error('unexpected')
 		mockUseRouteError.mockReturnValue(thrownError)
 		mockIsRouteErrorResponse.mockReturnValue(false)
 
-		render(<TestComponent />)
+		await render(<TestComponent />)
 
+		await expect.poll(() => mockCaptureException.mock.calls.length).toBe(1)
 		expect(mockCaptureException).toHaveBeenCalledWith(thrownError)
 	})
 })
