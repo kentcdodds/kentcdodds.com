@@ -35,7 +35,8 @@ function asNonEmptyString(value: unknown): string | undefined {
 }
 
 function parseYamlFrontmatter(source: string): Record<string, unknown> | null {
-	const match = source.match(/^---\n([\s\S]*?)\n---\n/u)
+	// Support LF and CRLF files and allow EOF after closing delimiter.
+	const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u)
 	if (!match) return null
 	const raw = match[1] ?? ''
 	try {

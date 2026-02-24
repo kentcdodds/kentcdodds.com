@@ -148,7 +148,7 @@ function PossibleMatchesSection({
 			<HeaderSection
 				title="Possible matches"
 				subTitle={
-					q ? `Deterministic matches for "${q}"` : 'Deterministic matches.'
+					q ? `Closest matches for "${q}"` : 'Closest matches.'
 				}
 			/>
 			<Spacer size="2xs" />
@@ -234,7 +234,7 @@ function FourOhFour({
 	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
 	const heroActionLabel = hasPossibleMatches
 		? 'Possible matches'
-		: 'Semantic search'
+		: 'Search the site'
 
 	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
 	// overall site layout). The 404 view reads better on mobile when it’s a bit
