@@ -114,6 +114,13 @@
 	}
 }
 
+/* Mobile gutters: keep content wide without going edge-to-edge. */
+@media (max-width: 479px) {
+	:root {
+		--spacing-5vw: max(0.5rem, 2.5vw);
+	}
+}
+
 /* tailwind is configured to prefer this font */
 @font-face {
 	font-weight: 500;
