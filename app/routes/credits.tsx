@@ -124,7 +124,17 @@ function ProfileCard({ person }: { person: Person }) {
 				<div className="mb-4 text-xl font-medium text-slate-500 lowercase">
 					{person.role}
 				</div>
-				<H3 className="mb-6">{person.name}</H3>
+				<div className="mb-6 flex items-center gap-2">
+					<a
+						href={`#${person.id}`}
+						aria-label={`Permalink to contributor ${person.id}`}
+						tabIndex={0}
+						className="focus-ring text-secondary hover:text-primary focus:text-primary rounded-sm focus:outline-none"
+					>
+						#
+					</a>
+					<H3 className="mb-0">{person.name}</H3>
+				</div>
 				<Paragraph className="mb-8">{person.description}</Paragraph>
 			</div>
 
