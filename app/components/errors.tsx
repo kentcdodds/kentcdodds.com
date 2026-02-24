@@ -226,10 +226,20 @@ function FourOhFour({
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const hasPossibleMatches =
 		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
-	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
-	const heroActionLabel = hasPossibleMatches
-		? 'Possible matches'
-		: 'Search the site'
+	const heroAction = hasPossibleMatches ? (
+		<ArrowLink to="#possible-matches" className="whitespace-nowrap">
+			Possible matches
+		</ArrowLink>
+	) : (
+		<div className="space-y-2">
+			<ArrowLink to={searchUrl} className="whitespace-nowrap">
+				Search the site
+			</ArrowLink>
+			<p className="text-sm text-slate-500 dark:text-slate-400">
+				Uses semantic search to find related content.
+			</p>
+		</div>
+	)
 
 	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
 	// overall site layout). The 404 view reads better on mobile when it’s a bit
@@ -248,11 +258,7 @@ function FourOhFour({
 					title: "404 - Oh no, you found a page that's missing stuff.",
 					subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 					image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-					action: (
-						<ArrowLink to={heroActionTo} className="whitespace-nowrap">
-							{heroActionLabel}
-						</ArrowLink>
-					),
+					action: heroAction,
 				}}
 			/>
 		</div>
