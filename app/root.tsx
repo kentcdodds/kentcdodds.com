@@ -437,7 +437,7 @@ export function ErrorBoundary() {
 		if (error.status === 404) {
 			return (
 				<ErrorDoc>
-					<FourOhFour />
+					<FourOhFour pathname={location.pathname} />
 				</ErrorDoc>
 			)
 		}

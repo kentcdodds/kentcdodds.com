@@ -229,14 +229,16 @@ function FourOhFour({
 	articles,
 	possibleMatches: possibleMatchesProp,
 	possibleMatchesQuery,
+	pathname: pathnameProp,
 }: {
 	articles?: Array<MdxListItem>
 	possibleMatches?: Array<NotFoundMatch>
 	possibleMatchesQuery?: string
+	pathname?: string
 }) {
 	const routeMatches = useMatches()
 	const last = routeMatches[routeMatches.length - 1]
-	const pathname = last?.pathname
+	const pathname = typeof pathnameProp === 'string' ? pathnameProp : last?.pathname
 	const derivedQuery = notFoundQueryFromPathname(pathname ?? '/')
 	const effectiveQuery =
 		typeof possibleMatchesQuery === 'string' && possibleMatchesQuery.trim()
