@@ -117,7 +117,7 @@
 /* Mobile gutters: keep content wide without going edge-to-edge. */
 @media (max-width: 479px) {
 	:root {
-		--spacing-5vw: max(0.5rem, 2.5vw);
+		--spacing-5vw: max(0.25rem, 1.5vw);
 	}
 }
 
