@@ -80,12 +80,10 @@ model Call {
   isAnonymous Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  // Preferred: store audio in R2 and keep a small DB row.
+  // Caller audio is stored in R2; the DB stores metadata + key.
   audioKey         String?
   audioContentType String?
   audioSize        Int?
-  // Legacy fallback: base64 data URL stored in the DB (pre-R2 migration).
-  base64      String?
   episodeDraft CallKentEpisodeDraft?
 
   @@index([createdAt])

@@ -2,6 +2,7 @@ import { Readable } from 'node:stream'
 import {
 	DeleteObjectCommand,
 	GetObjectCommand,
+	HeadObjectCommand,
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3'
@@ -17,6 +18,11 @@ type GetAudioStreamResult = {
 	body: Readable
 }
 
+type HeadAudioResult = {
+	size: number
+	contentType: string | null
+}
+
 type AudioStore = {
 	put: (args: {
 		key: string
@@ -27,6 +33,7 @@ type AudioStore = {
 		key: string
 		range?: { start: number; end: number }
 	}) => Promise<GetAudioStreamResult>
+	head: (args: { key: string }) => Promise<HeadAudioResult>
 	delete: (args: { key: string }) => Promise<void>
 }
 
@@ -157,6 +164,23 @@ function createR2Store({ bucket }: { bucket: string }): AudioStore {
 			}
 			return { body }
 		},
+		async head({ key }) {
+			const res = await client.send(
+				new HeadObjectCommand({
+					Bucket: bucket,
+					Key: key,
+				}),
+			)
+			const size = res.ContentLength
+			if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
+				throw new Error('Unexpected audio ContentLength')
+			}
+			const contentType =
+				typeof res.ContentType === 'string' && res.ContentType.trim()
+					? res.ContentType.trim()
+					: null
+			return { size, contentType }
+		},
 		async delete({ key }) {
 			await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
 		},
@@ -229,6 +253,11 @@ export async function getAudioStream({
 }): Promise<GetAudioStreamResult> {
 	const { store } = getStore()
 	return await store.getStream({ key, range })
+}
+
+export async function headAudioObject({ key }: { key: string }) {
+	const { store } = getStore()
+	return await store.head({ key })
 }
 
 export async function deleteAudioObject({ key }: { key: string }) {
