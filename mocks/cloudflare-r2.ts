@@ -299,6 +299,42 @@ export const cloudflareR2Handlers: Array<HttpHandler> = [
 				return new HttpResponse('', { status: 204 })
 			}
 
+			// HeadObject: HEAD /:bucket/:key
+			if (request.method === 'HEAD') {
+				if (!key) {
+					return new HttpResponse(
+						errorXml({ code: 'NoSuchKey', message: 'Missing Key' }),
+						{
+							status: 404,
+							headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+						},
+					)
+				}
+				const obj = store.get(key)
+				if (!obj) {
+					return new HttpResponse(
+						errorXml({
+							code: 'NoSuchKey',
+							message: 'The specified key does not exist.',
+						}),
+						{
+							status: 404,
+							headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+						},
+					)
+				}
+				return new HttpResponse('', {
+					status: 200,
+					headers: {
+						'Content-Type': obj.contentType,
+						'Content-Length': String(obj.size),
+						ETag: `"${obj.etag}"`,
+						'Last-Modified': obj.lastModified,
+						'Cache-Control': 'no-store',
+					},
+				})
+			}
+
 			// GetObject: GET /:bucket/:key
 			if (request.method === 'GET') {
 				if (!key) {

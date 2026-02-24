@@ -3,6 +3,7 @@ import {
 	deleteAudioObject,
 	getAudioBuffer,
 	getAudioStream,
+	headAudioObject,
 	putCallAudioFromBuffer,
 } from '../call-kent-audio-storage.server.ts'
 
@@ -42,5 +43,23 @@ describe('call kent audio storage (R2 via MSW)', () => {
 
 		await deleteAudioObject({ key: putRes.key })
 		await expect(getAudioBuffer({ key: putRes.key })).rejects.toThrow()
+	})
+
+	test('supports HEAD lookups for object size', async () => {
+		const callId = 'call_456'
+		const original = new Uint8Array([1, 2, 3, 4, 5, 6, 7])
+		const contentType = 'audio/webm;codecs=opus'
+
+		const putRes = await putCallAudioFromBuffer({
+			callId,
+			audio: original,
+			contentType,
+		})
+
+		const head = await headAudioObject({ key: putRes.key })
+		expect(head.size).toBe(original.byteLength)
+		expect(head.contentType).toBe(contentType)
+
+		await deleteAudioObject({ key: putRes.key })
 	})
 })
