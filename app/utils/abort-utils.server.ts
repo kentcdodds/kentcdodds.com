@@ -16,7 +16,7 @@ function throwIfAborted(signal?: AbortSignal) {
 }
 
 function isAbortError(error: unknown) {
-	return error instanceof Error && error.name === 'AbortError'
+	return typeof error === 'object' && error !== null && (error as any).name === 'AbortError'
 }
 
 async function waitForDelay({
