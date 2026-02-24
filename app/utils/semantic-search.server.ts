@@ -416,6 +416,37 @@ function parseYoutubeVideoIdFromUrl(url: string | undefined) {
 	}
 }
 
+function normalizeYoutubeTimestampSeconds({
+	startSeconds,
+	endSeconds,
+}: {
+	startSeconds: number | undefined
+	endSeconds: number | undefined
+}) {
+	if (typeof startSeconds !== 'number' || !Number.isFinite(startSeconds)) {
+		return undefined
+	}
+
+	const safeStart = Math.max(0, startSeconds)
+	const safeEnd =
+		typeof endSeconds === 'number' && Number.isFinite(endSeconds)
+			? Math.max(0, endSeconds)
+			: undefined
+
+	// Some older/legacy indexes stored milliseconds in `startSeconds`/`endSeconds`.
+	// Detect by looking at the chunk span: transcript chunks should never span
+	// tens of minutes, but millisecond values will make the delta look enormous.
+	if (
+		typeof safeEnd === 'number' &&
+		safeEnd >= safeStart &&
+		safeEnd - safeStart > 1_000
+	) {
+		return Math.max(0, Math.floor(safeStart / 1000))
+	}
+
+	return Math.max(0, Math.floor(safeStart))
+}
+
 function addYoutubeTimestampToUrl({
 	url,
 	videoId,
