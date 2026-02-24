@@ -319,7 +319,8 @@ describe('RecordingForm', () => {
 				'Title must be at least 5 characters',
 			)
 
-			await screen.getByLabelText('Notes (optional)').focus()
+			// Locators don't expose a dedicated `focus()` helper; click focuses.
+			await screen.getByLabelText('Notes (optional)').click()
 			await expect
 				.element(screen.getByText('Title must be at least 5 characters'))
 				.toBeVisible()
