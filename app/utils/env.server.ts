@@ -93,6 +93,7 @@ const schemaBase = z.object({
 		.optional()
 		.default('@cf/meta/llama-3.1-8b-instruct'),
 	CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL: z.string().trim().optional(),
+	CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: z.string().trim().optional(),
 
 	// Semantic search admin tooling (R2 manifests + ignore list).
 	R2_BUCKET: nonEmptyString,
@@ -167,6 +168,11 @@ export type Env = Omit<
 	 * text model by default.
 	 */
 	CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL: string
+	/**
+	 * Defaults to `CLOUDFLARE_AI_TEXT_MODEL` when not explicitly set.
+	 * Used to format generated Call Kent transcripts into readable paragraphs.
+	 */
+	CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: string
 	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */
 	R2_ENDPOINT: string
 }
@@ -237,6 +243,9 @@ export function getEnv(): Env {
 		R2_ENDPOINT: derivedR2Endpoint,
 		CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL:
 			values.CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL ??
+			values.CLOUDFLARE_AI_TEXT_MODEL,
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL:
+			values.CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL ??
 			values.CLOUDFLARE_AI_TEXT_MODEL,
 	}
 

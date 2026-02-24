@@ -967,6 +967,38 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 			const hasPrompt =
 				typeof promptRaw === 'string' && promptRaw.trim().length > 0
 			if (hasMessages || hasPrompt) {
+				const startMarker = '<<<TRANSCRIPT>>>'
+				const endMarker = '<<<END TRANSCRIPT>>>'
+				const messagesText = hasMessages
+					? (messagesRaw as unknown[])
+							.map((m: any) => (typeof m?.content === 'string' ? m.content : ''))
+							.filter(Boolean)
+							.join('\n\n')
+					: ''
+				const promptText = hasPrompt ? String(promptRaw) : ''
+				const combined = `${messagesText}\n\n${promptText}`.trim()
+
+				const startIdx = combined.indexOf(startMarker)
+				const endIdx =
+					startIdx === -1
+						? -1
+						: combined.indexOf(endMarker, startIdx + startMarker.length)
+				if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+					const transcript = combined
+						.slice(startIdx + startMarker.length, endIdx)
+						.trim()
+					const formatted = transcript
+						.replace(/\r\n/g, '\n')
+						// Ensure separators have blank lines around them.
+						.replace(/\n{0,2}---\n{0,2}/g, '\n\n---\n\n')
+						// Insert paragraph breaks after sentence-ending punctuation.
+						.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n')
+						// Collapse excessive blank lines.
+						.replace(/\n{3,}/g, '\n\n')
+						.trim()
+					return jsonOk({ response: formatted })
+				}
+
 				return jsonOk({
 					response: JSON.stringify({
 						title: `Mock Call Kent episode title (${model})`,
