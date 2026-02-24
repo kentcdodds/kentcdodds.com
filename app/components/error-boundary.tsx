@@ -33,14 +33,19 @@ export function GeneralErrorBoundary({
 		console.error(error)
 	}
 
+	if (isRouteErrorResponse(error)) {
+		const handler = statusHandlers?.[error.status] ?? defaultStatusHandler
+
+		return (
+			<div className="container mx-auto flex items-center justify-center p-4 lg:p-20">
+				{handler({ error, params })}
+			</div>
+		)
+	}
+
 	return (
-		<div className="text-h2 container mx-auto flex items-center justify-center p-20">
-			{isRouteErrorResponse(error)
-				? (statusHandlers?.[error.status] ?? defaultStatusHandler)({
-						error,
-						params,
-					})
-				: unexpectedErrorHandler(error)}
+		<div className="container mx-auto flex items-center justify-center p-4 lg:p-20">
+			{unexpectedErrorHandler(error)}
 		</div>
 	)
 }

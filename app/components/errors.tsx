@@ -72,19 +72,23 @@ function ErrorPage({
 	possibleMatchesQuery?: string
 	heroProps: HeroSectionProps
 }) {
-	const resolvedHeroProps: HeroSectionProps = possibleMatches?.length
-		? {
-				...heroProps,
-				arrowUrl: '#possible-matches',
-				arrowLabel: 'Possible matches',
-			}
-		: articles?.length
+	// Only inject the "arrow down" helper link when the caller didn't provide an
+	// explicit action. Otherwise, it can create duplicate CTAs (notably on 404s).
+	const resolvedHeroProps: HeroSectionProps = heroProps.action
+		? heroProps
+		: possibleMatches?.length
 			? {
 					...heroProps,
-					arrowUrl: '#articles',
-					arrowLabel: 'But wait, there is more!',
+					arrowUrl: '#possible-matches',
+					arrowLabel: 'Possible matches',
 				}
-			: heroProps
+			: articles?.length
+				? {
+						...heroProps,
+						arrowUrl: '#articles',
+						arrowLabel: 'But wait, there is more!',
+					}
+				: heroProps
 	return (
 		<>
 			<noscript>
@@ -108,7 +112,7 @@ function ErrorPage({
 				) : null}
 				<HeroSection {...resolvedHeroProps} />
 
-				{possibleMatches?.length ? (
+				{possibleMatches ? (
 					<PossibleMatchesSection
 						matches={possibleMatches}
 						query={possibleMatchesQuery}
@@ -140,15 +144,16 @@ function PossibleMatchesSection({
 	const q = typeof query === 'string' ? query.trim() : ''
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const sorted = sortNotFoundMatches(matches)
+	const hasMatches = sorted.length > 0
 
 	return (
 		<>
 			<div id="possible-matches" />
 			<HeaderSection
 				title="Possible matches"
-				subTitle={q ? `Semantic search for "${q}"` : 'Semantic search results.'}
-				cta="Search the site"
-				ctaUrl={searchUrl}
+				subTitle={
+					q ? `Closest matches for "${q}"` : 'Closest matches.'
+				}
 			/>
 			<Spacer size="2xs" />
 			<Grid>
@@ -157,19 +162,19 @@ function PossibleMatchesSection({
 						{sorted.slice(0, 8).map((m) => (
 							<li
 								key={`${m.type}:${m.url}`}
-								className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
+								className="rounded-lg bg-gray-100 p-4 sm:p-6 dark:bg-gray-800"
 							>
-								<div className="flex items-start gap-4">
+								<div className="flex items-start gap-3 sm:gap-4">
 									<div className="shrink-0">
 										{m.imageUrl ? (
 											<img
 												src={m.imageUrl}
 												alt={m.imageAlt ?? ''}
-												className="h-16 w-16 rounded-lg object-cover"
+												className="h-12 w-12 rounded-lg object-cover sm:h-16 sm:w-16"
 												loading="lazy"
 											/>
 										) : (
-											<div className="h-16 w-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
+											<div className="h-12 w-12 rounded-lg bg-gray-200 sm:h-16 sm:w-16 dark:bg-gray-700" />
 										)}
 									</div>
 									<div className="min-w-0 flex-1">
@@ -183,7 +188,7 @@ function PossibleMatchesSection({
 											<span className="truncate">{m.url}</span>
 										</div>
 										{m.summary ? (
-											<p className="mt-3 line-clamp-3 text-base text-slate-600 dark:text-slate-400">
+											<p className="mt-2 line-clamp-3 text-base text-slate-600 sm:mt-3 dark:text-slate-400">
 												{m.summary}
 											</p>
 										) : null}
@@ -192,13 +197,13 @@ function PossibleMatchesSection({
 							</li>
 						))}
 					</ul>
-					{sorted.length > 8 ? (
-						<p className="mt-4 text-sm text-slate-500">
-							<a href={searchUrl} className="underlined">
-								See all results
-							</a>
-						</p>
-					) : null}
+					<p className="mt-4 text-sm text-slate-500">
+						{hasMatches ? 'None of these match? ' : 'No close matches found. '}
+						<a href={searchUrl} className="underlined">
+							Try semantic search
+						</a>
+						.
+					</p>
 				</div>
 			</Grid>
 		</>
@@ -228,23 +233,38 @@ function FourOhFour({
 
 	const q = effectiveQuery ? effectiveQuery.trim() : ''
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
-	const heroActionTo =
+	const hasPossibleMatches =
 		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
-			? '#possible-matches'
-			: searchUrl
+	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
+	const heroActionLabel = hasPossibleMatches
+		? 'Possible matches'
+		: 'Search the site'
+
+	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
+	// overall site layout). The 404 view reads better on mobile when it’s a bit
+	// wider, so we override the underlying spacing token for just this subtree.
+	const notFoundGutterStyle = {
+		['--spacing-10vw' as any]: 'clamp(0.75rem, 3vw, 3rem)',
+	} as React.CSSProperties
 
 	return (
-		<ErrorPage
-			articles={articles}
-			possibleMatches={possibleMatchesProp}
-			possibleMatchesQuery={effectiveQuery}
-			heroProps={{
-				title: "404 - Oh no, you found a page that's missing stuff.",
-				subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
-				image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-				action: <ArrowLink to={heroActionTo}>Possible matches</ArrowLink>,
-			}}
-		/>
+		<div style={notFoundGutterStyle}>
+			<ErrorPage
+				articles={articles}
+				possibleMatches={possibleMatchesProp}
+				possibleMatchesQuery={effectiveQuery}
+				heroProps={{
+					title: "404 - Oh no, you found a page that's missing stuff.",
+					subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
+					image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
+					action: (
+						<ArrowLink to={heroActionTo} className="whitespace-nowrap">
+							{heroActionLabel}
+						</ArrowLink>
+					),
+				}}
+			/>
+		</div>
 	)
 }
 
