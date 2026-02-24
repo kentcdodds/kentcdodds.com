@@ -125,7 +125,9 @@ async function fetchTransitor<JsonResponse>({
 			}
 			if (json?.errors) {
 				throw new Error(
-					(json as TransistorErrorResponse).errors.map((e) => e.title).join('\n'),
+					(json as TransistorErrorResponse).errors
+						.map((e) => e.title)
+						.join('\n'),
 				)
 			}
 			return json as JsonResponse

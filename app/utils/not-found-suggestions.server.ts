@@ -513,7 +513,10 @@ export async function getNotFoundSuggestions({
 			}
 		}
 
-		const sorted = sortNotFoundMatches(matches, { priorities }).slice(0, safeLimit)
+		const sorted = sortNotFoundMatches(matches, { priorities }).slice(
+			0,
+			safeLimit,
+		)
 		return { query, matches: sorted }
 	} catch (error: unknown) {
 		// 404 pages should never fail the request because suggestions failed.

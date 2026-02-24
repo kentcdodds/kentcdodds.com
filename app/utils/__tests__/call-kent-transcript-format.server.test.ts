@@ -57,4 +57,3 @@ test('formatCallKentTranscriptWithWorkersAi does not truncate long transcripts',
 	expect(formatted).toContain('Sentence 600.')
 	expect(formatted).toMatch(/[.!?]\n\n/)
 })
-

@@ -151,9 +151,7 @@ function PossibleMatchesSection({
 			<div id="possible-matches" />
 			<HeaderSection
 				title="Possible matches"
-				subTitle={
-					q ? `Closest matches for "${q}"` : 'Closest matches.'
-				}
+				subTitle={q ? `Closest matches for "${q}"` : 'Closest matches.'}
 			/>
 			<Spacer size="2xs" />
 			<Grid>

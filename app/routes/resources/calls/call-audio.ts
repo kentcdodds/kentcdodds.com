@@ -56,9 +56,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			const range = rangeHeader
 				? parseHttpByteRangeHeader(rangeHeader, size)
 				: null
-			const body = range
-				? buffer.subarray(range.start, range.end + 1)
-				: buffer
+			const body = range ? buffer.subarray(range.start, range.end + 1) : buffer
 			const stream = Readable.from(body)
 			return new Response(createReadableStreamFromReadable(stream), {
 				status: range ? 206 : 200,

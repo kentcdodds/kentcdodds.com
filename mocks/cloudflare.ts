@@ -971,7 +971,9 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 				const endMarker = '<<<END TRANSCRIPT>>>'
 				const messagesText = hasMessages
 					? (messagesRaw as unknown[])
-							.map((m: any) => (typeof m?.content === 'string' ? m.content : ''))
+							.map((m: any) =>
+								typeof m?.content === 'string' ? m.content : '',
+							)
 							.filter(Boolean)
 							.join('\n\n')
 					: ''

@@ -28,6 +28,8 @@ test('escapes user-provided content and omits artwork markup when image is missi
 
 	expect(email.html).toContain('Hi &lt;Ada &amp; Co&gt;,')
 	expect(email.html).toContain('&lt;Episode &quot;12&quot;&gt;')
-	expect(email.html).toContain('href="https://kentcdodds.com/calls?x=1&amp;y=2"')
+	expect(email.html).toContain(
+		'href="https://kentcdodds.com/calls?x=1&amp;y=2"',
+	)
 	expect(email.html).not.toContain('<img')
 })

@@ -69,8 +69,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 		getEpisodes({ request, timings }),
 	])
 
-	const seasons = getEpisodesBySeason(episodes)
-
 	return json(
 		{ blogRecommendations, episodes },
 		{

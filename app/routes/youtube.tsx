@@ -67,10 +67,9 @@ function formatTimestamp(totalSeconds: number) {
 	const secs = seconds % 60
 
 	if (hours > 0) {
-		return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(
-			2,
-			'0',
-		)}`
+		return `${hours}:${String(minutes).padStart(2, '0')}:${String(
+			secs,
+		).padStart(2, '0')}`
 	}
 	return `${minutes}:${String(secs).padStart(2, '0')}`
 }
@@ -132,9 +131,10 @@ export default function YouTubePage({
 		playlistId,
 	)}`
 
-	const semanticSearchState = (location.state as any)?.semanticSearch as
-		| { title?: unknown; description?: unknown }
-		| null
+	const semanticSearchState = (location.state as any)?.semanticSearch as {
+		title?: unknown
+		description?: unknown
+	} | null
 	const semanticTitle = asNonEmptyString(semanticSearchState?.title)
 	const semanticDescription = asNonEmptyString(semanticSearchState?.description)
 
@@ -145,7 +145,7 @@ export default function YouTubePage({
 		(selectedVideoId ? (queryTitle ?? semanticTitle) : null) ??
 		(selectedVideoId ? `YouTube video ${selectedVideoId}` : null)
 	const videoDescription = selectedVideoId
-		? queryDescription ?? semanticDescription
+		? (queryDescription ?? semanticDescription)
 		: null
 	const shareUrl = selectedVideoId
 		? `${requestInfo.origin}/youtube?${new URLSearchParams({
