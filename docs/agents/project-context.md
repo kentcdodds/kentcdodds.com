@@ -39,3 +39,10 @@ reference:
   It's populated on first request or via `npm run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
+
+## Cloud / headless manual testing
+
+- In cloud VMs, Chrome may block camera/microphone access by default. Visiting
+  `/calls/record/new` can hit the route ErrorBoundary unless `localhost` is
+  allowed mic/camera access in site settings (even if you intend to use the
+  typed question → text-to-speech path).
