@@ -1,11 +1,10 @@
 import { clsx } from 'clsx'
 import errorStack from 'error-stack-parser'
 import * as React from 'react'
-import { useFetcher, useMatches } from 'react-router'
+import { useMatches } from 'react-router'
 import { type MdxListItem } from '#app/types.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
 import {
-	normalizeNotFoundUrl,
 	type NotFoundMatch,
 	sortNotFoundMatches,
 } from '#app/utils/not-found-matches.ts'
@@ -100,12 +99,6 @@ function ErrorPage({
 					<RedBox error={error} />
 				) : null}
 				<HeroSection {...resolvedHeroProps} />
-
-				{possibleMatchesQuery && !possibleMatches?.length ? (
-					// Ensure in-page links to `#possible-matches` have a target even
-					// before semantic results load.
-					<div id="possible-matches" />
-				) : null}
 
 				{possibleMatches?.length ? (
 					<PossibleMatchesSection
@@ -204,27 +197,6 @@ function PossibleMatchesSection({
 	)
 }
 
-function asNotFoundMatchFromResourceSearch(value: unknown): NotFoundMatch | null {
-	if (!value || typeof value !== 'object') return null
-	const v = value as Record<string, unknown>
-	const url =
-		typeof v.url === 'string' ? normalizeNotFoundUrl(v.url.trim()) : ''
-	if (!url) return null
-	const titleRaw = typeof v.title === 'string' ? v.title.trim() : ''
-	const segmentRaw = typeof v.segment === 'string' ? v.segment.trim() : ''
-	const summaryRaw = typeof v.summary === 'string' ? v.summary.trim() : ''
-	const imageUrlRaw = typeof v.imageUrl === 'string' ? v.imageUrl.trim() : ''
-	const imageAltRaw = typeof v.imageAlt === 'string' ? v.imageAlt.trim() : ''
-	return {
-		url,
-		type: segmentRaw || 'result',
-		title: titleRaw || url,
-		summary: summaryRaw || undefined,
-		imageUrl: imageUrlRaw || undefined,
-		imageAlt: imageAltRaw || undefined,
-	}
-}
-
 function FourOhFour({
 	articles,
 	possibleMatches: possibleMatchesProp,
@@ -245,38 +217,17 @@ function FourOhFour({
 			? possibleMatchesQuery.trim()
 			: derivedQuery
 
-	const fetcher = useFetcher({ key: 'four-oh-four-possible-matches' })
-	const requestedQueryRef = React.useRef<string>('')
-
-	React.useEffect(() => {
-		// Treat `[]` as "no server data" so we still allow client fallback.
-		if (Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0) return
-		if (!effectiveQuery) return
-		if (requestedQueryRef.current === effectiveQuery) return
-		requestedQueryRef.current = effectiveQuery
-		void fetcher.load(
-			`/resources/search?query=${encodeURIComponent(effectiveQuery)}`,
-		)
-	}, [effectiveQuery, fetcher, possibleMatchesProp])
-
-	const fetchedMatches = React.useMemo(() => {
-		const data = fetcher.data
-		if (!Array.isArray(data)) return undefined
-		return data
-			.map((v) => asNotFoundMatchFromResourceSearch(v))
-			.filter((v): v is NotFoundMatch => Boolean(v))
-	}, [fetcher.data])
-
-	const possibleMatches =
+	const q = effectiveQuery ? effectiveQuery.trim() : ''
+	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
+	const heroActionTo =
 		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
-			? possibleMatchesProp
-			: fetchedMatches
-	const heroActionTo = effectiveQuery ? '#possible-matches' : '/search'
+			? '#possible-matches'
+			: searchUrl
 
 	return (
 		<ErrorPage
 			articles={articles}
-			possibleMatches={possibleMatches}
+			possibleMatches={possibleMatchesProp}
 			possibleMatchesQuery={effectiveQuery}
 			heroProps={{
 				title: "404 - Oh no, you found a page that's missing stuff.",
