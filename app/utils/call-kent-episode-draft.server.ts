@@ -6,6 +6,7 @@ import {
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-template.ts'
 import { generateCallKentEpisodeMetadataWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-metadata.server.ts'
+import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
 import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcription.server.ts'
 import { createEpisodeAudio } from '#app/utils/ffmpeg.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
@@ -111,6 +112,7 @@ export async function startCallKentEpisodeDraftProcessing(
 
 		// Step 2: transcript (skip if already present)
 		let transcript = draft.transcript
+		let transcriptForMetadata: string | null = null
 		let callerTranscriptForMetadata: string | null = null
 		let responderTranscriptForMetadata: string | null = null
 		if (!transcript) {
@@ -168,11 +170,31 @@ export async function startCallKentEpisodeDraftProcessing(
 					callerNotes,
 				})
 			}
-			transcript = transcript.trim()
-			if (!transcript) {
+			const rawTranscript = transcript.trim()
+			if (!rawTranscript) {
 				throw new Error(
 					'Workers AI transcription returned an empty transcript.',
 				)
+			}
+			transcriptForMetadata = rawTranscript
+
+			transcript = await formatCallKentTranscriptWithWorkersAi({
+				transcript: rawTranscript,
+				callTitle,
+				callerNotes,
+				callerName,
+			}).catch((error: unknown) => {
+				console.error(
+					'Call Kent transcript formatting failed; using unformatted transcript.',
+					{ draftId, error: getErrorMessage(error) },
+				)
+				return rawTranscript
+			})
+			transcript = transcript.trim()
+			if (!transcript) {
+				// Should not happen (formatter either returns something or we fall back),
+				// but keep the error message clear if it does.
+				throw new Error('Transcript formatting returned an empty transcript.')
 			}
 
 			const step3 = await prisma.callKentEpisodeDraft.updateMany({
@@ -180,6 +202,10 @@ export async function startCallKentEpisodeDraftProcessing(
 				data: { transcript, step: 'GENERATING_METADATA' },
 			})
 			if (step3.count !== 1) return
+		}
+
+		if (!transcript) {
+			throw new Error('Transcript is missing after transcription/formatting.')
 		}
 
 		// Step 3: AI metadata (title/description/keywords) if not already present
@@ -197,7 +223,7 @@ export async function startCallKentEpisodeDraftProcessing(
 							callerTranscript: callerTranscriptForMetadata,
 							responderTranscript: responderTranscriptForMetadata,
 						}
-					: { transcript }),
+					: { transcript: transcriptForMetadata ?? transcript }),
 				callTitle: draft.call.title,
 				callerNotes: draft.call.notes,
 			})
