@@ -83,3 +83,59 @@ test('does not cache audio bytes; repeated requests invoke workers ai', async ()
 		synthesizeSpeechWithWorkersAi.mock.calls[0]?.[0],
 	)
 })
+
+test('validates normalized question text before synthesis', async () => {
+	synthesizeSpeechWithWorkersAi.mockClear()
+	rateLimit.mockClear()
+
+	const { action } = await import('../text-to-speech.tsx')
+
+	const req = makeRequest({
+		text: 'hello               you',
+		voice: 'luna',
+	})
+	const res = (await action({ request: req } as any)) as Response
+
+	expect(res.status).toBe(400)
+	expect(await res.json()).toEqual({
+		error: 'Question text must be at least 20 characters',
+	})
+	expect(synthesizeSpeechWithWorkersAi).not.toHaveBeenCalled()
+	expect(rateLimit).not.toHaveBeenCalled()
+})
+
+test('falls back to audio/mpeg when workers ai omits content type', async () => {
+	synthesizeSpeechWithWorkersAi.mockClear()
+	rateLimit.mockClear()
+	synthesizeSpeechWithWorkersAi.mockImplementationOnce(
+		async ({
+			text,
+			voice,
+			model,
+		}: {
+			text: string
+			voice?: string
+			model?: string
+		}) => {
+			const payload = `${model ?? ''}|${voice ?? ''}|${text}`
+			return {
+				bytes: new TextEncoder().encode(payload),
+				contentType: '',
+				model: model ?? '@cf/deepgram/aura-2-en',
+			}
+		},
+	)
+
+	const { action } = await import('../text-to-speech.tsx')
+
+	const req = makeRequest({
+		text: 'This request should still produce an audio response.',
+		voice: 'luna',
+	})
+	const res = (await action({ request: req } as any)) as Response
+
+	expect(res.ok).toBe(true)
+	expect(res.headers.get('content-type')).toBe('audio/mpeg')
+	expect(synthesizeSpeechWithWorkersAi).toHaveBeenCalledTimes(1)
+	expect(rateLimit).toHaveBeenCalledTimes(1)
+})

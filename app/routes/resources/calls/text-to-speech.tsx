@@ -30,7 +30,7 @@ const TTS_RATE_LIMIT_MAX = 20
 const TTS_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
 
 function normalizeQuestionText(text: string) {
-	// Keep speech output stable by collapsing insignificant whitespace.
+	// Normalize input by trimming and collapsing consecutive whitespace.
 	return text.trim().replace(/\s+/g, ' ')
 }
 
@@ -88,7 +88,8 @@ export async function action({ request }: Route.ActionArgs) {
 	// Clients are not trusted to include the disclosure prefix, but if they do, we
 	// strip it for validation so it can't satisfy min length by itself.
 	const questionText = stripAiDisclosurePrefix(text)
-	const textError = getErrorForCallKentQuestionText(questionText)
+	const normalizedQuestionText = normalizeQuestionText(questionText)
+	const textError = getErrorForCallKentQuestionText(normalizedQuestionText)
 	if (textError) {
 		return json({ error: textError }, { status: 400, headers })
 	}
@@ -97,11 +98,12 @@ export async function action({ request }: Route.ActionArgs) {
 		return json({ error: 'Invalid voice' }, { status: 400, headers })
 	}
 
-	const normalizedQuestionText = normalizeQuestionText(questionText)
 	const speechText = withAiDisclosurePrefix(normalizedQuestionText)
 	const model = getEnv().CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL
 
 	try {
+		// Intentionally consume quota before synthesis to cap paid API usage, even
+		// when upstream calls fail.
 		const limit = rateLimit({
 			key: `call-kent-tts:${user.id}`,
 			max: TTS_RATE_LIMIT_MAX,
@@ -137,10 +139,11 @@ export async function action({ request }: Route.ActionArgs) {
 						bytes.byteOffset + bytes.byteLength,
 					)
 				: Uint8Array.from(bytes).buffer
+		const responseContentType = contentType || 'audio/mpeg'
 		return new Response(responseBody, {
 			headers: {
 				...headers,
-				'Content-Type': contentType,
+				'Content-Type': responseContentType,
 			},
 		})
 	} catch (error: unknown) {
@@ -240,7 +243,7 @@ export function CallKentTextToSpeech({
 
 	const questionError = React.useMemo(() => {
 		// Only show hard validation for the current value; UX still gates on "Save".
-		return getErrorForCallKentQuestionText(questionText)
+		return getErrorForCallKentQuestionText(normalizeQuestionText(questionText))
 	}, [questionText])
 
 	function previewVoice() {
@@ -271,7 +274,9 @@ export function CallKentTextToSpeech({
 		setHasAttemptedSave(true)
 		setServerError(null)
 
-		const validationError = getErrorForCallKentQuestionText(questionText)
+		const validationError = getErrorForCallKentQuestionText(
+			normalizeQuestionText(questionText),
+		)
 		if (validationError) {
 			return
 		}
