@@ -10,6 +10,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Set `SITE_CACHE_VERSION` as a repository variable so all workflows share one
+  # knob for invalidation.
+  SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION }}
+  NODE_VERSION: 24
+
 jobs:
   changes:
     name: 🔎 Determine deployable changes
@@ -25,7 +31,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: 🔎 Determine deployable changes
         id: changes
@@ -49,7 +55,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1.11.2
@@ -69,7 +75,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1.11.2
@@ -93,7 +99,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1.11.2
@@ -109,7 +115,21 @@ jobs:
         uses: actions/cache@v5
         with:
           path: other/cache.db
-          key: site-cache
+          # `other/cache.db` is a derived artifact. Key it off the inputs that can
+          # make it stale (content + cache/MDX code + deps), not `github.sha`.
+          key: >-
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
+              'package-lock.json',
+              'app/utils/cache.server.ts',
+              'app/utils/compile-mdx.server.ts',
+              'app/utils/github.server.ts',
+              'app/utils/markdown.server.ts',
+              'app/utils/mdx.server.ts',
+              'content/**',
+              'mocks/**'
+            ) }}
+          restore-keys: |
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
       - name: 😅 Generate Site Cache
         if: steps.site-cache.outputs.cache-hit != 'true'
@@ -137,7 +157,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: 🎬 Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
@@ -161,7 +181,21 @@ jobs:
         uses: actions/cache@v5
         with:
           path: other/cache.db
-          key: site-cache
+          # `other/cache.db` is a derived artifact. Key it off the inputs that can
+          # make it stale (content + cache/MDX code + deps), not `github.sha`.
+          key: >-
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
+              'package-lock.json',
+              'app/utils/cache.server.ts',
+              'app/utils/compile-mdx.server.ts',
+              'app/utils/github.server.ts',
+              'app/utils/markdown.server.ts',
+              'app/utils/mdx.server.ts',
+              'content/**',
+              'mocks/**'
+            ) }}
+          restore-keys: |
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
       - name: 😅 Generate Site Cache
         if: steps.site-cache.outputs.cache-hit != 'true'
