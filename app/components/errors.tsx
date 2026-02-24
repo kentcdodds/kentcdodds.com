@@ -236,22 +236,31 @@ function FourOhFour({
 		? 'Possible matches'
 		: 'Semantic search'
 
+	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
+	// overall site layout). The 404 view reads better on mobile when it’s a bit
+	// wider, so we override the underlying spacing token for just this subtree.
+	const notFoundGutterStyle = {
+		['--spacing-10vw' as any]: 'clamp(0.75rem, 3vw, 3rem)',
+	} as React.CSSProperties
+
 	return (
-		<ErrorPage
-			articles={articles}
-			possibleMatches={possibleMatchesProp}
-			possibleMatchesQuery={effectiveQuery}
-			heroProps={{
-				title: "404 - Oh no, you found a page that's missing stuff.",
-				subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
-				image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-				action: (
-					<ArrowLink to={heroActionTo} className="whitespace-nowrap">
-						{heroActionLabel}
-					</ArrowLink>
-				),
-			}}
-		/>
+		<div style={notFoundGutterStyle}>
+			<ErrorPage
+				articles={articles}
+				possibleMatches={possibleMatchesProp}
+				possibleMatchesQuery={effectiveQuery}
+				heroProps={{
+					title: "404 - Oh no, you found a page that's missing stuff.",
+					subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
+					image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
+					action: (
+						<ArrowLink to={heroActionTo} className="whitespace-nowrap">
+							{heroActionLabel}
+						</ArrowLink>
+					),
+				}}
+			/>
+		</div>
 	)
 }
 
