@@ -21,6 +21,46 @@ import { stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
 
+function getErrorCode(error: unknown) {
+	if (!error || typeof error !== 'object') return ''
+	if ('code' in error && typeof error.code === 'string') return error.code
+	if (
+		'cause' in error &&
+		error.cause &&
+		typeof error.cause === 'object' &&
+		'code' in error.cause &&
+		typeof error.cause.code === 'string'
+	) {
+		return error.cause.code
+	}
+	return ''
+}
+
+function isTransientNetworkError(error: unknown) {
+	const code = getErrorCode(error)
+	if (
+		code === 'ECONNRESET' ||
+		code === 'ETIMEDOUT' ||
+		code === 'EPIPE' ||
+		code === 'ECONNREFUSED' ||
+		code === 'UND_ERR_CONNECT_TIMEOUT'
+	) {
+		return true
+	}
+
+	// Undici often throws TypeError("fetch failed") with more detail in `cause`.
+	if (
+		error &&
+		typeof error === 'object' &&
+		'message' in error &&
+		typeof error.message === 'string' &&
+		error.message === 'fetch failed'
+	) {
+		return true
+	}
+	return false
+}
+
 async function fetchTransitor<JsonResponse>({
 	endpoint,
 	method = 'GET',
@@ -54,35 +94,49 @@ async function fetchTransitor<JsonResponse>({
 	const maxRetries = 3
 	let attempt = 0
 	while (true) {
-		const res = await fetch(url.toString(), config)
-		if (res.status === 429 && attempt < maxRetries) {
-			attempt++
-			const retryAfterHeader = res.headers.get('Retry-After')
-			// Retry-After can be seconds or HTTP-date; treat as seconds if numeric
-			const retryAfterSeconds =
-				retryAfterHeader && !Number.isNaN(Number(retryAfterHeader))
-					? Number(retryAfterHeader)
-					: 10
-			await new Promise((r) => setTimeout(r, retryAfterSeconds * 1000))
-			continue
-		}
+		try {
+			const res = await fetch(url.toString(), config)
+			if (res.status === 429 && attempt < maxRetries) {
+				attempt++
+				const retryAfterHeader = res.headers.get('Retry-After')
+				// Retry-After can be seconds or HTTP-date; treat as seconds if numeric
+				const retryAfterSeconds =
+					retryAfterHeader && !Number.isNaN(Number(retryAfterHeader))
+						? Number(retryAfterHeader)
+						: 10
+				await new Promise((r) => setTimeout(r, retryAfterSeconds * 1000))
+				continue
+			}
+			if (res.status >= 500 && attempt < maxRetries) {
+				attempt++
+				await new Promise((r) => setTimeout(r, attempt * 1000))
+				continue
+			}
 
-		const json = (await res.json()) as any
-		if (!res.ok) {
-			// Surface API errors with response text if available
-			const message = json?.errors
-				? (json as TransistorErrorResponse).errors
-						.map((e: any) => e.title)
-						.join('\n')
-				: `HTTP ${res.status}`
-			throw new Error(message)
+			const json = (await res.json()) as any
+			if (!res.ok) {
+				// Surface API errors with response text if available
+				const message = json?.errors
+					? (json as TransistorErrorResponse).errors
+							.map((e: any) => e.title)
+							.join('\n')
+					: `HTTP ${res.status}`
+				throw new Error(message)
+			}
+			if (json?.errors) {
+				throw new Error(
+					(json as TransistorErrorResponse).errors.map((e) => e.title).join('\n'),
+				)
+			}
+			return json as JsonResponse
+		} catch (error: unknown) {
+			if (isTransientNetworkError(error) && attempt < maxRetries) {
+				attempt++
+				await new Promise((r) => setTimeout(r, attempt * 1000))
+				continue
+			}
+			throw error
 		}
-		if (json?.errors) {
-			throw new Error(
-				(json as TransistorErrorResponse).errors.map((e) => e.title).join('\n'),
-			)
-		}
-		return json as JsonResponse
 	}
 }
 
@@ -365,25 +419,33 @@ async function getCachedEpisodes({
 	timings?: Timings
 }) {
 	const episodesCacheKey = `transistor:episodes:${getEnv().CALL_KENT_PODCAST_ID}`
-	return cachified({
-		cache,
-		request,
-		timings,
-		key: episodesCacheKey,
-		getFreshValue: getEpisodes,
-		ttl: 1000 * 60 * 60 * 24,
-		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-		forceFresh: await shouldForceFresh({
-			key: episodesCacheKey,
-			forceFresh,
+	try {
+		return await cachified({
+			cache,
 			request,
-		}),
-		checkValue: (value: unknown) =>
-			Array.isArray(value) &&
-			value.every(
-				(v) => typeof v.slug === 'string' && typeof v.title === 'string',
-			),
-	})
+			timings,
+			key: episodesCacheKey,
+			getFreshValue: getEpisodes,
+			ttl: 1000 * 60 * 60 * 24,
+			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+			forceFresh: await shouldForceFresh({
+				key: episodesCacheKey,
+				forceFresh,
+				request,
+			}),
+			checkValue: (value: unknown) =>
+				Array.isArray(value) &&
+				value.every(
+					(v) => typeof v.slug === 'string' && typeof v.title === 'string',
+				),
+		})
+	} catch (error: unknown) {
+		console.error(
+			`transistor: cachified failed to resolve episodes, returning empty fallback`,
+			error,
+		)
+		return []
+	}
 }
 
 export {

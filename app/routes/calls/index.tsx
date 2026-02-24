@@ -9,7 +9,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
-		throw new Error(`oh no. season for ${seasonNumber}`)
+		return null
 	}
 
 	return redirect(`/calls/${String(season.seasonNumber).padStart(2, '0')}`)

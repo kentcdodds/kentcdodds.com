@@ -71,12 +71,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	const seasons = getEpisodesBySeason(episodes)
 
-	const seasonNumber = seasons[seasons.length - 1]?.seasonNumber ?? 1
-	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
-	if (!season) {
-		throw new Error(`oh no. season for ${seasonNumber}`)
-	}
-
 	return json(
 		{ blogRecommendations, episodes },
 		{
@@ -332,6 +326,32 @@ export default function CallHomeScreen({
 					))}
 				</TabPanels>
 			</Tabs>
+
+			{seasons.length === 0 ? (
+				<Grid className="mb-24">
+					<div className="col-span-full rounded-lg border border-gray-200 p-8 dark:border-gray-600">
+						<H4 as="h2" className="mb-3">
+							No calls are available right now.
+						</H4>
+						<Paragraph className="mb-4">
+							We are likely having trouble with our Transistor integration.
+							Please try again soon, or listen directly on the{' '}
+							<a
+								href={externalLinks.callKentRSS}
+								target="_blank"
+								rel="noreferrer noopener"
+								className="text-primary underline"
+							>
+								Transistor feed
+							</a>
+							.
+						</Paragraph>
+						<ButtonLink variant="primary" to="./record">
+							Record your call
+						</ButtonLink>
+					</div>
+				</Grid>
+			) : null}
 
 			<BlogSection
 				articles={data.blogRecommendations}
