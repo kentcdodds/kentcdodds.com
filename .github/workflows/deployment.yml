@@ -10,6 +10,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Bump to force-invalidate *all* site-cache entries.
+  SITE_CACHE_VERSION: v2
+
 jobs:
   changes:
     name: 🔎 Determine deployable changes
@@ -109,7 +113,19 @@ jobs:
         uses: actions/cache@v5
         with:
           path: other/cache.db
-          key: site-cache
+          # `other/cache.db` is a derived artifact. Key it off the inputs that can
+          # make it stale (content + cache/MDX code + deps), not `github.sha`.
+          key: >-
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node24-${{ hashFiles(
+              'package-lock.json',
+              'app/utils/cache.server.ts',
+              'app/utils/compile-mdx.server.ts',
+              'app/utils/github.server.ts',
+              'app/utils/markdown.server.ts',
+              'app/utils/mdx.server.ts',
+              'content/**',
+              'mocks/**'
+            ) }}
 
       - name: 😅 Generate Site Cache
         if: steps.site-cache.outputs.cache-hit != 'true'
@@ -161,7 +177,19 @@ jobs:
         uses: actions/cache@v5
         with:
           path: other/cache.db
-          key: site-cache
+          # `other/cache.db` is a derived artifact. Key it off the inputs that can
+          # make it stale (content + cache/MDX code + deps), not `github.sha`.
+          key: >-
+            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node24-${{ hashFiles(
+              'package-lock.json',
+              'app/utils/cache.server.ts',
+              'app/utils/compile-mdx.server.ts',
+              'app/utils/github.server.ts',
+              'app/utils/markdown.server.ts',
+              'app/utils/mdx.server.ts',
+              'content/**',
+              'mocks/**'
+            ) }}
 
       - name: 😅 Generate Site Cache
         if: steps.site-cache.outputs.cache-hit != 'true'
