@@ -26,3 +26,11 @@ test('removes duplicate AI disclosure from typed question', () => {
 		`${AI_VOICE_DISCLOSURE_PREFIX}\nTyped question: Hello from a typed call.`,
 	)
 })
+
+test('returns empty string for empty input', () => {
+	expect(formatCallKentTextToSpeechNotes('')).toBe('')
+})
+
+test('returns empty string for whitespace-only input', () => {
+	expect(formatCallKentTextToSpeechNotes('   ')).toBe('')
+})
