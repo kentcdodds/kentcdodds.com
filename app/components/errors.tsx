@@ -157,9 +157,7 @@ function PossibleMatchesSection({
 						? q
 							? `Closest matches for "${q}"`
 							: 'Closest matches.'
-						: q
-							? `We couldn't find close matches for "${q}".`
-							: "We couldn't find close matches."
+						: undefined
 				}
 			/>
 			<Spacer size="2xs" />
