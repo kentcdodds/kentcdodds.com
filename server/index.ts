@@ -392,11 +392,20 @@ async function getRequestHandler(): Promise<RequestHandler> {
 }
 
 app.use((req, res, next) => {
+	const metricName = 'middleware-request-handler'
 	startServerMetric(
 		res,
-		'middleware-request-handler',
+		metricName,
 		'time spent in react-router request handling',
 	)
+	let metricEnded = false
+	const finishMetric = () => {
+		if (metricEnded) return
+		metricEnded = true
+		endServerMetric(res, metricName)
+	}
+	res.once('finish', finishMetric)
+	res.once('close', finishMetric)
 	next()
 })
 

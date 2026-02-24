@@ -137,16 +137,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 		getLoginInfoSession(request),
 		getInstanceInfo().then((i) => i.primaryInstance),
 		time(
-			withTimeout(
-				getLatestPodcastSeasonLinks({ request, timings }).catch(
-					() => PODCAST_LINKS_FALLBACK,
-				),
-				{
-					timeoutMs: 2000,
-					fallback: PODCAST_LINKS_FALLBACK,
-					label: 'root:podcast-season-links',
-				},
-			),
+			withTimeout(getLatestPodcastSeasonLinks({ request, timings }), {
+				timeoutMs: 2000,
+				fallback: PODCAST_LINKS_FALLBACK,
+				label: 'root:podcast-season-links',
+			}),
 			{
 				timings,
 				type: 'root:podcast-season-links',
