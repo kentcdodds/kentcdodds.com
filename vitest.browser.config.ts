@@ -3,8 +3,8 @@
 
 import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { envOnlyMacros } from 'vite-env-only'
+import tsconfigPaths from 'vite-tsconfig-paths'
 import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({

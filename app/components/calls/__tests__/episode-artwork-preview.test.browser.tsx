@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { EpisodeArtworkPreview } from '#app/components/calls/episode-artwork-preview.tsx'
 import { expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
+import { EpisodeArtworkPreview } from '#app/components/calls/episode-artwork-preview.tsx'
 
 test('publish anonymously tooltip opens on hover', async () => {
 	const screen = await render(

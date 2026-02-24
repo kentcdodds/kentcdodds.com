@@ -1,6 +1,6 @@
+import { describe, expect, test, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { mswServer } from '#tests/msw-server.ts'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { type Tweet } from '../twitter/types/index.ts'
 import { getTweetEmbedHTML } from '../x.server.ts'
 
@@ -98,12 +98,9 @@ const tweetResultHandler = http.get(
 	},
 )
 
-beforeEach(() => {
-	mswServer.use(tweetResultHandler)
-})
-
 describe('getTweetEmbedHTML', () => {
 	test('adds linked ellipsis when longform content is truncated', async () => {
+		mswServer.use(tweetResultHandler)
 		const html = await getTweetEmbedHTML(
 			`https://x.com/kentcdodds/status/${truncatedTweetId}`,
 		)
@@ -116,6 +113,7 @@ describe('getTweetEmbedHTML', () => {
 	})
 
 	test('prefers full note tweet text when available', async () => {
+		mswServer.use(tweetResultHandler)
 		const html = await getTweetEmbedHTML(
 			`https://x.com/kentcdodds/status/${fullNoteTweetId}`,
 		)
