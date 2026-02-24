@@ -69,17 +69,11 @@ function ErrorPage({
 	possibleMatchesQuery?: string
 	heroProps: HeroSectionProps
 }) {
-	if (possibleMatches?.length) {
-		Object.assign(heroProps, {
-			arrowUrl: '#possible-matches',
-			arrowLabel: 'Possible matches',
-		})
-	} else if (articles?.length) {
-		Object.assign(heroProps, {
-			arrowUrl: '#articles',
-			arrowLabel: 'But wait, there is more!',
-		})
-	}
+	const resolvedHeroProps: HeroSectionProps = possibleMatches?.length
+		? { ...heroProps, arrowUrl: '#possible-matches', arrowLabel: 'Possible matches' }
+		: articles?.length
+			? { ...heroProps, arrowUrl: '#articles', arrowLabel: 'But wait, there is more!' }
+			: heroProps
 	return (
 		<>
 			<noscript>
@@ -101,7 +95,7 @@ function ErrorPage({
 				{error && import.meta.env.MODE === 'development' ? (
 					<RedBox error={error} />
 				) : null}
-				<HeroSection {...heroProps} />
+				<HeroSection {...resolvedHeroProps} />
 
 				{possibleMatchesQuery && !possibleMatches?.length ? (
 					// Ensure in-page links to `#possible-matches` have a target even

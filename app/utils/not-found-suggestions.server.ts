@@ -68,7 +68,19 @@ export async function getNotFoundSuggestions({
 	if (!query || query.length < 3) return null
 
 	try {
-		const results = await semanticSearchKCD({ query, topK })
+		// 404s should stay fast even if semantic search is slow/unavailable.
+		const timeoutMs = 1500
+		let timeoutId: ReturnType<typeof setTimeout> | null = null
+		const timeoutPromise = new Promise<never>((_, reject) => {
+			timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+		})
+		const results = await Promise.race([
+			semanticSearchKCD({ query, topK }),
+			timeoutPromise,
+		]).finally(() => {
+			if (timeoutId) clearTimeout(timeoutId)
+		})
+
 		const byUrl = new Map<string, NotFoundMatch>()
 
 		for (const r of results) {
@@ -118,6 +130,7 @@ export async function getNotFoundSuggestions({
 
 		return { query, matches }
 	} catch (error: unknown) {
+		if (error instanceof Error && error.message === 'Timeout') return null
 		// 404 pages should never fail the request because semantic search failed.
 		console.error('Semantic search failed while rendering 404 suggestions', error)
 		return null
