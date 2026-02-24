@@ -1,5 +1,5 @@
-import { http, HttpResponse, passthrough, type HttpHandler } from 'msw'
 import lz from 'lz-string'
+import { http, HttpResponse, passthrough, type HttpHandler } from 'msw'
 import { isConnectedToTheInternet } from './utils.ts'
 
 function escapeXml(value: string) {

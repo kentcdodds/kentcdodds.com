@@ -1,8 +1,6 @@
 import { rehypeCodeBlocksShiki } from '@kentcdodds/md-temp'
 import remarkEmbedder, { type TransformerInfo } from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
-import type * as H from 'hast'
-import type * as M from 'mdast'
 import { bundleMDX } from 'mdx-bundler'
 import lz from 'lz-string'
 import PQueue from 'p-queue'
@@ -10,10 +8,13 @@ import calculateReadingTime from 'reading-time'
 import remarkAutolinkHeadings from 'remark-autolink-headings'
 import gfm from 'remark-gfm'
 import remarkSlug from 'remark-slug'
-import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
 import { type GitHubFile } from '#app/types.ts'
 import * as x from './x.server.ts'
+
+import type * as H from 'hast'
+import type * as M from 'mdast'
+import type * as U from 'unified'
 
 // Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
 type MdxJsxAttribute = {
