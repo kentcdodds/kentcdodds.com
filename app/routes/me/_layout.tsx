@@ -647,8 +647,8 @@ function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 					</ul>
 				) : (
 					<Paragraph className="col-span-full">
-						No favorites yet. Open a blog post, talk, or podcast episode and hit
-						the star.
+						No favorites yet. Open a blog post, talk, podcast episode, or YouTube
+						video and hit the star.
 					</Paragraph>
 				)}
 			</Grid>

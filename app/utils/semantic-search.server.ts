@@ -444,6 +444,12 @@ function normalizeYoutubeTimestampSeconds({
 		return Math.max(0, Math.floor(safeStart / 1000))
 	}
 
+	// Fallback: if `startSeconds` looks like milliseconds (e.g. `123000` for 2:03),
+	// normalize defensively. We assume videos in this index aren't 4 hours long.
+	if (safeStart > 60 * 60 * 4) {
+		return Math.max(0, Math.floor(safeStart / 1000))
+	}
+
 	return Math.max(0, Math.floor(safeStart))
 }
 

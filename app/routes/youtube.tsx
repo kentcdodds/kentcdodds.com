@@ -41,7 +41,10 @@ function parseTimestampSeconds(value: string | null) {
 	if (!value) return null
 	const trimmed = value.trim()
 	if (!trimmed) return null
-	// Keep it simple: `t=123` (seconds). This is what our semantic search deep links emit.
+	// Semantic search deep links emit seconds (`t=123`), but older/buggy links
+	// sometimes used milliseconds (`t=123000`). We assume Kent videos aren't 4h+
+	// and treat values above that threshold as milliseconds. This mirrors the
+	// server-side normalization in `normalizeYoutubeTimestampSeconds`.
 	if (!/^\d+$/.test(trimmed)) return null
 	let n = Number(trimmed)
 	if (!Number.isFinite(n)) return null
