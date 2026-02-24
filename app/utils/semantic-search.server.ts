@@ -416,6 +416,43 @@ function parseYoutubeVideoIdFromUrl(url: string | undefined) {
 	}
 }
 
+function normalizeYoutubeTimestampSeconds({
+	startSeconds,
+	endSeconds,
+}: {
+	startSeconds: number | undefined
+	endSeconds: number | undefined
+}) {
+	if (typeof startSeconds !== 'number' || !Number.isFinite(startSeconds)) {
+		return undefined
+	}
+
+	const safeStart = Math.max(0, startSeconds)
+	const safeEnd =
+		typeof endSeconds === 'number' && Number.isFinite(endSeconds)
+			? Math.max(0, endSeconds)
+			: undefined
+
+	// Some older/legacy indexes stored milliseconds in `startSeconds`/`endSeconds`.
+	// Detect by looking at the chunk span: transcript chunks should never span
+	// tens of minutes, but millisecond values will make the delta look enormous.
+	if (
+		typeof safeEnd === 'number' &&
+		safeEnd >= safeStart &&
+		safeEnd - safeStart > 1_000
+	) {
+		return Math.max(0, Math.floor(safeStart / 1000))
+	}
+
+	// Fallback: if `startSeconds` looks like milliseconds (e.g. `123000` for 2:03),
+	// normalize defensively. We assume videos in this index aren't 4 hours long.
+	if (safeStart > 60 * 60 * 4) {
+		return Math.max(0, Math.floor(safeStart / 1000))
+	}
+
+	return Math.max(0, Math.floor(safeStart))
+}
+
 function addYoutubeTimestampToUrl({
 	url,
 	videoId,
@@ -537,7 +574,10 @@ export async function semanticSearchKCD({
 				const url = asNonEmptyString(md.url)
 				const snippet = asNonEmptyString(md.snippet)
 				// For media (YouTube), chunk metadata can include a start time.
-				const timestampSeconds = asFiniteNumber(md.startSeconds)
+				const timestampSeconds = normalizeYoutubeTimestampSeconds({
+					startSeconds: asFiniteNumber(md.startSeconds),
+					endSeconds: asFiniteNumber(md.endSeconds),
+				})
 				const imageUrl = asNonEmptyString(md.imageUrl)
 				const imageAlt = asNonEmptyString(md.imageAlt)
 

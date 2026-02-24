@@ -197,6 +197,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 						subtitle: 'Talk',
 					}
 				}
+				case 'youtube-video': {
+					const videoId = favorite.contentId
+					return {
+						contentType: 'youtube-video',
+						contentId: videoId,
+						title: `YouTube video ${videoId}`,
+						href: `/youtube?video=${encodeURIComponent(videoId)}`,
+						subtitle: 'YouTube video',
+					}
+				}
 				case 'call-kent-episode': {
 					const parsed = parseEpisodeFavoriteContentId(favorite.contentId)
 					if (!parsed) return null
@@ -637,8 +647,8 @@ function YouScreen({ loaderData: data, actionData }: Route.ComponentProps) {
 					</ul>
 				) : (
 					<Paragraph className="col-span-full">
-						No favorites yet. Open a blog post, talk, or podcast episode and hit
-						the star.
+						No favorites yet. Open a blog post, talk, podcast episode, or YouTube
+						video and hit the star.
 					</Paragraph>
 				)}
 			</Grid>

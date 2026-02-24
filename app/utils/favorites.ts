@@ -3,6 +3,7 @@ export const favoriteContentTypes = [
 	'talk',
 	'call-kent-episode',
 	'chats-with-kent-episode',
+	'youtube-video',
 ] as const
 
 export type FavoriteContentType = (typeof favoriteContentTypes)[number]

@@ -294,6 +294,36 @@ function SearchResults({
 				<ul className="space-y-6">
 					{results.map((r) => {
 						const href = r.url ?? (r.id ? `/` : '#')
+						const linkTo =
+							r.type === 'youtube' &&
+							typeof href === 'string' &&
+							href.startsWith('/youtube')
+								? (() => {
+										try {
+											const u = new URL(href, 'https://kentcdodds.com')
+											if (r.title) u.searchParams.set('title', r.title)
+											const desc = r.summary ?? r.snippet
+											if (desc) {
+												u.searchParams.set(
+													'desc',
+													desc.length > 400 ? `${desc.slice(0, 397)}...` : desc,
+												)
+											}
+											return `${u.pathname}?${u.searchParams.toString()}`
+										} catch {
+											return href
+										}
+									})()
+								: href
+						const semanticSearchState =
+							r.type === 'youtube'
+								? {
+										semanticSearch: {
+											title: r.title ?? null,
+											description: r.summary ?? r.snippet ?? null,
+										},
+									}
+								: undefined
 						return (
 							<li
 								key={r.id}
@@ -316,7 +346,9 @@ function SearchResults({
 										<div className="min-w-0 flex-1">
 											<H4 className="truncate">
 												{href ? (
-													<Link to={href}>{r.title ?? r.url ?? r.id}</Link>
+													<Link to={linkTo} state={semanticSearchState}>
+														{r.title ?? r.url ?? r.id}
+													</Link>
 												) : (
 													r.id
 												)}
