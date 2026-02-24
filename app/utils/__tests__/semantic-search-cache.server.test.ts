@@ -44,7 +44,7 @@ describe('semantic search caching', () => {
 			const fetchCallsAfterFirst = fetchSpy.mock.calls.length
 			const results2 = await semanticSearchKCD({ query, topK: 5 })
 			expect(results2).toEqual(results1)
-			expect(fetchSpy.mock.calls.length).toBe(fetchCallsAfterFirst)
+			expect(fetchSpy.mock.calls).toHaveLength(fetchCallsAfterFirst)
 			expect(cacheSetSpy).toHaveBeenCalledTimes(1)
 		} finally {
 			fetchSpy.mockRestore()
