@@ -20,7 +20,6 @@ export function formatCallKentTextToSpeechNotes(questionText: string) {
 	const questionBody = cleaned.toLowerCase().startsWith(prefixLower)
 		? cleaned.slice(AI_VOICE_DISCLOSURE_PREFIX.length).trimStart()
 		: cleaned
-
 	return `${AI_VOICE_DISCLOSURE_PREFIX}\nTyped question: ${questionBody}`
 }
 
