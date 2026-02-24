@@ -385,7 +385,7 @@ const matchSorterOptions = {
 	],
 } as const
 
-export function filterIndexItems(
+function filterIndexItems(
 	items: Array<NotFoundDeterministicIndexItem>,
 	searchString: string,
 ) {
