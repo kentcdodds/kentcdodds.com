@@ -6,6 +6,13 @@ import {
 import { notFoundQueryFromPathname } from './not-found-query.ts'
 import { semanticSearchKCD } from './semantic-search.server.ts'
 
+class LocalTimeoutError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'LocalTimeoutError'
+	}
+}
+
 function requestWantsHtml(request: Request) {
 	// Avoid expensive semantic search for asset/API requests.
 	const accept = request.headers.get('accept') ?? ''
@@ -61,7 +68,10 @@ export async function getNotFoundSuggestions({
 		const timeoutMs = 1500
 		let timeoutId: ReturnType<typeof setTimeout> | null = null
 		const timeoutPromise = new Promise<never>((_, reject) => {
-			timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+			timeoutId = setTimeout(
+				() => reject(new LocalTimeoutError('Timeout')),
+				timeoutMs,
+			)
 		})
 		const results = await Promise.race([
 			semanticSearchKCD({ query, topK }),
@@ -119,7 +129,7 @@ export async function getNotFoundSuggestions({
 
 		return { query, matches }
 	} catch (error: unknown) {
-		if (error instanceof Error && error.message === 'Timeout') return null
+		if (error instanceof LocalTimeoutError) return null
 		// 404 pages should never fail the request because semantic search failed.
 		console.error('Semantic search failed while rendering 404 suggestions', error)
 		return null

@@ -7,16 +7,22 @@ export type NotFoundMatch = {
 	imageAlt?: string
 }
 
+function isSafeInternalPath(path: string) {
+	// Reject protocol-relative URLs (`//evil.com/...`) which browsers treat as absolute.
+	return path.startsWith('/') && !path.startsWith('//')
+}
+
 export function normalizeNotFoundUrl(rawUrl: string) {
 	const url = rawUrl.trim()
 	if (!url) return ''
 	// Only allow internal app paths. This also keeps client/server rendering consistent
 	// when `/resources/search` returns absolute URLs.
-	if (url.startsWith('/')) return url
+	if (isSafeInternalPath(url)) return url
 	if (/^https?:\/\//i.test(url)) {
 		try {
 			const u = new URL(url)
-			return `${u.pathname}${u.search}${u.hash}`
+			const path = `${u.pathname}${u.search}${u.hash}`
+			return isSafeInternalPath(path) ? path : ''
 		} catch {
 			return ''
 		}
