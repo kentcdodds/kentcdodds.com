@@ -34,12 +34,11 @@ export function GeneralErrorBoundary({
 	}
 
 	if (isRouteErrorResponse(error)) {
-		const handler = statusHandlers?.[error.status]
-		if (handler) return handler({ error, params })
+		const handler = statusHandlers?.[error.status] ?? defaultStatusHandler
 
 		return (
 			<div className="container mx-auto flex items-center justify-center p-4 lg:p-20">
-				{defaultStatusHandler({ error, params })}
+				{handler({ error, params })}
 			</div>
 		)
 	}
