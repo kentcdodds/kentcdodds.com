@@ -184,6 +184,50 @@ const AuthenticationOptionsSchema = z.object({
 	options: z.object({ challenge: z.string() }).passthrough(),
 }) satisfies z.ZodType<{ options: PublicKeyCredentialRequestOptionsJSON }>
 
+type PasskeyVerificationJson =
+	| { status: 'success' }
+	| { status: 'error'; error: string }
+
+async function verifyPasskeyWithServer(
+	authResponse: unknown,
+	{
+		shouldAbort,
+	}: {
+		shouldAbort?: () => boolean
+	} = {},
+) {
+	const verificationResponse = await fetch(
+		'/resources/webauthn/verify-authentication',
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(authResponse),
+		},
+	)
+
+	// Used by the autofill effect to bail out silently on unmount/cancel without
+	// parsing/throwing.
+	if (shouldAbort?.()) return { type: 'aborted' as const }
+
+	const verificationJson = (await verificationResponse.json().catch(() => {
+		return null
+	})) as PasskeyVerificationJson | null
+
+	// Keep validation order stable to avoid behavior drift:
+	// 1) JSON parse success 2) server "error" status 3) HTTP ok.
+	if (!verificationJson) {
+		throw new Error('Failed to verify passkey')
+	}
+	if (verificationJson.status === 'error') {
+		throw new Error(verificationJson.error)
+	}
+	if (!verificationResponse.ok) {
+		throw new Error('Failed to verify passkey')
+	}
+
+	return { type: 'success' as const }
+}
+
 function Login({ loaderData: data }: Route.ComponentProps) {
 	const inputRef = React.useRef<HTMLInputElement>(null)
 	const passwordRef = React.useRef<HTMLInputElement>(null)
@@ -239,32 +283,10 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 				if (!isMounted || autofillCancelledRef.current) return
 
 				setPasskeyMessage('Verifying your passkey')
-
-				const verificationResponse = await fetch(
-					'/resources/webauthn/verify-authentication',
-					{
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(authResponse),
-					},
-				)
-				if (!isMounted || autofillCancelledRef.current) return
-				const verificationJson = (await verificationResponse.json().catch(() => {
-					return null
-				})) as
-					| { status: 'success' }
-					| { status: 'error'; error: string }
-					| null
-
-				if (!verificationJson) {
-					throw new Error('Failed to verify passkey')
-				}
-				if (verificationJson.status === 'error') {
-					throw new Error(verificationJson.error)
-				}
-				if (!verificationResponse.ok) {
-					throw new Error('Failed to verify passkey')
-				}
+				const verificationResult = await verifyPasskeyWithServer(authResponse, {
+					shouldAbort: () => !isMounted || autofillCancelledRef.current,
+				})
+				if (verificationResult.type === 'aborted') return
 
 				setPasskeyMessage('Welcome back! Navigating to your account page.')
 				void revalidate()
@@ -321,33 +343,7 @@ function Login({ loaderData: data }: Route.ComponentProps) {
 			const authResponse = await startAuthentication({ optionsJSON: options })
 			setPasskeyMessage('Verifying your passkey')
 
-			// Verify the authentication with the server
-			const verificationResponse = await fetch(
-				'/resources/webauthn/verify-authentication',
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(authResponse),
-				},
-			)
-
-			const verificationJson = (await verificationResponse.json().catch(() => {
-				return null
-			})) as
-				| { status: 'success' }
-				| { status: 'error'; error: string }
-				| null
-
-			if (!verificationJson) {
-				throw new Error('Failed to verify passkey')
-			}
-
-			if (verificationJson.status === 'error') {
-				throw new Error(verificationJson.error)
-			}
-			if (!verificationResponse.ok) {
-				throw new Error('Failed to verify passkey')
-			}
+			await verifyPasskeyWithServer(authResponse)
 
 			setPasskeyMessage('Welcome back! Navigating to your account page.')
 			didSucceed = true
