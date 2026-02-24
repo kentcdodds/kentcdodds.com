@@ -326,7 +326,10 @@ function remarkMermaidCodeToThemedSvg() {
 						: []),
 				]
 
-				parent.children[index] = {
+				// `mdast`'s `RootContent` types don't include MDX JSX nodes, but `bundleMDX`
+				// supports them. Cast so we can replace the code block with an MDX JSX
+				// element without a bunch of type churn.
+				;(parent.children as Array<any>)[index] = {
 					type: 'mdxJsxFlowElement',
 					name: 'MermaidDiagram',
 					attributes,
