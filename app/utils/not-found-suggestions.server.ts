@@ -385,7 +385,7 @@ const matchSorterOptions = {
 	],
 } as const
 
-function filterIndexItems(
+export function filterIndexItems(
 	items: Array<NotFoundDeterministicIndexItem>,
 	searchString: string,
 ) {
@@ -408,6 +408,7 @@ function filterIndexItems(
 		keys: matchSorterOptions.keys.map((key) => {
 			return {
 				...key,
+				maxRanking: matchSorterRankings.CASE_SENSITIVE_EQUAL,
 				threshold: matchSorterRankings.WORD_STARTS_WITH,
 			}
 		}),
