@@ -148,6 +148,7 @@ function PossibleMatchesSection({
 				title="Possible matches"
 				subTitle={q ? `Deterministic matches for "${q}"` : 'Deterministic matches.'}
 				cta="Semantic search"
+				ctaClassName="whitespace-nowrap"
 				ctaUrl={searchUrl}
 			/>
 			<Spacer size="2xs" />

@@ -6,6 +6,7 @@ import { H2 } from '../typography.tsx'
 interface HeaderSectionProps {
 	ctaUrl?: string
 	cta?: string
+	ctaClassName?: string
 	as?: React.ElementType
 	title: string
 	subTitle: string
@@ -15,6 +16,7 @@ interface HeaderSectionProps {
 function HeaderSection({
 	ctaUrl,
 	cta,
+	ctaClassName,
 	title,
 	subTitle,
 	className,
@@ -36,7 +38,7 @@ function HeaderSection({
 				</div>
 
 				{cta && ctaUrl ? (
-					<ArrowLink to={ctaUrl} direction="right">
+					<ArrowLink to={ctaUrl} direction="right" className={ctaClassName}>
 						{cta}
 					</ArrowLink>
 				) : null}
