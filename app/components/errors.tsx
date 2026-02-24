@@ -121,6 +121,7 @@ function ErrorPage({
 
 				{articles?.length ? (
 					<>
+						{possibleMatches?.length === 0 ? <Spacer size="lg" /> : null}
 						<div id="articles" />
 						<BlogSection
 							articles={articles}
@@ -150,8 +151,16 @@ function PossibleMatchesSection({
 		<>
 			<div id="possible-matches" />
 			<HeaderSection
-				title="Possible matches"
-				subTitle={q ? `Closest matches for "${q}"` : 'Closest matches.'}
+				title={hasMatches ? 'Possible matches' : 'No close matches found'}
+				subTitle={
+					hasMatches
+						? q
+							? `Closest matches for "${q}"`
+							: 'Closest matches.'
+						: q
+							? `We couldn't find close matches for "${q}".`
+							: "We couldn't find close matches."
+				}
 			/>
 			<Spacer size="2xs" />
 			<Grid>
