@@ -24,7 +24,7 @@ function unwrapWorkersAiText(result: any): string | null {
 function stripSingleMarkdownCodeFence(text: string) {
 	const trimmed = text.trim()
 	const match = /^```(?:text|markdown)?\s*\n([\s\S]*?)\n```$/i.exec(trimmed)
-	return match ? match[1].trim() : text
+	return match?.[1] ? match[1].trim() : text
 }
 
 function extractBetweenMarkers({
