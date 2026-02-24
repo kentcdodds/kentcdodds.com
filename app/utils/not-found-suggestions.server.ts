@@ -146,9 +146,8 @@ async function firstExistingFile(
 		try {
 			const stat = await fs.stat(filename)
 			if (stat.isFile()) return filename
-		} catch (e: any) {
-			if (e?.code === 'ENOENT') continue
-			// If the filesystem is unhappy, skip enrichment rather than failing 404s.
+		} catch {
+			// ENOENT or any other fs error — skip enrichment rather than failing 404s.
 			continue
 		}
 	}
@@ -409,7 +408,6 @@ function filterIndexItems(
 		keys: matchSorterOptions.keys.map((key) => {
 			return {
 				...key,
-				maxRanking: matchSorterRankings.CASE_SENSITIVE_EQUAL,
 				threshold: matchSorterRankings.WORD_STARTS_WITH,
 			}
 		}),
@@ -426,8 +424,9 @@ function filterIndexItems(
 			word,
 			individualWordOptions,
 		)
+		const searchResultSet = new Set(searchResult)
 		individualWordResults = individualWordResults.filter((r) =>
-			searchResult.includes(r),
+			searchResultSet.has(r),
 		)
 	}
 
