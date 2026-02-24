@@ -1,0 +1,34 @@
+---
+title: An AI-powered kentcdodds.com
+date: 2026-02-24
+description:
+  I've added some pretty cool AI-powered features to kentcdodds.com and I want
+  to tell you all about it.
+categories:
+  - ai
+meta:
+  keywords:
+    - ai
+    - cloudflare
+    - ai gateway
+    - semantic search
+    - vector database
+    - vectorize
+    - workers ai
+bannerCloudinaryId: unsplash/photo-1619884889432-b242fdee532a
+bannerAlt: Brown and silver telescope near body of water during daytime
+bannerCredit: Photo by [Daniel
+  Lerman](https://unsplash.com/photos/brown-and-silver-telescope-near-body-of-water-during-daytime-fr3YLb9UHSQ)
+---
+
+Over the last few weeks, I've been really impressed by the capabilities of our modern AI agents, especially [Cursor.com/agents](https://cursor.com/agents). Because it's been so easy to add new features and make changes (like [upgrading from Remix v2 to React Router v7](/blog/how-i-used-cursor-to-migrate-frameworks)), I decided to just throw all my open issues at it and see what it could do. And I've [closed them all](https://github.com/kentcdodds/kentcdodds.com/issues) (as of the time of this writing 😅).
+
+I think most of us has a wish list of things we'd like to build in projects we really care about. Some of those things stay on the wish list because we don't have time to build them. Well now time is no longer an issue.
+
+One of my biggest wish list items since I launched the updated site in 2021 was [semantic search](https://www.elastic.co/what-is/semantic-search) [(issue #5)](https://github.com/kentcdodds/kentcdodds.com/issues/5) (and it was [issue #107 on the old site](https://github.com/kentcdodds/old-kentcdodds.com/issues/107) opened back in 2019)!
+
+Now the tools we have are so much more powerful and it makes building something like this basically trivial.
+
+You can try it right now using the hotkey <kbd>/</kbd> to open the search bar and type "How did Kent get his first job?" or "What's the best way to learn React?" and hit <kbd>?</kbd> to see the keyboard shortcuts.
+
+Here's an outline of the architecture I used to build semantic search.

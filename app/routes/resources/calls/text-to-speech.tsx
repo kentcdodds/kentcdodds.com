@@ -16,12 +16,11 @@ import {
 	callKentTextToSpeechConstraints,
 	callKentTextToSpeechVoices,
 	type CallKentTextToSpeechVoice,
+	getCallKentVoicePreviewSrc,
 	getErrorForCallKentQuestionText,
 	isCallKentTextToSpeechVoice,
 } from '#app/utils/call-kent-text-to-speech.ts'
-import {
-	synthesizeSpeechWithWorkersAi,
-} from '#app/utils/cloudflare-ai-text-to-speech.server.ts'
+import { synthesizeSpeechWithWorkersAi } from '#app/utils/cloudflare-ai-text-to-speech.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { rateLimit } from '#app/utils/rate-limit.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
@@ -230,61 +229,6 @@ async function getErrorMessageFromResponse(response: Response) {
 	return bodyText.trim() || `Request failed (${response.status})`
 }
 
-function useFiveSecondPreview(
-	audioRef: React.RefObject<HTMLAudioElement | null>,
-) {
-	const cleanupRef = React.useRef<(() => void) | null>(null)
-
-	React.useEffect(() => {
-		return () => cleanupRef.current?.()
-	}, [])
-
-	return React.useCallback(() => {
-		const audio = audioRef.current
-		if (!audio) return
-		// Capture a non-null element for the hoisted handlers.
-		const audioEl = audio
-
-		// Stop any previous preview listeners.
-		cleanupRef.current?.()
-		cleanupRef.current = null
-
-		const stopAtSeconds = 5
-		let cleanedUp = false
-
-		function cleanup() {
-			if (cleanedUp) return
-			cleanedUp = true
-			audioEl.removeEventListener('timeupdate', onTimeUpdate)
-			audioEl.removeEventListener('ended', cleanup)
-			cleanupRef.current = null
-		}
-
-		function onTimeUpdate() {
-			if (audioEl.currentTime >= stopAtSeconds) {
-				audioEl.pause()
-				try {
-					audioEl.currentTime = 0
-				} catch {
-					// ignore
-				}
-				cleanup()
-			}
-		}
-
-		audioEl.addEventListener('timeupdate', onTimeUpdate)
-		audioEl.addEventListener('ended', cleanup)
-		cleanupRef.current = cleanup
-
-		try {
-			audioEl.currentTime = 0
-		} catch {
-			// ignore
-		}
-		void audioEl.play().catch(() => cleanup())
-	}, [audioRef])
-}
-
 export function CallKentTextToSpeech({
 	onAcceptAudio,
 }: {
@@ -304,26 +248,22 @@ export function CallKentTextToSpeech({
 		React.useState<CallKentTextToSpeechVoice>(defaultVoice)
 	const [questionText, setQuestionText] = React.useState('')
 	const [questionTouched, setQuestionTouched] = React.useState(false)
-	const [hasAttemptedPreview, setHasAttemptedPreview] = React.useState(false)
+	const [hasAttemptedSave, setHasAttemptedSave] = React.useState(false)
 
 	const [isGenerating, setIsGenerating] = React.useState(false)
 	const [serverError, setServerError] = React.useState<string | null>(null)
-	const [audioBlob, setAudioBlob] = React.useState<Blob | null>(null)
-	const [audioUrl, setAudioUrl] = React.useState<string | null>(null)
-	const [durationSeconds, setDurationSeconds] = React.useState<number | null>(
-		null,
-	)
 	const requestIdRef = React.useRef(0)
 	const abortControllerRef = React.useRef<AbortController | null>(null)
 
-	const audioRef = React.useRef<HTMLAudioElement | null>(null)
-	const playPreview = useFiveSecondPreview(audioRef)
+	const voicePreviewAudioRef = React.useRef<HTMLAudioElement | null>(null)
+	const [voicePreviewError, setVoicePreviewError] = React.useState<
+		string | null
+	>(null)
+	const voicePreviewSrc = getCallKentVoicePreviewSrc(voice)
 
 	React.useEffect(() => {
-		return () => {
-			if (audioUrl) URL.revokeObjectURL(audioUrl)
-		}
-	}, [audioUrl])
+		setVoicePreviewError(null)
+	}, [voice])
 
 	React.useEffect(() => {
 		return () => abortControllerRef.current?.abort()
@@ -336,40 +276,45 @@ export function CallKentTextToSpeech({
 		requestIdRef.current += 1
 		setIsGenerating(false)
 		setServerError(null)
-		setAudioBlob(null)
-		setAudioUrl(null)
-		setDurationSeconds(null)
 	}, [voice, questionText])
 
 	const questionError = React.useMemo(() => {
-		// Only show hard validation for the current value; UX still gates on "Preview".
+		// Only show hard validation for the current value; UX still gates on "Save".
 		return getErrorForCallKentQuestionText(questionText)
 	}, [questionText])
 
-	async function previewAudio() {
-		setHasAttemptedPreview(true)
+	function previewVoice() {
+		setVoicePreviewError(null)
+
+		const el = voicePreviewAudioRef.current
+		if (!el) return
+
+		try {
+			el.pause()
+		} catch {
+			// ignore
+		}
+		try {
+			el.currentTime = 0
+		} catch {
+			// ignore
+		}
+
+		void el.play().catch(() => {
+			setVoicePreviewError(
+				'Voice preview unavailable; run the generator script to create preview files.',
+			)
+		})
+	}
+
+	async function saveQuestion() {
+		setHasAttemptedSave(true)
 		setServerError(null)
 
 		const validationError = getErrorForCallKentQuestionText(questionText)
 		if (validationError) {
 			return
 		}
-
-		// If we already have audio for the current text/voice, just replay the preview.
-		if (audioUrl) {
-			playPreview()
-			return
-		}
-
-		// Clear any prior audio result so UI can't reflect stale duration state.
-		try {
-			audioRef.current?.pause()
-		} catch {
-			// ignore
-		}
-		setAudioBlob(null)
-		setAudioUrl(null)
-		setDurationSeconds(null)
 
 		abortControllerRef.current?.abort()
 		const requestId = requestIdRef.current + 1
@@ -397,16 +342,47 @@ export function CallKentTextToSpeech({
 			const blob = await response.blob()
 			if (requestIdRef.current !== requestId) return
 			if (!blob.type.startsWith('audio/')) {
-				setServerError('Unexpected response while generating audio.')
+				setServerError('Unexpected response while saving audio.')
 				return
 			}
 
-			const nextUrl = URL.createObjectURL(blob)
-			setAudioBlob(blob)
-			setAudioUrl(nextUrl)
+			// Sanity-check duration to keep typed calls reasonable.
+			const objectUrl = URL.createObjectURL(blob)
+			try {
+				const durationSeconds = await new Promise<number>((resolve, reject) => {
+					const el = new Audio()
+					const cleanup = () => {
+						el.removeEventListener('loadedmetadata', onLoadedMetadata)
+						el.removeEventListener('error', onError)
+					}
+					const onLoadedMetadata = () => {
+						cleanup()
+						resolve(el.duration)
+					}
+					const onError = () => {
+						cleanup()
+						reject(new Error('Unable to read generated audio duration.'))
+					}
+					el.addEventListener('loadedmetadata', onLoadedMetadata)
+					el.addEventListener('error', onError)
+					el.preload = 'metadata'
+					el.src = objectUrl
+				})
 
-			// Best-effort auto-preview (will be allowed since it's triggered by a click).
-			requestAnimationFrame(() => playPreview())
+				if (
+					Number.isFinite(durationSeconds) &&
+					durationSeconds > callKentTextToSpeechConstraints.maxAudioDurationSeconds
+				) {
+					setServerError(
+						`Generated audio is longer than ${callKentTextToSpeechConstraints.maxAudioDurationSeconds}s. Please shorten your question and try again.`,
+					)
+					return
+				}
+			} finally {
+				URL.revokeObjectURL(objectUrl)
+			}
+
+			onAcceptAudio({ audio: blob, questionText, voice })
 		} catch (e: unknown) {
 			if (e instanceof DOMException && e.name === 'AbortError') {
 				return
@@ -425,16 +401,13 @@ export function CallKentTextToSpeech({
 		}
 	}
 
-	const isTooLong =
-		typeof durationSeconds === 'number' &&
-		durationSeconds > callKentTextToSpeechConstraints.maxAudioDurationSeconds
-	const showQuestionError = questionTouched || hasAttemptedPreview
+	const showQuestionError = questionTouched || hasAttemptedSave
 	const displayedQuestionError = showQuestionError ? questionError : null
 
 	return (
 		<div className="flex flex-col gap-6">
 			<Paragraph className="mb-2">
-				{`Type your question and preview the audio before you submit it. Tip: include a quick intro like "Hi Kent, my name is ..." so I know who you are.`}
+				{`Type your question, pick a voice, and click "Save" to generate the audio. Tip: include a quick intro like "Hi Kent, my name is ..." so I know who you are.`}
 			</Paragraph>
 
 			<div>
@@ -464,22 +437,51 @@ export function CallKentTextToSpeech({
 
 			<FieldContainer label="Voice">
 				{({ inputProps }) => (
-					<select
-						{...inputProps}
-						className={clsx(inputClassName, 'appearance-none')}
-						value={voice}
-						onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-							setVoice(e.currentTarget.value as CallKentTextToSpeechVoice)
-						}
-					>
-						{callKentTextToSpeechVoices.map((v) => (
-							<option key={v.id} value={v.id}>
-								{v.label}
-							</option>
-						))}
-					</select>
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+						<select
+							{...inputProps}
+							className={clsx(inputClassName, 'appearance-none', 'sm:flex-1')}
+							value={voice}
+							onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+								setVoice(e.currentTarget.value as CallKentTextToSpeechVoice)
+							}
+						>
+							{callKentTextToSpeechVoices.map((v) => (
+								<option key={v.id} value={v.id}>
+									{v.label}
+								</option>
+							))}
+						</select>
+
+						<Button type="button" variant="secondary" onClick={previewVoice}>
+							Preview voice
+						</Button>
+					</div>
 				)}
 			</FieldContainer>
+
+			<audio
+				ref={voicePreviewAudioRef}
+				src={voicePreviewSrc}
+				preload="none"
+				className="hidden"
+				onError={() =>
+					setVoicePreviewError(
+						'Voice preview unavailable; run the generator script to create preview files.',
+					)
+				}
+			/>
+
+			{voicePreviewError ? (
+				<p
+					role="alert"
+					aria-live="polite"
+					aria-atomic="true"
+					className="text-sm text-red-500"
+				>
+					{voicePreviewError}
+				</p>
+			) : null}
 
 			{serverError ? (
 				<p
@@ -495,71 +497,12 @@ export function CallKentTextToSpeech({
 			<div className="flex flex-wrap gap-3">
 				<Button
 					type="button"
-					onClick={() => void previewAudio()}
+					onClick={() => void saveQuestion()}
 					disabled={isGenerating}
 				>
-					{isGenerating ? 'Preparing preview...' : 'Preview audio'}
+					{isGenerating ? 'Saving...' : 'Save'}
 				</Button>
 			</div>
-
-			{audioUrl ? (
-				<div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
-					<audio
-						ref={audioRef}
-						src={audioUrl}
-						aria-label="Generated audio playback"
-						controls
-						preload="metadata"
-						className="w-full"
-						onLoadedMetadata={(e) => {
-							const el = e.currentTarget
-							const d = el.duration
-							setDurationSeconds(Number.isFinite(d) ? d : null)
-						}}
-					/>
-					{typeof durationSeconds === 'number' ? (
-						<p
-							className={clsx('mt-2 text-sm', {
-								'text-gray-600 dark:text-slate-300': !isTooLong,
-								'text-red-600 dark:text-red-400': isTooLong,
-							})}
-						>
-							Duration: {Math.round(durationSeconds)}s
-							{isTooLong
-								? ` (over ${callKentTextToSpeechConstraints.maxAudioDurationSeconds}s)`
-								: ''}
-						</p>
-					) : null}
-
-					<div className="mt-4 flex flex-wrap gap-3">
-						<Button
-							type="button"
-							onClick={() => {
-								if (!audioBlob) return
-								onAcceptAudio({
-									audio: audioBlob,
-									questionText,
-									voice,
-								})
-							}}
-							disabled={!audioBlob || isTooLong}
-						>
-							Use this audio
-						</Button>
-						<Button
-							type="button"
-							variant="secondary"
-							onClick={() => {
-								setAudioBlob(null)
-								setAudioUrl(null)
-								setDurationSeconds(null)
-							}}
-						>
-							Change text/voice
-						</Button>
-					</div>
-				</div>
-			) : null}
 		</div>
 	)
 }

@@ -2,6 +2,7 @@ import type * as H from 'hast'
 import { toHtml as hastToHtml } from 'hast-util-to-html'
 import type * as M from 'mdast'
 import { toHast as mdastToHast } from 'mdast-util-to-hast'
+import pLimit from 'p-limit'
 import parseHtml from 'rehype-parse'
 import rehype2remark from 'rehype-remark'
 import rehypeStringify from 'rehype-stringify'
@@ -11,7 +12,6 @@ import { unified } from 'unified'
 import type * as U from 'unist'
 import { visit } from 'unist-util-visit'
 import { z } from 'zod'
-import pLimit from 'p-limit'
 import {
 	type CWKEpisode,
 	type CWKSeason,

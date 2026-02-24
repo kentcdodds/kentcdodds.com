@@ -1,7 +1,7 @@
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { subMonths } from 'date-fns'
-import { PrismaClient } from '#app/utils/prisma-generated.server/client.ts'
 import { getPasswordHash } from '#app/utils/password.server.ts'
+import { PrismaClient } from '#app/utils/prisma-generated.server/client.ts'
 
 import 'dotenv/config'
 
