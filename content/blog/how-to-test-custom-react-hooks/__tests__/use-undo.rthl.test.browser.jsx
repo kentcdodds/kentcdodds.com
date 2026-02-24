@@ -1,4 +1,3 @@
-/* eslint-disable max-statements */
 import { test, expect } from 'vitest'
 import { renderHook } from 'vitest-browser-react'
 import useUndo from '../use-undo.js'

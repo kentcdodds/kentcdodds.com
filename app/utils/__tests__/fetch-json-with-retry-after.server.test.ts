@@ -1,5 +1,5 @@
-import { beforeEach, expect, test, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { mswServer } from '#tests/msw-server.ts'
 import {
 	fetchJsonWithRetryAfter,
