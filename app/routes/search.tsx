@@ -294,6 +294,15 @@ function SearchResults({
 				<ul className="space-y-6">
 					{results.map((r) => {
 						const href = r.url ?? (r.id ? `/` : '#')
+						const semanticSearchState =
+							r.type === 'youtube'
+								? {
+										semanticSearch: {
+											title: r.title ?? null,
+											description: r.summary ?? r.snippet ?? null,
+										},
+									}
+								: undefined
 						return (
 							<li
 								key={r.id}
@@ -316,7 +325,9 @@ function SearchResults({
 										<div className="min-w-0 flex-1">
 											<H4 className="truncate">
 												{href ? (
-													<Link to={href}>{r.title ?? r.url ?? r.id}</Link>
+													<Link to={href} state={semanticSearchState}>
+														{r.title ?? r.url ?? r.id}
+													</Link>
 												) : (
 													r.id
 												)}

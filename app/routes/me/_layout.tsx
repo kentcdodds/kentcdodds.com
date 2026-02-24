@@ -197,6 +197,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 						subtitle: 'Talk',
 					}
 				}
+				case 'youtube-video': {
+					const videoId = favorite.contentId
+					return {
+						contentType: 'youtube-video',
+						contentId: videoId,
+						title: `YouTube video ${videoId}`,
+						href: `/youtube?video=${encodeURIComponent(videoId)}`,
+						subtitle: 'YouTube video',
+					}
+				}
 				case 'call-kent-episode': {
 					const parsed = parseEpisodeFavoriteContentId(favorite.contentId)
 					if (!parsed) return null
