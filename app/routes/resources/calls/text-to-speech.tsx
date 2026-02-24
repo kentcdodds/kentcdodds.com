@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { data as json } from 'react-router'
@@ -10,7 +9,6 @@ import {
 	inputClassName,
 } from '#app/components/form-elements.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
-import { cachified, cache } from '#app/utils/cache.server.ts'
 import {
 	AI_VOICE_DISCLOSURE_PREFIX,
 	callKentTextToSpeechConstraints,
@@ -30,11 +28,9 @@ const textToSpeechResourceRoute = '/resources/calls/text-to-speech'
 
 const TTS_RATE_LIMIT_MAX = 20
 const TTS_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
-// This caches *unsubmitted* call audio, so keep the TTL modest.
-const TTS_CACHE_TTL_MS = 1000 * 60 * 60 * 24 // 24 hours
 
-function normalizeTextForCache(text: string) {
-	// Normalize insignificant whitespace so repeated requests hit cache.
+function normalizeQuestionText(text: string) {
+	// Normalize input by trimming and collapsing consecutive whitespace.
 	return text.trim().replace(/\s+/g, ' ')
 }
 
@@ -92,7 +88,8 @@ export async function action({ request }: Route.ActionArgs) {
 	// Clients are not trusted to include the disclosure prefix, but if they do, we
 	// strip it for validation so it can't satisfy min length by itself.
 	const questionText = stripAiDisclosurePrefix(text)
-	const textError = getErrorForCallKentQuestionText(questionText)
+	const normalizedQuestionText = normalizeQuestionText(questionText)
+	const textError = getErrorForCallKentQuestionText(normalizedQuestionText)
 	if (textError) {
 		return json({ error: textError }, { status: 400, headers })
 	}
@@ -101,73 +98,38 @@ export async function action({ request }: Route.ActionArgs) {
 		return json({ error: 'Invalid voice' }, { status: 400, headers })
 	}
 
-	const normalizedQuestionText = normalizeTextForCache(questionText)
 	const speechText = withAiDisclosurePrefix(normalizedQuestionText)
 	const model = getEnv().CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL
-	// aura-2-en defaults to "luna" when omitted; treat empty voice as that for caching.
-	const voiceForCache = voiceRaw || 'luna'
-	const cacheKeyPayload = JSON.stringify({
-		v: 2,
-		model,
-		voice: voiceForCache,
-		text: speechText,
-	})
-	const cacheKeyHash = createHash('sha256')
-		.update(cacheKeyPayload)
-		.digest('hex')
-	const cacheKey = `call-kent-tts:audio:v2:${cacheKeyHash}`
 
 	try {
-		const cached = await cachified({
-			cache,
-			key: cacheKey,
-			ttl: TTS_CACHE_TTL_MS,
-			checkValue: (value: unknown) => {
-				if (!value || typeof value !== 'object') return false
-				const obj = value as Record<string, unknown>
-				const bytes = obj.bytes
-				const contentType = obj.contentType
-				if (!(bytes instanceof Uint8Array)) return false
-				if (typeof contentType !== 'string') return false
-				return true
-			},
-			getFreshValue: async () => {
-				// Only rate-limit *cache misses* (paid Workers AI calls).
-				const limit = rateLimit({
-					key: `call-kent-tts:${user.id}`,
-					max: TTS_RATE_LIMIT_MAX,
-					windowMs: TTS_RATE_LIMIT_WINDOW_MS,
-				})
-				if (!limit.allowed) {
-					const retryAfterSeconds = Math.ceil((limit.retryAfterMs ?? 0) / 1000)
-					throw json(
-						{
-							error: `Too many text-to-speech requests. Try again in ${retryAfterSeconds}s.`,
-						},
-						{
-							status: 429,
-							headers: {
-								...headers,
-								'Retry-After': String(retryAfterSeconds),
-							},
-						},
-					)
-				}
-
-				const { bytes, contentType } = await synthesizeSpeechWithWorkersAi({
-					text: speechText,
-					voice: voiceRaw || undefined,
-					model,
-				})
-				// Ensure we store a Buffer so the cache's base64 serializer works.
-				return {
-					bytes: Buffer.from(bytes),
-					contentType: contentType || 'audio/mpeg',
-				}
-			},
+		// Intentionally consume quota before synthesis to cap paid API usage, even
+		// when upstream calls fail.
+		const limit = rateLimit({
+			key: `call-kent-tts:${user.id}`,
+			max: TTS_RATE_LIMIT_MAX,
+			windowMs: TTS_RATE_LIMIT_WINDOW_MS,
 		})
+		if (!limit.allowed) {
+			const retryAfterSeconds = Math.ceil((limit.retryAfterMs ?? 0) / 1000)
+			return json(
+				{
+					error: `Too many text-to-speech requests. Try again in ${retryAfterSeconds}s.`,
+				},
+				{
+					status: 429,
+					headers: {
+						...headers,
+						'Retry-After': String(retryAfterSeconds),
+					},
+				},
+			)
+		}
 
-		const { bytes, contentType } = cached
+		const { bytes, contentType } = await synthesizeSpeechWithWorkersAi({
+			text: speechText,
+			voice: voiceRaw || undefined,
+			model,
+		})
 		// Some TS `fetch`/`Response` typings don't accept all `Uint8Array` variants.
 		// Normalize into an `ArrayBuffer` body for broad compatibility.
 		const responseBody =
@@ -177,10 +139,11 @@ export async function action({ request }: Route.ActionArgs) {
 						bytes.byteOffset + bytes.byteLength,
 					)
 				: Uint8Array.from(bytes).buffer
+		const responseContentType = contentType || 'audio/mpeg'
 		return new Response(responseBody, {
 			headers: {
 				...headers,
-				'Content-Type': contentType,
+				'Content-Type': responseContentType,
 			},
 		})
 	} catch (error: unknown) {
@@ -280,7 +243,7 @@ export function CallKentTextToSpeech({
 
 	const questionError = React.useMemo(() => {
 		// Only show hard validation for the current value; UX still gates on "Save".
-		return getErrorForCallKentQuestionText(questionText)
+		return getErrorForCallKentQuestionText(normalizeQuestionText(questionText))
 	}, [questionText])
 
 	function previewVoice() {
@@ -311,7 +274,9 @@ export function CallKentTextToSpeech({
 		setHasAttemptedSave(true)
 		setServerError(null)
 
-		const validationError = getErrorForCallKentQuestionText(questionText)
+		const validationError = getErrorForCallKentQuestionText(
+			normalizeQuestionText(questionText),
+		)
 		if (validationError) {
 			return
 		}
