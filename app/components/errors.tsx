@@ -140,6 +140,7 @@ function PossibleMatchesSection({
 	const q = typeof query === 'string' ? query.trim() : ''
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const sorted = sortNotFoundMatches(matches)
+	const hasMatches = sorted.length > 0
 
 	return (
 		<>
@@ -193,7 +194,7 @@ function PossibleMatchesSection({
 						))}
 					</ul>
 					<p className="mt-4 text-sm text-slate-500">
-						None of these match?{' '}
+						{hasMatches ? 'None of these match? ' : 'No deterministic matches found. '}
 						<a href={searchUrl} className="underlined">
 							Try semantic search
 						</a>
