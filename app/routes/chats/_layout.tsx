@@ -10,6 +10,7 @@ import {
 	useMatches,
 	useNavigate,
 } from 'react-router'
+import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { ChevronDownIcon, ChevronUpIcon } from '#app/components/icons.tsx'
 import { PodcastSubs } from '#app/components/podcast-subs.tsx'
@@ -331,6 +332,32 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 					))}
 				</TabPanels>
 			</Tabs>
+
+			{data.seasons.length === 0 ? (
+				<Grid className="mb-24">
+					<div className="col-span-full rounded-lg border border-gray-200 p-8 dark:border-gray-600">
+						<H4 as="h2" className="mb-3">
+							No chats are available right now.
+						</H4>
+						<Paragraph className="mb-4">
+							We are likely having trouble with our Simplecast integration.
+							Please try again soon, or listen directly on the{' '}
+							<a
+								href={externalLinks.simpleCast}
+								target="_blank"
+								rel="noreferrer noopener"
+								className="text-primary underline"
+							>
+								Simplecast feed
+							</a>
+							.
+						</Paragraph>
+						<ButtonLink variant="primary" to={externalLinks.simpleCast}>
+							Open Simplecast feed
+						</ButtonLink>
+					</div>
+				</Grid>
+			) : null}
 
 			<BlogSection
 				articles={data.blogRecommendations}

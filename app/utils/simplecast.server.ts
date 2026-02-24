@@ -102,21 +102,30 @@ const getCachedSeasons = async ({
 	request: Request
 	forceFresh?: boolean
 	timings?: Timings
-}) =>
-	cachified({
-		key: getSimplecastConfig().seasonsCacheKey,
-		cache,
-		request,
-		timings,
-		// while we're actively publishing the podcast, let's have the cache be
-		// shorter
-		ttl: 1000 * 60 * 5,
-		// ttl: 1000 * 60 * 60 * 24 * 7,
-		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-		getFreshValue: () => getSeasons({ request, forceFresh, timings }),
-		forceFresh,
-		checkValue: cwkCachedSeasonsSchema,
-	})
+}) => {
+	try {
+		return await cachified({
+			key: getSimplecastConfig().seasonsCacheKey,
+			cache,
+			request,
+			timings,
+			// while we're actively publishing the podcast, let's have the cache be
+			// shorter
+			ttl: 1000 * 60 * 5,
+			// ttl: 1000 * 60 * 60 * 24 * 7,
+			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+			getFreshValue: () => getSeasons({ request, forceFresh, timings }),
+			forceFresh,
+			checkValue: cwkCachedSeasonsSchema,
+		})
+	} catch (error: unknown) {
+		console.error(
+			`simplecast: cachified failed to resolve seasons, returning empty fallback`,
+			error,
+		)
+		return []
+	}
+}
 
 async function getCachedEpisode(
 	episodeId: string,
@@ -131,17 +140,25 @@ async function getCachedEpisode(
 	},
 ) {
 	const key = `simplecast:episode:${episodeId}`
-	return cachified({
-		cache,
-		request,
-		timings,
-		key,
-		ttl: 1000 * 60 * 60 * 24 * 7,
-		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-		getFreshValue: () => getEpisode(episodeId),
-		forceFresh,
-		checkValue: cwkCachedEpisodeSchema,
-	})
+	try {
+		return await cachified({
+			cache,
+			request,
+			timings,
+			key,
+			ttl: 1000 * 60 * 60 * 24 * 7,
+			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+			getFreshValue: () => getEpisode(episodeId),
+			forceFresh,
+			checkValue: cwkCachedEpisodeSchema,
+		})
+	} catch (error: unknown) {
+		console.error(
+			`simplecast: failed to load episode ${episodeId}, omitting from results`,
+			error,
+		)
+		return null
+	}
 }
 
 async function getSeasons({
