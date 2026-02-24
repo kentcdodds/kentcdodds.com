@@ -121,6 +121,7 @@
     "litefs-js": "^2.0.2",
     "lodash": "^4.17.23",
     "lru-cache": "^11.2.6",
+    "lz-string": "^1.5.0",
     "match-sorter": "^8.2.0",
     "md5-hash": "^1.0.1",
     "mdast-util-to-hast": "^13.2.1",

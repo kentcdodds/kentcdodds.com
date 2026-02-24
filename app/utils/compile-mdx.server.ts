@@ -2,6 +2,7 @@ import { rehypeCodeBlocksShiki } from '@kentcdodds/md-temp'
 import remarkEmbedder, { type TransformerInfo } from '@remark-embedder/core'
 import oembedTransformer from '@remark-embedder/transformer-oembed'
 import type * as H from 'hast'
+import lz from 'lz-string'
 import type * as M from 'mdast'
 import { bundleMDX } from 'mdx-bundler'
 import PQueue from 'p-queue'
@@ -13,6 +14,20 @@ import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
 import { type GitHubFile } from '#app/types.ts'
 import * as x from './x.server.ts'
+
+// Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
+type MdxJsxAttribute = {
+	type: 'mdxJsxAttribute'
+	name: string
+	value?: unknown
+}
+
+type MdxJsxFlowElement = {
+	type: 'mdxJsxFlowElement'
+	name: string
+	attributes: Array<MdxJsxAttribute>
+	children: Array<unknown>
+}
 
 function handleEmbedderError({ url }: { url: string }) {
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`
@@ -219,7 +234,116 @@ function removePreContainerDivs() {
 	}
 }
 
+type MermaidTheme = 'dark' | 'default'
+
+function mdxStringExpressionAttribute(
+	name: string,
+	value: string,
+): MdxJsxAttribute {
+	return {
+		type: 'mdxJsxAttribute',
+		name,
+		value: {
+			type: 'mdxJsxAttributeValueExpression',
+			value: JSON.stringify(value),
+			// This hack brought to you by this:
+			// https://github.com/syntax-tree/hast-util-to-estree/blob/e5ccb97e9f42bba90359ea6d0f83a11d74e0dad6/lib/handlers/mdx-expression.js#L35-L38
+			// No idea why we're required to have estree here, but I'm pretty sure
+			// someone is supposed to add it automatically for us and it just never
+			// happens...
+			data: {
+				estree: {
+					type: 'Program',
+					sourceType: 'script',
+					body: [
+						{
+							type: 'ExpressionStatement',
+							expression: {
+								type: 'Literal',
+								value,
+							},
+						},
+					],
+				},
+			},
+		},
+	}
+}
+
+async function getMermaidSvg({
+	code,
+	theme,
+}: {
+	code: string
+	theme: MermaidTheme
+}): Promise<string | null> {
+	const trimmed = code.trim()
+	if (!trimmed) return null
+
+	const compressed = lz.compressToEncodedURIComponent(trimmed)
+	if (!compressed) return null
+
+	const url = new URL('https://mermaid-to-svg.kentcdodds.workers.dev/svg')
+	url.searchParams.set('mermaid', compressed)
+	url.searchParams.set('theme', theme)
+
+	try {
+		const response = await fetch(url)
+		if (!response.ok) return null
+		const svgText = await response.text()
+		if (!svgText || !svgText.startsWith('<svg')) return null
+		return svgText
+	} catch {
+		return null
+	}
+}
+
+function remarkMermaidCodeToThemedSvg() {
+	return async function transformer(tree: M.Root) {
+		const promises: Array<Promise<void>> = []
+		visit(tree, 'code', (node: M.Code, index, parent) => {
+			if (node.lang !== 'mermaid') return
+			if (!parent || typeof index !== 'number') return
+
+			const promise = (async () => {
+				const code = node.value
+				const [lightSvg, darkSvg] = await Promise.all([
+					getMermaidSvg({ code, theme: 'default' }),
+					getMermaidSvg({ code, theme: 'dark' }),
+				])
+
+				// If we can't render either theme at compile time, keep the original
+				// code block so it still shows up as text.
+				if (!lightSvg && !darkSvg) return
+
+				const attributes: Array<MdxJsxAttribute> = [
+					mdxStringExpressionAttribute('code', code),
+					...(lightSvg
+						? [mdxStringExpressionAttribute('lightSvg', lightSvg)]
+						: []),
+					...(darkSvg
+						? [mdxStringExpressionAttribute('darkSvg', darkSvg)]
+						: []),
+				]
+
+				// `mdast`'s `RootContent` types don't include MDX JSX nodes, but `bundleMDX`
+				// supports them. Cast so we can replace the code block with an MDX JSX
+				// element without a bunch of type churn.
+				;(parent.children as Array<any>)[index] = {
+					type: 'mdxJsxFlowElement',
+					name: 'MermaidDiagram',
+					attributes,
+					children: [],
+				} satisfies MdxJsxFlowElement
+			})()
+			promises.push(promise)
+		})
+		await Promise.all(promises)
+	}
+}
+
 const remarkPlugins: U.PluggableList = [
+	remarkMermaidCodeToThemedSvg,
 	[
 		remarkEmbedder,
 		{
