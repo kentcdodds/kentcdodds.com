@@ -1,16 +1,13 @@
+import {
+	getWorkersAiRunUrl,
+	unwrapWorkersAiText,
+} from './cloudflare-ai-utils.server.ts'
 import { getEnv } from './env.server.ts'
 
 type CallKentEpisodeMetadata = {
 	title: string
 	description: string
 	keywords: string
-}
-
-function getWorkersAiRunUrl({ model }: { model: string }) {
-	// Cloudflare's REST route expects the model as path segments (with `/`), so do
-	// not URL-encode the model string (encoding can yield "No route for that URI").
-	const env = getEnv()
-	return `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/workers-ai/${model}`
 }
 
 function extractJsonObjectFromText(text: string) {
@@ -39,20 +36,6 @@ function clampTitle(title: string) {
 	const cleaned = title.trim().replace(/\s+/g, ' ')
 	// Keep title reasonable for UI + Transistor.
 	return cleaned.length > 80 ? `${cleaned.slice(0, 77).trimEnd()}...` : cleaned
-}
-
-function unwrapWorkersAiText(result: any): string | null {
-	if (!result) return null
-	if (typeof result === 'string') return result
-	if (typeof result.response === 'string') return result.response
-	if (typeof result.output === 'string') return result.output
-	if (typeof result.text === 'string') return result.text
-
-	// OpenAI-ish shape (some models / gateways).
-	const choiceContent = result?.choices?.[0]?.message?.content
-	if (typeof choiceContent === 'string') return choiceContent
-
-	return null
 }
 
 export async function generateCallKentEpisodeMetadataWithWorkersAi({

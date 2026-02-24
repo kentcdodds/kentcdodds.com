@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { cache, cachified } from '#app/utils/cache.server.ts'
+import { getWorkersAiRunUrl } from '#app/utils/cloudflare-ai-utils.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { getSemanticSearchPresentation } from '#app/utils/semantic-search-presentation.server.ts'
 import { type Timings } from '#app/utils/timing.server.ts'
@@ -173,20 +174,6 @@ function getRequiredSemanticSearchEnv() {
 
 function getCloudflareApiBaseUrl() {
 	return 'https://api.cloudflare.com/client/v4'
-}
-
-function getWorkersAiRunUrl({
-	accountId,
-	gatewayId,
-	model,
-}: {
-	accountId: string
-	gatewayId: string
-	model: string
-}) {
-	// Cloudflare's REST route expects the model as path segments (with `/`), so do
-	// not URL-encode the model string (encoding can yield "No route for that URI").
-	return `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/${model}`
 }
 
 async function cloudflareFetch(
@@ -466,7 +453,6 @@ export async function semanticSearchKCD({
 }): Promise<Array<SemanticSearchResult>> {
 	const cleanedQuery = normalizeSemanticSearchQueryForCache(query)
 	if (!cleanedQuery) return []
-
 	const {
 		accountId,
 		apiToken,

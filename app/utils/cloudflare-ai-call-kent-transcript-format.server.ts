@@ -1,25 +1,8 @@
+import {
+	getWorkersAiRunUrl,
+	unwrapWorkersAiText,
+} from './cloudflare-ai-utils.server.ts'
 import { getEnv } from './env.server.ts'
-
-function getWorkersAiRunUrl(model: string) {
-	// Cloudflare's REST route expects the model as path segments (with `/`), so do
-	// not URL-encode the model string (encoding can yield "No route for that URI").
-	const env = getEnv()
-	return `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/workers-ai/${model}`
-}
-
-function unwrapWorkersAiText(result: any): string | null {
-	if (!result) return null
-	if (typeof result === 'string') return result
-	if (typeof result.response === 'string') return result.response
-	if (typeof result.output === 'string') return result.output
-	if (typeof result.text === 'string') return result.text
-
-	// OpenAI-ish shape (some models / gateways).
-	const choiceContent = result?.choices?.[0]?.message?.content
-	if (typeof choiceContent === 'string') return choiceContent
-
-	return null
-}
 
 function stripSingleMarkdownCodeFence(text: string) {
 	const trimmed = text.trim()
@@ -62,7 +45,8 @@ export async function formatCallKentTranscriptWithWorkersAi({
 }): Promise<string> {
 	const env = getEnv()
 	const apiToken = env.CLOUDFLARE_API_TOKEN
-	const modelToUse = model ?? env.CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL
+	const modelToUse =
+		model ?? env.CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL
 
 	const input = transcript.trim()
 	if (!input) {
@@ -128,7 +112,9 @@ ${endMarker}
 	const result = (json?.result ?? json) as any
 	const text = unwrapWorkersAiText(result)
 	if (!text) {
-		throw new Error('Unexpected transcript formatting response shape from Workers AI')
+		throw new Error(
+			'Unexpected transcript formatting response shape from Workers AI',
+		)
 	}
 
 	let formatted = stripSingleMarkdownCodeFence(text).trim()
@@ -165,4 +151,3 @@ ${endMarker}
 
 	return formatted
 }
-

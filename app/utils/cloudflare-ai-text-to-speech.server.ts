@@ -1,11 +1,5 @@
+import { getWorkersAiRunUrl } from './cloudflare-ai-utils.server.ts'
 import { getEnv } from './env.server.ts'
-
-function getWorkersAiRunUrl(model: string) {
-	// Cloudflare's REST route expects the model as path segments (with `/`), so do
-	// not URL-encode the model string (encoding can yield "No route for that URI").
-	const env = getEnv()
-	return `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/workers-ai/${model}`
-}
 
 type WorkersAiTextToSpeechResponse = {
 	// Some models return base64 audio within JSON.
