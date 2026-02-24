@@ -35,16 +35,16 @@
 	background-color: var(--base00);
 	margin-top: 0;
 	margin-bottom: 2rem;
-	margin-left: calc(var(--spacing-5vw) * -1);
-	margin-right: calc(var(--spacing-5vw) * -1);
+	margin-left: -5vw;
+	margin-right: -5vw;
 	padding: 2rem;
 	border-radius: 0;
 }
 
 .prose .embed {
 	position: relative;
-	margin-left: calc(var(--spacing-5vw) * -1);
-	margin-right: calc(var(--spacing-5vw) * -1);
+	margin-left: -5vw;
+	margin-right: -5vw;
 }
 
 .prose .embed > div {
