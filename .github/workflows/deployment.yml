@@ -131,6 +131,10 @@ jobs:
           restore-keys: |
             site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
+      - name: 🛠 Setup Database (migrations)
+        if: steps.site-cache.outputs.cache-hit != 'true'
+        run: npx prisma migrate deploy
+
       - name: 😅 Generate Site Cache
         if: steps.site-cache.outputs.cache-hit != 'true'
         run: npm run prime-cache:mocks
