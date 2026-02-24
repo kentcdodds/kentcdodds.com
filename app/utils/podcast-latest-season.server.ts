@@ -13,6 +13,17 @@ const latestPodcastSeasonLinksSchema = z.object({
 	}),
 })
 
+function isAbortError(error: unknown) {
+	return error instanceof Error && error.name === 'AbortError'
+}
+
+function throwIfAborted(signal?: AbortSignal) {
+	if (!signal?.aborted) return
+	const error = new Error('Operation aborted')
+	error.name = 'AbortError'
+	throw error
+}
+
 function formatSeasonParam(seasonNumber: number) {
 	return String(seasonNumber).padStart(2, '0')
 }
@@ -20,20 +31,24 @@ function formatSeasonParam(seasonNumber: number) {
 async function getLatestChatsSeasonNumber({
 	request,
 	timings,
+	signal,
 }: {
 	request: Request
 	timings?: Timings
+	signal?: AbortSignal
 }) {
 	try {
+		throwIfAborted(signal)
 		// Dynamic import so missing podcast env vars don't crash the whole app.
 		const { getSeasonListItems } = await import('./simplecast.server.ts')
-		const seasons = await getSeasonListItems({ request, timings })
+		const seasons = await getSeasonListItems({ request, timings, signal })
 		const latestSeasonNumber = seasons.reduce(
 			(max, s) => Math.max(max, s.seasonNumber ?? 0),
 			0,
 		)
 		return latestSeasonNumber || null
 	} catch (error: unknown) {
+		if (isAbortError(error)) return null
 		console.error('podcast-latest-season: failed to load chats seasons', error)
 		return null
 	}
@@ -42,20 +57,24 @@ async function getLatestChatsSeasonNumber({
 async function getLatestCallsSeasonNumber({
 	request,
 	timings,
+	signal,
 }: {
 	request: Request
 	timings?: Timings
+	signal?: AbortSignal
 }) {
 	try {
+		throwIfAborted(signal)
 		// Dynamic import so missing podcast env vars don't crash the whole app.
 		const { getEpisodes } = await import('./transistor.server.ts')
-		const episodes = await getEpisodes({ request, timings })
+		const episodes = await getEpisodes({ request, timings, signal })
 		const latestSeasonNumber = episodes.reduce(
 			(max, e) => Math.max(max, e.seasonNumber ?? 0),
 			0,
 		)
 		return latestSeasonNumber || null
 	} catch (error: unknown) {
+		if (isAbortError(error)) return null
 		console.error('podcast-latest-season: failed to load calls episodes', error)
 		return null
 	}
@@ -64,9 +83,11 @@ async function getLatestCallsSeasonNumber({
 export async function getLatestPodcastSeasonLinks({
 	request,
 	timings,
+	signal,
 }: {
 	request: Request
 	timings?: Timings
+	signal?: AbortSignal
 }) {
 	return cachified({
 		cache,
@@ -78,10 +99,11 @@ export async function getLatestPodcastSeasonLinks({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		checkValue: latestPodcastSeasonLinksSchema,
 		getFreshValue: async () => {
+			throwIfAborted(signal)
 			const [latestChatsSeasonNumber, latestCallsSeasonNumber] =
 				await Promise.all([
-					getLatestChatsSeasonNumber({ request, timings }),
-					getLatestCallsSeasonNumber({ request, timings }),
+					getLatestChatsSeasonNumber({ request, timings, signal }),
+					getLatestCallsSeasonNumber({ request, timings, signal }),
 				])
 
 			return {

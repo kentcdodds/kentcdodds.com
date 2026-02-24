@@ -38,15 +38,22 @@ export async function withTimeout<T>(
 		timeoutMs,
 		fallback,
 		label = 'operation',
+		onTimeout,
 	}: {
 		timeoutMs: number
 		fallback: T
 		label?: string
+		onTimeout?: () => void
 	},
 ): Promise<T> {
 	let timeoutId: ReturnType<typeof setTimeout> | undefined
 	const timeoutPromise = new Promise<never>((_, reject) => {
 		timeoutId = setTimeout(() => {
+			try {
+				onTimeout?.()
+			} catch (error) {
+				console.error(`${label}: onTimeout hook failed`, error)
+			}
 			reject(new Error(`${label} timed out after ${timeoutMs}ms`))
 		}, timeoutMs)
 	})

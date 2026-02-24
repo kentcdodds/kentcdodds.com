@@ -6,6 +6,57 @@ const defaultSleep: Sleep = async (ms) => {
 	await new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+function createAbortError() {
+	const error = new Error('Request aborted')
+	error.name = 'AbortError'
+	return error
+}
+
+function throwIfAborted(signal?: AbortSignal) {
+	if (!signal?.aborted) return
+	throw createAbortError()
+}
+
+async function waitForDelay({
+	sleep,
+	delayMs,
+	signal,
+}: {
+	sleep: Sleep
+	delayMs: number
+	signal?: AbortSignal
+}) {
+	if (!signal) {
+		await sleep(delayMs)
+		return
+	}
+	throwIfAborted(signal)
+	await new Promise<void>((resolve, reject) => {
+		let settled = false
+		const onAbort = () => {
+			if (settled) return
+			settled = true
+			signal.removeEventListener('abort', onAbort)
+			reject(createAbortError())
+		}
+		signal.addEventListener('abort', onAbort, { once: true })
+		sleep(delayMs).then(
+			() => {
+				if (settled) return
+				settled = true
+				signal.removeEventListener('abort', onAbort)
+				resolve()
+			},
+			(error) => {
+				if (settled) return
+				settled = true
+				signal.removeEventListener('abort', onAbort)
+				reject(error)
+			},
+		)
+	})
+}
+
 type RetryDelayReason = 'retry-after' | 'rate-limit-reset' | 'default'
 
 type RetryDelay = {
@@ -101,6 +152,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		label,
 		sleep = defaultSleep,
 		retryOn5xx = false,
+		signal,
 	}: {
 		headers?: Record<string, string>
 		maxRetries?: number
@@ -110,14 +162,17 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		label?: string
 		sleep?: Sleep
 		retryOn5xx?: boolean
+		signal?: AbortSignal
 	} = {},
 ): Promise<JsonResponse> {
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+		throwIfAborted(signal)
 		let res: Response
 		try {
 			res = timeoutMs
 				? await fetchWithTimeout(url, { headers }, timeoutMs)
 				: await fetch(url, { headers })
+			throwIfAborted(signal)
 		} catch (cause) {
 			if (attempt < maxRetries) {
 				const delayMs = clampMs(defaultDelayMs * (attempt + 1), maxDelayMs)
@@ -126,7 +181,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 						maxRetries + 1
 					}), waiting ${Math.round(delayMs)}ms`,
 				)
-				await sleep(delayMs)
+				await waitForDelay({ sleep, delayMs, signal })
 				continue
 			}
 			throw new Error(`${label ?? 'request'}: fetch failed`, { cause })
@@ -146,7 +201,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 					delayMs,
 				)}ms (${reason})`,
 			)
-			await sleep(delayMs)
+			await waitForDelay({ sleep, delayMs, signal })
 			continue
 		}
 
@@ -159,7 +214,7 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 						maxRetries + 1
 					}), waiting ${Math.round(delayMs)}ms`,
 				)
-				await sleep(delayMs)
+				await waitForDelay({ sleep, delayMs, signal })
 				continue
 			}
 

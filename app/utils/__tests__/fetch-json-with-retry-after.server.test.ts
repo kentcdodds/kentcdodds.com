@@ -167,6 +167,28 @@ test('fetchJsonWithRetryAfter retries when fetch throws (network error / abort)'
 	expect(sleep).toHaveBeenCalledWith(456)
 })
 
+test('fetchJsonWithRetryAfter throws AbortError when signal is already aborted', async () => {
+	const controller = new AbortController()
+	controller.abort()
+	await expect(
+		fetchJsonWithRetryAfter('https://example.com/test', {
+			label: 'aborted-before-start',
+			signal: controller.signal,
+		}),
+	).rejects.toMatchObject({ name: 'AbortError' })
+})
+
+test('fetchJsonWithRetryAfter aborts while waiting to retry', async () => {
+	const controller = new AbortController()
+	const promise = fetchJsonWithRetryAfter('https://example.com/always-429', {
+		label: 'aborted-during-delay',
+		maxRetries: 2,
+		signal: controller.signal,
+	})
+	setTimeout(() => controller.abort(), 10)
+	await expect(promise).rejects.toMatchObject({ name: 'AbortError' })
+})
+
 test('fetchJsonWithRetryAfter throws a labeled error on malformed JSON', async () => {
 	const sleep = vi.fn(async () => {})
 	await expect(

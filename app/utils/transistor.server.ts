@@ -61,16 +61,53 @@ function isTransientNetworkError(error: unknown) {
 	return false
 }
 
+function createAbortError() {
+	const error = new Error('Operation aborted')
+	error.name = 'AbortError'
+	return error
+}
+
+function throwIfAborted(signal?: AbortSignal) {
+	if (!signal?.aborted) return
+	throw createAbortError()
+}
+
+function isAbortError(error: unknown) {
+	return error instanceof Error && error.name === 'AbortError'
+}
+
+async function waitForDelayWithSignal(delayMs: number, signal?: AbortSignal) {
+	if (!signal) {
+		await new Promise((resolve) => setTimeout(resolve, delayMs))
+		return
+	}
+	throwIfAborted(signal)
+	await new Promise<void>((resolve, reject) => {
+		const timeoutId = setTimeout(() => {
+			signal.removeEventListener('abort', onAbort)
+			resolve()
+		}, delayMs)
+		const onAbort = () => {
+			clearTimeout(timeoutId)
+			signal.removeEventListener('abort', onAbort)
+			reject(createAbortError())
+		}
+		signal.addEventListener('abort', onAbort, { once: true })
+	})
+}
+
 async function fetchTransitor<JsonResponse>({
 	endpoint,
 	method = 'GET',
 	query = {},
 	data,
+	signal,
 }: {
 	endpoint: string
 	method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 	query?: Record<string, string>
 	data?: Record<string, unknown>
+	signal?: AbortSignal
 }) {
 	const env = getEnv()
 	const url = new URL(endpoint, 'https://api.transistor.fm')
@@ -95,7 +132,9 @@ async function fetchTransitor<JsonResponse>({
 	let attempt = 0
 	while (true) {
 		try {
+			throwIfAborted(signal)
 			const res = await fetch(url.toString(), config)
+			throwIfAborted(signal)
 			if (res.status === 429 && attempt < maxRetries) {
 				attempt++
 				const retryAfterHeader = res.headers.get('Retry-After')
@@ -104,12 +143,12 @@ async function fetchTransitor<JsonResponse>({
 					retryAfterHeader && !Number.isNaN(Number(retryAfterHeader))
 						? Number(retryAfterHeader)
 						: 10
-				await new Promise((r) => setTimeout(r, retryAfterSeconds * 1000))
+				await waitForDelayWithSignal(retryAfterSeconds * 1000, signal)
 				continue
 			}
 			if (res.status >= 500 && attempt < maxRetries) {
 				attempt++
-				await new Promise((r) => setTimeout(r, attempt * 1000))
+				await waitForDelayWithSignal(attempt * 1000, signal)
 				continue
 			}
 
@@ -132,9 +171,10 @@ async function fetchTransitor<JsonResponse>({
 			}
 			return json as JsonResponse
 		} catch (error: unknown) {
+			if (isAbortError(error)) throw error
 			if (isTransientNetworkError(error) && attempt < maxRetries) {
 				attempt++
-				await new Promise((r) => setTimeout(r, attempt * 1000))
+				await waitForDelayWithSignal(attempt * 1000, signal)
 				continue
 			}
 			throw error
@@ -327,7 +367,8 @@ async function createEpisode({
 	return returnValue
 }
 
-async function getEpisodes() {
+async function getEpisodes({ signal }: { signal?: AbortSignal } = {}) {
+	throwIfAborted(signal)
 	// Transistor's API max per-page is 100; fetch all pages sequentially
 	const perPage = 100
 
@@ -335,6 +376,7 @@ async function getEpisodes() {
 	const firstPage = await fetchTransitor<TransistorEpisodesJson>({
 		endpoint: `/v1/episodes`,
 		query: { 'pagination[per]': String(perPage), 'pagination[page]': '1' },
+		signal,
 	})
 
 	const allEpisodesData = [...firstPage.data]
@@ -345,12 +387,14 @@ async function getEpisodes() {
 		{ length: Math.max(0, totalPages - 1) },
 		(_, i) => i + 2,
 	)) {
+		throwIfAborted(signal)
 		const pageData = await fetchTransitor<TransistorEpisodesJson>({
 			endpoint: `/v1/episodes`,
 			query: {
 				'pagination[per]': String(perPage),
 				'pagination[page]': String(page),
 			},
+			signal,
 		})
 		allEpisodesData.push(...pageData.data)
 	}
@@ -368,6 +412,7 @@ async function getEpisodes() {
 	})
 	const episodes: Array<CallKentEpisode> = []
 	for (const episode of sortedTransistorEpisodes) {
+		throwIfAborted(signal)
 		if (episode.attributes.audio_processing) continue
 		if (episode.attributes.status !== 'published') continue
 		if (!episode.attributes.number) continue
@@ -415,10 +460,12 @@ async function getCachedEpisodes({
 	request,
 	forceFresh,
 	timings,
+	signal,
 }: {
 	request?: Request
 	forceFresh?: boolean
 	timings?: Timings
+	signal?: AbortSignal
 }) {
 	const episodesCacheKey = `transistor:episodes:${getEnv().CALL_KENT_PODCAST_ID}`
 	try {
@@ -427,7 +474,7 @@ async function getCachedEpisodes({
 			request,
 			timings,
 			key: episodesCacheKey,
-			getFreshValue: getEpisodes,
+			getFreshValue: () => getEpisodes({ signal }),
 			ttl: 1000 * 60 * 60 * 24,
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 			forceFresh: await shouldForceFresh({
@@ -442,6 +489,7 @@ async function getCachedEpisodes({
 				),
 		})
 	} catch (error: unknown) {
+		if (isAbortError(error)) return []
 		console.error(
 			`transistor: cachified failed to resolve episodes, returning empty fallback`,
 			error,

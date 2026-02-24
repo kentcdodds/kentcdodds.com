@@ -124,6 +124,7 @@ const PODCAST_LINKS_FALLBACK = {
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const loaderStart = performance.now()
+	const podcastLinksAbortController = new AbortController()
 	const session = await getSession(request)
 	const [
 		user,
@@ -137,11 +138,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 		getLoginInfoSession(request),
 		getInstanceInfo().then((i) => i.primaryInstance),
 		time(
-			withTimeout(getLatestPodcastSeasonLinks({ request, timings }), {
+			withTimeout(
+				getLatestPodcastSeasonLinks({
+					request,
+					timings,
+					signal: podcastLinksAbortController.signal,
+				}),
+				{
 				timeoutMs: 2000,
 				fallback: PODCAST_LINKS_FALLBACK,
 				label: 'root:podcast-season-links',
-			}),
+				onTimeout: () => podcastLinksAbortController.abort(),
+			},
+			),
 			{
 				timings,
 				type: 'root:podcast-season-links',
