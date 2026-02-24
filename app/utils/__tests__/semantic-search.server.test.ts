@@ -26,6 +26,8 @@ describe('semantic search result normalization', () => {
 			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
 			CLOUDFLARE_AI_GATEWAY_ID: process.env.CLOUDFLARE_AI_GATEWAY_ID,
+			CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN:
+				process.env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN,
 			CLOUDFLARE_VECTORIZE_INDEX: process.env.CLOUDFLARE_VECTORIZE_INDEX,
 			CLOUDFLARE_AI_EMBEDDING_MODEL: process.env.CLOUDFLARE_AI_EMBEDDING_MODEL,
 			CLOUDFLARE_AI_TEXT_MODEL: process.env.CLOUDFLARE_AI_TEXT_MODEL,
@@ -35,10 +37,12 @@ describe('semantic search result normalization', () => {
 			const apiToken = 'MOCK_test-token'
 			const indexName = 'semantic-index'
 			const gatewayId = 'test-gateway'
+			const gatewayAuthToken = 'MOCK_test-gateway-auth-token'
 
 			process.env.CLOUDFLARE_ACCOUNT_ID = accountId
 			process.env.CLOUDFLARE_API_TOKEN = apiToken
 			process.env.CLOUDFLARE_AI_GATEWAY_ID = gatewayId
+			process.env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN = gatewayAuthToken
 			process.env.CLOUDFLARE_VECTORIZE_INDEX = indexName
 			process.env.CLOUDFLARE_AI_TEXT_MODEL = '@cf/meta/llama-3.1-8b-instruct'
 			delete process.env.CLOUDFLARE_AI_EMBEDDING_MODEL
@@ -54,6 +58,7 @@ describe('semantic search result normalization', () => {
 					method: 'POST',
 					headers: {
 						Authorization: `Bearer ${apiToken}`,
+						'cf-aig-authorization': `Bearer ${gatewayAuthToken}`,
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify({ text: [query] }),

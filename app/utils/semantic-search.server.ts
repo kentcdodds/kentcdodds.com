@@ -119,6 +119,7 @@ function getRequiredSemanticSearchEnv() {
 		accountId: env.CLOUDFLARE_ACCOUNT_ID,
 		apiToken: env.CLOUDFLARE_API_TOKEN,
 		gatewayId: env.CLOUDFLARE_AI_GATEWAY_ID,
+		gatewayAuthToken: env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN,
 		indexName: env.CLOUDFLARE_VECTORIZE_INDEX,
 		embeddingModel: env.CLOUDFLARE_AI_EMBEDDING_MODEL,
 	}
@@ -175,12 +176,14 @@ async function getEmbedding({
 	accountId,
 	apiToken,
 	gatewayId,
+	gatewayAuthToken,
 	model,
 	text,
 }: {
 	accountId: string
 	apiToken: string
 	gatewayId: string
+	gatewayAuthToken: string
 	model: string
 	text: string
 }) {
@@ -189,6 +192,7 @@ async function getEmbedding({
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${apiToken}`,
+			'cf-aig-authorization': `Bearer ${gatewayAuthToken}`,
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({ text: [text] }),
@@ -390,7 +394,7 @@ export async function semanticSearchKCD({
 	 */
 	topK?: number
 }): Promise<Array<SemanticSearchResult>> {
-	const { accountId, apiToken, gatewayId, indexName, embeddingModel } =
+	const { accountId, apiToken, gatewayId, gatewayAuthToken, indexName, embeddingModel } =
 		getRequiredSemanticSearchEnv()
 
 	const safeTopK =
@@ -406,6 +410,7 @@ export async function semanticSearchKCD({
 		accountId,
 		apiToken,
 		gatewayId,
+		gatewayAuthToken,
 		model: embeddingModel,
 		text: query,
 	})

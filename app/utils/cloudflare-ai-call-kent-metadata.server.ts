@@ -146,6 +146,7 @@ ${callTitle ? `Caller-provided title: ${callTitle}\n\n` : ''}${callerNotes?.trim
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${apiToken}`,
+			'cf-aig-authorization': `Bearer ${env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN}`,
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({

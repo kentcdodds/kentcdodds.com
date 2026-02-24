@@ -67,6 +67,10 @@ const schemaBase = z.object({
 	CLOUDFLARE_API_TOKEN: nonEmptyString,
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,
+	/**
+	 * AI Gateway authenticated gateway token (used as `cf-aig-authorization`).
+	 */
+	CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: nonEmptyString,
 	CLOUDFLARE_VECTORIZE_INDEX: nonEmptyString,
 	CLOUDFLARE_AI_EMBEDDING_MODEL: z
 		.string()

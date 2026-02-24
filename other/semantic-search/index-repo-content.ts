@@ -638,12 +638,14 @@ async function embedItemsSafely({
 	accountId,
 	apiToken,
 	gatewayId,
+	gatewayAuthToken,
 	model,
 	items,
 }: {
 	accountId: string
 	apiToken: string
 	gatewayId: string
+	gatewayAuthToken: string
 	model: string
 	items: Array<{
 		vectorId: string
@@ -658,6 +660,7 @@ async function embedItemsSafely({
 			accountId,
 			apiToken,
 			gatewayId,
+			gatewayAuthToken,
 			model,
 			texts: items.map((b) => b.text),
 		})
@@ -683,6 +686,7 @@ async function embedItemsSafely({
 			accountId,
 			apiToken,
 			gatewayId,
+			gatewayAuthToken,
 			model,
 			items: items.slice(0, mid),
 		})
@@ -690,6 +694,7 @@ async function embedItemsSafely({
 			accountId,
 			apiToken,
 			gatewayId,
+			gatewayAuthToken,
 			model,
 			items: items.slice(mid),
 		})
@@ -699,7 +704,7 @@ async function embedItemsSafely({
 
 async function main() {
 	const { before, after, manifestKey, only } = parseArgs()
-	const { accountId, apiToken, gatewayId, vectorizeIndex, embeddingModel } =
+	const { accountId, apiToken, gatewayId, gatewayAuthToken, vectorizeIndex, embeddingModel } =
 		getCloudflareConfig()
 	const r2Bucket = (process.env.R2_BUCKET ?? '').trim()
 	if (!r2Bucket) {
@@ -928,6 +933,7 @@ async function main() {
 			accountId,
 			apiToken,
 			gatewayId,
+			gatewayAuthToken,
 			indexName: vectorizeIndex,
 			ids: idBatch,
 		})
@@ -951,6 +957,7 @@ async function main() {
 			accountId,
 			apiToken,
 			gatewayId,
+			gatewayAuthToken,
 			model: embeddingModel,
 			items: embedBatch,
 		})
@@ -971,6 +978,7 @@ async function main() {
 			accountId,
 			apiToken,
 			gatewayId,
+			gatewayAuthToken,
 			indexName: vectorizeIndex,
 			vectors: vecBatch,
 		})

@@ -54,6 +54,7 @@ export async function synthesizeSpeechWithWorkersAi({
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${apiToken}`,
+			'cf-aig-authorization': `Bearer ${env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN}`,
 			'Content-Type': 'application/json',
 			// Many TTS models return binary audio when requested.
 			Accept: 'audio/mpeg,application/json;q=0.9,*/*;q=0.8',

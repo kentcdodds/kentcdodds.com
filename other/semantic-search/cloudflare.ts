@@ -18,6 +18,7 @@ export function getCloudflareConfig() {
 		accountId: getRequiredEnv('CLOUDFLARE_ACCOUNT_ID'),
 		apiToken: getRequiredEnv('CLOUDFLARE_API_TOKEN'),
 		gatewayId: getRequiredEnv('CLOUDFLARE_AI_GATEWAY_ID'),
+		gatewayAuthToken: getRequiredEnv('CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN'),
 		vectorizeIndex: getRequiredEnv('CLOUDFLARE_VECTORIZE_INDEX'),
 		embeddingModel:
 			process.env.CLOUDFLARE_AI_EMBEDDING_MODEL ??
@@ -30,7 +31,13 @@ async function cfFetch(
 		accountId,
 		apiToken,
 		gatewayId,
-	}: { accountId: string; apiToken: string; gatewayId: string },
+		gatewayAuthToken,
+	}: {
+		accountId: string
+		apiToken: string
+		gatewayId: string
+		gatewayAuthToken: string
+	},
 	path: string,
 	init: RequestInit,
 ) {
@@ -73,6 +80,9 @@ async function cfFetch(
 			signal,
 			headers: {
 				Authorization: `Bearer ${apiToken}`,
+				...(path.startsWith(workersAiPrefix)
+					? { 'cf-aig-authorization': `Bearer ${gatewayAuthToken}` }
+					: null),
 				...(init.headers ?? {}),
 			},
 		}).catch((e) => {
@@ -114,20 +124,26 @@ export async function getEmbeddings({
 	accountId,
 	apiToken,
 	gatewayId,
+	gatewayAuthToken,
 	model,
 	texts,
 }: {
 	accountId: string
 	apiToken: string
 	gatewayId: string
+	gatewayAuthToken: string
 	model: string
 	texts: string[]
 }) {
-	const res = await cfFetch({ accountId, apiToken, gatewayId }, `/ai/run/${model}`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ text: texts }),
-	})
+	const res = await cfFetch(
+		{ accountId, apiToken, gatewayId, gatewayAuthToken },
+		`/ai/run/${model}`,
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ text: texts }),
+		},
+	)
 	const json = (await res.json()) as any
 	const result: EmbeddingResponse = (json?.result ?? json) as any
 	if (!Array.isArray(result?.data) || result.data.length !== texts.length) {
@@ -151,6 +167,7 @@ async function vectorizeWriteNdjson({
 	accountId,
 	apiToken,
 	gatewayId,
+	gatewayAuthToken,
 	indexName,
 	operation,
 	vectors,
@@ -158,6 +175,7 @@ async function vectorizeWriteNdjson({
 	accountId: string
 	apiToken: string
 	gatewayId: string
+	gatewayAuthToken: string
 	indexName: string
 	operation: 'insert' | 'upsert'
 	vectors: VectorizeVector[]
@@ -175,10 +193,14 @@ async function vectorizeWriteNdjson({
 
 	const pathV2 = `/vectorize/v2/indexes/${indexName}/${operation}`
 	try {
-		const res = await cfFetch({ accountId, apiToken, gatewayId }, pathV2, {
-			method: 'POST',
-			body: form,
-		})
+		const res = await cfFetch(
+			{ accountId, apiToken, gatewayId, gatewayAuthToken },
+			pathV2,
+			{
+				method: 'POST',
+				body: form,
+			},
+		)
 		return (await res.json()) as any
 	} catch (e) {
 		// Only fall back when we strongly suspect this is a legacy (v1) index.
@@ -194,10 +216,14 @@ async function vectorizeWriteNdjson({
 		if (!looksLikeLegacyIndex) throw e
 
 		const pathLegacy = `/vectorize/indexes/${indexName}/${operation}`
-		const res = await cfFetch({ accountId, apiToken, gatewayId }, pathLegacy, {
-			method: 'POST',
-			body: form,
-		})
+		const res = await cfFetch(
+			{ accountId, apiToken, gatewayId, gatewayAuthToken },
+			pathLegacy,
+			{
+				method: 'POST',
+				body: form,
+			},
+		)
 		return (await res.json()) as any
 	}
 }
@@ -206,12 +232,14 @@ export async function vectorizeUpsert({
 	accountId,
 	apiToken,
 	gatewayId,
+	gatewayAuthToken,
 	indexName,
 	vectors,
 }: {
 	accountId: string
 	apiToken: string
 	gatewayId: string
+	gatewayAuthToken: string
 	indexName: string
 	vectors: VectorizeVector[]
 }) {
@@ -219,6 +247,7 @@ export async function vectorizeUpsert({
 		accountId,
 		apiToken,
 		gatewayId,
+		gatewayAuthToken,
 		indexName,
 		operation: 'upsert',
 		vectors,
@@ -229,26 +258,28 @@ export async function vectorizeDeleteByIds({
 	accountId,
 	apiToken,
 	gatewayId,
+	gatewayAuthToken,
 	indexName,
 	ids,
 }: {
 	accountId: string
 	apiToken: string
 	gatewayId: string
+	gatewayAuthToken: string
 	indexName: string
 	ids: string[]
 }) {
 	const body = JSON.stringify({ ids })
 	try {
 		const res = await cfFetch(
-			{ accountId, apiToken, gatewayId },
+			{ accountId, apiToken, gatewayId, gatewayAuthToken },
 			`/vectorize/v2/indexes/${indexName}/delete_by_ids`,
 			{ method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
 		)
 		return (await res.json()) as any
 	} catch {
 		const res = await cfFetch(
-			{ accountId, apiToken, gatewayId },
+			{ accountId, apiToken, gatewayId, gatewayAuthToken },
 			`/vectorize/indexes/${indexName}/delete_by_ids`,
 			{ method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
 		)

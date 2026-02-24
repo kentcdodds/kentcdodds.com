@@ -84,6 +84,7 @@ ${callerName ? `- ${callerName}` : ''}
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${apiToken}`,
+			'cf-aig-authorization': `Bearer ${env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN}`,
 			'Content-Type': isWhisperLargeV3Turbo ? 'application/json' : 'audio/mpeg',
 		},
 		body,
