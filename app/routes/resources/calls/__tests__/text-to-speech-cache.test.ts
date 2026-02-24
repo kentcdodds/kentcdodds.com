@@ -94,10 +94,15 @@ test('validates normalized question text before synthesis', async () => {
 		text: 'hello               you',
 		voice: 'luna',
 	})
-	const res = (await action({ request: req } as any)) as Response
+	const result = (await action({ request: req } as any)) as {
+		type?: string
+		data?: unknown
+		init?: ResponseInit | null
+	}
 
-	expect(res.status).toBe(400)
-	expect(await res.json()).toEqual({
+	expect(result.type).toBe('DataWithResponseInit')
+	expect(result.init?.status).toBe(400)
+	expect(result.data).toEqual({
 		error: 'Question text must be at least 20 characters',
 	})
 	expect(synthesizeSpeechWithWorkersAi).not.toHaveBeenCalled()
