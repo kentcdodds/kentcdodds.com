@@ -112,12 +112,14 @@ function ErrorPage({
 				) : null}
 				<HeroSection {...resolvedHeroProps} />
 
-				{possibleMatches ? (
+				{possibleMatches?.length ? (
 					<PossibleMatchesSection
 						matches={possibleMatches}
 						query={possibleMatchesQuery}
 					/>
 				) : null}
+
+				{possibleMatches?.length === 0 ? <Spacer size="lg" /> : null}
 
 				{articles?.length ? (
 					<>
@@ -142,9 +144,7 @@ function PossibleMatchesSection({
 	query?: string
 }) {
 	const q = typeof query === 'string' ? query.trim() : ''
-	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const sorted = sortNotFoundMatches(matches)
-	const hasMatches = sorted.length > 0
 
 	return (
 		<>
@@ -195,13 +195,6 @@ function PossibleMatchesSection({
 							</li>
 						))}
 					</ul>
-					<p className="mt-4 text-sm text-slate-500">
-						{hasMatches ? 'None of these match? ' : 'No close matches found. '}
-						<a href={searchUrl} className="underlined">
-							Try semantic search
-						</a>
-						.
-					</p>
 				</div>
 			</Grid>
 		</>
@@ -233,10 +226,20 @@ function FourOhFour({
 	const searchUrl = q ? `/search?q=${encodeURIComponent(q)}` : '/search'
 	const hasPossibleMatches =
 		Array.isArray(possibleMatchesProp) && possibleMatchesProp.length > 0
-	const heroActionTo = hasPossibleMatches ? '#possible-matches' : searchUrl
-	const heroActionLabel = hasPossibleMatches
-		? 'Possible matches'
-		: 'Search the site'
+	const heroAction = hasPossibleMatches ? (
+		<ArrowLink to="#possible-matches" className="whitespace-nowrap">
+			Possible matches
+		</ArrowLink>
+	) : (
+		<div className="space-y-2">
+			<ArrowLink to={searchUrl} className="whitespace-nowrap">
+				Search the site
+			</ArrowLink>
+			<p className="text-sm text-slate-500 dark:text-slate-400">
+				Uses semantic search to find related content.
+			</p>
+		</div>
+	)
 
 	// Most pages intentionally use the global `mx-10vw` gutter (it’s part of the
 	// overall site layout). The 404 view reads better on mobile when it’s a bit
@@ -255,11 +258,7 @@ function FourOhFour({
 					title: "404 - Oh no, you found a page that's missing stuff.",
 					subtitle: `"${pathname}" is not a page on kentcdodds.com. So sorry.`,
 					image: <MissingSomething className="rounded-lg" aspectRatio="3:4" />,
-					action: (
-						<ArrowLink to={heroActionTo} className="whitespace-nowrap">
-							{heroActionLabel}
-						</ArrowLink>
-					),
+					action: heroAction,
 				}}
 			/>
 		</div>

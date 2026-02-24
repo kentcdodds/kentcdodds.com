@@ -8,7 +8,7 @@ interface HeaderSectionProps {
 	cta?: string
 	as?: React.ElementType
 	title: string
-	subTitle: string
+	subTitle?: string
 	className?: string
 }
 
@@ -30,9 +30,11 @@ function HeaderSection({
 			>
 				<div className="space-y-2 lg:space-y-0">
 					<H2>{title}</H2>
-					<H2 variant="secondary" as="p">
-						{subTitle}
-					</H2>
+					{subTitle ? (
+						<H2 variant="secondary" as="p">
+							{subTitle}
+						</H2>
+					) : null}
 				</div>
 
 				{cta && ctaUrl ? (
