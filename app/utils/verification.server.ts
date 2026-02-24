@@ -4,13 +4,15 @@ import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 
 const VERIFICATION_CODE_DIGITS = 6
-const VERIFICATION_CODE_PERIOD_SECONDS = 30
-const VERIFICATION_CODE_MAX_AGE_MS = 1000 * 60 * 10
+const VERIFICATION_CODE_MAX_AGE_SECONDS = 10 * 60
+const VERIFICATION_CODE_MAX_AGE_MS = VERIFICATION_CODE_MAX_AGE_SECONDS * 1000
+const VERIFICATION_CODE_PERIOD_SECONDS = VERIFICATION_CODE_MAX_AGE_SECONDS
 const VERIFICATION_CODE_ALGORITHM: HashAlgorithm = 'SHA-256'
 const VERIFICATION_CODE_CHARSET = '0123456789'
-const VERIFICATION_CODE_WINDOW = Math.ceil(
-	VERIFICATION_CODE_MAX_AGE_MS / (VERIFICATION_CODE_PERIOD_SECONDS * 1000),
-)
+// With a 10 minute TOTP period and a 10 minute `expiresAt`, the code can cross
+// at most one TOTP boundary before expiry. Allowing one previous step keeps the
+// emailed code valid for the full lifetime without accepting future codes.
+const VERIFICATION_CODE_WINDOW = 1
 
 export type VerificationType = 'SIGNUP' | 'PASSWORD_RESET'
 
@@ -29,10 +31,10 @@ async function isValidVerificationCode({
 			period: VERIFICATION_CODE_PERIOD_SECONDS,
 			algorithm: VERIFICATION_CODE_ALGORITHM,
 			charSet: VERIFICATION_CODE_CHARSET,
-			// Ensure the emailed code works for the full max age from creation.
+			// Accept current/previous step only (reject future steps via `delta`).
 			window: VERIFICATION_CODE_WINDOW,
 		})
-		return Boolean(result)
+		return Boolean(result && result.delta <= 0)
 	}
 
 	// Backwards compatibility: existing rows stored a bcrypt hash of the code.

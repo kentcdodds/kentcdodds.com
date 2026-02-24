@@ -198,7 +198,7 @@ test('consumeVerificationForTarget verifies and consumes the latest unexpired re
 
 	const { otp, secret } = await generateTOTP({
 		digits: 6,
-		period: 30,
+		period: 10 * 60,
 		algorithm: 'SHA-256',
 		charSet: '0123456789',
 	})
