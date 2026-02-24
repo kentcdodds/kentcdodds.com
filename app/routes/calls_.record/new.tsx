@@ -12,6 +12,7 @@ import { H4, Paragraph } from '#app/components/typography.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
+import { formatCallKentTextToSpeechNotes } from '#app/utils/call-kent-text-to-speech.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/new'
@@ -156,11 +157,12 @@ export default function RecordScreen({
 							<CallKentTextToSpeech
 								onAcceptAudio={({ audio, questionText }) => {
 									setAudio(audio)
-									const cleanedQuestion = questionText.trim()
+									const formattedNotes =
+										formatCallKentTextToSpeechNotes(questionText)
 									setPrefill({
 										fields: {
 											title: 'Call Kent question',
-											notes: cleanedQuestion,
+											notes: formattedNotes,
 										},
 										errors: {},
 									})
