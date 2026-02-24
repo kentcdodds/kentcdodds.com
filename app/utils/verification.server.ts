@@ -1,20 +1,47 @@
-import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
+import { generateTOTP, verifyTOTP } from '@epic-web/totp'
+import type { HashAlgorithm } from '@epic-web/totp'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 
 const VERIFICATION_CODE_DIGITS = 6
+const VERIFICATION_CODE_PERIOD_SECONDS = 30
 const VERIFICATION_CODE_MAX_AGE_MS = 1000 * 60 * 10
+const VERIFICATION_CODE_ALGORITHM: HashAlgorithm = 'SHA-256'
+const VERIFICATION_CODE_CHARSET = '0123456789'
+const VERIFICATION_CODE_WINDOW = Math.ceil(
+	VERIFICATION_CODE_MAX_AGE_MS / (VERIFICATION_CODE_PERIOD_SECONDS * 1000),
+)
 
 export type VerificationType = 'SIGNUP' | 'PASSWORD_RESET'
 
-function generateVerificationCode() {
-	// 000000 - 999999 (left-padded)
-	const code = crypto
-		.randomInt(0, Math.pow(10, VERIFICATION_CODE_DIGITS))
-		.toString()
-		.padStart(VERIFICATION_CODE_DIGITS, '0')
-	return code
+async function isValidVerificationCode({
+	code,
+	verification,
+}: {
+	code: string
+	verification: { secret: string | null; codeHash: string | null }
+}) {
+	if (verification.secret) {
+		const result = await verifyTOTP({
+			otp: code,
+			secret: verification.secret,
+			digits: VERIFICATION_CODE_DIGITS,
+			period: VERIFICATION_CODE_PERIOD_SECONDS,
+			algorithm: VERIFICATION_CODE_ALGORITHM,
+			charSet: VERIFICATION_CODE_CHARSET,
+			// Ensure the emailed code works for the full max age from creation.
+			window: VERIFICATION_CODE_WINDOW,
+		})
+		return Boolean(result)
+	}
+
+	// Backwards compatibility: existing rows stored a bcrypt hash of the code.
+	if (verification.codeHash) {
+		return bcrypt.compare(code, verification.codeHash)
+	}
+
+	return false
 }
 
 export async function createVerification({
@@ -24,8 +51,12 @@ export async function createVerification({
 	type: VerificationType
 	target: string
 }) {
-	const code = generateVerificationCode()
-	const codeHash = await bcrypt.hash(code, 10)
+	const { otp: code, secret } = await generateTOTP({
+		digits: VERIFICATION_CODE_DIGITS,
+		period: VERIFICATION_CODE_PERIOD_SECONDS,
+		algorithm: VERIFICATION_CODE_ALGORITHM,
+		charSet: VERIFICATION_CODE_CHARSET,
+	})
 	const expiresAt = new Date(Date.now() + VERIFICATION_CODE_MAX_AGE_MS)
 
 	await ensurePrimary()
@@ -33,7 +64,7 @@ export async function createVerification({
 		data: {
 			type,
 			target,
-			codeHash,
+			secret,
 			expiresAt,
 		},
 		select: { id: true, expiresAt: true, target: true, type: true },
@@ -57,6 +88,7 @@ export async function consumeVerification({
 			id: true,
 			type: true,
 			target: true,
+			secret: true,
 			codeHash: true,
 			expiresAt: true,
 		},
@@ -66,7 +98,7 @@ export async function consumeVerification({
 	if (verification.type !== type) return null
 	if (Date.now() > verification.expiresAt.getTime()) return null
 
-	const isValid = await bcrypt.compare(code, verification.codeHash)
+	const isValid = await isValidVerificationCode({ code, verification })
 	if (!isValid) return null
 
 	await ensurePrimary()
@@ -108,13 +140,14 @@ export async function consumeVerificationForTarget({
 			id: true,
 			type: true,
 			target: true,
+			secret: true,
 			codeHash: true,
 			expiresAt: true,
 		},
 	})
 	if (!verification) return null
 
-	const isValid = await bcrypt.compare(code, verification.codeHash)
+	const isValid = await isValidVerificationCode({ code, verification })
 	if (!isValid) return null
 
 	await ensurePrimary()

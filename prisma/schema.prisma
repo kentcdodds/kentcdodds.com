@@ -54,7 +54,9 @@ model Verification {
   createdAt DateTime @default(now())
   type      String
   target    String
-  codeHash  String
+  // New verifications store a TOTP secret; legacy rows may still have `codeHash`.
+  secret    String?
+  codeHash  String?
   expiresAt DateTime
 
   @@index([target, type])

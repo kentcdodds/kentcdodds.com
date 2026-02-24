@@ -59,6 +59,7 @@
     "@epic-web/config": "^1.24.0",
     "@epic-web/invariant": "^1.0.0",
     "@epic-web/remember": "^1.1.0",
+    "@epic-web/totp": "^4.0.1",
     "@kentcdodds/md-temp": "^10.0.1",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@octokit/plugin-throttling": "^11.0.3",
