@@ -126,24 +126,29 @@ async function readMdxDoc(type: DocType, slug: string) {
 	if (type !== 'blog' && type !== 'page') {
 		throw new Error(`readMdxDoc only supports blog/page. Got: ${type}`)
 	}
-	if (type === 'blog') {
-		// Blog posts can be either:
-		// - content/blog/<slug>/index.mdx
-		// - content/blog/<slug>.mdx
-		const dirFilename = path.join('content', 'blog', slug, 'index.mdx')
-		try {
-			const source = await fs.readFile(dirFilename, 'utf8')
-			return { filename: dirFilename, source }
-		} catch (e: any) {
-			if (e?.code !== 'ENOENT' && e?.code !== 'ENOTDIR') throw e
-		}
-		const fileFilename = path.join('content', 'blog', `${slug}.mdx`)
-		const source = await fs.readFile(fileFilename, 'utf8')
-		return { filename: fileFilename, source }
-	}
-	const filename = path.join('content', 'pages', `${slug}.mdx`)
+	const contentDir = type === 'blog' ? 'blog' : 'pages'
+	const filename = path.join('content', contentDir, slug, 'index.mdx')
 	const source = await fs.readFile(filename, 'utf8')
 	return { filename, source }
+}
+
+async function getMdxEntrySlugs(
+	contentDir: 'blog' | 'pages',
+): Promise<Array<string>> {
+	const contentRoot = path.join('content', contentDir)
+	const entries = await fs.readdir(contentRoot, { withFileTypes: true })
+	const slugs: Array<string> = []
+	for (const entry of entries) {
+		if (!entry.isDirectory()) continue
+		const entryFile = path.join(contentRoot, entry.name, 'index.mdx')
+		try {
+			await fs.access(entryFile)
+			slugs.push(entry.name)
+		} catch {
+			// ignore non-mdx directories
+		}
+	}
+	return slugs
 }
 
 function getSlugFromContentPath(
@@ -161,10 +166,11 @@ function getSlugFromContentPath(
 		return { type: 'blog', slug }
 	}
 	if (typeDir === 'pages') {
-		// content/pages/<slug>.mdx
-		const filename = parts[2]
-		if (!filename) return null
-		const slug = filename.replace(/\.mdx$/, '')
+		// content/pages/<slug>/...
+		// content/pages/<slug>.mdx (temporary while migrating)
+		const segment = parts[2]
+		if (!segment) return null
+		const slug = segment.replace(/\.mdx$/, '')
 		return { type: 'page', slug }
 	}
 	return null
@@ -757,28 +763,14 @@ async function main() {
 		console.log(`Only indexing explicitly requested docs: ${only}`)
 	} else if (!before || !after || isAllZerosSha(before)) {
 		// Full index.
-		const blogEntries = await fs.readdir(path.join('content', 'blog'), {
-			withFileTypes: true,
-		})
-		docsToIndex = blogEntries
-			.map((entry) => {
-				if (entry.isDirectory()) {
-					return { type: 'blog' as const, slug: entry.name }
-				}
-				if (entry.isFile() && entry.name.endsWith('.mdx')) {
-					return {
-						type: 'blog' as const,
-						slug: entry.name.replace(/\.mdx$/, ''),
-					}
-				}
-				return null
-			})
-			.filter(Boolean) as Array<{ type: DocType; slug: string }>
-		const pageFiles = await fs.readdir(path.join('content', 'pages'))
+		const blogSlugs = await getMdxEntrySlugs('blog')
+		docsToIndex = blogSlugs.map((slug) => ({
+			type: 'blog' as const,
+			slug,
+		}))
+		const pageSlugs = await getMdxEntrySlugs('pages')
 		docsToIndex.push(
-			...pageFiles
-				.filter((f) => f.endsWith('.mdx'))
-				.map((f) => ({ type: 'page' as const, slug: f.replace(/\.mdx$/, '') })),
+			...pageSlugs.map((slug) => ({ type: 'page' as const, slug })),
 		)
 
 		// YAML-backed site sections
