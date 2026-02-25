@@ -11,6 +11,14 @@ type KvNamespaceLike = {
 	get(key: string, type?: 'text'): Promise<string | null>
 }
 
+type R2ObjectBodyLike = {
+	text(): Promise<string>
+}
+
+type R2BucketLike = {
+	get(key: string): Promise<R2ObjectBodyLike | null>
+}
+
 type MdxRemoteDocumentLookupOptions = {
 	contentDir: string
 	slug: string
@@ -47,6 +55,7 @@ async function getMdxRemoteDocument({
 
 	const source =
 		(await getMdxRemoteDocumentSourceFromBinding(documentKey)) ??
+		(await getMdxRemoteDocumentSourceFromR2Binding(documentKey)) ??
 		(await getMdxRemoteDocumentSourceFromBaseUrl(documentKey)) ??
 		(await getMdxRemoteDocumentSourceFromLocalArtifacts(documentKey))
 	if (!source) return null
@@ -67,6 +76,22 @@ async function getMdxRemoteDocumentSourceFromBinding(documentKey: string) {
 	} catch (error: unknown) {
 		console.warn(
 			`Unable to read mdx-remote document "${documentKey}" from KV binding`,
+			error,
+		)
+		return null
+	}
+}
+
+async function getMdxRemoteDocumentSourceFromR2Binding(documentKey: string) {
+	const r2Binding = getRuntimeBinding<R2BucketLike>('MDX_REMOTE_R2')
+	if (!r2Binding) return null
+	try {
+		const object = await r2Binding.get(documentKey)
+		if (!object) return null
+		return object.text()
+	} catch (error: unknown) {
+		console.warn(
+			`Unable to read mdx-remote document "${documentKey}" from R2 binding`,
 			error,
 		)
 		return null

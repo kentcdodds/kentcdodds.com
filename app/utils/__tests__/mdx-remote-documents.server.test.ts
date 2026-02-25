@@ -92,7 +92,7 @@ test('getMdxRemoteDocument falls back to remote base url fetch', async () => {
 	const document = createRemoteDocument({ slug: 'remote-fetch' })
 	const fetchMock = vi.fn(
 		async (_input: RequestInfo | URL) =>
-		new Response(serializeMdxRemoteDocument(document), { status: 200 }),
+			new Response(serializeMdxRemoteDocument(document), { status: 200 }),
 	)
 	vi.stubGlobal('fetch', fetchMock)
 	setRuntimeEnvSource({
@@ -114,6 +114,36 @@ test('getMdxRemoteDocument falls back to remote base url fetch', async () => {
 	} finally {
 		vi.unstubAllGlobals()
 		clearRuntimeEnvSource()
+	}
+})
+
+test('getMdxRemoteDocument falls back to runtime R2 binding before base url', async () => {
+	const document = createRemoteDocument({ slug: 'r2-post' })
+	const fetchMock = vi.fn()
+	vi.stubGlobal('fetch', fetchMock)
+	setRuntimeEnvSource({
+		ENABLE_MDX_REMOTE: 'true',
+		MDX_REMOTE_BASE_URL: 'https://mdx-remote.example.com',
+	})
+	setRuntimeBindingSource({
+		MDX_REMOTE_R2: {
+			get: vi.fn(async () => ({
+				text: async () => serializeMdxRemoteDocument(document),
+			})),
+		},
+	})
+
+	try {
+		const result = await getMdxRemoteDocument({
+			contentDir: 'blog',
+			slug: 'r2-post',
+		})
+		expect(result?.slug).toBe('r2-post')
+		expect(fetchMock).not.toHaveBeenCalled()
+	} finally {
+		clearRuntimeBindingSource()
+		clearRuntimeEnvSource()
+		vi.unstubAllGlobals()
 	}
 })
 
