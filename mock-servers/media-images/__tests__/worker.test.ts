@@ -43,4 +43,16 @@ describe('media images mock worker', () => {
 		const bodyBytes = new Uint8Array(await videoResponse.arrayBuffer())
 		expect(bodyBytes.byteLength).toBeGreaterThan(0)
 	})
+
+	test('serves placeholder call artwork responses', async () => {
+		const artworkResponse = await worker.fetch(
+			new Request(
+				'http://mock-media-images.local/artwork/call-kent.png?title=Hello&url=kentcdodds.com%2Fcalls%2F01%2F01',
+			),
+		)
+		expect(artworkResponse.status).toBe(200)
+		expect(artworkResponse.headers.get('content-type')).toBe('image/webp')
+		const bodyBytes = new Uint8Array(await artworkResponse.arrayBuffer())
+		expect(bodyBytes.byteLength).toBeGreaterThan(0)
+	})
 })
