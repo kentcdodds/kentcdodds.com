@@ -40,6 +40,9 @@ test('parseArgs throws for malformed inputs', () => {
 	expect(() => parseArgs(['--env', 'preview'])).toThrow(/--name/)
 	expect(() => parseArgs(['--name'])).toThrow(/missing value/i)
 	expect(() => parseArgs(['value-without-flag'])).toThrow(/unexpected argument/i)
+	expect(() => parseArgs(['--name', 'worker', '--unknown-flag', 'value'])).toThrow(
+		/unexpected argument|missing value|unknown/i,
+	)
 })
 
 test('collectSecrets merges dotenv, set, env, and generated values', async () => {
@@ -110,5 +113,35 @@ test('collectSecrets throws when required env var is missing', async () => {
 	} finally {
 		if (previousRequired === undefined) delete process.env.MISSING_REQUIRED_SECRET
 		else process.env.MISSING_REQUIRED_SECRET = previousRequired
+	}
+})
+
+test('collectSecrets includes empty values when includeEmpty is true', async () => {
+	const tempDir = await mkdtemp(path.join(os.tmpdir(), 'sync-secrets-empty-test-'))
+	const dotenvPath = path.join(tempDir, '.test-empty.env')
+	await writeFile(
+		dotenvPath,
+		['EMPTY_FROM_DOTENV=', 'NON_EMPTY_FROM_DOTENV=available'].join('\n'),
+		'utf8',
+	)
+
+	try {
+		const secrets = await collectSecrets({
+			name: 'kentcdodds-com',
+			envName: 'preview',
+			setValues: ['EMPTY_FROM_SET=', 'NON_EMPTY_FROM_SET=value'],
+			fromDotenv: [dotenvPath],
+			setFromEnv: [],
+			setFromEnvOptional: [],
+			includeEmpty: true,
+			generateCookieSecret: false,
+		})
+
+		expect(secrets.EMPTY_FROM_DOTENV).toBe('')
+		expect(secrets.EMPTY_FROM_SET).toBe('')
+		expect(secrets.NON_EMPTY_FROM_DOTENV).toBe('available')
+		expect(secrets.NON_EMPTY_FROM_SET).toBe('value')
+	} finally {
+		await rm(tempDir, { recursive: true, force: true })
 	}
 })
