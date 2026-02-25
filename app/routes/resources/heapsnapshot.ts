@@ -1,8 +1,7 @@
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
-import v8 from 'v8'
-import { formatDate } from '#app/utils/misc.ts'
+import {
+	createHeapSnapshot,
+	isHeapSnapshotUnavailableError,
+} from '#app/utils/heapsnapshot.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/heapsnapshot'
 
@@ -10,28 +9,35 @@ export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 	const host =
 		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
-
-	const tempDir = os.tmpdir()
-	const filepath = path.join(
-		tempDir,
-		`${host}-${formatDate(new Date(), 'yyyy-MM-dd HH_mm_ss_SSS')}.heapsnapshot`,
-	)
-
-	const snapshotPath = v8.writeHeapSnapshot(filepath)
-	if (!snapshotPath) {
-		throw new Response('No snapshot saved', { status: 500 })
+	if (!host) {
+		throw new Response('Host header is required', { status: 400 })
 	}
-	const snapshot = await fs.promises.readFile(snapshotPath)
-	const snapshotSize = snapshot.byteLength
 
-	return new Response(snapshot, {
-		status: 200,
-		headers: {
-			'Content-Type': 'application/octet-stream',
-			'Content-Disposition': `attachment; filename="${path.basename(
-				snapshotPath,
-			)}"`,
-			'Content-Length': String(snapshotSize),
-		},
-	})
+	try {
+		const { bytes, filename } = await createHeapSnapshot({ host })
+		const snapshotSize = bytes.byteLength
+		const responseBody =
+			bytes.buffer instanceof ArrayBuffer
+				? bytes.buffer.slice(
+						bytes.byteOffset,
+						bytes.byteOffset + bytes.byteLength,
+					)
+				: Uint8Array.from(bytes).buffer
+
+		return new Response(responseBody, {
+			status: 200,
+			headers: {
+				'Content-Type': 'application/octet-stream',
+				'Content-Disposition': `attachment; filename="${filename}"`,
+				'Content-Length': String(snapshotSize),
+			},
+		})
+	} catch (error) {
+		if (isHeapSnapshotUnavailableError(error)) {
+			throw new Response('Heap snapshot is unavailable in this runtime', {
+				status: 501,
+			})
+		}
+		throw error
+	}
 }
