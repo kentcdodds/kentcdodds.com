@@ -201,6 +201,8 @@ const schemaBase = z.object({
 	// Call Kent audio storage bucket (used by R2-backed call audio storage and
 	// the disk-backed mock when MOCKS=true).
 	CALL_KENT_R2_BUCKET: nonEmptyString,
+	// Optional: HTTP endpoint for containerized ffmpeg processing.
+	CALL_KENT_FFMPEG_CONTAINER_BASE_URL: z.string().trim().optional(),
 	SEMANTIC_SEARCH_IGNORE_LIST_KEY: z
 		.string()
 		.trim()
