@@ -55,4 +55,43 @@ describe('call-kent-ffmpeg container server handler', () => {
 			Buffer.from([7, 8, 9]).toString('base64'),
 		)
 	})
+
+	test('returns 400 when multipart audio fields are missing', async () => {
+		const handler = createCallKentFfmpegHandler({
+			stitchAudio: vi.fn(),
+		})
+		const form = new FormData()
+		form.set(
+			'callAudio',
+			new File([new Uint8Array([1])], 'call.mp3', { type: 'audio/mpeg' }),
+		)
+
+		const response = await handler(
+			new Request('http://container.local/episode-audio', {
+				method: 'POST',
+				body: form,
+			}),
+		)
+		expect(response.status).toBe(400)
+	})
+
+	test('returns 400 when provided audio files are empty', async () => {
+		const handler = createCallKentFfmpegHandler({
+			stitchAudio: vi.fn(),
+		})
+		const form = new FormData()
+		form.set('callAudio', new File([], 'call.mp3', { type: 'audio/mpeg' }))
+		form.set(
+			'responseAudio',
+			new File([new Uint8Array([1])], 'response.mp3', { type: 'audio/mpeg' }),
+		)
+
+		const response = await handler(
+			new Request('http://container.local/episode-audio', {
+				method: 'POST',
+				body: form,
+			}),
+		)
+		expect(response.status).toBe(400)
+	})
 })
