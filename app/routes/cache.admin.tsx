@@ -36,6 +36,13 @@ import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/cache.admin'
 
 const deleteAllMatchingIntent = 'delete-all-matching-cache-values'
+const defaultCacheKeysLimit = 100
+const maxCacheKeysLimit = 10_000
+
+function sanitizeCacheKeysLimit(limit: number) {
+	if (!Number.isFinite(limit)) return defaultCacheKeysLimit
+	return Math.min(maxCacheKeysLimit, Math.max(1, Math.floor(limit)))
+}
 
 async function getMatchingCacheKeys({
 	query,
@@ -44,10 +51,11 @@ async function getMatchingCacheKeys({
 	query: string | null
 	limit: number
 }) {
+	const sanitizedLimit = sanitizeCacheKeysLimit(limit)
 	if (typeof query === 'string') {
-		return searchCacheKeys(query, limit)
+		return searchCacheKeys(query, sanitizedLimit)
 	}
-	return getAllCacheKeys(limit)
+	return getAllCacheKeys(sanitizedLimit)
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -77,6 +85,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const intent = formData.get('intent')
 	if (intent === deleteAllMatchingIntent) {
+		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+		invariantResponse(
+			currentIsPrimary,
+			`Bulk delete must run on the primary instance (${primaryInstance})`,
+		)
 		const query = searchParams.get('query')
 		const limit = Number(searchParams.get('limit') ?? 100)
 		const { sqlite, lru } = await getMatchingCacheKeys({ query, limit })
@@ -152,7 +165,7 @@ export default function CacheAdminRoute({
 						/>
 						<div className="absolute top-0 right-2 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
 							<span title="Total results shown">
-								{data.cacheKeys.sqlite.length + data.cacheKeys.lru.length}
+								{matchingCacheValuesCount}
 							</span>
 						</div>
 					</div>
