@@ -1,13 +1,10 @@
 import path from 'path'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
-import {
-	PrismaClient,
-	type User,
-} from '#app/utils/prisma-generated.server/client.ts'
+import { type User } from '#app/utils/prisma-generated.server/client.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
 
@@ -76,28 +73,15 @@ export function extractUrl(text: string) {
 const users = new Set<User>()
 
 export async function insertNewUser(userOverrides?: Partial<User>) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
-
 	const user = await prisma.user.create({
 		data: { ...createUser(), ...userOverrides },
 	})
-	await prisma.$disconnect()
 	users.add(user)
 	return user
 }
 
 export async function deleteUserByEmail(email: string) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
 	await prisma.user.delete({ where: { email } })
-	await prisma.$disconnect()
 }
 
 export const test = base.extend<{
@@ -137,13 +121,7 @@ export const test = base.extend<{
 export const { expect } = test
 
 test.afterEach(async () => {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
 	await prisma.user.deleteMany({
 		where: { id: { in: [...users].map((u) => u.id) } },
 	})
-	await prisma.$disconnect()
 })
