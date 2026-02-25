@@ -123,7 +123,6 @@ import {
 	headAudioObject,
 	putCallAudioFromBuffer,
 	putEpisodeDraftResponseAudioFromBuffer,
-	putEpisodeDraftResponseAudioFromDataUrl,
 } from '../call-kent-audio-storage.server.ts'
 
 process.env.R2_BUCKET = 'mock-r2-bucket'
@@ -180,27 +179,6 @@ describe('call kent audio storage', () => {
 		const head = await headAudioObject({ key: putRes.key })
 		expect(head.size).toBe(original.byteLength)
 		expect(head.contentType).toBe(contentType)
-
-		await deleteAudioObject({ key: putRes.key })
-	})
-
-	test('stores episode response audio from data url by draft key', async () => {
-		resetMockObjects()
-		const draftId = 'draft_789'
-		const bytes = Buffer.from([10, 11, 12, 13, 14])
-		const dataUrl = `data:audio/webm;codecs=opus;base64,${bytes.toString('base64')}`
-
-		const putRes = await putEpisodeDraftResponseAudioFromDataUrl({
-			draftId,
-			dataUrl,
-		})
-		expect(putRes.key).toBe(
-			getEpisodeDraftResponseAudioKey(draftId, 'audio/webm;codecs=opus'),
-		)
-		expect(putRes.contentType).toBe('audio/webm;codecs=opus')
-
-		const restored = await getAudioBuffer({ key: putRes.key })
-		expect(Buffer.from(restored)).toEqual(bytes)
 
 		await deleteAudioObject({ key: putRes.key })
 	})

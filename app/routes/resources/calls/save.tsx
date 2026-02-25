@@ -7,8 +7,6 @@ import {
 	getAudioBuffer,
 	putCallAudioFromBuffer,
 	putEpisodeDraftResponseAudioFromBuffer,
-	putEpisodeDraftResponseAudioFromDataUrl,
-	putCallAudioFromDataUrl,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { enqueueCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft-queue.server.ts'
 import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
@@ -35,7 +33,7 @@ import { createEpisode } from '#app/utils/transistor.server.ts'
 import { type Route } from './+types/save'
 
 type ActionData = RecordingFormData
-type SubmittedAudio = string | File | null
+type SubmittedAudio = File | null
 
 function getCheckboxFormValue(formData: FormData, key: string) {
 	const value = formData.get(key)
@@ -67,7 +65,6 @@ function getActionData(formData: FormData) {
 
 function getAudioFormValue(formData: FormData, key: string): SubmittedAudio {
 	const value = formData.get(key)
-	if (typeof value === 'string') return value
 	if (value instanceof File) return value
 	return null
 }
@@ -109,14 +106,11 @@ async function createCall({
 		}
 
 		const callId = randomUUID()
-		const stored =
-			typeof audio === 'string'
-				? await putCallAudioFromDataUrl({ callId, dataUrl: audio })
-				: await putCallAudioFromBuffer({
-						callId,
-						audio: new Uint8Array(await audio.arrayBuffer()),
-						contentType: getAudioContentType(audio),
-					})
+		const stored = await putCallAudioFromBuffer({
+			callId,
+			audio: new Uint8Array(await audio.arrayBuffer()),
+			contentType: getAudioContentType(audio),
+		})
 		let createdCall: { id: string }
 		try {
 			createdCall = await prisma.call.create({
@@ -422,6 +416,11 @@ async function createEpisodeDraft({
 		searchParams.set('error', 'Response audio file is required.')
 		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 	}
+	if (!responseAudio) {
+		const searchParams = new URLSearchParams()
+		searchParams.set('error', 'Response audio file is required.')
+		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+	}
 
 	await requireAdminUser(request)
 
@@ -472,17 +471,11 @@ async function createEpisodeDraft({
 		}),
 	])
 
-	const responseAudioObject =
-		typeof responseAudio === 'string'
-			? await putEpisodeDraftResponseAudioFromDataUrl({
-					draftId: draft.id,
-					dataUrl: responseAudio,
-				})
-			: await putEpisodeDraftResponseAudioFromBuffer({
-					draftId: draft.id,
-					audio: new Uint8Array(await responseAudio!.arrayBuffer()),
-					contentType: getAudioContentType(responseAudio!),
-				})
+	const responseAudioObject = await putEpisodeDraftResponseAudioFromBuffer({
+		draftId: draft.id,
+		audio: new Uint8Array(await responseAudio.arrayBuffer()),
+		contentType: getAudioContentType(responseAudio),
+	})
 	let wasEnqueued = false
 	try {
 		wasEnqueued = await enqueueCallKentEpisodeDraftProcessing({

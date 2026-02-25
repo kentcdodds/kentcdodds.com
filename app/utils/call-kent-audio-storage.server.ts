@@ -61,21 +61,6 @@ export function parseHttpByteRangeHeader(rangeHeader: string, size: number) {
 	return { start, end: Math.min(end, size - 1) }
 }
 
-function parseBase64DataUrl(dataUrl: string): {
-	buffer: Buffer
-	contentType: string
-} {
-	// MediaRecorder often emits data URLs like:
-	// `data:audio/webm;codecs=opus;base64,...`
-	const match = dataUrl.match(/^data:(?<type>.+?);base64,(?<data>.+)$/)
-	const contentType = match?.groups?.type
-	const base64 = match?.groups?.data
-	if (!contentType || !base64) {
-		throw new Error('Invalid base64 data URL')
-	}
-	return { buffer: Buffer.from(base64, 'base64'), contentType }
-}
-
 function extFromContentType(contentType: string) {
 	const ct = contentType.toLowerCase()
 	if (ct.includes('audio/webm')) return '.webm'
@@ -210,19 +195,6 @@ export function getEpisodeDraftResponseAudioKey(
 	return `call-kent/drafts/${draftId}/response${ext}`
 }
 
-export async function putCallAudioFromDataUrl({
-	callId,
-	dataUrl,
-}: {
-	callId: string
-	dataUrl: string
-}): Promise<PutAudioResult> {
-	const { buffer, contentType } = parseBase64DataUrl(dataUrl)
-	const { store } = getStore()
-	const key = getCallAudioKey(callId, contentType)
-	return await store.put({ key, body: buffer, contentType })
-}
-
 export async function putCallAudioFromBuffer({
 	callId,
 	audio,
@@ -247,21 +219,6 @@ export async function putEpisodeDraftAudioFromBuffer({
 	const { store } = getStore()
 	const key = getEpisodeDraftAudioKey(draftId)
 	return await store.put({ key, body: mp3, contentType: 'audio/mpeg' })
-}
-
-export async function putEpisodeDraftResponseAudioFromDataUrl({
-	draftId,
-	dataUrl,
-}: {
-	draftId: string
-	dataUrl: string
-}): Promise<PutAudioResult> {
-	const { buffer, contentType } = parseBase64DataUrl(dataUrl)
-	return putEpisodeDraftResponseAudioFromBuffer({
-		draftId,
-		audio: buffer,
-		contentType,
-	})
 }
 
 export async function putEpisodeDraftResponseAudioFromBuffer({
@@ -303,8 +260,6 @@ export async function getAudioBuffer({ key }: { key: string }) {
 	const { body } = await getAudioStream({ key })
 	return readStreamIntoBuffer(body)
 }
-
-export { parseBase64DataUrl }
 
 function toWebReadableStream(body: unknown): ReadableStream<Uint8Array> {
 	if (body instanceof ReadableStream) {
