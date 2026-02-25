@@ -5,6 +5,7 @@ import {
 	Link,
 	useSearchParams,
 } from 'react-router'
+import { getImageBuilder } from '#app/images.tsx'
 import resumeStyles from '#app/styles/resume.css?url'
 import { getResumeData, type ResumeData } from '#app/utils/resume.server.ts'
 import { type Route } from './+types/resume'
@@ -107,6 +108,16 @@ export default function ResumePage({
 		(link) => link.includeInPrint,
 	)
 	const recognitionView = getRecognitionView(resumeData)
+	const profileImageUrl = getImageBuilder('kent/profile')({
+		format: 'auto',
+		quality: 'auto',
+		dpr: '2.0',
+		resize: {
+			height: 200,
+			aspectRatio: '1:1',
+			type: 'fill',
+		},
+	})
 
 	function handleCopyMarkdown() {
 		const markdown = formatMarkdown(resumeData, isShort)
@@ -163,7 +174,7 @@ export default function ResumePage({
 					<div className="resume-header__identity">
 						<img
 							className="resume-photo"
-							src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,h_200,ar_1:1,c_fill/kent/profile"
+							src={profileImageUrl}
 							alt="Photo of Kent C. Dodds"
 						/>
 						<div>

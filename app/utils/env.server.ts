@@ -26,7 +26,7 @@ const schemaBase = z.object({
 		.string()
 		.trim()
 		.optional()
-		.default('https://res.cloudinary.com'),
+		.default('https://media.kentcdodds.com'),
 
 	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,

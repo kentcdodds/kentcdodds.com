@@ -1,3 +1,5 @@
+import { getCloudinaryBaseUrl } from '#app/images.tsx'
+
 type MediaVideoProps = {
 	className?: string
 	width?: number
@@ -31,7 +33,7 @@ export function MediaVideo({
 		<video
 			className={className}
 			autoPlay
-			src={`https://res.cloudinary.com/kentcdodds-com/video/upload/${transforms}/${imageId}`}
+			src={`${getCloudinaryBaseUrl().replace(/\/+$/, '')}/kentcdodds-com/video/upload/${transforms}/${imageId}`}
 			muted
 			loop
 			controls={false}

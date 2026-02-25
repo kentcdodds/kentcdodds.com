@@ -42,10 +42,10 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		responseHeaders.append('Document-Policy', 'js-profiling')
 	}
 
-	responseHeaders.append(
-		'Link',
-		'<https://res.cloudinary.com>; rel="preconnect"',
-	)
+	const mediaOrigin = getUrlOrigin(env.CLOUDINARY_BASE_URL)
+	if (mediaOrigin) {
+		responseHeaders.append('Link', `<${mediaOrigin}>; rel="preconnect"`)
+	}
 
 	// If the request is from a bot, we want to wait for the full
 	// response to render before sending it to the client. This
@@ -171,6 +171,14 @@ async function renderDocumentResponse({
 		status: waitForAllReady ? responseStatusCode : didError ? 500 : responseStatusCode,
 		headers: responseHeaders,
 	})
+}
+
+function getUrlOrigin(urlString: string) {
+	try {
+		return new URL(urlString).origin
+	} catch {
+		return null
+	}
 }
 
 function createNonceTransformStream(nonce: string) {
