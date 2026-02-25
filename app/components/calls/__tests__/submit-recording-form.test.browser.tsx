@@ -26,7 +26,7 @@ describe('RecordingForm', () => {
 	it('recovers when FileReader.readAsDataURL throws synchronously', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: null },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
 		const readAsDataURL = vi.fn(() => {
 			throw new TypeError('Unexpected blob state')
@@ -94,7 +94,7 @@ describe('RecordingForm', () => {
 	it('submits and navigates using the redirected response URL', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: 'primary-abc123' },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
 
 		let loadEndListener: (() => void) | null = null
@@ -157,7 +157,7 @@ describe('RecordingForm', () => {
 			expect(requestHeaders.get('Content-Type')).toContain(
 				'application/x-www-form-urlencoded',
 			)
-			expect(requestHeaders.get('fly-force-instance-id')).toBe('primary-abc123')
+			expect(requestHeaders.get('fly-force-instance-id')).toBeNull()
 
 			const requestBody = requestInit?.body as URLSearchParams
 			expect(requestBody.get('intent')).toBe('create-call')
@@ -181,7 +181,7 @@ describe('RecordingForm', () => {
 	it('preserves server validation errors across equivalent data prop rerenders', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: null },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
 
 		let loadEndListener: (() => void) | null = null
@@ -283,7 +283,7 @@ describe('RecordingForm', () => {
 	it('shows validation feedback on blur or submit (and keeps native validation off)', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: null },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
 		const fetchMock = vi.fn()
 		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
