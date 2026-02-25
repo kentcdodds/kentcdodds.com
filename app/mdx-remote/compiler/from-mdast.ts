@@ -300,6 +300,17 @@ function getMdxJsxAttributeExpressionNode(attributeValueNode: MdxNode) {
 
 function convertMdxExpressionNode(node: MdxNode): MdxRemoteNode | null {
 	const expressionNode = getEstreeExpressionNode(node)
+	if (
+		expressionNode?.type === 'TemplateLiteral' &&
+		Array.isArray(expressionNode.expressions) &&
+		expressionNode.expressions.length === 0
+	) {
+		const firstQuasi = (expressionNode.quasis as Array<{ value?: { cooked?: string } }> | undefined)?.[0]
+		return {
+			type: 'text',
+			value: String(firstQuasi?.value?.cooked ?? ''),
+		}
+	}
 	if (!expressionNode || expressionNode.type !== 'ArrowFunctionExpression') {
 		return null
 	}
@@ -517,6 +528,14 @@ function convertEstreeExpressionToPropValue(
 			values.push(nestedValue)
 		}
 		return values
+	}
+	if (
+		expression.type === 'TemplateLiteral' &&
+		Array.isArray(expression.expressions) &&
+		expression.expressions.length === 0
+	) {
+		const firstQuasi = (expression.quasis as Array<{ value?: { cooked?: string } }> | undefined)?.[0]
+		return String(firstQuasi?.value?.cooked ?? '')
 	}
 	const jsxNode = convertEstreeJsxNodeToRemoteNode(expression)
 	if (jsxNode) {
