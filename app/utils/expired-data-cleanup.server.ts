@@ -1,4 +1,3 @@
-import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
 import {
 	deleteExpiredSessions,
 	deleteExpiredVerifications,
@@ -9,27 +8,11 @@ export async function runExpiredDataCleanup({
 }: {
 	reason: string
 }) {
-	const { currentIsPrimary, currentInstance, primaryInstance } =
-		await getInstanceInfo()
-	if (!currentIsPrimary) {
-		return {
-			didRun: false,
-			deletedSessionsCount: 0,
-			deletedVerificationsCount: 0,
-			currentInstance,
-			primaryInstance,
-		}
-	}
-
 	const deletedSessionsCount = await deleteExpiredSessions()
 	const deletedVerificationsCount = await deleteExpiredVerifications()
 	if (deletedSessionsCount > 0 || deletedVerificationsCount > 0) {
 		console.info(
 			`expired-data-cleanup: deleted ${deletedSessionsCount} expired sessions and ${deletedVerificationsCount} expired verifications (${reason})`,
-			{
-				currentInstance,
-				primaryInstance,
-			},
 		)
 	}
 
@@ -37,7 +20,5 @@ export async function runExpiredDataCleanup({
 		didRun: true,
 		deletedSessionsCount,
 		deletedVerificationsCount,
-		currentInstance,
-		primaryInstance,
 	}
 }
