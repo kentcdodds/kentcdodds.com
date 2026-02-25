@@ -21,7 +21,7 @@ meta:
     - user experience
     - blurhash
     - gatsby-plugin-sharp
-bannerCloudinaryId: unsplash/photo-1541969358822-1567cdf1a2a4
+bannerImageId: unsplash/photo-1541969358822-1567cdf1a2a4
 bannerAlt: frosted glass window
 bannerCredit: Photo by [Danielle MacInnes](https://unsplash.com/photos/JhEzbxfNeMw)
 ---
@@ -172,11 +172,11 @@ Then I use it like so:
 
 ```tsx
 <img
-	key={frontmatter.bannerCloudinaryId}
+	key={frontmatter.bannerImageId}
 	title={frontmatter.bannerCredit}
 	{...getImgProps(
 		getImageBuilder(
-			frontmatter.bannerCloudinaryId,
+			frontmatter.bannerImageId,
 			getBannerAltProp(frontmatter),
 		),
 		{
@@ -351,18 +351,18 @@ function BlogScreen() {
 	return (
 		// ...
 		<div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
-			{frontmatter.bannerCloudinaryId ? (
+			{frontmatter.bannerImageId ? (
 				<BlurrableImage
-					key={frontmatter.bannerCloudinaryId}
+					key={frontmatter.bannerImageId}
 					blurDataUrl={frontmatter.bannerBlurDataUrl}
 					className="aspect-[3/4] md:aspect-[3/2]"
 					img={
 						<img
-							key={frontmatter.bannerCloudinaryId}
+							key={frontmatter.bannerImageId}
 							title={frontmatter.bannerCredit}
 							{...getImgProps(
 								getImageBuilder(
-									frontmatter.bannerCloudinaryId,
+									frontmatter.bannerImageId,
 									frontmatter.bannerAlt ??
 										frontmatter.bannerCredit ??
 										frontmatter.title ??

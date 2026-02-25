@@ -11,7 +11,7 @@ meta:
     - production
     - node.js
     - memory leak
-bannerCloudinaryId: unsplash/photo-1520637102912-2df6bb2aec6d
+bannerImageId: unsplash/photo-1520637102912-2df6bb2aec6d
 bannerAlt: person in front of waterfalls during nighttime
 bannerCredit: Photo by [Jonatan Pie](https://unsplash.com/photos/VlH2eHyE_50)
 ---
@@ -105,8 +105,8 @@ out).
 
 <ThemedBlogImage
 	transparentBackground
-	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing"
-	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing-light"
+	darkImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing"
+	lightImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/server-timing-light"
 	imgProps={{
 		alt: 'server timing ui in Chrome showing a bunch of times for data retrieval from caches, rendering, etc.',
 	}}
@@ -206,8 +206,8 @@ out:
 
 <ThemedBlogImage
 	transparentBackground
-	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32"
-	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32-light"
+	darkImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32"
+	lightImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/heapf32-light"
 	imgProps={{
 		alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with an ArrayBuffer constructor selected and an object called HEAPF32 that has a retained size of 125,931,130',
 	}}
@@ -331,8 +331,8 @@ One thing he noticed right up front was the TypedArray allocation was nuts:
 
 <ThemedBlogImage
 	transparentBackground
-	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays"
-	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays-light"
+	darkImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays"
+	lightImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/typed-arrays-light"
 	imgProps={{
 		alt: 'Memory tab of Chrome DevTools showing a heap snapshot on the statistics view with 358,159 kB of Typed arrays being a large chunk of a total of 573,329 kB',
 	}}
@@ -487,8 +487,8 @@ and found a lot of strings related to express requests and cloudinary:
 
 <ThemedBlogImage
 	transparentBackground
-	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings"
-	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings-light"
+	darkImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings"
+	lightImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/cloudinary-strings-light"
 	imgProps={{
 		alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with a lot of strings related to Cloudinary',
 	}}
@@ -499,8 +499,8 @@ as well:
 
 <ThemedBlogImage
 	transparentBackground
-	darkCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections"
-	lightCloudinaryId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections-light"
+	darkImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections"
+	lightImageId="kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/tls-connections-light"
 	imgProps={{
 		alt: 'Memory tab of the Chrome DevTools showing a summary of a heap snapshot with a filter on "TLS" showing a lot of TLSSocket objects',
 	}}

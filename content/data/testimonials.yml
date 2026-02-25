@@ -10,7 +10,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/vasileios-drosatos
+  imageId: kentcdodds.com/testimonials/vasileios-drosatos
   company: Senior Frontend Developer
   link: https://www.linkedin.com/in/billdrosatos/?originalSubdomain=gr
   testimonial: >-
@@ -22,7 +22,7 @@
   priority: 3
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/efeisikgor
+  imageId: kentcdodds.com/testimonials/efeisikgor
   company: JavaScript Developer at
   link: https://www.mertisikgor.com/
   testimonial: >-
@@ -35,7 +35,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/josh-payette
+  imageId: kentcdodds.com/testimonials/josh-payette
   company: Software Developer
   link: https://joshpayette.dev/
   testimonial: >-
@@ -47,7 +47,7 @@
   priority: 2
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/ashwin-khode
+  imageId: kentcdodds.com/testimonials/ashwin-khode
   company: Student
   link: https://ashwinkhode.codes/
   testimonial: >-
@@ -60,7 +60,7 @@
   priority: 3
   subjects:
     - TestingJavaScript.com
-  cloudinaryId: kentcdodds.com/testimonials/bernard-baker
+  imageId: kentcdodds.com/testimonials/bernard-baker
   company: Front End Engineer
   link: https://bernard-baker.netlify.app/
   testimonial: >-
@@ -73,7 +73,7 @@
   priority: 4
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/arpanchattopadhyay
+  imageId: kentcdodds.com/testimonials/arpanchattopadhyay
   company: Software Engineer, Healthifyme
   link: https://x.com/Arpan____
   testimonial: >-
@@ -88,7 +88,7 @@
   priority: 3
   subjects:
     - TestingJavaScript.com
-  cloudinaryId: kentcdodds.com/testimonials/jared-jardine
+  imageId: kentcdodds.com/testimonials/jared-jardine
   company: Senior Software Engineer - Frontend
   link: https://www.linkedin.com/in/jaredjardine/
   testimonial: >-
@@ -100,7 +100,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/conor-gaughan
+  imageId: kentcdodds.com/testimonials/conor-gaughan
   company: Forge Labs LLC
   link: https://www.linkedin.com/in/conorgaughan/
   testimonial: >-
@@ -114,7 +114,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/diego-alvarez
+  imageId: kentcdodds.com/testimonials/diego-alvarez
   company: Ssr React Developer
   link: https://x.com/doctordalvarez
   testimonial: >-
@@ -126,7 +126,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/jacob-m-g-evans
+  imageId: kentcdodds.com/testimonials/jacob-m-g-evans
   company: Sr. FullStack Engineer
   link: https://x.com/jacobmgevans
   testimonial: >-
@@ -140,7 +140,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/jack
+  imageId: kentcdodds.com/testimonials/jack
   company: Junior Software Engineer
   testimonial: >-
     Whilst job searching, I knew I had to improve my React skills beyond what
@@ -157,7 +157,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/fares-essayeh
+  imageId: kentcdodds.com/testimonials/fares-essayeh
   company: Frontend Developer
   link: https://www.linkedin.com/in/fares-essayeh
   testimonial: >-
@@ -170,7 +170,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/kevin-bailey
+  imageId: kentcdodds.com/testimonials/kevin-bailey
   company: Senior Front End Developer
   link: https://www.linkedin.com/in/kevin-bailey-53416971/
   testimonial: >-
@@ -182,7 +182,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/apoorv-kansal
+  imageId: kentcdodds.com/testimonials/apoorv-kansal
   company: Lead Front End Developer
   link: https://apoorv.page/
   testimonial: >-
@@ -195,7 +195,7 @@
   subjects:
     - Other
   categories: [teaching, community]
-  cloudinaryId: kentcdodds.com/testimonials/bouwe
+  imageId: kentcdodds.com/testimonials/bouwe
   company: Software Engineer @ WebinarGeek
   link: https://bouwe.io/
   testimonial: >-
@@ -209,7 +209,7 @@
   subjects:
     - Other
   categories: [teaching]
-  cloudinaryId: kentcdodds.com/testimonials/johannes
+  imageId: kentcdodds.com/testimonials/johannes
   company: Supreme Commander @ ProPro Productions
   link: https://x.com/jo_HH_oe
   testimonial: >-
@@ -220,7 +220,7 @@
   priority: 3
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/azizbek-jonibekov
+  imageId: kentcdodds.com/testimonials/azizbek-jonibekov
   company: Software Engineer at
   link: https://x.com/jonybekov
   testimonial: >-
@@ -233,7 +233,7 @@
   priority: 1
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/zhu-baohua
+  imageId: kentcdodds.com/testimonials/zhu-baohua
   company: Leqee
   testimonial: >-
     I am learning epicreact.dev. It's good!
@@ -242,7 +242,7 @@
   priority: 4
   subjects:
     - 'workshop: advanced-react-hooks'
-  cloudinaryId: kentcdodds.com/testimonials/pramod-jingade
+  imageId: kentcdodds.com/testimonials/pramod-jingade
   company: INSCALE Asia Sdn. Bhd
   link: https://pramod-profile.net
   testimonial: >-
@@ -260,7 +260,7 @@
   priority: 5
   subjects:
     - 'workshop: advanced-react-hooks'
-  cloudinaryId: kentcdodds.com/testimonials/cameron-pak
+  imageId: kentcdodds.com/testimonials/cameron-pak
   company: YouVersion Bible
   link: https://campak.super.site/
   testimonial: >-
@@ -272,7 +272,7 @@
   priority: 4
   subjects:
     - 'workshop: advanced-react-hooks'
-  cloudinaryId: kentcdodds.com/testimonials/david-han
+  imageId: kentcdodds.com/testimonials/david-han
   company: Engineer at Greenhouse Software
   link: https://www.linkedin.com/in/davidhan527/
   testimonial: >-
@@ -285,7 +285,7 @@
   priority: 4
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/yago-pereira-azevedo
+  imageId: kentcdodds.com/testimonials/yago-pereira-azevedo
   company: Software Engineer @BitGo
   link: https://x.com/yagopereiraaz
   testimonial: >-
@@ -301,7 +301,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/yago-pereira-azevedo
+  imageId: kentcdodds.com/testimonials/yago-pereira-azevedo
   company: Software Engineer @BitGo
   link: https://x.com/yagopereiraaz
   testimonial: >-
@@ -318,7 +318,7 @@
   priority: 4
   subjects:
     - TestingJavaScript.com
-  cloudinaryId: kentcdodds.com/testimonials/praveen-senadheera
+  imageId: kentcdodds.com/testimonials/praveen-senadheera
   company: Software Engineer
   link: https://x.com/Pro542
   testimonial: >-
@@ -331,7 +331,7 @@
   priority: 3
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/ricardo-busquet
+  imageId: kentcdodds.com/testimonials/ricardo-busquet
   company: Software Engineer @ Carta
   link: https://www.ricardobusquet.com/
   testimonial: >-
@@ -343,7 +343,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/ricardo-busquet
+  imageId: kentcdodds.com/testimonials/ricardo-busquet
   company: Software Enginner @ Carta
   link: https://www.ricardobusquet.com/
   testimonial: >-
@@ -361,7 +361,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/alan-medina
+  imageId: kentcdodds.com/testimonials/alan-medina
   company: Frontend Engineer
   link: https://spacebro.io/
   testimonial: >-
@@ -378,7 +378,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/sergio-xalambrí
+  imageId: kentcdodds.com/testimonials/sergio-xalambrí
   company: Web Developer at Daffy
   link: Sergio Xalambrí
   testimonial: >-
@@ -389,7 +389,7 @@
   priority: 3
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/sandrina-pereira
+  imageId: kentcdodds.com/testimonials/sandrina-pereira
   company: Lead Frontend Engineer
   link: https://www.sandrina-p.net/
   testimonial: >-
@@ -406,7 +406,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/eddie-hinkle
+  imageId: kentcdodds.com/testimonials/eddie-hinkle
   company: Lead Front-End Engineer, Glassdoor
   link: https://eddiehinkle.com/
   testimonial: >-
@@ -420,7 +420,7 @@
   priority: 5
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/tiger
+  imageId: kentcdodds.com/testimonials/tiger
   company: Frontend Developer
   link: https://www.tigerabrodi.tech/
   testimonial: >-
@@ -435,7 +435,7 @@
   priority: 4
   subjects:
     - Discord Community
-  cloudinaryId: kentcdodds.com/testimonials/tiger
+  imageId: kentcdodds.com/testimonials/tiger
   company: Frontend Developer
   link: https://www.tigerabrodi.tech/
   testimonial: >-
@@ -448,7 +448,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/nikolaj-ivancic
+  imageId: kentcdodds.com/testimonials/nikolaj-ivancic
   company: Congral, LLC
   link: https://www.linkedin.com/in/nikolaj-ivancic-6ab948a8/
   testimonial: >-
@@ -460,7 +460,7 @@
   priority: 4
   subjects:
     - Other
-  cloudinaryId: kentcdodds.com/testimonials/wes-bos
+  imageId: kentcdodds.com/testimonials/wes-bos
   company: Fullstack Dev
   link: https://x.com/wesbos/status/1609939724981911554
   testimonial: >-
@@ -471,7 +471,7 @@
   subjects:
     - EpicReact.dev
     - TestingJavaScript.com
-  cloudinaryId: kentcdodds.com/testimonials/matthew-herzog
+  imageId: kentcdodds.com/testimonials/matthew-herzog
   company: Software Engineer
   link: https://www.linkedin.com/in/mattherzog3/
   testimonial: >-
@@ -488,7 +488,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/michael-tedla
+  imageId: kentcdodds.com/testimonials/michael-tedla
   company: Software Engineer at Levitate
   link: https://github.com/mickykebe
   testimonial: >-
@@ -515,7 +515,7 @@
     - KCD Office Hours
     - Call Kent Podcast
     - Chats with Kent Podcast
-  cloudinaryId: kentcdodds.com/testimonials/amir-ziaei
+  imageId: kentcdodds.com/testimonials/amir-ziaei
   company: Software Enginner at Zenitech
   link: https://www.linkedin.com/in/amirziaei/
   testimonial: >-
@@ -540,7 +540,7 @@
     - Blog
     - YouTube Live Streams
     - KCD Office Hours
-  cloudinaryId: kentcdodds.com/testimonials/judi
+  imageId: kentcdodds.com/testimonials/judi
   company: Frontend Engineer
   link: https://read.cv/judicaelandria
   testimonial: >-
@@ -550,7 +550,7 @@
   priority: 4
   subjects:
     - Blog
-  cloudinaryId: kentcdodds.com/testimonials/robin-wieruch
+  imageId: kentcdodds.com/testimonials/robin-wieruch
   company: Software Engineer
   link: https://www.robinwieruch.de
   testimonial: >-
@@ -563,7 +563,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/amandeep-kochhar
+  imageId: kentcdodds.com/testimonials/amandeep-kochhar
   company: Full Stack Developer
   testimonial: >-
     I was speechless the moment Kent C Dodds started teaching me about Compound
@@ -577,7 +577,7 @@
     - TestingJavaScript.com
     - Discord Community
     - KCD Office Hours
-  cloudinaryId: kentcdodds.com/testimonials/murat-ozcan
+  imageId: kentcdodds.com/testimonials/murat-ozcan
   company: Staff Engineer, Test Architect - Extend
   link: https://github.com/muratkeremozcan
   testimonial: >-
@@ -594,7 +594,7 @@
     - Workshop
     - 'workshop: web-app-fundamentals-part-1'
     - 'workshop: web-app-fundamentals-part-2'
-  cloudinaryId: kentcdodds.com/testimonials/gwen-shapira
+  imageId: kentcdodds.com/testimonials/gwen-shapira
   company: Co-founder @ Nile
   link: https://bento.me/gwenshap
   testimonial: >-
@@ -607,7 +607,7 @@
   subjects:
     - EpicReact.dev
     - KCD Office Hours
-  cloudinaryId: kentcdodds.com/testimonials/lydia-hendriks
+  imageId: kentcdodds.com/testimonials/lydia-hendriks
   company: Software Engineer
   link: https://x.com/LydiaHendriks
   testimonial: >-
@@ -627,7 +627,7 @@
   priority: 3
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/emre-baltaci
+  imageId: kentcdodds.com/testimonials/emre-baltaci
   company: Web developer at Optimal Web Apps
   testimonial: >-
     If I were to choose one word to describe the Epic React Course, that would
@@ -644,7 +644,7 @@
     - EpicReact.dev
     - Frontend Masters
     - Talk
-  cloudinaryId: kentcdodds.com/testimonials/rija-nifaliana
+  imageId: kentcdodds.com/testimonials/rija-nifaliana
   company: Senior Frontend Engineer
   link: https://read.cv/nifaliana
   testimonial: >-
@@ -663,7 +663,7 @@
     - Frontend Masters
     - Egghead.io
     - YouTube Live Streams
-  cloudinaryId: kentcdodds.com/testimonials/rowin-hernandez
+  imageId: kentcdodds.com/testimonials/rowin-hernandez
   company: Synphonyte, Senior SWE
   link: https://rowinbot.com
   testimonial: >-
@@ -678,7 +678,7 @@
   priority: 4
   subjects:
     - EpicWeb.dev
-  cloudinaryId: kentcdodds.com/testimonials/pawel-pawlowski
+  imageId: kentcdodds.com/testimonials/pawel-pawlowski
   company: Senior Frontend Developer
   link: https://www.linkedin.com/in/pawel-pawlowski-dev
   testimonial: >-
@@ -693,7 +693,7 @@
   priority: 4
   subjects:
     - EpicWeb.dev
-  cloudinaryId: kentcdodds.com/testimonials/michaël-de-boey
+  imageId: kentcdodds.com/testimonials/michaël-de-boey
   company: Freelance full stack JavaScript/TypeScript & React engineer
   link: https://x.com/MichaelDeBoey93
   testimonial: >-
@@ -704,7 +704,7 @@
   priority: 4
   subjects:
     - EpicWeb.dev
-  cloudinaryId: kentcdodds.com/testimonials/devon-neill
+  imageId: kentcdodds.com/testimonials/devon-neill
   company: Full Stack Software Engineer and Consultant
   link: https://x.com/devneill
   testimonial: >-
@@ -724,7 +724,7 @@
   priority: 3
   subjects:
     - EpicWeb.dev
-  cloudinaryId: kentcdodds.com/testimonials/bruno-noriller
+  imageId: kentcdodds.com/testimonials/bruno-noriller
   company: Programmer
   link: https://www.linkedin.com/in/noriller/
   testimonial: >-
@@ -740,7 +740,7 @@
   priority: 4
   subjects:
     - EpicWeb.dev
-  cloudinaryId: kentcdodds.com/testimonials/taranveer-bains
+  imageId: kentcdodds.com/testimonials/taranveer-bains
   company: Senior Software Engineer
   link: https://taranveerbains.ca/about
   testimonial: >-
@@ -757,7 +757,7 @@
   priority: 3
   subjects:
     - EpicWeb.dev
-  cloudinaryId: kentcdodds.com/testimonials/saurabh-prakash
+  imageId: kentcdodds.com/testimonials/saurabh-prakash
   company: Full Stack Developer, Freelance
   link: https://saurabhp75.github.io
   testimonial: >-
@@ -770,7 +770,7 @@
   subjects:
     - EpicWeb.dev
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/andrew-james
+  imageId: kentcdodds.com/testimonials/andrew-james
   company: Senior Engineer, Coinbase
   link: https://ajames.dev/
   testimonial: >-
@@ -788,7 +788,7 @@
   priority: 4
   subjects:
     - EpicReact.dev
-  cloudinaryId: kentcdodds.com/testimonials/benjamin-matthews
+  imageId: kentcdodds.com/testimonials/benjamin-matthews
   company: Senior Developer
   link: https://www.linkedin.com/in/benjamin-matthews-07320778/
   testimonial: >-
@@ -811,7 +811,7 @@
   subjects:
     - EpicReact.dev
     - EpicWeb.dev
-  cloudinaryId: kentcdodds.com/testimonials/marco
+  imageId: kentcdodds.com/testimonials/marco
   company: Full stack developer
   link: https://github.com/Marcoj776
   testimonial: >-
@@ -836,7 +836,7 @@
     - Blog
     - Frontend Masters
     - Egghead.io
-  cloudinaryId: kentcdodds.com/testimonials/elvinas
+  imageId: kentcdodds.com/testimonials/elvinas
   company: BacklogLab
   link: https://backloglab.com/
   testimonial: >-
