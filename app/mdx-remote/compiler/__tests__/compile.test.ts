@@ -113,6 +113,39 @@ test('validates node prop values for unknown components', async () => {
 	).toThrow(/unknown mdx component/i)
 })
 
+test('rejects forbidden conditional test syntax in lambda nodes', async () => {
+	expect(() =>
+		compileMdxRemoteDocument({
+			slug: 'forbidden-lambda-test',
+			frontmatter: {},
+			root: {
+				type: 'root',
+				children: [
+					{
+						type: 'lambda',
+						parameter: 'value',
+						body: {
+							kind: 'conditional',
+							test: 'new Date()',
+							consequent: {
+								type: 'element',
+								name: 'p',
+								children: [{ type: 'text', value: 'yes' }],
+							},
+							alternate: {
+								type: 'element',
+								name: 'p',
+								children: [{ type: 'text', value: 'no' }],
+							},
+						},
+					},
+				],
+			},
+			allowedComponentNames: [],
+		}),
+	).toThrow(/forbidden expression syntax/i)
+})
+
 test('allows expression syntax when strict expression mode is disabled', async () => {
 	const { document } = await compileMdxRemoteDocument({
 		slug: 'non-strict-expression',

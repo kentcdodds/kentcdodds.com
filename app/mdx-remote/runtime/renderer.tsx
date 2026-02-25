@@ -26,7 +26,7 @@ function renderMdxRemoteDocument<Frontmatter extends Record<string, unknown>>({
 		context,
 		components,
 		keyPrefix: 'root',
-	})
+	}) as React.ReactNode
 }
 
 function renderMdxRemoteNode({
@@ -39,19 +39,20 @@ function renderMdxRemoteNode({
 	context: MdxRemoteRuntimeContext
 	components: MdxRemoteComponentRegistry
 	keyPrefix: string
-}): React.ReactNode {
+}): unknown {
 	if (node.type === 'root') {
+		const renderedChildren = (node.children ?? []).map((child, index) =>
+			renderMdxRemoteNode({
+				node: child,
+				context,
+				components,
+				keyPrefix: `${keyPrefix}.${index}`,
+			}),
+		) as Array<React.ReactNode>
 		return React.createElement(
 			React.Fragment,
 			null,
-			...(node.children ?? []).map((child, index) =>
-				renderMdxRemoteNode({
-					node: child,
-					context,
-					components,
-					keyPrefix: `${keyPrefix}.${index}`,
-				}),
-			),
+			...renderedChildren,
 		)
 	}
 	if (node.type === 'text') {
@@ -63,6 +64,40 @@ function renderMdxRemoteNode({
 			scope: context.scope,
 			allowCalls: context.allowCalls,
 		}) as React.ReactNode
+	}
+	if (node.type === 'lambda') {
+		return (parameterValue: unknown) => {
+			const lambdaScope = {
+				...context.scope,
+				[node.parameter]: parameterValue,
+			}
+			const lambdaContext = {
+				...context,
+				scope: lambdaScope,
+			}
+			if (node.body.kind === 'node') {
+				return renderMdxRemoteNode({
+					node: node.body.node,
+					context: lambdaContext,
+					components,
+					keyPrefix: `${keyPrefix}.lambda`,
+				})
+			}
+			const conditionResult = evaluateMdxRemoteExpression({
+				source: node.body.test,
+				scope: lambdaScope,
+				allowCalls: lambdaContext.allowCalls,
+			})
+			const nextNode = conditionResult
+				? node.body.consequent
+				: node.body.alternate
+			return renderMdxRemoteNode({
+				node: nextNode,
+				context: lambdaContext,
+				components,
+				keyPrefix: `${keyPrefix}.lambda.branch`,
+			})
+		}
 	}
 
 	const component =
@@ -92,7 +127,7 @@ function renderMdxRemoteNode({
 		...resolvedProps,
 	}
 	if (children.length > 0) {
-		elementProps.children = children
+		elementProps.children = children.length === 1 ? children[0] : children
 	}
 
 	return React.createElement(component as React.ElementType, elementProps)

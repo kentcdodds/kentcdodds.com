@@ -142,3 +142,64 @@ test('renders JSX node prop values passed to components', () => {
 	expect(markup).toContain('<section><p>Dark content</p></section>')
 	expect(markup).toContain('<section><p>Light content</p></section>')
 })
+
+test('renders lambda child expressions for render-prop components', () => {
+	const document: MdxRemoteDocument<Record<string, unknown>> = {
+		schemaVersion: 1,
+		slug: 'lambda-child',
+		frontmatter: {},
+		compiledAt: '2026-02-25T00:00:00.000Z',
+		root: {
+			type: 'root',
+			children: [
+				{
+					type: 'element',
+					name: 'OptionalUser',
+					children: [
+						{
+							type: 'lambda',
+							parameter: 'maybeUser',
+							body: {
+								kind: 'conditional',
+								test: 'maybeUser',
+								consequent: {
+									type: 'element',
+									name: 'p',
+									children: [
+										{ type: 'text', value: 'Hello ' },
+										{
+											type: 'expression',
+											value: 'maybeUser.firstName',
+										},
+									],
+								},
+								alternate: {
+									type: 'element',
+									name: 'p',
+									children: [{ type: 'text', value: 'Hello visitor' }],
+								},
+							},
+						},
+					],
+				},
+			],
+		},
+	}
+
+	const markup = renderToStaticMarkup(
+		<>
+			{renderMdxRemoteDocument({
+				document,
+				context: createMdxRemoteRuntimeContext({
+					scope: { user: { firstName: 'Kent' } },
+				}),
+				components: {
+					OptionalUser: ({ children }: { children: (user: unknown) => ReactNode }) =>
+						children({ firstName: 'Kent' }),
+				},
+			})}
+		</>,
+	)
+
+	expect(markup).toContain('<p>Hello Kent</p>')
+})

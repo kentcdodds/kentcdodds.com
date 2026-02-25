@@ -28,6 +28,24 @@ type MdxRemoteExpressionNode = {
 	value: string
 }
 
+type MdxRemoteLambdaBody =
+	| {
+			kind: 'node'
+			node: MdxRemoteNode
+	  }
+	| {
+			kind: 'conditional'
+			test: string
+			consequent: MdxRemoteNode
+			alternate: MdxRemoteNode
+	  }
+
+type MdxRemoteLambdaNode = {
+	type: 'lambda'
+	parameter: string
+	body: MdxRemoteLambdaBody
+}
+
 type MdxRemoteElementNode = {
 	type: 'element'
 	name: string
@@ -43,6 +61,7 @@ type MdxRemoteRootNode = {
 type MdxRemoteNode =
 	| MdxRemoteTextNode
 	| MdxRemoteExpressionNode
+	| MdxRemoteLambdaNode
 	| MdxRemoteElementNode
 	| MdxRemoteRootNode
 
@@ -59,6 +78,8 @@ export type {
 	MdxRemoteElementNode,
 	MdxRemoteExpressionNode,
 	MdxRemoteExpressionValue,
+	MdxRemoteLambdaBody,
+	MdxRemoteLambdaNode,
 	MdxRemoteNode,
 	MdxRemoteNodeValue,
 	MdxRemotePropValue,
