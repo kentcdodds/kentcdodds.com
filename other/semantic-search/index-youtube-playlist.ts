@@ -11,11 +11,11 @@ import {
 } from './cloudflare.ts'
 import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
-import { isLowSignalYoutubeCaptionCueLine } from './youtube-transcript-cue-filter.ts'
 import {
 	chunkTranscriptEvents,
 	type TranscriptEvent,
 } from './youtube-transcript-chunking.ts'
+import { isLowSignalYoutubeCaptionCueLine } from './youtube-transcript-cue-filter.ts'
 
 type DocType = 'youtube'
 type TranscriptSource = 'manual' | 'auto' | 'none'
