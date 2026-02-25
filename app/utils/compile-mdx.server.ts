@@ -13,6 +13,7 @@ import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
 import { type GitHubFile } from '#app/types.ts'
+import { getEnv } from './env.server.ts'
 import * as x from './x.server.ts'
 
 // Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
@@ -362,6 +363,34 @@ const rehypePlugins: U.PluggableList = [
 	removePreContainerDivs,
 ]
 
+async function withOembedApiRouting<T>(fn: () => Promise<T>) {
+	const oembedApiBaseUrl = getEnv().OEMBED_API_BASE_URL
+	if (oembedApiBaseUrl === 'https://oembed.com') {
+		return fn()
+	}
+	const originalFetch = globalThis.fetch
+	globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+		const originalRequestUrl =
+			typeof input === 'string' || input instanceof URL
+				? new URL(String(input))
+				: new URL(input.url)
+		if (originalRequestUrl.origin !== 'https://oembed.com') {
+			return originalFetch(input, init)
+		}
+		const routedUrl = new URL(
+			originalRequestUrl.pathname.replace(/^\//, ''),
+			`${oembedApiBaseUrl.replace(/\/+$/, '')}/`,
+		)
+		routedUrl.search = originalRequestUrl.search
+		return originalFetch(routedUrl.toString(), init)
+	}) as typeof fetch
+	try {
+		return await fn()
+	} finally {
+		globalThis.fetch = originalFetch
+	}
+}
+
 async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 	slug: string,
 	githubFiles: Array<GitHubFile>,
@@ -383,24 +412,26 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 	})
 
 	try {
-		const { frontmatter, code } = await bundleMDX({
-			source: indexFile.content,
-			files,
-			mdxOptions(options) {
-				options.remarkPlugins = [
-					...(options.remarkPlugins ?? []),
-					remarkSlug,
-					[remarkAutolinkHeadings, { behavior: 'wrap' }],
-					gfm,
-					...remarkPlugins,
-				]
-				options.rehypePlugins = [
-					...(options.rehypePlugins ?? []),
-					...rehypePlugins,
-				]
-				return options
-			},
-		})
+		const { frontmatter, code } = await withOembedApiRouting(() =>
+			bundleMDX({
+				source: indexFile.content,
+				files,
+				mdxOptions(options) {
+					options.remarkPlugins = [
+						...(options.remarkPlugins ?? []),
+						remarkSlug,
+						[remarkAutolinkHeadings, { behavior: 'wrap' }],
+						gfm,
+						...remarkPlugins,
+					]
+					options.rehypePlugins = [
+						...(options.rehypePlugins ?? []),
+						...rehypePlugins,
+					]
+					return options
+				},
+			}),
+		)
 		const readTime = calculateReadingTime(indexFile.content)
 
 		return {

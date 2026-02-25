@@ -55,6 +55,11 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://kcd-oauth-provider.kentcdodds.workers.dev'),
+	OEMBED_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://oembed.com'),
 	PWNED_PASSWORDS_API_BASE_URL: z
 		.string()
 		.trim()
