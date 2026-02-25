@@ -1,16 +1,10 @@
-import path from 'path'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
 import { parse } from 'cookie'
-import fsExtra from 'fs-extra'
 import { type User } from '#app/utils/prisma-generated.server/client.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
-
-type MSWData = {
-	email: Record<string, Email>
-}
 
 type Email = {
 	to: string
@@ -77,20 +71,21 @@ export async function readEmail(
 					return email
 				}
 			}
-
-			const mswOutput = fsExtra.readJsonSync(
-				path.join(process.cwd(), './mocks/msw.local.json'),
-			) as unknown as MSWData
-			const emails = Object.values(mswOutput.email).reverse() // reverse so we get the most recent email first
-			// TODO: add validation
-			let email: Email | undefined
-			if (typeof recipientOrFilter === 'string') {
-				email = emails.find((email: Email) => email.to === recipientOrFilter)
-			} else {
-				email = emails.find(recipientOrFilter)
-			}
-			if (email) {
-				return email
+			if (process.env.ALLOW_MSW_EMAIL_FIXTURE_FALLBACK === 'true') {
+				const fixtureModule = await import('../mocks/utils.ts')
+				const mswOutput = (await fixtureModule.readFixture()) as {
+					email: Record<string, Email>
+				}
+				const emails = Object.values(mswOutput.email).reverse()
+				let email: Email | undefined
+				if (typeof recipientOrFilter === 'string') {
+					email = emails.find((entry) => entry.to === recipientOrFilter)
+				} else {
+					email = emails.find(recipientOrFilter)
+				}
+				if (email) {
+					return email
+				}
 			}
 			// Email not found yet, retry after a delay
 			if (attempt < maxRetries - 1) {
