@@ -2,7 +2,6 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { type ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { MemoryRouter } from 'react-router'
 import { test, expect, vi } from 'vitest'
 import { compileMdxRemoteDocumentFromSource } from '#app/mdx-remote/compiler/from-mdast.ts'
 import { mdxRemoteComponentAllowlist } from '#app/mdx-remote/component-allowlist.ts'
@@ -26,6 +25,28 @@ vi.mock('#app/utils/theme.tsx', () => ({
 		dark?: ReactNode
 	}) => <>{light ?? dark ?? null}</>,
 }))
+
+vi.mock('#app/utils/misc-react.tsx', async () => {
+	const actual = await vi.importActual('#app/utils/misc-react.tsx')
+	return {
+		...actual,
+		AnchorOrLink: ({
+			href,
+			to,
+			children,
+			...rest
+		}: {
+			href?: string
+			to?: string
+			children?: ReactNode
+			[key: string]: unknown
+		}) => (
+			<a href={to ?? href ?? ''} {...rest}>
+				{children}
+			</a>
+		),
+	}
+})
 
 vi.mock('mdx-bundler/client/index.js', () => ({
 	getMDXComponent: vi.fn(() => () => <p>bundled-mdx</p>),
@@ -54,11 +75,7 @@ async function renderRemoteMdxFromContentPath(contentPath: string) {
 			})
 			return <Component />
 		}
-		return renderToStaticMarkup(
-			<MemoryRouter>
-				<TestRoute />
-			</MemoryRouter>,
-		)
+		return renderToStaticMarkup(<TestRoute />)
 	} finally {
 		if (typeof originalFlag === 'undefined') {
 			delete process.env.ENABLE_MDX_REMOTE
@@ -75,6 +92,27 @@ async function getContentPagePaths() {
 		.filter((entry) => entry.isDirectory())
 		.map((entry) => `content/pages/${entry.name}/index.mdx`)
 		.sort()
+}
+
+function getRepresentativeBlogPaths() {
+	return [
+		'content/blog/fix-the-not-wrapped-in-act-warning/index.mdx',
+		'content/blog/use-react-error-boundary-to-handle-errors-in-react/index.mdx',
+		'content/blog/dont-call-a-react-function-component/index.mdx',
+		'content/blog/the-state-initializer-pattern/index.mdx',
+		'content/blog/write-fewer-longer-tests/index.mdx',
+		'content/blog/react-hooks-pitfalls/index.mdx',
+		'content/blog/use-state-lazy-initialization-and-function-updates/index.mdx',
+		'content/blog/how-to-test-custom-react-hooks/index.mdx',
+		'content/blog/usememo-and-usecallback/index.mdx',
+		'content/blog/understanding-reacts-key-prop/index.mdx',
+		'content/blog/aha-testing/index.mdx',
+		'content/blog/props-vs-state/index.mdx',
+		'content/blog/avoid-the-test-user/index.mdx',
+		'content/blog/avoid-nesting-when-youre-testing/index.mdx',
+		'content/blog/fix-the-slow-render-before-you-fix-the-re-render/index.mdx',
+		'content/blog/state-colocation-will-make-your-react-app-faster/index.mdx',
+	]
 }
 
 test.each([
@@ -115,6 +153,22 @@ test.each([
 test('renders all page mdx documents in strict mdx-remote mode', async () => {
 	const pagePaths = await getContentPagePaths()
 	for (const contentPath of pagePaths) {
+		let markup = ''
+		try {
+			markup = await renderRemoteMdxFromContentPath(contentPath)
+		} catch (error: unknown) {
+			throw new Error(
+				`Failed to render ${contentPath}: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+		expect(markup.length).toBeGreaterThan(50)
+		expect(markup).not.toContain('Unknown MDX runtime component')
+	}
+})
+
+test('renders representative blog mdx documents in strict mdx-remote mode', async () => {
+	const blogPaths = getRepresentativeBlogPaths()
+	for (const contentPath of blogPaths) {
 		let markup = ''
 		try {
 			markup = await renderRemoteMdxFromContentPath(contentPath)

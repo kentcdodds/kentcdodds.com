@@ -203,3 +203,45 @@ test('renders lambda child expressions for render-prop components', () => {
 
 	expect(markup).toContain('<p>Hello Kent</p>')
 })
+
+test('falls back to undefined when prop expression parsing fails', () => {
+	const document: MdxRemoteDocument<Record<string, unknown>> = {
+		schemaVersion: 1,
+		slug: 'bad-prop-expression',
+		frontmatter: {},
+		compiledAt: '2026-02-25T00:00:00.000Z',
+		root: {
+			type: 'root',
+			children: [
+				{
+					type: 'element',
+					name: 'Probe',
+					props: {
+						onSubmit: {
+							type: 'expression',
+							value: '({ username }) => alert(username)',
+						},
+					},
+				},
+			],
+		},
+	}
+
+	const markup = renderToStaticMarkup(
+		<>
+			{renderMdxRemoteDocument({
+				document,
+				context: createMdxRemoteRuntimeContext(),
+				components: {
+					Probe: ({
+						onSubmit,
+					}: {
+						onSubmit?: unknown
+					}) => <p>{typeof onSubmit === 'undefined' ? 'fallback' : 'value'}</p>,
+				},
+			})}
+		</>,
+	)
+
+	expect(markup).toContain('<p>fallback</p>')
+})
