@@ -10,6 +10,7 @@ type CliOptions = {
 	outConfigPath: string
 	environment: string
 	dryRun: boolean
+	mdxRemoteR2BucketName: string | null
 }
 
 type D1DatabaseListEntry = {
@@ -41,6 +42,7 @@ function parseArgs(argv: Array<string>) {
 		outConfigPath: 'wrangler-preview.generated.jsonc',
 		environment: 'preview',
 		dryRun: false,
+		mdxRemoteR2BucketName: null,
 	}
 
 	for (let index = 1; index < argv.length; index += 1) {
@@ -65,6 +67,10 @@ function parseArgs(argv: Array<string>) {
 				break
 			case '--dry-run':
 				options.dryRun = true
+				break
+			case '--mdx-remote-r2-bucket':
+				options.mdxRemoteR2BucketName = argv[index + 1] ?? null
+				index += 1
 				break
 			default:
 				if (arg.startsWith('-')) {
@@ -338,6 +344,7 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseName,
 	d1DatabaseId,
 	siteCacheKvId,
+	mdxRemoteR2BucketName,
 }: {
 	baseConfigPath: string
 	outConfigPath: string
@@ -346,6 +353,7 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseName: string
 	d1DatabaseId: string
 	siteCacheKvId: string
+	mdxRemoteR2BucketName: string | null
 }) {
 	const baseText = await readFile(baseConfigPath, 'utf8')
 	const config = JSON.parse(baseText) as Record<string, unknown>
@@ -398,6 +406,24 @@ async function writeGeneratedWranglerConfig({
 		},
 	]
 
+	const existingR2Buckets = Array.isArray(targetConfig.r2_buckets)
+		? targetConfig.r2_buckets
+		: []
+	const r2WithoutMdxBinding = existingR2Buckets.filter((entry) => {
+		return !(isRecord(entry) && entry.binding === 'MDX_REMOTE_R2')
+	})
+	if (mdxRemoteR2BucketName) {
+		targetConfig.r2_buckets = [
+			...r2WithoutMdxBinding,
+			{
+				binding: 'MDX_REMOTE_R2',
+				bucket_name: mdxRemoteR2BucketName,
+			},
+		]
+	} else {
+		targetConfig.r2_buckets = r2WithoutMdxBinding
+	}
+
 	const resolvedOut = path.resolve(outConfigPath)
 	await mkdir(path.dirname(resolvedOut), { recursive: true })
 	await writeFile(resolvedOut, `${JSON.stringify(config, null, '\t')}\n`, 'utf8')
@@ -421,6 +447,7 @@ async function ensurePreviewResources(options: CliOptions) {
 		d1DatabaseName: d1.name,
 		d1DatabaseId: d1.id,
 		siteCacheKvId: kv.id,
+		mdxRemoteR2BucketName: options.mdxRemoteR2BucketName,
 	})
 
 	console.log(`wrangler_config=${generatedConfigPath}`)
@@ -428,6 +455,7 @@ async function ensurePreviewResources(options: CliOptions) {
 	console.log(`d1_database_id=${d1.id}`)
 	console.log(`site_cache_kv_title=${kv.title}`)
 	console.log(`site_cache_kv_id=${kv.id}`)
+	console.log(`mdx_remote_r2_bucket=${options.mdxRemoteR2BucketName ?? ''}`)
 }
 
 async function cleanupPreviewResources(options: CliOptions) {

@@ -101,13 +101,18 @@ jobs:
         env:
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+          MDX_REMOTE_R2_BUCKET: ${{ secrets.MDX_REMOTE_R2_BUCKET || secrets.R2_BUCKET }}
         run: |
           set -euo pipefail
           dry_run_flag=()
+          mdx_remote_r2_flag=()
           if [ "$DRY_RUN" = "true" ]; then
             dry_run_flag+=(--dry-run)
           fi
-          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}" | tee -a "$GITHUB_OUTPUT"
+          if [ -n "${MDX_REMOTE_R2_BUCKET:-}" ]; then
+            mdx_remote_r2_flag+=(--mdx-remote-r2-bucket "$MDX_REMOTE_R2_BUCKET")
+          fi
+          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}" "${mdx_remote_r2_flag[@]}" | tee -a "$GITHUB_OUTPUT"
 
       - name: 🧪 Deploy preview mock workers
         id: deploy-mocks
