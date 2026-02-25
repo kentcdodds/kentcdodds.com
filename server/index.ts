@@ -36,6 +36,8 @@ sourceMapSupport.install()
 
 const env = getEnv()
 const MODE = env.NODE_ENV
+const localDevCspSources =
+	MODE === 'development' ? ['http://127.0.0.1:*', 'http://localhost:*'] : []
 
 const viteDevServer =
 	MODE === 'production'
@@ -265,6 +267,7 @@ app.use(
 				'connect-src': [
 					...(MODE === 'development' ? ['ws:'] : []),
 					"'self'",
+					...localDevCspSources,
 				].filter(Boolean),
 				'font-src': ["'self'"],
 				'frame-src': [
@@ -305,6 +308,7 @@ app.use(
 					...(MODE === 'development'
 						? ['cloudflare-ipfs.com', 'cdn.jsdelivr.net']
 						: []),
+					...localDevCspSources,
 				],
 				'media-src': [
 					"'self'",
@@ -314,6 +318,7 @@ app.use(
 					'blob:',
 					'www.dropbox.com',
 					'*.dropboxusercontent.com',
+					...localDevCspSources,
 				],
 				'script-src': [
 					"'strict-dynamic'",

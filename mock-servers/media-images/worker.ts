@@ -19,6 +19,7 @@ type Env = {
 		fetch(request: Request): Promise<Response>
 	}
 	MEDIA_PROXY_BASE_URL?: string
+	MEDIA_IMAGES_DELIVERY_BASE_URL?: string
 	MEDIA_PROXY_CACHE_BASE_URL?: string
 	MEDIA_PROXY_CACHE_BUCKET?: string
 	MEDIA_R2_ENDPOINT?: string
@@ -49,6 +50,8 @@ const videoExtensions = new Set(['.mp4', '.mov', '.m4v', '.webm'])
 
 const imagesManifest = imagesManifestData as MediaManifest
 const videosManifest = videosManifestData as MediaManifest
+const defaultCloudflareImagesDeliveryBaseUrl =
+	'https://imagedelivery.net/-P7RfnLm6GMsEkkSxgg7ZQ'
 
 const imageIdToSourcePath = new Map<string, string>()
 for (const [, asset] of Object.entries(imagesManifest.assets)) {
@@ -143,8 +146,7 @@ async function tryServeRepoMediaAsset({
 			),
 		)
 		if (!response.ok) continue
-		const headers = new Headers(response.headers)
-		headers.set('cache-control', 'no-store')
+		const headers = applyMediaResponseHeaders(new Headers(response.headers))
 		return new Response(
 			request.method === 'HEAD' ? null : await response.arrayBuffer(),
 			{
@@ -186,17 +188,87 @@ async function tryServeRemoteMediaAsset({
 		pathname: url.pathname,
 		query: url.search,
 	})
-	let response: Response
+	let response: Response | null = null
 	try {
 		response = await fetch(new Request(proxyUrl, { method: request.method }))
 	} catch {
+		// fall through to Cloudflare direct delivery fallback
+	}
+	if (response?.ok) {
+		return buildServedMediaResponse({
+			method: request.method,
+			response,
+			proxyCacheBaseUrl,
+			cacheObjectKey,
+		})
+	}
+
+	const directDeliveryResponse = await tryServeDirectCloudflareImageDelivery({
+		request,
+		url,
+		env,
+	})
+	if (!directDeliveryResponse) return null
+	return buildServedMediaResponse({
+		method: request.method,
+		response: directDeliveryResponse,
+		proxyCacheBaseUrl,
+		cacheObjectKey,
+	})
+}
+
+function getMediaProxyBaseUrl(env: Env) {
+	const baseUrl =
+		env.MEDIA_PROXY_BASE_URL?.trim() ??
+		readProcessEnv('MEDIA_PROXY_BASE_URL')?.trim()
+	return baseUrl ? baseUrl.replace(/\/+$/, '') : null
+}
+
+function getCloudflareImagesDeliveryBaseUrl(env: Env) {
+	const baseUrl =
+		env.MEDIA_IMAGES_DELIVERY_BASE_URL?.trim() ??
+		readProcessEnv('MEDIA_IMAGES_DELIVERY_BASE_URL')?.trim()
+	return (baseUrl || defaultCloudflareImagesDeliveryBaseUrl).replace(/\/+$/, '')
+}
+
+async function tryServeDirectCloudflareImageDelivery({
+	request,
+	url,
+	env,
+}: {
+	request: Request
+	url: URL
+	env: Env
+}) {
+	if (!url.pathname.startsWith('/images/')) return null
+	const imageId = decodeURIComponent(url.pathname.slice('/images/'.length))
+	if (!imageId) return null
+	const directBaseUrl = getCloudflareImagesDeliveryBaseUrl(env)
+	const directUrl = buildProxyObjectUrl({
+		baseUrl: directBaseUrl,
+		objectKey: `${imageId}/public`,
+	})
+	try {
+		const response = await fetch(new Request(directUrl, { method: request.method }))
+		return response.ok ? response : null
+	} catch {
 		return null
 	}
-	if (!response.ok) return null
+}
+
+async function buildServedMediaResponse({
+	method,
+	response,
+	proxyCacheBaseUrl,
+	cacheObjectKey,
+}: {
+	method: string
+	response: Response
+	proxyCacheBaseUrl: string | null
+	cacheObjectKey: string
+}) {
 	const responseBytes =
-		request.method === 'HEAD'
-			? null
-			: new Uint8Array(await response.arrayBuffer())
+		method === 'HEAD' ? null : new Uint8Array(await response.arrayBuffer())
 	const responseContentType =
 		response.headers.get('content-type')?.trim() ??
 		'application/octet-stream'
@@ -208,19 +280,11 @@ async function tryServeRemoteMediaAsset({
 			bytes: responseBytes,
 		})
 	}
-	const headers = new Headers(response.headers)
-	headers.set('cache-control', 'no-store')
-	return new Response(request.method === 'HEAD' ? null : responseBytes, {
+	const headers = applyMediaResponseHeaders(new Headers(response.headers))
+	return new Response(method === 'HEAD' ? null : responseBytes, {
 		status: response.status,
 		headers,
 	})
-}
-
-function getMediaProxyBaseUrl(env: Env) {
-	const baseUrl =
-		env.MEDIA_PROXY_BASE_URL?.trim() ??
-		readProcessEnv('MEDIA_PROXY_BASE_URL')?.trim()
-	return baseUrl ? baseUrl.replace(/\/+$/, '') : null
 }
 
 function getCandidateAssetPaths(pathname: string) {
@@ -376,8 +440,7 @@ async function tryServeProxyCacheAsset({
 		return null
 	}
 	if (!response.ok) return null
-	const headers = new Headers(response.headers)
-	headers.set('cache-control', 'no-store')
+	const headers = applyMediaResponseHeaders(new Headers(response.headers))
 	return new Response(
 		method === 'HEAD' ? null : await response.arrayBuffer(),
 		{
@@ -451,13 +514,22 @@ function buildWireframeFallbackResponse({
 	)
 	return new Response(method === 'HEAD' ? null : payload, {
 		status: 200,
-		headers: {
+		headers: applyMediaResponseHeaders(
+			new Headers({
 			'content-type': pathname.startsWith('/stream/')
 				? 'image/svg+xml'
 				: 'image/svg+xml',
-			'cache-control': 'no-store',
-		},
+			}),
+		),
 	})
+}
+
+function applyMediaResponseHeaders(headers: Headers) {
+	headers.set('cache-control', 'no-store')
+	headers.set('access-control-allow-origin', '*')
+	headers.set('access-control-allow-methods', 'GET,HEAD,OPTIONS')
+	headers.set('cross-origin-resource-policy', 'cross-origin')
+	return headers
 }
 
 function recordRequest({

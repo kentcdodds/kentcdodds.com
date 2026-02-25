@@ -34,6 +34,9 @@ reference:
 
 - External APIs are mocked via Worker mock servers in `bun run dev` and test
   workflows.
+- `bun run dev` now auto-selects a free contiguous local mock-port range
+  (prefers `8790-8803`) so stale local processes do not fail startup with
+  `Address already in use` errors.
 - The Kit integration is now served by a Worker mock server in dev
   (`mock-servers/kit/worker.ts`, local port `8790`).
 - The email verifier integration is served by a Worker mock server in dev
@@ -71,6 +74,9 @@ reference:
   - The media mock attempts to serve assets from local `content/**` first.
   - When local assets are unavailable, it can proxy `/images/*` and `/stream/*`
     requests to remote media delivery infrastructure.
+  - If `MEDIA_PROXY_BASE_URL` is unreachable for image requests, the mock
+    falls back to direct Cloudflare Images delivery
+    (`MEDIA_IMAGES_DELIVERY_BASE_URL`) to avoid local placeholder-only pages.
   - Proxied media responses are persisted into local R2 cache bucket
     `mock-media-cache` so already-fetched assets continue working offline.
   - If remote media is unreachable (offline/no internet), the media mock returns a

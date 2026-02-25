@@ -12,6 +12,7 @@
 			"name": "kentcdodds-mock-media-images-dev",
 			"vars": {
 				"MEDIA_PROXY_BASE_URL": "https://media.kcd.dev",
+				"MEDIA_IMAGES_DELIVERY_BASE_URL": "https://imagedelivery.net/-P7RfnLm6GMsEkkSxgg7ZQ",
 				"MEDIA_PROXY_CACHE_BUCKET": "mock-media-cache"
 			}
 		},
@@ -19,6 +20,7 @@
 			"name": "kentcdodds-mock-media-images-preview",
 			"vars": {
 				"MEDIA_PROXY_BASE_URL": "https://media.kcd.dev",
+				"MEDIA_IMAGES_DELIVERY_BASE_URL": "https://imagedelivery.net/-P7RfnLm6GMsEkkSxgg7ZQ",
 				"MEDIA_PROXY_CACHE_BUCKET": "mock-media-cache"
 			}
 		},
@@ -26,6 +28,7 @@
 			"name": "kentcdodds-mock-media-images",
 			"vars": {
 				"MEDIA_PROXY_BASE_URL": "https://media.kcd.dev",
+				"MEDIA_IMAGES_DELIVERY_BASE_URL": "https://imagedelivery.net/-P7RfnLm6GMsEkkSxgg7ZQ",
 				"MEDIA_PROXY_CACHE_BUCKET": "mock-media-cache"
 			}
 		}
