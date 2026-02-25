@@ -19,6 +19,7 @@ reference:
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
 | Dev server      | `bun run dev` (starts app + worker mock stack + mdx-remote content watcher; app runs on port 3000) |
+| Calls e2e local stack | `bun run dev:calls-e2e` (starts Worker runtime + mock workers + mdx-remote watcher, including queue bindings for Call Kent draft processing) |
 | Lint            | `bun run lint`                                                                    |
 | Typecheck       | `bun run typecheck`                                                               |
 | Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
@@ -93,6 +94,12 @@ reference:
     KV-backed shared cache behavior.
 - MCP Worker routing expects a Durable Object binding named `MCP_OBJECT`
   (`McpDurableObject` class in `worker/mcp-durable-object.ts`).
+- Call Kent draft processing queue:
+  - Wrangler env config now binds `CALLS_DRAFT_QUEUE` in each env.
+  - Generated preview/production Wrangler configs rewrite queue bindings to
+    branch/preview-specific queue names.
+  - `bun run dev:calls-e2e` runs the app on Wrangler local runtime so queue
+    producer/consumer flow can be exercised without Node-only dev server fallbacks.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - Semantic search caveat: YouTube auto-captions can include cue-only chunks like
