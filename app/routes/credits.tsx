@@ -280,11 +280,11 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 				</Paragraph>
 				<Paragraph className="col-span-4">
 					{`The folks at `}
-					<a href="https://fly.io">Fly.io</a>
+					<a href="https://cloudflare.com">Cloudflare</a>
 					{`
-            were an enormous help in getting me off the ground with hosting the
-            site and databases. The backend is totally not my domain and they
-            seriously helped me be successful.
+            have been an enormous help in running and evolving the hosting stack
+            for this site. Backend and infrastructure are not my strongest domain,
+            and their platform + docs have made a huge difference.
           `}
 				</Paragraph>
 			</Grid>
