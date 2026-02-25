@@ -22,6 +22,12 @@ describe('security mock worker', () => {
 		expect(pwnedResponse.status).toBe(200)
 		const pwnedBody = await pwnedResponse.text()
 		expect(pwnedBody).toContain('1E4C9B93F3F0682250B6CF8331B7EE68FD8')
+		const pwnedRangeWithoutPrefixResponse = await worker.fetch(
+			new Request('http://mock-security.local/range/5BAA6'),
+			{},
+			{},
+		)
+		expect(pwnedRangeWithoutPrefixResponse.status).toBe(200)
 
 		const gravatarHeadResponse = await worker.fetch(
 			new Request(
@@ -35,9 +41,9 @@ describe('security mock worker', () => {
 		)
 		expect(gravatarHeadResponse.status).toBe(200)
 
-		const gravatarMissingResponse = await worker.fetch(
+		const avatarHeadResponse = await worker.fetch(
 			new Request(
-				'http://mock-security.local/gravatar/avatar/00000000000000000000000000000000',
+				'http://mock-security.local/avatar/c1c563b36d23e34002036e1de405f9ca',
 				{
 					method: 'HEAD',
 				},
@@ -45,6 +51,6 @@ describe('security mock worker', () => {
 			{},
 			{},
 		)
-		expect(gravatarMissingResponse.status).toBe(404)
+		expect(avatarHeadResponse.status).toBe(200)
 	})
 })

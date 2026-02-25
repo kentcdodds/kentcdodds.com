@@ -17,11 +17,6 @@ const commonPasswordRanges = new Map<string, string>([
 	],
 ])
 
-const gravatarHashesWithAvatar = new Set<string>([
-	// md5("me@kentcdodds.com")
-	'f8fee5dd63f8ef8f8ce83d4f92f5508f',
-])
-
 const transparentPngBytes = new Uint8Array([
 	137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,
 	0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 13, 73, 68, 65, 84,
@@ -67,7 +62,10 @@ export default {
 			return htmlResponse(renderDashboard())
 		}
 
-		if (request.method === 'GET' && /^\/pwned\/range\/[^/]+$/.test(url.pathname)) {
+		if (
+			request.method === 'GET' &&
+			/^\/(?:pwned\/)?range\/[^/]+$/.test(url.pathname)
+		) {
 			const prefix = url.pathname.split('/').pop()?.toUpperCase() ?? ''
 			const body = commonPasswordRanges.get(prefix) ?? ''
 			return new Response(body, {
@@ -81,13 +79,8 @@ export default {
 
 		if (
 			(request.method === 'HEAD' || request.method === 'GET') &&
-			/^\/gravatar\/avatar\/[^/]+$/.test(url.pathname)
+			/^\/(?:gravatar\/)?avatar\/[^/]+$/.test(url.pathname)
 		) {
-			const hash = url.pathname.split('/').pop()?.toLowerCase() ?? ''
-			const exists = gravatarHashesWithAvatar.has(hash)
-			if (!exists) {
-				return new Response(null, { status: 404 })
-			}
 			if (request.method === 'HEAD') {
 				return new Response(null, {
 					status: 200,
