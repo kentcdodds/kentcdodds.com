@@ -174,9 +174,15 @@ function buildPreviewResourceNames(workerName: string) {
 	const maxLen = 63
 	const d1Suffix = '-db'
 	const kvSuffix = '-site-cache-kv'
+	const queueSuffix = '-calls-draft-queue'
 	const d1DatabaseName = truncateWithSuffix(workerName, d1Suffix, maxLen)
 	const siteCacheKvTitle = truncateWithSuffix(workerName, kvSuffix, maxLen)
-	return { d1DatabaseName, siteCacheKvTitle }
+	const callsDraftQueueName = truncateWithSuffix(
+		workerName,
+		queueSuffix,
+		maxLen,
+	)
+	return { d1DatabaseName, siteCacheKvTitle, callsDraftQueueName }
 }
 
 function truncateWithSuffix(base: string, suffix: string, maxLen: number) {
@@ -336,6 +342,77 @@ function deleteKvNamespace({
 	console.error(`Deleted KV namespace: ${title} (${existing.id})`)
 }
 
+function isQueueMissingError(output: string) {
+	const lower = output.toLowerCase()
+	return (
+		lower.includes('not found') ||
+		lower.includes('does not exist') ||
+		lower.includes('unknown queue')
+	)
+}
+
+function ensureQueue({ name, dryRun }: { name: string; dryRun: boolean }) {
+	if (dryRun) {
+		console.error(`[dry-run] ensure queue: ${name}`)
+		return { name }
+	}
+
+	const infoResult = runWranglerWithRetry(['queues', 'info', name], {
+		quiet: true,
+		maxAttempts: 1,
+	})
+	if (infoResult.status === 0) {
+		console.error(`Queue exists: ${name}`)
+		return { name }
+	}
+	const infoOutput = `${infoResult.stdout}${infoResult.stderr}`.trim()
+	if (infoOutput && !isQueueMissingError(infoOutput)) {
+		fail(`Failed to inspect queue "${name}": ${infoOutput}`)
+	}
+
+	const createResult = runWranglerWithRetry(['queues', 'create', name], {
+		quiet: true,
+		input: 'y\n',
+	})
+	if (createResult.status !== 0) {
+		const output = `${createResult.stdout}${createResult.stderr}`.trim()
+		if (!output.toLowerCase().includes('already exists')) {
+			fail(`Failed to create queue "${name}": ${output}`)
+		}
+	}
+	console.error(`Created queue: ${name}`)
+	return { name }
+}
+
+function deleteQueue({ name, dryRun }: { name: string; dryRun: boolean }) {
+	if (dryRun) {
+		console.error(`[dry-run] delete queue: ${name}`)
+		return
+	}
+
+	const infoResult = runWranglerWithRetry(['queues', 'info', name], {
+		quiet: true,
+		maxAttempts: 1,
+	})
+	if (infoResult.status !== 0) {
+		const output = `${infoResult.stdout}${infoResult.stderr}`.trim()
+		if (!output || isQueueMissingError(output)) {
+			console.error(`Queue already deleted: ${name}`)
+			return
+		}
+		fail(`Failed to inspect queue "${name}": ${output}`)
+	}
+
+	const deleteResult = runWranglerWithRetry(['queues', 'delete', name], {
+		quiet: true,
+		input: 'y\n',
+	})
+	if (deleteResult.status !== 0) {
+		fail(`Failed to delete queue: ${name}`)
+	}
+	console.error(`Deleted queue: ${name}`)
+}
+
 async function writeGeneratedWranglerConfig({
 	baseConfigPath,
 	outConfigPath,
@@ -344,6 +421,7 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseName,
 	d1DatabaseId,
 	siteCacheKvId,
+	callsDraftQueueName,
 	mdxRemoteR2BucketName,
 }: {
 	baseConfigPath: string
@@ -353,6 +431,7 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseName: string
 	d1DatabaseId: string
 	siteCacheKvId: string
+	callsDraftQueueName: string
 	mdxRemoteR2BucketName: string | null
 }) {
 	const baseText = await readFile(baseConfigPath, 'utf8')
@@ -424,6 +503,40 @@ async function writeGeneratedWranglerConfig({
 		targetConfig.r2_buckets = r2WithoutMdxBinding
 	}
 
+	const existingQueues = isRecord(targetConfig.queues)
+		? (targetConfig.queues as Record<string, unknown>)
+		: {}
+	const existingQueueProducers = Array.isArray(existingQueues.producers)
+		? existingQueues.producers
+		: []
+	const queueProducersWithoutBinding = existingQueueProducers.filter((entry) => {
+		return !(isRecord(entry) && entry.binding === 'CALLS_DRAFT_QUEUE')
+	})
+	const existingQueueConsumers = Array.isArray(existingQueues.consumers)
+		? existingQueues.consumers
+		: []
+	const queueConsumersWithoutQueue = existingQueueConsumers.filter((entry) => {
+		return !(isRecord(entry) && entry.queue === callsDraftQueueName)
+	})
+	targetConfig.queues = {
+		...existingQueues,
+		producers: [
+			...queueProducersWithoutBinding,
+			{
+				binding: 'CALLS_DRAFT_QUEUE',
+				queue: callsDraftQueueName,
+			},
+		],
+		consumers: [
+			...queueConsumersWithoutQueue,
+			{
+				queue: callsDraftQueueName,
+				max_batch_size: 1,
+				max_batch_timeout: 5,
+			},
+		],
+	}
+
 	const resolvedOut = path.resolve(outConfigPath)
 	await mkdir(path.dirname(resolvedOut), { recursive: true })
 	await writeFile(resolvedOut, `${JSON.stringify(config, null, '\t')}\n`, 'utf8')
@@ -432,10 +545,13 @@ async function writeGeneratedWranglerConfig({
 }
 
 async function ensurePreviewResources(options: CliOptions) {
-	const { d1DatabaseName, siteCacheKvTitle } = buildPreviewResourceNames(
-		options.workerName,
-	)
+	const { d1DatabaseName, siteCacheKvTitle, callsDraftQueueName } =
+		buildPreviewResourceNames(options.workerName)
 
+	const queue = ensureQueue({
+		name: callsDraftQueueName,
+		dryRun: options.dryRun,
+	})
 	const d1 = ensureD1Database({ name: d1DatabaseName, dryRun: options.dryRun })
 	const kv = ensureKvNamespace({ title: siteCacheKvTitle, dryRun: options.dryRun })
 
@@ -447,6 +563,7 @@ async function ensurePreviewResources(options: CliOptions) {
 		d1DatabaseName: d1.name,
 		d1DatabaseId: d1.id,
 		siteCacheKvId: kv.id,
+		callsDraftQueueName: queue.name,
 		mdxRemoteR2BucketName: options.mdxRemoteR2BucketName,
 	})
 
@@ -455,13 +572,15 @@ async function ensurePreviewResources(options: CliOptions) {
 	console.log(`d1_database_id=${d1.id}`)
 	console.log(`site_cache_kv_title=${kv.title}`)
 	console.log(`site_cache_kv_id=${kv.id}`)
+	console.log(`calls_draft_queue_name=${queue.name}`)
 	console.log(`mdx_remote_r2_bucket=${options.mdxRemoteR2BucketName ?? ''}`)
 }
 
 async function cleanupPreviewResources(options: CliOptions) {
-	const { d1DatabaseName, siteCacheKvTitle } = buildPreviewResourceNames(
-		options.workerName,
-	)
+	const { d1DatabaseName, siteCacheKvTitle, callsDraftQueueName } =
+		buildPreviewResourceNames(options.workerName)
+
+	deleteQueue({ name: callsDraftQueueName, dryRun: options.dryRun })
 	deleteKvNamespace({ title: siteCacheKvTitle, dryRun: options.dryRun })
 	deleteD1Database({ name: d1DatabaseName, dryRun: options.dryRun })
 	const outputConfigPath = path.resolve(options.outConfigPath)
