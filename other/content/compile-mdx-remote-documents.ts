@@ -280,3 +280,5 @@ export {
 	parseArgs,
 	parseFrontmatter,
 }
+
+export type { CliOptions, CompiledEntry, FailedEntry }
