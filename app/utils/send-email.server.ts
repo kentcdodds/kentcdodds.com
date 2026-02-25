@@ -6,6 +6,7 @@ import { getOptionalTeam } from './misc.ts'
 const {
 	MAILGUN_DOMAIN: mailgunDomain,
 	MAILGUN_SENDING_KEY: mailgunSendingKey,
+	MAILGUN_API_BASE_URL: mailgunApiBaseUrl,
 } = getEnv()
 
 type MailgunMessage = {
@@ -34,7 +35,8 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
 		html,
 	})
 
-	await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
+	const url = new URL(`/v3/${mailgunDomain}/messages`, mailgunApiBaseUrl)
+	await fetch(url.toString(), {
 		method: 'POST',
 		body,
 		headers: {

@@ -54,6 +54,11 @@ const schemaBase = z.object({
 	MAGIC_LINK_SECRET: nonEmptyString,
 	MAILGUN_DOMAIN: nonEmptyString,
 	MAILGUN_SENDING_KEY: nonEmptyString,
+	MAILGUN_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.mailgun.net'),
 	REFRESH_CACHE_SECRET: nonEmptyString,
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
 	// Sentry is optional; validate required combos in `superRefine`.

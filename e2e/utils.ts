@@ -20,6 +20,37 @@ type Email = {
 	html: string
 }
 
+type MockMailgunResponse = {
+	emails: Array<Email>
+}
+
+async function getMockMailgunEmails() {
+	const mailgunBaseUrl = process.env.MAILGUN_API_BASE_URL
+	if (!mailgunBaseUrl) return null
+	if (!mailgunBaseUrl.startsWith('http://127.0.0.1')) return null
+	const url = new URL('/__mocks/emails', mailgunBaseUrl)
+	try {
+		const response = await fetch(url)
+		if (!response.ok) return null
+		const payload = (await response.json()) as MockMailgunResponse
+		return payload.emails
+	} catch {
+		return null
+	}
+}
+
+async function resetMockMailgunEmails() {
+	const mailgunBaseUrl = process.env.MAILGUN_API_BASE_URL
+	if (!mailgunBaseUrl) return
+	if (!mailgunBaseUrl.startsWith('http://127.0.0.1')) return
+	const url = new URL('/__mocks/reset', mailgunBaseUrl)
+	try {
+		await fetch(url, { method: 'POST' })
+	} catch {
+		// best effort
+	}
+}
+
 async function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -33,6 +64,20 @@ export async function readEmail(
 ) {
 	for (let attempt = 0; attempt < maxRetries; attempt++) {
 		try {
+			const mockEmails = await getMockMailgunEmails()
+			if (mockEmails) {
+				const emails = [...mockEmails]
+				let email: Email | undefined
+				if (typeof recipientOrFilter === 'string') {
+					email = emails.find((entry) => entry.to === recipientOrFilter)
+				} else {
+					email = emails.find(recipientOrFilter)
+				}
+				if (email) {
+					return email
+				}
+			}
+
 			const mswOutput = fsExtra.readJsonSync(
 				path.join(process.cwd(), './mocks/msw.local.json'),
 			) as unknown as MSWData
@@ -124,4 +169,5 @@ test.afterEach(async () => {
 	await prisma.user.deleteMany({
 		where: { id: { in: [...users].map((u) => u.id) } },
 	})
+	await resetMockMailgunEmails()
 })
