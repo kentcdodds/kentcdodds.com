@@ -1,5 +1,6 @@
 import { createCookieSessionStorage, redirect } from 'react-router'
 import { z } from 'zod'
+import { isUserAdmin } from '#app/utils/authorization.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { type User } from '#app/utils/prisma-generated.server/client.ts'
 import { getEnv } from './env.server.ts'
@@ -177,7 +178,7 @@ async function requireAdminUser(request: Request): Promise<User> {
 		await session.signOut()
 		throw redirect('/login', { headers: await session.getHeaders() })
 	}
-	if (user.role !== 'ADMIN') {
+	if (!isUserAdmin(user)) {
 		throw redirect('/')
 	}
 	return user
