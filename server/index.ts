@@ -399,8 +399,6 @@ app.use((req, res, next) => {
 		'time spent in react-router request handling',
 	)
 	// `server-timing` auto-ends unfinished metrics when headers are written.
-	// Ending this metric on `finish/close` can double-end it and log:
-	// "No such name middleware-request-handler".
 	next()
 })
 
