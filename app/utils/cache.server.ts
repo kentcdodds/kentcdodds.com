@@ -12,10 +12,9 @@ import {
 } from '@epic-web/cachified'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
-import { updatePrimaryCacheValue } from '#app/routes/resources/cache.sqlite.ts'
 import { getEnv } from '#app/utils/env.server.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 import { isUserAdmin } from './authorization.server.ts'
-import { getInstanceInfo, getInstanceInfoSync } from './litefs-js.server.js'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -26,9 +25,6 @@ function createDatabase(tryAgain = true): DatabaseSync {
 	const parentDir = path.dirname(cacheDatabasePath)
 	fs.mkdirSync(parentDir, { recursive: true })
 	const db = new DatabaseSync(cacheDatabasePath)
-	const { currentIsPrimary } = getInstanceInfoSync()
-	if (!currentIsPrimary) return db
-
 	try {
 		// create cache table with metadata JSON column and value JSON column if it does not exist already
 		db.exec(`
@@ -105,9 +101,38 @@ const preparedSet = cacheDb.prepare(
 )
 const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
 
+type KvNamespaceLike = {
+	get: (
+		key: string,
+		type: 'text',
+	) => Promise<string | null> | string | null
+	put: (key: string, value: string) => Promise<void> | void
+	delete: (key: string) => Promise<void> | void
+	list: (options?: {
+		prefix?: string
+		limit?: number
+		cursor?: string
+	}) => Promise<{ keys: Array<{ name: string }>; cursor?: string }>
+}
+
+const KV_CACHE_PREFIX = 'site-cache:'
+
+function getCacheKvNamespace() {
+	return getRuntimeBinding<KvNamespaceLike>('SITE_CACHE_KV')
+}
+
+function toKvCacheKey(key: string) {
+	return `${KV_CACHE_PREFIX}${key}`
+}
+
 export const cache: CachifiedCache = {
-	name: 'SQLite cache',
-	get(key) {
+	name: 'Shared cache',
+	async get(key) {
+		const kvNamespace = getCacheKvNamespace()
+		if (kvNamespace) {
+			const value = await kvNamespace.get(toKvCacheKey(key), 'text')
+			return value ? JSON.parse(value, bufferReviver) : null
+		}
 		const result = preparedGet.get(key) as any
 		if (!result) return null
 		return {
@@ -116,62 +141,60 @@ export const cache: CachifiedCache = {
 		}
 	},
 	async set(key, entry) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-		if (currentIsPrimary) {
-			preparedSet.run(
-				key,
-				JSON.stringify(entry.value, bufferReplacer),
-				JSON.stringify(entry.metadata),
+		const kvNamespace = getCacheKvNamespace()
+		if (kvNamespace) {
+			await kvNamespace.put(
+				toKvCacheKey(key),
+				JSON.stringify(entry, bufferReplacer),
 			)
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue!({
-				key,
-				cacheValue: entry,
-			}).then((response: Response) => {
-				if (!response.ok) {
-					console.error(
-						`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-						{ entry },
-					)
-				}
-			})
+			return
 		}
+		preparedSet.run(
+			key,
+			JSON.stringify(entry.value, bufferReplacer),
+			JSON.stringify(entry.metadata),
+		)
 	},
 	async delete(key) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-		if (currentIsPrimary) {
-			preparedDelete.run(key)
+		const kvNamespace = getCacheKvNamespace()
+		if (kvNamespace) {
+			await kvNamespace.delete(toKvCacheKey(key))
 		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue!({
-				key,
-				cacheValue: undefined,
-			}).then((response: Response) => {
-				if (!response.ok) {
-					console.error(
-						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-					)
-				}
-			})
+			preparedDelete.run(key)
 		}
 	},
 }
 
-const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
+async function listKvCacheKeys(limit: number) {
+	const kvNamespace = getCacheKvNamespace()
+	if (!kvNamespace) return []
+	const result = await kvNamespace.list({
+		prefix: KV_CACHE_PREFIX,
+		limit,
+	})
+	return result.keys.map((entry) => entry.name.slice(KV_CACHE_PREFIX.length))
+}
+
 export async function getAllCacheKeys(limit: number) {
+	const kvKeys = await listKvCacheKeys(limit)
 	return {
-		sqlite: preparedAllKeys
-			.all(limit)
-			.map((row) => (row as { key: string }).key),
+		sqlite: kvKeys.length
+			? kvKeys
+			: preparedAllKeys.all(limit).map((row) => (row as { key: string }).key),
 		lru: [...lruInstance.keys()],
 	}
 }
 
-const preparedKeySearch = cacheDb.prepare(
-	'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
-)
 export async function searchCacheKeys(search: string, limit: number) {
+	const kvNamespace = getCacheKvNamespace()
+	if (kvNamespace) {
+		const keys = await listKvCacheKeys(Math.max(limit * 5, limit))
+		return {
+			sqlite: keys.filter((key) => key.includes(search)).slice(0, limit),
+			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
+		}
+	}
+
 	return {
 		sqlite: preparedKeySearch
 			.all(`%${search}%`, limit)
@@ -179,6 +202,11 @@ export async function searchCacheKeys(search: string, limit: number) {
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 	}
 }
+
+const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
+const preparedKeySearch = cacheDb.prepare(
+	'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
+)
 
 export async function shouldForceFresh({
 	forceFresh,
