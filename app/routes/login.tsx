@@ -29,7 +29,6 @@ import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import {
 	getDisplayUrl,
@@ -145,7 +144,6 @@ export async function action({ request }: Route.ActionArgs) {
 		userWithPassword?.password?.hash &&
 		isLegacyPasswordHash(userWithPassword.password.hash)
 	) {
-		await ensurePrimary()
 		await prisma.password.deleteMany({ where: { userId: userWithPassword.id } })
 		loginSession.flashError(
 			'Your previous password was reset during our security upgrade. Please use "Reset password" to set a new one.',
@@ -182,7 +180,6 @@ export async function action({ request }: Route.ActionArgs) {
 		try {
 			const clientId = clientSession.getClientId()
 			if (clientId) {
-				await ensurePrimary()
 				await prisma.postRead.updateMany({
 					data: { userId: userWithPassword.id, clientId: null },
 					where: { clientId },

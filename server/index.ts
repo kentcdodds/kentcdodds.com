@@ -25,7 +25,6 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
-import { scheduleExpiredDataCleanup } from './expired-sessions-cleanup.js'
 import { createRateLimitingMiddleware } from './rate-limiting.js'
 import {
 	getRedirectsMiddleware,
@@ -113,7 +112,6 @@ const endServerMetric = (res: ServerTimingResponse, name: string) => {
 }
 
 const expiredDataCleanup = scheduleExpiredDataCleanup()
-
 app.get('/img/social', oldImgSocial)
 
 // TODO: remove this once all clients are updated
@@ -489,7 +487,6 @@ if (MODE === 'development') {
 
 closeWithGrace(() => {
 	return Promise.all([
-		expiredDataCleanup.stop(),
 		new Promise((resolve, reject) => {
 			server.close((e) => (e ? reject(e) : resolve('ok')))
 		}),

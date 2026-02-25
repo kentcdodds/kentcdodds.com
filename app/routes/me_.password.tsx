@@ -5,7 +5,6 @@ import { Grid } from '#app/components/grid.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import {
 	getPasswordHash,
 	getPasswordStrengthError,
@@ -109,7 +108,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const passwordHash = await getPasswordHash(password)
 
-	await ensurePrimary()
 	await prisma.$transaction([
 		prisma.password.upsert({
 			where: { userId: user.id },
