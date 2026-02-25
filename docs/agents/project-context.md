@@ -102,6 +102,8 @@ reference:
 - Mdx-remote compilation script:
   - `bun run content:compile-mdx-remote`
   - `bun run content:compile-mdx-remote:dry-run`
+  - `bun run content:compile-mdx-remote:strict-report` (strict validation report
+    for component/expression compatibility; exits non-zero on failures)
   - generates serialized mdx-remote JSON docs + manifest under
     `other/content/mdx-remote/`.
 

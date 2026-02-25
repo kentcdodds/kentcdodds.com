@@ -85,6 +85,34 @@ test('rejects forbidden expression syntax in nodes and props', async () => {
 	).toThrow(/forbidden expression syntax/i)
 })
 
+test('validates node prop values for unknown components', async () => {
+	expect(() =>
+		compileMdxRemoteDocument({
+			slug: 'invalid-node-prop',
+			frontmatter: {},
+			root: {
+				type: 'root',
+				children: [
+					{
+						type: 'element',
+						name: 'Themed',
+						props: {
+							dark: {
+								type: 'node',
+								value: {
+									type: 'element',
+									name: 'UnknownComponent',
+								},
+							},
+						},
+					},
+				],
+			},
+			allowedComponentNames: ['Themed'],
+		}),
+	).toThrow(/unknown mdx component/i)
+})
+
 test('allows expression syntax when strict expression mode is disabled', async () => {
 	const { document } = await compileMdxRemoteDocument({
 		slug: 'non-strict-expression',
