@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream'
 import { createReadableStreamFromReadable } from '@react-router/node'
+import { isUserAdmin } from '#app/utils/authorization.server.ts'
 import {
 	getAudioBuffer,
 	getAudioStream,
@@ -16,7 +17,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const callId = url.searchParams.get('callId')
 	if (!callId) throw new Response('callId is required', { status: 400 })
 
-	const isAdmin = user.role === 'ADMIN'
+	const isAdmin = isUserAdmin(user)
 	const call = await prisma.call.findFirst({
 		where: isAdmin ? { id: callId } : { id: callId, userId: user.id },
 		select: {

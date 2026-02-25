@@ -14,6 +14,7 @@ import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import { updatePrimaryCacheValue } from '#app/routes/resources/cache.sqlite.ts'
 import { getEnv } from '#app/utils/env.server.ts'
+import { isUserAdmin } from './authorization.server.ts'
 import { getInstanceInfo, getInstanceInfoSync } from './litefs-js.server.js'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
@@ -194,7 +195,7 @@ export async function shouldForceFresh({
 	if (!request) return false
 	const fresh = new URL(request.url).searchParams.get('fresh')
 	if (typeof fresh !== 'string') return false
-	if ((await getUser(request))?.role !== 'ADMIN') return false
+	if (!isUserAdmin(await getUser(request))) return false
 	if (fresh === '') return true
 
 	return fresh.split(',').includes(key)
