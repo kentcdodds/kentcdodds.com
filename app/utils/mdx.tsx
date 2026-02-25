@@ -2,7 +2,7 @@ import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { type MetaFunction } from 'react-router'
-import { MediaVideo } from '#app/components/cloudinary-video.tsx'
+import { MediaVideo } from '#app/components/media-video.tsx'
 import { MermaidDiagram } from '#app/components/mermaid.tsx'
 import {
 	getImageBuilder,

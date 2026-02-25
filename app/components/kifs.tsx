@@ -1,4 +1,4 @@
-import { MediaVideo } from './cloudinary-video.tsx'
+import { MediaVideo } from './media-video.tsx'
 
 type MediaVideoProps = Parameters<typeof MediaVideo>[0]
 

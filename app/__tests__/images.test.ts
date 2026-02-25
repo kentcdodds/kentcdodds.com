@@ -3,12 +3,12 @@ import { getImageBuilder } from '#app/images.tsx'
 
 const originalEnv = globalThis.ENV
 
-describe('cloudinary image url generation', () => {
+describe('media image url generation', () => {
 	afterEach(() => {
 		globalThis.ENV = originalEnv
 	})
 
-	test('uses default cloudinary host when no override exists', () => {
+	test('uses default media host when no override exists', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
 			CLOUDINARY_BASE_URL: 'https://media.kentcdodds.com',
@@ -19,7 +19,7 @@ describe('cloudinary image url generation', () => {
 		expect(url.startsWith('https://media.kentcdodds.com/')).toBe(true)
 	})
 
-	test('rewrites cloudinary host when public env override is set', () => {
+	test('rewrites media host when public env override is set', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
 			CLOUDINARY_BASE_URL: 'http://127.0.0.1:8803',
