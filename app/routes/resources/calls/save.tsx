@@ -5,6 +5,8 @@ import { type RecordingFormData } from '#app/components/calls/recording-form.tsx
 import {
 	deleteAudioObject,
 	getAudioBuffer,
+	putCallAudioFromBuffer,
+	putEpisodeDraftResponseAudioFromBuffer,
 	putEpisodeDraftResponseAudioFromDataUrl,
 	putCallAudioFromDataUrl,
 } from '#app/utils/call-kent-audio-storage.server.ts'
@@ -33,6 +35,7 @@ import { createEpisode } from '#app/utils/transistor.server.ts'
 import { type Route } from './+types/save'
 
 type ActionData = RecordingFormData
+type SubmittedAudio = string | File | null
 
 function getCheckboxFormValue(formData: FormData, key: string) {
 	const value = formData.get(key)
@@ -42,7 +45,7 @@ function getCheckboxFormValue(formData: FormData, key: string) {
 
 function getActionData(formData: FormData) {
 	const fields = {
-		audio: getStringFormValue(formData, 'audio'),
+		audio: getAudioFormValue(formData, 'audio'),
 		title: getStringFormValue(formData, 'title'),
 		notes: getStringFormValue(formData, 'notes'),
 	}
@@ -60,6 +63,17 @@ function getActionData(formData: FormData) {
 	}
 
 	return { actionData, fields }
+}
+
+function getAudioFormValue(formData: FormData, key: string): SubmittedAudio {
+	const value = formData.get(key)
+	if (typeof value === 'string') return value
+	if (value instanceof File) return value
+	return null
+}
+
+function getAudioContentType(audio: File) {
+	return audio.type.trim() ? audio.type : 'audio/webm'
 }
 
 function hasActionErrors(actionData: ActionData) {
@@ -95,7 +109,14 @@ async function createCall({
 		}
 
 		const callId = randomUUID()
-		const stored = await putCallAudioFromDataUrl({ callId, dataUrl: audio })
+		const stored =
+			typeof audio === 'string'
+				? await putCallAudioFromDataUrl({ callId, dataUrl: audio })
+				: await putCallAudioFromBuffer({
+						callId,
+						audio: new Uint8Array(await audio.arrayBuffer()),
+						contentType: getAudioContentType(audio),
+					})
 		let createdCall: { id: string }
 		try {
 			createdCall = await prisma.call.create({
@@ -392,7 +413,7 @@ async function createEpisodeDraft({
 	formData: FormData
 }) {
 	const callId = getStringFormValue(formData, 'callId')
-	const responseAudio = getStringFormValue(formData, 'audio')
+	const responseAudio = getAudioFormValue(formData, 'audio')
 	const formCallTitle = getStringFormValue(formData, 'callTitle')
 	const formNotes = getStringFormValue(formData, 'notes')
 	if (!callId) return redirectCallNotFound()
@@ -451,10 +472,17 @@ async function createEpisodeDraft({
 		}),
 	])
 
-	const responseAudioObject = await putEpisodeDraftResponseAudioFromDataUrl({
-		draftId: draft.id,
-		dataUrl: responseAudio!,
-	})
+	const responseAudioObject =
+		typeof responseAudio === 'string'
+			? await putEpisodeDraftResponseAudioFromDataUrl({
+					draftId: draft.id,
+					dataUrl: responseAudio,
+				})
+			: await putEpisodeDraftResponseAudioFromBuffer({
+					draftId: draft.id,
+					audio: new Uint8Array(await responseAudio!.arrayBuffer()),
+					contentType: getAudioContentType(responseAudio!),
+				})
 	let wasEnqueued = false
 	try {
 		wasEnqueued = await enqueueCallKentEpisodeDraftProcessing({

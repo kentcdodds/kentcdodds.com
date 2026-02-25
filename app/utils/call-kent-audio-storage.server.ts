@@ -257,9 +257,25 @@ export async function putEpisodeDraftResponseAudioFromDataUrl({
 	dataUrl: string
 }): Promise<PutAudioResult> {
 	const { buffer, contentType } = parseBase64DataUrl(dataUrl)
+	return putEpisodeDraftResponseAudioFromBuffer({
+		draftId,
+		audio: buffer,
+		contentType,
+	})
+}
+
+export async function putEpisodeDraftResponseAudioFromBuffer({
+	draftId,
+	audio,
+	contentType,
+}: {
+	draftId: string
+	audio: Uint8Array
+	contentType: string
+}): Promise<PutAudioResult> {
 	const { store } = getStore()
 	const key = getEpisodeDraftResponseAudioKey(draftId, contentType)
-	return await store.put({ key, body: buffer, contentType })
+	return await store.put({ key, body: audio, contentType })
 }
 
 export async function getAudioStream({

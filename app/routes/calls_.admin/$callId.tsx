@@ -238,7 +238,7 @@ function ResponseAudioDraftForm({
 		}
 	}, [audioURL])
 
-	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
 		if (isSubmitting) return
 		setError(null)
@@ -247,71 +247,51 @@ function ResponseAudioDraftForm({
 		const callTitleValue = String(formData.get('callTitle') ?? '')
 		const notesValue = String(formData.get('notes') ?? '')
 
-		const reader = new FileReader()
-		const handleLoadEnd = async () => {
-			try {
-				if (typeof reader.result !== 'string') {
-					setError('Unable to read recording. Please try again.')
-					return
-				}
+		const body = new FormData()
+		body.set('intent', 'create-episode-draft')
+		body.set('callId', callId)
+		body.set('callTitle', callTitleValue)
+		body.set('notes', notesValue)
+		body.set('audio', audio, 'response-recording.webm')
 
-				const body = new URLSearchParams()
-				body.set('intent', 'create-episode-draft')
-				body.set('callId', callId)
-				body.set('audio', reader.result)
-				body.set('callTitle', callTitleValue)
-				body.set('notes', notesValue)
-
-				const headers = new Headers({
-					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-				})
-
-				abortControllerRef.current?.abort()
-				const abortController = new AbortController()
-				abortControllerRef.current = abortController
-
-				const response = await fetch(recordingFormActionPath, {
-					method: 'POST',
-					body,
-					headers,
-					signal: abortController.signal,
-				})
-
-				const redirectPath = getNavigationPathFromResponse(response)
-				if (redirectPath) {
-					// Avoid scroll-to-top when the action redirects back to this page.
-					// (Also avoid unnecessary navigation if the redirect target is the same URL.)
-					if (redirectPath !== `${location.pathname}${location.search}`) {
-						await navigate(redirectPath, { preventScrollReset: true })
-					} else {
-						await revalidator.revalidate()
-					}
-					return
-				}
-
-				if (response.ok) {
-					await revalidator.revalidate()
-					return
-				}
-
-				const text = await response.text().catch(() => '')
-				setError(text.trim() || 'Unable to submit response. Please try again.')
-			} catch (e: unknown) {
-				if (e instanceof DOMException && e.name === 'AbortError') return
-				setError(e instanceof Error ? e.message : 'Unable to submit response.')
-			} finally {
-				setIsSubmitting(false)
-			}
-		}
-
-		reader.addEventListener('loadend', handleLoadEnd, { once: true })
 		setIsSubmitting(true)
+		abortControllerRef.current?.abort()
+		const abortController = new AbortController()
+		abortControllerRef.current = abortController
 		try {
-			reader.readAsDataURL(audio)
+			const response = await fetch(recordingFormActionPath, {
+				method: 'POST',
+				body,
+				signal: abortController.signal,
+			})
+
+			const redirectPath = getNavigationPathFromResponse(response)
+			if (redirectPath) {
+				// Avoid scroll-to-top when the action redirects back to this page.
+				// (Also avoid unnecessary navigation if the redirect target is the same URL.)
+				if (redirectPath !== `${location.pathname}${location.search}`) {
+					await navigate(redirectPath, { preventScrollReset: true })
+				} else {
+					await revalidator.revalidate()
+				}
+				return
+			}
+
+			if (response.ok) {
+				await revalidator.revalidate()
+				return
+			}
+
+			const text = await response.text().catch(() => '')
+			setError(text.trim() || 'Unable to submit response. Please try again.')
 		} catch (e: unknown) {
-			reader.removeEventListener('loadend', handleLoadEnd)
+			if (e instanceof DOMException && e.name === 'AbortError') return
+			setError(e instanceof Error ? e.message : 'Unable to submit response.')
+		} finally {
+			if (abortControllerRef.current === abortController) {
+				abortControllerRef.current = null
+			}
 			setIsSubmitting(false)
-			setError(e instanceof Error ? e.message : 'Unable to read recording.')
 		}
 	}
 
