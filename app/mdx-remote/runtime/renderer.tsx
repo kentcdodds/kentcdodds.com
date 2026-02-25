@@ -87,11 +87,15 @@ function renderMdxRemoteNode({
 		}),
 	)
 
-	return React.createElement(component as React.ElementType, {
+	const elementProps: Record<string, unknown> = {
 		key: keyPrefix,
 		...resolvedProps,
-		children,
-	})
+	}
+	if (children.length > 0) {
+		elementProps.children = children
+	}
+
+	return React.createElement(component as React.ElementType, elementProps)
 }
 
 function resolveProps({
