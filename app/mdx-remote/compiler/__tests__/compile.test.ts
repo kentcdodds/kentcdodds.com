@@ -42,6 +42,23 @@ test('rejects unknown component names that are not allowlisted', async () => {
 	).toThrow(/unknown mdx component/i)
 })
 
+test('allows unknown component names when strict mode is disabled', async () => {
+	const { document } = await compileMdxRemoteDocument({
+		slug: 'unknown-component-non-strict',
+		frontmatter: {},
+		root: {
+			type: 'root',
+			children: [{ type: 'element', name: 'LegacyComponent' }],
+		},
+		allowedComponentNames: [],
+		strictComponentValidation: false,
+	})
+	expect(document.root.children[0]).toMatchObject({
+		type: 'element',
+		name: 'LegacyComponent',
+	})
+})
+
 test('rejects forbidden expression syntax in nodes and props', async () => {
 	expect(() =>
 		compileMdxRemoteDocument({
@@ -66,6 +83,23 @@ test('rejects forbidden expression syntax in nodes and props', async () => {
 			allowedComponentNames: [],
 		}),
 	).toThrow(/forbidden expression syntax/i)
+})
+
+test('allows expression syntax when strict expression mode is disabled', async () => {
+	const { document } = await compileMdxRemoteDocument({
+		slug: 'non-strict-expression',
+		frontmatter: {},
+		root: {
+			type: 'root',
+			children: [{ type: 'expression', value: 'new Date()' }],
+		},
+		allowedComponentNames: [],
+		strictExpressionValidation: false,
+	})
+	expect(document.root.children[0]).toMatchObject({
+		type: 'expression',
+		value: 'new Date()',
+	})
 })
 
 test('executes compiler plugins with document context', async () => {

@@ -27,6 +27,8 @@ function compileMdxRemoteDocument<Frontmatter extends Record<string, unknown>>({
 	frontmatter,
 	root,
 	allowedComponentNames,
+	strictComponentValidation = true,
+	strictExpressionValidation = true,
 	plugins = [],
 	compiledAt = new Date().toISOString(),
 }: {
@@ -34,6 +36,8 @@ function compileMdxRemoteDocument<Frontmatter extends Record<string, unknown>>({
 	frontmatter: Frontmatter
 	root: MdxRemoteRootNode
 	allowedComponentNames: Array<string>
+	strictComponentValidation?: boolean
+	strictExpressionValidation?: boolean
 	plugins?: Array<MdxRemoteCompilerPlugin<Frontmatter>>
 	compiledAt?: string
 }) {
@@ -42,6 +46,8 @@ function compileMdxRemoteDocument<Frontmatter extends Record<string, unknown>>({
 	assertNodeTreeIsSafe({
 		root,
 		allowedComponentNames: allowedComponentNameSet,
+		strictComponentValidation,
+		strictExpressionValidation,
 	})
 
 	const document: MdxRemoteDocument<Frontmatter> = {
@@ -65,21 +71,32 @@ function compileMdxRemoteDocument<Frontmatter extends Record<string, unknown>>({
 function assertNodeTreeIsSafe({
 	root,
 	allowedComponentNames,
+	strictComponentValidation,
+	strictExpressionValidation,
 }: {
 	root: MdxRemoteRootNode
 	allowedComponentNames: ReadonlySet<string>
+	strictComponentValidation: boolean
+	strictExpressionValidation: boolean
 }) {
 	visitNode(root, (node) => {
 		if (node.type === 'element') {
-			if (isMdxComponentName(node.name) && !allowedComponentNames.has(node.name)) {
+			if (
+				strictComponentValidation &&
+				isMdxComponentName(node.name) &&
+				!allowedComponentNames.has(node.name)
+			) {
 				throw new Error(`Unknown MDX component "${node.name}"`)
 			}
 			for (const value of Object.values(node.props ?? {})) {
-				assertPropValueIsSafe(value)
+				assertPropValueIsSafe({
+					value,
+					strictExpressionValidation,
+				})
 			}
 			return
 		}
-		if (node.type === 'expression') {
+		if (node.type === 'expression' && strictExpressionValidation) {
 			assertExpressionIsSafe(node.value)
 		}
 	})
@@ -94,21 +111,35 @@ function visitNode(node: MdxRemoteNode, visitor: (node: MdxRemoteNode) => void) 
 	}
 }
 
-function assertPropValueIsSafe(value: MdxRemotePropValue) {
+function assertPropValueIsSafe({
+	value,
+	strictExpressionValidation,
+}: {
+	value: MdxRemotePropValue
+	strictExpressionValidation: boolean
+}) {
 	if (value === null) return
 	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
 		return
 	}
 	if (Array.isArray(value)) {
-		for (const item of value) assertPropValueIsSafe(item)
+		for (const item of value) {
+			assertPropValueIsSafe({
+				value: item,
+				strictExpressionValidation,
+			})
+		}
 		return
 	}
-	if (isExpressionPropValue(value)) {
+	if (isExpressionPropValue(value) && strictExpressionValidation) {
 		assertExpressionIsSafe(value.value)
 		return
 	}
 	for (const item of Object.values(value)) {
-		assertPropValueIsSafe(item)
+		assertPropValueIsSafe({
+			value: item,
+			strictExpressionValidation,
+		})
 	}
 }
 

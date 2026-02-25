@@ -93,6 +93,10 @@ reference:
   `[Music]`. The YouTube indexer filters these low-signal caption lines and
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
+- Mdx-remote compilation script:
+  - `bun run content:compile-mdx-remote`
+  - generates serialized mdx-remote JSON docs + manifest under
+    `other/content/mdx-remote/`.
 
 ## Cloud / headless manual testing
 
