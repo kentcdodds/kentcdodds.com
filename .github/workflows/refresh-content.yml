@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           bun run content:publish-mdx-remote -- \
-            --bucket "${{ secrets.R2_BUCKET }}" \
+            --bucket "${{ secrets.MDX_REMOTE_R2_BUCKET || secrets.R2_BUCKET }}" \
             --before "${{ github.event.before }}" \
             --after "${{ github.sha }}"
         env:
