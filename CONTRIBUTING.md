@@ -192,176 +192,25 @@ bunx prisma@7 migrate reset --force
 In addition to resetting your database to the latest schema, it'll also run the
 seed script which will populate the database with some example data.
 
-## Maintenance Tips
+## Maintenance tips
 
-### Backup the database
+The production platform is Cloudflare Workers + D1 + KV + Queues + container
+helpers. For operational procedures, use these runbooks:
 
-```sh
-fly ssh console -C bash -s
-# select a specific instance
+- `docs/cloudflare-cutover-runbook.md`
+- `docs/call-kent-container-runbook.md`
 
-# make a backup of the database
-cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db.bkp
-
-# do an integrity check
-sqlite3 /data/sqlite.db.bkp "PRAGMA integrity_check;"
-
-# make a gzip copy so it downloads faster
-gzip -c /data/sqlite.db.bkp > /data/sqlite.db.bkp.gz
-```
-
-In another tab, download that backup:
+Useful commands for local verification:
 
 ```sh
-fly sftp get -s /data/sqlite.db.bkp.gz ./sqlite.db.bkp.gz
-# select the same instance as above
-```
+# queue + mock container stack
+bun run dev:calls-e2e
 
-### Handle LiteFS checksum errors
+# queue + real local ffmpeg container stack
+bun run dev:calls-e2e:real-container
 
-We use LiteFS to proxy the file system for SQLite for multi-regional SQLite. If
-things go wrong, this is what you do. First, backup the database, then scale
-down to a single region (one that's a primary candidate):
-
-```sh
-fly scale count 1
-```
-
-Then delete the litefs database and import the backup:
-
-```sh
-# ssh into fly console
-fly ssh console -C bash -s
-
-# delete the litefs database
-rm -rf /data/litefs/dbs/sqlite.db
-# import the backup
-litefs import -name sqlite.db /data/sqlite.db.bkp
-```
-
-Then you should be good to go again.
-
-### Disabling LiteFS
-
-If LiteFS is giving you grief. Then you may want to disable it. To do that,
-first backup the database.
-
-In one terminal, ssh into fly:
-
-```sh
-fly ssh console -C bash
-
-# make a copy of the database
-cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db
-
-# do an integrity check
-sqlite3 /data/sqlite.db "PRAGMA integrity_check;"
-```
-
-Then make sure to scale down to a single region:
-
-```sh
-fly vol list
-# grab the ID for all but the primary you want to keep
-fly vol delete {id}
-fly scale count 1
-```
-
-Copy the sqlite database and the cache database to `/data/litefs-disabled`:
-
-```sh
-fly ssh console -C bash
-
-cp /data/litefs/dbs/sqlite.db/database /data/litefs-disabled/sqlite.db
-cp /data/litefs/dbs/cache.db/database /data/litefs-disabled/cache.db
-```
-
-Update the Dockerfile:
-
-```Dockerfile
-# TODO: enable litefs
-# ENV LITEFS_DIR="/litefs"
-ENV LITEFS_DIR="/data/litefs-disabled"
-
-...
-
-# TODO: enable litefs proxy
-# ENV PORT="8081"
-ENV PORT="8080"
-
-...
-
-# TODO: enable litefs
-# COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
-# ADD other/litefs.yml /etc/litefs.yml
-# RUN mkdir -p /data ${LITEFS_DIR}
-
-# CMD ["litefs", "mount"]
-CMD ["npm", "start"]
-```
-
-> NOTE: this will **not** run migrations or setup the swap file like it does in
-> the current startup process. But hopefully what you're doing is temporary
-> anyway.
-
-And disable the litefs proxy healthcheck in `fly.toml`:
-
-```toml
-# TODO: enable litefs proxy
-#   [[services.http_checks]]
-#     grace_period = "10s"
-#     interval = "30s"
-#     method = "GET"
-#     timeout = "5s"
-#     path = "/litefs/health"
-```
-
-Then push that to fly.
-
-You'll lose any data created between when you did the backup and when the deploy
-finishes, but hopefully you won't have LiteFS issues.
-
-### Adding more regions
-
-When doing stuff like this it's not a bad idea to do a database backup first
-(even though Fly backs-up your volumes daily for you).
-
-Even though fly has a specific command for adding and removing regions, when
-regions have volumes, you instead control the regions by adding more volumes to
-specific regions and then scaling up. For example:
-
-```sh
-fly vol create data --size 3 --region ams
-fly scale count 2
-```
-
-### Removing regions
-
-Similar to adding regions, maybe backup the data.
-
-First, you should know which volume is the current primary region. It's kinda
-hard to tell without SSH-ing into the boxes and looking for the `.primary` file,
-but instead you can hit the site and check the `x-fly-primary-instance` header
-which will be the hostname of the primary instance. Just make sure you don't
-take that one down. If you need to change the primary, make sure to update
-`litefs.yml` first so another region can take over as candidate.
-
-Now that you know the volume you _don't_ want to delete, run:
-
-```sh
-fly vol list
-```
-
-That'll show you all the volumes, then run:
-
-```sh
-fly vol destroy <VOL_ID>
-```
-
-And when you're finished, scale down to the number of volumes you have:
-
-```sh
-fly scale count <COUNT>
+# strict content compile report (CI parity)
+bun run content:compile-mdx-remote:strict-report
 ```
 
 ## Help needed
