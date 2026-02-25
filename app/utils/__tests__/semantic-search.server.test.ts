@@ -47,16 +47,8 @@ test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_GATEW
 		expect(embeddingRequestUrl).not.toContain('/indexing-only-gateway/')
 	} finally {
 		fetchSpy.mockRestore()
-		if (previousGatewayId === undefined) {
-			delete process.env.CLOUDFLARE_AI_GATEWAY_ID
-		} else {
-			process.env.CLOUDFLARE_AI_GATEWAY_ID = previousGatewayId
-		}
-		if (previousEmbeddingGatewayId === undefined) {
-			delete process.env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID
-		} else {
-			process.env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID =
-				previousEmbeddingGatewayId
-		}
+		process.env.CLOUDFLARE_AI_GATEWAY_ID = previousGatewayId ?? ''
+		process.env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID =
+			previousEmbeddingGatewayId ?? ''
 	}
 })
