@@ -16,6 +16,7 @@ import {
 	waitForDelay,
 } from './abort-utils.server.ts'
 import { cache, cachified, shouldForceFresh } from './cache.server.ts'
+import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 import {
 	getCallKentEpisodeArtworkAvatar,
 	getCallKentEpisodeArtworkUrl,
@@ -25,6 +26,8 @@ import { getEnv } from './env.server.ts'
 import { stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
+
+const TRANSISTOR_REQUEST_TIMEOUT_MS = 10_000
 
 function getErrorCode(error: unknown) {
 	if (!error || typeof error !== 'object') return ''
@@ -59,7 +62,7 @@ function isTransientNetworkError(error: unknown) {
 		typeof error === 'object' &&
 		'message' in error &&
 		typeof error.message === 'string' &&
-		error.message === 'fetch failed'
+		(error.message === 'fetch failed' || error.message === 'Request timeout')
 	) {
 		return true
 	}
@@ -105,7 +108,11 @@ async function fetchTransitor<JsonResponse>({
 	while (true) {
 		try {
 			throwIfAborted(signal)
-			const res = await fetch(url.toString(), config)
+			const res = await fetchWithTimeout(
+				url.toString(),
+				config,
+				TRANSISTOR_REQUEST_TIMEOUT_MS,
+			)
 			throwIfAborted(signal)
 			if (res.status === 429 && attempt < maxRetries) {
 				attempt++
