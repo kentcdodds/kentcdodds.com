@@ -42,7 +42,7 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		responseHeaders.append('Document-Policy', 'js-profiling')
 	}
 
-	const mediaOrigin = getUrlOrigin(env.CLOUDINARY_BASE_URL)
+	const mediaOrigin = getUrlOrigin(env.MEDIA_BASE_URL)
 	if (mediaOrigin) {
 		responseHeaders.append('Link', `<${mediaOrigin}>; rel="preconnect"`)
 	}

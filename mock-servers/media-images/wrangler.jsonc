@@ -1,18 +1,18 @@
 {
 	"$schema": "../../node_modules/wrangler/config-schema.json",
-	"name": "kentcdodds-mock-cloudinary",
+	"name": "kentcdodds-mock-media-images",
 	"main": "worker.ts",
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
 	"env": {
 		"development": {
-			"name": "kentcdodds-mock-cloudinary-dev"
+			"name": "kentcdodds-mock-media-images-dev"
 		},
 		"preview": {
-			"name": "kentcdodds-mock-cloudinary-preview"
+			"name": "kentcdodds-mock-media-images-preview"
 		},
 		"production": {
-			"name": "kentcdodds-mock-cloudinary"
+			"name": "kentcdodds-mock-media-images"
 		}
 	}
 }

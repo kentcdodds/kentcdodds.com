@@ -22,7 +22,7 @@ const schemaBase = z.object({
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
 	CACHE_DATABASE_PATH: nonEmptyString,
-	CLOUDINARY_BASE_URL: z
+	MEDIA_BASE_URL: z
 		.string()
 		.trim()
 		.optional()
@@ -403,7 +403,7 @@ export function getPublicEnv() {
 		MODE: env.NODE_ENV,
 		DISCORD_CLIENT_ID: env.DISCORD_CLIENT_ID,
 		SENTRY_DSN: env.SENTRY_DSN,
-		CLOUDINARY_BASE_URL: env.CLOUDINARY_BASE_URL,
+		MEDIA_BASE_URL: env.MEDIA_BASE_URL,
 	}
 }
 

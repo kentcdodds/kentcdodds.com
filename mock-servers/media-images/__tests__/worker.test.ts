@@ -1,20 +1,20 @@
 import { describe, expect, test } from 'vitest'
 import worker from '../worker.ts'
 
-describe('cloudinary mock worker', () => {
+describe('media images mock worker', () => {
 	test('returns service metadata', async () => {
 		const response = await worker.fetch(
-			new Request('http://mock-cloudinary.local/__mocks/meta'),
+			new Request('http://mock-media-images.local/__mocks/meta'),
 		)
 		expect(response.status).toBe(200)
 		const payload = (await response.json()) as { service: string }
-		expect(payload.service).toBe('cloudinary')
+		expect(payload.service).toBe('media-images')
 	})
 
 	test('serves placeholder image responses', async () => {
 		const imageResponse = await worker.fetch(
 			new Request(
-				'http://mock-cloudinary.local/kentcdodds-com/image/upload/w_100,q_auto,f_webp/sample',
+				'http://mock-media-images.local/kentcdodds-com/image/upload/w_100,q_auto,f_webp/sample',
 			),
 		)
 		expect(imageResponse.status).toBe(200)
@@ -24,7 +24,7 @@ describe('cloudinary mock worker', () => {
 
 		const headResponse = await worker.fetch(
 			new Request(
-				'http://mock-cloudinary.local/kentcdodds-com/image/upload/w_100,q_auto,f_webp/sample',
+				'http://mock-media-images.local/kentcdodds-com/image/upload/w_100,q_auto,f_webp/sample',
 				{
 					method: 'HEAD',
 				},

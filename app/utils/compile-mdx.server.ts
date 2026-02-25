@@ -90,15 +90,13 @@ function trimCodeBlocks() {
 }
 
 // yes, I did write this myself 😬
-const cloudinaryUrlRegex =
-	/^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
 const mediaPathRegex =
 	/^\/media\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
 
-const CLOUD_NAME = 'kentcdodds-com'
+const mediaCloudName = 'kentcdodds-com'
 
-function optimizeCloudinaryImages() {
-	const baseUrl = getEnv().CLOUDINARY_BASE_URL.replace(/\/+$/, '')
+function optimizeMediaImages() {
+	const baseUrl = getEnv().MEDIA_BASE_URL.replace(/\/+$/, '')
 
 	return async function transformer(tree: H.Root) {
 		// `unist-util-visit` types can differ between mdast/hast; this tree is hast
@@ -148,7 +146,7 @@ function optimizeCloudinaryImages() {
 	function rewriteMediaHref(href: string, base: string): string | null {
 		if (!href.startsWith('/media/')) return null
 		const pathAfterMedia = href.slice('/media'.length)
-		return `${base}/${CLOUD_NAME}${pathAfterMedia}`
+		return `${base}/${mediaCloudName}${pathAfterMedia}`
 	}
 
 	function handleImageUrl(urlString: string, baseUrl: string): string | undefined {
@@ -161,7 +159,7 @@ function optimizeCloudinaryImages() {
 				publicId: string
 			}
 			if (transforms) {
-				return `${baseUrl}/${CLOUD_NAME}/image/upload/${transforms}/${version ?? ''}${publicId}`.replace(
+				return `${baseUrl}/${mediaCloudName}/image/upload/${transforms}/${version ?? ''}${publicId}`.replace(
 					/\/+/g,
 					'/',
 				)
@@ -175,36 +173,7 @@ function optimizeCloudinaryImages() {
 				.filter(Boolean)
 				.join(',')
 			return [
-				`${baseUrl}/${CLOUD_NAME}/image/upload`,
-				defaultTransforms,
-				version,
-				publicId,
-			]
-				.filter(Boolean)
-				.join('/')
-		}
-
-		// Legacy: full Cloudinary URLs (backward compat)
-		const match = urlString.match(cloudinaryUrlRegex)
-		const groups = match?.groups
-		if (groups) {
-			const { cloudName, transforms, version, publicId } = groups as {
-				cloudName: string
-				transforms?: string
-				version?: string
-				publicId: string
-			}
-			if (transforms) return
-			const defaultTransforms = [
-				'f_auto',
-				'q_auto',
-				publicId.endsWith('.gif') ? '' : 'dpr_2.0',
-				'w_1600',
-			]
-				.filter(Boolean)
-				.join(',')
-			return [
-				`${baseUrl}/${cloudName}/image/upload`,
+				`${baseUrl}/${mediaCloudName}/image/upload`,
 				defaultTransforms,
 				version,
 				publicId,
@@ -413,7 +382,7 @@ const remarkPlugins: U.PluggableList = [
 ]
 
 const rehypePlugins: U.PluggableList = [
-	optimizeCloudinaryImages,
+	optimizeMediaImages,
 	trimCodeBlocks,
 	rehypeCodeBlocksShiki,
 	removePreContainerDivs,

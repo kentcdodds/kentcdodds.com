@@ -11,7 +11,7 @@ describe('media image url generation', () => {
 	test('uses default media host when no override exists', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
-			CLOUDINARY_BASE_URL: 'https://media.kentcdodds.com',
+			MEDIA_BASE_URL: 'https://media.kentcdodds.com',
 		}
 
 		const builder = getImageBuilder('kent/profile')
@@ -22,7 +22,7 @@ describe('media image url generation', () => {
 	test('rewrites media host when public env override is set', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
-			CLOUDINARY_BASE_URL: 'http://127.0.0.1:8803',
+			MEDIA_BASE_URL: 'http://127.0.0.1:8803',
 		}
 
 		const builder = getImageBuilder('kent/profile')

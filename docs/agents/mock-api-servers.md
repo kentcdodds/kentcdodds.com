@@ -75,7 +75,7 @@ API servers (epicflare-style).
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
   - S3 path-style API: `/:bucket/:key`
-- `mock-servers/cloudinary/worker.ts`
+- `mock-servers/media-images/worker.ts`
   - local dev URL: `http://127.0.0.1:8803`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
@@ -99,7 +99,7 @@ API servers (epicflare-style).
   - mermaid-to-svg mock worker (`dev:mock-mermaid-to-svg`)
   - cloudflare API mock worker (`dev:mock-cloudflare`)
   - cloudflare R2 mock worker (`dev:mock-cloudflare-r2`)
-  - cloudinary image mock worker (`dev:mock-cloudinary`)
+  - media image mock worker (`dev:mock-media-images`)
 - `KIT_API_BASE_URL` and `VERIFIER_API_BASE_URL` are set to local mock worker
   URLs in this mode. `OAUTH_PROVIDER_BASE_URL` is also pointed at the local
   oauth mock worker. `MAILGUN_API_BASE_URL` is pointed at the local mailgun
@@ -114,7 +114,7 @@ API servers (epicflare-style).
   mermaid-to-svg mock worker. `CLOUDFLARE_API_BASE_URL` and
   `CLOUDFLARE_AI_GATEWAY_BASE_URL` are pointed at the local cloudflare mock
   worker, and `R2_ENDPOINT` is pointed at the local cloudflare-r2 mock worker.
-  `CLOUDINARY_BASE_URL` is pointed at the local cloudinary mock worker.
+  `MEDIA_BASE_URL` is pointed at the local media-image mock worker.
 
 MSW remains active for integrations that have not yet been migrated to Worker
 mock servers.

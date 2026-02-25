@@ -278,7 +278,7 @@ app.use(
 				'img-src': [
 					"'self'",
 					'data:',
-					'res.cloudinary.com',
+					'media.kentcdodds.com',
 					'www.gravatar.com',
 					'cdn.usefathom.com',
 					'pbs.twimg.com',
@@ -300,7 +300,7 @@ app.use(
 				],
 				'media-src': [
 					"'self'",
-					'res.cloudinary.com',
+					'media.kentcdodds.com',
 					'data:',
 					'blob:',
 					'www.dropbox.com',
