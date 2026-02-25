@@ -6,6 +6,7 @@ import { getEnv } from './env.server.ts'
 import {
 	createSession,
 	getUserFromSessionId,
+	normalizeUserRole,
 	prisma,
 	sessionExpirationTime,
 } from './prisma.server.ts'
@@ -153,7 +154,10 @@ async function getUser(
 		type: 'getAuthInfoFromOAuthFromRequest',
 	})
 	if (authInfo?.extra.userId) {
-		return prisma.user.findUnique({ where: { id: authInfo.extra.userId } })
+		const user = await prisma.user.findUnique({
+			where: { id: authInfo.extra.userId },
+		})
+		return user ? normalizeUserRole(user) : null
 	}
 	const { session } = await getSession(request)
 

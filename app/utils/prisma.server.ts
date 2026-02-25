@@ -5,10 +5,11 @@ import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
-import { PrismaClient } from './prisma-generated.server/client.ts'
+import { PrismaClient, type User } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
 const logThreshold = 500
+const ADMIN_EMAIL = 'me@kentcdodds.com'
 
 const prisma = remember('prisma', getClient)
 
@@ -112,7 +113,27 @@ async function getUserFromSessionId(
 		})
 	}
 
-	return session.user
+	return normalizeUserRole(session.user)
+}
+
+async function normalizeUserRole(user: User) {
+	if (user.email === ADMIN_EMAIL && user.role !== 'ADMIN') {
+		await ensurePrimary()
+		await prisma.user.update({
+			where: { id: user.id },
+			data: { role: 'ADMIN' },
+		})
+		return { ...user, role: 'ADMIN' }
+	}
+	if (user.role === 'USER') {
+		await ensurePrimary()
+		await prisma.user.update({
+			where: { id: user.id },
+			data: { role: 'MEMBER' },
+		})
+		return { ...user, role: 'MEMBER' }
+	}
+	return user
 }
 
 async function getAllUserData(userId: string) {
@@ -163,6 +184,7 @@ export {
 	deleteExpiredVerifications,
 	getAllUserData,
 	getUserFromSessionId,
+	normalizeUserRole,
 	prisma,
 	sessionExpirationTime,
 }
