@@ -1,7 +1,4 @@
-export async function withEnv(
-	overrides: Record<string, string | undefined>,
-	callback: () => Promise<void> | void,
-) {
+export function setEnv(overrides: Record<string, string | undefined>) {
 	const env = process.env as Record<string, string | undefined>
 	const previous = new Map<string, string | undefined>()
 
@@ -14,15 +11,15 @@ export async function withEnv(
 		}
 	}
 
-	try {
-		await callback()
-	} finally {
-		for (const [key, value] of previous.entries()) {
-			if (value === undefined) {
-				delete env[key]
-			} else {
-				env[key] = value
+	return {
+		[Symbol.dispose]() {
+			for (const [key, value] of previous.entries()) {
+				if (value === undefined) {
+					delete env[key]
+				} else {
+					env[key] = value
+				}
 			}
-		}
+		},
 	}
 }

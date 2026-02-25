@@ -11,6 +11,8 @@ magic.
 - Don't write tests for what the type system already guarantees.
 - Use disposable objects only when there is real cleanup. If no cleanup, skip
   `using` and `Symbol.dispose`.
+- For setup-only `using` bindings, name variables with an `ignored` prefix so
+  `@typescript-eslint/no-unused-vars` accepts intentional non-reads.
 - Build helpers that return ready-to-run objects (factory pattern), not globals.
 - Keep test intent obvious in the name: "auth handler returns 400 for invalid
   JSON".
@@ -24,6 +26,21 @@ magic.
   runs.
 
 ## Examples
+
+### Setup-only `using` bindings
+
+When the disposable is needed only for side-effects (like env restoration), use
+an `ignored` prefix for the binding name:
+
+```ts
+import { test, expect } from 'bun:test'
+import { setEnv } from '#tests/env-disposable.ts'
+
+test('reads env var', () => {
+	using ignoredEnv = setEnv({ MY_VAR: 'hello' })
+	expect(process.env.MY_VAR).toBe('hello')
+})
+```
 
 ### `Symbol.dispose` with `using`
 
