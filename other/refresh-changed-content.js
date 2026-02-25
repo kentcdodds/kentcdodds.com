@@ -4,9 +4,10 @@ import { getChangedFiles, fetchJson } from './get-changed-files.js'
 import { postRefreshCache } from './utils.js'
 
 const defaultBaseUrl =
-	process.env.GITHUB_REF_NAME === 'dev'
-		? 'https://kcd-staging.fly.dev'
-		: 'https://kentcdodds.com'
+	process.env.REFRESH_CONTENT_BASE_URL ||
+	(process.env.GITHUB_REF_NAME === 'dev'
+		? 'https://kentcdodds-com-development.workers.dev'
+		: 'https://kentcdodds.com')
 
 const defaultFetchTimeoutMs = 10_000
 

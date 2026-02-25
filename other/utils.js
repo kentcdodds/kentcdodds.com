@@ -1,7 +1,8 @@
 const hostname =
-	process.env.GITHUB_REF_NAME === 'dev'
-		? 'kcd-staging.fly.dev'
-		: 'kentcdodds.com'
+	process.env.REFRESH_CONTENT_HOSTNAME ||
+	(process.env.GITHUB_REF_NAME === 'dev'
+		? 'kentcdodds-com-development.workers.dev'
+		: 'kentcdodds.com')
 
 const defaultTimeoutMs = 30_000
 

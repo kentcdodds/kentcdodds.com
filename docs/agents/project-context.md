@@ -85,6 +85,10 @@ reference:
   - strict legacy scan gate: `bun run media:scan-legacy-references:strict`
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
+- Content-refresh helper scripts (`other/refresh-changed-content.js`,
+  `other/is-deployable.js`) default to
+  `kentcdodds-com-development.workers.dev` on `dev` branch and support explicit
+  overrides via `REFRESH_CONTENT_BASE_URL` / `REFRESH_CONTENT_HOSTNAME`.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
   external database server is required.
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run
