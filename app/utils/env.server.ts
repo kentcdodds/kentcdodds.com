@@ -33,6 +33,12 @@ const schemaBase = z.object({
 		.optional()
 		.default('https://media.kentcdodds.com/stream'),
 	ENABLE_MDX_REMOTE: z.enum(['true', 'false']).optional().default('false'),
+	MDX_REMOTE_BASE_URL: z.string().trim().optional(),
+	MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY: z
+		.string()
+		.trim()
+		.optional()
+		.default('other/content/mdx-remote'),
 
 	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,
