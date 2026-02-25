@@ -60,6 +60,11 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://oembed.com'),
+	MERMAID_TO_SVG_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://mermaid-to-svg.kentcdodds.workers.dev'),
 	PWNED_PASSWORDS_API_BASE_URL: z
 		.string()
 		.trim()

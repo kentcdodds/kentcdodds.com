@@ -284,7 +284,10 @@ async function getMermaidSvg({
 	const compressed = lz.compressToEncodedURIComponent(trimmed)
 	if (!compressed) return null
 
-	const url = new URL('https://mermaid-to-svg.kentcdodds.workers.dev/svg')
+	const url = new URL(
+		'svg',
+		`${getEnv().MERMAID_TO_SVG_BASE_URL.replace(/\/+$/, '')}/`,
+	)
 	url.searchParams.set('mermaid', compressed)
 	url.searchParams.set('theme', theme)
 

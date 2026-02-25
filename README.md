@@ -54,6 +54,7 @@ Then open `http://localhost:3000`.
 - Twitter mock worker at `http://127.0.0.1:8797`
 - Security mock worker at `http://127.0.0.1:8798`
 - oEmbed mock worker at `http://127.0.0.1:8799`
+- Mermaid-to-SVG mock worker at `http://127.0.0.1:8800`
 
 Each exposes a `__mocks` dashboard for request/state inspection.
 
