@@ -23,6 +23,21 @@ magic.
 
 ## Examples
 
+### Setup-only `using` bindings
+
+When the disposable is needed only for side-effects (like env restoration), use
+an `ignored` prefix for the binding name:
+
+```ts
+import { test, expect } from 'bun:test'
+import { setEnv } from '#tests/env-disposable.ts'
+
+test('reads env var', () => {
+	using ignoredEnv = setEnv({ MY_VAR: 'hello' })
+	expect(process.env.MY_VAR).toBe('hello')
+})
+```
+
 ### `Symbol.dispose` with `using`
 
 ```ts

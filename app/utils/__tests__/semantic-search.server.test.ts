@@ -23,8 +23,12 @@ import { semanticSearchKCD } from '../semantic-search.server.ts'
 
 test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_GATEWAY_ID', async () => {
 	using ignoredEnv = setEnv({
+		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
+		CLOUDFLARE_API_TOKEN: 'cf-token',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-search-gateway',
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'indexing-only-gateway',
+		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'gateway-auth-token',
+		CLOUDFLARE_VECTORIZE_INDEX: 'vector-index',
 	})
 
 	const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
