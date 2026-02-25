@@ -15,6 +15,11 @@ API servers (epicflare-style).
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
+- `mock-servers/oauth/worker.ts`
+  - local dev URL: `http://127.0.0.1:8792`
+  - dashboard: `GET /__mocks`
+  - metadata: `GET /__mocks/meta`
+  - reset state: `POST /__mocks/reset`
 
 ## Local development wiring
 
@@ -22,8 +27,10 @@ API servers (epicflare-style).
   - app server (`dev:app`)
   - kit mock worker (`dev:mock-kit`)
   - verifier mock worker (`dev:mock-verifier`)
+  - oauth mock worker (`dev:mock-oauth`)
 - `KIT_API_BASE_URL` and `VERIFIER_API_BASE_URL` are set to local mock worker
-  URLs in this mode.
+  URLs in this mode. `OAUTH_PROVIDER_BASE_URL` is also pointed at the local
+  oauth mock worker.
 
 MSW remains active for integrations that have not yet been migrated to Worker
 mock servers.
