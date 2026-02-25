@@ -68,8 +68,8 @@ const schemaBase = z.object({
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,
 	/**
-	 * Optional indexing/batch embedding AI Gateway id.
-	 * Runtime user search queries continue to use `CLOUDFLARE_AI_GATEWAY_ID`.
+	 * Optional embedding AI Gateway id.
+	 * Used by semantic-search embeddings (runtime queries + indexing jobs).
 	 * Falls back to `CLOUDFLARE_AI_GATEWAY_ID` when omitted.
 	 */
 	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: z.string().trim().optional(),
@@ -184,9 +184,9 @@ export type Env = Omit<
 	 */
 	CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: string
 	/**
-	 * Indexing/batch embedding jobs can be routed through a separate gateway
-	 * (for example, with guardrails disabled). Runtime user search queries
-	 * should use `CLOUDFLARE_AI_GATEWAY_ID`.
+	 * Embedding calls can be routed through a separate gateway (for example, with
+	 * guardrails disabled). This is used by semantic-search embeddings for both
+	 * runtime user queries and indexing jobs.
 	 */
 	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: string
 	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */

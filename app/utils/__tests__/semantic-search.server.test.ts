@@ -21,7 +21,7 @@ vi.mock('#app/utils/semantic-search-presentation.server.ts', () => ({
 
 import { semanticSearchKCD } from '../semantic-search.server.ts'
 
-test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_GATEWAY_ID', async () => {
+test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID', async () => {
 	using ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_API_TOKEN: 'cf-token',
@@ -70,8 +70,8 @@ test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_GATEW
 			.find((url) => url.includes('/workers-ai/'))
 
 		expect(embeddingRequestUrl).toBeDefined()
-		expect(embeddingRequestUrl).toContain('/runtime-search-gateway/')
-		expect(embeddingRequestUrl).not.toContain('/indexing-only-gateway/')
+		expect(embeddingRequestUrl).toContain('/indexing-only-gateway/')
+		expect(embeddingRequestUrl).not.toContain('/runtime-search-gateway/')
 	} finally {
 		fetchSpy.mockRestore()
 	}
