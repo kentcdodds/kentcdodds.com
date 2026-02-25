@@ -36,6 +36,11 @@ API servers (epicflare-style).
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
+- `mock-servers/transistor/worker.ts`
+  - local dev URL: `http://127.0.0.1:8796`
+  - dashboard: `GET /__mocks`
+  - metadata: `GET /__mocks/meta`
+  - reset state: `POST /__mocks/reset`
 
 ## Local development wiring
 
@@ -47,11 +52,13 @@ API servers (epicflare-style).
   - mailgun mock worker (`dev:mock-mailgun`)
   - discord mock worker (`dev:mock-discord`)
   - simplecast mock worker (`dev:mock-simplecast`)
+  - transistor mock worker (`dev:mock-transistor`)
 - `KIT_API_BASE_URL` and `VERIFIER_API_BASE_URL` are set to local mock worker
   URLs in this mode. `OAUTH_PROVIDER_BASE_URL` is also pointed at the local
   oauth mock worker. `MAILGUN_API_BASE_URL` is pointed at the local mailgun
   mock worker. `DISCORD_API_BASE_URL` is pointed at the local discord mock
   worker. `SIMPLECAST_API_BASE_URL` is pointed at the local simplecast mock
+  worker. `TRANSISTOR_API_BASE_URL` is pointed at the local transistor mock
   worker.
 
 MSW remains active for integrations that have not yet been migrated to Worker

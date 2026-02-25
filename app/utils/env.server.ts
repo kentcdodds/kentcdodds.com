@@ -79,6 +79,11 @@ const schemaBase = z.object({
 		.optional()
 		.default('https://api.simplecast.com'),
 	TRANSISTOR_API_SECRET: nonEmptyString,
+	TRANSISTOR_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.transistor.fm'),
 	TWITTER_BEARER_TOKEN: nonEmptyString,
 	VERIFIER_API_KEY: nonEmptyString,
 	VERIFIER_API_BASE_URL: z
