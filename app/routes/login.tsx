@@ -39,6 +39,7 @@ import {
 } from '#app/utils/misc.ts'
 import {
 	DUMMY_PASSWORD_HASH,
+	isLegacyPasswordHash,
 	verifyPassword,
 } from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
@@ -139,6 +140,20 @@ export async function action({ request }: Route.ActionArgs) {
 			password: { select: { hash: true } },
 		},
 	})
+
+	if (
+		userWithPassword?.password?.hash &&
+		isLegacyPasswordHash(userWithPassword.password.hash)
+	) {
+		await ensurePrimary()
+		await prisma.password.deleteMany({ where: { userId: userWithPassword.id } })
+		loginSession.flashError(
+			'Your previous password was reset during our security upgrade. Please use "Reset password" to set a new one.',
+		)
+		return redirect(`/login`, {
+			headers: await loginSession.getHeaders(),
+		})
+	}
 
 	const passwordHash = userWithPassword?.password?.hash ?? DUMMY_PASSWORD_HASH
 	const isValid = await verifyPassword({

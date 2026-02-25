@@ -10,7 +10,7 @@ export function createUser(): Omit<P.User, 'id' | 'createdAt' | 'updatedAt'> {
 		email: `${username}@example.com`,
 		kitId: null,
 		discordId: null,
-		role: 'USER',
+		role: 'MEMBER',
 		team: faker.helpers.arrayElement(['BLUE', 'RED', 'YELLOW']),
 	}
 }

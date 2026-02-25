@@ -1,18 +1,22 @@
 import crypto from 'node:crypto'
-import bcrypt from 'bcrypt'
+import { promisify } from 'node:util'
 import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 
-const BCRYPT_COST = 10
-// Precomputed bcrypt hash for timing-equal password comparisons.
+const pbkdf2Async = promisify(crypto.pbkdf2)
+const PASSWORD_HASH_PREFIX = 'pbkdf2$sha256'
+const PASSWORD_HASH_ITERATIONS = 310_000
+const PASSWORD_HASH_KEY_LENGTH_BYTES = 32
+const PASSWORD_HASH_SALT_BYTES = 16
+const VERIFICATION_HASH_ITERATIONS = 120_000
+const LEGACY_BCRYPT_PREFIX = '$2'
+// Precomputed PBKDF2 hash for timing-equal password comparisons.
 export const DUMMY_PASSWORD_HASH =
-	'$2b$10$fvrjcVttSLHkz9k1tjMfqu9ADv42kasEph8Oi2UR0zQNC9h0svQyu'
+	'pbkdf2$sha256$310000$cGFzc3dvcmQtZHVtbXktc2FsdC12MQ$YJ5-f_TbmLNp__2wOy5KAgIeCQ66IJIJopdd8iV_iag'
 const PASSWORD_MIN_LENGTH = 8
-// NOTE: bcrypt only uses the first 72 bytes of the password.
-// Enforcing this avoids giving users a false sense of security.
-const PASSWORD_MAX_BYTES = 72
+const PASSWORD_MAX_BYTES = 256
 
 export async function getPasswordHash(password: string) {
-	return bcrypt.hash(password, BCRYPT_COST)
+	return createPbkdf2Hash(password, { iterations: PASSWORD_HASH_ITERATIONS })
 }
 
 export async function verifyPassword({
@@ -22,7 +26,31 @@ export async function verifyPassword({
 	password: string
 	hash: string
 }) {
-	return bcrypt.compare(password, hash)
+	return verifyPbkdf2Hash({
+		value: password,
+		hash,
+	})
+}
+
+export function isLegacyPasswordHash(hash: string) {
+	return hash.startsWith(LEGACY_BCRYPT_PREFIX)
+}
+
+export async function getVerificationCodeHash(code: string) {
+	return createPbkdf2Hash(code, { iterations: VERIFICATION_HASH_ITERATIONS })
+}
+
+export async function verifyVerificationCode({
+	code,
+	hash,
+}: {
+	code: string
+	hash: string
+}) {
+	return verifyPbkdf2Hash({
+		value: code,
+		hash,
+	})
 }
 
 function getPasswordHashParts(password: string) {
@@ -80,4 +108,74 @@ export async function getPasswordStrengthError(password: string) {
 		return 'This password is too common. Please choose a different one.'
 	}
 	return null
+}
+
+async function createPbkdf2Hash(
+	value: string,
+	{ iterations }: { iterations: number },
+) {
+	const salt = crypto.randomBytes(PASSWORD_HASH_SALT_BYTES)
+	const key = await pbkdf2Async(
+		value,
+		salt,
+		iterations,
+		PASSWORD_HASH_KEY_LENGTH_BYTES,
+		'sha256',
+	)
+	return serializePbkdf2Hash({
+		iterations,
+		salt,
+		key: Buffer.from(key),
+	})
+}
+
+async function verifyPbkdf2Hash({
+	value,
+	hash,
+}: {
+	value: string
+	hash: string
+}) {
+	const parsedHash = parsePbkdf2Hash(hash)
+	if (!parsedHash) return false
+	const candidateKey = Buffer.from(
+		await pbkdf2Async(
+			value,
+			parsedHash.salt,
+			parsedHash.iterations,
+			parsedHash.key.length,
+			'sha256',
+		),
+	)
+	if (candidateKey.length !== parsedHash.key.length) return false
+	return crypto.timingSafeEqual(candidateKey, parsedHash.key)
+}
+
+function serializePbkdf2Hash({
+	iterations,
+	salt,
+	key,
+}: {
+	iterations: number
+	salt: Buffer
+	key: Buffer
+}) {
+	return `${PASSWORD_HASH_PREFIX}$${iterations}$${salt.toString('base64url')}$${key.toString('base64url')}`
+}
+
+function parsePbkdf2Hash(hash: string) {
+	const [prefix, digest, iterationRaw, saltRaw, keyRaw] = hash.split('$')
+	if (!prefix || !digest || !iterationRaw || !saltRaw || !keyRaw) return null
+	if (`${prefix}$${digest}` !== PASSWORD_HASH_PREFIX) return null
+	const iterations = Number.parseInt(iterationRaw, 10)
+	if (!Number.isInteger(iterations) || iterations <= 0) return null
+	try {
+		return {
+			iterations,
+			salt: Buffer.from(saltRaw, 'base64url'),
+			key: Buffer.from(keyRaw, 'base64url'),
+		}
+	} catch {
+		return null
+	}
 }
