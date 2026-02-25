@@ -67,8 +67,9 @@ reference:
   JSON-tree interpreter path.
 - Runtime mdx-remote document loading order (when `ENABLE_MDX_REMOTE=true`):
   1) KV binding (`MDX_REMOTE_KV`)
-  2) HTTP artifact host (`MDX_REMOTE_BASE_URL`)
-  3) local artifact files in mocks mode (`MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY`,
+  2) R2 binding (`MDX_REMOTE_R2`)
+  3) HTTP artifact host (`MDX_REMOTE_BASE_URL`)
+  4) local artifact files in mocks mode (`MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY`,
      defaults to `other/content/mdx-remote`)
 - GitHub content fetches in mocks mode use local filesystem fallback in
   `app/utils/github.server.ts` (no network call required for content paths).
