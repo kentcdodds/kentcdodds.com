@@ -4,7 +4,7 @@ import emojiRegex from 'emoji-regex'
 import { type CSSProperties } from 'react'
 import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.ts'
 
-const defaultCloudinaryBaseUrl = 'https://media.kentcdodds.com'
+const defaultMediaBaseUrl = 'https://media.kentcdodds.com'
 
 type ImageBuilder = {
 	(transformations?: TransformerOption): string
@@ -37,9 +37,9 @@ function getImageBuilder(
 		const imageUrl = buildMediaImageUrl({
 			id,
 			transformations,
-			baseUrl: getCloudinaryImageUploadBaseUrl(),
+			baseUrl: getMediaImageUploadBaseUrl(),
 		})
-		return rewriteCloudinaryBaseUrl(imageUrl, getCloudinaryBaseUrl())
+		return rewriteMediaBaseUrl(imageUrl, getMediaBaseUrl())
 	}
 	imageBuilder.alt = alt
 	imageBuilder.id = id
@@ -48,7 +48,7 @@ function getImageBuilder(
 	return imageBuilder
 }
 
-function getCloudinaryBaseUrl() {
+function getMediaBaseUrl() {
 	if (typeof window !== 'undefined' && window.ENV?.CLOUDINARY_BASE_URL) {
 		return window.ENV.CLOUDINARY_BASE_URL
 	}
@@ -58,16 +58,16 @@ function getCloudinaryBaseUrl() {
 	if (typeof process !== 'undefined' && process.env.CLOUDINARY_BASE_URL) {
 		return process.env.CLOUDINARY_BASE_URL
 	}
-	return defaultCloudinaryBaseUrl
+	return defaultMediaBaseUrl
 }
 
-function getCloudinaryImageUploadBaseUrl() {
-	const baseUrl = getCloudinaryBaseUrl().replace(/\/+$/, '')
+function getMediaImageUploadBaseUrl() {
+	const baseUrl = getMediaBaseUrl().replace(/\/+$/, '')
 	return `${baseUrl}/kentcdodds-com/image/upload`
 }
 
-function rewriteCloudinaryBaseUrl(url: string, baseUrl: string) {
-	if (!baseUrl || baseUrl === defaultCloudinaryBaseUrl) return url
+function rewriteMediaBaseUrl(url: string, baseUrl: string) {
+	if (!baseUrl || baseUrl === defaultMediaBaseUrl) return url
 	try {
 		const source = new URL(url)
 		const target = new URL(baseUrl)
@@ -857,14 +857,14 @@ function getSocialImageWithPreTitle({
 	const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_9,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
 
 	const featuredImageIsRemote = img.startsWith('http')
-	const featuredImageCloudinaryId = featuredImageIsRemote
+	const featuredImageMediaId = featuredImageIsRemote
 		? toBase64(img)
 		: img.replace(/\//g, ':')
 	const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
-	const featuredImageSection = `c_fill,ar_3:4,r_12,g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
+	const featuredImageSection = `c_fill,ar_3:4,r_12,g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageMediaId}`
 
 	return [
-		getCloudinaryImageUploadBaseUrl(),
+		getMediaImageUploadBaseUrl(),
 		vars,
 		preTitleSection,
 		titleSection,
@@ -897,16 +897,16 @@ function getGenericSocialImage({
 	const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
 
 	const featuredImageIsRemote = img.startsWith('http')
-	const featuredImageCloudinaryId = featuredImageIsRemote
+	const featuredImageMediaId = featuredImageIsRemote
 		? toBase64(img)
 		: img.replace(/\//g, ':')
 	const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
 
-	const featureImageSection = `c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
+	const featureImageSection = `c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,${featuredImageLayerType}${featuredImageMediaId}`
 
 	const backgroundSection = `c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
 	return [
-		getCloudinaryImageUploadBaseUrl(),
+		getMediaImageUploadBaseUrl(),
 		vars,
 		primaryWordsSection,
 		kentProfileSection,
@@ -929,7 +929,7 @@ function emojiStrip(string: string) {
 	)
 }
 
-// cloudinary needs double-encoding
+// The image transform URL text overlay syntax expects double-encoded content.
 function doubleEncode(s: string) {
 	return encodeURIComponent(encodeURIComponent(s))
 }
@@ -954,7 +954,7 @@ export {
 	kodyImages,
 	getImgProps,
 	getImageBuilder,
-	getCloudinaryBaseUrl,
+	getMediaBaseUrl,
 	getGenericSocialImage,
 	getSocialImageWithPreTitle,
 	illustrationImages,

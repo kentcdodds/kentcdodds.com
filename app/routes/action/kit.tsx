@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
-import { MediaVideo } from '#app/components/cloudinary-video'
 import { Grid } from '#app/components/grid.tsx'
+import { MediaVideo } from '#app/components/media-video'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Paragraph } from '#app/components/typography.tsx'

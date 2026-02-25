@@ -1,4 +1,4 @@
-import { getCloudinaryBaseUrl } from '#app/images.tsx'
+import { getMediaBaseUrl } from '#app/images.tsx'
 
 type MediaVideoProps = {
 	className?: string
@@ -33,7 +33,7 @@ export function MediaVideo({
 		<video
 			className={className}
 			autoPlay
-			src={`${getCloudinaryBaseUrl().replace(/\/+$/, '')}/kentcdodds-com/video/upload/${transforms}/${imageId}`}
+			src={`${getMediaBaseUrl().replace(/\/+$/, '')}/kentcdodds-com/video/upload/${transforms}/${imageId}`}
 			muted
 			loop
 			controls={false}
