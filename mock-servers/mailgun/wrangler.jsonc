@@ -1,0 +1,30 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "kentcdodds-com-mock-mailgun",
+	"main": "worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"APP_ENV": "development"
+	},
+	"env": {
+		"development": {
+			"name": "kentcdodds-com-mock-mailgun-development",
+			"vars": {
+				"APP_ENV": "development"
+			}
+		},
+		"preview": {
+			"name": "kentcdodds-com-mock-mailgun-preview",
+			"vars": {
+				"APP_ENV": "preview"
+			}
+		},
+		"production": {
+			"name": "kentcdodds-com-mock-mailgun-production",
+			"vars": {
+				"APP_ENV": "production"
+			}
+		}
+	}
+}

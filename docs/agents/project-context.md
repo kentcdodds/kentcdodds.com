@@ -37,6 +37,8 @@ reference:
   (`mock-servers/verifier/worker.ts`, local port `8791`).
 - OAuth provider token validation is served by a Worker mock server in dev
   (`mock-servers/oauth/worker.ts`, local port `8792`).
+- Outbound Mailgun delivery is served by a Worker mock server in dev
+  (`mock-servers/mailgun/worker.ts`, local port `8793`).
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
