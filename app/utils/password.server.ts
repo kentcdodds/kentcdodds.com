@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { promisify } from 'node:util'
+import { getEnv } from './env.server.ts'
 import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 
 const pbkdf2Async = promisify(crypto.pbkdf2)
@@ -65,8 +66,12 @@ function getPasswordHashParts(password: string) {
 async function checkIsCommonPassword(password: string) {
 	const [prefix, suffix] = getPasswordHashParts(password)
 	try {
+		const endpoint = new URL(
+			`range/${prefix}`,
+			`${getEnv().PWNED_PASSWORDS_API_BASE_URL.replace(/\/+$/, '')}/`,
+		)
 		const response = await fetchWithTimeout(
-			`https://api.pwnedpasswords.com/range/${prefix}`,
+			endpoint.toString(),
 			{},
 			1000,
 		)

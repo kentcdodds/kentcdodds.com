@@ -3,6 +3,7 @@ import { getImageBuilder, images } from '../images.tsx'
 import * as k from '../kit/kit.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import * as discord from './discord.server.ts'
+import { getEnv } from './env.server.ts'
 import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 import { getAvatar, getOptionalTeam } from './misc-react.tsx'
 import { type Timings } from './timing.server.ts'
@@ -42,7 +43,7 @@ export async function gravatarExistsForEmail({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 365,
 		checkValue: (prevValue) => typeof prevValue === 'boolean',
 		getFreshValue: async (context) => {
-			const gravatarUrl = getAvatar(email, { fallback: '404' })
+			const gravatarUrl = getGravatarRequestUrl(email, { fallback: '404' })
 			try {
 				const timeoutMs = context.background || forceFresh ? 1000 * 10 : 100
 				const avatarResponse = await fetchWithTimeout(
@@ -87,7 +88,10 @@ async function getDirectAvatarForUser(
 		forceFresh,
 	})
 	if (hasGravatar) {
-		return { hasGravatar, avatar: getAvatar(email, { size, fallback: null }) }
+		return {
+			hasGravatar,
+			avatar: getGravatarRequestUrl(email, { size, fallback: null }),
+		}
 	} else {
 		const imageProfileIds = {
 			RED: images.kodyProfileRed.id,
@@ -106,6 +110,27 @@ async function getDirectAvatarForUser(
 			}),
 		}
 	}
+}
+
+function getGravatarRequestUrl(
+	email: string,
+	{
+		size,
+		fallback,
+	}: {
+		size?: number
+		fallback?: string | null
+	} = {},
+) {
+	const gravatarUrl = new URL(getAvatar(email, { size, fallback }))
+	const gravatarBaseUrl = getEnv().GRAVATAR_BASE_URL
+	if (gravatarBaseUrl === 'https://www.gravatar.com') {
+		return gravatarUrl.toString()
+	}
+	const configuredBase = new URL(gravatarBaseUrl)
+	configuredBase.pathname = gravatarUrl.pathname
+	configuredBase.search = gravatarUrl.search
+	return configuredBase.toString()
 }
 
 const getKitCacheKey = (kitId: string) => `kit:${kitId}`

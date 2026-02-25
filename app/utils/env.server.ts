@@ -55,6 +55,11 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://kcd-oauth-provider.kentcdodds.workers.dev'),
+	PWNED_PASSWORDS_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.pwnedpasswords.com'),
 	INTERNAL_COMMAND_TOKEN: nonEmptyString,
 	MAGIC_LINK_SECRET: nonEmptyString,
 	MAILGUN_DOMAIN: nonEmptyString,
@@ -64,6 +69,11 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://api.mailgun.net'),
+	GRAVATAR_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://www.gravatar.com'),
 	REFRESH_CACHE_SECRET: nonEmptyString,
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
 	// Sentry is optional; validate required combos in `superRefine`.
