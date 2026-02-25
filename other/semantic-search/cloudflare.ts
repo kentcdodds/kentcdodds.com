@@ -4,7 +4,16 @@ type EmbeddingResponse = {
 }
 
 function getApiBaseUrl() {
-	return 'https://api.cloudflare.com/client/v4'
+	return (
+		process.env.CLOUDFLARE_API_BASE_URL ?? 'https://api.cloudflare.com/client/v4'
+	)
+}
+
+function getGatewayBaseUrl() {
+	return (
+		process.env.CLOUDFLARE_AI_GATEWAY_BASE_URL ??
+		'https://gateway.ai.cloudflare.com/v1'
+	)
 }
 
 function getRequiredEnv(name: string) {
@@ -45,7 +54,7 @@ async function cfFetch(
 	const url = path.startsWith(workersAiPrefix)
 		? // Cloudflare expects the model as path segments (with `/`), so do not
 			// URL-encode the model string.
-			`https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/${path.slice(
+			`${getGatewayBaseUrl().replace(/\/+$/, '')}/${accountId}/${gatewayId}/workers-ai/${path.slice(
 				workersAiPrefix.length,
 			)}`
 		: `${getApiBaseUrl()}/accounts/${accountId}${path}`

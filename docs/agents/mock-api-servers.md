@@ -61,6 +61,20 @@ API servers (epicflare-style).
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
+- `mock-servers/cloudflare/worker.ts`
+  - local dev URL: `http://127.0.0.1:8801`
+  - dashboard: `GET /__mocks`
+  - metadata: `GET /__mocks/meta`
+  - reset state: `POST /__mocks/reset`
+  - API prefixes:
+    - `/client/v4` (Cloudflare API + Vectorize + `ai/run`)
+    - `/gateway/v1` (Workers AI Gateway)
+- `mock-servers/cloudflare-r2/worker.ts`
+  - local dev URL: `http://127.0.0.1:8802`
+  - dashboard: `GET /__mocks`
+  - metadata: `GET /__mocks/meta`
+  - reset state: `POST /__mocks/reset`
+  - S3 path-style API: `/:bucket/:key`
 
 ## Local development wiring
 
@@ -77,6 +91,8 @@ API servers (epicflare-style).
   - security mock worker (`dev:mock-security`)
   - oembed mock worker (`dev:mock-oembed`)
   - mermaid-to-svg mock worker (`dev:mock-mermaid-to-svg`)
+  - cloudflare API mock worker (`dev:mock-cloudflare`)
+  - cloudflare R2 mock worker (`dev:mock-cloudflare-r2`)
 - `KIT_API_BASE_URL` and `VERIFIER_API_BASE_URL` are set to local mock worker
   URLs in this mode. `OAUTH_PROVIDER_BASE_URL` is also pointed at the local
   oauth mock worker. `MAILGUN_API_BASE_URL` is pointed at the local mailgun
@@ -88,7 +104,9 @@ API servers (epicflare-style).
   `PWNED_PASSWORDS_API_BASE_URL` and `GRAVATAR_BASE_URL` are pointed at the
   local security mock worker. `OEMBED_API_BASE_URL` is pointed at the local
   oembed mock worker. `MERMAID_TO_SVG_BASE_URL` is pointed at the local
-  mermaid-to-svg mock worker.
+  mermaid-to-svg mock worker. `CLOUDFLARE_API_BASE_URL` and
+  `CLOUDFLARE_AI_GATEWAY_BASE_URL` are pointed at the local cloudflare mock
+  worker, and `R2_ENDPOINT` is pointed at the local cloudflare-r2 mock worker.
 
 MSW remains active for integrations that have not yet been migrated to Worker
 mock servers.

@@ -29,7 +29,8 @@ reference:
 
 ## Non-obvious caveats
 
-- All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
+- Most external APIs are now mocked via Worker mock servers in `bun run dev`.
+  MSW remains for residual one-off handlers while migration completes.
 - The Kit integration is now served by a Worker mock server in dev
   (`mock-servers/kit/worker.ts`, local port `8790`). Other third-party
   integrations still use MSW while migration is in progress.
@@ -53,6 +54,10 @@ reference:
   dev (`mock-servers/oembed/worker.ts`, local port `8799`).
 - Mermaid SVG rendering calls are served by a Worker mock server in dev
   (`mock-servers/mermaid-to-svg/worker.ts`, local port `8800`).
+- Cloudflare API + Workers AI Gateway calls are served by a Worker mock server
+  in dev (`mock-servers/cloudflare/worker.ts`, local port `8801`).
+- Cloudflare R2 S3-compatible calls are served by a Worker mock server in dev
+  (`mock-servers/cloudflare-r2/worker.ts`, local port `8802`).
 - GitHub content fetches in mocks mode use local filesystem fallback in
   `app/utils/github.server.ts` (no network call required for content paths).
 - No real API keys are needed for local development; `.env.example` values are

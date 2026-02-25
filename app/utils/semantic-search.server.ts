@@ -186,7 +186,7 @@ function getRequiredSemanticSearchEnv() {
 }
 
 function getCloudflareApiBaseUrl() {
-	return 'https://api.cloudflare.com/client/v4'
+	return getEnv().CLOUDFLARE_API_BASE_URL
 }
 
 async function cloudflareFetch(
