@@ -73,7 +73,7 @@ async function fetchTransitor<JsonResponse>({
 	data?: Record<string, unknown>
 }) {
 	const env = getEnv()
-	const url = new URL(endpoint, 'https://api.transistor.fm')
+	const url = new URL(endpoint, env.TRANSISTOR_API_BASE_URL)
 	for (const [key, value] of Object.entries(query)) {
 		url.searchParams.set(key, value)
 	}
