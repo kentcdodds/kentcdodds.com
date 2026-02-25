@@ -25,6 +25,11 @@ on:
         description: Optional preview name override
         required: false
         type: string
+      dry_run:
+        description: Run preview workflow in dry-run mode
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -95,17 +100,27 @@ jobs:
         id: resources
         env:
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: |
           set -euo pipefail
-          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc | tee -a "$GITHUB_OUTPUT"
+          dry_run_flag=()
+          if [ "$DRY_RUN" = "true" ]; then
+            dry_run_flag+=(--dry-run)
+          fi
+          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}" | tee -a "$GITHUB_OUTPUT"
 
       - name: 🧪 Deploy preview mock workers
         id: deploy-mocks
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: |
           set -euo pipefail
+          dry_run_flag=()
+          if [ "$DRY_RUN" = "true" ]; then
+            dry_run_flag+=(--dry-run)
+          fi
           summary=""
           for dir in mock-servers/*; do
             if [ ! -d "$dir" ] || [ ! -f "$dir/wrangler.jsonc" ]; then
@@ -114,7 +129,7 @@ jobs:
             service="$(basename "$dir")"
             mock_worker_name="${WORKER_NAME}-mock-${service}"
             log_file="deploy-mock-${service}.log"
-            bun run wrangler -- deploy --config "$dir/wrangler.jsonc" --env preview --name "$mock_worker_name" 2>&1 | tee "$log_file"
+            bun run wrangler -- deploy --config "$dir/wrangler.jsonc" --env preview --name "$mock_worker_name" "${dry_run_flag[@]}" 2>&1 | tee "$log_file"
             mock_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync(process.argv[1], 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')" "$log_file")"
             if [ -n "$mock_url" ]; then
               summary="${summary}\n- ${service}: ${mock_url}"
@@ -131,6 +146,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: 🔐 Sync preview app secrets
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
@@ -145,13 +161,18 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: |
           set -euo pipefail
-          bun run wrangler -- d1 migrations apply APP_DB --remote --config "$WRANGLER_CONFIG" --env preview
-          bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env preview --name "$WORKER_NAME" 2>&1 | tee deploy-preview.log
-          preview_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy-preview.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
-          if [ -n "$preview_url" ]; then
-            echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+          if [ "$DRY_RUN" = "true" ]; then
+            bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env preview --name "$WORKER_NAME" --dry-run 2>&1 | tee deploy-preview.log
+          else
+            bun run wrangler -- d1 migrations apply APP_DB --remote --config "$WRANGLER_CONFIG" --env preview
+            bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env preview --name "$WORKER_NAME" 2>&1 | tee deploy-preview.log
+            preview_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy-preview.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
+            if [ -n "$preview_url" ]; then
+              echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: 💬 Comment preview URL on PR
@@ -255,6 +276,7 @@ jobs:
           echo "worker_name=$WORKER_NAME" >> "$GITHUB_OUTPUT"
 
       - name: 🗑️ Delete preview workers
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
@@ -291,6 +313,11 @@ jobs:
       - name: 🧹 Cleanup generated preview config
         env:
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
-        run: >
-          bun tools/ci/preview-resources.ts cleanup --worker-name "$WORKER_NAME" --environment preview
-          --out-config wrangler-preview.generated.jsonc
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+          dry_run_flag=()
+          if [ "$DRY_RUN" = "true" ]; then
+            dry_run_flag+=(--dry-run)
+          fi
+          bun tools/ci/preview-resources.ts cleanup --worker-name "$WORKER_NAME" --environment preview --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}"

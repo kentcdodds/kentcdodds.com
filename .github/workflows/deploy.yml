@@ -7,6 +7,12 @@ on:
     types:
       - completed
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Run production workflow in dry-run mode
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -91,6 +97,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🔐 Sync Cloudflare secrets
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: >
@@ -107,11 +114,17 @@ jobs:
         id: resources
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: |
           set -euo pipefail
-          bun tools/ci/preview-resources.ts ensure --worker-name kentcdodds-com --environment production --wrangler-config wrangler.jsonc --out-config wrangler-production.generated.jsonc | tee -a "$GITHUB_OUTPUT"
+          dry_run_flag=()
+          if [ "$DRY_RUN" = "true" ]; then
+            dry_run_flag+=(--dry-run)
+          fi
+          bun tools/ci/preview-resources.ts ensure --worker-name kentcdodds-com --environment production --wrangler-config wrangler.jsonc --out-config wrangler-production.generated.jsonc "${dry_run_flag[@]}" | tee -a "$GITHUB_OUTPUT"
 
       - name: 🗄️ Apply D1 migrations
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
@@ -122,16 +135,23 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: |
           set -euo pipefail
-          bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env production --name kentcdodds-com 2>&1 | tee deploy.log
-          deploy_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
-          if [ -n "$deploy_url" ]; then
-            echo "url=$deploy_url" >> "$GITHUB_OUTPUT"
+          if [ "$DRY_RUN" = "true" ]; then
+            bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env production --name kentcdodds-com --dry-run 2>&1 | tee deploy.log
+          else
+            bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env production --name kentcdodds-com 2>&1 | tee deploy.log
+            deploy_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
+            if [ -n "$deploy_url" ]; then
+              echo "url=$deploy_url" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: 🩺 Healthcheck
-        if: steps.deploy.outputs.url != ''
+        if: >-
+          steps.deploy.outputs.url != '' &&
+          !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         shell: bash
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
@@ -153,3 +173,7 @@ jobs:
             cat health.json >&2
           fi
           exit 1
+
+      - name: 🧹 Cleanup generated production config
+        if: always()
+        run: rm -f wrangler-production.generated.jsonc
