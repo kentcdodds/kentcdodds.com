@@ -176,6 +176,7 @@ function convertMdastNode(node: MdxNode): MdxRemoteNode | null {
 			return convertMdxJsxElementNode(node)
 		case 'mdxFlowExpression':
 		case 'mdxTextExpression':
+			if (isMdxCommentExpression(node)) return null
 			return (
 				convertMdxExpressionNode(node) ?? {
 					type: 'expression',
@@ -296,6 +297,11 @@ function getMdxJsxAttributeExpressionNode(attributeValueNode: MdxNode) {
 	const expression = (statement as { expression?: EstreeNode } | undefined)
 		?.expression
 	return expression ?? null
+}
+
+function isMdxCommentExpression(node: MdxNode) {
+	const value = String(node.value ?? '').trim()
+	return /^\/\*[\s\S]*\*\/$/.test(value)
 }
 
 function convertMdxExpressionNode(node: MdxNode): MdxRemoteNode | null {

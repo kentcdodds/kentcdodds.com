@@ -183,11 +183,21 @@ function resolvePropValue({
 		)
 	}
 	if (isExpressionPropValue(value)) {
-		return evaluateMdxRemoteExpression({
-			source: value.value,
-			scope: context.scope,
-			allowCalls: context.allowCalls,
-		})
+		try {
+			return evaluateMdxRemoteExpression({
+				source: value.value,
+				scope: context.scope,
+				allowCalls: context.allowCalls,
+			})
+		} catch (error: unknown) {
+			if (process.env.NODE_ENV !== 'test') {
+				console.warn(
+					`Unable to evaluate mdx-remote prop expression "${value.value}"`,
+					error,
+				)
+			}
+			return undefined
+		}
 	}
 	if (isNodePropValue(value)) {
 		return renderMdxRemoteNode({
