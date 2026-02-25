@@ -1,4 +1,5 @@
 import { expect, test, vi } from 'vitest'
+import { withEnv } from '#tests/with-env.ts'
 
 vi.mock('#app/utils/cache.server.ts', () => ({
 	cache: {
@@ -21,34 +22,61 @@ vi.mock('#app/utils/semantic-search-presentation.server.ts', () => ({
 import { semanticSearchKCD } from '../semantic-search.server.ts'
 
 test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_GATEWAY_ID', async () => {
-	const previousGatewayId = process.env.CLOUDFLARE_AI_GATEWAY_ID
-	const previousEmbeddingGatewayId =
-		process.env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID
-	process.env.CLOUDFLARE_AI_GATEWAY_ID = 'runtime-search-gateway'
-	process.env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID = 'indexing-only-gateway'
+	await withEnv(
+		{
+			CLOUDFLARE_AI_GATEWAY_ID: 'runtime-search-gateway',
+			CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'indexing-only-gateway',
+		},
+		async () => {
+			const fetchSpy = vi
+				.spyOn(globalThis, 'fetch')
+				.mockImplementation(async (input) => {
+					const url = input instanceof Request ? input.url : String(input)
 
-	const originalFetch = globalThis.fetch
-	const fetchSpy = vi
-		.spyOn(globalThis, 'fetch')
-		.mockImplementation((input, init) => originalFetch(input, init))
+					if (url.includes('/workers-ai/')) {
+						return new Response(
+							JSON.stringify({
+								result: {
+									shape: [1, 3],
+									data: [[0.1, 0.2, 0.3]],
+								},
+							}),
+							{
+								status: 200,
+								headers: { 'Content-Type': 'application/json' },
+							},
+						)
+					}
 
-	try {
-		await semanticSearchKCD({
-			query: `Gateway regression test ${Date.now()}`,
-			topK: 1,
-		})
+					if (url.includes('/vectorize/')) {
+						return new Response(
+							JSON.stringify({ result: { count: 0, matches: [] } }),
+							{
+								status: 200,
+								headers: { 'Content-Type': 'application/json' },
+							},
+						)
+					}
 
-		const embeddingRequestUrl = fetchSpy.mock.calls
-			.map(([input]) => input.toString())
-			.find((url) => url.includes('/workers-ai/'))
+					throw new Error(`Unexpected fetch URL in semantic search test: ${url}`)
+				})
 
-		expect(embeddingRequestUrl).toBeDefined()
-		expect(embeddingRequestUrl).toContain('/runtime-search-gateway/')
-		expect(embeddingRequestUrl).not.toContain('/indexing-only-gateway/')
-	} finally {
-		fetchSpy.mockRestore()
-		process.env.CLOUDFLARE_AI_GATEWAY_ID = previousGatewayId ?? ''
-		process.env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID =
-			previousEmbeddingGatewayId ?? ''
-	}
+			try {
+				await semanticSearchKCD({
+					query: `Gateway regression test ${Date.now()}`,
+					topK: 1,
+				})
+
+				const embeddingRequestUrl = fetchSpy.mock.calls
+					.map(([input]) => (input instanceof Request ? input.url : String(input)))
+					.find((url) => url.includes('/workers-ai/'))
+
+				expect(embeddingRequestUrl).toBeDefined()
+				expect(embeddingRequestUrl).toContain('/runtime-search-gateway/')
+				expect(embeddingRequestUrl).not.toContain('/indexing-only-gateway/')
+			} finally {
+				fetchSpy.mockRestore()
+			}
+		},
+	)
 })

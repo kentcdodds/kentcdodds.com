@@ -1,33 +1,6 @@
 import { expect, test } from 'vitest'
+import { withEnv } from '#tests/with-env.ts'
 import { getCloudflareConfig } from '../cloudflare.ts'
-
-async function withEnv(
-	overrides: Record<string, string | undefined>,
-	callback: () => Promise<void> | void,
-) {
-	const previous = new Map<string, string | undefined>()
-
-	for (const [key, value] of Object.entries(overrides)) {
-		previous.set(key, process.env[key])
-		if (value === undefined) {
-			delete process.env[key]
-		} else {
-			process.env[key] = value
-		}
-	}
-
-	try {
-		await callback()
-	} finally {
-		for (const [key, value] of previous.entries()) {
-			if (value === undefined) {
-				delete process.env[key]
-			} else {
-				process.env[key] = value
-			}
-		}
-	}
-}
 
 test('getCloudflareConfig prefers embedding gateway for indexing when configured', async () => {
 	await withEnv(
