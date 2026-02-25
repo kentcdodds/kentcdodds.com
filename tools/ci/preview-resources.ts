@@ -516,7 +516,13 @@ async function writeGeneratedWranglerConfig({
 		? existingQueues.consumers
 		: []
 	const queueConsumersWithoutQueue = existingQueueConsumers.filter((entry) => {
-		return !(isRecord(entry) && entry.queue === callsDraftQueueName)
+		if (!isRecord(entry)) return true
+		if (entry.queue === callsDraftQueueName) return false
+		const existingQueueName = entry.queue
+		return !(
+			typeof existingQueueName === 'string' &&
+			existingQueueName.endsWith('-calls-draft-queue')
+		)
 	})
 	targetConfig.queues = {
 		...existingQueues,

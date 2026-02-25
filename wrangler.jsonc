@@ -37,6 +37,21 @@
 			},
 			"vars": {
 				"APP_ENV": "production"
+			},
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
 			}
 		},
 		"development": {
@@ -51,6 +66,21 @@
 			},
 			"vars": {
 				"APP_ENV": "development"
+			},
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-development-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-development-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
 			}
 		},
 		"preview": {
@@ -65,6 +95,21 @@
 			},
 			"vars": {
 				"APP_ENV": "preview"
+			},
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-preview-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-preview-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
 			}
 		},
 		"test": {
@@ -79,6 +124,21 @@
 			},
 			"vars": {
 				"APP_ENV": "test"
+			},
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-test-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-test-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
 			}
 		}
 	}
