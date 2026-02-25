@@ -49,8 +49,6 @@ export default {
 		if (
 			(url.pathname.startsWith('/images/') ||
 				url.pathname.startsWith('/social/') ||
-				url.pathname.includes('/image/upload/') ||
-				url.pathname.includes('/video/upload/') ||
 				url.pathname.startsWith('/artwork/call-kent') ||
 				url.pathname.startsWith('/stream/')) &&
 			(request.method === 'GET' || request.method === 'HEAD')
