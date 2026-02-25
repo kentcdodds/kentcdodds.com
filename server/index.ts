@@ -101,12 +101,6 @@ const startServerMetric = (
 ) => {
 	res.startTime?.(name, description)
 }
-
-const endServerMetric = (res: ServerTimingResponse, name: string) => {
-	res.endTime?.(name)
-}
-
-const expiredDataCleanup = scheduleExpiredDataCleanup()
 app.get('/img/social', oldImgSocial)
 
 // TODO: remove this once all clients are updated
