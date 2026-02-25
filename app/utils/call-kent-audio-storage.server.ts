@@ -15,7 +15,7 @@ type PutAudioResult = {
 }
 
 type GetAudioStreamResult = {
-	body: Readable
+	body: ReadableStream<Uint8Array>
 }
 
 type HeadAudioResult = {
@@ -159,10 +159,7 @@ function createR2Store({ bucket }: { bucket: string }): AudioStore {
 				}),
 			)
 			const body = res.Body
-			if (!(body instanceof Readable)) {
-				throw new Error('Unexpected R2 response body type')
-			}
-			return { body }
+			return { body: toWebReadableStream(body) }
 		},
 		async head({ key }) {
 			const res = await client.send(
@@ -267,11 +264,47 @@ export async function deleteAudioObject({ key }: { key: string }) {
 
 export async function getAudioBuffer({ key }: { key: string }) {
 	const { body } = await getAudioStream({ key })
-	const chunks: Buffer[] = []
-	for await (const chunk of body) {
-		chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-	}
-	return Buffer.concat(chunks)
+	return readStreamIntoBuffer(body)
 }
 
 export { parseBase64DataUrl }
+
+function toWebReadableStream(body: unknown): ReadableStream<Uint8Array> {
+	if (body instanceof ReadableStream) {
+		return body as ReadableStream<Uint8Array>
+	}
+	if (
+		body &&
+		typeof body === 'object' &&
+		'transformToWebStream' in body &&
+		typeof body.transformToWebStream === 'function'
+	) {
+		return body.transformToWebStream() as ReadableStream<Uint8Array>
+	}
+	if (body instanceof Readable) {
+		return Readable.toWeb(body) as ReadableStream<Uint8Array>
+	}
+	throw new Error('Unexpected R2 response body type')
+}
+
+async function readStreamIntoBuffer(stream: ReadableStream<Uint8Array>) {
+	const reader = stream.getReader()
+	const chunks: Array<Uint8Array> = []
+	let totalLength = 0
+
+	while (true) {
+		const { done, value } = await reader.read()
+		if (done) break
+		if (!value) continue
+		chunks.push(value)
+		totalLength += value.byteLength
+	}
+
+	const merged = new Uint8Array(totalLength)
+	let offset = 0
+	for (const chunk of chunks) {
+		merged.set(chunk, offset)
+		offset += chunk.byteLength
+	}
+	return Buffer.from(merged.buffer, merged.byteOffset, merged.byteLength)
+}
