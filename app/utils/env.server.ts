@@ -27,6 +27,11 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://media.kentcdodds.com'),
+	MEDIA_STREAM_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://media.kentcdodds.com/stream'),
 
 	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,
@@ -404,6 +409,7 @@ export function getPublicEnv() {
 		DISCORD_CLIENT_ID: env.DISCORD_CLIENT_ID,
 		SENTRY_DSN: env.SENTRY_DSN,
 		MEDIA_BASE_URL: env.MEDIA_BASE_URL,
+		MEDIA_STREAM_BASE_URL: env.MEDIA_STREAM_BASE_URL,
 	}
 }
 

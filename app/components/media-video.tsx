@@ -1,4 +1,5 @@
-import { getMediaBaseUrl } from '#app/images.tsx'
+import { getMediaStreamBaseUrl } from '#app/images.tsx'
+import { resolveMediaVideoId } from '#app/utils/media-manifest-resolver.ts'
 
 type MediaVideoProps = {
 	className?: string
@@ -17,23 +18,19 @@ export function MediaVideo({
 	crop = 'fill',
 	imageId,
 }: MediaVideoProps) {
-	const transforms = [
-		`f_auto:video`,
-		`q_auto`,
-		`c_${crop}`,
-		`ac_none`,
-		aspectRatio ? `ar_${aspectRatio}` : null,
-		`w_${width}`,
-		height ? `h_${height}` : null,
-		'fl_keep_dar',
-	]
-		.filter(Boolean)
-		.join(',')
+	const resolvedVideoId = resolveMediaVideoId(imageId)
+	const params = new URLSearchParams()
+	params.set('width', String(width))
+	params.set('fit', crop)
+	if (height) params.set('height', String(height))
+	if (aspectRatio) params.set('aspectRatio', aspectRatio)
+	const sourceUrl = `${getMediaStreamBaseUrl().replace(/\/+$/, '')}/${resolvedVideoId}.mp4?${params.toString()}`
+
 	return (
 		<video
 			className={className}
 			autoPlay
-			src={`${getMediaBaseUrl().replace(/\/+$/, '')}/kentcdodds-com/video/upload/${transforms}/${imageId}`}
+			src={sourceUrl}
 			muted
 			loop
 			controls={false}

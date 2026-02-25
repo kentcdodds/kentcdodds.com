@@ -48,14 +48,17 @@ export default {
 
 		if (
 			(url.pathname.includes('/image/upload/') ||
-				url.pathname.includes('/video/upload/')) &&
+				url.pathname.includes('/video/upload/') ||
+				url.pathname.startsWith('/stream/')) &&
 			(request.method === 'GET' || request.method === 'HEAD')
 		) {
 			if (request.method === 'HEAD') {
 				return new Response(null, {
 					status: 200,
 					headers: {
-						'content-type': 'image/webp',
+						'content-type': url.pathname.startsWith('/stream/')
+							? 'video/mp4'
+							: 'image/webp',
 						'cache-control': 'no-store',
 					},
 				})
@@ -63,7 +66,9 @@ export default {
 			return new Response(decodeBase64(mockMediaImageBase64), {
 				status: 200,
 				headers: {
-					'content-type': 'image/webp',
+					'content-type': url.pathname.startsWith('/stream/')
+						? 'video/mp4'
+						: 'image/webp',
 					'cache-control': 'no-store',
 				},
 			})

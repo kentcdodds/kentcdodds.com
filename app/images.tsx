@@ -2,6 +2,7 @@ import { type TransformerOption } from '@cld-apis/types'
 import clsx from 'clsx'
 import emojiRegex from 'emoji-regex'
 import { type CSSProperties } from 'react'
+import { resolveMediaImageId } from './utils/media-manifest-resolver.ts'
 import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.ts'
 
 const defaultMediaBaseUrl = 'https://media.kentcdodds.com'
@@ -35,7 +36,7 @@ function getImageBuilder(
 ): ImageBuilder {
 	function imageBuilder(transformations?: TransformerOption) {
 		const imageUrl = buildMediaImageUrl({
-			id,
+			id: resolveMediaImageId(id),
 			transformations,
 			baseUrl: getMediaImageUploadBaseUrl(),
 		})
@@ -59,6 +60,28 @@ function getMediaBaseUrl() {
 		return process.env.MEDIA_BASE_URL
 	}
 	return defaultMediaBaseUrl
+}
+
+function getMediaStreamBaseUrl() {
+	if (
+		typeof window !== 'undefined' &&
+		window.ENV?.MEDIA_STREAM_BASE_URL
+	) {
+		return window.ENV.MEDIA_STREAM_BASE_URL
+	}
+	if (
+		typeof globalThis !== 'undefined' &&
+		globalThis.ENV?.MEDIA_STREAM_BASE_URL
+	) {
+		return globalThis.ENV.MEDIA_STREAM_BASE_URL
+	}
+	if (
+		typeof process !== 'undefined' &&
+		process.env.MEDIA_STREAM_BASE_URL
+	) {
+		return process.env.MEDIA_STREAM_BASE_URL
+	}
+	return `${getMediaBaseUrl().replace(/\/+$/, '')}/stream`
 }
 
 function getMediaImageUploadBaseUrl() {
@@ -955,6 +978,7 @@ export {
 	getImgProps,
 	getImageBuilder,
 	getMediaBaseUrl,
+	getMediaStreamBaseUrl,
 	getGenericSocialImage,
 	getSocialImageWithPreTitle,
 	illustrationImages,

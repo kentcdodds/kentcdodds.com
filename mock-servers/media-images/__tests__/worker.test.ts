@@ -33,4 +33,14 @@ describe('media images mock worker', () => {
 		expect(headResponse.status).toBe(200)
 		expect(headResponse.headers.get('content-type')).toBe('image/webp')
 	})
+
+	test('serves placeholder stream responses', async () => {
+		const videoResponse = await worker.fetch(
+			new Request('http://mock-media-images.local/stream/sample-video.mp4'),
+		)
+		expect(videoResponse.status).toBe(200)
+		expect(videoResponse.headers.get('content-type')).toBe('video/mp4')
+		const bodyBytes = new Uint8Array(await videoResponse.arrayBuffer())
+		expect(bodyBytes.byteLength).toBeGreaterThan(0)
+	})
 })
