@@ -89,6 +89,10 @@ reference:
   (`McpDurableObject` class in `worker/mcp-durable-object.ts`).
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
+- Mdx-remote compilation script:
+  - `bun run content:compile-mdx-remote`
+  - generates serialized mdx-remote JSON docs + manifest under
+    `other/content/mdx-remote/`.
 
 ## Cloud / headless manual testing
 

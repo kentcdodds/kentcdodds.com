@@ -25,11 +25,15 @@ async function compileMdxRemoteDocumentFromSource<
 	source,
 	frontmatter,
 	allowedComponentNames,
+	strictComponentValidation = true,
+	strictExpressionValidation = true,
 }: {
 	slug: string
 	source: string
 	frontmatter: Frontmatter
 	allowedComponentNames: Array<string>
+	strictComponentValidation?: boolean
+	strictExpressionValidation?: boolean
 }) {
 	const mdast = unified()
 		.use(remarkParse)
@@ -42,6 +46,8 @@ async function compileMdxRemoteDocumentFromSource<
 		frontmatter,
 		root,
 		allowedComponentNames,
+		strictComponentValidation,
+		strictExpressionValidation,
 	})
 	return document
 }

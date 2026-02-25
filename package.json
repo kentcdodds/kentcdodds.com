@@ -58,6 +58,7 @@
     "media:scan-legacy-references": "bun tools/media/scan-legacy-media-references.ts",
     "media:scan-legacy-references:strict": "bun tools/media/scan-legacy-media-references.ts --strict",
     "media:sync-cloudflare": "bun tools/media/sync-cloudflare-media.ts",
+		"content:compile-mdx-remote": "bun other/content/compile-mdx-remote-documents.ts",
     "curl:blog": "curl -I --silent http://localhost:$PORT/blog > /dev/null || true",
     "prime-cache:prod": "cross-env PORT=4001 bunx start-server-and-test start http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
     "prime-cache:mocks": "cross-env PORT=4001 bunx start-server-and-test start:mocks http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
