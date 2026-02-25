@@ -9,7 +9,6 @@ import {
 } from '@react-router/express'
 import {
 	init as sentryInit,
-	setContext as sentrySetContext,
 } from '@sentry/react-router'
 import { ip as ipAddress } from 'address'
 import chalk from 'chalk'
@@ -82,10 +81,6 @@ if (SHOULD_INIT_SENTRY) {
 		dsn: env.SENTRY_DSN,
 		tracesSampleRate: 0.3,
 		environment: env.NODE_ENV,
-	})
-	sentrySetContext('fly', {
-		region: env.FLY_REGION,
-		machineId: env.FLY_MACHINE_ID,
 	})
 }
 

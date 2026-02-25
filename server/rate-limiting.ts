@@ -12,8 +12,8 @@ type CreateRateLimitingMiddlewareOptions = {
  * - In development we effectively disable limits to avoid slowing iteration.
  * - In Playwright we also effectively disable limits because tests can be fast
  *   enough to hit strict limits (especially on auth endpoints).
- * - In production the limits are enforced and keyed by `Fly-Client-Ip` when
- *   available (users cannot spoof this header on Fly.io).
+ * - In production the limits are enforced and keyed by Cloudflare/CDN
+ *   forwarding headers (`CF-Connecting-IP` first, then `X-Forwarded-For`).
  */
 export function createRateLimitingMiddleware(
 	options: CreateRateLimitingMiddlewareOptions = {},
@@ -34,13 +34,17 @@ export function createRateLimitingMiddleware(
 		standardHeaders: true,
 		legacyHeaders: false,
 		validate: { trustProxy: false },
-		// Malicious users can spoof their IP address which means we should not default
-		// to trusting req.ip when hosted on Fly.io. However, users cannot spoof Fly-Client-Ip.
-		// When sitting behind a CDN such as cloudflare, replace fly-client-ip with the CDN
-		// specific header such as cf-connecting-ip
+		// Prefer Cloudflare/CDN-provided IP headers before Express-derived values.
 		keyGenerator: (req: Parameters<RequestHandler>[0]) => {
-			const flyClientIp = req.get('fly-client-ip')
-			const ip = flyClientIp ?? req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0'
+			const cfConnectingIp = req.get('cf-connecting-ip')
+			const forwardedFor = req.get('x-forwarded-for')
+			const forwardedIp = forwardedFor?.split(',')[0]?.trim()
+			const ip =
+				cfConnectingIp ??
+				forwardedIp ??
+				req.ip ??
+				req.socket?.remoteAddress ??
+				'0.0.0.0'
 			return ipKeyGenerator(ip)
 		},
 	}
