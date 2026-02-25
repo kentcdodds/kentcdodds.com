@@ -36,6 +36,11 @@ const schemaBase = z.object({
 	DISCORD_CALL_KENT_CHANNEL: nonEmptyString,
 	DISCORD_CLIENT_ID: nonEmptyString,
 	DISCORD_CLIENT_SECRET: nonEmptyString,
+	DISCORD_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://discord.com/api'),
 	DISCORD_GUILD_ID: nonEmptyString,
 	DISCORD_LEADERBOARD_CHANNEL: nonEmptyString,
 	DISCORD_MEMBER_ROLE: nonEmptyString,

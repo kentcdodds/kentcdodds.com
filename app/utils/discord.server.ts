@@ -6,6 +6,7 @@ import { prisma } from './prisma.server.ts'
 function getDiscordConfig() {
 	const env = getEnv()
 	return {
+		apiBaseUrl: env.DISCORD_API_BASE_URL,
 		clientId: env.DISCORD_CLIENT_ID,
 		clientSecret: env.DISCORD_CLIENT_SECRET,
 		scopes: env.DISCORD_SCOPES,
@@ -18,6 +19,11 @@ function getDiscordConfig() {
 			BLUE: env.DISCORD_BLUE_ROLE,
 		} satisfies Record<Team, string>,
 	}
+}
+
+function getDiscordApiUrl(pathname: string) {
+	const { apiBaseUrl } = getDiscordConfig()
+	return new URL(pathname.replace(/^\//, ''), `${apiBaseUrl.replace(/\/+$/, '')}/`)
 }
 type DiscordUser = {
 	id: string
@@ -34,7 +40,7 @@ type DiscordError = { message: string; code: number }
 
 async function fetchAsDiscordBot(endpoint: string, config?: RequestInit) {
 	const { botToken } = getDiscordConfig()
-	const url = new URL(`https://discord.com/api/${endpoint}`)
+	const url = getDiscordApiUrl(endpoint)
 	const res = await fetch(url.toString(), {
 		...config,
 		headers: {
@@ -76,7 +82,7 @@ async function getUserToken({
 	domainUrl: string
 }) {
 	const { clientId, clientSecret, scopes } = getDiscordConfig()
-	const tokenUrl = new URL('https://discord.com/api/oauth2/token')
+	const tokenUrl = getDiscordApiUrl('oauth2/token')
 	const params = new URLSearchParams({
 		client_id: clientId,
 		client_secret: clientSecret,
@@ -96,7 +102,7 @@ async function getUserToken({
 
 	const discordToken = (await tokenRes.json()) as DiscordToken
 
-	const userUrl = new URL('https://discord.com/api/users/@me')
+	const userUrl = getDiscordApiUrl('users/@me')
 	const userRes = await fetch(userUrl.toString(), {
 		headers: {
 			authorization: `${discordToken.token_type} ${discordToken.access_token}`,
