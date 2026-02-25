@@ -25,7 +25,6 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
-import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
 import { scheduleExpiredDataCleanup } from './expired-sessions-cleanup.js'
 import { createRateLimitingMiddleware } from './rate-limiting.js'
 import {
@@ -107,30 +106,19 @@ app.post('/__metronome', (req: any, res: any) => {
 })
 
 app.use((req, res, next) => {
-	getInstanceInfo()
-		.then(({ currentInstance, primaryInstance }) => {
-			res.set('X-Powered-By', 'Kody the Koala')
-			res.set('X-Fly-Region', env.FLY_REGION)
-			res.set('X-Fly-App', env.FLY_APP_NAME)
-			res.set('X-Fly-Instance', currentInstance)
-			res.set('X-Fly-Primary-Instance', primaryInstance)
-			res.set('X-Frame-Options', 'SAMEORIGIN')
-			const proto = req.get('X-Forwarded-Proto') ?? req.protocol
+	res.set('X-Powered-By', 'Kody the Koala')
+	res.set('X-Frame-Options', 'SAMEORIGIN')
+	const proto = req.get('X-Forwarded-Proto') ?? req.protocol
 
-			const host = getHost(req)
-			if (!host.endsWith(primaryHost)) {
-				res.set('X-Robots-Tag', 'noindex')
-			}
-			res.set('Access-Control-Allow-Origin', `${proto}://${host}`)
+	const host = getHost(req)
+	if (!host.endsWith(primaryHost)) {
+		res.set('X-Robots-Tag', 'noindex')
+	}
+	res.set('Access-Control-Allow-Origin', `${proto}://${host}`)
 
-			// if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
-			res.set(
-				'Strict-Transport-Security',
-				`max-age=${60 * 60 * 24 * 365 * 100}`,
-			)
-			next()
-		})
-		.catch(next)
+	// if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
+	res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
+	next()
 })
 
 app.use((req, res, next) => {
