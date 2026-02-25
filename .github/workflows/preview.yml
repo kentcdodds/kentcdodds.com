@@ -154,10 +154,12 @@ jobs:
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CALL_KENT_FFMPEG_CONTAINER_BASE_URL: ${{ secrets.CALL_KENT_FFMPEG_CONTAINER_BASE_URL }}
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
         run: >
           bun tools/ci/sync-worker-secrets.ts --name "$WORKER_NAME" --env
           preview --from-dotenv .env.example --generate-cookie-secret
+          --set-from-env-optional CALL_KENT_FFMPEG_CONTAINER_BASE_URL
           --include-empty
 
       - name: ☁️ Deploy preview app worker
