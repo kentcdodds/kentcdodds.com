@@ -49,6 +49,7 @@ Then open `http://localhost:3000`.
 - OAuth mock worker at `http://127.0.0.1:8792`
 - Mailgun mock worker at `http://127.0.0.1:8793`
 - Discord mock worker at `http://127.0.0.1:8794`
+- Simplecast mock worker at `http://127.0.0.1:8795`
 
 Each exposes a `__mocks` dashboard for request/state inspection.
 

@@ -29,10 +29,16 @@ import { type Timings } from './timing.server.ts'
 function getSimplecastConfig() {
 	const env = getEnv()
 	return {
+		apiBaseUrl: env.SIMPLECAST_API_BASE_URL,
 		podcastId: env.CHATS_WITH_KENT_PODCAST_ID,
 		headers: { authorization: `Bearer ${env.SIMPLECAST_KEY}` },
 		seasonsCacheKey: `simplecast:seasons:${env.CHATS_WITH_KENT_PODCAST_ID}`,
 	}
+}
+
+function getSimplecastUrl(pathname: string) {
+	const { apiBaseUrl } = getSimplecastConfig()
+	return new URL(pathname.replace(/^\//, ''), `${apiBaseUrl.replace(/\/+$/, '')}/`)
 }
 
 // Episodes can be fetched concurrently from multiple seasons (and from multiple
@@ -171,9 +177,10 @@ async function getSeasons({
 	timings?: Timings
 }) {
 	const { podcastId, headers } = getSimplecastConfig()
+	const seasonsUrl = getSimplecastUrl(`/podcasts/${podcastId}/seasons`)
 	const seasonsJson = simplecastSeasonsResponseSchema.parse(
 		await fetchJsonWithRetryAfter<unknown>(
-			`https://api.simplecast.com/podcasts/${podcastId}/seasons`,
+			seasonsUrl.toString(),
 			{
 				headers,
 				label: `simplecast seasons (${podcastId})`,
@@ -222,7 +229,7 @@ async function getEpisodes(
 	},
 ) {
 	const { headers } = getSimplecastConfig()
-	const url = new URL(`https://api.simplecast.com/seasons/${seasonId}/episodes`)
+	const url = getSimplecastUrl(`/seasons/${seasonId}/episodes`)
 	url.searchParams.set('limit', '300')
 	const listJson = simplecastEpisodesListResponseSchema.parse(
 		await fetchJsonWithRetryAfter<unknown>(url.toString(), {
@@ -245,16 +252,14 @@ async function getEpisodes(
 
 async function getEpisode(episodeId: string) {
 	const { headers } = getSimplecastConfig()
+	const episodeUrl = getSimplecastUrl(`/episodes/${episodeId}`)
 	const json = simplecastEpisodeSchema.parse(
 		await simplecastEpisodeDetailsLimit(() =>
-			fetchJsonWithRetryAfter<unknown>(
-				`https://api.simplecast.com/episodes/${episodeId}`,
-				{
-					headers,
-					label: `simplecast episode ${episodeId}`,
-					retryOn5xx: true,
-				},
-			),
+			fetchJsonWithRetryAfter<unknown>(episodeUrl.toString(), {
+				headers,
+				label: `simplecast episode ${episodeId}`,
+				retryOn5xx: true,
+			}),
 		),
 	)
 
