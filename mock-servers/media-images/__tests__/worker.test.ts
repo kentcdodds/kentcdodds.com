@@ -55,4 +55,16 @@ describe('media images mock worker', () => {
 		const bodyBytes = new Uint8Array(await artworkResponse.arrayBuffer())
 		expect(bodyBytes.byteLength).toBeGreaterThan(0)
 	})
+
+	test('serves placeholder social image responses', async () => {
+		const socialResponse = await worker.fetch(
+			new Request(
+				'http://mock-media-images.local/social/generic.png?words=Hello&url=kentcdodds.com%2Fblog',
+			),
+		)
+		expect(socialResponse.status).toBe(200)
+		expect(socialResponse.headers.get('content-type')).toBe('image/webp')
+		const bodyBytes = new Uint8Array(await socialResponse.arrayBuffer())
+		expect(bodyBytes.byteLength).toBeGreaterThan(0)
+	})
 })
