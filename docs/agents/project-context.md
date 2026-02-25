@@ -62,6 +62,8 @@ reference:
   (`mock-servers/media-images/worker.ts`, local port `8803`).
   - The media mock prefers serving files directly from `content/**` when the
     requested media key matches a repo asset path.
+- Call Kent ffmpeg container simulation is served by a Worker mock server in dev
+  (`mock-servers/call-kent-ffmpeg/worker.ts`, local port `8804`).
 - Stream video URLs can use `MEDIA_STREAM_BASE_URL` (defaults to
   `${MEDIA_BASE_URL}/stream`).
 - `ENABLE_MDX_REMOTE=true` enables runtime rendering via the new mdx-remote
