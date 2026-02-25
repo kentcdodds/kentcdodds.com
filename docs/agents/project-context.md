@@ -95,6 +95,7 @@ reference:
   still linger until the next YouTube reindex.
 - Mdx-remote compilation script:
   - `bun run content:compile-mdx-remote`
+  - `bun run content:compile-mdx-remote:dry-run`
   - generates serialized mdx-remote JSON docs + manifest under
     `other/content/mdx-remote/`.
 
