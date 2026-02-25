@@ -375,10 +375,10 @@ function ArticleQuestionCard() {
 export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 	const { requestInfo } = useRootData()
 
-	const { code, dateDisplay, frontmatter } = data.page
+	const { code, dateDisplay, frontmatter, remoteDocument } = data.page
 	const params = useParams()
 	const { slug } = params
-	const Component = useMdxComponent(code)
+	const Component = useMdxComponent({ code, remoteDocument })
 
 	const permalink = `${requestInfo.origin}/blog/${slug}`
 

@@ -12,6 +12,10 @@ import gfm from 'remark-gfm'
 import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
+import {
+	compileMdxRemoteDocumentFromSource,
+} from '#app/mdx-remote/compiler/from-mdast.ts'
+import { mdxRemoteComponentAllowlist } from '#app/mdx-remote/component-allowlist.ts'
 import { type GitHubFile } from '#app/types.ts'
 import { getEnv } from './env.server.ts'
 import * as x from './x.server.ts'
@@ -461,11 +465,21 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 			}),
 		)
 		const readTime = calculateReadingTime(indexFile.content)
+		const remoteDocument = await compileMdxRemoteDocumentFromSource({
+			slug,
+			source: indexFile.content,
+			frontmatter: frontmatter as FrontmatterType,
+			allowedComponentNames: mdxRemoteComponentAllowlist,
+		}).catch((error: unknown) => {
+			console.warn(`Failed to compile mdx-remote document for slug "${slug}"`, error)
+			return undefined
+		})
 
 		return {
 			code,
 			readTime,
 			frontmatter: frontmatter as FrontmatterType,
+			remoteDocument,
 		}
 	} catch (error: unknown) {
 		console.error(`Compilation error for slug: `, slug)

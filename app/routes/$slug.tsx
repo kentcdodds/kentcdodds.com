@@ -92,10 +92,10 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta = mdxPageMeta
 
 export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
-	const { code, frontmatter } = data.page
+	const { code, frontmatter, remoteDocument } = data.page
 	const isDraft = Boolean(frontmatter.draft)
 	const isArchived = Boolean(frontmatter.archived)
-	const Component = useMdxComponent(code)
+	const Component = useMdxComponent({ code, remoteDocument })
 
 	return (
 		<>
