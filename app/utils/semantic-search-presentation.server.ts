@@ -54,16 +54,16 @@ function getRepoRootDir() {
 	return process.cwd()
 }
 
-function buildThumbFromCloudinaryId({
-	cloudinaryId,
+function buildThumbFromImageId({
+	imageId,
 	alt,
 	size,
 }: {
-	cloudinaryId: string
+	imageId: string
 	alt: string
 	size: number
 }) {
-	const builder = getImageBuilder(cloudinaryId, alt)
+	const builder = getImageBuilder(imageId, alt)
 	return builder({
 		quality: 'auto',
 		format: 'auto',
@@ -226,7 +226,7 @@ async function readMdxSourceForSlug(type: 'blog' | 'page', slug: string) {
 type RepoDocMeta = {
 	title?: string
 	summary?: string
-	cloudinaryId?: string
+	imageId?: string
 	imageAlt?: string
 }
 
@@ -248,7 +248,7 @@ async function getMdxDocMeta({
 		const fm = parseYamlFrontmatter(source)
 		const title = asNonEmptyString(fm?.title)
 		const description = asNonEmptyString(fm?.description)
-		const bannerCloudinaryId = asNonEmptyString(fm?.bannerCloudinaryId)
+		const bannerImageId = asNonEmptyString(fm?.bannerImageId)
 		const bannerAltRaw = fm?.bannerAlt
 		const bannerAlt =
 			typeof bannerAltRaw === 'string' ? normalizeText(bannerAltRaw) : undefined
@@ -256,7 +256,7 @@ async function getMdxDocMeta({
 		const meta: RepoDocMeta = {
 			title,
 			summary: description,
-			cloudinaryId: bannerCloudinaryId,
+			imageId: bannerImageId,
 			imageAlt: bannerAlt,
 		}
 		mdxMetaCache.set(cacheKey, meta)
@@ -297,7 +297,7 @@ type CreditMeta = {
 	name: string
 	role?: string
 	description?: string
-	cloudinaryId?: string
+	imageId?: string
 }
 let creditsBySlug: Map<string, CreditMeta> | null = null
 async function loadCreditsBySlug() {
@@ -324,9 +324,9 @@ async function loadCreditsBySlug() {
 				typeof person?.description === 'string'
 					? person.description
 					: undefined,
-			cloudinaryId:
-				typeof person?.cloudinaryId === 'string'
-					? person.cloudinaryId
+			imageId:
+				typeof person?.imageId === 'string'
+					? person.imageId
 					: undefined,
 		})
 	}
@@ -338,7 +338,7 @@ type TestimonialMeta = {
 	author: string
 	company?: string
 	testimonial?: string
-	cloudinaryId?: string
+	imageId?: string
 }
 let testimonialsBySlug: Map<string, TestimonialMeta> | null = null
 async function loadTestimonialsBySlug() {
@@ -363,8 +363,8 @@ async function loadTestimonialsBySlug() {
 			company: typeof t?.company === 'string' ? t.company : undefined,
 			testimonial:
 				typeof t?.testimonial === 'string' ? t.testimonial : undefined,
-			cloudinaryId:
-				typeof t?.cloudinaryId === 'string' ? t.cloudinaryId : undefined,
+			imageId:
+				typeof t?.imageId === 'string' ? t.imageId : undefined,
 		})
 	}
 	testimonialsBySlug = map
@@ -442,9 +442,9 @@ export async function getSemanticSearchPresentation(
 		if (!meta) return base
 		const summary = meta.summary ? truncate(meta.summary, 220) : base.summary
 		const alt = meta.imageAlt ?? meta.title ?? result.title ?? fallback.imageAlt
-		const imageUrl = meta.cloudinaryId
-			? buildThumbFromCloudinaryId({
-					cloudinaryId: meta.cloudinaryId,
+		const imageUrl = meta.imageId
+			? buildThumbFromImageId({
+					imageId: meta.imageId,
 					alt,
 					size: 96,
 				})
@@ -482,9 +482,9 @@ export async function getSemanticSearchPresentation(
 					? truncate(person.role, 220)
 					: base.summary
 			const alt = person.name || fallbackImageAlt
-			const imageUrl = person.cloudinaryId
-				? buildThumbFromCloudinaryId({
-						cloudinaryId: person.cloudinaryId,
+			const imageUrl = person.imageId
+				? buildThumbFromImageId({
+						imageId: person.imageId,
 						alt,
 						size: 96,
 					})
@@ -505,9 +505,9 @@ export async function getSemanticSearchPresentation(
 				? truncate(t.testimonial, 220)
 				: base.summary
 			const alt = t.author || fallbackImageAlt
-			const imageUrl = t.cloudinaryId
-				? buildThumbFromCloudinaryId({
-						cloudinaryId: t.cloudinaryId,
+			const imageUrl = t.imageId
+				? buildThumbFromImageId({
+						imageId: t.imageId,
 						alt,
 						size: 96,
 					})

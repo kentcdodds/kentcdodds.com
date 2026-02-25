@@ -238,12 +238,12 @@ async function compileMdxCached({
 			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
 			if (compiledPage) {
 				if (
-					compiledPage.frontmatter.bannerCloudinaryId &&
+					compiledPage.frontmatter.bannerImageId &&
 					!compiledPage.frontmatter.bannerBlurDataUrl
 				) {
 					try {
 						compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
-							compiledPage.frontmatter.bannerCloudinaryId,
+							compiledPage.frontmatter.bannerImageId,
 						)
 					} catch (error: unknown) {
 						console.error(
@@ -284,8 +284,8 @@ async function compileMdxCached({
 	return page
 }
 
-async function getBlurDataUrl(cloudinaryId: string) {
-	const imageURL = buildImageUrl(cloudinaryId, {
+async function getBlurDataUrl(imageId: string) {
+	const imageURL = buildImageUrl(imageId, {
 		transformations: {
 			resize: { width: 100 },
 			quality: 'auto',

@@ -132,10 +132,10 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 						</H6>
 					) : null}
 				</div>
-				{frontmatter.bannerCloudinaryId ? (
+				{frontmatter.bannerImageId ? (
 					<div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
 						<BlurrableImage
-							key={frontmatter.bannerCloudinaryId}
+							key={frontmatter.bannerImageId}
 							blurDataUrl={frontmatter.bannerBlurDataUrl}
 							className="md:aspect-1 aspect-[3/4] md:aspect-[3/2]"
 							img={
@@ -143,7 +143,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 									title={getBannerTitleProp(frontmatter)}
 									{...getImgProps(
 										getImageBuilder(
-											frontmatter.bannerCloudinaryId,
+											frontmatter.bannerImageId,
 											getBannerAltProp(frontmatter),
 										),
 										{

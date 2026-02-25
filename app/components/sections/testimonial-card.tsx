@@ -12,7 +12,7 @@ export function TestimonialCard({
 		<img
 			{...getImgProps(
 				getImageBuilder(
-					testimonial.cloudinaryId,
+					testimonial.imageId,
 					`${testimonial.author} profile`,
 				),
 				{

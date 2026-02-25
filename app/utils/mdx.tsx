@@ -2,7 +2,7 @@ import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { type MetaFunction } from 'react-router'
-import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
+import { MediaVideo } from '#app/components/cloudinary-video.tsx'
 import { MermaidDiagram } from '#app/components/mermaid.tsx'
 import {
 	getImageBuilder,
@@ -76,7 +76,7 @@ const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
 				image: getSocialImageWithPreTitle({
 					url: getDisplayUrl(requestInfo),
 					featuredImage:
-						data.page.frontmatter.bannerCloudinaryId ??
+						data.page.frontmatter.bannerImageId ??
 						'kentcdodds.com/illustrations/kody-flying_blue',
 					title:
 						data.page.frontmatter.socialImageTitle ??
@@ -122,7 +122,7 @@ const mdxComponents = {
 	a: AnchorOrLink,
 	table: MdxTable,
 	Themed,
-	CloudinaryVideo,
+	MediaVideo,
 	MermaidDiagram,
 	ThemedBlogImage,
 	BlogImage,
@@ -170,11 +170,11 @@ function getMdxComponent(code: string) {
 }
 
 function BlogImage({
-	cloudinaryId,
+	imageId,
 	imgProps,
 	transparentBackground,
 }: {
-	cloudinaryId: string
+	imageId: string
 	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
@@ -182,7 +182,7 @@ function BlogImage({
 		<img
 			// @ts-expect-error classname is overridden by getImgProps
 			className="w-full rounded-lg object-cover py-8"
-			{...getImgProps(getImageBuilder(cloudinaryId, imgProps.alt), {
+			{...getImgProps(getImageBuilder(imageId, imgProps.alt), {
 				widths: [350, 550, 700, 845, 1250, 1700, 2550],
 				sizes: [
 					'(max-width:1023px) 80vw',
@@ -199,13 +199,13 @@ function BlogImage({
 }
 
 function ThemedBlogImage({
-	darkCloudinaryId,
-	lightCloudinaryId,
+	darkImageId,
+	lightImageId,
 	imgProps,
 	transparentBackground,
 }: {
-	darkCloudinaryId: string
-	lightCloudinaryId: string
+	darkImageId: string
+	lightImageId: string
 	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
@@ -213,14 +213,14 @@ function ThemedBlogImage({
 		<Themed
 			light={
 				<BlogImage
-					cloudinaryId={lightCloudinaryId}
+					imageId={lightImageId}
 					imgProps={imgProps}
 					transparentBackground={transparentBackground}
 				/>
 			}
 			dark={
 				<BlogImage
-					cloudinaryId={darkCloudinaryId}
+					imageId={darkImageId}
 					imgProps={imgProps}
 					transparentBackground={transparentBackground}
 				/>

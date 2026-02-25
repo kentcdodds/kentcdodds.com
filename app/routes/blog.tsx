@@ -666,9 +666,9 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 							title={data.recommended.frontmatter.title}
 							blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
 							imageBuilder={
-								data.recommended.frontmatter.bannerCloudinaryId
+								data.recommended.frontmatter.bannerImageId
 									? getImageBuilder(
-											data.recommended.frontmatter.bannerCloudinaryId,
+											data.recommended.frontmatter.bannerImageId,
 											getBannerAltProp(data.recommended.frontmatter),
 										)
 									: undefined

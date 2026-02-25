@@ -1,20 +1,20 @@
-type CloudinaryVideoProps = {
+type MediaVideoProps = {
 	className?: string
 	width?: number
 	height?: number
 	aspectRatio?: `${number}:${number}`
 	crop?: 'fit' | 'fill'
-	cloudinaryId: string
+	imageId: string
 }
 
-export function CloudinaryVideo({
+export function MediaVideo({
 	className,
 	width = 1000,
 	height,
 	aspectRatio,
 	crop = 'fill',
-	cloudinaryId,
-}: CloudinaryVideoProps) {
+	imageId,
+}: MediaVideoProps) {
 	const transforms = [
 		`f_auto:video`,
 		`q_auto`,
@@ -31,7 +31,7 @@ export function CloudinaryVideo({
 		<video
 			className={className}
 			autoPlay
-			src={`https://res.cloudinary.com/kentcdodds-com/video/upload/${transforms}/${cloudinaryId}`}
+			src={`https://res.cloudinary.com/kentcdodds-com/video/upload/${transforms}/${imageId}`}
 			muted
 			loop
 			controls={false}
