@@ -15,6 +15,7 @@ env:
   # knob for invalidation.
   SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION }}
   NODE_VERSION: 24
+  BUN_VERSION: 1.3.9
 
 jobs:
   changes:
@@ -33,10 +34,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: 🥟 Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
       - name: 🔎 Determine deployable changes
         id: changes
         run:
-          echo "DEPLOYABLE=$(node ./other/is-deployable.js ${{ github.sha }})"
+          echo "DEPLOYABLE=$(bun ./other/is-deployable.js ${{ github.sha }})"
           >> "$GITHUB_OUTPUT"
 
       - name: ❓ Deployable
@@ -57,11 +63,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: 🥟 Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
+        run: bun install --frozen-lockfile
 
       - name: 🔬 Lint
-        run: npm run lint
+        run: bun run lint
 
   typecheck:
     name: ʦ TypeScript
@@ -77,11 +88,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: 🥟 Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
+        run: bun install --frozen-lockfile
 
       - name: 🔎 Type check
-        run: npm run typecheck
+        run: bun run typecheck
 
   pre-deploy-health-check:
     name: 🏥 Pre-deploy health check
@@ -101,14 +117,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: 🥟 Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
+        run: bun install --frozen-lockfile
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
 
       - name: 🏗 Build (production)
-        run: npm run build
+        run: bun run build
 
       - name: 🏦 Prime Site Cache
         id: site-cache
@@ -121,6 +142,7 @@ jobs:
             site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
             }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
               'package-lock.json',
+              'bun.lock',
               'app/utils/cache.server.ts',
               'app/utils/compile-mdx.server.ts',
               'app/utils/github.server.ts',
@@ -134,14 +156,14 @@ jobs:
 
       - name: 🛠 Setup Database (migrations)
         if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npx prisma migrate deploy
+        run: bunx prisma@7 migrate deploy
 
       - name: 😅 Generate Site Cache
         if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npm run prime-cache:mocks
+        run: bun run prime-cache:mocks
 
       - name: 🩺 Smoke test /healthcheck (production build)
-        run: npm run predeploy:healthcheck
+        run: bun run predeploy:healthcheck
         env:
           MOCKS: 'true'
 
@@ -164,22 +186,25 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: 🥟 Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
       - name: 🎬 Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
 
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
-        with:
-          useLockFile: false
+        run: bun install --frozen-lockfile
 
       - name: 🌐 Install Playwright Browsers
-        run: npm run test:e2e:install
+        run: bun run test:e2e:install
 
       - name: 🛠 Setup Database
-        run: npx prisma migrate reset --force
+        run: bunx prisma@7 migrate reset --force
 
       - name: 🏗 Build
-        run: npm run build
+        run: bun run build
 
       - name: 🏦 Prime Site Cache
         id: site-cache
@@ -192,6 +217,7 @@ jobs:
             site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
             }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
               'package-lock.json',
+              'bun.lock',
               'app/utils/cache.server.ts',
               'app/utils/compile-mdx.server.ts',
               'app/utils/github.server.ts',
@@ -205,10 +231,10 @@ jobs:
 
       - name: 😅 Generate Site Cache
         if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npm run prime-cache:mocks
+        run: bun run prime-cache:mocks
 
       - name: 🎭 Playwright tests
-        run: npx playwright test
+        run: bunx playwright test
         env:
           PORT: 8811
 

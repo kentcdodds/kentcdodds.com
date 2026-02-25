@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "engines": {
     "node": "24",
-    "npm": ">=10"
+    "bun": ">=1.3.9"
   },
+  "packageManager": "bun@1.3.9",
   "imports": {
     "#*": "./*"
   },
@@ -23,36 +24,39 @@
   "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "type": "module",
   "scripts": {
-    "postinstall": "npx prisma@7 generate",
+    "postinstall": "bunx prisma@7 generate",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build",
-    "prebuild": "npm run clean && echo All clean ✨",
+    "prebuild": "bun run clean && echo All clean ✨",
     "build": "run-s build:*",
     "build:router": "vite build --sourcemap && vite build --ssr --sourcemap",
     "build:server": "tsx ./other/build-server.ts",
     "build:info": "tsx ./other/generate-build-info",
-    "dev": "node ./server/dev-server.js",
+    "dev": "bun ./cli.ts",
+    "dev:app": "node ./server/dev-server.js",
+    "dev:worker": "bun ./wrangler-env.ts dev --local",
     "runfile": "tsx ./other/runfile.js",
     "start": "cross-env NODE_ENV=production node ./index.js",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx ./index.js",
     "predeploy:healthcheck": "node ./other/pre-deployment-health-check.js",
     "curl:blog": "curl -I --silent http://localhost:$PORT/blog > /dev/null || true",
-    "prime-cache:prod": "cross-env PORT=4001 npx start-server-and-test start http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
-    "prime-cache:mocks": "cross-env PORT=4001 npx start-server-and-test start:mocks http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
+    "prime-cache:prod": "cross-env PORT=4001 bunx start-server-and-test start http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
+    "prime-cache:mocks": "cross-env PORT=4001 bunx start-server-and-test start:mocks http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
     "test:e2e:dev": "cross-env PORT=3000 playwright test",
-    "pretest:e2e:run": "npm run build",
+    "pretest:e2e:run": "bun run build",
     "test:e2e:run": "cross-env CI=1 PORT=8811 playwright test",
-    "test:e2e:install": "npx playwright install chromium --with-deps",
+    "test:e2e:install": "bunx playwright install chromium --with-deps",
     "test": "run-s test:backend test:browser",
     "test:backend": "vitest --run --config vitest.config.ts",
     "test:backend:watch": "vitest --config vitest.config.ts",
     "test:browser": "vitest --run --config vitest.browser.config.ts",
     "test:browser:watch": "vitest --config vitest.browser.config.ts",
-    "test:watch": "npm run test:backend:watch",
+    "test:watch": "bun run test:backend:watch",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "react-router typegen && tsc -b .",
     "validate": "./other/validate",
-    "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
+    "wrangler": "bun ./wrangler-env.ts",
+    "setup": "bun install && bunx prisma@7 migrate reset --force && bun run validate && bun run prime-cache:mocks && bun run test:e2e:install && bun run test:e2e:run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.995.0",
@@ -217,7 +221,8 @@
     "vite-env-only": "^3.0.3",
     "vite-plugin-cjs-interop": "^2.4.2",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest-browser-react": "^2.0.5"
+    "vitest-browser-react": "^2.0.5",
+    "wrangler": "^4.67.0"
   },
   "prettier": "@epic-web/config/prettier"
 }

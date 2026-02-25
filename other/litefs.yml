@@ -77,7 +77,7 @@ lease:
     key: 'litefs/${FLY_APP_NAME}_8'
 
 exec:
-  - cmd: npx prisma@7 migrate deploy
+  - cmd: bunx prisma@7 migrate deploy
     if-candidate: true
 
   # Set the journal mode for the database to WAL. This reduces concurrency deadlock issues

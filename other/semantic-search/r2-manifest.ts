@@ -27,9 +27,9 @@ function wranglerR2ObjectPath(bucket: string, key: string) {
 	return `${bucket}/${key}`
 }
 
-function getWranglerNpxPackage() {
+function getWranglerBunxPackage() {
 	// Pin by default for reproducibility in GitHub Actions.
-	return process.env.WRANGLER_NPX_PACKAGE ?? 'wrangler@4.66.0'
+	return process.env.WRANGLER_BUNX_PACKAGE ?? 'wrangler@4.67.0'
 }
 
 function getObjectViaWrangler(bucket: string, key: string) {
@@ -40,9 +40,9 @@ function getObjectViaWrangler(bucket: string, key: string) {
 	// Bump the buffer so large JSON manifests can be streamed back via `--pipe`.
 	const maxBufferBytes = 64 * 1024 * 1024
 	return execFileSync(
-		'npx',
+		'bunx',
 		[
-			getWranglerNpxPackage(),
+			getWranglerBunxPackage(),
 			'r2',
 			'object',
 			'get',
@@ -65,9 +65,9 @@ function putObjectViaWrangler(bucket: string, key: string, body: string) {
 	fs.writeFileSync(tmpFile, body, 'utf8')
 	try {
 		execFileSync(
-			'npx',
+			'bunx',
 			[
-				getWranglerNpxPackage(),
+				getWranglerBunxPackage(),
 				'r2',
 				'object',
 				'put',
