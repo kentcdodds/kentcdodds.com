@@ -3,9 +3,10 @@ import { randomBytes } from 'node:crypto'
 import { readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { parse } from 'dotenv'
 
-type ParsedArgs = {
+export type ParsedArgs = {
 	name: string
 	envName: string | null
 	setValues: Array<string>
@@ -40,7 +41,7 @@ async function main() {
 	}
 }
 
-async function collectSecrets(args: ParsedArgs) {
+export async function collectSecrets(args: ParsedArgs) {
 	const secrets: Record<string, string> = {}
 
 	for (const dotenvPath of args.fromDotenv) {
@@ -133,7 +134,7 @@ async function runWranglerSecretBulk({
 	})
 }
 
-function parseArgs(rawArgs: Array<string>): ParsedArgs {
+export function parseArgs(rawArgs: Array<string>): ParsedArgs {
 	const options = new Map<string, Array<string>>()
 	const flags = new Set<string>()
 
@@ -174,7 +175,13 @@ function parseArgs(rawArgs: Array<string>): ParsedArgs {
 	}
 }
 
-main().catch((error: unknown) => {
-	console.error(error)
-	process.exit(1)
-})
+const isExecutedDirectly =
+	process.argv[1] &&
+	path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))
+
+if (isExecutedDirectly) {
+	main().catch((error: unknown) => {
+		console.error(error)
+		process.exit(1)
+	})
+}
