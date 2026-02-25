@@ -51,6 +51,7 @@ Then open `http://localhost:3000`.
 - Discord mock worker at `http://127.0.0.1:8794`
 - Simplecast mock worker at `http://127.0.0.1:8795`
 - Transistor mock worker at `http://127.0.0.1:8796`
+- Twitter mock worker at `http://127.0.0.1:8797`
 
 Each exposes a `__mocks` dashboard for request/state inspection.
 

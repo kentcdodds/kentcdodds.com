@@ -41,6 +41,11 @@ API servers (epicflare-style).
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
+- `mock-servers/twitter/worker.ts`
+  - local dev URL: `http://127.0.0.1:8797`
+  - dashboard: `GET /__mocks`
+  - metadata: `GET /__mocks/meta`
+  - reset state: `POST /__mocks/reset`
 
 ## Local development wiring
 
@@ -53,13 +58,15 @@ API servers (epicflare-style).
   - discord mock worker (`dev:mock-discord`)
   - simplecast mock worker (`dev:mock-simplecast`)
   - transistor mock worker (`dev:mock-transistor`)
+  - twitter mock worker (`dev:mock-twitter`)
 - `KIT_API_BASE_URL` and `VERIFIER_API_BASE_URL` are set to local mock worker
   URLs in this mode. `OAUTH_PROVIDER_BASE_URL` is also pointed at the local
   oauth mock worker. `MAILGUN_API_BASE_URL` is pointed at the local mailgun
   mock worker. `DISCORD_API_BASE_URL` is pointed at the local discord mock
   worker. `SIMPLECAST_API_BASE_URL` is pointed at the local simplecast mock
   worker. `TRANSISTOR_API_BASE_URL` is pointed at the local transistor mock
-  worker.
+  worker. `TWITTER_SYNDICATION_BASE_URL`, `TWITTER_SHORTENER_BASE_URL`, and
+  `TWITTER_OEMBED_BASE_URL` are pointed at the local twitter mock worker.
 
 MSW remains active for integrations that have not yet been migrated to Worker
 mock servers.
