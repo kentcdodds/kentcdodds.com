@@ -91,6 +91,7 @@ reference:
   Changes to content files are auto-detected by the dev server's file watcher.
 - Mdx-remote compilation script:
   - `bun run content:compile-mdx-remote`
+  - `bun run content:compile-mdx-remote:dry-run`
   - generates serialized mdx-remote JSON docs + manifest under
     `other/content/mdx-remote/`.
 

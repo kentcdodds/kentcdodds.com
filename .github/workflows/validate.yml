@@ -82,6 +82,32 @@ jobs:
       - name: 🖼️ Scan media references
         run: bun run media:scan-legacy-references:strict
 
+  mdx-remote-compile:
+    runs-on: ubuntu-latest
+    name: 📚 mdx-remote compile dry-run
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 📚 Compile mdx-remote docs (dry-run)
+        run: bun run content:compile-mdx-remote:dry-run
+
   typecheck:
     runs-on: ubuntu-latest
     name: 🧪 Typecheck
