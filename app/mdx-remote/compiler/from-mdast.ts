@@ -8,6 +8,7 @@ import {
 } from '#app/mdx-remote/compiler/compile.ts'
 import {
 	type MdxRemoteDocument,
+	type MdxRemoteLambdaNode,
 	type MdxRemoteNode,
 	type MdxRemotePropValue,
 	type MdxRemoteRootNode,
@@ -175,10 +176,12 @@ function convertMdastNode(node: MdxNode): MdxRemoteNode | null {
 			return convertMdxJsxElementNode(node)
 		case 'mdxFlowExpression':
 		case 'mdxTextExpression':
-			return {
-				type: 'expression',
-				value: String(node.value ?? ''),
-			}
+			return (
+				convertMdxExpressionNode(node) ?? {
+					type: 'expression',
+					value: String(node.value ?? ''),
+				}
+			)
 		case 'yaml':
 		case 'toml':
 			return null
@@ -253,6 +256,16 @@ function convertMdxJsxAttributes(
 			'type' in attribute.value &&
 			(attribute.value as { type?: string }).type === 'mdxJsxAttributeValueExpression'
 		) {
+			const estreeExpression = getMdxJsxAttributeExpressionNode(
+				attribute.value as MdxNode,
+			)
+			const estreePropValue = estreeExpression
+				? convertEstreeExpressionToPropValue(estreeExpression)
+				: undefined
+			if (typeof estreePropValue !== 'undefined') {
+				props[name] = estreePropValue
+				continue
+			}
 			const expressionValue = String(
 				(attribute.value as { value?: string }).value ?? '',
 			)
@@ -273,6 +286,59 @@ function convertMdxJsxAttributes(
 		props[name] = String(attribute.value)
 	}
 	return props
+}
+
+function getMdxJsxAttributeExpressionNode(attributeValueNode: MdxNode) {
+	const estree = (
+		attributeValueNode.data as { estree?: { body?: Array<EstreeNode> } } | undefined
+	)?.estree
+	const [statement] = estree?.body ?? []
+	const expression = (statement as { expression?: EstreeNode } | undefined)
+		?.expression
+	return expression ?? null
+}
+
+function convertMdxExpressionNode(node: MdxNode): MdxRemoteNode | null {
+	const expressionNode = getEstreeExpressionNode(node)
+	if (!expressionNode || expressionNode.type !== 'ArrowFunctionExpression') {
+		return null
+	}
+	const parameterNode = (expressionNode.params as Array<EstreeNode> | undefined)?.[0]
+	if (!parameterNode || parameterNode.type !== 'Identifier') return null
+	const parameter = String(parameterNode.name ?? '')
+	if (!parameter) return null
+	const body = expressionNode.body as EstreeNode | undefined
+	if (!body) return null
+
+	if (body.type === 'ConditionalExpression') {
+		const test = estreeExpressionToSource(body.test as EstreeNode)
+		const consequent = convertEstreeJsxNodeToRemoteNode(
+			body.consequent as EstreeNode,
+		)
+		const alternate = convertEstreeJsxNodeToRemoteNode(body.alternate as EstreeNode)
+		if (!test || !consequent || !alternate) return null
+		return {
+			type: 'lambda',
+			parameter,
+			body: {
+				kind: 'conditional',
+				test,
+				consequent,
+				alternate,
+			},
+		} satisfies MdxRemoteLambdaNode
+	}
+
+	const lambdaBodyNode = convertEstreeJsxNodeToRemoteNode(body)
+	if (!lambdaBodyNode) return null
+	return {
+		type: 'lambda',
+		parameter,
+		body: {
+			kind: 'node',
+			node: lambdaBodyNode,
+		},
+	} satisfies MdxRemoteLambdaNode
 }
 
 function convertJsxAttributeExpressionToNode(
@@ -318,6 +384,240 @@ function unwrapWrappedExpression(source: string) {
 		result = next
 	}
 	return result
+}
+
+type EstreeNode = {
+	type: string
+	[key: string]: unknown
+}
+
+function getEstreeExpressionNode(node: MdxNode) {
+	const estree = (node.data as { estree?: { body?: Array<EstreeNode> } } | undefined)
+		?.estree
+	const [statement] = estree?.body ?? []
+	const expression = (statement as { expression?: EstreeNode } | undefined)
+		?.expression
+	return expression ?? null
+}
+
+function convertEstreeJsxNodeToRemoteNode(node: EstreeNode): MdxRemoteNode | null {
+	if (node.type === 'JSXFragment') {
+		const children = convertEstreeJsxChildren(
+			(node.children as Array<EstreeNode>) ?? [],
+		)
+		return {
+			type: 'root',
+			children,
+		}
+	}
+	if (node.type !== 'JSXElement') return null
+	const openingElement = node.openingElement as EstreeNode | undefined
+	if (!openingElement || openingElement.type !== 'JSXOpeningElement') return null
+	const name = convertEstreeJsxTagName(openingElement.name as EstreeNode)
+	if (!name) return null
+	const props = convertEstreeJsxAttributes(
+		(openingElement.attributes as Array<EstreeNode>) ?? [],
+	)
+	if (!props) return null
+	const children = convertEstreeJsxChildren(
+		(node.children as Array<EstreeNode>) ?? [],
+	)
+	return {
+		type: 'element',
+		name,
+		...(Object.keys(props).length > 0 ? { props } : {}),
+		...(children.length > 0 ? { children } : {}),
+	}
+}
+
+function convertEstreeJsxTagName(nameNode: EstreeNode | undefined): string | null {
+	if (!nameNode) return null
+	if (nameNode.type === 'JSXIdentifier') {
+		return String(nameNode.name ?? '')
+	}
+	if (nameNode.type === 'JSXMemberExpression') {
+		const objectName = convertEstreeJsxTagName(nameNode.object as EstreeNode)
+		const propertyName = convertEstreeJsxTagName(nameNode.property as EstreeNode)
+		if (!objectName || !propertyName) return null
+		return `${objectName}.${propertyName}`
+	}
+	return null
+}
+
+function convertEstreeJsxAttributes(attributes: Array<EstreeNode>) {
+	const props: Record<string, MdxRemotePropValue> = {}
+	for (const attribute of attributes) {
+		if (attribute.type !== 'JSXAttribute') return null
+		const key = convertEstreeJsxTagName(attribute.name as EstreeNode)
+		if (!key) return null
+		const valueNode = attribute.value as EstreeNode | null | undefined
+		if (!valueNode) {
+			props[key] = true
+			continue
+		}
+		if (valueNode.type === 'Literal') {
+			props[key] = convertLiteralToPropValue(valueNode.value)
+			continue
+		}
+		if (valueNode.type === 'JSXExpressionContainer') {
+			const expression = valueNode.expression as EstreeNode | undefined
+			if (!expression || expression.type === 'JSXEmptyExpression') continue
+			if (expression.type === 'Literal') {
+				props[key] = convertLiteralToPropValue(expression.value)
+				continue
+			}
+			const source = estreeExpressionToSource(expression)
+			if (!source) return null
+			props[key] = {
+				type: 'expression',
+				value: source,
+			}
+			continue
+		}
+		return null
+	}
+	return props
+}
+
+function convertEstreeExpressionToPropValue(
+	expression: EstreeNode,
+): MdxRemotePropValue | undefined {
+	if (expression.type === 'Literal') {
+		return convertLiteralToPropValue(expression.value)
+	}
+	if (expression.type === 'ObjectExpression') {
+		const objectValue: Record<string, MdxRemotePropValue> = {}
+		const properties = (expression.properties as Array<EstreeNode>) ?? []
+		for (const property of properties) {
+			if (property.type !== 'Property') return undefined
+			if ((property.computed as boolean | undefined) === true) return undefined
+			const keyNode = property.key as EstreeNode | undefined
+			let key = ''
+			if (keyNode?.type === 'Identifier') {
+				key = String(keyNode.name ?? '')
+			} else if (keyNode?.type === 'Literal') {
+				key = String(keyNode.value ?? '')
+			}
+			if (!key) return undefined
+			const nestedExpression = property.value as EstreeNode | undefined
+			if (!nestedExpression) return undefined
+			const nestedValue = convertEstreeExpressionToPropValue(nestedExpression)
+			if (typeof nestedValue === 'undefined') return undefined
+			objectValue[key] = nestedValue
+		}
+		return objectValue
+	}
+	if (expression.type === 'ArrayExpression') {
+		const elements = (expression.elements as Array<EstreeNode | null>) ?? []
+		const values: Array<MdxRemotePropValue> = []
+		for (const element of elements) {
+			if (!element) return undefined
+			const nestedValue = convertEstreeExpressionToPropValue(element)
+			if (typeof nestedValue === 'undefined') return undefined
+			values.push(nestedValue)
+		}
+		return values
+	}
+	const jsxNode = convertEstreeJsxNodeToRemoteNode(expression)
+	if (jsxNode) {
+		return {
+			type: 'node',
+			value: jsxNode,
+		}
+	}
+	const source = estreeExpressionToSource(expression)
+	if (!source) return undefined
+	return {
+		type: 'expression',
+		value: source,
+	}
+}
+
+function convertEstreeJsxChildren(children: Array<EstreeNode>) {
+	const nodes: Array<MdxRemoteNode | null> = []
+	for (const child of children) {
+		if (child.type === 'JSXText') {
+			nodes.push({
+				type: 'text',
+				value: String(child.value ?? ''),
+			})
+			continue
+		}
+		if (child.type === 'JSXElement' || child.type === 'JSXFragment') {
+			nodes.push(convertEstreeJsxNodeToRemoteNode(child))
+			continue
+		}
+		if (child.type === 'JSXExpressionContainer') {
+			const expression = child.expression as EstreeNode | undefined
+			if (!expression || expression.type === 'JSXEmptyExpression') continue
+			if (expression.type === 'Literal') {
+				nodes.push({
+					type: 'text',
+					value: String(expression.value ?? ''),
+				})
+				continue
+			}
+			const source = estreeExpressionToSource(expression)
+			if (!source) continue
+			nodes.push({
+				type: 'expression',
+				value: source,
+			})
+		}
+	}
+	return compactNodes(nodes)
+}
+
+function convertLiteralToPropValue(value: unknown): MdxRemotePropValue {
+	if (
+		typeof value === 'string' ||
+		typeof value === 'number' ||
+		typeof value === 'boolean'
+	) {
+		return value
+	}
+	return value === null ? null : String(value)
+}
+
+function estreeExpressionToSource(node: EstreeNode | undefined): string | null {
+	if (!node) return null
+	if (node.type === 'Identifier') {
+		return String(node.name ?? '')
+	}
+	if (node.type === 'Literal') {
+		if (typeof node.value === 'string') return JSON.stringify(node.value)
+		if (
+			typeof node.value === 'number' ||
+			typeof node.value === 'boolean' ||
+			node.value === null
+		) {
+			return String(node.value)
+		}
+		return null
+	}
+	if (node.type === 'MemberExpression') {
+		const objectSource = estreeExpressionToSource(node.object as EstreeNode)
+		if (!objectSource) return null
+		const computed = Boolean(node.computed)
+		if (computed) {
+			const propertySource = estreeExpressionToSource(node.property as EstreeNode)
+			if (!propertySource) return null
+			return `${objectSource}[${propertySource}]`
+		}
+		const property = node.property as { name?: string } | undefined
+		if (!property?.name) return null
+		return `${objectSource}.${property.name}`
+	}
+	if (
+		node.type === 'UnaryExpression' &&
+		typeof node.operator === 'string' &&
+		node.argument
+	) {
+		const argumentSource = estreeExpressionToSource(node.argument as EstreeNode)
+		if (!argumentSource) return null
+		return `${node.operator}${argumentSource}`
+	}
+	return null
 }
 
 function compactNodes(nodes: Array<MdxRemoteNode | null>) {

@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { type ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
 import { test, expect, vi } from 'vitest'
@@ -14,6 +15,16 @@ const { useOptionalUserMock } = vi.hoisted(() => ({
 
 vi.mock('#app/utils/use-root-data.ts', () => ({
 	useOptionalUser: () => useOptionalUserMock(),
+}))
+
+vi.mock('#app/utils/theme.tsx', () => ({
+	Themed: ({
+		light,
+		dark,
+	}: {
+		light?: ReactNode
+		dark?: ReactNode
+	}) => <>{light ?? dark ?? null}</>,
 }))
 
 vi.mock('mdx-bundler/client/index.js', () => ({
@@ -78,6 +89,10 @@ test.each([
 	{
 		contentPath: 'content/pages/uses/index.mdx',
 		expectedText: '<h1>Uses</h1>',
+	},
+	{
+		contentPath: 'content/pages/teams/index.mdx',
+		expectedText: 'can choose between the Red, Yellow, or Blue team.',
 	},
 ])(
 	'renders strict mdx-remote content parity for $contentPath',

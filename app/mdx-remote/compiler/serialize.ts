@@ -60,6 +60,27 @@ function assertMdxRemoteNode(value: unknown): asserts value is MdxRemoteNode {
 		}
 		return
 	}
+	if (node.type === 'lambda') {
+		if (typeof node.parameter !== 'string' || !node.parameter) {
+			throw new Error('Lambda node must have a non-empty parameter')
+		}
+		if (!node.body || typeof node.body !== 'object') {
+			throw new Error('Lambda node body must be an object')
+		}
+		if (node.body.kind === 'node') {
+			assertMdxRemoteNode(node.body.node)
+			return
+		}
+		if (node.body.kind === 'conditional') {
+			if (typeof node.body.test !== 'string') {
+				throw new Error('Lambda conditional body must have test expression')
+			}
+			assertMdxRemoteNode(node.body.consequent)
+			assertMdxRemoteNode(node.body.alternate)
+			return
+		}
+		throw new Error(`Unsupported lambda body kind: ${(node.body as { kind?: string }).kind ?? 'unknown'}`)
+	}
 	if (node.type === 'element') {
 		if (typeof node.name !== 'string' || !node.name) {
 			throw new Error('Element node must have a non-empty name')

@@ -84,3 +84,51 @@ test('converts JSX attribute expressions into node prop values', async () => {
 		},
 	})
 })
+
+test('converts arrow-function expression children into lambda nodes', async () => {
+	const document = await compileMdxRemoteDocumentFromSource({
+		slug: 'lambda-children',
+		source: `<OptionalUser>{(maybeUser) => maybeUser ? <p>Hello {maybeUser.firstName}</p> : <p>Hello visitor</p>}</OptionalUser>`,
+		frontmatter: {
+			title: 'Lambda children',
+		},
+		allowedComponentNames: mdxRemoteComponentAllowlist,
+	})
+
+	expect(document.root.children[0]).toMatchObject({
+		type: 'element',
+		name: 'OptionalUser',
+		children: [
+			{
+				type: 'lambda',
+				parameter: 'maybeUser',
+				body: {
+					kind: 'conditional',
+					test: 'maybeUser',
+				},
+			},
+		],
+	})
+})
+
+test('converts object expression props without runtime parsing', async () => {
+	const document = await compileMdxRemoteDocumentFromSource({
+		slug: 'object-props',
+		source: `<img style={{ aspectRatio: '1/1', opacity: 0.5 }} />`,
+		frontmatter: {
+			title: 'Object props',
+		},
+		allowedComponentNames: mdxRemoteComponentAllowlist,
+	})
+
+	expect(document.root.children[0]).toMatchObject({
+		type: 'element',
+		name: 'img',
+		props: {
+			style: {
+				aspectRatio: '1/1',
+				opacity: 0.5,
+			},
+		},
+	})
+})

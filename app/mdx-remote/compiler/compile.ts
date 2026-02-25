@@ -102,11 +102,28 @@ function assertNodeTreeIsSafe({
 		if (node.type === 'expression' && strictExpressionValidation) {
 			assertExpressionIsSafe(node.value)
 		}
+		if (
+			node.type === 'lambda' &&
+			node.body.kind === 'conditional' &&
+			strictExpressionValidation
+		) {
+			assertExpressionIsSafe(node.body.test)
+		}
 	})
 }
 
 function visitNode(node: MdxRemoteNode, visitor: (node: MdxRemoteNode) => void) {
 	visitor(node)
+	if (node.type === 'lambda') {
+		if (node.body.kind === 'node') {
+			visitNode(node.body.node, visitor)
+		}
+		if (node.body.kind === 'conditional') {
+			visitNode(node.body.consequent, visitor)
+			visitNode(node.body.alternate, visitor)
+		}
+		return
+	}
 	if (node.type === 'root' || node.type === 'element') {
 		for (const child of node.children ?? []) {
 			visitNode(child, visitor)
