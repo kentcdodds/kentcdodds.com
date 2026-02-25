@@ -7,6 +7,7 @@ import {
 } from '#app/utils/github.server.ts'
 import {
 	buildMdxPageFromRemoteDocument,
+	getMdxRemoteDirectoryEntries,
 	getMdxRemoteDocument,
 	shouldUseMdxRemoteDocuments,
 } from '#app/utils/mdx-remote-documents.server.ts'
@@ -97,7 +98,9 @@ export async function getMdxPagesInDirectory(
 	contentDir: string,
 	options: CachifiedOptions,
 ) {
-	const dirList = await getMdxDirList(contentDir, options)
+	const dirList =
+		(await getMdxRemoteDirListCached({ contentDir, options })) ??
+		(await getMdxDirList(contentDir, options))
 	const pages = await Promise.all(
 		dirList.map(async ({ slug }) => {
 			const remotePage = await getMdxRemotePageCached({
@@ -174,6 +177,30 @@ async function getMdxRemotePageCached({
 				slug,
 				document: remoteDocument,
 			})
+		},
+	})
+}
+
+async function getMdxRemoteDirListCached({
+	contentDir,
+	options,
+}: {
+	contentDir: string
+	options: CachifiedOptions
+}) {
+	if (!shouldUseMdxRemoteDocuments()) return null
+	const { forceFresh, ttl = defaultTTL, request, timings } = options
+	return cachified({
+		key: `${contentDir}:dir-list:remote`,
+		cache,
+		request,
+		timings,
+		ttl,
+		staleWhileRevalidate: defaultStaleWhileRevalidate,
+		forceFresh,
+		checkValue: (value: unknown) => Array.isArray(value),
+		getFreshValue: async () => {
+			return getMdxRemoteDirectoryEntries(contentDir)
 		},
 	})
 }

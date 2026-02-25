@@ -6,8 +6,10 @@ import { serializeMdxRemoteDocument } from '#app/mdx-remote/index.ts'
 import { clearRuntimeEnvSource, setRuntimeEnvSource } from '#app/utils/env.server.ts'
 import {
 	buildMdxPageFromRemoteDocument,
+	getMdxRemoteDirectoryEntries,
 	getMdxRemoteDocument,
 	getMdxRemoteDocumentKey,
+	getMdxRemoteManifest,
 	shouldUseMdxRemoteDocuments,
 } from '#app/utils/mdx-remote-documents.server.ts'
 import {
@@ -171,6 +173,38 @@ test('getMdxRemoteDocument falls back to local artifact files in mocks mode', as
 		})
 		expect(result?.slug).toBe('local-artifact')
 	} finally {
+		clearRuntimeEnvSource()
+	}
+})
+
+test('getMdxRemoteManifest loads entries from runtime bindings', async () => {
+	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
+	setRuntimeBindingSource({
+		MDX_REMOTE_KV: {
+			get: vi.fn(async (key: string) => {
+				if (key !== 'manifest.json') return null
+				return JSON.stringify({
+					entries: [
+						{ collection: 'blog', slug: 'first-post' },
+						{ collection: 'pages', slug: 'uses' },
+					],
+				})
+			}),
+		},
+	})
+
+	try {
+		const manifest = await getMdxRemoteManifest()
+		expect(manifest).toEqual({
+			entries: [
+				{ collection: 'blog', slug: 'first-post' },
+				{ collection: 'pages', slug: 'uses' },
+			],
+		})
+		const blogEntries = await getMdxRemoteDirectoryEntries('blog')
+		expect(blogEntries).toEqual([{ name: 'first-post', slug: 'first-post' }])
+	} finally {
+		clearRuntimeBindingSource()
 		clearRuntimeEnvSource()
 	}
 })
