@@ -68,6 +68,15 @@ async function renderRemoteMdxFromContentPath(contentPath: string) {
 	}
 }
 
+async function getContentPagePaths() {
+	const pagesDirectory = path.resolve(process.cwd(), 'content/pages')
+	const entries = await fs.readdir(pagesDirectory, { withFileTypes: true })
+	return entries
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => `content/pages/${entry.name}/index.mdx`)
+		.sort()
+}
+
 test.each([
 	{
 		contentPath: 'content/blog/fix-the-not-wrapped-in-act-warning/index.mdx',
@@ -102,3 +111,19 @@ test.each([
 		expect(markup).not.toContain('Unknown MDX runtime component')
 	},
 )
+
+test('renders all page mdx documents in strict mdx-remote mode', async () => {
+	const pagePaths = await getContentPagePaths()
+	for (const contentPath of pagePaths) {
+		let markup = ''
+		try {
+			markup = await renderRemoteMdxFromContentPath(contentPath)
+		} catch (error: unknown) {
+			throw new Error(
+				`Failed to render ${contentPath}: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+		expect(markup.length).toBeGreaterThan(50)
+		expect(markup).not.toContain('Unknown MDX runtime component')
+	}
+})
