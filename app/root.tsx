@@ -19,7 +19,6 @@ import {
 } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
-import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
 import {
 	useCapturedRouteError,
 	getDisplayUrl,
@@ -123,13 +122,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 		user,
 		clientSession,
 		loginInfoSession,
-		primaryInstance,
 		latestPodcastSeasonLinks,
 	] = await Promise.all([
 		session.getUser({ timings }),
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
-		getInstanceInfo().then((i) => i.primaryInstance),
 		getLatestPodcastSeasonLinks({ request, timings }).catch(() => ({
 			chats: { latestSeasonNumber: null, latestSeasonPath: '/chats' },
 			calls: { latestSeasonNumber: null, latestSeasonPath: '/calls' },
@@ -151,7 +148,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 			hints: getHints(request),
 			origin: getDomainUrl(request),
 			path: new URL(request.url).pathname,
-			flyPrimaryInstance: primaryInstance,
 			userPrefs: {
 				theme: getTheme(request),
 			},
