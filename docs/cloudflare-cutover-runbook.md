@@ -1,7 +1,7 @@
 # Cloudflare cutover runbook
 
-This runbook documents the production cutover sequence from Fly.io to
-Cloudflare Workers.
+This runbook documents the production cutover sequence from the legacy hosting
+platform to Cloudflare Workers.
 
 ## Preconditions
 
@@ -15,7 +15,7 @@ Cloudflare Workers.
 
 ## Data migration checklist
 
-1. **Export source data** from the current production SQLite/LiteFS state.
+1. **Export source data** from the current production state.
 2. **Import into D1 target** (or run migration bootstraps for net-new env).
 3. **Row-count parity check** for critical tables (`User`, `Session`, `PostRead`,
    call-kent draft/episode tables).
@@ -26,7 +26,7 @@ Cloudflare Workers.
 
 ## Cutover sequence
 
-1. Enable temporary **write freeze window** on Fly production app.
+1. Enable temporary **write freeze window** on the legacy production app.
 2. Run final source export/import + parity checks.
 3. Deploy Cloudflare production worker via `deploy.yml`.
 4. Run post-deploy healthcheck (`/health`) and targeted endpoint smoke checks.
@@ -59,7 +59,7 @@ Apply/verify the following before traffic cutover:
 
 If post-cutover smoke checks fail:
 
-1. Re-enable Fly traffic routing.
+1. Re-enable legacy platform traffic routing.
 2. Disable Cloudflare write paths (or maintenance mode) to prevent divergence.
 3. Capture incident timestamp and failed endpoint list.
 4. Investigate/fix in preview, then re-run cutover sequence.
