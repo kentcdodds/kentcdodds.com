@@ -18,7 +18,7 @@ reference:
 
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
-| Dev server      | `bun run dev` (starts app + worker mock stack; app runs on port 3000)              |
+| Dev server      | `bun run dev` (starts app + worker mock stack + mdx-remote content watcher; app runs on port 3000) |
 | Lint            | `bun run lint`                                                                    |
 | Typecheck       | `bun run typecheck`                                                               |
 | Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
