@@ -114,7 +114,8 @@ API servers (epicflare-style).
   mermaid-to-svg mock worker. `CLOUDFLARE_API_BASE_URL` and
   `CLOUDFLARE_AI_GATEWAY_BASE_URL` are pointed at the local cloudflare mock
   worker, and `R2_ENDPOINT` is pointed at the local cloudflare-r2 mock worker.
-  `MEDIA_BASE_URL` is pointed at the local media-image mock worker.
+  `MEDIA_BASE_URL` and `MEDIA_STREAM_BASE_URL` are pointed at the local
+  media-image mock worker.
 
 MSW remains active for integrations that have not yet been migrated to Worker
 mock servers.
