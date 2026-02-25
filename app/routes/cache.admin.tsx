@@ -35,6 +35,21 @@ import {
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/cache.admin'
 
+const deleteAllMatchingIntent = 'delete-all-matching-cache-values'
+
+async function getMatchingCacheKeys({
+	query,
+	limit,
+}: {
+	query: string | null
+	limit: number
+}) {
+	if (typeof query === 'string') {
+		return searchCacheKeys(query, limit)
+	}
+	return getAllCacheKeys(limit)
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 	const searchParams = new URL(request.url).searchParams
@@ -47,27 +62,38 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const instances = await getAllInstances()
 	await ensureInstance(instance)
 
-	let cacheKeys: { sqlite: Array<string>; lru: Array<string> }
-	if (typeof query === 'string') {
-		cacheKeys = await searchCacheKeys(query, limit)
-	} else {
-		cacheKeys = await getAllCacheKeys(limit)
-	}
+	const cacheKeys = await getMatchingCacheKeys({ query, limit })
 	return json({ cacheKeys, instance, instances, currentInstanceInfo })
 }
 
 export async function action({ request }: Route.ActionArgs) {
 	await requireAdminUser(request)
+	const searchParams = new URL(request.url).searchParams
 	const formData = await request.formData()
-	const key = formData.get('cacheKey')
 	const { currentInstance } = await getInstanceInfo()
 	const instance = formData.get('instance') ?? currentInstance
+	invariantResponse(typeof instance === 'string', 'instance must be a string')
+	await ensureInstance(instance)
+
+	const intent = formData.get('intent')
+	if (intent === deleteAllMatchingIntent) {
+		const query = searchParams.get('query')
+		const limit = Number(searchParams.get('limit') ?? 100)
+		const { sqlite, lru } = await getMatchingCacheKeys({ query, limit })
+		for (const cacheKey of sqlite) {
+			await cache.delete(cacheKey)
+		}
+		for (const cacheKey of lru) {
+			lruCache.delete(cacheKey)
+		}
+		return json({ success: true })
+	}
+
+	const key = formData.get('cacheKey')
 	const type = formData.get('type')
 
 	invariantResponse(typeof key === 'string', 'cacheKey must be a string')
 	invariantResponse(typeof type === 'string', 'type must be a string')
-	invariantResponse(typeof instance === 'string', 'instance must be a string')
-	await ensureInstance(instance)
 
 	switch (type) {
 		case 'sqlite': {
@@ -93,6 +119,8 @@ export default function CacheAdminRoute({
 	const query = searchParams.get('query') ?? ''
 	const limit = searchParams.get('limit') ?? '100'
 	const instance = searchParams.get('instance') ?? data.instance
+	const matchingCacheValuesCount =
+		data.cacheKeys.sqlite.length + data.cacheKeys.lru.length
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
 		void submit(form)
@@ -170,6 +198,11 @@ export default function CacheAdminRoute({
 				</div>
 			</Form>
 			<Spacer size="2xs" />
+			<DeleteAllMatchingCacheValuesButton
+				instance={instance}
+				matchingCacheValuesCount={matchingCacheValuesCount}
+			/>
+			<Spacer size="2xs" />
 			<div className="flex flex-col gap-4">
 				<H3>LRU Cache:</H3>
 				{data.cacheKeys.lru.map((key) => (
@@ -194,6 +227,37 @@ export default function CacheAdminRoute({
 				))}
 			</div>
 		</div>
+	)
+}
+
+function DeleteAllMatchingCacheValuesButton({
+	instance,
+	matchingCacheValuesCount,
+}: {
+	instance: string
+	matchingCacheValuesCount: number
+}) {
+	const fetcher = useFetcher()
+	const dc = useDoubleCheck()
+	const isDeleting = fetcher.state !== 'idle'
+
+	return (
+		<fetcher.Form method="POST">
+			<input type="hidden" name="intent" value={deleteAllMatchingIntent} />
+			<input type="hidden" name="instance" value={instance} />
+			<Button
+				size="small"
+				variant="danger"
+				disabled={isDeleting || matchingCacheValuesCount === 0}
+				{...dc.getButtonProps({ type: 'submit' })}
+			>
+				{isDeleting
+					? `deleting ${matchingCacheValuesCount} matching cache values...`
+					: dc.doubleCheck
+						? `you sure? delete all ${matchingCacheValuesCount} matching cache values`
+						: `delete all ${matchingCacheValuesCount} matching cache values`}
+			</Button>
+		</fetcher.Form>
 	)
 }
 
