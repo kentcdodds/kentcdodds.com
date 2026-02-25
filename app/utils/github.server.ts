@@ -168,7 +168,7 @@ async function downloadMdxFileOrDirectory(
 			(item) => item.type === 'dir' && item.name === mdxFileWithoutExt,
 		)
 		if (exactDir) {
-			entry = exactDir.path
+			entry = safePath(nodePath.join(exactDir.path, 'index.mdx'))
 			files = await downloadDirectory(exactDir.path)
 		}
 	}
