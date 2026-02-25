@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, test } from 'vitest'
-import { getImageBuilder } from '#app/images.tsx'
+import {
+	getGenericSocialImage,
+	getImageBuilder,
+	getSocialImageWithPreTitle,
+} from '#app/images.tsx'
 
 const originalEnv = globalThis.ENV
 
@@ -29,5 +33,36 @@ describe('media image url generation', () => {
 		const url = builder()
 		expect(url.startsWith('http://127.0.0.1:8803/')).toBe(true)
 		expect(url).toContain('/images/')
+	})
+
+	test('generic social images use media social endpoint', () => {
+		globalThis.ENV = {
+			...(originalEnv ?? {}),
+			MEDIA_BASE_URL: 'http://127.0.0.1:8803',
+		}
+		const url = getGenericSocialImage({
+			words: 'Hello world',
+			featuredImage: 'kent/profile',
+			url: 'kentcdodds.com/blog',
+		})
+		expect(url.startsWith('http://127.0.0.1:8803/social/generic.png')).toBe(
+			true,
+		)
+	})
+
+	test('pre-title social images use media social endpoint', () => {
+		globalThis.ENV = {
+			...(originalEnv ?? {}),
+			MEDIA_BASE_URL: 'http://127.0.0.1:8803',
+		}
+		const url = getSocialImageWithPreTitle({
+			title: 'A title',
+			preTitle: 'A pre-title',
+			featuredImage: 'kent/profile',
+			url: 'kentcdodds.com/blog/my-post',
+		})
+		expect(
+			url.startsWith('http://127.0.0.1:8803/social/pre-title.png'),
+		).toBe(true)
 	})
 })

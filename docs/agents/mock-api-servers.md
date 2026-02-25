@@ -81,6 +81,7 @@ development and tests.
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
   - image endpoints: `/images/*`
+  - social image endpoints: `/social/*`
   - call artwork endpoint: `/artwork/call-kent.png`
 
 ## Local development wiring
