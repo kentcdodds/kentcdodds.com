@@ -24,6 +24,15 @@ type MdxRemoteDocumentLookupOptions = {
 	slug: string
 }
 
+type MdxRemoteManifestEntry = {
+	collection: MdxRemoteCollection
+	slug: string
+}
+
+type MdxRemoteManifest = {
+	entries: Array<MdxRemoteManifestEntry>
+}
+
 function shouldUseMdxRemoteDocuments() {
 	return getEnv().ENABLE_MDX_REMOTE === 'true'
 }
@@ -53,11 +62,7 @@ async function getMdxRemoteDocument({
 	const documentKey = getMdxRemoteDocumentKey({ contentDir, slug })
 	if (!documentKey) return null
 
-	const source =
-		(await getMdxRemoteDocumentSourceFromBinding(documentKey)) ??
-		(await getMdxRemoteDocumentSourceFromR2Binding(documentKey)) ??
-		(await getMdxRemoteDocumentSourceFromBaseUrl(documentKey)) ??
-		(await getMdxRemoteDocumentSourceFromLocalArtifacts(documentKey))
+	const source = await getMdxRemoteArtifactSource(documentKey)
 	if (!source) return null
 
 	try {
@@ -68,54 +73,110 @@ async function getMdxRemoteDocument({
 	}
 }
 
-async function getMdxRemoteDocumentSourceFromBinding(documentKey: string) {
+async function getMdxRemoteArtifactSource(artifactKey: string) {
+	return (
+		(await getMdxRemoteDocumentSourceFromBinding(artifactKey)) ??
+		(await getMdxRemoteDocumentSourceFromR2Binding(artifactKey)) ??
+		(await getMdxRemoteDocumentSourceFromBaseUrl(artifactKey)) ??
+		(await getMdxRemoteDocumentSourceFromLocalArtifacts(artifactKey))
+	)
+}
+
+async function getMdxRemoteManifest() {
+	if (!shouldUseMdxRemoteDocuments()) return null
+	const source = await getMdxRemoteArtifactSource('manifest.json')
+	if (!source) return null
+	try {
+		const parsed = JSON.parse(source) as {
+			entries?: Array<{ collection?: string; slug?: string }>
+		}
+		const entries = (parsed.entries ?? [])
+			.filter(
+				(entry): entry is { collection: string; slug: string } =>
+					typeof entry?.collection === 'string' &&
+					typeof entry?.slug === 'string' &&
+					entry.slug.length > 0,
+			)
+			.filter(
+				(entry): entry is MdxRemoteManifestEntry =>
+					entry.collection === 'blog' ||
+					entry.collection === 'pages' ||
+					entry.collection === 'writing-blog',
+			)
+			.map((entry) => ({
+				collection: entry.collection,
+				slug: entry.slug,
+			}))
+		return { entries } satisfies MdxRemoteManifest
+	} catch (error: unknown) {
+		console.warn('Unable to parse mdx-remote manifest', error)
+		return null
+	}
+}
+
+async function getMdxRemoteDirectoryEntries(contentDir: string) {
+	const collection = getMdxRemoteCollection(contentDir)
+	if (!collection) return null
+	const manifest = await getMdxRemoteManifest()
+	if (!manifest) return null
+	const uniqueSlugs = Array.from(
+		new Set(
+			manifest.entries
+				.filter((entry) => entry.collection === collection)
+				.map((entry) => entry.slug),
+		),
+	)
+	return uniqueSlugs.map((slug) => ({ name: slug, slug }))
+}
+
+async function getMdxRemoteDocumentSourceFromBinding(artifactKey: string) {
 	const kvBinding = getRuntimeBinding<KvNamespaceLike>('MDX_REMOTE_KV')
 	if (!kvBinding) return null
 	try {
-		return await kvBinding.get(documentKey, 'text')
+		return await kvBinding.get(artifactKey, 'text')
 	} catch (error: unknown) {
 		console.warn(
-			`Unable to read mdx-remote document "${documentKey}" from KV binding`,
+			`Unable to read mdx-remote artifact "${artifactKey}" from KV binding`,
 			error,
 		)
 		return null
 	}
 }
 
-async function getMdxRemoteDocumentSourceFromR2Binding(documentKey: string) {
+async function getMdxRemoteDocumentSourceFromR2Binding(artifactKey: string) {
 	const r2Binding = getRuntimeBinding<R2BucketLike>('MDX_REMOTE_R2')
 	if (!r2Binding) return null
 	try {
-		const object = await r2Binding.get(documentKey)
+		const object = await r2Binding.get(artifactKey)
 		if (!object) return null
 		return object.text()
 	} catch (error: unknown) {
 		console.warn(
-			`Unable to read mdx-remote document "${documentKey}" from R2 binding`,
+			`Unable to read mdx-remote artifact "${artifactKey}" from R2 binding`,
 			error,
 		)
 		return null
 	}
 }
 
-async function getMdxRemoteDocumentSourceFromBaseUrl(documentKey: string) {
+async function getMdxRemoteDocumentSourceFromBaseUrl(artifactKey: string) {
 	const baseUrl = getEnv().MDX_REMOTE_BASE_URL
 	if (!baseUrl) return null
 	try {
-		const remoteUrl = new URL(documentKey, `${baseUrl.replace(/\/+$/, '')}/`)
+		const remoteUrl = new URL(artifactKey, `${baseUrl.replace(/\/+$/, '')}/`)
 		const response = await fetch(remoteUrl)
 		if (!response.ok) return null
 		return response.text()
 	} catch (error: unknown) {
 		console.warn(
-			`Unable to fetch mdx-remote document "${documentKey}" from base URL`,
+			`Unable to fetch mdx-remote artifact "${artifactKey}" from base URL`,
 			error,
 		)
 		return null
 	}
 }
 
-async function getMdxRemoteDocumentSourceFromLocalArtifacts(documentKey: string) {
+async function getMdxRemoteDocumentSourceFromLocalArtifacts(artifactKey: string) {
 	const env = getEnv()
 	if (!env.MOCKS) return null
 	try {
@@ -124,7 +185,7 @@ async function getMdxRemoteDocumentSourceFromLocalArtifacts(documentKey: string)
 		const artifactPath = path.resolve(
 			process.cwd(),
 			env.MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY,
-			documentKey,
+			artifactKey,
 		)
 		return await fs.readFile(artifactPath, 'utf8')
 	} catch {
@@ -154,7 +215,9 @@ function buildMdxPageFromRemoteDocument({
 
 export {
 	buildMdxPageFromRemoteDocument,
+	getMdxRemoteDirectoryEntries,
 	getMdxRemoteDocument,
 	getMdxRemoteDocumentKey,
+	getMdxRemoteManifest,
 	shouldUseMdxRemoteDocuments,
 }

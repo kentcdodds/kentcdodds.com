@@ -15,7 +15,7 @@ const compileMdxMocks = vi.hoisted(() => ({
 
 vi.mock('#app/utils/compile-mdx.server.ts', () => compileMdxMocks)
 
-import { getMdxPage } from '#app/utils/mdx.server.ts'
+import { getMdxPage, getMdxPagesInDirectory } from '#app/utils/mdx.server.ts'
 import {
 	clearRuntimeBindingSource,
 	setRuntimeBindingSource,
@@ -94,6 +94,50 @@ test('getMdxPage falls back to github + compile path when mdx-remote missing', a
 		expect(page?.frontmatter.title).toBe('Fallback path')
 		expect(githubMocks.downloadMdxFileOrDirectory).toHaveBeenCalledTimes(1)
 		expect(compileMdxMocks.compileMdx).toHaveBeenCalledTimes(1)
+	} finally {
+		clearRuntimeBindingSource()
+		clearRuntimeEnvSource()
+	}
+})
+
+test('getMdxPagesInDirectory uses mdx-remote manifest and skips github listing', async () => {
+	const firstSlug = `first-${crypto.randomUUID()}`
+	const secondSlug = `second-${crypto.randomUUID()}`
+	compileMdxMocks.compileMdx.mockReset()
+	githubMocks.downloadDirList.mockReset()
+	githubMocks.downloadMdxFileOrDirectory.mockReset()
+	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
+	setRuntimeBindingSource({
+		MDX_REMOTE_KV: {
+			get: vi.fn(async (key: string) => {
+				if (key === 'manifest.json') {
+					return JSON.stringify({
+						entries: [
+							{ collection: 'blog', slug: firstSlug },
+							{ collection: 'blog', slug: secondSlug },
+						],
+					})
+				}
+				if (key === `blog/${firstSlug}.json`) {
+					return serializeMdxRemoteDocument(createRemoteDocument(firstSlug))
+				}
+				if (key === `blog/${secondSlug}.json`) {
+					return serializeMdxRemoteDocument(createRemoteDocument(secondSlug))
+				}
+				return null
+			}),
+		},
+	})
+
+	try {
+		const pages = await getMdxPagesInDirectory('blog', { forceFresh: true })
+		expect(pages.map((page) => page.slug)).toEqual([firstSlug, secondSlug])
+		expect(
+			pages.every((page) => page.remoteDocument && page.code === ''),
+		).toBe(true)
+		expect(githubMocks.downloadDirList).not.toHaveBeenCalled()
+		expect(githubMocks.downloadMdxFileOrDirectory).not.toHaveBeenCalled()
+		expect(compileMdxMocks.compileMdx).not.toHaveBeenCalled()
 	} finally {
 		clearRuntimeBindingSource()
 		clearRuntimeEnvSource()
