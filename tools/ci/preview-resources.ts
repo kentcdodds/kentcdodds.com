@@ -114,6 +114,56 @@ function runWrangler(
 	return { status, stdout, stderr }
 }
 
+function runWranglerWithRetry(
+	args: Array<string>,
+	options?: {
+		input?: string
+		quiet?: boolean
+		maxAttempts?: number
+	},
+) {
+	const maxAttempts = Math.max(1, options?.maxAttempts ?? 4)
+	let lastResult: ReturnType<typeof runWrangler> | null = null
+	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+		const result = runWrangler(args, options)
+		lastResult = result
+		if (result.status === 0) return result
+
+		if (attempt >= maxAttempts) break
+
+		const output = `${result.stdout}${result.stderr}`
+		if (!isRetryableWranglerFailure(output)) break
+		console.error(
+			`wrangler command failed (attempt ${attempt}/${maxAttempts}), retrying...`,
+		)
+	}
+	return (
+		lastResult ?? {
+			status: 1,
+			stdout: '',
+			stderr: '',
+		}
+	)
+}
+
+function isRetryableWranglerFailure(output: string) {
+	const lower = output.toLowerCase()
+	return (
+		lower.includes('timed out') ||
+		lower.includes('timeout') ||
+		lower.includes('temporarily unavailable') ||
+		lower.includes('internal error') ||
+		lower.includes('econnreset') ||
+		lower.includes('etimedout') ||
+		lower.includes('fetch failed') ||
+		lower.includes('network error') ||
+		lower.includes('connection reset') ||
+		lower.includes('429') ||
+		lower.includes('rate limit') ||
+		lower.includes('5xx')
+	)
+}
+
 function buildPreviewResourceNames(workerName: string) {
 	const maxLen = 63
 	const d1Suffix = '-db'
@@ -131,7 +181,9 @@ function truncateWithSuffix(base: string, suffix: string, maxLen: number) {
 }
 
 function listD1Databases() {
-	const result = runWrangler(['d1', 'list', '--json'], { quiet: true })
+	const result = runWranglerWithRetry(['d1', 'list', '--json'], {
+		quiet: true,
+	})
 	if (result.status !== 0) {
 		fail('Failed to list D1 databases (wrangler d1 list --json).')
 	}
@@ -160,7 +212,7 @@ function ensureD1Database({
 		return { name, id: existing.uuid }
 	}
 
-	const createResult = runWrangler(['d1', 'create', name], {
+	const createResult = runWranglerWithRetry(['d1', 'create', name], {
 		input: 'n\n',
 		quiet: true,
 	})
@@ -185,9 +237,12 @@ function deleteD1Database({ name, dryRun }: { name: string; dryRun: boolean }) {
 		console.error(`D1 database already deleted: ${name}`)
 		return
 	}
-	const result = runWrangler(['d1', 'delete', name, '--skip-confirmation'], {
-		quiet: true,
-	})
+	const result = runWranglerWithRetry(
+		['d1', 'delete', name, '--skip-confirmation'],
+		{
+			quiet: true,
+		},
+	)
 	if (result.status !== 0) {
 		fail(`Failed to delete D1 database: ${name}`)
 	}
@@ -195,7 +250,9 @@ function deleteD1Database({ name, dryRun }: { name: string; dryRun: boolean }) {
 }
 
 function listKvNamespaces() {
-	const result = runWrangler(['kv', 'namespace', 'list'], { quiet: true })
+	const result = runWranglerWithRetry(['kv', 'namespace', 'list'], {
+		quiet: true,
+	})
 	if (result.status !== 0) {
 		fail('Failed to list KV namespaces.')
 	}
@@ -222,10 +279,13 @@ function ensureKvNamespace({
 		console.error(`KV namespace exists: ${title} (${existing.id})`)
 		return { title, id: existing.id }
 	}
-	const createResult = runWrangler(['kv', 'namespace', 'create', title], {
-		input: 'n\n',
-		quiet: true,
-	})
+	const createResult = runWranglerWithRetry(
+		['kv', 'namespace', 'create', title],
+		{
+			input: 'n\n',
+			quiet: true,
+		},
+	)
 	if (createResult.status !== 0) {
 		fail(`Failed to create KV namespace: ${title}`)
 	}
@@ -253,7 +313,7 @@ function deleteKvNamespace({
 		console.error(`KV namespace already deleted: ${title}`)
 		return
 	}
-	const result = runWrangler(
+	const result = runWranglerWithRetry(
 		[
 			'kv',
 			'namespace',
