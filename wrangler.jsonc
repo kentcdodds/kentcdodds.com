@@ -7,24 +7,62 @@
 	"triggers": {
 		"crons": ["0 * * * *"]
 	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "MCP_OBJECT",
+				"class_name": "McpDurableObject"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1-mcp-durable-object",
+			"new_classes": ["McpDurableObject"]
+		}
+	],
 	"vars": {
 		"APP_ENV": "production"
 	},
 	"env": {
 		"development": {
 			"name": "kentcdodds-com-development",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
 			"vars": {
 				"APP_ENV": "development"
 			}
 		},
 		"preview": {
 			"name": "kentcdodds-com-preview",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
 			"vars": {
 				"APP_ENV": "preview"
 			}
 		},
 		"test": {
 			"name": "kentcdodds-com-test",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
 			"vars": {
 				"APP_ENV": "test"
 			}

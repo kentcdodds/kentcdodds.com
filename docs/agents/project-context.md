@@ -64,6 +64,8 @@ reference:
     app falls back to the SQLite cache file at `other/cache.db`.
   - Add `SITE_CACHE_KV` in Wrangler env config per environment before relying on
     KV-backed shared cache behavior.
+- MCP Worker routing expects a Durable Object binding named `MCP_OBJECT`
+  (`McpDurableObject` class in `worker/mcp-durable-object.ts`).
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 
