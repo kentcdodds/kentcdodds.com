@@ -1,9 +1,5 @@
+import { runExpiredDataCleanup } from '#app/utils/expired-data-cleanup.server.ts'
 import { getEnv } from '../app/utils/env.server.ts'
-import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
-import {
-	deleteExpiredSessions,
-	deleteExpiredVerifications,
-} from '../app/utils/prisma.server.ts'
 
 type CleanupController = {
 	stop: () => Promise<void>
@@ -56,21 +52,7 @@ export function scheduleExpiredDataCleanup({
 		if (stopped) return
 		runningPromise = (async () => {
 			try {
-				const { currentIsPrimary, currentInstance, primaryInstance } =
-					await getInstanceInfo()
-				if (!currentIsPrimary) return
-
-				const deletedSessionsCount = await deleteExpiredSessions()
-				const deletedVerificationsCount = await deleteExpiredVerifications()
-				if (deletedSessionsCount > 0 || deletedVerificationsCount > 0) {
-					console.info(
-						`expired-data-cleanup: deleted ${deletedSessionsCount} expired sessions and ${deletedVerificationsCount} expired verifications (${reason})`,
-						{
-							currentInstance,
-							primaryInstance,
-						},
-					)
-				}
+				await runExpiredDataCleanup({ reason })
 			} catch (error: unknown) {
 				console.error(`expired-data-cleanup: failed (${reason})`, error)
 			} finally {

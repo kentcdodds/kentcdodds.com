@@ -4,6 +4,9 @@
 	"main": "worker/index.ts",
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
+	"triggers": {
+		"crons": ["0 * * * *"]
+	},
 	"vars": {
 		"APP_ENV": "production"
 	},
