@@ -1,6 +1,3 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
 import {
 	type Cache,
 	cachified as baseCachified,
@@ -17,35 +14,6 @@ import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 import { isUserAdmin } from './authorization.server.ts'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
-
-const cacheDb = remember('cacheDb', createDatabase)
-
-function createDatabase(tryAgain = true): DatabaseSync {
-	const cacheDatabasePath = getEnv().CACHE_DATABASE_PATH
-	const parentDir = path.dirname(cacheDatabasePath)
-	fs.mkdirSync(parentDir, { recursive: true })
-	const db = new DatabaseSync(cacheDatabasePath)
-	try {
-		// create cache table with metadata JSON column and value JSON column if it does not exist already
-		db.exec(`
-      CREATE TABLE IF NOT EXISTS cache (
-        key TEXT PRIMARY KEY,
-        metadata TEXT,
-        value TEXT
-      )
-    `)
-	} catch (error: unknown) {
-		fs.unlinkSync(cacheDatabasePath)
-		if (tryAgain) {
-			console.error(
-				`Error creating cache database, deleting the file at "${cacheDatabasePath}" and trying again...`,
-			)
-			return createDatabase(false)
-		}
-		throw error
-	}
-	return db
-}
 
 const lruInstance = remember(
 	'lru-cache',
@@ -93,13 +61,116 @@ function bufferReviver(_key: string, value: unknown) {
 	return value
 }
 
-const preparedGet = cacheDb.prepare(
-	'SELECT value, metadata FROM cache WHERE key = ?',
+type SharedCacheStore = {
+	get: (key: string) => CacheEntry<unknown> | null
+	set: (key: string, entry: CacheEntry<unknown>) => void
+	delete: (key: string) => void
+	getAllKeys: (limit: number) => Array<string>
+	searchKeys: (search: string, limit: number) => Array<string>
+}
+
+const memorySharedStore = remember(
+	'memory-shared-cache',
+	() => new Map<string, CacheEntry<unknown>>(),
 )
-const preparedSet = cacheDb.prepare(
-	'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (?, ?, ?)',
-)
-const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
+
+function getMemorySharedStore(): SharedCacheStore {
+	return {
+		get(key) {
+			return memorySharedStore.get(key) ?? null
+		},
+		set(key, entry) {
+			memorySharedStore.set(key, entry)
+		},
+		delete(key) {
+			memorySharedStore.delete(key)
+		},
+		getAllKeys(limit) {
+			return [...memorySharedStore.keys()].slice(0, limit)
+		},
+		searchKeys(search, limit) {
+			return [...memorySharedStore.keys()]
+				.filter((key) => key.includes(search))
+				.slice(0, limit)
+		},
+	}
+}
+
+let sharedCacheStorePromise: Promise<SharedCacheStore> | null = null
+
+async function createSqliteSharedStore(): Promise<SharedCacheStore> {
+	const [fs, path, sqlite] = await Promise.all([
+		import('node:fs'),
+		import('node:path'),
+		import('node:sqlite'),
+	])
+	const cacheDatabasePath = getEnv().CACHE_DATABASE_PATH
+	const parentDir = path.dirname(cacheDatabasePath)
+	fs.mkdirSync(parentDir, { recursive: true })
+
+	const db = new sqlite.DatabaseSync(cacheDatabasePath)
+	db.exec(`
+    CREATE TABLE IF NOT EXISTS cache (
+      key TEXT PRIMARY KEY,
+      metadata TEXT,
+      value TEXT
+    )
+  `)
+
+	const preparedGet = db.prepare('SELECT value, metadata FROM cache WHERE key = ?')
+	const preparedSet = db.prepare(
+		'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (?, ?, ?)',
+	)
+	const preparedDelete = db.prepare('DELETE FROM cache WHERE key = ?')
+	const preparedAllKeys = db.prepare('SELECT key FROM cache LIMIT ?')
+	const preparedKeySearch = db.prepare(
+		'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
+	)
+
+	return {
+		get(key) {
+			const result = preparedGet.get(key) as any
+			if (!result) return null
+			return {
+				metadata: JSON.parse(result.metadata),
+				value: JSON.parse(result.value, bufferReviver),
+			}
+		},
+		set(key, entry) {
+			preparedSet.run(
+				key,
+				JSON.stringify(entry.value, bufferReplacer),
+				JSON.stringify(entry.metadata),
+			)
+		},
+		delete(key) {
+			preparedDelete.run(key)
+		},
+		getAllKeys(limit) {
+			return preparedAllKeys
+				.all(limit)
+				.map((row) => (row as { key: string }).key)
+		},
+		searchKeys(search, limit) {
+			return preparedKeySearch
+				.all(`%${search}%`, limit)
+				.map((row) => (row as { key: string }).key)
+		},
+	}
+}
+
+async function getSharedFallbackStore() {
+	if (!sharedCacheStorePromise) {
+		sharedCacheStorePromise = createSqliteSharedStore().catch((error) => {
+			console.warn(
+				'Shared cache sqlite backend unavailable, using in-memory shared cache fallback.',
+				error,
+			)
+			return getMemorySharedStore()
+		})
+	}
+	return sharedCacheStorePromise
+}
 
 type KvNamespaceLike = {
 	get: (
@@ -133,12 +204,8 @@ export const cache: CachifiedCache = {
 			const value = await kvNamespace.get(toKvCacheKey(key), 'text')
 			return value ? JSON.parse(value, bufferReviver) : null
 		}
-		const result = preparedGet.get(key) as any
-		if (!result) return null
-		return {
-			metadata: JSON.parse(result.metadata),
-			value: JSON.parse(result.value, bufferReviver),
-		}
+		const sharedFallbackStore = await getSharedFallbackStore()
+		return sharedFallbackStore.get(key)
 	},
 	async set(key, entry) {
 		const kvNamespace = getCacheKvNamespace()
@@ -149,18 +216,16 @@ export const cache: CachifiedCache = {
 			)
 			return
 		}
-		preparedSet.run(
-			key,
-			JSON.stringify(entry.value, bufferReplacer),
-			JSON.stringify(entry.metadata),
-		)
+		const sharedFallbackStore = await getSharedFallbackStore()
+		sharedFallbackStore.set(key, entry)
 	},
 	async delete(key) {
 		const kvNamespace = getCacheKvNamespace()
 		if (kvNamespace) {
 			await kvNamespace.delete(toKvCacheKey(key))
 		} else {
-			preparedDelete.run(key)
+			const sharedFallbackStore = await getSharedFallbackStore()
+			sharedFallbackStore.delete(key)
 		}
 	},
 }
@@ -177,10 +242,15 @@ async function listKvCacheKeys(limit: number) {
 
 export async function getAllCacheKeys(limit: number) {
 	const kvKeys = await listKvCacheKeys(limit)
+	if (kvKeys.length) {
+		return {
+			shared: kvKeys,
+			lru: [...lruInstance.keys()],
+		}
+	}
+	const sharedFallbackStore = await getSharedFallbackStore()
 	return {
-		shared: kvKeys.length
-			? kvKeys
-			: preparedAllKeys.all(limit).map((row) => (row as { key: string }).key),
+		shared: sharedFallbackStore.getAllKeys(limit),
 		lru: [...lruInstance.keys()],
 	}
 }
@@ -195,18 +265,12 @@ export async function searchCacheKeys(search: string, limit: number) {
 		}
 	}
 
+	const sharedFallbackStore = await getSharedFallbackStore()
 	return {
-		shared: preparedKeySearch
-			.all(`%${search}%`, limit)
-			.map((row) => (row as { key: string }).key),
+		shared: sharedFallbackStore.searchKeys(search, limit),
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 	}
 }
-
-const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
-const preparedKeySearch = cacheDb.prepare(
-	'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
-)
 
 export async function shouldForceFresh({
 	forceFresh,
