@@ -17,6 +17,7 @@ and stable.
 - `docs/agents/bugfix-workflow.md`
 - `docs/agents/testing-principles.md`
 - `docs/agents/cloudflare-managed-controls.md`
+- `docs/agents/mock-api-servers.md`
 
 If you discover a new sharp edge, workflow, or non-obvious project behavior,
 update the relevant doc(s) in `docs/agents/` so future agent runs are faster and

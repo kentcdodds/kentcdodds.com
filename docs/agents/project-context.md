@@ -18,7 +18,7 @@ reference:
 
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
-| Dev server      | `bun run dev` (starts on port 3000 with `MOCKS=true`)                             |
+| Dev server      | `bun run dev` (starts app + kit mock worker; app runs on port 3000)               |
 | Lint            | `bun run lint`                                                                    |
 | Typecheck       | `bun run typecheck`                                                               |
 | Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
@@ -30,7 +30,10 @@ reference:
 ## Non-obvious caveats
 
 - All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
-  No real API keys are needed for local development; `.env.example` values are
+- The Kit integration is now served by a Worker mock server in dev
+  (`mock-servers/kit/worker.ts`, local port `8790`). Other third-party
+  integrations still use MSW while migration is in progress.
+- No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
   external database server is required.

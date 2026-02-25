@@ -2,10 +2,13 @@ import { spawn, type ChildProcess } from 'node:child_process'
 
 const args = process.argv.slice(2)
 const mode = parseMode(args)
-const script = mode === 'worker' ? 'dev:worker' : 'dev:app'
+const script = mode === 'worker' ? 'dev:worker' : 'dev:stack'
 const scriptArgs = mode === 'worker' ? args.slice(1) : args
 
-const runningModeLabel = mode === 'worker' ? 'worker preview' : 'node app server'
+const runningModeLabel =
+	mode === 'worker'
+		? 'worker preview'
+		: 'app server + mock workers'
 console.log(`Starting ${runningModeLabel} via "${script}"...`)
 
 const child = spawnDevProcess(script, scriptArgs)

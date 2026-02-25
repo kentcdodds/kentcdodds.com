@@ -2,7 +2,11 @@ import { getEnv } from '../utils/env.server.ts'
 
 function getKitAuth() {
 	const env = getEnv()
-	return { apiSecret: env.KIT_API_SECRET, apiKey: env.KIT_API_KEY }
+	return {
+		apiSecret: env.KIT_API_SECRET,
+		apiKey: env.KIT_API_KEY,
+		apiBaseUrl: env.KIT_API_BASE_URL,
+	}
 }
 
 type KitSubscriber = {
@@ -21,8 +25,8 @@ type KitTag = {
 }
 
 async function getKitSubscriber(email: string) {
-	const { apiSecret } = getKitAuth()
-	const url = new URL('https://api.kit.com/v3/subscribers')
+	const { apiSecret, apiBaseUrl } = getKitAuth()
+	const url = new URL('/v3/subscribers', apiBaseUrl)
 	// Kit API v3 expects `api_secret` as a query param for these endpoints.
 	// Avoid logging this URL to prevent leaking credentials.
 	url.searchParams.set('api_secret', apiSecret)
@@ -38,8 +42,8 @@ async function getKitSubscriber(email: string) {
 }
 
 async function getKitSubscriberTags(subscriberId: KitSubscriber['id']) {
-	const { apiSecret } = getKitAuth()
-	const url = new URL(`https://api.kit.com/v3/subscribers/${subscriberId}/tags`)
+	const { apiSecret, apiBaseUrl } = getKitAuth()
+	const url = new URL(`/v3/subscribers/${subscriberId}/tags`, apiBaseUrl)
 	// Kit API v3 expects `api_secret` as a query param for these endpoints.
 	// Avoid logging this URL to prevent leaking credentials.
 	url.searchParams.set('api_secret', apiSecret)
@@ -91,14 +95,13 @@ async function addSubscriberToForm({
 
 	// this is a basic form that doesn't really do anything. It's just a way to
 	// get the users on the mailing list
-	const response = await fetch(
-		`https://api.kit.com/v3/forms/${kitFormId}/subscribe`,
-		{
-			method: 'POST',
-			body: JSON.stringify(subscriberData),
-			headers: { 'Content-Type': 'application/json' },
-		},
-	)
+	const { apiBaseUrl } = getKitAuth()
+	const subscribeUrl = new URL(`/v3/forms/${kitFormId}/subscribe`, apiBaseUrl)
+	const response = await fetch(subscribeUrl.toString(), {
+		method: 'POST',
+		body: JSON.stringify(subscriberData),
+		headers: { 'Content-Type': 'application/json' },
+	})
 	const json = (await response.json()) as {
 		subscription: { subscriber: KitSubscriber }
 	}
@@ -115,7 +118,7 @@ async function addTagToSubscriber({
 	kitTagId: string
 }) {
 	await ensureSubscriber({ email, firstName })
-	const { apiKey, apiSecret } = getKitAuth()
+	const { apiKey, apiSecret, apiBaseUrl } = getKitAuth()
 	const subscriberData = {
 		api_key: apiKey,
 		api_secret: apiSecret,
@@ -123,7 +126,7 @@ async function addTagToSubscriber({
 		email,
 	}
 
-	const subscribeUrl = `https://api.kit.com/v3/tags/${kitTagId}/subscribe`
+	const subscribeUrl = new URL(`/v3/tags/${kitTagId}/subscribe`, apiBaseUrl)
 	const response = await fetch(subscribeUrl, {
 		method: 'POST',
 		body: JSON.stringify(subscriberData),
@@ -149,7 +152,7 @@ async function tagKCDSiteSubscriber({
 	const subscriber = await getKitSubscriber(email)
 	const kcdTagId = '2466369'
 	const kcdSiteForm = '2393887'
-	const { apiKey, apiSecret } = getKitAuth()
+	const { apiKey, apiSecret, apiBaseUrl } = getKitAuth()
 	const subscriberData = {
 		api_key: apiKey,
 		api_secret: apiSecret,
@@ -163,8 +166,8 @@ async function tagKCDSiteSubscriber({
 	// tag to existing subscribers who have already confirmed.
 	// This form auto-adds the tag to new subscribers
 	const subscribeUrl = subscriber
-		? `https://api.kit.com/v3/tags/${kcdTagId}/subscribe`
-		: `https://api.kit.com/v3/forms/${kcdSiteForm}/subscribe`
+		? new URL(`/v3/tags/${kcdTagId}/subscribe`, apiBaseUrl).toString()
+		: new URL(`/v3/forms/${kcdSiteForm}/subscribe`, apiBaseUrl).toString()
 	const updatedRes = await fetch(subscribeUrl, {
 		method: 'POST',
 		body: JSON.stringify(subscriberData),

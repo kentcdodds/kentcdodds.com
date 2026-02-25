@@ -28,6 +28,7 @@ const schemaBase = z.object({
 	CHATS_WITH_KENT_PODCAST_ID: nonEmptyString,
 	KIT_API_KEY: nonEmptyString,
 	KIT_API_SECRET: nonEmptyString,
+	KIT_API_BASE_URL: z.string().trim().optional().default('https://api.kit.com'),
 	DISCORD_ADMIN_USER_ID: nonEmptyString,
 	DISCORD_BLUE_CHANNEL: nonEmptyString,
 	DISCORD_BLUE_ROLE: nonEmptyString,
