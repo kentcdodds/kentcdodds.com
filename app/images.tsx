@@ -9,6 +9,8 @@ setConfig({
 	cloudName: 'kentcdodds-com',
 })
 
+const defaultCloudinaryBaseUrl = 'https://res.cloudinary.com'
+
 type ImageBuilder = {
 	(transformations?: TransformerOption): string
 	alt: string
@@ -37,13 +39,40 @@ function getImageBuilder(
 	{ className, style }: { className?: string; style?: CSSProperties } = {},
 ): ImageBuilder {
 	function imageBuilder(transformations?: TransformerOption) {
-		return buildImageUrl(id, { transformations })
+		return rewriteCloudinaryBaseUrl(
+			buildImageUrl(id, { transformations }),
+			getCloudinaryBaseUrl(),
+		)
 	}
 	imageBuilder.alt = alt
 	imageBuilder.id = id
 	imageBuilder.className = className
 	imageBuilder.style = style
 	return imageBuilder
+}
+
+function getCloudinaryBaseUrl() {
+	if (typeof window !== 'undefined' && window.ENV?.CLOUDINARY_BASE_URL) {
+		return window.ENV.CLOUDINARY_BASE_URL
+	}
+	if (typeof globalThis !== 'undefined' && globalThis.ENV?.CLOUDINARY_BASE_URL) {
+		return globalThis.ENV.CLOUDINARY_BASE_URL
+	}
+	if (typeof process !== 'undefined' && process.env.CLOUDINARY_BASE_URL) {
+		return process.env.CLOUDINARY_BASE_URL
+	}
+	return defaultCloudinaryBaseUrl
+}
+
+function rewriteCloudinaryBaseUrl(url: string, baseUrl: string) {
+	if (!baseUrl || baseUrl === defaultCloudinaryBaseUrl) return url
+	try {
+		const source = new URL(url)
+		const target = new URL(baseUrl)
+		return `${target.origin}${source.pathname}${source.search}`
+	} catch {
+		return url
+	}
 }
 
 const square = { aspectRatio: '1/1' } satisfies CSSProperties

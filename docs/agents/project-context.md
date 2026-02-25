@@ -58,6 +58,8 @@ reference:
   in dev (`mock-servers/cloudflare/worker.ts`, local port `8801`).
 - Cloudflare R2 S3-compatible calls are served by a Worker mock server in dev
   (`mock-servers/cloudflare-r2/worker.ts`, local port `8802`).
+- Cloudinary image calls are served by a Worker mock server in dev
+  (`mock-servers/cloudinary/worker.ts`, local port `8803`).
 - GitHub content fetches in mocks mode use local filesystem fallback in
   `app/utils/github.server.ts` (no network call required for content paths).
 - No real API keys are needed for local development; `.env.example` values are

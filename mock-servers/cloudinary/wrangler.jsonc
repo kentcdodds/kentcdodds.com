@@ -1,0 +1,18 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "kentcdodds-mock-cloudinary",
+	"main": "worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"env": {
+		"development": {
+			"name": "kentcdodds-mock-cloudinary-dev"
+		},
+		"preview": {
+			"name": "kentcdodds-mock-cloudinary-preview"
+		},
+		"production": {
+			"name": "kentcdodds-mock-cloudinary"
+		}
+	}
+}
