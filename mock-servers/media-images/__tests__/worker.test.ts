@@ -14,7 +14,7 @@ describe('media images mock worker', () => {
 	test('serves placeholder image responses', async () => {
 		const imageResponse = await worker.fetch(
 			new Request(
-				'http://mock-media-images.local/kentcdodds-com/image/upload/w_100,q_auto,f_webp/sample',
+				'http://mock-media-images.local/images/sample/path.png?tr=w_100,q_auto,f_webp',
 			),
 		)
 		expect(imageResponse.status).toBe(200)
@@ -24,7 +24,7 @@ describe('media images mock worker', () => {
 
 		const headResponse = await worker.fetch(
 			new Request(
-				'http://mock-media-images.local/kentcdodds-com/image/upload/w_100,q_auto,f_webp/sample',
+				'http://mock-media-images.local/images/sample/path.png?tr=w_100,q_auto,f_webp',
 				{
 					method: 'HEAD',
 				},

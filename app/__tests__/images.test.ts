@@ -28,6 +28,6 @@ describe('media image url generation', () => {
 		const builder = getImageBuilder('kent/profile')
 		const url = builder()
 		expect(url.startsWith('http://127.0.0.1:8803/')).toBe(true)
-		expect(url).toContain('/kentcdodds-com/image/upload/')
+		expect(url).toContain('/images/')
 	})
 })

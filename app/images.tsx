@@ -38,9 +38,9 @@ function getImageBuilder(
 		const imageUrl = buildMediaImageUrl({
 			id: resolveMediaImageId(id),
 			transformations,
-			baseUrl: getMediaImageUploadBaseUrl(),
+			baseUrl: getMediaImageDeliveryBaseUrl(),
 		})
-		return rewriteMediaBaseUrl(imageUrl, getMediaBaseUrl())
+		return imageUrl
 	}
 	imageBuilder.alt = alt
 	imageBuilder.id = id
@@ -84,20 +84,14 @@ function getMediaStreamBaseUrl() {
 	return `${getMediaBaseUrl().replace(/\/+$/, '')}/stream`
 }
 
+function getMediaImageDeliveryBaseUrl() {
+	const baseUrl = getMediaBaseUrl().replace(/\/+$/, '')
+	return `${baseUrl}/images`
+}
+
 function getMediaImageUploadBaseUrl() {
 	const baseUrl = getMediaBaseUrl().replace(/\/+$/, '')
 	return `${baseUrl}/kentcdodds-com/image/upload`
-}
-
-function rewriteMediaBaseUrl(url: string, baseUrl: string) {
-	if (!baseUrl || baseUrl === defaultMediaBaseUrl) return url
-	try {
-		const source = new URL(url)
-		const target = new URL(baseUrl)
-		return `${target.origin}${source.pathname}${source.search}`
-	} catch {
-		return url
-	}
 }
 
 function buildMediaImageUrl({
@@ -111,7 +105,11 @@ function buildMediaImageUrl({
 }) {
 	const transformSection = serializeTransformerOption(transformations)
 	const normalizedId = id.replace(/^\/+/, '')
-	return [baseUrl, transformSection, normalizedId].filter(Boolean).join('/')
+	const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${normalizedId}`)
+	if (transformSection) {
+		url.searchParams.set('tr', transformSection)
+	}
+	return url.toString()
 }
 
 function serializeTransformerOption(transformations?: TransformerOption) {
