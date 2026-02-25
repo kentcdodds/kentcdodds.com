@@ -8,6 +8,12 @@
 		"APP_ENV": "production"
 	},
 	"env": {
+		"development": {
+			"name": "kentcdodds-com-development",
+			"vars": {
+				"APP_ENV": "development"
+			}
+		},
 		"preview": {
 			"name": "kentcdodds-com-preview",
 			"vars": {
