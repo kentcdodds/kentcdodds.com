@@ -6,9 +6,8 @@ import { createVerification } from './verification.server.ts'
 /**
  * Creates a PASSWORD_RESET verification and sends the email.
  *
- * - Rethrows LiteFS replay `Response`s (so the request can be replayed on primary).
- * - Swallows non-Response errors (outage, mail provider errors) so auth flows
- *   can still show a generic "check your email" message.
+ * - Swallows non-fatal provider/runtime errors so auth flows can still show a
+ *   generic "check your email" message.
  */
 export async function createAndSendPasswordResetVerificationEmail({
 	emailAddress,
