@@ -161,6 +161,12 @@ function getCanonicalResultId({
 }) {
 	// The Vectorize index stores multiple chunk vectors per doc, so we need a
 	// canonical, doc-level identifier to collapse duplicates in query results.
+	if (type === 'youtube') {
+		if (slug) return `${type}:${normalizeSlugForKey(slug)}`
+		// Legacy vectors may omit `slug`; recover stable doc identity from URL.
+		const youtubeVideoId = parseYoutubeVideoIdFromUrl(url)
+		if (youtubeVideoId) return `${type}:${normalizeSlugForKey(youtubeVideoId)}`
+	}
 	if (type && slug) return `${type}:${normalizeSlugForKey(slug)}`
 	const fromVectorId = parseDocRefFromVectorId(vectorId)
 	if (fromVectorId) {
@@ -468,6 +474,46 @@ function addYoutubeTimestampToUrl({
 	}
 }
 
+function isLikelyYoutubeCaptionCueSnippet(snippet: string) {
+	const normalized = snippet.replace(/\s+/g, ' ').trim()
+	if (!normalized) return false
+
+	// Caption tracks often include non-semantic cues like `[Music]` that can end
+	// up with disproportionately high vector similarity.
+	const cueOnlyBracketedPattern = /^(?:\[[^\]]+\](?:[\s.,!?;:\/\\-]*)?)+$/u
+	if (cueOnlyBracketedPattern.test(normalized)) return true
+
+	const bareCueWords = new Set([
+		'music',
+		'applause',
+		'laughter',
+		'laughing',
+		'cheering',
+		'silence',
+		'noise',
+		'sigh',
+		'sighs',
+		'inaudible',
+	])
+	return bareCueWords.has(normalized.toLowerCase())
+}
+
+function shouldDropLowSignalYoutubeChunkMatch({
+	type,
+	chunkKind,
+	snippet,
+}: {
+	type: string | undefined
+	chunkKind: string | undefined
+	snippet: string | undefined
+}) {
+	if (type !== 'youtube') return false
+	if (!snippet) return false
+	// If `chunkKind` is missing on older vectors, still allow cue filtering.
+	if (chunkKind && chunkKind !== 'transcript') return false
+	return isLikelyYoutubeCaptionCueSnippet(snippet)
+}
+
 export async function semanticSearchKCD({
 	query,
 	topK = 15,
@@ -558,10 +604,20 @@ export async function semanticSearchKCD({
 				if (!m) continue
 				const md = (m.metadata ?? {}) as Record<string, unknown>
 				const type = asNonEmptyString(md.type)
+				const chunkKind = asNonEmptyString(md.chunkKind)
 				const slug = asNonEmptyString(md.slug)
 				const title = asNonEmptyString(md.title)
 				const url = asNonEmptyString(md.url)
 				const snippet = asNonEmptyString(md.snippet)
+				if (
+					shouldDropLowSignalYoutubeChunkMatch({
+						type,
+						chunkKind,
+						snippet,
+					})
+				) {
+					continue
+				}
 				// For media (YouTube), chunk metadata can include a start time.
 				const timestampSeconds = normalizeYoutubeTimestampSeconds({
 					startSeconds: asFiniteNumber(md.startSeconds),

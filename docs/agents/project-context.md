@@ -39,6 +39,9 @@ reference:
   It's populated on first request or via `npm run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
+- Semantic search caveat: YouTube auto-captions can include cue-only chunks like
+  `[Music]`. Runtime search now filters these low-signal transcript chunks, but
+  old vectors can still linger until the next YouTube reindex.
 
 ## Cloud / headless manual testing
 
