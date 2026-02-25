@@ -51,6 +51,9 @@ Apply/verify the following before traffic cutover:
   - the legacy `/resources/heapsnapshot` endpoint is intentionally removed for
     Worker runtime; use Cloudflare observability tooling + queue/container logs
     for runtime diagnostics.
+- **Sentry runtime integrations**:
+  - Node CPU profiling integration (`@sentry/profiling-node`) is removed from
+    runtime init; use Worker-compatible traces/errors plus platform metrics.
 
 ## Rollback plan
 
