@@ -16,6 +16,7 @@ and stable.
 - `docs/agents/code-style.md`
 - `docs/agents/bugfix-workflow.md`
 - `docs/agents/testing-principles.md`
+- `docs/cloudflare-cutover-runbook.md` (release/cutover/rollback checklist)
 - `docs/agents/cloudflare-managed-controls.md`
 - `docs/agents/mock-api-servers.md`
 
