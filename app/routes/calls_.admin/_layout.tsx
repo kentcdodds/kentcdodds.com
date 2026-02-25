@@ -52,7 +52,7 @@ export default function CallListScreen({
 				</div>
 
 				{/* Sidebar - Call List */}
-				<div className="col-span-full lg:col-span-4">
+				<div className="col-span-full lg:col-span-3">
 					<H6 as="h3" className="mb-4">
 						Pending Calls
 					</H6>
@@ -123,7 +123,7 @@ export default function CallListScreen({
 				<Spacer size="xs" className="col-span-full block lg:hidden" />
 
 				{/* Main Content Area */}
-				<div className="col-span-full lg:col-span-7 lg:col-start-6">
+				<div className="col-span-full lg:col-span-8 lg:col-start-5">
 					<Outlet />
 				</div>
 			</Grid>
