@@ -10,10 +10,6 @@ closeWithGrace(async ({ err }) => {
 	}
 })
 
-if (process.env.MOCKS === 'true') {
-	await import('./mocks/index.ts')
-}
-
 if (process.env.NODE_ENV === 'production') {
 	// this file may not exist if you haven't built yet, but it will
 	// definitely exist by the time the prod server actually runs.

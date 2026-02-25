@@ -1,5 +1,24 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
+
+function installTranscriptFormatterFetchMock() {
+	vi.stubGlobal(
+		'fetch',
+		vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+			const payload = JSON.parse(String(init?.body ?? '{}')) as {
+				messages?: Array<{ role?: string; content?: string }>
+			}
+			const userMessage =
+				payload.messages?.find((message) => message.role === 'user')
+					?.content ?? ''
+			const transcriptMatch =
+				/<<<TRANSCRIPT>>>\n([\s\S]*?)\n<<<END TRANSCRIPT>>>/.exec(userMessage)
+			const transcript = transcriptMatch?.[1]?.trim() ?? ''
+			const formatted = transcript.replace(/([.!?])\s+/g, '$1\n\n')
+			return Response.json({ result: { response: formatted } })
+		}),
+	)
+}
 
 test('formatCallKentTranscriptWithWorkersAi rejects empty transcripts', async () => {
 	await expect(
@@ -8,6 +27,7 @@ test('formatCallKentTranscriptWithWorkersAi rejects empty transcripts', async ()
 })
 
 test('formatCallKentTranscriptWithWorkersAi returns paragraphs and preserves separators', async () => {
+	installTranscriptFormatterFetchMock()
 	const transcript = `
 Announcer: You're listening to the Call Kent Podcast. Now let's hear the call.
 
@@ -39,6 +59,7 @@ Announcer: This has been the Call Kent Podcast. Thanks for listening.
 })
 
 test('formatCallKentTranscriptWithWorkersAi works without --- separators', async () => {
+	installTranscriptFormatterFetchMock()
 	const transcript = `Caller: Hi Kent. This is a single block transcript. It should still get paragraph breaks.`
 	const formatted = await formatCallKentTranscriptWithWorkersAi({ transcript })
 	expect(formatted).toContain('Caller:')
@@ -46,6 +67,7 @@ test('formatCallKentTranscriptWithWorkersAi works without --- separators', async
 })
 
 test('formatCallKentTranscriptWithWorkersAi does not truncate long transcripts', async () => {
+	installTranscriptFormatterFetchMock()
 	const longBody = Array.from(
 		{ length: 600 },
 		(_, i) => `Sentence ${i + 1}.`,
