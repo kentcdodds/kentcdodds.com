@@ -4,7 +4,7 @@ import {
 	waitForDelay,
 	type Sleep,
 } from './abort-utils.server.ts'
-import { fetchWithTimeout } from './fetch-with-timeout.server'
+import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 
 type RetryDelayReason = 'retry-after' | 'rate-limit-reset' | 'default'
 
