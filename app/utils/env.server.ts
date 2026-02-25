@@ -12,10 +12,8 @@ const schemaBase = z.object({
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
-	LITEFS_DIR: nonEmptyString,
-
-	// Used by LiteFS + tooling. Optional because it can be derived from
-	// `DATABASE_URL` when using SQLite `file:` URLs.
+	// Optional because it can be derived from `DATABASE_URL` when using SQLite
+	// `file:` URLs.
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
 	CACHE_DATABASE_PATH: nonEmptyString,
