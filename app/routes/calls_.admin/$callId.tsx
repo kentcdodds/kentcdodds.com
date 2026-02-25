@@ -573,7 +573,6 @@ function DraftEditor({
 	)
 }
 
-const draftStatusResourcePath = '/resources/calls/draft-status'
 const draftStatusStreamResourcePath = '/resources/calls/draft-status-stream'
 
 function RecordingDetailScreen({
@@ -606,34 +605,6 @@ function RecordingDetailScreen({
 			setPolledStatus(statusUpdate)
 			if (statusUpdate.status !== 'PROCESSING' && revalidator.state === 'idle') {
 				void revalidator.revalidate()
-			}
-		}
-
-		// Fallback for environments without EventSource support.
-		if (typeof EventSource === 'undefined') {
-			const pollStatus = async () => {
-				if (isClosed || revalidator.state !== 'idle') return
-				try {
-					const res = await fetch(
-						`${draftStatusResourcePath}?callId=${data.call.id}`,
-					)
-					if (!res.ok) return
-					const json = (await res.json()) as {
-						status: string
-						step: string
-						errorMessage: string | null
-					}
-					handleStatusUpdate(json)
-				} catch {
-					// Ignore fetch errors; next poll will retry.
-				}
-			}
-
-			void pollStatus()
-			const intervalId = setInterval(() => void pollStatus(), 1500)
-			return () => {
-				isClosed = true
-				clearInterval(intervalId)
 			}
 		}
 
