@@ -107,6 +107,9 @@ reference:
   - `bun run content:publish-mdx-remote -- --bucket <r2-bucket> [--before <sha> --after <sha>]`
     publishes strict-validated mdx-remote artifacts to R2 (changed-entry upload +
     deleted-entry cleanup when SHAs are provided).
+  - `bun run content:watch-mdx-remote` watches content collections locally and
+    continuously rebuilds strict mdx-remote artifacts into
+    `other/content/mdx-remote/` (use `--once` for a single local rebuild pass).
   - Preview/production generated Wrangler configs can attach an R2 binding for
     runtime mdx docs via `--mdx-remote-r2-bucket <bucket-name>` on
     `tools/ci/preview-resources.ts`.
