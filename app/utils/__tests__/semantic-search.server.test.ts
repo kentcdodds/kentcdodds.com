@@ -146,7 +146,7 @@ test('semanticSearchKCD filters low-signal YouTube cue chunks', async () => {
 			topK: 5,
 		})
 
-		expect(results.length).toBe(1)
+		expect(results).toHaveLength(1)
 		expect(results[0]?.type).toBe('blog')
 		expect(results[0]?.title).toBe('Tools without config')
 	} finally {
@@ -295,7 +295,7 @@ test('semanticSearchKCD canonicalizes YouTube results by video id from URL when 
 			topK: 5,
 		})
 
-		expect(results.length).toBe(2)
+		expect(results).toHaveLength(2)
 		expect(results.map((r) => r.id)).toEqual([
 			'youtube:aaa111bbb22',
 			'youtube:ccc333ddd44',
