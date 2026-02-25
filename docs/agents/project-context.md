@@ -59,6 +59,8 @@ reference:
   (`mock-servers/cloudflare-r2/worker.ts`, local port `8802`).
 - Media image calls are served by a Worker mock server in dev
   (`mock-servers/media-images/worker.ts`, local port `8803`).
+  - The media mock prefers serving files directly from `content/**` when the
+    requested media key matches a repo asset path.
 - Stream video URLs can use `MEDIA_STREAM_BASE_URL` (defaults to
   `${MEDIA_BASE_URL}/stream`).
 - GitHub content fetches in mocks mode use local filesystem fallback in

@@ -2,6 +2,9 @@
 	"$schema": "../../node_modules/wrangler/config-schema.json",
 	"name": "kentcdodds-mock-media-images",
 	"main": "worker.ts",
+	"assets": {
+		"directory": "../../content"
+	},
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
 	"env": {

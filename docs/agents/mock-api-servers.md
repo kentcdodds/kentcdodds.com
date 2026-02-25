@@ -81,6 +81,8 @@ development and tests.
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
   - image endpoints: `/images/*`
+    - serves in-repo media files from `content/**` via Worker assets binding when
+      the requested key maps to a repo path.
   - social image endpoints: `/social/*`
   - call artwork endpoint: `/artwork/call-kent.png`
 
