@@ -161,6 +161,12 @@ function getCanonicalResultId({
 }) {
 	// The Vectorize index stores multiple chunk vectors per doc, so we need a
 	// canonical, doc-level identifier to collapse duplicates in query results.
+	if (type === 'youtube') {
+		if (slug) return `${type}:${normalizeSlugForKey(slug)}`
+		// Legacy vectors may omit `slug`; recover stable doc identity from URL.
+		const youtubeVideoId = parseYoutubeVideoIdFromUrl(url)
+		if (youtubeVideoId) return `${type}:${normalizeSlugForKey(youtubeVideoId)}`
+	}
 	if (type && slug) return `${type}:${normalizeSlugForKey(slug)}`
 	const fromVectorId = parseDocRefFromVectorId(vectorId)
 	if (fromVectorId) {

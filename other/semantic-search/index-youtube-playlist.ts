@@ -11,6 +11,11 @@ import {
 } from './cloudflare.ts'
 import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
+import {
+	chunkTranscriptEvents,
+	type TranscriptEvent,
+} from './youtube-transcript-chunking.ts'
+import { isLowSignalYoutubeCaptionCueLine } from './youtube-transcript-cue-filter.ts'
 
 type DocType = 'youtube'
 type TranscriptSource = 'manual' | 'auto' | 'none'
@@ -61,12 +66,6 @@ type VideoEnrichedData = {
 	transcript: string
 	transcriptEvents: TranscriptEvent[]
 	transcriptSource: TranscriptSource
-}
-
-type TranscriptEvent = {
-	startMs: number
-	durationMs: number
-	text: string
 }
 
 type YoutubeChunkItem =
@@ -844,6 +843,7 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 			.replace(/\u200B/g, '')
 			.trim()
 		if (!line) continue
+		if (isLowSignalYoutubeCaptionCueLine(line)) continue
 		lines.push(line)
 		transcriptEvents.push({ startMs, durationMs, text: line })
 	}
@@ -851,72 +851,6 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 		transcript: normalizeText(lines.join('\n')),
 		transcriptEvents,
 	}
-}
-
-function chunkTranscriptEvents(
-	events: TranscriptEvent[],
-	{
-		targetChars = 3500,
-		maxChunkChars = 5500,
-	}: { targetChars?: number; maxChunkChars?: number } = {},
-) {
-	const sorted = [...events].sort((a, b) => a.startMs - b.startMs)
-	const chunks: Array<{
-		body: string
-		startMs: number
-		endMs: number
-	}> = []
-
-	let currentLines: string[] = []
-	let currentLen = 0
-	let startMs: number | null = null
-	let endMs = 0
-
-	const flush = () => {
-		if (!currentLines.length || startMs === null) return
-		const body = normalizeText(currentLines.join('\n'))
-		if (!body) return
-		chunks.push({ body, startMs, endMs })
-		currentLines = []
-		currentLen = 0
-		startMs = null
-		endMs = 0
-	}
-
-	for (const e of sorted) {
-		const line = normalizeText(e.text)
-		if (!line) continue
-
-		// If we don't have a current chunk and this line is huge, split it.
-		if (!currentLines.length && line.length > maxChunkChars) {
-			const eStartMs = Math.max(0, Math.floor(e.startMs))
-			const eEndMs = Math.max(
-				eStartMs,
-				Math.floor(e.startMs + (e.durationMs || 0)),
-			)
-			for (let i = 0; i < line.length; i += targetChars) {
-				const part = line.slice(i, i + targetChars)
-				const body = normalizeText(part)
-				if (!body) continue
-				chunks.push({ body, startMs: eStartMs, endMs: eEndMs })
-			}
-			continue
-		}
-
-		const nextLen = currentLen + (currentLines.length ? 1 : 0) + line.length
-		if (currentLines.length && nextLen > targetChars) {
-			flush()
-		}
-
-		if (startMs === null) startMs = Math.max(0, Math.floor(e.startMs))
-		const eventEnd = Math.max(0, Math.floor(e.startMs + (e.durationMs || 0)))
-		endMs = Math.max(endMs, eventEnd)
-		currentLines.push(line)
-		currentLen = currentLen + (currentLines.length > 1 ? 1 : 0) + line.length
-	}
-
-	flush()
-	return chunks
 }
 
 async function fetchVideoEnrichedData({
