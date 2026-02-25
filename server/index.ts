@@ -25,7 +25,6 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
-import { scheduleExpiredDataCleanup } from './expired-sessions-cleanup.js'
 import { createRateLimitingMiddleware } from './rate-limiting.js'
 import {
 	getRedirectsMiddleware,
@@ -94,8 +93,6 @@ const app = express()
 // fly is our proxy
 app.set('trust proxy', true)
 app.use(serverTiming())
-
-const expiredDataCleanup = scheduleExpiredDataCleanup()
 
 app.get('/img/social', oldImgSocial)
 
@@ -461,7 +458,6 @@ if (MODE === 'development') {
 
 closeWithGrace(() => {
 	return Promise.all([
-		expiredDataCleanup.stop(),
 		new Promise((resolve, reject) => {
 			server.close((e) => (e ? reject(e) : resolve('ok')))
 		}),

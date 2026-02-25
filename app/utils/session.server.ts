@@ -1,7 +1,6 @@
 import { createCookieSessionStorage, redirect } from 'react-router'
 import { z } from 'zod'
 import { isUserAdmin } from '#app/utils/authorization.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { type User } from '#app/utils/prisma-generated.server/client.ts'
 import { getEnv } from './env.server.ts'
 import {
@@ -60,7 +59,6 @@ async function getSession(request: Request) {
 		signOut: async () => {
 			const sessionId = getSessionId()
 			if (sessionId) {
-				await ensurePrimary()
 				unsetSessionId()
 				prisma.session
 					.delete({ where: { id: sessionId } })
@@ -110,7 +108,6 @@ async function deleteOtherSessions(request: Request) {
 		return
 	}
 	const user = await getUserFromSessionId(token)
-	await ensurePrimary()
 	await prisma.session.deleteMany({
 		where: { userId: user.id, NOT: { id: token } },
 	})

@@ -1,5 +1,4 @@
 import crypto from 'node:crypto'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import {
 	getVerificationCodeHash,
 	verifyVerificationCode,
@@ -31,7 +30,6 @@ export async function createVerification({
 	const codeHash = await getVerificationCodeHash(code)
 	const expiresAt = new Date(Date.now() + VERIFICATION_CODE_MAX_AGE_MS)
 
-	await ensurePrimary()
 	const verification = await prisma.verification.create({
 		data: {
 			type,
@@ -75,7 +73,6 @@ export async function consumeVerification({
 	})
 	if (!isValid) return null
 
-	await ensurePrimary()
 	try {
 		await prisma.verification.delete({ where: { id: verification.id } })
 	} catch (error: unknown) {
@@ -126,7 +123,6 @@ export async function consumeVerificationForTarget({
 	})
 	if (!isValid) return null
 
-	await ensurePrimary()
 	try {
 		await prisma.verification.delete({ where: { id: verification.id } })
 	} catch (error: unknown) {

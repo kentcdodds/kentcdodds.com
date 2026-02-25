@@ -1,5 +1,4 @@
-import { ensurePrimary } from './litefs-js.server.ts'
-import { getDomainUrl, isResponse } from './misc.ts'
+import { getDomainUrl } from './misc.ts'
 import { prisma } from './prisma.server.ts'
 import { sendPasswordResetEmail } from './send-email.server.ts'
 import { createVerification } from './verification.server.ts'
@@ -42,14 +41,9 @@ export async function createAndSendPasswordResetVerificationEmail({
 			team,
 		})
 	} catch (error: unknown) {
-		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-		// If we swallow it, the email will never get sent.
-		if (isResponse(error)) throw error
-
 		if (verificationId) {
 			try {
 				// Best effort: don't leave unused verifications around if email sending fails.
-				await ensurePrimary()
 				await prisma.verification.delete({ where: { id: verificationId } })
 			} catch (cleanupError) {
 				console.error(

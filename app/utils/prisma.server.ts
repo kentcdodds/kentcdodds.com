@@ -5,7 +5,6 @@ import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { PrismaClient, type User } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -72,7 +71,6 @@ const sessionExpirationTime = 1000 * 60 * 60 * 24 * 365
 async function createSession(
 	sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>,
 ) {
-	await ensurePrimary()
 	return prisma.session.create({
 		data: {
 			...sessionData,
@@ -84,7 +82,6 @@ async function createSession(
 async function deleteExpiredSessions({
 	now = new Date(),
 }: { now?: Date } = {}) {
-	await ensurePrimary()
 	const result = await prisma.session.deleteMany({
 		where: { expirationDate: { lt: now } },
 	})
@@ -94,7 +91,6 @@ async function deleteExpiredSessions({
 async function deleteExpiredVerifications({
 	now = new Date(),
 }: { now?: Date } = {}) {
-	await ensurePrimary()
 	const result = await prisma.verification.deleteMany({
 		where: { expiresAt: { lt: now } },
 	})
@@ -117,7 +113,6 @@ async function getUserFromSessionId(
 	}
 
 	if (Date.now() > session.expirationDate.getTime()) {
-		await ensurePrimary()
 		await prisma.session.delete({ where: { id: sessionId } })
 		throw new Error('Session expired. Please log in again.')
 	}
@@ -125,7 +120,6 @@ async function getUserFromSessionId(
 	// if there's less than ~six months left, extend the session
 	const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
 	if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
-		await ensurePrimary()
 		const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
 		await prisma.session.update({
 			data: { expirationDate: newExpirationDate },
@@ -138,7 +132,6 @@ async function getUserFromSessionId(
 
 async function normalizeUserRole(user: User) {
 	if (user.email === ADMIN_EMAIL && user.role !== 'ADMIN') {
-		await ensurePrimary()
 		await prisma.user.update({
 			where: { id: user.id },
 			data: { role: 'ADMIN' },
@@ -146,7 +139,6 @@ async function normalizeUserRole(user: User) {
 		return { ...user, role: 'ADMIN' }
 	}
 	if (user.role === 'USER') {
-		await ensurePrimary()
 		await prisma.user.update({
 			where: { id: user.id },
 			data: { role: 'MEMBER' },

@@ -13,12 +13,10 @@ import { tagKCDSiteSubscriber } from '#app/kit/kit.server.ts'
 import { type KCDHandle, type Team } from '#app/types.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import {
 	getDomainUrl,
 	getErrorStack,
-	isResponse,
 	isTeam,
 	teams,
 } from '#app/utils/misc.ts'
@@ -142,12 +140,8 @@ export async function action({ request }: Route.ActionArgs) {
 				domainUrl,
 			})
 		} catch (error: unknown) {
-			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-			// If we swallow it, the email will never get sent.
-			if (isResponse(error)) throw error
 			// Avoid leaving an unused verification record around if email sending fails.
 			try {
-				await ensurePrimary()
 				await prisma.verification.delete({ where: { id: verification.id } })
 			} catch (cleanupError) {
 				console.error(
@@ -266,7 +260,6 @@ export async function action({ request }: Route.ActionArgs) {
 		const safePassword = String(password)
 
 		const passwordHash = await getPasswordHash(safePassword)
-		await ensurePrimary()
 		let user: { id: string }
 		try {
 			user = await prisma.user.create({
@@ -304,7 +297,6 @@ export async function action({ request }: Route.ActionArgs) {
 			fields: { kcd_team: safeTeam, kcd_site_id: user.id },
 		})
 			.then(async (sub) => {
-				await ensurePrimary()
 				await prisma.user.update({
 					data: { kitId: String(sub.id) },
 					where: { id: user.id },
@@ -319,8 +311,6 @@ export async function action({ request }: Route.ActionArgs) {
 			session = await getSession(request)
 			await session.signIn(user)
 		} catch (error: unknown) {
-			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-			if (isResponse(error)) throw error
 			console.error('Signup succeeded but auto-login failed', error)
 			loginInfoSession.unsetSignupEmail()
 			loginInfoSession.flashMessage(
@@ -338,7 +328,6 @@ export async function action({ request }: Route.ActionArgs) {
 			const clientId = clientSession.getClientId()
 			// update all PostReads from clientId to userId
 			if (clientId) {
-				await ensurePrimary()
 				await prisma.postRead.updateMany({
 					data: { userId: user.id, clientId: null },
 					where: { clientId },
@@ -356,8 +345,6 @@ export async function action({ request }: Route.ActionArgs) {
 		await loginInfoSession.getHeaders(headers)
 		return redirect('/me', { headers })
 	} catch (error: unknown) {
-		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-		if (isResponse(error)) throw error
 		console.error(getErrorStack(error))
 		return json(
 			{
