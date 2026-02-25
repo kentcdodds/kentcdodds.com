@@ -196,6 +196,9 @@ function resolvePropValue({
 					error,
 				)
 			}
+			if (value.value.includes('=>')) {
+				return () => undefined
+			}
 			return undefined
 		}
 	}
