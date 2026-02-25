@@ -80,7 +80,6 @@
     "@reach/dialog": "^0.18.0",
     "@reach/tabs": "^0.18.0",
     "@react-router/express": "^7.0.0",
-    "@react-router/node": "^7.0.0",
     "@remark-embedder/core": "^3.0.3",
     "@remark-embedder/transformer-oembed": "^5.0.1",
     "@sentry/profiling-node": "^10.39.0",
