@@ -1,7 +1,16 @@
 import { expect, test, vi } from 'vitest'
-import { getEpisodes } from '../transistor.server.ts'
+
+vi.mock('../cache.server.ts', () => {
+	return {
+		cache: {},
+		cachified: async ({ getFreshValue }: { getFreshValue: (context: {}) => unknown }) =>
+			await getFreshValue({}),
+		shouldForceFresh: async () => true,
+	}
+})
 
 test('getEpisodes does not forward signal to fetch', async () => {
+	const { getEpisodes } = await import('../transistor.server.ts')
 	const controller = new AbortController()
 	const fetchSpy = vi
 		.spyOn(globalThis, 'fetch')
