@@ -84,12 +84,13 @@ async function fetchTransitor<JsonResponse>({
 	for (const [key, value] of Object.entries(query)) {
 		url.searchParams.set(key, value)
 	}
+	// Intentionally do not pass AbortSignal to fetch: Node.js v24 can crash when
+	// aborting in-flight fetches. We still honor cancellation via throwIfAborted.
 	const config: RequestInit = {
 		method,
 		headers: {
 			'x-api-key': env.TRANSISTOR_API_SECRET,
 		},
-		signal,
 	}
 	if (data) {
 		config.body = JSON.stringify(data)

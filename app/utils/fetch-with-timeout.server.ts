@@ -9,9 +9,12 @@ export function fetchWithTimeout(
 	options: RequestInit = {},
 	timeoutMs: number = 1000,
 ): Promise<Response> {
+	const requestOptions: RequestInit = { ...options }
+	delete requestOptions.signal
+
 	const timeoutPromise = new Promise<never>((_, reject) => {
 		const id = setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
 		id.unref?.()
 	})
-	return Promise.race([fetch(url, options), timeoutPromise])
+	return Promise.race([fetch(url, requestOptions), timeoutPromise])
 }

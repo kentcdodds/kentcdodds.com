@@ -4,7 +4,7 @@ import {
 	waitForDelay,
 	type Sleep,
 } from './abort-utils.server.ts'
-import { fetchWithTimeout } from './fetch-with-timeout.server'
+import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 
 type RetryDelayReason = 'retry-after' | 'rate-limit-reset' | 'default'
 
@@ -114,13 +114,17 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		signal?: AbortSignal
 	} = {},
 ): Promise<JsonResponse> {
+	// Intentionally do not pass AbortSignal to fetch: Node.js v24 can crash when
+	// aborting in-flight fetches. We still honor cancellation via throwIfAborted.
+	const requestInit: RequestInit = { headers }
+
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
 		throwIfAborted(signal)
 		let res: Response
 		try {
 			res = timeoutMs
-				? await fetchWithTimeout(url, { headers, signal }, timeoutMs)
-				: await fetch(url, { headers, signal })
+				? await fetchWithTimeout(url, requestInit, timeoutMs)
+				: await fetch(url, requestInit)
 			throwIfAborted(signal)
 		} catch (cause) {
 			if (attempt < maxRetries) {

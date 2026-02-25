@@ -18,6 +18,10 @@ magic.
   public internet and third-party services; prefer local fakes/fixtures.
 - Prefer fast unit tests for server logic; keep e2e tests focused on journeys.
 - Run server tests with `bun test server` to avoid Playwright spec discovery.
+- In backend Vitest tests, modules that transitively import `cache.server.ts`
+  may require mocking `../cache.server.ts` first; otherwise `vite-env-only`
+  macros (for `serverOnly$` route exports) can fail to transform in Node test
+  runs.
 
 ## Examples
 
