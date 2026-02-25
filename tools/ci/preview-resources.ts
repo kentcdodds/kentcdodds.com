@@ -1,112 +1,401 @@
+import { spawnSync } from 'node:child_process'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 type Command = 'ensure' | 'cleanup'
 
-type Args = {
-	command: Command
+type CliOptions = {
 	workerName: string
-	outConfig: string
+	wranglerConfigPath: string
+	outConfigPath: string
+	environment: string
+	dryRun: boolean
 }
 
-async function main() {
-	const args = parseArgs(process.argv.slice(2))
-	if (args.command === 'ensure') {
-		await ensurePreviewResources(args)
-		return
-	}
-	await cleanupPreviewResources(args)
+type D1DatabaseListEntry = {
+	uuid: string
+	name: string
 }
 
-async function ensurePreviewResources({
-	workerName,
-	outConfig,
-}: Args) {
-	const rootConfigPath = path.join(process.cwd(), 'wrangler.jsonc')
-	const outputConfigPath = path.resolve(process.cwd(), outConfig)
-	const rootConfigContents = await readFile(rootConfigPath, 'utf-8')
-	const rootConfig = JSON.parse(rootConfigContents) as Record<string, unknown>
-
-	const generatedConfig = structuredClone(rootConfig)
-	generatedConfig.name = workerName
-	generatedConfig.vars = {
-		...(isRecord(generatedConfig.vars) ? generatedConfig.vars : {}),
-		APP_ENV: 'preview',
-	}
-
-	if (!isRecord(generatedConfig.env)) generatedConfig.env = {}
-	const envConfig = generatedConfig.env as Record<string, unknown>
-	const previewConfig = isRecord(envConfig.preview)
-		? envConfig.preview
-		: {}
-
-	envConfig.preview = {
-		...previewConfig,
-		name: workerName,
-		vars: {
-			...(isRecord(previewConfig.vars) ? previewConfig.vars : {}),
-			APP_ENV: 'preview',
-		},
-	}
-
-	await mkdir(path.dirname(outputConfigPath), { recursive: true })
-	await writeFile(
-		outputConfigPath,
-		`${JSON.stringify(generatedConfig, null, '\t')}\n`,
-		'utf-8',
-	)
-
-	emitOutput('wrangler_config', outputConfigPath)
-	emitOutput('d1_database_name', `${workerName}-db`)
-	emitOutput('oauth_kv_title', `${workerName}-oauth`)
+type KvNamespaceListEntry = {
+	id: string
+	title: string
 }
 
-async function cleanupPreviewResources({ outConfig }: Args) {
-	const outputConfigPath = path.resolve(process.cwd(), outConfig)
-	await rm(outputConfigPath, { force: true })
+function fail(message: string): never {
+	console.error(message)
+	process.exit(1)
 }
 
-function parseArgs(rawArgs: Array<string>): Args {
-	const [commandRaw, ...rest] = rawArgs
-	if (commandRaw !== 'ensure' && commandRaw !== 'cleanup') {
-		throw new Error(`Expected command "ensure" or "cleanup", got "${commandRaw}"`)
+function parseArgs(argv: Array<string>) {
+	const command = argv[0]
+	if (command !== 'ensure' && command !== 'cleanup') {
+		fail(
+			`Missing or invalid command. Usage: bun tools/ci/preview-resources.ts <ensure|cleanup> --worker-name <name>`,
+		)
 	}
 
-	const options = new Map<string, Array<string>>()
-	for (let index = 0; index < rest.length; index++) {
-		const arg = rest[index]
-		if (!arg?.startsWith('--')) {
-			throw new Error(`Unexpected argument "${arg}"`)
+	const options: CliOptions = {
+		workerName: '',
+		wranglerConfigPath: 'wrangler.jsonc',
+		outConfigPath: 'wrangler-preview.generated.jsonc',
+		environment: 'preview',
+		dryRun: false,
+	}
+
+	for (let index = 1; index < argv.length; index += 1) {
+		const arg = argv[index]
+		if (!arg) continue
+		switch (arg) {
+			case '--worker-name':
+				options.workerName = argv[index + 1] ?? ''
+				index += 1
+				break
+			case '--wrangler-config':
+				options.wranglerConfigPath = argv[index + 1] ?? ''
+				index += 1
+				break
+			case '--out-config':
+				options.outConfigPath = argv[index + 1] ?? ''
+				index += 1
+				break
+			case '--environment':
+				options.environment = argv[index + 1] ?? ''
+				index += 1
+				break
+			case '--dry-run':
+				options.dryRun = true
+				break
+			default:
+				if (arg.startsWith('-')) {
+					fail(`Unknown flag: ${arg}`)
+				}
 		}
-		const key = arg.slice(2)
-		const value = rest[index + 1]
-		if (!value || value.startsWith('--')) {
-			throw new Error(`Missing value for --${key}`)
-		}
-		index++
-		const current = options.get(key) ?? []
-		current.push(value)
-		options.set(key, current)
 	}
 
-	const workerName = options.get('worker-name')?.at(-1)
-	if (!workerName) {
-		throw new Error(`Missing required option --worker-name`)
+	if (!options.workerName) {
+		fail('Missing required flag: --worker-name <name>')
+	}
+	if (!options.environment) {
+		fail('Missing required flag: --environment <name>')
 	}
 
 	return {
-		command: commandRaw,
-		workerName,
-		outConfig: options.get('out-config')?.at(-1) ?? 'wrangler-preview.generated.jsonc',
+		command: command as Command,
+		options,
 	}
 }
 
-function emitOutput(key: string, value: string) {
-	console.log(`${key}=${value}`)
+function runWrangler(
+	args: Array<string>,
+	options?: { input?: string; quiet?: boolean },
+) {
+	const bunBin = process.execPath
+	const result = spawnSync(bunBin, ['x', 'wrangler', ...args], {
+		encoding: 'utf8',
+		stdio: 'pipe',
+		input: options?.input,
+		env: process.env,
+	})
+
+	const status = result.status ?? 1
+	const stdout = result.stdout ?? ''
+	const stderr = result.stderr ?? ''
+
+	if (!options?.quiet) {
+		console.error(`wrangler: bun x wrangler ${args.join(' ')}`)
+	}
+
+	if (status !== 0) {
+		const output = `${stdout}${stderr}`.trim()
+		if (output) console.error(output)
+	}
+
+	return { status, stdout, stderr }
+}
+
+function buildPreviewResourceNames(workerName: string) {
+	const maxLen = 63
+	const d1Suffix = '-db'
+	const kvSuffix = '-site-cache-kv'
+	const d1DatabaseName = truncateWithSuffix(workerName, d1Suffix, maxLen)
+	const siteCacheKvTitle = truncateWithSuffix(workerName, kvSuffix, maxLen)
+	return { d1DatabaseName, siteCacheKvTitle }
+}
+
+function truncateWithSuffix(base: string, suffix: string, maxLen: number) {
+	if (base.length + suffix.length <= maxLen) return `${base}${suffix}`
+	const cut = Math.max(1, maxLen - suffix.length)
+	const trimmed = base.slice(0, cut).replace(/-+$/g, '')
+	return `${trimmed}${suffix}`
+}
+
+function listD1Databases() {
+	const result = runWrangler(['d1', 'list', '--json'], { quiet: true })
+	if (result.status !== 0) {
+		fail('Failed to list D1 databases (wrangler d1 list --json).')
+	}
+	try {
+		return JSON.parse(result.stdout) as Array<D1DatabaseListEntry>
+	} catch {
+		fail('Could not parse JSON output from wrangler d1 list --json.')
+	}
+}
+
+function ensureD1Database({
+	name,
+	dryRun,
+}: {
+	name: string
+	dryRun: boolean
+}) {
+	if (dryRun) {
+		console.error(`[dry-run] ensure D1 database: ${name}`)
+		return { name, id: `dry-run-${name}` }
+	}
+
+	const existing = listD1Databases().find((db) => db.name === name)
+	if (existing) {
+		console.error(`D1 database exists: ${name} (${existing.uuid})`)
+		return { name, id: existing.uuid }
+	}
+
+	const createResult = runWrangler(['d1', 'create', name], {
+		input: 'n\n',
+		quiet: true,
+	})
+	if (createResult.status !== 0) {
+		fail(`Failed to create D1 database: ${name}`)
+	}
+	const created = listD1Databases().find((db) => db.name === name)
+	if (!created) {
+		fail(`Created D1 database "${name}" but could not find it via list.`)
+	}
+	console.error(`Created D1 database: ${name} (${created.uuid})`)
+	return { name, id: created.uuid }
+}
+
+function deleteD1Database({ name, dryRun }: { name: string; dryRun: boolean }) {
+	if (dryRun) {
+		console.error(`[dry-run] delete D1 database: ${name}`)
+		return
+	}
+	const existing = listD1Databases().some((db) => db.name === name)
+	if (!existing) {
+		console.error(`D1 database already deleted: ${name}`)
+		return
+	}
+	const result = runWrangler(['d1', 'delete', name, '--skip-confirmation'], {
+		quiet: true,
+	})
+	if (result.status !== 0) {
+		fail(`Failed to delete D1 database: ${name}`)
+	}
+	console.error(`Deleted D1 database: ${name}`)
+}
+
+function listKvNamespaces() {
+	const result = runWrangler(['kv', 'namespace', 'list'], { quiet: true })
+	if (result.status !== 0) {
+		fail('Failed to list KV namespaces.')
+	}
+	try {
+		return JSON.parse(result.stdout) as Array<KvNamespaceListEntry>
+	} catch {
+		fail('Could not parse JSON output from wrangler kv namespace list.')
+	}
+}
+
+function ensureKvNamespace({
+	title,
+	dryRun,
+}: {
+	title: string
+	dryRun: boolean
+}) {
+	if (dryRun) {
+		console.error(`[dry-run] ensure KV namespace: ${title}`)
+		return { title, id: `dry-run-${title}` }
+	}
+	const existing = listKvNamespaces().find((entry) => entry.title === title)
+	if (existing) {
+		console.error(`KV namespace exists: ${title} (${existing.id})`)
+		return { title, id: existing.id }
+	}
+	const createResult = runWrangler(['kv', 'namespace', 'create', title], {
+		input: 'n\n',
+		quiet: true,
+	})
+	if (createResult.status !== 0) {
+		fail(`Failed to create KV namespace: ${title}`)
+	}
+	const created = listKvNamespaces().find((entry) => entry.title === title)
+	if (!created) {
+		fail(`Created KV namespace "${title}" but could not find it via list.`)
+	}
+	console.error(`Created KV namespace: ${title} (${created.id})`)
+	return { title, id: created.id }
+}
+
+function deleteKvNamespace({
+	title,
+	dryRun,
+}: {
+	title: string
+	dryRun: boolean
+}) {
+	if (dryRun) {
+		console.error(`[dry-run] delete KV namespace: ${title}`)
+		return
+	}
+	const existing = listKvNamespaces().find((entry) => entry.title === title)
+	if (!existing) {
+		console.error(`KV namespace already deleted: ${title}`)
+		return
+	}
+	const result = runWrangler(
+		[
+			'kv',
+			'namespace',
+			'delete',
+			'--namespace-id',
+			existing.id,
+			'--skip-confirmation',
+		],
+		{ quiet: true },
+	)
+	if (result.status !== 0) {
+		fail(`Failed to delete KV namespace: ${title}`)
+	}
+	console.error(`Deleted KV namespace: ${title} (${existing.id})`)
+}
+
+async function writeGeneratedWranglerConfig({
+	baseConfigPath,
+	outConfigPath,
+	environment,
+	workerName,
+	d1DatabaseName,
+	d1DatabaseId,
+	siteCacheKvId,
+}: {
+	baseConfigPath: string
+	outConfigPath: string
+	environment: string
+	workerName: string
+	d1DatabaseName: string
+	d1DatabaseId: string
+	siteCacheKvId: string
+}) {
+	const baseText = await readFile(baseConfigPath, 'utf8')
+	const config = JSON.parse(baseText) as Record<string, unknown>
+
+	const env = config.env
+	if (!env || typeof env !== 'object') {
+		fail(`wrangler config "${baseConfigPath}" is missing "env".`)
+	}
+
+	const environmentConfig = (env as Record<string, unknown>)[environment]
+	if (!environmentConfig || typeof environmentConfig !== 'object') {
+		fail(`wrangler config "${baseConfigPath}" is missing "env.${environment}".`)
+	}
+
+	const targetConfig = environmentConfig as Record<string, unknown>
+	targetConfig.name = workerName
+	targetConfig.vars = {
+		...(isRecord(targetConfig.vars) ? targetConfig.vars : {}),
+		APP_ENV: environment,
+	}
+
+	const existingD1Databases = Array.isArray(targetConfig.d1_databases)
+		? targetConfig.d1_databases
+		: []
+	const d1WithoutBinding = existingD1Databases.filter((entry) => {
+		return !(isRecord(entry) && entry.binding === 'APP_DB')
+	})
+	targetConfig.d1_databases = [
+		...d1WithoutBinding,
+		{
+			binding: 'APP_DB',
+			database_name: d1DatabaseName,
+			database_id: d1DatabaseId,
+			migrations_dir: 'prisma/migrations',
+		},
+	]
+
+	const existingKvNamespaces = Array.isArray(targetConfig.kv_namespaces)
+		? targetConfig.kv_namespaces
+		: []
+	const kvWithoutBinding = existingKvNamespaces.filter((entry) => {
+		return !(isRecord(entry) && entry.binding === 'SITE_CACHE_KV')
+	})
+	targetConfig.kv_namespaces = [
+		...kvWithoutBinding,
+		{
+			binding: 'SITE_CACHE_KV',
+			id: siteCacheKvId,
+			preview_id: siteCacheKvId,
+		},
+	]
+
+	const resolvedOut = path.resolve(outConfigPath)
+	await mkdir(path.dirname(resolvedOut), { recursive: true })
+	await writeFile(resolvedOut, `${JSON.stringify(config, null, '\t')}\n`, 'utf8')
+	console.error(`Wrote generated Wrangler config: ${resolvedOut}`)
+	return resolvedOut
+}
+
+async function ensurePreviewResources(options: CliOptions) {
+	const { d1DatabaseName, siteCacheKvTitle } = buildPreviewResourceNames(
+		options.workerName,
+	)
+
+	const d1 = ensureD1Database({ name: d1DatabaseName, dryRun: options.dryRun })
+	const kv = ensureKvNamespace({ title: siteCacheKvTitle, dryRun: options.dryRun })
+
+	const generatedConfigPath = await writeGeneratedWranglerConfig({
+		baseConfigPath: options.wranglerConfigPath,
+		outConfigPath: options.outConfigPath,
+		environment: options.environment,
+		workerName: options.workerName,
+		d1DatabaseName: d1.name,
+		d1DatabaseId: d1.id,
+		siteCacheKvId: kv.id,
+	})
+
+	console.log(`wrangler_config=${generatedConfigPath}`)
+	console.log(`d1_database_name=${d1.name}`)
+	console.log(`d1_database_id=${d1.id}`)
+	console.log(`site_cache_kv_title=${kv.title}`)
+	console.log(`site_cache_kv_id=${kv.id}`)
+}
+
+async function cleanupPreviewResources(options: CliOptions) {
+	const { d1DatabaseName, siteCacheKvTitle } = buildPreviewResourceNames(
+		options.workerName,
+	)
+	deleteKvNamespace({ title: siteCacheKvTitle, dryRun: options.dryRun })
+	deleteD1Database({ name: d1DatabaseName, dryRun: options.dryRun })
+	const outputConfigPath = path.resolve(options.outConfigPath)
+	await rm(outputConfigPath, { force: true })
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null
+}
+
+async function main() {
+	const { command, options } = parseArgs(process.argv.slice(2))
+	if (!process.env.CLOUDFLARE_API_TOKEN && !options.dryRun) {
+		fail(
+			'Missing CLOUDFLARE_API_TOKEN (required for Wrangler resource operations).',
+		)
+	}
+	if (command === 'ensure') {
+		await ensurePreviewResources(options)
+		return
+	}
+	await cleanupPreviewResources(options)
 }
 
 main().catch((error: unknown) => {

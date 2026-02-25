@@ -103,18 +103,28 @@ jobs:
           --set-from-env-optional DISCORD_CLIENT_SECRET
           --set-from-env-optional MAILGUN_SENDING_KEY --generate-cookie-secret
 
+      - name: 🧱 Ensure production resources
+        id: resources
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          bun tools/ci/preview-resources.ts ensure --worker-name kentcdodds-com --environment production --wrangler-config wrangler.jsonc --out-config wrangler-production.generated.jsonc | tee -a "$GITHUB_OUTPUT"
+
       - name: 🗄️ Apply D1 migrations
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: bun run wrangler -- d1 migrations apply APP_DB --remote --env production
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+        run: bun run wrangler -- d1 migrations apply APP_DB --remote --config "$WRANGLER_CONFIG" --env production
 
       - name: ☁️ Deploy worker
         id: deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
         run: |
           set -euo pipefail
-          bun run deploy -- --env production 2>&1 | tee deploy.log
+          bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env production --name kentcdodds-com 2>&1 | tee deploy.log
           deploy_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
           if [ -n "$deploy_url" ]; then
             echo "url=$deploy_url" >> "$GITHUB_OUTPUT"
