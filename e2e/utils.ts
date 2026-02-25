@@ -7,21 +7,27 @@ import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
 
 type Email = {
+	id?: number
 	to: string
 	from: string
 	subject: string
 	text: string
 	html: string
+	verificationCode?: string | null
+	verificationUrl?: string | null
 }
 
 type MockMailgunResponse = {
 	emails: Array<Email>
 }
 
+type MockMailgunLatestResponse = {
+	email: Email
+}
+
 async function getMockMailgunEmails() {
-	const mailgunBaseUrl = process.env.MAILGUN_API_BASE_URL
+	const mailgunBaseUrl = getLocalMailgunBaseUrl()
 	if (!mailgunBaseUrl) return null
-	if (!mailgunBaseUrl.startsWith('http://127.0.0.1')) return null
 	const url = new URL('/__mocks/emails', mailgunBaseUrl)
 	try {
 		const response = await fetch(url)
@@ -33,16 +39,48 @@ async function getMockMailgunEmails() {
 	}
 }
 
+async function getMockMailgunLatestEmail({
+	to,
+}: {
+	to: string
+}) {
+	const mailgunBaseUrl = getLocalMailgunBaseUrl()
+	if (!mailgunBaseUrl) return null
+	const url = new URL('/__mocks/emails/latest', mailgunBaseUrl)
+	url.searchParams.set('to', to)
+	try {
+		const response = await fetch(url)
+		if (!response.ok) return null
+		const payload = (await response.json()) as MockMailgunLatestResponse
+		return payload.email
+	} catch {
+		return null
+	}
+}
+
 async function resetMockMailgunEmails() {
-	const mailgunBaseUrl = process.env.MAILGUN_API_BASE_URL
+	const mailgunBaseUrl = getLocalMailgunBaseUrl()
 	if (!mailgunBaseUrl) return
-	if (!mailgunBaseUrl.startsWith('http://127.0.0.1')) return
 	const url = new URL('/__mocks/reset', mailgunBaseUrl)
 	try {
 		await fetch(url, { method: 'POST' })
 	} catch {
 		// best effort
 	}
+}
+
+function getLocalMailgunBaseUrl() {
+	const configuredBaseUrl = process.env.MAILGUN_API_BASE_URL?.trim()
+	if (configuredBaseUrl?.startsWith('http://127.0.0.1')) {
+		return configuredBaseUrl
+	}
+	if (configuredBaseUrl?.startsWith('http://localhost')) {
+		return configuredBaseUrl.replace('http://localhost', 'http://127.0.0.1')
+	}
+	if (process.env.PLAYWRIGHT_TEST_BASE_URL?.startsWith('http://localhost')) {
+		return 'http://127.0.0.1:8793'
+	}
+	return null
 }
 
 async function sleep(ms: number) {
@@ -59,6 +97,12 @@ export async function readEmail(
 	for (let attempt = 0; attempt < maxRetries; attempt++) {
 		try {
 			const mockEmails = await getMockMailgunEmails()
+			if (typeof recipientOrFilter === 'string') {
+				const latestEmail = await getMockMailgunLatestEmail({
+					to: recipientOrFilter,
+				})
+				if (latestEmail) return latestEmail
+			}
 			if (mockEmails) {
 				const emails = [...mockEmails]
 				let email: Email | undefined

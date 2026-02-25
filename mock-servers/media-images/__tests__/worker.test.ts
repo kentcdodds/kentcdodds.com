@@ -86,27 +86,124 @@ describe('media images mock worker', () => {
 	})
 
 	test('proxies media requests when proxy base url is configured', async () => {
-		const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-			new Response(new Uint8Array([9, 8, 7]), {
-				status: 200,
-				headers: { 'content-type': 'image/png' },
-			}),
+		const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
+			async (request: Request | URL | string) => {
+				const normalizedRequest =
+					request instanceof Request ? request : new Request(String(request))
+				const requestUrl = new URL(normalizedRequest.url)
+				if (requestUrl.origin === 'https://cache-miss.test') {
+					return new Response('not found', { status: 404 })
+				}
+				return new Response(new Uint8Array([9, 8, 7]), {
+					status: 200,
+					headers: { 'content-type': 'image/png' },
+				})
+			},
 		)
 		try {
 			const response = await worker.fetch(
 				new Request('http://mock-media-images.local/images/blog/demo/image.png'),
 				{
 					MEDIA_PROXY_BASE_URL: 'https://example-media-proxy.test',
+					MEDIA_PROXY_CACHE_BASE_URL: 'https://cache-miss.test',
 				},
 			)
 			expect(response.status).toBe(200)
 			expect(response.headers.get('content-type')).toBe('image/png')
-			expect(fetchSpy).toHaveBeenCalledWith(
-				expect.objectContaining({
-					method: 'GET',
-					url: 'https://example-media-proxy.test/blog/demo/image.png',
-				}),
+			const requestUrls = fetchSpy.mock.calls
+				.map((call) => call[0])
+				.filter((value): value is Request => value instanceof Request)
+				.map((request) => request.url)
+			expect(requestUrls).toContain(
+				'https://example-media-proxy.test/blog/demo/image.png',
 			)
+		} finally {
+			fetchSpy.mockRestore()
+		}
+	})
+
+	test('caches proxied media and serves cached asset when remote is unavailable', async () => {
+		const cacheStore = new Map<string, Uint8Array>()
+		let remoteOnline = true
+		const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
+			async (request: Request | URL | string) => {
+				const normalizedRequest =
+					request instanceof Request ? request : new Request(String(request))
+				const requestUrl = new URL(normalizedRequest.url)
+
+				if (requestUrl.origin === 'https://cache-media.test') {
+					if (normalizedRequest.method === 'PUT') {
+						const payload = new Uint8Array(await normalizedRequest.arrayBuffer())
+						cacheStore.set(requestUrl.pathname, payload)
+						return new Response(null, { status: 200 })
+					}
+					const cachedPayload = cacheStore.get(requestUrl.pathname)
+					if (!cachedPayload) {
+						return new Response('not found', { status: 404 })
+					}
+					return new Response(new Uint8Array(cachedPayload), {
+						status: 200,
+						headers: { 'content-type': 'image/png' },
+					})
+				}
+
+				if (requestUrl.origin === 'https://remote-media.test') {
+					if (!remoteOnline) {
+						throw new Error('remote offline')
+					}
+					return new Response(new Uint8Array([9, 8, 7]), {
+						status: 200,
+						headers: { 'content-type': 'image/png' },
+					})
+				}
+
+				throw new Error(`Unexpected fetch URL: ${requestUrl.toString()}`)
+			},
+		)
+		try {
+			const env = {
+				MEDIA_PROXY_BASE_URL: 'https://remote-media.test',
+				MEDIA_PROXY_CACHE_BASE_URL: 'https://cache-media.test',
+			}
+			const firstResponse = await worker.fetch(
+				new Request(
+					'http://mock-media-images.local/images/blog/demo/image.png?tr=w_120,q_auto',
+				),
+				env,
+			)
+			expect(firstResponse.status).toBe(200)
+			expect(new Uint8Array(await firstResponse.arrayBuffer())).toEqual(
+				new Uint8Array([9, 8, 7]),
+			)
+
+			remoteOnline = false
+
+			const secondResponse = await worker.fetch(
+				new Request(
+					'http://mock-media-images.local/images/blog/demo/image.png?tr=w_120,q_auto',
+				),
+				env,
+			)
+			expect(secondResponse.status).toBe(200)
+			expect(new Uint8Array(await secondResponse.arrayBuffer())).toEqual(
+				new Uint8Array([9, 8, 7]),
+			)
+
+			const requestedUrls = fetchSpy.mock.calls.map((call) => {
+				const request = call[0]
+				return request instanceof Request
+					? request.url
+					: request instanceof URL
+						? request.toString()
+						: String(request)
+			})
+			expect(
+				requestedUrls.some((url) => url.startsWith('https://remote-media.test/')),
+			).toBe(true)
+			expect(
+				requestedUrls.some((url) => url.startsWith('https://cache-media.test/')),
+			).toBe(true)
+			expect(cacheStore.size).toBeGreaterThan(0)
 		} finally {
 			fetchSpy.mockRestore()
 		}

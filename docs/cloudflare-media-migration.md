@@ -64,6 +64,9 @@ the current Cloudflare Images + Stream workflow.
 - Local media mock serves local `content/**` assets first, can proxy to remote
   media infrastructure when online, and otherwise returns a
   wireframe placeholder image.
+- While online, proxied media responses are cached into local R2 mock bucket
+  `mock-media-cache` (persisted under `.local/mock-r2-cache`, gitignored) so
+  subsequent offline sessions can replay already-fetched assets.
 
 ## Verification checklist
 

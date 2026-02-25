@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import imagesManifestData from '../../content/data/media-manifests/images.json'
 import videosManifestData from '../../content/data/media-manifests/videos.json'
 
@@ -18,6 +19,8 @@ type Env = {
 		fetch(request: Request): Promise<Response>
 	}
 	MEDIA_PROXY_BASE_URL?: string
+	MEDIA_PROXY_CACHE_BASE_URL?: string
+	MEDIA_PROXY_CACHE_BUCKET?: string
 	MEDIA_R2_PROXY_BASE_URL?: string
 	MEDIA_R2_BUCKET?: string
 	MEDIA_R2_ENDPOINT?: string
@@ -175,10 +178,27 @@ async function tryServeRemoteMediaAsset({
 		readProcessEnv('MEDIA_R2_PROXY_BASE_URL') ??
 		buildPathStyleR2BaseUrl(env)
 	if (!baseUrl) return null
+	const proxyCacheBaseUrl = buildMediaProxyCacheBaseUrl(env)
 	const keys = getCandidateAssetProxyKeys(url.pathname)
 	for (const key of keys) {
 		const normalizedKey = key.replace(/^\/+/, '')
-		const proxyUrl = `${baseUrl.replace(/\/+$/, '')}/${normalizedKey}`
+		const cacheObjectKey = buildProxyCacheObjectKey({
+			objectKey: normalizedKey,
+			query: url.search,
+		})
+		if (proxyCacheBaseUrl) {
+			const cachedResponse = await tryServeProxyCacheAsset({
+				method: request.method,
+				baseUrl: proxyCacheBaseUrl,
+				objectKey: cacheObjectKey,
+			})
+			if (cachedResponse) return cachedResponse
+		}
+		const proxyUrl = buildProxyObjectUrl({
+			baseUrl,
+			objectKey: normalizedKey,
+			query: url.search,
+		})
 		let response: Response
 		try {
 			response = await fetch(
@@ -188,10 +208,25 @@ async function tryServeRemoteMediaAsset({
 			continue
 		}
 		if (!response.ok) continue
+		const responseBytes =
+			request.method === 'HEAD'
+				? null
+				: new Uint8Array(await response.arrayBuffer())
+		const responseContentType =
+			response.headers.get('content-type')?.trim() ??
+			'application/octet-stream'
+		if (proxyCacheBaseUrl && responseBytes) {
+			void writeProxyCacheAsset({
+				baseUrl: proxyCacheBaseUrl,
+				objectKey: cacheObjectKey,
+				contentType: responseContentType,
+				bytes: responseBytes,
+			})
+		}
 		const headers = new Headers(response.headers)
 		headers.set('cache-control', 'no-store')
 		return new Response(
-			request.method === 'HEAD' ? null : await response.arrayBuffer(),
+			request.method === 'HEAD' ? null : responseBytes,
 			{
 				status: response.status,
 				headers,
@@ -313,6 +348,129 @@ function buildPathStyleR2BaseUrl(env: Env) {
 		readProcessEnv('R2_ENDPOINT')
 	if (!bucket || !endpoint) return null
 	return `${endpoint.replace(/\/+$/, '')}/${bucket}`
+}
+
+function buildMediaProxyCacheBaseUrl(env: Env) {
+	const explicitCacheBaseUrl =
+		env.MEDIA_PROXY_CACHE_BASE_URL?.trim() ??
+		readProcessEnv('MEDIA_PROXY_CACHE_BASE_URL')
+	if (explicitCacheBaseUrl) {
+		return explicitCacheBaseUrl.replace(/\/+$/, '')
+	}
+
+	const bucket =
+		env.MEDIA_PROXY_CACHE_BUCKET?.trim() ??
+		readProcessEnv('MEDIA_PROXY_CACHE_BUCKET') ??
+		'mock-media-cache'
+	const endpoint =
+		env.MEDIA_R2_ENDPOINT?.trim() ??
+		readProcessEnv('MEDIA_R2_ENDPOINT') ??
+		readProcessEnv('R2_ENDPOINT')
+	if (!bucket || !endpoint) return null
+	return `${endpoint.replace(/\/+$/, '')}/${bucket}`
+}
+
+function buildProxyCacheObjectKey({
+	objectKey,
+	query,
+}: {
+	objectKey: string
+	query: string
+}) {
+	if (!query) return objectKey
+	const queryHash = createHash('sha256').update(query).digest('hex').slice(0, 16)
+	return `${objectKey}.__q_${queryHash}`
+}
+
+function buildProxyObjectUrl({
+	baseUrl,
+	objectKey,
+	query,
+}: {
+	baseUrl: string
+	objectKey: string
+	query: string
+}) {
+	const encodedObjectKey = objectKey
+		.split('/')
+		.filter(Boolean)
+		.map((segment) => encodeURIComponent(segment))
+		.join('/')
+	const resolvedUrl = new URL(`${baseUrl.replace(/\/+$/, '')}/${encodedObjectKey}`)
+	if (query) {
+		resolvedUrl.search = query
+	}
+	return resolvedUrl.toString()
+}
+
+async function tryServeProxyCacheAsset({
+	method,
+	baseUrl,
+	objectKey,
+}: {
+	method: string
+	baseUrl: string
+	objectKey: string
+}) {
+	let response: Response
+	try {
+		response = await fetch(
+			new Request(
+				buildProxyObjectUrl({
+					baseUrl,
+					objectKey,
+					query: '',
+				}),
+				{ method },
+			),
+		)
+	} catch {
+		return null
+	}
+	if (!response.ok) return null
+	const headers = new Headers(response.headers)
+	headers.set('cache-control', 'no-store')
+	return new Response(
+		method === 'HEAD' ? null : await response.arrayBuffer(),
+		{
+			status: response.status,
+			headers,
+		},
+	)
+}
+
+async function writeProxyCacheAsset({
+	baseUrl,
+	objectKey,
+	contentType,
+	bytes,
+}: {
+	baseUrl: string
+	objectKey: string
+	contentType: string
+	bytes: Uint8Array
+}) {
+	const cacheBody = new Uint8Array(bytes)
+	try {
+		await fetch(
+			new Request(
+				buildProxyObjectUrl({
+					baseUrl,
+					objectKey,
+					query: '',
+				}),
+				{
+					method: 'PUT',
+					headers: {
+						'content-type': contentType,
+					},
+					body: cacheBody,
+				},
+			),
+		)
+	} catch {
+		// best effort cache write
+	}
 }
 
 function readProcessEnv(key: string) {

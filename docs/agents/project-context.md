@@ -42,6 +42,10 @@ reference:
   (`mock-servers/oauth/worker.ts`, local port `8792`).
 - Outbound Mailgun delivery is served by a Worker mock server in dev
   (`mock-servers/mailgun/worker.ts`, local port `8793`).
+  - Useful inbox APIs:
+    - `GET /__mocks/emails/latest?to=<email>`
+    - `GET /__mocks/emails?to=<email>&subject=<query>&limit=<n>`
+    - `GET /__mocks/emails/<id>`
 - Discord API calls are served by a Worker mock server in dev
   (`mock-servers/discord/worker.ts`, local port `8794`).
 - Simplecast API calls are served by a Worker mock server in dev
@@ -60,13 +64,15 @@ reference:
   in dev (`mock-servers/cloudflare/worker.ts`, local port `8801`).
 - Cloudflare R2 S3-compatible calls are served by a Bun mock server in dev
   (`mock-servers/cloudflare-r2/local-server.ts`, local port `8802`).
-  - mock uploads persist to disk at `/tmp/mock-r2-cache` by default so local
+  - mock uploads persist to disk at `.local/mock-r2-cache` (gitignored) so local
     non-media R2 fixtures stay available across restarts/offline sessions.
 - Media image calls are served by a Worker mock server in dev
   (`mock-servers/media-images/worker.ts`, local port `8803`).
   - The media mock attempts to serve assets from local `content/**` first.
   - When local assets are unavailable, it can proxy `/images/*` and `/stream/*`
     requests to remote media delivery infrastructure.
+  - Proxied media responses are persisted into local R2 cache bucket
+    `mock-media-cache` so already-fetched assets continue working offline.
   - If remote media is unreachable (offline/no internet), the media mock returns a
     wireframe SVG placeholder so route audits still pass.
 - Call Kent ffmpeg container simulation is served by a Worker mock server in dev

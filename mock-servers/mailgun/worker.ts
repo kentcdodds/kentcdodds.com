@@ -5,6 +5,8 @@ type MockEmail = {
 	subject: string
 	text: string
 	html: string
+	verificationCode: string | null
+	verificationUrl: string | null
 	createdAt: string
 }
 
@@ -52,7 +54,36 @@ export default {
 		}
 
 		if (url.pathname === '/__mocks/emails') {
-			return jsonResponse({ emails: [...emails].reverse() })
+			const filteredEmails = filterEmails({
+				to: url.searchParams.get('to')?.trim() ?? '',
+				subject: url.searchParams.get('subject')?.trim() ?? '',
+			})
+			const limit = Number.parseInt(url.searchParams.get('limit') ?? '500', 10)
+			const boundedLimit = Number.isFinite(limit) ? Math.max(1, Math.min(limit, 500)) : 500
+			return jsonResponse({
+				emails: [...filteredEmails].reverse().slice(0, boundedLimit),
+			})
+		}
+
+		if (url.pathname === '/__mocks/emails/latest') {
+			const filteredEmails = filterEmails({
+				to: url.searchParams.get('to')?.trim() ?? '',
+				subject: url.searchParams.get('subject')?.trim() ?? '',
+			})
+			const latestEmail = filteredEmails[filteredEmails.length - 1]
+			if (!latestEmail) {
+				return jsonResponse({ error: 'No matching emails found' }, 404)
+			}
+			return jsonResponse({ email: latestEmail })
+		}
+
+		if (/^\/__mocks\/emails\/\d+$/.test(url.pathname)) {
+			const emailId = Number.parseInt(url.pathname.split('/').pop() ?? '', 10)
+			const email = emails.find((entry) => entry.id === emailId)
+			if (!email) {
+				return jsonResponse({ error: `Email ${emailId} not found` }, 404)
+			}
+			return jsonResponse({ email })
 		}
 
 		if (url.pathname === '/__mocks/reset' && request.method === 'POST') {
@@ -105,6 +136,8 @@ function createMockEmail({
 	text: string
 	html: string
 }) {
+	const verificationCode = extractVerificationCode(text, html)
+	const verificationUrl = extractVerificationUrl(text, html)
 	return {
 		id: nextEmailId++,
 		to,
@@ -112,8 +145,49 @@ function createMockEmail({
 		subject,
 		text,
 		html,
+		verificationCode,
+		verificationUrl,
 		createdAt: new Date().toISOString(),
 	}
+}
+
+function filterEmails({
+	to,
+	subject,
+}: {
+	to: string
+	subject: string
+}) {
+	const normalizedTo = to.toLowerCase()
+	const normalizedSubject = subject.toLowerCase()
+	return emails.filter((email) => {
+		if (normalizedTo && !email.to.toLowerCase().includes(normalizedTo)) {
+			return false
+		}
+		if (
+			normalizedSubject &&
+			!email.subject.toLowerCase().includes(normalizedSubject)
+		) {
+			return false
+		}
+		return true
+	})
+}
+
+function extractVerificationCode(text: string, html: string) {
+	const textMatch = /Verification code:\s*([A-Za-z0-9-]+)/i.exec(text)
+	if (textMatch?.[1]) return textMatch[1].trim()
+	const htmlMatch = /Verification code<\/[^>]+>\s*<[^>]+>\s*([A-Za-z0-9-]+)\s*</i.exec(
+		html,
+	)
+	return htmlMatch?.[1]?.trim() ?? null
+}
+
+function extractVerificationUrl(text: string, html: string) {
+	const textMatch = /Or click this link:\s*(https?:\/\/\S+)/i.exec(text)
+	if (textMatch?.[1]) return textMatch[1].trim()
+	const htmlMatch = /href="(https?:\/\/[^"]+)"/i.exec(html)
+	return htmlMatch?.[1]?.trim() ?? null
 }
 
 function recordRequest({
@@ -164,14 +238,45 @@ function htmlResponse(html: string) {
 }
 
 function renderDashboard() {
-	const rows = [...emails]
+	const rows = [...emails].reverse().slice(0, 50)
+	const latestVerificationEmail = [...emails]
 		.reverse()
-		.slice(0, 50)
+		.find((email) => email.verificationCode || email.verificationUrl)
+	const selectedEmail = rows[0]
+	const selectedEmailPanel = selectedEmail
+		? `<section class="details">
+        <h2>Email #${selectedEmail.id}</h2>
+        <dl class="detail-grid">
+          <dt>To</dt><dd>${escapeHtml(selectedEmail.to)}</dd>
+          <dt>From</dt><dd>${escapeHtml(selectedEmail.from)}</dd>
+          <dt>Subject</dt><dd>${escapeHtml(selectedEmail.subject)}</dd>
+          <dt>Verification code</dt><dd>${selectedEmail.verificationCode ? `<code>${escapeHtml(selectedEmail.verificationCode)}</code>` : '—'}</dd>
+          <dt>Verification URL</dt><dd>${selectedEmail.verificationUrl ? `<a href="${escapeHtml(selectedEmail.verificationUrl)}">${escapeHtml(selectedEmail.verificationUrl)}</a>` : '—'}</dd>
+        </dl>
+        <h3>Text body</h3>
+        <pre>${escapeHtml(selectedEmail.text || '(empty)')}</pre>
+      </section>`
+		: ''
+	const latestVerificationPanel = latestVerificationEmail
+		? `<section class="verification-summary">
+        <h2>Latest verification email</h2>
+        <p><strong>To:</strong> ${escapeHtml(latestVerificationEmail.to)}</p>
+        <p><strong>Subject:</strong> ${escapeHtml(latestVerificationEmail.subject)}</p>
+        <p><strong>Code:</strong> ${latestVerificationEmail.verificationCode ? `<code>${escapeHtml(latestVerificationEmail.verificationCode)}</code>` : '—'}</p>
+        <p><strong>URL:</strong> ${latestVerificationEmail.verificationUrl ? `<a href="${escapeHtml(latestVerificationEmail.verificationUrl)}">${escapeHtml(latestVerificationEmail.verificationUrl)}</a>` : '—'}</p>
+      </section>`
+		: '<section class="verification-summary"><h2>Latest verification email</h2><p>No verification emails captured yet.</p></section>'
+
+	const emailApiExamples = `curl -sS http://127.0.0.1:8793/__mocks/emails/latest?to=user@example.com
+curl -sS http://127.0.0.1:8793/__mocks/emails?subject=verification&limit=5`
+
+	const rowsMarkup = rows
 		.map(
 			(email) => `<tr>
       <td>${email.id}</td>
       <td>${escapeHtml(email.to)}</td>
       <td>${escapeHtml(email.subject)}</td>
+      <td>${email.verificationCode ? `<code>${escapeHtml(email.verificationCode)}</code>` : '—'}</td>
       <td>${escapeHtml(email.createdAt)}</td>
     </tr>`,
 		)
@@ -213,6 +318,12 @@ function renderDashboard() {
       .summary {
         color: var(--muted);
       }
+      .verification-summary {
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin: 1rem 0;
+      }
       .toolbar {
         display: flex;
         gap: 0.5rem;
@@ -236,6 +347,28 @@ function renderDashboard() {
         padding: 0.5rem;
         text-align: left;
       }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 0.4rem 0.8rem;
+      }
+      .detail-grid dt {
+        color: var(--muted);
+      }
+      pre {
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        max-height: 20rem;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+      .api-help {
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin: 1rem 0;
+      }
       @media (max-width: 700px) {
         table, thead, tbody, tr, th, td {
           display: block;
@@ -250,25 +383,38 @@ function renderDashboard() {
     <main class="layout">
       <h1>Mailgun Mock Dashboard</h1>
       <p class="summary">
-        Captured emails and request activity for the Mailgun mock worker.
+        Captured emails and request activity for the Mailgun mock worker. Use the
+        JSON endpoints to power Playwright helpers and quickly locate login/reset codes.
       </p>
+      ${latestVerificationPanel}
       <div class="toolbar">
         <button id="refresh" type="button">Refresh</button>
         <button id="reset" type="button">Reset state</button>
       </div>
+      <section class="api-help">
+        <h2>Useful API endpoints</h2>
+        <ul>
+          <li><code>/__mocks/emails/latest?to=&lt;recipient&gt;</code></li>
+          <li><code>/__mocks/emails?to=&lt;recipient&gt;&amp;subject=verification</code></li>
+          <li><code>/__mocks/emails/&lt;id&gt;</code></li>
+        </ul>
+        <pre>${escapeHtml(emailApiExamples)}</pre>
+      </section>
       <table>
         <thead>
           <tr>
             <th>ID</th>
             <th>To</th>
             <th>Subject</th>
+            <th>Code</th>
             <th>Time</th>
           </tr>
         </thead>
         <tbody>
-          ${rows || '<tr><td colspan="4">No emails captured yet.</td></tr>'}
+          ${rowsMarkup || '<tr><td colspan="5">No emails captured yet.</td></tr>'}
         </tbody>
       </table>
+      ${selectedEmailPanel}
     </main>
     <script>
       document.getElementById('refresh')?.addEventListener('click', () => {

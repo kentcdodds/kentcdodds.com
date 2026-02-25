@@ -7,18 +7,27 @@
 	},
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
-	"vars": {
-		"MEDIA_PROXY_BASE_URL": "https://media.kcd.dev"
-	},
 	"env": {
 		"development": {
-			"name": "kentcdodds-mock-media-images-dev"
+			"name": "kentcdodds-mock-media-images-dev",
+			"vars": {
+				"MEDIA_PROXY_BASE_URL": "https://media.kcd.dev",
+				"MEDIA_PROXY_CACHE_BUCKET": "mock-media-cache"
+			}
 		},
 		"preview": {
-			"name": "kentcdodds-mock-media-images-preview"
+			"name": "kentcdodds-mock-media-images-preview",
+			"vars": {
+				"MEDIA_PROXY_BASE_URL": "https://media.kcd.dev",
+				"MEDIA_PROXY_CACHE_BUCKET": "mock-media-cache"
+			}
 		},
 		"production": {
-			"name": "kentcdodds-mock-media-images"
+			"name": "kentcdodds-mock-media-images",
+			"vars": {
+				"MEDIA_PROXY_BASE_URL": "https://media.kcd.dev",
+				"MEDIA_PROXY_CACHE_BUCKET": "mock-media-cache"
+			}
 		}
 	}
 }

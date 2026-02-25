@@ -48,7 +48,7 @@
     "dev:mock-oembed": "bun ./wrangler-env.ts dev --local --config mock-servers/oembed/wrangler.jsonc --port 8799",
     "dev:mock-mermaid-to-svg": "bun ./wrangler-env.ts dev --local --config mock-servers/mermaid-to-svg/wrangler.jsonc --port 8800",
     "dev:mock-cloudflare": "bun ./wrangler-env.ts dev --local --config mock-servers/cloudflare/wrangler.jsonc --port 8801",
-    "dev:mock-cloudflare-r2": "bun mock-servers/cloudflare-r2/local-server.ts --port 8802",
+    "dev:mock-cloudflare-r2": "cross-env R2_MOCK_CACHE_DIRECTORY=.local/mock-r2-cache bun mock-servers/cloudflare-r2/local-server.ts --port 8802",
     "dev:mock-media-images": "bun ./wrangler-env.ts dev --local --config mock-servers/media-images/wrangler.jsonc --port 8803",
     "dev:mock-call-kent-ffmpeg": "bun ./wrangler-env.ts dev --local --config mock-servers/call-kent-ffmpeg/wrangler.jsonc --port 8804",
     "dev:call-kent-ffmpeg-container": "cross-env CALL_KENT_FFMPEG_CONTAINER_PORT=8810 node ./containers/call-kent-ffmpeg/start-server.mjs",
