@@ -132,7 +132,6 @@
         "@types/dom-mediacapture-record": "^1.0.22",
         "@types/express-http-proxy": "^1.6.7",
         "@types/fs-extra": "^11.0.4",
-        "@types/heapdump": "^0.3.4",
         "@types/lodash": "^4.17.23",
         "@types/morgan": "^1.9.10",
         "@types/node": "^24.10.9",
@@ -1270,8 +1269,6 @@
     "@types/graceful-fs": ["@types/graceful-fs@4.1.9", "", { "dependencies": { "@types/node": "*" } }, "sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ=="],
 
     "@types/hast": ["@types/hast@3.0.4", "", { "dependencies": { "@types/unist": "*" } }, "sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ=="],
-
-    "@types/heapdump": ["@types/heapdump@0.3.4", "", {}, "sha512-gTGn7W7i58F1yzvLZ5+hRE7M/VqgEzgccERJ9ZThC6qor5R8wo3oP7iiHvwgHIZzoqPF22ngu8mBagcqPWMVTg=="],
 
     "@types/http-errors": ["@types/http-errors@2.0.5", "", {}, "sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg=="],
 

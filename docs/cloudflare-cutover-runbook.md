@@ -47,6 +47,10 @@ Apply/verify the following before traffic cutover:
   - verify HTML/cache rules and `SITE_CACHE_KV` binding configuration by env.
 - **Durable Object bindings**:
   - verify `MCP_OBJECT` binding + migrations are present in each deployed env.
+- **Heap diagnostics policy**:
+  - the legacy `/resources/heapsnapshot` endpoint is intentionally removed for
+    Worker runtime; use Cloudflare observability tooling + queue/container logs
+    for runtime diagnostics.
 
 ## Rollback plan
 
