@@ -62,6 +62,10 @@ reference:
   (`mock-servers/cloudinary/worker.ts`, local port `8803`).
 - GitHub content fetches in mocks mode use local filesystem fallback in
   `app/utils/github.server.ts` (no network call required for content paths).
+- Media workflow:
+  - canonical manifests live in `content/data/media-manifests/{images,videos}.json`
+  - changed-file sync script: `bun run media:sync-cloudflare`
+  - strict legacy scan gate: `bun run media:scan-legacy-references:strict`
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
@@ -93,3 +97,5 @@ reference:
   `docs/agents/cloudflare-managed-controls.md`
 - Cloudflare cutover runbook (data parity, rollout, rollback):
   `docs/cloudflare-cutover-runbook.md`
+- Cloudflare media migration + sync runbook:
+  `docs/cloudflare-media-migration.md`

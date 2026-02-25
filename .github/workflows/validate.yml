@@ -56,6 +56,32 @@ jobs:
       - name: 🧹 Lint
         run: bun run lint
 
+  media-references:
+    runs-on: ubuntu-latest
+    name: 🖼️ Media reference scan
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🖼️ Scan media references
+        run: bun run media:scan-legacy-references:strict
+
   typecheck:
     runs-on: ubuntu-latest
     name: 🧪 Typecheck

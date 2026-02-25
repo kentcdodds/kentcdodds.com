@@ -17,6 +17,7 @@ and stable.
 - `docs/agents/bugfix-workflow.md`
 - `docs/agents/testing-principles.md`
 - `docs/cloudflare-cutover-runbook.md` (release/cutover/rollback checklist)
+- `docs/cloudflare-media-migration.md` (media migration + sync workflow)
 - `docs/agents/cloudflare-managed-controls.md`
 - `docs/agents/mock-api-servers.md`
 
