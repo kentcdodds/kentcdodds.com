@@ -5,6 +5,7 @@ import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 import { PrismaClient, type User } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -17,11 +18,8 @@ type PrismaClientAdapterOptions = {
 	eagerConnect?: boolean
 }
 
-const prisma = remember('prisma', getClient)
-
-function getClient(): PrismaClient {
-	return createPrismaClient()
-}
+const sqlitePrisma = remember('prisma', createPrismaClient)
+const d1PrismaClients = new WeakMap<object, PrismaClient>()
 
 function createPrismaClient({
 	d1,
@@ -65,6 +63,34 @@ function createPrismaClient({
 function createPrismaClientForD1(d1: D1Binding) {
 	return createPrismaClient({ d1, eagerConnect: false })
 }
+
+function isD1Binding(value: unknown): value is D1Binding {
+	return typeof value === 'object' && value !== null
+}
+
+function getD1PrismaClient(dbBinding: D1Binding) {
+	const existingClient = d1PrismaClients.get(dbBinding)
+	if (existingClient) return existingClient
+	const client = createPrismaClientForD1(dbBinding)
+	d1PrismaClients.set(dbBinding, client)
+	return client
+}
+
+function getActivePrismaClient() {
+	const dbBinding = getRuntimeBinding('DB')
+	if (isD1Binding(dbBinding)) {
+		return getD1PrismaClient(dbBinding)
+	}
+	return sqlitePrisma
+}
+
+const prisma = new Proxy({} as PrismaClient, {
+	get(_, prop) {
+		const client = getActivePrismaClient()
+		const value = (client as unknown as Record<PropertyKey, unknown>)[prop]
+		return typeof value === 'function' ? value.bind(client) : value
+	},
+})
 
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 365
 

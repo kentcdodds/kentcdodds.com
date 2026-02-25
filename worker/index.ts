@@ -10,6 +10,10 @@ import {
 	setRuntimeEnvSource,
 } from '#app/utils/env.server.ts'
 import { runExpiredDataCleanup } from '#app/utils/expired-data-cleanup.server.ts'
+import {
+	clearRuntimeBindingSource,
+	setRuntimeBindingSource,
+} from '#app/utils/runtime-bindings.server.ts'
 
 let cachedRequestHandler:
 	| ((request: Request, loadContext?: AppLoadContext) => Promise<Response>)
@@ -46,11 +50,13 @@ export default {
 
 		try {
 			setRuntimeEnvSource(getStringEnvBindings(requestEnv))
+			setRuntimeBindingSource(requestEnv)
 			const response = await requestHandler(request, {
 				cloudflare: { env: requestEnv, ctx },
 			})
 			return applyD1Bookmark(response, getD1Bookmark(dbSession))
 		} finally {
+			clearRuntimeBindingSource()
 			clearRuntimeEnvSource()
 		}
 	},
@@ -60,6 +66,7 @@ export default {
 	) {
 		try {
 			setRuntimeEnvSource(getStringEnvBindings(env))
+			setRuntimeBindingSource(env)
 			await runExpiredDataCleanup({
 				reason: `worker-cron:${controller.cron}`,
 			})
@@ -67,6 +74,7 @@ export default {
 			console.error('Scheduled cleanup failed', error)
 			throw error
 		} finally {
+			clearRuntimeBindingSource()
 			clearRuntimeEnvSource()
 		}
 	},
