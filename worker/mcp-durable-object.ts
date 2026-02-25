@@ -18,7 +18,7 @@ export class McpDurableObject {
 
 	async fetch(request: Request) {
 		if (request.headers.get('accept')?.includes('text/html')) {
-			return Response.redirect('/about-mcp', 302)
+			return Response.redirect(new URL('/about-mcp', request.url).toString(), 302)
 		}
 
 		try {
