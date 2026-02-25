@@ -98,9 +98,7 @@ export async function getMdxPagesInDirectory(
 	contentDir: string,
 	options: CachifiedOptions,
 ) {
-	const dirList =
-		(await getMdxRemoteDirListCached({ contentDir, options })) ??
-		(await getMdxDirList(contentDir, options))
+	const dirList = await getMdxDirList(contentDir, options)
 	const pages = await Promise.all(
 		dirList.map(async ({ slug }) => {
 			const remotePage = await getMdxRemotePageCached({
@@ -122,6 +120,11 @@ export async function getMdxDirList(
 	contentDir: string,
 	options?: CachifiedOptions,
 ) {
+	const remoteDirList = await getMdxRemoteDirListCached({
+		contentDir,
+		options: options ?? {},
+	})
+	if (remoteDirList) return remoteDirList
 	const { forceFresh, ttl = defaultTTL, request, timings } = options ?? {}
 	const key = getDirListKey(contentDir)
 	return cachified({

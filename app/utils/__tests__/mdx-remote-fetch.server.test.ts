@@ -15,7 +15,11 @@ const compileMdxMocks = vi.hoisted(() => ({
 
 vi.mock('#app/utils/compile-mdx.server.ts', () => compileMdxMocks)
 
-import { getMdxPage, getMdxPagesInDirectory } from '#app/utils/mdx.server.ts'
+import {
+	getMdxDirList,
+	getMdxPage,
+	getMdxPagesInDirectory,
+} from '#app/utils/mdx.server.ts'
 import {
 	clearRuntimeBindingSource,
 	setRuntimeBindingSource,
@@ -138,6 +142,39 @@ test('getMdxPagesInDirectory uses mdx-remote manifest and skips github listing',
 		expect(githubMocks.downloadDirList).not.toHaveBeenCalled()
 		expect(githubMocks.downloadMdxFileOrDirectory).not.toHaveBeenCalled()
 		expect(compileMdxMocks.compileMdx).not.toHaveBeenCalled()
+	} finally {
+		clearRuntimeBindingSource()
+		clearRuntimeEnvSource()
+	}
+})
+
+test('getMdxDirList uses mdx-remote manifest when enabled', async () => {
+	const firstSlug = `page-${crypto.randomUUID()}`
+	const secondSlug = `page-${crypto.randomUUID()}`
+	githubMocks.downloadDirList.mockReset()
+	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
+	setRuntimeBindingSource({
+		MDX_REMOTE_KV: {
+			get: vi.fn(async (key: string) => {
+				if (key !== 'manifest.json') return null
+				return JSON.stringify({
+					entries: [
+						{ collection: 'pages', slug: firstSlug },
+						{ collection: 'pages', slug: secondSlug },
+						{ collection: 'blog', slug: 'ignore-me' },
+					],
+				})
+			}),
+		},
+	})
+
+	try {
+		const dirEntries = await getMdxDirList('pages', { forceFresh: true })
+		expect(dirEntries).toEqual([
+			{ name: firstSlug, slug: firstSlug },
+			{ name: secondSlug, slug: secondSlug },
+		])
+		expect(githubMocks.downloadDirList).not.toHaveBeenCalled()
 	} finally {
 		clearRuntimeBindingSource()
 		clearRuntimeEnvSource()
