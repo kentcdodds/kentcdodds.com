@@ -313,7 +313,7 @@ function validateManifestShape({
 			throw new Error(`Manifest id is empty for "${key}".`)
 		}
 		const inferredKind = getMediaKind(asset.sourcePath)
-		if (inferredKind !== kind) {
+		if (inferredKind !== null && inferredKind !== kind) {
 			throw new Error(
 				`Manifest media kind mismatch for "${key}". Expected ${kind}, got ${String(inferredKind)}.`,
 			)

@@ -60,6 +60,7 @@
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx ./index.js",
     "predeploy:healthcheck": "node ./other/pre-deployment-health-check.js",
     "media:normalize-content-layout": "bun tools/media/normalize-content-mdx-layout.ts",
+    "media:bootstrap-cloudinary": "bun tools/media/bootstrap-cloudinary-media.ts",
     "media:normalize-legacy-paths": "bun tools/media/normalize-legacy-media-paths.ts",
     "media:scan-legacy-references": "bun tools/media/scan-legacy-media-references.ts",
     "media:scan-legacy-references:strict": "bun tools/media/scan-legacy-media-references.ts --strict",
