@@ -3,9 +3,10 @@ import { getChangedFiles, fetchJson } from './get-changed-files.js'
 const [currentCommitSha] = process.argv.slice(2)
 
 const baseUrl =
-	process.env.GITHUB_REF_NAME === 'dev'
-		? 'https://kcd-staging.fly.dev'
-		: 'https://kentcdodds.com'
+	process.env.REFRESH_CONTENT_BASE_URL ||
+	(process.env.GITHUB_REF_NAME === 'dev'
+		? 'https://kentcdodds-com-development.workers.dev'
+		: 'https://kentcdodds.com')
 
 async function go() {
 	const buildInfo = await fetchJson(`${baseUrl}/build/info.json`, {
