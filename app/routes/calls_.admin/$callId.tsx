@@ -164,7 +164,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 				<H6 as="h3" className="mb-2">
 					Notes
 				</H6>
-				<Paragraph className="whitespace-pre-wrap text-gray-600 dark:text-slate-300">
+				<Paragraph className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-600 dark:text-slate-300">
 					{call.notes ?? 'No notes provided.'}
 				</Paragraph>
 			</div>
