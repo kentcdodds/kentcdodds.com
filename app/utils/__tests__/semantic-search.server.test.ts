@@ -22,7 +22,7 @@ vi.mock('#app/utils/semantic-search-presentation.server.ts', () => ({
 import { semanticSearchKCD } from '../semantic-search.server.ts'
 
 test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_GATEWAY_ID', async () => {
-	using _env = setEnv({
+	using ignoredEnv = setEnv({
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-search-gateway',
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'indexing-only-gateway',
 	})

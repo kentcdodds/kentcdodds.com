@@ -3,7 +3,7 @@ import { setEnv } from '#tests/env-disposable.ts'
 import { getCloudflareConfig } from '../cloudflare.ts'
 
 test('getCloudflareConfig prefers embedding gateway for indexing when configured', () => {
-	using _env = setEnv({
+	using ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_API_TOKEN: 'cf-token',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-gateway',
@@ -17,7 +17,7 @@ test('getCloudflareConfig prefers embedding gateway for indexing when configured
 })
 
 test('getCloudflareConfig falls back to regular gateway when embedding override is unset', () => {
-	using _env = setEnv({
+	using ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_API_TOKEN: 'cf-token',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-gateway',
