@@ -50,6 +50,8 @@
     "dev:mock-cloudflare-r2": "bun ./wrangler-env.ts dev --local --config mock-servers/cloudflare-r2/wrangler.jsonc --port 8802",
     "dev:mock-media-images": "bun ./wrangler-env.ts dev --local --config mock-servers/media-images/wrangler.jsonc --port 8803",
     "dev:mock-call-kent-ffmpeg": "bun ./wrangler-env.ts dev --local --config mock-servers/call-kent-ffmpeg/wrangler.jsonc --port 8804",
+    "dev:call-kent-ffmpeg-container": "cross-env CALL_KENT_FFMPEG_CONTAINER_PORT=8810 node ./containers/call-kent-ffmpeg/start-server.mjs",
+    "container:build:call-kent-ffmpeg": "docker build -f containers/call-kent-ffmpeg/dockerfile -t call-kent-ffmpeg-container .",
     "dev:content-watch": "bun run content:watch-mdx-remote",
     "dev:worker": "bun ./wrangler-env.ts dev --local",
     "runfile": "tsx ./other/runfile.js",

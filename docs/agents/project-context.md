@@ -20,6 +20,7 @@ reference:
 | --------------- | --------------------------------------------------------------------------------- |
 | Dev server      | `bun run dev` (starts app + worker mock stack + mdx-remote content watcher; app runs on port 3000) |
 | Calls e2e local stack | `bun run dev:calls-e2e` (starts Worker runtime + mock workers + mdx-remote watcher, including queue bindings for Call Kent draft processing) |
+| Local ffmpeg container (Node) | `bun run dev:call-kent-ffmpeg-container` (runs container-compatible HTTP ffmpeg service on port 8810) |
 | Lint            | `bun run lint`                                                                    |
 | Typecheck       | `bun run typecheck`                                                               |
 | Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
@@ -108,6 +109,9 @@ reference:
   - expected response JSON fields: `callerMp3Base64`, `responseMp3Base64`,
     and `episodeMp3Base64`.
   - when unset, local/Node ffmpeg fallback remains in place.
+  - lightweight container-compatible Node service source lives in
+    `containers/call-kent-ffmpeg/` and can be image-built via
+    `bun run container:build:call-kent-ffmpeg`.
 - Call Kent transcription payload mode:
   - default model is `@cf/openai/whisper` (raw binary `audio/mpeg` payload).
   - if using base64-only models (for example `@cf/openai/whisper-large-v3-turbo`),
@@ -147,3 +151,5 @@ reference:
   `docs/cloudflare-cutover-runbook.md`
 - Cloudflare media migration + sync runbook:
   `docs/cloudflare-media-migration.md`
+- Call Kent ffmpeg container runbook:
+  `docs/call-kent-container-runbook.md`
