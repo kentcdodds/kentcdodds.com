@@ -177,6 +177,11 @@ const schemaBase = z.object({
 		.default('manifests/ignore-list.json'),
 
 	GITHUB_REF: z.string().trim().optional().default('main'),
+	GITHUB_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.github.com'),
 
 	// Optional: /youtube route + indexing scripts.
 	YOUTUBE_PLAYLIST_ID: z

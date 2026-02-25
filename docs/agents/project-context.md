@@ -53,6 +53,8 @@ reference:
   dev (`mock-servers/oembed/worker.ts`, local port `8799`).
 - Mermaid SVG rendering calls are served by a Worker mock server in dev
   (`mock-servers/mermaid-to-svg/worker.ts`, local port `8800`).
+- GitHub content fetches in mocks mode use local filesystem fallback in
+  `app/utils/github.server.ts` (no network call required for content paths).
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
