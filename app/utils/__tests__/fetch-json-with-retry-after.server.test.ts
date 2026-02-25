@@ -167,6 +167,64 @@ test('fetchJsonWithRetryAfter retries when fetch throws (network error / abort)'
 	expect(sleep).toHaveBeenCalledWith(456)
 })
 
+test('fetchJsonWithRetryAfter does not forward signal when timeout is enabled', async () => {
+	const controller = new AbortController()
+	const fetchSpy = vi
+		.spyOn(globalThis, 'fetch')
+		.mockImplementation(async () =>
+			Response.json({ ok: true }, { status: 200 }),
+		)
+
+	try {
+		const json = await fetchJsonWithRetryAfter<{ ok: boolean }>(
+			'https://example.com/no-forward-signal-timeout',
+			{
+				label: 'no-forward-signal-timeout',
+				maxRetries: 0,
+				timeoutMs: 1000,
+				signal: controller.signal,
+			},
+		)
+
+		expect(json.ok).toBe(true)
+		const firstCall = fetchSpy.mock.calls.at(0)
+		expect(firstCall).toBeTruthy()
+		const requestInit = firstCall?.[1] as RequestInit | undefined
+		expect(requestInit?.signal).toBeUndefined()
+	} finally {
+		fetchSpy.mockRestore()
+	}
+})
+
+test('fetchJsonWithRetryAfter does not forward signal when timeout is disabled', async () => {
+	const controller = new AbortController()
+	const fetchSpy = vi
+		.spyOn(globalThis, 'fetch')
+		.mockImplementation(async () =>
+			Response.json({ ok: true }, { status: 200 }),
+		)
+
+	try {
+		const json = await fetchJsonWithRetryAfter<{ ok: boolean }>(
+			'https://example.com/no-forward-signal-no-timeout',
+			{
+				label: 'no-forward-signal-no-timeout',
+				maxRetries: 0,
+				timeoutMs: 0,
+				signal: controller.signal,
+			},
+		)
+
+		expect(json.ok).toBe(true)
+		const firstCall = fetchSpy.mock.calls.at(0)
+		expect(firstCall).toBeTruthy()
+		const requestInit = firstCall?.[1] as RequestInit | undefined
+		expect(requestInit?.signal).toBeUndefined()
+	} finally {
+		fetchSpy.mockRestore()
+	}
+})
+
 test('fetchJsonWithRetryAfter throws AbortError when signal is already aborted', async () => {
 	const controller = new AbortController()
 	controller.abort()

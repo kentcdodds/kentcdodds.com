@@ -114,13 +114,17 @@ export async function fetchJsonWithRetryAfter<JsonResponse>(
 		signal?: AbortSignal
 	} = {},
 ): Promise<JsonResponse> {
+	// Intentionally do not pass AbortSignal to fetch: Node.js v24 can crash when
+	// aborting in-flight fetches. We still honor cancellation via throwIfAborted.
+	const requestInit: RequestInit = { headers }
+
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
 		throwIfAborted(signal)
 		let res: Response
 		try {
 			res = timeoutMs
-				? await fetchWithTimeout(url, { headers, signal }, timeoutMs)
-				: await fetch(url, { headers, signal })
+				? await fetchWithTimeout(url, requestInit, timeoutMs)
+				: await fetch(url, requestInit)
 			throwIfAborted(signal)
 		} catch (cause) {
 			if (attempt < maxRetries) {
