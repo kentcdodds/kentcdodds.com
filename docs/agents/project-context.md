@@ -63,6 +63,8 @@ reference:
     requested media key matches a repo asset path.
 - Stream video URLs can use `MEDIA_STREAM_BASE_URL` (defaults to
   `${MEDIA_BASE_URL}/stream`).
+- `ENABLE_MDX_REMOTE=true` enables runtime rendering via the new mdx-remote
+  JSON-tree interpreter path.
 - GitHub content fetches in mocks mode use local filesystem fallback in
   `app/utils/github.server.ts` (no network call required for content paths).
 - Media workflow:
