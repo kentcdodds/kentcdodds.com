@@ -5,6 +5,11 @@ import {
 	downloadDirList,
 	downloadMdxFileOrDirectory,
 } from '#app/utils/github.server.ts'
+import {
+	buildMdxPageFromRemoteDocument,
+	getMdxRemoteDocument,
+	shouldUseMdxRemoteDocuments,
+} from '#app/utils/mdx-remote-documents.server.ts'
 import { formatDate, typedBoolean } from '#app/utils/misc.ts'
 import { cache, cachified } from './cache.server.ts'
 import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
@@ -59,6 +64,13 @@ export async function getMdxPage(
 		forceFresh,
 		checkValue: checkCompiledValue,
 		getFreshValue: async (context) => {
+			const remotePage = await getMdxRemotePageCached({
+				contentDir,
+				slug,
+				options,
+			})
+			if (remotePage) return remotePage
+
 			const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
 			const compiledPage = await compileMdxCached({
 				contentDir,
@@ -86,21 +98,17 @@ export async function getMdxPagesInDirectory(
 	options: CachifiedOptions,
 ) {
 	const dirList = await getMdxDirList(contentDir, options)
-
-	// our octokit throttle plugin will make sure we don't hit the rate limit
-	const pageDatas = await Promise.all(
-		dirList.map(async ({ slug }) => {
-			return {
-				...(await downloadMdxFilesCached(contentDir, slug, options)),
-				slug,
-			}
-		}),
-	)
-
 	const pages = await Promise.all(
-		pageDatas.map((pageData) =>
-			compileMdxCached({ contentDir, ...pageData, options }),
-		),
+		dirList.map(async ({ slug }) => {
+			const remotePage = await getMdxRemotePageCached({
+				contentDir,
+				slug,
+				options,
+			})
+			if (remotePage) return remotePage
+			const pageData = await downloadMdxFilesCached(contentDir, slug, options)
+			return compileMdxCached({ contentDir, slug, ...pageData, options })
+		}),
 	)
 	return pages.filter(typedBoolean)
 }
@@ -134,6 +142,38 @@ export async function getMdxDirList(
 				}))
 				.filter(({ name }) => name !== 'README.md')
 			return dirList
+		},
+	})
+}
+
+async function getMdxRemotePageCached({
+	contentDir,
+	slug,
+	options,
+}: {
+	contentDir: string
+	slug: string
+	options: CachifiedOptions
+}) {
+	if (!shouldUseMdxRemoteDocuments()) return null
+	const { forceFresh, ttl = defaultTTL, request, timings } = options
+	return cachified({
+		key: `${contentDir}:${slug}:compiled:remote`,
+		cache,
+		request,
+		timings,
+		ttl,
+		staleWhileRevalidate: defaultStaleWhileRevalidate,
+		forceFresh,
+		checkValue: checkCompiledValue,
+		getFreshValue: async () => {
+			const remoteDocument = await getMdxRemoteDocument({ contentDir, slug })
+			if (!remoteDocument) return null
+			return buildMdxPageFromRemoteDocument({
+				contentDir,
+				slug,
+				document: remoteDocument,
+			})
 		},
 	})
 }
