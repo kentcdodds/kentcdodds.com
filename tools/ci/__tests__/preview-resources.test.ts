@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import {
 	buildGeneratedWranglerConfig,
 	buildPreviewResourceNames,
+	isRetryableWranglerFailure,
 } from '../preview-resources.ts'
 
 test('buildPreviewResourceNames keeps queue/db/kv names within limits', () => {
@@ -180,4 +181,15 @@ test('buildGeneratedWranglerConfig adds mdx remote r2 binding when configured', 
 			bucket_name: 'mdx-remote-bucket',
 		},
 	])
+})
+
+test('isRetryableWranglerFailure recognizes retryable wrangler/network errors', () => {
+	expect(isRetryableWranglerFailure('Request timed out while contacting API')).toBe(
+		true,
+	)
+	expect(isRetryableWranglerFailure('Fetch failed: ECONNRESET')).toBe(true)
+	expect(isRetryableWranglerFailure('Error 429: rate limit reached')).toBe(true)
+	expect(isRetryableWranglerFailure('Cloudflare API returned 500')).toBe(true)
+	expect(isRetryableWranglerFailure('invalid auth token')).toBe(false)
+	expect(isRetryableWranglerFailure('resource not found')).toBe(false)
 })
