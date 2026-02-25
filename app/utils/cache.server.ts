@@ -178,7 +178,7 @@ async function listKvCacheKeys(limit: number) {
 export async function getAllCacheKeys(limit: number) {
 	const kvKeys = await listKvCacheKeys(limit)
 	return {
-		sqlite: kvKeys.length
+		shared: kvKeys.length
 			? kvKeys
 			: preparedAllKeys.all(limit).map((row) => (row as { key: string }).key),
 		lru: [...lruInstance.keys()],
@@ -190,13 +190,13 @@ export async function searchCacheKeys(search: string, limit: number) {
 	if (kvNamespace) {
 		const keys = await listKvCacheKeys(Math.max(limit * 5, limit))
 		return {
-			sqlite: keys.filter((key) => key.includes(search)).slice(0, limit),
+			shared: keys.filter((key) => key.includes(search)).slice(0, limit),
 			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 		}
 	}
 
 	return {
-		sqlite: preparedKeySearch
+		shared: preparedKeySearch
 			.all(`%${search}%`, limit)
 			.map((row) => (row as { key: string }).key),
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),

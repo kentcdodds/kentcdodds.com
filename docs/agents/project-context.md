@@ -37,8 +37,12 @@ reference:
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run
   the DB reset + seed command from the table above to apply migrations and seed
   data.
-- Cache database: a separate SQLite cache DB is created at `other/cache.db`.
-  It's populated on first request or via `bun run prime-cache:mocks`.
+- Shared cache backend:
+  - Worker runtime uses the `SITE_CACHE_KV` binding when configured.
+  - If `SITE_CACHE_KV` is not bound (including most local Node workflows), the
+    app falls back to the SQLite cache file at `other/cache.db`.
+  - Add `SITE_CACHE_KV` in Wrangler env config per environment before relying on
+    KV-backed shared cache behavior.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - Semantic search caveat: YouTube auto-captions can include cue-only chunks like

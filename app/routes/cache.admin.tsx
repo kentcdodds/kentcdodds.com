@@ -49,6 +49,8 @@ async function getMatchingCacheKeys({
 	return getAllCacheKeys(sanitizedLimit)
 }
 
+type CacheBucketType = 'shared' | 'memory'
+
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 	const searchParams = new URL(request.url).searchParams
@@ -68,8 +70,8 @@ export async function action({ request }: Route.ActionArgs) {
 	if (intent === deleteAllMatchingIntent) {
 		const query = searchParams.get('query')
 		const limit = Number(searchParams.get('limit') ?? 100)
-		const { sqlite, lru } = await getMatchingCacheKeys({ query, limit })
-		for (const cacheKey of sqlite) {
+		const { shared, lru } = await getMatchingCacheKeys({ query, limit })
+		for (const cacheKey of shared) {
 			await cache.delete(cacheKey)
 		}
 		for (const cacheKey of lru) {
@@ -85,11 +87,11 @@ export async function action({ request }: Route.ActionArgs) {
 	invariantResponse(typeof type === 'string', 'type must be a string')
 
 	switch (type) {
-		case 'sqlite': {
+		case 'shared': {
 			await cache.delete(key)
 			break
 		}
-		case 'lru': {
+		case 'memory': {
 			lruCache.delete(key)
 			break
 		}
@@ -108,7 +110,7 @@ export default function CacheAdminRoute({
 	const query = searchParams.get('query') ?? ''
 	const limit = searchParams.get('limit') ?? '100'
 	const matchingCacheValuesCount =
-		data.cacheKeys.sqlite.length + data.cacheKeys.lru.length
+		data.cacheKeys.shared.length + data.cacheKeys.lru.length
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
 		void submit(form)
@@ -164,16 +166,16 @@ export default function CacheAdminRoute({
 			/>
 			<Spacer size="2xs" />
 			<div className="flex flex-col gap-4">
-				<H3>LRU Cache:</H3>
+				<H3>Memory Cache:</H3>
 				{data.cacheKeys.lru.map((key) => (
-					<CacheKeyRow key={key} cacheKey={key} type="lru" />
+					<CacheKeyRow key={key} cacheKey={key} type="memory" />
 				))}
 			</div>
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
 				<H3>Shared Cache:</H3>
-				{data.cacheKeys.sqlite.map((key) => (
-					<CacheKeyRow key={key} cacheKey={key} type="sqlite" />
+				{data.cacheKeys.shared.map((key) => (
+					<CacheKeyRow key={key} cacheKey={key} type="shared" />
 				))}
 			</div>
 		</div>
@@ -214,7 +216,7 @@ function CacheKeyRow({
 	type,
 }: {
 	cacheKey: string
-	type: string
+	type: CacheBucketType
 }) {
 	const fetcher = useFetcher()
 	const dc = useDoubleCheck()
