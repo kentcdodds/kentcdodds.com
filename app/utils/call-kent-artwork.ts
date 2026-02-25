@@ -1,5 +1,4 @@
-import { images } from '#app/images.tsx'
-import { getEnv } from '#app/utils/env.server.ts'
+import { getMediaBaseUrl, images } from '#app/images.tsx'
 import { getOptionalTeam, toBase64 } from './misc.ts'
 
 export type CallKentEpisodeArtworkAvatar =
@@ -103,7 +102,7 @@ export function getCallKentEpisodeArtworkUrl({
 	const textLines = Math.ceil(Math.min(title.length, 50) / 18)
 	const avatarYPosition = textLines + 0.6
 	const nameYPosition = -textLines + 5.2
-	const imageUploadBaseUrl = `${getEnv().MEDIA_BASE_URL.replace(/\/+$/, '')}/kentcdodds-com/image/upload`
+	const imageUploadBaseUrl = `${getMediaBaseUrl().replace(/\/+$/, '')}/kentcdodds-com/image/upload`
 
 	// Keep layout math consistent by always composing at 3000px, then scaling
 	// for previews. Generating the layout directly at small sizes can crop out
