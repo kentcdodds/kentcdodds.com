@@ -85,7 +85,7 @@ That will fail with an error like this:
 
 It looks even better in the terminal:
 
-![visual output of the above](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032930/kentcdodds.com/content/blog/improve-test-error-messages-of-your-abstractions/one.png)
+![visual output of the above](/media/image/upload/v1625032930/kentcdodds.com/content/blog/improve-test-error-messages-of-your-abstractions/one.png)
 
 Nice right? Especially that codeframe. Being able to see not only the error
 itself. Now, I'm going to keep things contrived here to make it simple, but
@@ -267,7 +267,7 @@ function assertAdd(inputs, output) {
 And with that we get the stack trace I previewed to you above. Here's a
 screenshot of that:
 
-![visual representation of the good output](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032930/kentcdodds.com/content/blog/improve-test-error-messages-of-your-abstractions/two.png)
+![visual representation of the good output](/media/image/upload/v1625032930/kentcdodds.com/content/blog/improve-test-error-messages-of-your-abstractions/two.png)
 
 The problem with this is we actually don't want to _just_ filter out our
 utility. What if that utility function is built on top of other functions. So
@@ -347,7 +347,7 @@ And here's the output:
 
 And here's what that looks like visually:
 
-![visual representation of the error message](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625032930/kentcdodds.com/content/blog/improve-test-error-messages-of-your-abstractions/two.png)
+![visual representation of the error message](/media/image/upload/v1625032930/kentcdodds.com/content/blog/improve-test-error-messages-of-your-abstractions/two.png)
 
 One other thing to note is that Jest automatically knows to not make a codeframe
 out of a line that's coming from `node_modules`. So if you publish your

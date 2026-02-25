@@ -58,11 +58,11 @@ if `contacts` was `[]`? That's right! You'd render `0`!
 I shipped this mistake to production at PayPal once. No joke. It was on
 [this page](https://www.paypal.com/myaccount/transfer/homepage):
 
-![PayPal page with contacts](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033483/kentcdodds.com/content/blog/use-ternaries-rather-than-and-and-in-jsx/contacts.png)
+![PayPal page with contacts](/media/image/upload/v1625033483/kentcdodds.com/content/blog/use-ternaries-rather-than-and-and-in-jsx/contacts.png)
 
 When a user came with no contacts, this is what they saw:
 
-![PayPal page with 0 instead of contacts](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033483/kentcdodds.com/content/blog/use-ternaries-rather-than-and-and-in-jsx/no-contacts.png)
+![PayPal page with 0 instead of contacts](/media/image/upload/v1625033483/kentcdodds.com/content/blog/use-ternaries-rather-than-and-and-in-jsx/no-contacts.png)
 
 Yeah, that was not fun... Why is that? Because when JavaScript evaluates
 `0 && anything` the result will _always_ be `0` because `0` is falsy, so it

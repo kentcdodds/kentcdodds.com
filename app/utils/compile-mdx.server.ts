@@ -92,44 +92,99 @@ function trimCodeBlocks() {
 // yes, I did write this myself 😬
 const cloudinaryUrlRegex =
 	/^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
+const mediaPathRegex =
+	/^\/media\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
+
+const CLOUD_NAME = 'kentcdodds-com'
 
 function optimizeCloudinaryImages() {
+	const baseUrl = getEnv().CLOUDINARY_BASE_URL.replace(/\/+$/, '')
+
 	return async function transformer(tree: H.Root) {
 		// `unist-util-visit` types can differ between mdast/hast; this tree is hast
 		// but can still contain MDX nodes. Use `any` to avoid type churn.
 		visit(tree as any, 'mdxJsxFlowElement' as any, function visitor(node: any) {
-			if (node?.name !== 'img') return
-			const srcAttr = node.attributes?.find(
+			const srcAttr = node?.attributes?.find(
 				(attr: any) => attr?.type === 'mdxJsxAttribute' && attr?.name === 'src',
 			)
-			const urlString = srcAttr?.value ? String(srcAttr.value) : null
-			if (!srcAttr || !urlString) {
-				console.error('image without url?', node)
-				return
-			}
-			const newUrl = handleImageUrl(urlString)
+			if (!srcAttr) return
+			const urlString = srcAttr.value ? String(srcAttr.value) : null
+			if (!urlString) return
+			// img, MediaVideo, or any element with media src
+			const newUrl =
+				node?.name === 'img'
+					? handleImageUrl(urlString, baseUrl)
+					: rewriteMediaHref(urlString, baseUrl) ?? handleImageUrl(urlString, baseUrl)
 			if (newUrl) {
 				srcAttr.value = newUrl
 			}
 		})
 
 		visit(tree, 'element', function visitor(node: H.Element) {
-			if (node.tagName !== 'img') return
-			const urlString = node.properties?.src
-				? String(node.properties.src)
-				: null
-			if (!node.properties?.src || !urlString) {
-				console.error('image without url?', node)
+			if (node.tagName === 'img') {
+				const urlString = node.properties?.src
+					? String(node.properties.src)
+					: null
+				if (!node.properties?.src || !urlString) {
+					console.error('image without url?', node)
+					return
+				}
+				const newUrl = handleImageUrl(urlString, baseUrl)
+				if (newUrl) {
+					node.properties.src = newUrl
+				}
 				return
 			}
-			const newUrl = handleImageUrl(urlString)
-			if (newUrl) {
-				node.properties.src = newUrl
+			if (node.tagName === 'a' && node.properties?.href) {
+				const href = String(node.properties.href)
+				const newHref = rewriteMediaHref(href, baseUrl)
+				if (newHref) {
+					node.properties.href = newHref
+				}
 			}
 		})
 	}
 
-	function handleImageUrl(urlString: string) {
+	function rewriteMediaHref(href: string, base: string): string | null {
+		if (!href.startsWith('/media/')) return null
+		const pathAfterMedia = href.slice('/media'.length)
+		return `${base}/${CLOUD_NAME}${pathAfterMedia}`
+	}
+
+	function handleImageUrl(urlString: string, baseUrl: string): string | undefined {
+		// Canonical form: /media/image/upload/...
+		const mediaMatch = urlString.match(mediaPathRegex)
+		if (mediaMatch?.groups) {
+			const { transforms, version, publicId } = mediaMatch.groups as {
+				transforms?: string
+				version?: string
+				publicId: string
+			}
+			if (transforms) {
+				return `${baseUrl}/${CLOUD_NAME}/image/upload/${transforms}/${version ?? ''}${publicId}`.replace(
+					/\/+/g,
+					'/',
+				)
+			}
+			const defaultTransforms = [
+				'f_auto',
+				'q_auto',
+				publicId.endsWith('.gif') ? '' : 'dpr_2.0',
+				'w_1600',
+			]
+				.filter(Boolean)
+				.join(',')
+			return [
+				`${baseUrl}/${CLOUD_NAME}/image/upload`,
+				defaultTransforms,
+				version,
+				publicId,
+			]
+				.filter(Boolean)
+				.join('/')
+		}
+
+		// Legacy: full Cloudinary URLs (backward compat)
 		const match = urlString.match(cloudinaryUrlRegex)
 		const groups = match?.groups
 		if (groups) {
@@ -139,19 +194,17 @@ function optimizeCloudinaryImages() {
 				version?: string
 				publicId: string
 			}
-			// don't add transforms if they're already included
 			if (transforms) return
 			const defaultTransforms = [
 				'f_auto',
 				'q_auto',
-				// gifs can't do dpr transforms
 				publicId.endsWith('.gif') ? '' : 'dpr_2.0',
 				'w_1600',
 			]
 				.filter(Boolean)
 				.join(',')
 			return [
-				`https://res.cloudinary.com/${cloudName}/image/upload`,
+				`${baseUrl}/${cloudName}/image/upload`,
 				defaultTransforms,
 				version,
 				publicId,
