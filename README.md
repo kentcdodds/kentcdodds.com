@@ -55,6 +55,8 @@ Then open `http://localhost:3000`.
 - Security mock worker at `http://127.0.0.1:8798`
 - oEmbed mock worker at `http://127.0.0.1:8799`
 - Mermaid-to-SVG mock worker at `http://127.0.0.1:8800`
+- Cloudflare API/AI mock worker at `http://127.0.0.1:8801`
+- Cloudflare R2 mock worker at `http://127.0.0.1:8802`
 
 Each exposes a `__mocks` dashboard for request/state inspection.
 

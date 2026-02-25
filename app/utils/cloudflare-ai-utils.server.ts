@@ -14,7 +14,8 @@ export function getWorkersAiRunUrl(options: string | WorkersAiRunUrlOptions) {
 	const env = getEnv()
 	const resolvedAccountId = accountId ?? env.CLOUDFLARE_ACCOUNT_ID
 	const resolvedGatewayId = gatewayId ?? env.CLOUDFLARE_AI_GATEWAY_ID
-	return `https://gateway.ai.cloudflare.com/v1/${resolvedAccountId}/${resolvedGatewayId}/workers-ai/${model}`
+	const base = env.CLOUDFLARE_AI_GATEWAY_BASE_URL.replace(/\/+$/, '')
+	return `${base}/${resolvedAccountId}/${resolvedGatewayId}/workers-ai/${model}`
 }
 
 export function unwrapWorkersAiText(result: any): string | null {

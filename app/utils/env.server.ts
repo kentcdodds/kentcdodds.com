@@ -131,6 +131,16 @@ const schemaBase = z.object({
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
 	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,
 	CLOUDFLARE_API_TOKEN: nonEmptyString,
+	CLOUDFLARE_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.cloudflare.com/client/v4'),
+	CLOUDFLARE_AI_GATEWAY_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://gateway.ai.cloudflare.com/v1'),
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,
 	/**
