@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import worker from '../worker.ts'
 
 describe('media images mock worker', () => {
@@ -42,6 +42,47 @@ describe('media images mock worker', () => {
 		expect(videoResponse.headers.get('content-type')).toBe('video/mp4')
 		const bodyBytes = new Uint8Array(await videoResponse.arrayBuffer())
 		expect(bodyBytes.byteLength).toBeGreaterThan(0)
+	})
+
+	test('serves repo media files from assets binding when available', async () => {
+		const assetsFetch = vi.fn(async (request: Request) => {
+			const path = new URL(request.url).pathname
+			if (path === '/blog/demo/image.png') {
+				return new Response(new Uint8Array([1, 2, 3]), {
+					headers: { 'content-type': 'image/png' },
+				})
+			}
+			if (path === '/blog/demo/video.webm') {
+				return new Response(new Uint8Array([4, 5, 6]), {
+					headers: { 'content-type': 'video/webm' },
+				})
+			}
+			return new Response('not found', { status: 404 })
+		})
+
+		const imageResponse = await worker.fetch(
+			new Request('http://mock-media-images.local/images/blog/demo/image.png'),
+			{
+				ASSETS: { fetch: assetsFetch },
+			},
+		)
+		expect(imageResponse.status).toBe(200)
+		expect(imageResponse.headers.get('content-type')).toBe('image/png')
+		expect(assetsFetch).toHaveBeenCalledWith(
+			expect.objectContaining({
+				method: 'GET',
+				url: 'http://mock-media-images.local/blog/demo/image.png',
+			}),
+		)
+
+		const videoResponse = await worker.fetch(
+			new Request('http://mock-media-images.local/stream/blog/demo/video.webm'),
+			{
+				ASSETS: { fetch: assetsFetch },
+			},
+		)
+		expect(videoResponse.status).toBe(200)
+		expect(videoResponse.headers.get('content-type')).toBe('video/webm')
 	})
 
 	test('serves placeholder call artwork responses', async () => {

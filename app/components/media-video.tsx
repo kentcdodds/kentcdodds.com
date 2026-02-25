@@ -24,7 +24,10 @@ export function MediaVideo({
 	params.set('fit', crop)
 	if (height) params.set('height', String(height))
 	if (aspectRatio) params.set('aspectRatio', aspectRatio)
-	const sourceUrl = `${getMediaStreamBaseUrl().replace(/\/+$/, '')}/${resolvedVideoId}.mp4?${params.toString()}`
+	const filename = /\.[a-z0-9]+$/i.test(resolvedVideoId)
+		? resolvedVideoId
+		: `${resolvedVideoId}.mp4`
+	const sourceUrl = `${getMediaStreamBaseUrl().replace(/\/+$/, '')}/${filename}?${params.toString()}`
 
 	return (
 		<video

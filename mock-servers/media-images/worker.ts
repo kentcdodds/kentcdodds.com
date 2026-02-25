@@ -1,3 +1,24 @@
+import imagesManifestData from '../../content/data/media-manifests/images.json'
+import videosManifestData from '../../content/data/media-manifests/videos.json'
+
+type MediaManifestAsset = {
+	id: string
+	checksum: string
+	sourcePath: string
+	uploadedAt: string
+}
+
+type MediaManifest = {
+	version: number
+	assets: Record<string, MediaManifestAsset>
+}
+
+type Env = {
+	ASSETS?: {
+		fetch(request: Request): Promise<Response>
+	}
+}
+
 type RequestLogEntry = {
 	id: number
 	method: string
@@ -9,11 +30,33 @@ type RequestLogEntry = {
 const requestLog: Array<RequestLogEntry> = []
 let nextRequestId = 1
 
+const imageExtensions = new Set([
+	'.png',
+	'.jpg',
+	'.jpeg',
+	'.gif',
+	'.webp',
+	'.avif',
+	'.svg',
+])
+
+const videoExtensions = new Set(['.mp4', '.mov', '.m4v', '.webm'])
+
+const imagesManifest = imagesManifestData as MediaManifest
+const videosManifest = videosManifestData as MediaManifest
+
+const imageIdToSourcePath = new Map(
+	Object.values(imagesManifest.assets).map((asset) => [asset.id, asset.sourcePath]),
+)
+const videoIdToSourcePath = new Map(
+	Object.values(videosManifest.assets).map((asset) => [asset.id, asset.sourcePath]),
+)
+
 const mockMediaImageBase64 =
 	'UklGRhoBAABXRUJQVlA4IA4BAABwCgCdASpkAEMAPqVInUq5sy+hqvqpuzAUiWcG+BsvrZQel/iYPLGE154ZiYwzeF8UJRAKZ0oAzLdTpjlp8qBuGwW1ntMTe6iQZbxzyP4gBeg7X7SH7NwyBcUDAAD+8MrTwbAD8OLmsoaL1QDPwEE+GrfqLQPn6xkgFHCB8lyjV3K2RvcQ7pSvgA87LOVuDtMrtkm+tTV0x1RcIe4Uvb6J+yygkV48DSejuyrMWrYgoZyjkf/0/L9+bAZgCam6+oHqjBSWTq5jF7wzBxYwfoGY7OdYZOdeGb4euuuLaCzDHz/QRbDCaIsJWJW3Jo4bkbz44AI/8UfFTGX4tMTRcKLXTDIviU+/u7UnlVaDQAA='
 
 export default {
-	async fetch(request: Request): Promise<Response> {
+	async fetch(request: Request, env: Env = {}): Promise<Response> {
 		const url = new URL(request.url)
 		recordRequest({
 			method: request.method,
@@ -53,6 +96,8 @@ export default {
 				url.pathname.startsWith('/stream/')) &&
 			(request.method === 'GET' || request.method === 'HEAD')
 		) {
+			const repoMediaResponse = await tryServeRepoMediaAsset({ request, url, env })
+			if (repoMediaResponse) return repoMediaResponse
 			if (request.method === 'HEAD') {
 				return new Response(null, {
 					status: 200,
@@ -82,6 +127,97 @@ export default {
 			404,
 		)
 	},
+}
+
+async function tryServeRepoMediaAsset({
+	request,
+	url,
+	env,
+}: {
+	request: Request
+	url: URL
+	env: Env
+}) {
+	if (!env.ASSETS) return null
+	const paths = getCandidateAssetPaths(url.pathname)
+	for (const assetPath of paths) {
+		const response = await env.ASSETS.fetch(
+			new Request(
+				new URL(`/${assetPath.replace(/^\/+/, '')}`, url.origin),
+				{ method: request.method },
+			),
+		)
+		if (!response.ok) continue
+		const headers = new Headers(response.headers)
+		headers.set('cache-control', 'no-store')
+		return new Response(
+			request.method === 'HEAD' ? null : await response.arrayBuffer(),
+			{
+				status: response.status,
+				headers,
+			},
+		)
+	}
+	return null
+}
+
+function getCandidateAssetPaths(pathname: string) {
+	const paths = new Set<string>()
+	const normalizedPath = pathname.replace(/\/+$/, '')
+	if (normalizedPath.startsWith('/images/')) {
+		const imageId = decodeURIComponent(normalizedPath.slice('/images/'.length))
+		for (const path of resolveImageSourcePaths(imageId)) {
+			paths.add(path)
+		}
+	}
+	if (normalizedPath.startsWith('/stream/')) {
+		const streamId = decodeURIComponent(normalizedPath.slice('/stream/'.length))
+		for (const path of resolveVideoSourcePaths(streamId)) {
+			paths.add(path)
+		}
+	}
+	return [...paths]
+}
+
+function normalizeSourcePath(sourcePath: string) {
+	return sourcePath.replace(/^\/+/, '').replace(/^content\//, '')
+}
+
+function resolveImageSourcePaths(imageId: string) {
+	const normalizedId = imageId.replace(/^\/+/, '').replace(/^content\//, '')
+	const paths = new Set<string>()
+	const fromKey = imagesManifest.assets[normalizedId]?.sourcePath
+	if (fromKey) paths.add(normalizeSourcePath(fromKey))
+	const fromId = imageIdToSourcePath.get(normalizedId)
+	if (fromId) paths.add(normalizeSourcePath(fromId))
+	if (hasAllowedExtension(normalizedId, imageExtensions)) {
+		paths.add(normalizedId)
+	}
+	return [...paths]
+}
+
+function resolveVideoSourcePaths(streamId: string) {
+	const normalizedId = streamId.replace(/^\/+/, '').replace(/^content\//, '')
+	const baseId = normalizedId.replace(/\.mp4$/i, '')
+	const paths = new Set<string>()
+	const candidates = [normalizedId, baseId]
+	for (const candidate of candidates) {
+		const fromKey = videosManifest.assets[candidate]?.sourcePath
+		if (fromKey) paths.add(normalizeSourcePath(fromKey))
+		const fromId = videoIdToSourcePath.get(candidate)
+		if (fromId) paths.add(normalizeSourcePath(fromId))
+		if (hasAllowedExtension(candidate, videoExtensions)) {
+			paths.add(candidate)
+		}
+	}
+	return [...paths]
+}
+
+function hasAllowedExtension(filePath: string, extensions: Set<string>) {
+	const extension = filePath.includes('.')
+		? `.${filePath.split('.').pop()?.toLowerCase() ?? ''}`
+		: ''
+	return extensions.has(extension)
 }
 
 function decodeBase64(value: string) {
