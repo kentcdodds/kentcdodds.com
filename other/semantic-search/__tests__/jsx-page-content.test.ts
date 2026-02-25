@@ -150,7 +150,9 @@ describe('jsx page content utils', () => {
 		expect(extracted.text).not.toContain('Also excluded text')
 	})
 
-	test('getMdxPageRoutes recursively discovers nested MDX files', async () => {
+	test(
+		'getMdxPageRoutes discovers nested mdx files and index routes',
+		async () => {
 		const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jsx-page-routes-'))
 		try {
 			await fs.mkdir(path.join(root, 'content', 'pages', 'nested', 'deep'), {
@@ -171,6 +173,14 @@ describe('jsx page content utils', () => {
 				'# Leaf page',
 				'utf8',
 			)
+			await fs.mkdir(path.join(root, 'content', 'pages', 'using-index'), {
+				recursive: true,
+			})
+			await fs.writeFile(
+				path.join(root, 'content', 'pages', 'using-index', 'index.mdx'),
+				'# Using index',
+				'utf8',
+			)
 			await fs.writeFile(
 				path.join(root, 'content', 'pages', 'nested', 'deep', 'ignore.txt'),
 				'ignore me',
@@ -182,11 +192,13 @@ describe('jsx page content utils', () => {
 				'/nested/child-page',
 				'/nested/deep/leaf-page',
 				'/top-level',
+				'/using-index',
 			])
 		} finally {
 			await fs.rm(root, { recursive: true, force: true })
 		}
-	})
+		},
+	)
 
 	test('loadJsxPageItemsFromRunningSite follows one same-origin redirect', async () => {
 		const server = http.createServer((req, res) => {
