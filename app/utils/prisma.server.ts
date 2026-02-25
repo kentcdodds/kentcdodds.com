@@ -1,5 +1,6 @@
 import { remember } from '@epic-web/remember'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaD1 } from '@prisma/adapter-d1'
 import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
@@ -10,16 +11,29 @@ import { time, type Timings } from './timing.server.ts'
 
 const logThreshold = 500
 const ADMIN_EMAIL = 'me@kentcdodds.com'
+type D1Binding = ConstructorParameters<typeof PrismaD1>[0]
+type PrismaClientAdapterOptions = {
+	d1?: D1Binding
+	url?: string
+	eagerConnect?: boolean
+}
 
 const prisma = remember('prisma', getClient)
 
 function getClient(): PrismaClient {
+	return createPrismaClient()
+}
+
+function createPrismaClient({
+	d1,
+	url = getEnv().DATABASE_URL,
+	eagerConnect = true,
+}: PrismaClientAdapterOptions = {}): PrismaClient {
 	// NOTE: during development if you change anything in this function, remember
 	// that this only runs once per server restart and won't automatically be
 	// re-run per request like everything else is.
-	const url = getEnv().DATABASE_URL
 	const client = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
+		adapter: d1 ? new PrismaD1(d1) : new PrismaBetterSqlite3({ url }),
 		log: [
 			{ level: 'query', emit: 'event' },
 			{ level: 'error', emit: 'stdout' },
@@ -43,8 +57,14 @@ function getClient(): PrismaClient {
 		console.info(`prisma:query - ${dur} - ${e.query}`)
 	})
 	// make the connection eagerly so the first request doesn't have to wait
-	void client.$connect()
+	if (eagerConnect) {
+		void client.$connect()
+	}
 	return client
+}
+
+function createPrismaClientForD1(d1: D1Binding) {
+	return createPrismaClient({ d1, eagerConnect: false })
 }
 
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 365
@@ -186,5 +206,6 @@ export {
 	getUserFromSessionId,
 	normalizeUserRole,
 	prisma,
+	createPrismaClientForD1,
 	sessionExpirationTime,
 }
