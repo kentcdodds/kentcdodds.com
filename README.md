@@ -73,8 +73,8 @@ For contribution guidelines and manual setup details, read
 [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 <!-- prettier-ignore-start -->
-[build-badge]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/deployment.yml/badge.svg?branch=main
-[build]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/deployment.yml
+[build-badge]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/validate.yml/badge.svg?branch=main
+[build]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/validate.yml
 [license-badge]: https://img.shields.io/badge/license-GPL%203.0%20License-blue.svg?style=flat-square
 [license]: https://github.com/kentcdodds/kentcdodds.com/blob/main/LICENSE.md
 <!-- prettier-ignore-end -->
