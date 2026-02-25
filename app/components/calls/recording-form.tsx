@@ -164,7 +164,7 @@ export function RecordingForm({
 		notes: clientErrors.notes ?? submissionData?.errors.notes ?? null,
 	}
 
-	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
 		if (isSubmitting) return
 		setRequestError(null)
@@ -184,77 +184,51 @@ export function RecordingForm({
 			return
 		}
 
-		const reader = new FileReader()
-		const handleLoadEnd = async () => {
-			try {
-				if (typeof reader.result !== 'string') {
-					setRequestError('Unable to read recording. Please try again.')
-					return
-				}
-				form.append('audio', reader.result)
-
-				const body = new URLSearchParams()
-				for (const [key, value] of form.entries()) {
-					if (typeof value === 'string') {
-						body.append(key, value)
-					}
-				}
-
-				const headers = new Headers({
-					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-				})
-				const abortController = new AbortController()
-				abortControllerRef.current = abortController
-
-				try {
-					const response = await fetch(recordingFormActionPath, {
-						method: 'POST',
-						body,
-						headers,
-						signal: abortController.signal,
-					})
-
-					const redirectPath = getNavigationPathFromResponse(response)
-					if (redirectPath) {
-						await navigate(redirectPath)
-						return
-					}
-
-					if (response.ok) {
-						await revalidator.revalidate()
-						return
-					}
-
-					const actionData = await response.json().catch(() => null)
-					if (actionData && typeof actionData === 'object') {
-						setSubmissionData(actionData as RecordingFormData)
-					} else {
-						setRequestError('Something went wrong submitting your recording.')
-					}
-					return
-				} catch (error: unknown) {
-					if (error instanceof DOMException && error.name === 'AbortError') {
-						return
-					}
-					console.error('Unable to submit recording', error)
-					setRequestError('Unable to submit recording. Please try again.')
-				} finally {
-					if (abortControllerRef.current === abortController) {
-						abortControllerRef.current = null
-					}
-				}
-			} finally {
-				setIsSubmitting(false)
+		const body = new FormData()
+		for (const [key, value] of form.entries()) {
+			if (typeof value === 'string') {
+				body.append(key, value)
 			}
 		}
-		reader.addEventListener('loadend', handleLoadEnd, { once: true })
+		body.append('audio', audio, 'recording.webm')
+
 		setIsSubmitting(true)
+		const abortController = new AbortController()
+		abortControllerRef.current = abortController
 		try {
-			reader.readAsDataURL(audio)
+			const response = await fetch(recordingFormActionPath, {
+				method: 'POST',
+				body,
+				signal: abortController.signal,
+			})
+
+			const redirectPath = getNavigationPathFromResponse(response)
+			if (redirectPath) {
+				await navigate(redirectPath)
+				return
+			}
+
+			if (response.ok) {
+				await revalidator.revalidate()
+				return
+			}
+
+			const actionData = await response.json().catch(() => null)
+			if (actionData && typeof actionData === 'object') {
+				setSubmissionData(actionData as RecordingFormData)
+			} else {
+				setRequestError('Something went wrong submitting your recording.')
+			}
 		} catch (error: unknown) {
-			reader.removeEventListener('loadend', handleLoadEnd)
-			console.error('Unable to read recording', error)
-			setRequestError('Unable to read recording. Please try again.')
+			if (error instanceof DOMException && error.name === 'AbortError') {
+				return
+			}
+			console.error('Unable to submit recording', error)
+			setRequestError('Unable to submit recording. Please try again.')
+		} finally {
+			if (abortControllerRef.current === abortController) {
+				abortControllerRef.current = null
+			}
 			setIsSubmitting(false)
 		}
 	}
