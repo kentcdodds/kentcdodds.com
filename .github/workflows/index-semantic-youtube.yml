@@ -28,16 +28,21 @@ jobs:
         with:
           node-version: 24
 
+      - name: 🥟 Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.9
+
       - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
+        run: bun install --frozen-lockfile
 
       - name: 🔎 Index youtube playlist
         run: |
           set -euo pipefail
           if [ -n "${YOUTUBE_VIDEO_IDS:-}" ]; then
-            node other/semantic-search/index-youtube-playlist.ts --videos "$YOUTUBE_VIDEO_IDS"
+            bun other/semantic-search/index-youtube-playlist.ts --videos "$YOUTUBE_VIDEO_IDS"
           else
-            node other/semantic-search/index-youtube-playlist.ts
+            bun other/semantic-search/index-youtube-playlist.ts
           fi
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

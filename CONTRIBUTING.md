@@ -60,7 +60,8 @@ instructions:
 
 ### System Requirements
 
-- [Node.js](https://nodejs.org/) >= 16.0.0
+- [Bun](https://bun.sh/) >= 1.3.9
+- [Node.js](https://nodejs.org/) >= 24.0.0
 - [git](https://git-scm.com/) >= 2.7.0
 - [Docker](https://www.docker.com/)
 
@@ -68,7 +69,7 @@ instructions:
 
 1.  Fork and clone the repo
 2.  Copy `.env.example` into `.env`
-3.  Run `npm run setup -s` to install dependencies and run validation
+3.  Run `bun run setup -s` to install dependencies and run validation
 4.  Create a branch for your PR with `git checkout -b pr/your-branch-name`
 
 > Tip: Keep your `main` branch pointing at the original repository and make pull
@@ -98,29 +99,29 @@ cd ./kentcdodds.com
 cp .env.example .env
 
 # Install deps
-npm install
+bun install
 
 # setup database
 prisma migrate reset --force
 
 # run build, typecheck, linting
-npm run validate
+bun run validate
 
 # setup cache database
-npm run prime-cache:mocks
+bun run prime-cache:mocks
 
 # Install playwright browsers
-npm run test:e2e:install
+bun run test:e2e:install
 
 # run e2e tests
-npm run test:e2e:run
+bun run test:e2e:run
 ```
 
 If that all worked without trouble, you should be able to start development
 with:
 
 ```sh
-npm run dev
+bun run dev
 ```
 
 And open up `http://localhost:3000` and rock!
@@ -147,13 +148,13 @@ with Playwright.
 
 ```sh
 # run the unit and component tests with jest via:
-npm run test
+bun run test
 
 # run the Playwright tests in dev mode:
-npm run test:e2e:dev
+bun run test:e2e:dev
 
 # run the Playwright tests in headless mode:
-npm run test:e2e:run
+bun run test:e2e:run
 ```
 
 ## Running static tests (Formatting/Linting/Typing)
@@ -163,9 +164,9 @@ commit (only relevant files are checked). You can run them individually though
 if you want:
 
 ```sh
-npm run format
-npm run lint
-npm run typecheck
+bun run format
+bun run lint
+bun run typecheck
 ```
 
 These are all configured in the project to hopefully work with whatever editor
@@ -185,7 +186,7 @@ what commands you can run in `./prisma/schema.prisma`.
 One common command you might need to run is to re-seed the database:
 
 ```sh
-npx prisma@7 migrate reset --force
+bunx prisma@7 migrate reset --force
 ```
 
 In addition to resetting your database to the latest schema, it'll also run the

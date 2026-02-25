@@ -6,7 +6,9 @@ APIs.
 
 ## Prerequisites
 
-- Node.js 24 is required (`engines` in `package.json`).
+- Bun 1.3.9+ is required (`packageManager` in `package.json`).
+  - Install via `curl -fsSL https://bun.sh/install | bash`.
+- Node.js 24 is still required for some tooling/runtime scripts.
   - Install via `nvm install 24 && nvm alias default 24`.
 
 ## Key commands
@@ -16,14 +18,14 @@ reference:
 
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
-| Dev server      | `npm run dev` (starts on port 3000 with `MOCKS=true`)                             |
-| Lint            | `npm run lint`                                                                    |
-| Typecheck       | `npm run typecheck`                                                               |
-| Unit tests      | `npm run test` (runs backend + browser-mode tests)                                |
-| Backend tests   | `npm run test:backend`                                                            |
-| Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
-| E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
-| DB reset + seed | `npx prisma@7 migrate reset --force` then `npm run runfile -- prisma/seed.ts`     |
+| Dev server      | `bun run dev` (starts on port 3000 with `MOCKS=true`)                             |
+| Lint            | `bun run lint`                                                                    |
+| Typecheck       | `bun run typecheck`                                                               |
+| Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
+| Backend tests   | `bun run test:backend`                                                            |
+| Browser tests   | `bun run test:browser` (requires Playwright browsers: `bun run test:e2e:install`) |
+| E2E tests       | `bun run test:e2e:dev` (requires Playwright browsers: `bun run test:e2e:install`) |
+| DB reset + seed | `bunx prisma@7 migrate reset --force` then `bun run runfile -- prisma/seed.ts`     |
 
 ## Non-obvious caveats
 
@@ -36,7 +38,7 @@ reference:
   the DB reset + seed command from the table above to apply migrations and seed
   data.
 - Cache database: a separate SQLite cache DB is created at `other/cache.db`.
-  It's populated on first request or via `npm run prime-cache:mocks`.
+  It's populated on first request or via `bun run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - Semantic search caveat: YouTube auto-captions can include cue-only chunks like

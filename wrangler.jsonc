@@ -1,0 +1,24 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kentcdodds-com",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"APP_ENV": "production"
+	},
+	"env": {
+		"preview": {
+			"name": "kentcdodds-com-preview",
+			"vars": {
+				"APP_ENV": "preview"
+			}
+		},
+		"test": {
+			"name": "kentcdodds-com-test",
+			"vars": {
+				"APP_ENV": "test"
+			}
+		}
+	}
+}

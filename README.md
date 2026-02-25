@@ -18,8 +18,8 @@ Vite, and an Express server.
 
 ## Prerequisites
 
+- [Bun](https://bun.sh/) `>=1.3.9`
 - [Node.js](https://nodejs.org/) `24`
-- `npm` `>=10`
 - [git](https://git-scm.com/)
 
 ## Setup
@@ -28,7 +28,7 @@ Vite, and an Express server.
 2. Copy environment variables:
    - `cp .env.example .env`
 3. Run the full setup script:
-   - `npm run setup -s`
+   - `bun run setup -s`
 
 The setup script installs dependencies, resets the local database, validates the
 project, primes local cache data, installs Playwright browsers, and runs
@@ -38,18 +38,18 @@ end-to-end tests.
 
 Start the development server:
 
-- `npm run dev`
+- `bun run dev`
 
 Then open `http://localhost:3000`.
 
 ## Useful scripts
 
-- `npm run dev` - start local development server
-- `npm run test` - run unit/component tests
-- `npm run test:e2e:dev` - run Playwright tests against dev server
-- `npm run lint` - run ESLint
-- `npm run typecheck` - run TypeScript checks
-- `npm run build` - build the app
+- `bun run dev` - start local development server
+- `bun run test` - run unit/component tests
+- `bun run test:e2e:dev` - run Playwright tests against dev server
+- `bun run lint` - run ESLint
+- `bun run typecheck` - run TypeScript checks
+- `bun run build` - build the app
 
 ## Contributing
 

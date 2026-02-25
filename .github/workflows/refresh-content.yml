@@ -20,7 +20,15 @@ jobs:
         with:
           node-version: 24
 
+      - name: 🥟 Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.9
+
+      - name: 📥 Download deps
+        run: bun install --frozen-lockfile
+
       - name: 🥬 Refresh Content
-        run: node ./other/refresh-changed-content.js ${{ github.sha }}
+        run: bun ./other/refresh-changed-content.js ${{ github.sha }}
         env:
           REFRESH_CACHE_SECRET: ${{ secrets.REFRESH_CACHE_SECRET }}
