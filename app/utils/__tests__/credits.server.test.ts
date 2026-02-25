@@ -1,5 +1,5 @@
-import { expect, test, vi } from 'vitest'
 import { cachified } from '@epic-web/cachified'
+import { expect, test, vi } from 'vitest'
 
 const staleCachedPeople = [
 	{
@@ -27,8 +27,8 @@ vi.mock('../github.server.ts', () => ({
 	downloadFile: vi.fn(async () => ''),
 }))
 
-import { downloadFile } from '../github.server.ts'
 import { getPeople } from '../credits.server.ts'
+import { downloadFile } from '../github.server.ts'
 
 test('getPeople normalizes stale cached people with missing id values', async () => {
 	const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
