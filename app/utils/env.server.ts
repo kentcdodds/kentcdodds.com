@@ -61,6 +61,11 @@ const schemaBase = z.object({
 	TRANSISTOR_API_SECRET: nonEmptyString,
 	TWITTER_BEARER_TOKEN: nonEmptyString,
 	VERIFIER_API_KEY: nonEmptyString,
+	VERIFIER_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://verifyright.co'),
 	CF_INTERNAL_SECRET: nonEmptyString,
 
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
