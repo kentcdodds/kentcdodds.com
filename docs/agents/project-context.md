@@ -45,6 +45,8 @@ reference:
   (`mock-servers/simplecast/worker.ts`, local port `8795`).
 - Transistor API calls are served by a Worker mock server in dev
   (`mock-servers/transistor/worker.ts`, local port `8796`).
+- Twitter/X syndication + short-link/oEmbed calls are served by a Worker mock
+  server in dev (`mock-servers/twitter/worker.ts`, local port `8797`).
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No

@@ -84,6 +84,21 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://api.transistor.fm'),
+	TWITTER_SYNDICATION_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://cdn.syndication.twimg.com'),
+	TWITTER_SHORTENER_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://t.co'),
+	TWITTER_OEMBED_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://publish.twitter.com'),
 	TWITTER_BEARER_TOKEN: nonEmptyString,
 	VERIFIER_API_KEY: nonEmptyString,
 	VERIFIER_API_BASE_URL: z
