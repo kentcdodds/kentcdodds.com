@@ -67,6 +67,7 @@ reference:
   `app/utils/github.server.ts` (no network call required for content paths).
 - Media workflow:
   - canonical manifests live in `content/data/media-manifests/{images,videos}.json`
+  - normalize legacy content URLs: `bun run media:normalize-legacy-paths`
   - changed-file sync script: `bun run media:sync-cloudflare`
   - strict legacy scan gate: `bun run media:scan-legacy-references:strict`
 - No real API keys are needed for local development; `.env.example` values are

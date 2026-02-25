@@ -24,6 +24,8 @@ the ongoing repo-driven media sync workflow.
 
 - Normalize MDX layout:
   - `bun run media:normalize-content-layout`
+- Normalize legacy `/media/{image,video}/upload/...` content URLs:
+  - `bun run media:normalize-legacy-paths`
 - Legacy reference scan:
   - `bun run media:scan-legacy-references`
   - `bun run media:scan-legacy-references:strict`

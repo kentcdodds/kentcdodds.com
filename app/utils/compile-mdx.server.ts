@@ -89,10 +89,6 @@ function trimCodeBlocks() {
 	}
 }
 
-// yes, I did write this myself 😬
-const legacyMediaUploadPathRegex =
-	/^\/media\/(?:(?<cloudName>[^/]+)\/)?image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
-
 function optimizeMediaImages() {
 	const baseUrl = getEnv().MEDIA_BASE_URL.replace(/\/+$/, '')
 
@@ -142,54 +138,34 @@ function optimizeMediaImages() {
 	}
 
 	function rewriteMediaHref(href: string, base: string): string | null {
-		if (!href.startsWith('/media/')) return null
-		const mediaMatch = href.match(legacyMediaUploadPathRegex)
-		if (mediaMatch?.groups) {
-			const { publicId, transforms } = mediaMatch.groups as {
-				publicId: string
-				transforms?: string
-			}
-			return buildMediaImageDeliveryUrl({ base, publicId, transforms })
-		}
-		const publicId = href.slice('/media/'.length).replace(/^\/+/, '')
-		return buildMediaImageDeliveryUrl({ base, publicId })
+		const mediaReference = parseMediaReference(href)
+		if (!mediaReference) return null
+		return buildMediaImageDeliveryUrl({
+			base,
+			publicId: mediaReference.publicId,
+			transforms: mediaReference.transforms,
+		})
 	}
 
 	function handleImageUrl(urlString: string, baseUrl: string): string | undefined {
-		// Canonical form: /media/image/upload/...
-		const mediaMatch = urlString.match(legacyMediaUploadPathRegex)
-		if (mediaMatch?.groups) {
-			const { transforms, publicId } = mediaMatch.groups as {
-				transforms?: string
-				publicId: string
-			}
-			if (transforms) {
-				return buildMediaImageDeliveryUrl({
-					base: baseUrl,
-					publicId,
-					transforms,
-				})
-			}
-			const defaultTransforms = [
-				'f_auto',
-				'q_auto',
-				publicId.endsWith('.gif') ? '' : 'dpr_2.0',
-				'w_1600',
-			]
-				.filter(Boolean)
-				.join(',')
-			return buildMediaImageDeliveryUrl({
-				base: baseUrl,
-				publicId,
-				transforms: defaultTransforms,
-			})
-		}
-		if (urlString.startsWith('/media/')) {
-			return buildMediaImageDeliveryUrl({
-				base: baseUrl,
-				publicId: urlString.slice('/media/'.length),
-			})
-		}
+		const mediaReference = parseMediaReference(urlString)
+		if (!mediaReference) return
+		return buildMediaImageDeliveryUrl({
+			base: baseUrl,
+			publicId: mediaReference.publicId,
+			transforms: mediaReference.transforms,
+		})
+	}
+}
+
+function parseMediaReference(urlString: string) {
+	if (!urlString.startsWith('/media/')) return null
+	const mediaUrl = new URL(urlString, 'https://media.local')
+	const publicId = mediaUrl.pathname.slice('/media/'.length).replace(/^\/+/, '')
+	if (!publicId) return null
+	return {
+		publicId,
+		transforms: mediaUrl.searchParams.get('tr') ?? undefined,
 	}
 }
 

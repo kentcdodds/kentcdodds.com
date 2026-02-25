@@ -60,12 +60,12 @@ ReactDOM.render(<App />, document.getElementById('root'))
 If you send that to production, your users are going to get the white screen of
 sadness:
 
-![Chrome window with nothing but white](/media/image/upload/v1625033476/kentcdodds.com/content/blog/use-react-error-boundary-to-handle-errors-in-react/white-screen.png)
+![Chrome window with nothing but white](/media/kentcdodds.com/content/blog/use-react-error-boundary-to-handle-errors-in-react/white-screen.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 If you run this with create-react-app's error overlay (during development),
 you'll get this:
 
-![TypeError Cannot read property 'toUpperCase' of undefined](/media/image/upload/v1625033477/kentcdodds.com/content/blog/use-react-error-boundary-to-handle-errors-in-react/error-overlay.png)
+![TypeError Cannot read property 'toUpperCase' of undefined](/media/kentcdodds.com/content/blog/use-react-error-boundary-to-handle-errors-in-react/error-overlay.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 The problem is we need to either pass a `subject` prop (as a string) or default
 the `subject` prop's value. Obviously, this is contrived, but runtime errors
