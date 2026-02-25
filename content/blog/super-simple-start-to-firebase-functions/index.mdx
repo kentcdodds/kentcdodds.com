@@ -44,7 +44,7 @@ then you can start with the following steps:
 
 ### Step 1: Create a Firebase project
 
-![Firebase console showing an "Add project" button](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-1-firebase-console.png)
+![Firebase console showing an "Add project" button](/media/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-1-firebase-console.png)
 
 Go to [the firebase console](https://console.firebase.google.com/u/0/) and
 create a new project. Follow the steps there (your option selections here don't
@@ -60,7 +60,7 @@ https://console.firebase.google.com/u/0/project/{your-project-id-is-here}/functi
 It's generated when you give the project a name, and you can change it at that
 time as well:
 
-![Let's start with a name for your project. Project name: My Awesome Firebase Thing. my-awesome-firebase-thin-33d3a. A unique identifier for your project](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-1-2-firebase-name.png)
+![Let's start with a name for your project. Project name: My Awesome Firebase Thing. my-awesome-firebase-thin-33d3a. A unique identifier for your project](/media/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-1-2-firebase-name.png)
 
 ### Step 2: Create a `firebase.json` file
 
@@ -93,7 +93,7 @@ Make sure to change `{your-project-id}` to whatever your project ID is. Again,
 you can get that from the URL of your project on the firebase console as
 mentioned above. You can also get it from your project's settings page:
 
-![Firebase console showing the setting page with the Project ID](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-3-project-id.png)
+![Firebase console showing the setting page with the Project ID](/media/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-3-project-id.png)
 
 ### Step 4: Create a `functions/package.json` file
 
@@ -192,7 +192,7 @@ firebase login
 That should pop open your browser and allow you to login with your Google
 account. Go ahead and login. When you're done, you'll be logged in locally.
 
-![Terminal output from the firebase login command](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-8-login.png)
+![Terminal output from the firebase login command](/media/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-8-login.png)
 
 ### Step 9: Test locally
 
@@ -229,15 +229,15 @@ i  emulators: Starting emulators: functions
 If you open the Emulator UI, you'll see the emulator overview and you can select
 the function logs:
 
-![Emulator overview](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-9-emulator-overview.png)
+![Emulator overview](/media/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-9-emulator-overview.png)
 
 If you hit your serverless function in a browser you should see the output:
 
-![Browser saying "Hello World!"](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-9-fn-output.png)
+![Browser saying "Hello World!"](/media/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-9-fn-output.png)
 
 And then your logs will show that the function was run:
 
-![Function logs](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-9-fn-logs.png)
+![Function logs](/media/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-9-fn-logs.png)
 
 Awesome! So the function is working! On to the next step.
 
@@ -267,12 +267,12 @@ this part was a real pain honestly. But here's what you need to do...
 So you'll go back to the firebase console for your project and navigate to
 "Usage and billing" and then go to the "Details & settings" tab:
 
-![Usage and billing settings page](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-11-usage-and-billing.png)
+![Usage and billing settings page](/media/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-11-usage-and-billing.png)
 
 Then you'll click "Modify plan" and then "Select plan" under "Blaze Pay as you
 go":
 
-![Firebase billing plans](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-11-firebase-billing-plans.png)
+![Firebase billing plans](/media/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-11-firebase-billing-plans.png)
 
 Don't worry, Firebase has a generous free tier and (I don't think) you should be
 charged for anything until you actually start using the function a lot. But at
@@ -319,7 +319,7 @@ function's output. For extra fun, our function handles providing a custom
 subject, so if you add `?subject=Bob%20Ross` to the end of that URL, you get a
 nice greeting. Hello there Bob Ross!
 
-![Browser saying "Hello Bob Ross!"](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-12-deployed-fn-output.png)
+![Browser saying "Hello Bob Ross!"](/media/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-12-deployed-fn-output.png)
 
 ### Step 13: Auto-deploy Firebase Cloud Functions with GitHub Actions
 
@@ -405,7 +405,7 @@ Great, now you'll copy that token into your GitHub repository's `secrets`
 configuration:
 `https://github.com/{your-username}/{your-repo-name}/settings/secrets/actions`
 
-![GitHub secrets UI adding the firebase token](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-14-add-secret.png)
+![GitHub secrets UI adding the firebase token](/media/image/upload/v1625033387/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-14-add-secret.png)
 
 With that added, you're ready to deploy!
 
@@ -423,7 +423,7 @@ Then go to your repo's actions page
 (`https://github.com/{your-username}/{your-repo-name}/actions`) and watch the
 deploy happen automatically!
 
-![Action output showing the deploy](https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-16-action-output.png)
+![Action output showing the deploy](/media/image/upload/v1625033386/kentcdodds.com/content/blog/super-simple-start-to-firebase-functions/step-16-action-output.png)
 
 Then celebrate 🎉
 
