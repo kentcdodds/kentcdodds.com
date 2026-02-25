@@ -137,6 +137,15 @@ async function runWranglerSecretBulk({
 export function parseArgs(rawArgs: Array<string>): ParsedArgs {
 	const options = new Map<string, Array<string>>()
 	const flags = new Set<string>()
+	const flagKeys = new Set(['include-empty', 'generate-cookie-secret'])
+	const optionKeys = new Set([
+		'name',
+		'env',
+		'set',
+		'from-dotenv',
+		'set-from-env',
+		'set-from-env-optional',
+	])
 
 	for (let index = 0; index < rawArgs.length; index++) {
 		const arg = rawArgs[index]
@@ -144,9 +153,12 @@ export function parseArgs(rawArgs: Array<string>): ParsedArgs {
 			throw new Error(`Unexpected argument "${arg}"`)
 		}
 		const key = arg.slice(2)
-		if (key === 'include-empty' || key === 'generate-cookie-secret') {
+		if (flagKeys.has(key)) {
 			flags.add(key)
 			continue
+		}
+		if (!optionKeys.has(key)) {
+			throw new Error(`Unknown option --${key}`)
 		}
 		const value = rawArgs[index + 1]
 		if (!value || value.startsWith('--')) {
