@@ -13,7 +13,6 @@ import {
 	getNavigationPathFromResponse,
 	recordingFormActionPath,
 } from '#app/components/calls/recording-form.tsx'
-import { useInterval } from '#app/components/hooks/use-interval.tsx'
 import { MailIcon } from '#app/components/icons.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
@@ -575,6 +574,7 @@ function DraftEditor({
 }
 
 const draftStatusResourcePath = '/resources/calls/draft-status'
+const draftStatusStreamResourcePath = '/resources/calls/draft-status-stream'
 
 function RecordingDetailScreen({
 	data,
@@ -594,31 +594,75 @@ function RecordingDetailScreen({
 		setPolledStatus(null)
 	}, [draft?.id])
 
-	// Use lightweight status-only endpoint when polling to avoid re-fetching
-	// transcript, title, description, keywords on every 1.5s poll.
-	useInterval(
-		async () => {
-			if (revalidator.state !== 'idle') return
+	React.useEffect(() => {
+		if (draft?.status !== 'PROCESSING') return
+
+		let isClosed = false
+		const handleStatusUpdate = (statusUpdate: {
+			status: string
+			step: string
+			errorMessage: string | null
+		}) => {
+			setPolledStatus(statusUpdate)
+			if (statusUpdate.status !== 'PROCESSING' && revalidator.state === 'idle') {
+				void revalidator.revalidate()
+			}
+		}
+
+		// Fallback for environments without EventSource support.
+		if (typeof EventSource === 'undefined') {
+			const pollStatus = async () => {
+				if (isClosed || revalidator.state !== 'idle') return
+				try {
+					const res = await fetch(
+						`${draftStatusResourcePath}?callId=${data.call.id}`,
+					)
+					if (!res.ok) return
+					const json = (await res.json()) as {
+						status: string
+						step: string
+						errorMessage: string | null
+					}
+					handleStatusUpdate(json)
+				} catch {
+					// Ignore fetch errors; next poll will retry.
+				}
+			}
+
+			void pollStatus()
+			const intervalId = setInterval(() => void pollStatus(), 1500)
+			return () => {
+				isClosed = true
+				clearInterval(intervalId)
+			}
+		}
+
+		const eventSource = new EventSource(
+			`${draftStatusStreamResourcePath}?callId=${data.call.id}`,
+		)
+		eventSource.onmessage = (event) => {
+			if (isClosed) return
 			try {
-				const res = await fetch(
-					`${draftStatusResourcePath}?callId=${data.call.id}`,
-				)
-				if (!res.ok) return
-				const json = (await res.json()) as {
+				const json = JSON.parse(event.data) as {
 					status: string
 					step: string
 					errorMessage: string | null
 				}
-				setPolledStatus(json)
+				handleStatusUpdate(json)
 				if (json.status !== 'PROCESSING') {
-					void revalidator.revalidate()
+					eventSource.close()
+					isClosed = true
 				}
 			} catch {
-				// Ignore fetch errors; next poll will retry
+				// Ignore malformed status payloads.
 			}
-		},
-		draft?.status === 'PROCESSING' ? 1500 : 0,
-	)
+		}
+
+		return () => {
+			isClosed = true
+			eventSource.close()
+		}
+	}, [data.call.id, draft?.status, revalidator])
 
 	return (
 		<div key={data.call.id} className="flex flex-col gap-6">
