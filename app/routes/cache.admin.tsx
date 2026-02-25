@@ -26,13 +26,15 @@ import {
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/cache.admin'
 
+type CacheBucketType = 'shared' | 'memory'
+
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 	const searchParams = new URL(request.url).searchParams
 	const query = searchParams.get('query')
 	const limit = Number(searchParams.get('limit') ?? 100)
 
-	let cacheKeys: { sqlite: Array<string>; lru: Array<string> }
+	let cacheKeys: { shared: Array<string>; lru: Array<string> }
 	if (typeof query === 'string') {
 		cacheKeys = await searchCacheKeys(query, limit)
 	} else {
@@ -51,11 +53,11 @@ export async function action({ request }: Route.ActionArgs) {
 	invariantResponse(typeof type === 'string', 'type must be a string')
 
 	switch (type) {
-		case 'sqlite': {
+		case 'shared': {
 			await cache.delete(key)
 			break
 		}
-		case 'lru': {
+		case 'memory': {
 			lruCache.delete(key)
 			break
 		}
@@ -104,7 +106,7 @@ export default function CacheAdminRoute({
 						/>
 						<div className="absolute top-0 right-2 flex h-full w-14 items-center justify-between text-lg font-medium text-slate-500">
 							<span title="Total results shown">
-								{data.cacheKeys.sqlite.length + data.cacheKeys.lru.length}
+								{data.cacheKeys.shared.length + data.cacheKeys.lru.length}
 							</span>
 						</div>
 					</div>
@@ -124,16 +126,16 @@ export default function CacheAdminRoute({
 			</Form>
 			<Spacer size="2xs" />
 			<div className="flex flex-col gap-4">
-				<H3>LRU Cache:</H3>
+				<H3>Memory Cache:</H3>
 				{data.cacheKeys.lru.map((key) => (
-					<CacheKeyRow key={key} cacheKey={key} type="lru" />
+					<CacheKeyRow key={key} cacheKey={key} type="memory" />
 				))}
 			</div>
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
 				<H3>Shared Cache:</H3>
-				{data.cacheKeys.sqlite.map((key) => (
-					<CacheKeyRow key={key} cacheKey={key} type="sqlite" />
+				{data.cacheKeys.shared.map((key) => (
+					<CacheKeyRow key={key} cacheKey={key} type="shared" />
 				))}
 			</div>
 		</div>
@@ -145,7 +147,7 @@ function CacheKeyRow({
 	type,
 }: {
 	cacheKey: string
-	type: string
+	type: CacheBucketType
 }) {
 	const fetcher = useFetcher()
 	const dc = useDoubleCheck()

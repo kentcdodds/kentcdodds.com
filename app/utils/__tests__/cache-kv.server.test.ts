@@ -47,7 +47,7 @@ describe('cache kv adapter', () => {
 			const result = await cache.get('example-key')
 			expect(result).toEqual(entry)
 
-			expect((await getAllCacheKeys(10)).sqlite).toContain('example-key')
+			expect((await getAllCacheKeys(10)).shared).toContain('example-key')
 
 			await cache.delete('example-key')
 			expect(await cache.get('example-key')).toBeNull()
