@@ -35,21 +35,14 @@ https://egghead.io/lessons/jest-fix-the-not-wrapped-in-act-warning-when-testing-
 import {
 	Rendered,
 	UsernameForm,
-	UsernameFormClass,
-	UsernameFormClassWithBug,
+	UsernameFormClassDemo,
+	UsernameFormClassWithBugDemo,
 } from './components'
 
 Imagine you have a component like this:
 
 <Rendered>
-	<UsernameFormClass
-		updateUsername={(u) =>
-			new Promise((resolve) => {
-				alert(`You typed ${u}! Updating the database...`)
-				setTimeout(() => resolve(), 2000)
-			})
-		}
-	/>
+	<UsernameFormClassDemo />
 </Rendered>
 
 Here's the code for that (if you were to do it with class components, don't
@@ -207,14 +200,7 @@ Guess what! Our tests still pass! But, the `Saving...` loading indicator next to
 our submit button never goes away:
 
 <Rendered>
-	<UsernameFormClassWithBug
-		updateUsername={(u) =>
-			new Promise((resolve) => {
-				alert(`You typed ${u}! Updating the database...`)
-				setTimeout(() => resolve(), 2000)
-			})
-		}
-	/>
+	<UsernameFormClassWithBugDemo />
 </Rendered>
 
 Oh no! It sure would've been nice if we'd had some warning that we weren't
