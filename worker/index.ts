@@ -1,5 +1,11 @@
 import { createRequestHandler, type AppLoadContext } from 'react-router'
 import {
+	applyD1Bookmark,
+	getD1Bookmark,
+	readD1Bookmark,
+	withD1Session,
+} from '#app/utils/d1-session.server.ts'
+import {
 	clearRuntimeEnvSource,
 	setRuntimeEnvSource,
 } from '#app/utils/env.server.ts'
@@ -33,11 +39,16 @@ export default {
 			})
 		}
 
+		const requestBookmark = readD1Bookmark(request)
+		const dbSession = withD1Session(env.DB, requestBookmark)
+		const requestEnv = dbSession === env.DB ? env : { ...env, DB: dbSession }
+
 		try {
-			setRuntimeEnvSource(getStringEnvBindings(env))
-			return await requestHandler(request, {
-				cloudflare: { env, ctx },
+			setRuntimeEnvSource(getStringEnvBindings(requestEnv))
+			const response = await requestHandler(request, {
+				cloudflare: { env: requestEnv, ctx },
 			})
+			return applyD1Bookmark(response, getD1Bookmark(dbSession))
 		} finally {
 			clearRuntimeEnvSource()
 		}
