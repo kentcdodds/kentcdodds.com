@@ -35,7 +35,7 @@ it's loaded. Here's a video to demonstrate that experience:
 	controls={true}
 	loop={true}
 	muted={true}
-	src="/media/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4"
+	src="/stream/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4?tr=f_auto:video,q_auto"
 />
 
 I want to walk you through some of the things I had to do for this to work, and
@@ -109,16 +109,16 @@ Here's what my img tag looks like for a blog post:
 	title="Photo by Kari Shea"
 	class="z-10 rounded-lg object-cover object-center transition-opacity"
 	alt="MacBook Pro on top of brown table"
-	src="/media/image/upload/w_1517,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop"
+	src="/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_1517,q_auto,f_auto,b_rgb:e6e9ee"
 	srcset="
-		/media/image/upload/w_280,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   280w,
-		/media/image/upload/w_560,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   560w,
-		/media/image/upload/w_840,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop   840w,
-		/media/image/upload/w_1100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 1100w,
-		/media/image/upload/w_1650,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 1650w,
-		/media/image/upload/w_2500,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 2500w,
-		/media/image/upload/w_2100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 2100w,
-		/media/image/upload/w_3100,q_auto,f_auto,b_rgb:e6e9ee/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop 3100w
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_280,q_auto,f_auto,b_rgb:e6e9ee   280w,
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_560,q_auto,f_auto,b_rgb:e6e9ee   560w,
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_840,q_auto,f_auto,b_rgb:e6e9ee   840w,
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_1100,q_auto,f_auto,b_rgb:e6e9ee 1100w,
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_1650,q_auto,f_auto,b_rgb:e6e9ee 1650w,
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_2500,q_auto,f_auto,b_rgb:e6e9ee 2500w,
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_2100,q_auto,f_auto,b_rgb:e6e9ee 2100w,
+		/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_3100,q_auto,f_auto,b_rgb:e6e9ee 3100w
 	"
 	sizes="(max-width:1023px) 80vw, (min-width:1024px) and (max-width:1620px) 67vw, 1100px"
 />
@@ -218,7 +218,7 @@ does.
 	controls={true}
 	loop={true}
 	muted={true}
-	src="/media/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4"
+	src="/stream/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4?tr=f_auto:video,q_auto"
 />
 
 When you land on an unsplash image, there are three things that can happen in
@@ -254,7 +254,7 @@ a nice looking blur of a full image: `LGFFaXYk^6#M@-5c,1J5@[or[Q6.`:
 
 ![blurhash website showing an image being
 converted into a hash and the canvas representation of
-that](/media/image/upload/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurhash)
+that](/media/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurhash?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Honestly, it's so cool. Magical 🧙
 
@@ -280,10 +280,10 @@ This is really easy since I'm using [Cloudinary](https://cloudinary.com) for all
 my images. Additionally, cloudinary has the ability to apply transforms like
 blur on the image. This means that I could easily reduce the amount of data to
 represent in my base64 string. So I generate a cloudinary URL
-[like this](/media/image/upload/w_100,q_auto,f_webp,e_blur:1000/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop):
+[like this](/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_100,q_auto,f_webp,e_blur:1000):
 
 ```
-/media/image/upload/w_100,q_auto,f_webp,e_blur:1000/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop
+/media/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop?tr=w_100,q_auto,f_webp,e_blur:1000
 ```
 
 And when I fetch that image and base64 encode it, I end up with this:
@@ -314,7 +314,7 @@ image.
 
 Unfortunately, upscaling it like this made it look really pixelated.
 
-![Pixelated blog post placeholder](/media/image/upload/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/pixelated-placeholder)
+![Pixelated blog post placeholder](/media/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/pixelated-placeholder?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 The platform to the rescue! I just slapped this in the DOM after my base64 image
 and we were in business:
@@ -331,7 +331,7 @@ backdrop-filter: blur(24px);
 
 And we get the nice blur effect:
 
-![Blurred blog post placeholder](/media/image/upload/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-placeholder)
+![Blurred blog post placeholder](/media/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-placeholder?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Sweet!
 

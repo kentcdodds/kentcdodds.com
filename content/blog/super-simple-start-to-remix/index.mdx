@@ -399,14 +399,14 @@ again. Again, HMR will come in the future.
 Ok, great, let's get this opened up! Navigate to
 [localhost:3000](http://localhost:3000) and poof:
 
-![Browser window with the text "This is a remix app. Hooray!"" And a button with the number 0 in it](/media/image/upload/v1620151304/kentcdodds.com/blog/super-simple-start-to-remix/app_ol57hw.png)
+![Browser window with the text "This is a remix app. Hooray!"" And a button with the number 0 in it](/media/kentcdodds.com/blog/super-simple-start-to-remix/app_ol57hw.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 ## 6. Hydrating our Remix app
 
 But oh no! If we click that button nothing happens. Weird... I thought this was
 a react app. Let's take a look at the network tab:
 
-![Network tab showing two GET requests, one for the document and the other for a favicon](/media/image/upload/v1620395539/kentcdodds.com/blog/super-simple-start-to-remix/network-tab_iyg7iy.png)
+![Network tab showing two GET requests, one for the document and the other for a favicon](/media/kentcdodds.com/blog/super-simple-start-to-remix/network-tab_iyg7iy.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Notice anything missing? Oh yeah! No JavaScript! Yup, that's right, with Remix
 you get to choose whether you load any JavaScript at all. And it's not a
@@ -447,7 +447,7 @@ favicon:
 		marginRight: 'auto',
 	}}
 	alt="CD"
-	src="/media/image/upload/w_120,q_auto,dpr_2.0/v1620153603/kentcdodds.com/blog/super-simple-start-to-remix/favicon_vsvcsr.ico"
+	src="/media/kentcdodds.com/blog/super-simple-start-to-remix/favicon_vsvcsr.ico?tr=w_120,q_auto,dpr_2.0"
 />
 
 Just put that `.ico` file in the `public` directory. `@remix-run/serve` will
@@ -456,7 +456,7 @@ that file by default) will be able to get it that way.
 
 Neato, let's try that now:
 
-![Network tab with scripts getting loaded](/media/image/upload/v1620153551/kentcdodds.com/blog/super-simple-start-to-remix/network-tab-with-scripts_tdibpc.png)
+![Network tab with scripts getting loaded](/media/kentcdodds.com/blog/super-simple-start-to-remix/network-tab-with-scripts_tdibpc.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 And if we "view source" on the document here's what we get (formatted):
 
@@ -588,7 +588,7 @@ Remix App Server started at http://localhost:3000 (http://192.168.115.103:3000)
 
 And if we open that up, we'll see it's working perfectly:
 
-![The working app](/media/image/upload/v1620155777/kentcdodds.com/blog/super-simple-start-to-remix/app-running-in-production_hnbdvy.png)
+![The working app](/media/kentcdodds.com/blog/super-simple-start-to-remix/app-running-in-production_hnbdvy.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Hooray!
 
