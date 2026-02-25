@@ -97,7 +97,7 @@ jobs:
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
         run: |
           set -euo pipefail
-          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --out-config wrangler-preview.generated.jsonc | tee -a "$GITHUB_OUTPUT"
+          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc | tee -a "$GITHUB_OUTPUT"
 
       - name: 🧪 Deploy preview mock workers
         id: deploy-mocks
@@ -147,6 +147,7 @@ jobs:
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
         run: |
           set -euo pipefail
+          bun run wrangler -- d1 migrations apply APP_DB --remote --config "$WRANGLER_CONFIG" --env preview
           bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env preview --name "$WORKER_NAME" 2>&1 | tee deploy-preview.log
           preview_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy-preview.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
           if [ -n "$preview_url" ]; then
@@ -291,5 +292,5 @@ jobs:
         env:
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
         run: >
-          bun tools/ci/preview-resources.ts cleanup --worker-name "$WORKER_NAME"
+          bun tools/ci/preview-resources.ts cleanup --worker-name "$WORKER_NAME" --environment preview
           --out-config wrangler-preview.generated.jsonc
