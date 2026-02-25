@@ -1,9 +1,7 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { PassThrough } from 'stream'
 import v8 from 'v8'
-import { createReadableStreamFromReadable } from '@react-router/node'
 import { formatDate } from '#app/utils/misc.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/heapsnapshot'
@@ -23,21 +21,17 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (!snapshotPath) {
 		throw new Response('No snapshot saved', { status: 500 })
 	}
+	const snapshot = await fs.promises.readFile(snapshotPath)
+	const snapshotSize = snapshot.byteLength
 
-	const body = new PassThrough()
-	const stream = fs.createReadStream(snapshotPath)
-	stream.on('open', () => stream.pipe(body))
-	stream.on('error', (err) => body.end(err))
-	stream.on('end', () => body.end())
-
-	return new Response(createReadableStreamFromReadable(body), {
+	return new Response(snapshot, {
 		status: 200,
 		headers: {
 			'Content-Type': 'application/octet-stream',
 			'Content-Disposition': `attachment; filename="${path.basename(
 				snapshotPath,
 			)}"`,
-			'Content-Length': (await fs.promises.stat(snapshotPath)).size.toString(),
+			'Content-Length': String(snapshotSize),
 		},
 	})
 }
