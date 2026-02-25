@@ -58,17 +58,59 @@ FLY_MACHINE_ID fix).
 - Test site: `curl -I https://kentcdodds.com/healthcheck`
 - Check logs: `fly logs -a kcd` (look for ZodError — should be gone)
 
-## Step 4: Scale Back Up
+## Step 4: Scale Back Up (one region at a time)
 
-Run deploy again to recreate replicas:
+Do **not** bring up all replicas at once. Clone the primary into one region,
+wait for health checks to pass, then move to the next region.
+
+Current standard regions:
+
+- `gru`
+- `jnb`
+- `ams`
+- `sin`
+- `bom`
+- `syd`
+- `cdg`
+
+Template (run sequentially, one region at a time):
 
 ```bash
-fly deploy -a kcd
+fly machine clone 7817602a936548 -a kcd --region <REGION>
+fly machine status <NEW_MACHINE_ID> -a kcd
+fly checks list -a kcd
 ```
 
-Fly may recreate machines based on previous configuration. If replicas are not
-recreated, you may need to clone the primary to other regions via the Fly
-dashboard or `fly machine clone`.
+Only continue to the next region after the new machine is healthy (`3/3`).
+
+If a machine fails to start or is left in a non-started state, destroy it
+before continuing:
+
+```bash
+fly machine destroy <MACHINE_ID> -a kcd
+```
+
+You can also prune all non-started machines in one pass:
+
+```bash
+for id in $(fly m list -a kcd --json | jq -r '.[] | select(.state != "started") | .id'); do
+  fly machine destroy "$id" -a kcd --force
+done
+```
+
+## Step 5: Prune Unattached Volumes (removed regions)
+
+After intentionally removing regions, delete unattached volumes in those
+regions to avoid ongoing storage costs.
+
+```bash
+for id in $(fly vol list -a kcd --json | jq -r '.[] | select(.attached_machine_id == null and (.region=="jnb" or .region=="ams" or .region=="sin" or .region=="bom" or .region=="syd" or .region=="cdg")) | .id'); do
+  fly vol destroy "$id" -a kcd --yes
+done
+```
+
+Always review `fly vol list -a kcd` first and keep attached volumes in active
+regions (`dfw`/`gru`).
 
 ## Notes
 
@@ -77,3 +119,6 @@ dashboard or `fly machine clone`.
   (primary_region in fly.toml).
 - **Machine IDs**: Run `fly machines list -a kcd` to get current IDs before
   scaling down — they may change between runs.
+- **Avoid parallel startup**: Starting many regional machines concurrently can
+  create noisy health-check failures and slow recovery; prefer strict serial
+  rollout.

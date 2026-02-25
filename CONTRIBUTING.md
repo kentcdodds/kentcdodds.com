@@ -334,6 +334,16 @@ fly vol create data --size 3 --region ams
 fly scale count 2
 ```
 
+For this app, avoid bringing up many regions simultaneously. Prefer cloning one
+machine at a time from the current primary and waiting for checks to pass
+before adding the next region:
+
+```sh
+fly machine clone <PRIMARY_MACHINE_ID> -a kcd --region <REGION>
+fly machine status <NEW_MACHINE_ID> -a kcd
+fly checks list -a kcd
+```
+
 ### Removing regions
 
 Similar to adding regions, maybe backup the data.
@@ -362,6 +372,26 @@ And when you're finished, scale down to the number of volumes you have:
 ```sh
 fly scale count <COUNT>
 ```
+
+If cleanup leaves any machines in a non-started state, destroy them:
+
+```sh
+for id in $(fly m list -a kcd --json | jq -r '.[] | select(.state != "started") | .id'); do
+  fly machine destroy "$id" -a kcd --force
+done
+```
+
+After removing regions, also clean up unattached volumes in those regions so
+you are not paying for orphaned storage:
+
+```sh
+for id in $(fly vol list -a kcd --json | jq -r '.[] | select(.attached_machine_id == null and (.region=="jnb" or .region=="ams" or .region=="sin" or .region=="bom" or .region=="syd" or .region=="cdg")) | .id'); do
+  fly vol destroy "$id" -a kcd --yes
+done
+```
+
+Run `fly vol list -a kcd` first and do not delete volumes attached to active
+machines.
 
 ## Help needed
 
