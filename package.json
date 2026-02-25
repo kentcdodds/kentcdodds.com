@@ -62,6 +62,7 @@
     "media:normalize-content-layout": "bun tools/media/normalize-content-mdx-layout.ts",
     "media:bootstrap-cloudinary": "bun tools/media/bootstrap-cloudinary-media.ts",
     "media:reorganize-colocated": "bun tools/media/reorganize-colocated-media.ts",
+    "media:upload-r2": "bun tools/media/upload-manifest-assets-to-r2.ts",
     "media:normalize-legacy-paths": "bun tools/media/normalize-legacy-media-paths.ts",
     "media:scan-legacy-references": "bun tools/media/scan-legacy-media-references.ts",
     "media:scan-legacy-references:strict": "bun tools/media/scan-legacy-media-references.ts --strict",

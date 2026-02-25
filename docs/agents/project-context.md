@@ -62,8 +62,11 @@ reference:
   (`mock-servers/cloudflare-r2/worker.ts`, local port `8802`).
 - Media image calls are served by a Worker mock server in dev
   (`mock-servers/media-images/worker.ts`, local port `8803`).
-  - The media mock prefers serving files directly from `content/**` when the
-    requested media key matches a repo asset path.
+  - The media mock attempts to proxy `/images/*` and `/stream/*` requests to R2
+    first (via `MEDIA_R2_PROXY_BASE_URL` or path-style
+    `MEDIA_R2_ENDPOINT`/`MEDIA_R2_BUCKET`).
+  - If R2 is unreachable (offline/no internet), the media mock returns a
+    wireframe SVG placeholder so route audits still pass.
 - Call Kent ffmpeg container simulation is served by a Worker mock server in dev
   (`mock-servers/call-kent-ffmpeg/worker.ts`, local port `8804`).
 - Stream video URLs can use `MEDIA_STREAM_BASE_URL` (defaults to
@@ -80,8 +83,9 @@ reference:
   `app/utils/github.server.ts` (no network call required for content paths).
 - Media workflow:
   - canonical manifests live in `content/data/media-manifests/{images,videos}.json`
+  - one-time upload + local prune script: `bun run media:upload-r2 -- --delete-local`
   - normalize legacy content URLs: `bun run media:normalize-legacy-paths`
-  - changed-file sync script: `bun run media:sync-cloudflare`
+  - Cloudflare Images/Stream sync helper (legacy path): `bun run media:sync-cloudflare`
   - strict legacy scan gate: `bun run media:scan-legacy-references:strict`
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.

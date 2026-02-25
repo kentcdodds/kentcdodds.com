@@ -18,7 +18,7 @@ describe('media images mock worker', () => {
 			),
 		)
 		expect(imageResponse.status).toBe(200)
-		expect(imageResponse.headers.get('content-type')).toBe('image/webp')
+		expect(imageResponse.headers.get('content-type')).toBe('image/svg+xml')
 		const bodyBytes = new Uint8Array(await imageResponse.arrayBuffer())
 		expect(bodyBytes.byteLength).toBeGreaterThan(0)
 
@@ -31,7 +31,7 @@ describe('media images mock worker', () => {
 			),
 		)
 		expect(headResponse.status).toBe(200)
-		expect(headResponse.headers.get('content-type')).toBe('image/webp')
+		expect(headResponse.headers.get('content-type')).toBe('image/svg+xml')
 	})
 
 	test('serves placeholder stream responses', async () => {
@@ -39,7 +39,7 @@ describe('media images mock worker', () => {
 			new Request('http://mock-media-images.local/stream/sample-video.mp4'),
 		)
 		expect(videoResponse.status).toBe(200)
-		expect(videoResponse.headers.get('content-type')).toBe('video/mp4')
+		expect(videoResponse.headers.get('content-type')).toBe('image/svg+xml')
 		const bodyBytes = new Uint8Array(await videoResponse.arrayBuffer())
 		expect(bodyBytes.byteLength).toBeGreaterThan(0)
 	})
@@ -85,6 +85,33 @@ describe('media images mock worker', () => {
 		expect(videoResponse.headers.get('content-type')).toBe('video/webm')
 	})
 
+	test('proxies media requests to r2 when proxy base url is configured', async () => {
+		const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+			new Response(new Uint8Array([9, 8, 7]), {
+				status: 200,
+				headers: { 'content-type': 'image/png' },
+			}),
+		)
+		try {
+			const response = await worker.fetch(
+				new Request('http://mock-media-images.local/images/blog/demo/image.png'),
+				{
+					MEDIA_R2_PROXY_BASE_URL: 'https://example-r2-proxy.test',
+				},
+			)
+			expect(response.status).toBe(200)
+			expect(response.headers.get('content-type')).toBe('image/png')
+			expect(fetchSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					method: 'GET',
+					url: 'https://example-r2-proxy.test/blog/demo/image.png',
+				}),
+			)
+		} finally {
+			fetchSpy.mockRestore()
+		}
+	})
+
 	test('serves placeholder call artwork responses', async () => {
 		const artworkResponse = await worker.fetch(
 			new Request(
@@ -92,7 +119,7 @@ describe('media images mock worker', () => {
 			),
 		)
 		expect(artworkResponse.status).toBe(200)
-		expect(artworkResponse.headers.get('content-type')).toBe('image/webp')
+		expect(artworkResponse.headers.get('content-type')).toBe('image/svg+xml')
 		const bodyBytes = new Uint8Array(await artworkResponse.arrayBuffer())
 		expect(bodyBytes.byteLength).toBeGreaterThan(0)
 	})
@@ -104,7 +131,7 @@ describe('media images mock worker', () => {
 			),
 		)
 		expect(socialResponse.status).toBe(200)
-		expect(socialResponse.headers.get('content-type')).toBe('image/webp')
+		expect(socialResponse.headers.get('content-type')).toBe('image/svg+xml')
 		const bodyBytes = new Uint8Array(await socialResponse.arrayBuffer())
 		expect(bodyBytes.byteLength).toBeGreaterThan(0)
 	})

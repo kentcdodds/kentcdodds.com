@@ -17,6 +17,9 @@ type Env = {
 	ASSETS?: {
 		fetch(request: Request): Promise<Response>
 	}
+	MEDIA_R2_PROXY_BASE_URL?: string
+	MEDIA_R2_BUCKET?: string
+	MEDIA_R2_ENDPOINT?: string
 }
 
 type RequestLogEntry = {
@@ -45,15 +48,19 @@ const videoExtensions = new Set(['.mp4', '.mov', '.m4v', '.webm'])
 const imagesManifest = imagesManifestData as MediaManifest
 const videosManifest = videosManifestData as MediaManifest
 
-const imageIdToSourcePath = new Map(
-	Object.values(imagesManifest.assets).map((asset) => [asset.id, asset.sourcePath]),
-)
-const videoIdToSourcePath = new Map(
-	Object.values(videosManifest.assets).map((asset) => [asset.id, asset.sourcePath]),
-)
+const imageIdToSourcePath = new Map<string, string>()
+const imageIdToKey = new Map<string, string>()
+for (const [key, asset] of Object.entries(imagesManifest.assets)) {
+	imageIdToSourcePath.set(asset.id, asset.sourcePath)
+	imageIdToKey.set(asset.id, key)
+}
 
-const mockMediaImageBase64 =
-	'UklGRhoBAABXRUJQVlA4IA4BAABwCgCdASpkAEMAPqVInUq5sy+hqvqpuzAUiWcG+BsvrZQel/iYPLGE154ZiYwzeF8UJRAKZ0oAzLdTpjlp8qBuGwW1ntMTe6iQZbxzyP4gBeg7X7SH7NwyBcUDAAD+8MrTwbAD8OLmsoaL1QDPwEE+GrfqLQPn6xkgFHCB8lyjV3K2RvcQ7pSvgA87LOVuDtMrtkm+tTV0x1RcIe4Uvb6J+yygkV48DSejuyrMWrYgoZyjkf/0/L9+bAZgCam6+oHqjBSWTq5jF7wzBxYwfoGY7OdYZOdeGb4euuuLaCzDHz/QRbDCaIsJWJW3Jo4bkbz44AI/8UfFTGX4tMTRcKLXTDIviU+/u7UnlVaDQAA='
+const videoIdToSourcePath = new Map<string, string>()
+const videoIdToKey = new Map<string, string>()
+for (const [key, asset] of Object.entries(videosManifest.assets)) {
+	videoIdToSourcePath.set(asset.id, asset.sourcePath)
+	videoIdToKey.set(asset.id, key)
+}
 
 export default {
 	async fetch(request: Request, env: Env = {}): Promise<Response> {
@@ -98,25 +105,11 @@ export default {
 		) {
 			const repoMediaResponse = await tryServeRepoMediaAsset({ request, url, env })
 			if (repoMediaResponse) return repoMediaResponse
-			if (request.method === 'HEAD') {
-				return new Response(null, {
-					status: 200,
-					headers: {
-						'content-type': url.pathname.startsWith('/stream/')
-							? 'video/mp4'
-							: 'image/webp',
-						'cache-control': 'no-store',
-					},
-				})
-			}
-			return new Response(decodeBase64(mockMediaImageBase64), {
-				status: 200,
-				headers: {
-					'content-type': url.pathname.startsWith('/stream/')
-						? 'video/mp4'
-						: 'image/webp',
-					'cache-control': 'no-store',
-				},
+			const r2ProxyResponse = await tryServeR2ProxyAsset({ request, url, env })
+			if (r2ProxyResponse) return r2ProxyResponse
+			return buildWireframeFallbackResponse({
+				pathname: url.pathname,
+				method: request.method,
 			})
 		}
 
@@ -161,6 +154,46 @@ async function tryServeRepoMediaAsset({
 	return null
 }
 
+async function tryServeR2ProxyAsset({
+	request,
+	url,
+	env,
+}: {
+	request: Request
+	url: URL
+	env: Env
+}) {
+	const baseUrl =
+		env.MEDIA_R2_PROXY_BASE_URL ??
+		readProcessEnv('MEDIA_R2_PROXY_BASE_URL') ??
+		buildPathStyleR2BaseUrl(env)
+	if (!baseUrl) return null
+	const keys = getCandidateAssetProxyKeys(url.pathname)
+	for (const key of keys) {
+		const normalizedKey = key.replace(/^\/+/, '')
+		const proxyUrl = `${baseUrl.replace(/\/+$/, '')}/${normalizedKey}`
+		let response: Response
+		try {
+			response = await fetch(
+				new Request(proxyUrl, { method: request.method }),
+			)
+		} catch {
+			continue
+		}
+		if (!response.ok) continue
+		const headers = new Headers(response.headers)
+		headers.set('cache-control', 'no-store')
+		return new Response(
+			request.method === 'HEAD' ? null : await response.arrayBuffer(),
+			{
+				status: response.status,
+				headers,
+			},
+		)
+	}
+	return null
+}
+
 function getCandidateAssetPaths(pathname: string) {
 	const paths = new Set<string>()
 	const normalizedPath = pathname.replace(/\/+$/, '')
@@ -179,7 +212,21 @@ function getCandidateAssetPaths(pathname: string) {
 	return [...paths]
 }
 
+function getCandidateAssetProxyKeys(pathname: string) {
+	const normalizedPath = pathname.replace(/\/+$/, '')
+	if (normalizedPath.startsWith('/images/')) {
+		const imageId = decodeURIComponent(normalizedPath.slice('/images/'.length))
+		return resolveImageProxyKeys(imageId)
+	}
+	if (normalizedPath.startsWith('/stream/')) {
+		const streamId = decodeURIComponent(normalizedPath.slice('/stream/'.length))
+		return resolveVideoProxyKeys(streamId)
+	}
+	return []
+}
+
 function normalizeSourcePath(sourcePath: string) {
+	if (sourcePath.startsWith('r2://')) return ''
 	return sourcePath.replace(/^\/+/, '').replace(/^content\//, '')
 }
 
@@ -194,6 +241,15 @@ function resolveImageSourcePaths(imageId: string) {
 		paths.add(normalizedId)
 	}
 	return [...paths]
+}
+
+function resolveImageProxyKeys(imageId: string) {
+	const normalizedId = imageId.replace(/^\/+/, '').replace(/^content\//, '')
+	const keys = new Set<string>()
+	keys.add(normalizedId)
+	const mappedKey = imageIdToKey.get(normalizedId)
+	if (mappedKey) keys.add(mappedKey)
+	return [...keys]
 }
 
 function resolveVideoSourcePaths(streamId: string) {
@@ -213,6 +269,25 @@ function resolveVideoSourcePaths(streamId: string) {
 	return [...paths]
 }
 
+function resolveVideoProxyKeys(streamId: string) {
+	const normalizedId = streamId.replace(/^\/+/, '').replace(/^content\//, '')
+	const baseId = normalizedId.replace(/\.mp4$/i, '')
+	const keys = new Set<string>()
+	for (const candidate of [normalizedId, baseId]) {
+		keys.add(candidate)
+		const mappedKey = videoIdToKey.get(candidate)
+		if (mappedKey) keys.add(mappedKey)
+	}
+	const withMp4 = new Set<string>()
+	for (const key of keys) {
+		withMp4.add(key)
+		if (!/\.[a-z0-9]+$/i.test(key)) {
+			withMp4.add(`${key}.mp4`)
+		}
+	}
+	return [...withMp4]
+}
+
 function hasAllowedExtension(filePath: string, extensions: Set<string>) {
 	const extension = filePath.includes('.')
 		? `.${filePath.split('.').pop()?.toLowerCase() ?? ''}`
@@ -220,13 +295,57 @@ function hasAllowedExtension(filePath: string, extensions: Set<string>) {
 	return extensions.has(extension)
 }
 
-function decodeBase64(value: string) {
-	const binary = atob(value)
-	const bytes = new Uint8Array(binary.length)
-	for (let index = 0; index < binary.length; index += 1) {
-		bytes[index] = binary.charCodeAt(index)
+function buildPathStyleR2BaseUrl(env: Env) {
+	const bucket =
+		env.MEDIA_R2_BUCKET?.trim() ??
+		readProcessEnv('MEDIA_R2_BUCKET') ??
+		readProcessEnv('R2_BUCKET')
+	const endpoint =
+		env.MEDIA_R2_ENDPOINT?.trim() ??
+		readProcessEnv('MEDIA_R2_ENDPOINT') ??
+		readProcessEnv('R2_ENDPOINT')
+	if (!bucket || !endpoint) return null
+	return `${endpoint.replace(/\/+$/, '')}/${bucket}`
+}
+
+function readProcessEnv(key: string) {
+	try {
+		return process.env[key]
+	} catch {
+		return undefined
 	}
-	return bytes
+}
+
+function buildWireframeFallbackResponse({
+	pathname,
+	method,
+}: {
+	pathname: string
+	method: string
+}) {
+	const payload = new TextEncoder().encode(
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="media placeholder">
+<rect width="1200" height="675" fill="#f1f5f9"/>
+<rect x="40" y="40" width="1120" height="595" fill="none" stroke="#94a3b8" stroke-width="8"/>
+<rect x="120" y="120" width="360" height="240" fill="#cbd5e1"/>
+<rect x="540" y="140" width="540" height="24" fill="#94a3b8"/>
+<rect x="540" y="190" width="480" height="24" fill="#cbd5e1"/>
+<rect x="540" y="240" width="520" height="24" fill="#cbd5e1"/>
+<rect x="120" y="410" width="960" height="18" fill="#cbd5e1"/>
+<rect x="120" y="450" width="900" height="18" fill="#cbd5e1"/>
+<rect x="120" y="490" width="820" height="18" fill="#cbd5e1"/>
+<text x="120" y="580" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="36">media unavailable offline: placeholder</text>
+</svg>`,
+	)
+	return new Response(method === 'HEAD' ? null : payload, {
+		status: 200,
+		headers: {
+			'content-type': pathname.startsWith('/stream/')
+				? 'image/svg+xml'
+				: 'image/svg+xml',
+			'cache-control': 'no-store',
+		},
+	})
 }
 
 function recordRequest({

@@ -7,6 +7,9 @@
 	},
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"MEDIA_R2_PROXY_BASE_URL": "http://127.0.0.1:8802/mock-r2-bucket"
+	},
 	"env": {
 		"development": {
 			"name": "kentcdodds-mock-media-images-dev"

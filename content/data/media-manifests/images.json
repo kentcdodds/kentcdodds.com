@@ -4,2078 +4,2078 @@
     "kent/coding-on-couch": {
       "id": "kent/coding-on-couch",
       "checksum": "ef3c2909ae7c2fe0f114f6e940122a97bcfa217c0003262ed96f2f615b9f814b",
-      "sourcePath": "content/kent/coding-on-couch",
-      "uploadedAt": "2026-02-25T15:46:56.306Z"
+      "sourcePath": "r2://media/kent/coding-on-couch",
+      "uploadedAt": "2026-02-25T16:55:41.899Z"
     },
     "kent/coding-with-kody": {
       "id": "kent/coding-with-kody",
       "checksum": "1422a263ffa512402b6097a9b9477ffafd069130453fdf92417ec3c0ad2096e6",
-      "sourcePath": "content/kent/coding-with-kody",
-      "uploadedAt": "2026-02-25T15:46:56.963Z"
+      "sourcePath": "r2://media/kent/coding-with-kody",
+      "uploadedAt": "2026-02-25T16:55:42.123Z"
     },
     "kent/holding-out-kody": {
       "id": "kent/holding-out-kody",
       "checksum": "151684aa7e2b0d7a84814959f0d7acaba7157039f8998627080ca3b291ff4fdb",
-      "sourcePath": "content/kent/holding-out-kody",
-      "uploadedAt": "2026-02-25T15:46:57.498Z"
+      "sourcePath": "r2://media/kent/holding-out-kody",
+      "uploadedAt": "2026-02-25T16:55:42.187Z"
     },
     "kent/kent-listening-at-react-rally": {
       "id": "kent/kent-listening-at-react-rally",
       "checksum": "3a8b3e8ec5bdc65d27a65bec33b7df593bc1882d71475690a4d94ce741e8a24f",
-      "sourcePath": "content/kent/kent-listening-at-react-rally",
-      "uploadedAt": "2026-02-25T15:46:57.708Z"
+      "sourcePath": "r2://media/kent/kent-listening-at-react-rally",
+      "uploadedAt": "2026-02-25T16:55:42.206Z"
     },
     "kent/kent-speaking-all-things-open": {
       "id": "kent/kent-speaking-all-things-open",
       "checksum": "e84338e5f4b0515f602313c2d6ba5f0b0662685a64e6f12ff87ec0715898d5d0",
-      "sourcePath": "content/kent/kent-speaking-all-things-open",
-      "uploadedAt": "2026-02-25T15:46:58.219Z"
+      "sourcePath": "r2://media/kent/kent-speaking-all-things-open",
+      "uploadedAt": "2026-02-25T16:55:42.218Z"
     },
     "kent/palming-soccer-ball": {
       "id": "kent/palming-soccer-ball",
       "checksum": "55ea4b53dfb78b8cdbc97260769fe05a350f80371a275e81a6db5b6e48f79046",
-      "sourcePath": "content/kent/palming-soccer-ball",
-      "uploadedAt": "2026-02-25T15:46:58.794Z"
+      "sourcePath": "r2://media/kent/palming-soccer-ball",
+      "uploadedAt": "2026-02-25T16:55:42.383Z"
     },
     "kent/profile": {
       "id": "kent/profile",
       "checksum": "00e495130208345dcc438bce0102f73a6e5cef01085a930c9c9ed2651a67b8d9",
-      "sourcePath": "content/kent/profile",
-      "uploadedAt": "2026-02-25T15:46:58.828Z"
+      "sourcePath": "r2://media/kent/profile",
+      "uploadedAt": "2026-02-25T16:55:42.413Z"
     },
     "kent/profile-transparent": {
       "id": "kent/profile-transparent",
       "checksum": "761efe8c18fb4e2b7703015f7cb3f1d96fef35bf131c4b15a5e9f40d46e1bc02",
-      "sourcePath": "content/kent/profile-transparent",
-      "uploadedAt": "2026-02-25T15:46:59.177Z"
+      "sourcePath": "r2://media/kent/profile-transparent",
+      "uploadedAt": "2026-02-25T16:55:42.483Z"
     },
     "kent/riding-onewheel-outdoors": {
       "id": "kent/riding-onewheel-outdoors",
       "checksum": "7f263d9d9d436a83417bf8aea86bb50d2c5002985ad2ea410f2a5fe67aaf267d",
-      "sourcePath": "content/kent/riding-onewheel-outdoors",
-      "uploadedAt": "2026-02-25T15:47:00.148Z"
+      "sourcePath": "r2://media/kent/riding-onewheel-outdoors",
+      "uploadedAt": "2026-02-25T16:55:43.066Z"
     },
     "kent/riding-onewheel-outdoors-fast": {
       "id": "kent/riding-onewheel-outdoors-fast",
       "checksum": "010181c76f3d6c5f25fd6e012c36bba9744edcfb0fe4430a1dae9da895b9388b",
-      "sourcePath": "content/kent/riding-onewheel-outdoors-fast",
-      "uploadedAt": "2026-02-25T15:47:01.097Z"
+      "sourcePath": "r2://media/kent/riding-onewheel-outdoors-fast",
+      "uploadedAt": "2026-02-25T16:55:43.431Z"
     },
     "kent/rollerblade-coding-checking-watch": {
       "id": "kent/rollerblade-coding-checking-watch",
       "checksum": "81bc38989ee4693bc86c803618a11f5400c58bc3f62c648e51c1fa2f78b68181",
-      "sourcePath": "content/kent/rollerblade-coding-checking-watch",
-      "uploadedAt": "2026-02-25T15:47:01.737Z"
+      "sourcePath": "r2://media/kent/rollerblade-coding-checking-watch",
+      "uploadedAt": "2026-02-25T16:55:43.575Z"
     },
     "kent/signature-dark-mode": {
       "id": "kent/signature-dark-mode",
       "checksum": "b5e2f15c350f8b9c857c5da491be5dc859fe62748531186a82d368fc287ba53b",
-      "sourcePath": "content/kent/signature-dark-mode",
-      "uploadedAt": "2026-02-25T15:47:01.780Z"
+      "sourcePath": "r2://media/kent/signature-dark-mode",
+      "uploadedAt": "2026-02-25T16:55:43.582Z"
     },
     "kent/signature-light-mode": {
       "id": "kent/signature-light-mode",
       "checksum": "5f467f2ef30012c4087123fb02a1257c81264a640339fe81602b41defa30198d",
-      "sourcePath": "content/kent/signature-light-mode",
-      "uploadedAt": "2026-02-25T15:47:02.000Z"
+      "sourcePath": "r2://media/kent/signature-light-mode",
+      "uploadedAt": "2026-02-25T16:55:43.586Z"
     },
     "kent/skating-gear": {
       "id": "kent/skating-gear",
       "checksum": "6a7e47b26b8b82bbf0e44ab666279e7ea613b255d3ab35be153298828e2ca055",
-      "sourcePath": "content/kent/skating-gear",
-      "uploadedAt": "2026-02-25T15:47:02.400Z"
+      "sourcePath": "r2://media/kent/skating-gear",
+      "uploadedAt": "2026-02-25T16:55:43.711Z"
     },
     "kent/smiling-with-laptop-on-couch": {
       "id": "kent/smiling-with-laptop-on-couch",
       "checksum": "e7782a170582c3dc16fcf333d295629ec9aeb51a390b86da625aed64fd2028ab",
-      "sourcePath": "content/kent/smiling-with-laptop-on-couch",
-      "uploadedAt": "2026-02-25T15:47:03.151Z"
+      "sourcePath": "r2://media/kent/smiling-with-laptop-on-couch",
+      "uploadedAt": "2026-02-25T16:55:43.900Z"
     },
     "kent/snow-sports": {
       "id": "kent/snow-sports",
       "checksum": "94748e0f04be8bb4258172e1f20153c2e89bd738528d6ac2183ed95f41941769",
-      "sourcePath": "content/kent/snow-sports",
-      "uploadedAt": "2026-02-25T15:47:03.623Z"
+      "sourcePath": "r2://media/kent/snow-sports",
+      "uploadedAt": "2026-02-25T16:55:43.963Z"
     },
     "kent/video-stills/get-to-know-kent-video-thumbnail": {
       "id": "kent/video-stills/get-to-know-kent-video-thumbnail",
       "checksum": "16e853d7590810928e1718286eb5f635e484e88e432bd0139b71d3e54ac33032",
-      "sourcePath": "content/kent/video-stills/get-to-know-kent-video-thumbnail",
-      "uploadedAt": "2026-02-25T15:47:04.566Z"
+      "sourcePath": "r2://media/kent/video-stills/get-to-know-kent-video-thumbnail",
+      "uploadedAt": "2026-02-25T16:55:44.113Z"
     },
     "kent/video-stills/happy-snowboarder": {
       "id": "kent/video-stills/happy-snowboarder",
       "checksum": "4e5778b4a71a43e951ac19cca0e94f1356af49bb951a05484fa15c0d0e9db059",
-      "sourcePath": "content/kent/video-stills/happy-snowboarder",
-      "uploadedAt": "2026-02-25T15:47:05.297Z"
+      "sourcePath": "r2://media/kent/video-stills/happy-snowboarder",
+      "uploadedAt": "2026-02-25T16:55:44.249Z"
     },
     "kent/video-stills/microphone-with-hands": {
       "id": "kent/video-stills/microphone-with-hands",
       "checksum": "18d470a22efb62ce9ae23d9a0dfc8208ac497282d41b108e4ca237f3831694b0",
-      "sourcePath": "content/kent/video-stills/microphone-with-hands",
-      "uploadedAt": "2026-02-25T15:47:05.890Z"
+      "sourcePath": "r2://media/kent/video-stills/microphone-with-hands",
+      "uploadedAt": "2026-02-25T16:55:44.342Z"
     },
     "kent/video-stills/mr-rogers-be-kind": {
       "id": "kent/video-stills/mr-rogers-be-kind",
       "checksum": "c79357d9dde0d35a0239030e6629da3e9f4926d4100609dc0a697019e005088b",
-      "sourcePath": "content/kent/video-stills/mr-rogers-be-kind",
-      "uploadedAt": "2026-02-25T15:47:06.965Z"
+      "sourcePath": "r2://media/kent/video-stills/mr-rogers-be-kind",
+      "uploadedAt": "2026-02-25T16:55:44.454Z"
     },
     "kent/walking-away-with-onewheel": {
       "id": "kent/walking-away-with-onewheel",
       "checksum": "9abbc15a3b1235a75973be4a22e368d21ebfef7cec54cdd0627e3860022f87f4",
-      "sourcePath": "content/kent/walking-away-with-onewheel",
-      "uploadedAt": "2026-02-25T15:47:07.993Z"
+      "sourcePath": "r2://media/kent/walking-away-with-onewheel",
+      "uploadedAt": "2026-02-25T16:55:44.554Z"
     },
     "kent/working-in-nature": {
       "id": "kent/working-in-nature",
       "checksum": "4f015c5c0f51192993e5b27bf73a3a7c74d4156e1e9a8c45c8fecf5242907c93",
-      "sourcePath": "content/kent/working-in-nature",
-      "uploadedAt": "2026-02-25T15:47:08.871Z"
+      "sourcePath": "r2://media/kent/working-in-nature",
+      "uploadedAt": "2026-02-25T16:55:45.050Z"
     },
     "blog/2010s-decade-in-review/2010-cds-after.jpg": {
       "id": "blog/2010s-decade-in-review/2010-cds-after.jpg",
       "checksum": "dbb643d2a5c113bc78c7c38aa3327e76b6c537ff179e120a0b3bf02cc21b5021",
-      "sourcePath": "content/blog/2010s-decade-in-review/2010-cds-after.jpg",
-      "uploadedAt": "2026-02-25T15:47:09.094Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2010-cds-after.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.060Z"
     },
     "blog/2010s-decade-in-review/2010-cds-before.jpg": {
       "id": "blog/2010s-decade-in-review/2010-cds-before.jpg",
       "checksum": "6141891cb8b92a09fe4cc79c5b8c47ce3419a49db11aa0071dbc7a6346db7de2",
-      "sourcePath": "content/blog/2010s-decade-in-review/2010-cds-before.jpg",
-      "uploadedAt": "2026-02-25T15:47:09.512Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2010-cds-before.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.071Z"
     },
     "blog/2010s-decade-in-review/2010-dvds-after.jpg": {
       "id": "blog/2010s-decade-in-review/2010-dvds-after.jpg",
       "checksum": "f2359a72ebffb3e7d9fb3bcbb54e0b7c41a078004188117e448426680a1a111f",
-      "sourcePath": "content/blog/2010s-decade-in-review/2010-dvds-after.jpg",
-      "uploadedAt": "2026-02-25T15:47:09.836Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2010-dvds-after.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.079Z"
     },
     "blog/2010s-decade-in-review/2010-dvds-before.jpg": {
       "id": "blog/2010s-decade-in-review/2010-dvds-before.jpg",
       "checksum": "7d2fd04a4baac82e4dc3b4a00785da4e3bd51b54ff19b38b987fe045d84d08a0",
-      "sourcePath": "content/blog/2010s-decade-in-review/2010-dvds-before.jpg",
-      "uploadedAt": "2026-02-25T15:47:10.429Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2010-dvds-before.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.086Z"
     },
     "blog/2010s-decade-in-review/2010-isayhi.jpg": {
       "id": "blog/2010s-decade-in-review/2010-isayhi.jpg",
       "checksum": "53fe4ea2ec903e69059948d580dc298debe8913755cd5af105f422215ce6a95b",
-      "sourcePath": "content/blog/2010s-decade-in-review/2010-isayhi.jpg",
-      "uploadedAt": "2026-02-25T15:47:10.868Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2010-isayhi.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.092Z"
     },
     "blog/2010s-decade-in-review/2010.jpg": {
       "id": "blog/2010s-decade-in-review/2010.jpg",
       "checksum": "27e78b5f6885ccc044980055d6f332d58e1c99c075de7f281498d3d277957de7",
-      "sourcePath": "content/blog/2010s-decade-in-review/2010.jpg",
-      "uploadedAt": "2026-02-25T15:47:11.151Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2010.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.096Z"
     },
     "blog/2010s-decade-in-review/2011.jpg": {
       "id": "blog/2010s-decade-in-review/2011.jpg",
       "checksum": "ea2e0c1f4f4527300ca76e0549f327c33db52d57f6fb35f3d18b10d5907246f5",
-      "sourcePath": "content/blog/2010s-decade-in-review/2011.jpg",
-      "uploadedAt": "2026-02-25T15:47:11.473Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2011.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.103Z"
     },
     "blog/2010s-decade-in-review/2012.jpg": {
       "id": "blog/2010s-decade-in-review/2012.jpg",
       "checksum": "f52cd32a6e4a8118ce0a781b9845ab873572bf2be6ec9acaf433326063dd5599",
-      "sourcePath": "content/blog/2010s-decade-in-review/2012.jpg",
-      "uploadedAt": "2026-02-25T15:47:11.703Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2012.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.109Z"
     },
     "blog/2010s-decade-in-review/2013-domo-offer.png": {
       "id": "blog/2010s-decade-in-review/2013-domo-offer.png",
       "checksum": "7e6204a83a18d8ba425622367f951d1f47c0229abab6239ac3466c033142c420",
-      "sourcePath": "content/blog/2010s-decade-in-review/2013-domo-offer.png",
-      "uploadedAt": "2026-02-25T15:47:12.147Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2013-domo-offer.png",
+      "uploadedAt": "2026-02-25T16:55:45.119Z"
     },
     "blog/2010s-decade-in-review/2013.jpg": {
       "id": "blog/2010s-decade-in-review/2013.jpg",
       "checksum": "7ae7b578627c6f10d1513ca243ac430de8e114243b7e786ee475e9b33776b9ee",
-      "sourcePath": "content/blog/2010s-decade-in-review/2013.jpg",
-      "uploadedAt": "2026-02-25T15:47:12.449Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2013.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.126Z"
     },
     "blog/2010s-decade-in-review/2014-angularair.png": {
       "id": "blog/2010s-decade-in-review/2014-angularair.png",
       "checksum": "940271bb3e50e955d7d98f37fc94ad41003ab63ca9ca4e937ea00a09913f8f5b",
-      "sourcePath": "content/blog/2010s-decade-in-review/2014-angularair.png",
-      "uploadedAt": "2026-02-25T15:47:12.965Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2014-angularair.png",
+      "uploadedAt": "2026-02-25T16:55:45.176Z"
     },
     "blog/2010s-decade-in-review/2014.jpg": {
       "id": "blog/2010s-decade-in-review/2014.jpg",
       "checksum": "5ab921a8916a9fd5acbfc608c669832dce073d300291dbb089e4450a8efe2471",
-      "sourcePath": "content/blog/2010s-decade-in-review/2014.jpg",
-      "uploadedAt": "2026-02-25T15:47:13.801Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2014.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.232Z"
     },
     "blog/2010s-decade-in-review/2015-angularair-ng-nl.jpg": {
       "id": "blog/2010s-decade-in-review/2015-angularair-ng-nl.jpg",
       "checksum": "d12534ba75e8b1e8e22895b10fe16096a0abb300481bc2360393f4fe715bae3c",
-      "sourcePath": "content/blog/2010s-decade-in-review/2015-angularair-ng-nl.jpg",
-      "uploadedAt": "2026-02-25T15:47:14.146Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2015-angularair-ng-nl.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.242Z"
     },
     "blog/2010s-decade-in-review/2015-paypal-dm.png": {
       "id": "blog/2010s-decade-in-review/2015-paypal-dm.png",
       "checksum": "dce4c37b3f871615f543339a9881e5646edcce87eca1a3f1f5074eb9be7e3272",
-      "sourcePath": "content/blog/2010s-decade-in-review/2015-paypal-dm.png",
-      "uploadedAt": "2026-02-25T15:47:14.500Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2015-paypal-dm.png",
+      "uploadedAt": "2026-02-25T16:55:45.248Z"
     },
     "blog/2010s-decade-in-review/2015-temple.jpg": {
       "id": "blog/2010s-decade-in-review/2015-temple.jpg",
       "checksum": "9fa08d0b7329ac32748f8a3d78fefe6ebc27a69ab628f325dbbd0b2505c220d5",
-      "sourcePath": "content/blog/2010s-decade-in-review/2015-temple.jpg",
-      "uploadedAt": "2026-02-25T15:47:14.896Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2015-temple.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.257Z"
     },
     "blog/2010s-decade-in-review/2015.jpg": {
       "id": "blog/2010s-decade-in-review/2015.jpg",
       "checksum": "2ffd53a98b9db9a5441e75d01f407b24ae85e652d4efc2d3316b4c6457873709",
-      "sourcePath": "content/blog/2010s-decade-in-review/2015.jpg",
-      "uploadedAt": "2026-02-25T15:47:15.243Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2015.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.265Z"
     },
     "blog/2010s-decade-in-review/2016.jpg": {
       "id": "blog/2010s-decade-in-review/2016.jpg",
       "checksum": "367367733726dbc04422b38d4d1c20699e92dab9fbfdaa84dae14bb8d55f533b",
-      "sourcePath": "content/blog/2010s-decade-in-review/2016.jpg",
-      "uploadedAt": "2026-02-25T15:47:15.815Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2016.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.274Z"
     },
     "blog/2010s-decade-in-review/2017-githubgraph.png": {
       "id": "blog/2010s-decade-in-review/2017-githubgraph.png",
       "checksum": "4201f991e92cead3da801660a8aa3d72ad124e344d55df129a8e584c93ddf3c9",
-      "sourcePath": "content/blog/2010s-decade-in-review/2017-githubgraph.png",
-      "uploadedAt": "2026-02-25T15:47:16.057Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2017-githubgraph.png",
+      "uploadedAt": "2026-02-25T16:55:45.280Z"
     },
     "blog/2010s-decade-in-review/2017.jpg": {
       "id": "blog/2010s-decade-in-review/2017.jpg",
       "checksum": "a17c93709c9681fd8619e656d02567bdb3e625c9d7baf3c4d93762d7b01acbb0",
-      "sourcePath": "content/blog/2010s-decade-in-review/2017.jpg",
-      "uploadedAt": "2026-02-25T15:47:16.461Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2017.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.287Z"
     },
     "blog/2010s-decade-in-review/2018-gemma.jpg": {
       "id": "blog/2010s-decade-in-review/2018-gemma.jpg",
       "checksum": "baa58e8ad5e7c3bf31f4e0462d22267cc0ca12f1ac306d32a1d88e33dce89190",
-      "sourcePath": "content/blog/2010s-decade-in-review/2018-gemma.jpg",
-      "uploadedAt": "2026-02-25T15:47:16.916Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2018-gemma.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.293Z"
     },
     "blog/2010s-decade-in-review/2018-nanowrimo.jpg": {
       "id": "blog/2010s-decade-in-review/2018-nanowrimo.jpg",
       "checksum": "a9b0b7f4ee2e72e8b3ff3a361ce1dd66152c277f1a021bf6cee73d2f99db5a0e",
-      "sourcePath": "content/blog/2010s-decade-in-review/2018-nanowrimo.jpg",
-      "uploadedAt": "2026-02-25T15:47:17.203Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2018-nanowrimo.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.297Z"
     },
     "blog/2010s-decade-in-review/2018-shurlan.jpg": {
       "id": "blog/2010s-decade-in-review/2018-shurlan.jpg",
       "checksum": "2fe0371a331998544aff884d25534eac15e6b2380d2887ee3ad8ac25ec57d82a",
-      "sourcePath": "content/blog/2010s-decade-in-review/2018-shurlan.jpg",
-      "uploadedAt": "2026-02-25T15:47:17.470Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2018-shurlan.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.303Z"
     },
     "blog/2010s-decade-in-review/2018-workshop.jpg": {
       "id": "blog/2010s-decade-in-review/2018-workshop.jpg",
       "checksum": "d73debbb31662d1e794ca9740c9779b700f615a61b923413c95a2b4c14c63390",
-      "sourcePath": "content/blog/2010s-decade-in-review/2018-workshop.jpg",
-      "uploadedAt": "2026-02-25T15:47:17.812Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2018-workshop.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.311Z"
     },
     "blog/2010s-decade-in-review/2018.jpg": {
       "id": "blog/2010s-decade-in-review/2018.jpg",
       "checksum": "7dceb39aa71aebebdcb04bcd6f8051c2610563b3d660c1955cf45bf412cbe994",
-      "sourcePath": "content/blog/2010s-decade-in-review/2018.jpg",
-      "uploadedAt": "2026-02-25T15:47:18.310Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2018.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.316Z"
     },
     "blog/2010s-decade-in-review/2019-amsterdam-workshop.jpg": {
       "id": "blog/2010s-decade-in-review/2019-amsterdam-workshop.jpg",
       "checksum": "fd5928ec8e6eb86969f4d1be2a043b03a4ead7d0c2e45005f5002baf8913e1b0",
-      "sourcePath": "content/blog/2010s-decade-in-review/2019-amsterdam-workshop.jpg",
-      "uploadedAt": "2026-02-25T15:47:18.845Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2019-amsterdam-workshop.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.324Z"
     },
     "blog/2010s-decade-in-review/2019-amsterdam.jpg": {
       "id": "blog/2010s-decade-in-review/2019-amsterdam.jpg",
       "checksum": "b4e11f31e114625bb13d7dcfbf60d305b5fa28830a47cba272a75cd16046735a",
-      "sourcePath": "content/blog/2010s-decade-in-review/2019-amsterdam.jpg",
-      "uploadedAt": "2026-02-25T15:47:19.181Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2019-amsterdam.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.333Z"
     },
     "blog/2010s-decade-in-review/2019-ato.jpg": {
       "id": "blog/2010s-decade-in-review/2019-ato.jpg",
       "checksum": "106f81c218a8f035363419ac6f8871eac116cccff7316fd6b610b3f3df6956be",
-      "sourcePath": "content/blog/2010s-decade-in-review/2019-ato.jpg",
-      "uploadedAt": "2026-02-25T15:47:19.686Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2019-ato.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.340Z"
     },
     "blog/2010s-decade-in-review/2019-family-search.jpg": {
       "id": "blog/2010s-decade-in-review/2019-family-search.jpg",
       "checksum": "49db78e8602d15c1d47c518350d95b00be57570a818d4285c59b966fb0feba19",
-      "sourcePath": "content/blog/2010s-decade-in-review/2019-family-search.jpg",
-      "uploadedAt": "2026-02-25T15:47:20.013Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2019-family-search.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.348Z"
     },
     "blog/2010s-decade-in-review/2019-react-rally.jpg": {
       "id": "blog/2010s-decade-in-review/2019-react-rally.jpg",
       "checksum": "ab446ae0e4742f6cd1b41fc0dc79e0eb46673aba2ff33bcba22442ad6a8f702d",
-      "sourcePath": "content/blog/2010s-decade-in-review/2019-react-rally.jpg",
-      "uploadedAt": "2026-02-25T15:47:20.273Z"
+      "sourcePath": "r2://media/blog/2010s-decade-in-review/2019-react-rally.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.354Z"
     },
     "blog/don-t-solve-problems-eliminate-them/giga_casting_dymoig.png": {
       "id": "blog/don-t-solve-problems-eliminate-them/giga_casting_dymoig.png",
       "checksum": "b55bfb5d1424886486b0cbdb45a1f0b44db7cabcaf992408e5d9c50512bad7e9",
-      "sourcePath": "content/blog/don-t-solve-problems-eliminate-them/giga_casting_dymoig.png",
-      "uploadedAt": "2026-02-25T15:47:20.760Z"
+      "sourcePath": "r2://media/blog/don-t-solve-problems-eliminate-them/giga_casting_dymoig.png",
+      "uploadedAt": "2026-02-25T16:55:45.368Z"
     },
     "blog/don-t-solve-problems-eliminate-them/react_nlj9aq.png": {
       "id": "blog/don-t-solve-problems-eliminate-them/react_nlj9aq.png",
       "checksum": "52100c331e294af436765c4b85852f67feb2cee70f74c9f3d7b0c89c35b28c75",
-      "sourcePath": "content/blog/don-t-solve-problems-eliminate-them/react_nlj9aq.png",
-      "uploadedAt": "2026-02-25T15:47:21.402Z"
+      "sourcePath": "r2://media/blog/don-t-solve-problems-eliminate-them/react_nlj9aq.png",
+      "uploadedAt": "2026-02-25T16:55:45.380Z"
     },
     "blog/don-t-solve-problems-eliminate-them/remix-on-light_har5s6.png": {
       "id": "blog/don-t-solve-problems-eliminate-them/remix-on-light_har5s6.png",
       "checksum": "921a9cf7aa05c934b4a8ba14aa8c44895410d9a6c3fdb21124b62ca5c8b8ce6d",
-      "sourcePath": "content/blog/don-t-solve-problems-eliminate-them/remix-on-light_har5s6.png",
-      "uploadedAt": "2026-02-25T15:47:21.610Z"
+      "sourcePath": "r2://media/blog/don-t-solve-problems-eliminate-them/remix-on-light_har5s6.png",
+      "uploadedAt": "2026-02-25T16:55:45.385Z"
     },
     "blog/don-t-solve-problems-eliminate-them/tesla_model_s_mbupt9.jpg": {
       "id": "blog/don-t-solve-problems-eliminate-them/tesla_model_s_mbupt9.jpg",
       "checksum": "ae0f05da41654a2483f1f9799f9e5a8fc3b753f7bee320efec71b13f5d0667aa",
-      "sourcePath": "content/blog/don-t-solve-problems-eliminate-them/tesla_model_s_mbupt9.jpg",
-      "uploadedAt": "2026-02-25T15:47:21.896Z"
+      "sourcePath": "r2://media/blog/don-t-solve-problems-eliminate-them/tesla_model_s_mbupt9.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.396Z"
     },
     "blog/don-t-solve-problems-eliminate-them/violin_pdtl8b.jpg": {
       "id": "blog/don-t-solve-problems-eliminate-them/violin_pdtl8b.jpg",
       "checksum": "4437d423f966bffa1d809b37c893e0a57d747c8f97b098ef50a797349f73e8c9",
-      "sourcePath": "content/blog/don-t-solve-problems-eliminate-them/violin_pdtl8b.jpg",
-      "uploadedAt": "2026-02-25T15:47:22.130Z"
+      "sourcePath": "r2://media/blog/don-t-solve-problems-eliminate-them/violin_pdtl8b.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.403Z"
     },
     "blog/first-timers-only/github-comment_kxtvav.png": {
       "id": "blog/first-timers-only/github-comment_kxtvav.png",
       "checksum": "e5001ba26eed01ee6b2d9b17deddf514877a81b0fb669c2a5acbfff2eba61add",
-      "sourcePath": "content/blog/first-timers-only/github-comment_kxtvav.png",
-      "uploadedAt": "2026-02-25T15:47:22.704Z"
+      "sourcePath": "r2://media/blog/first-timers-only/github-comment_kxtvav.png",
+      "uploadedAt": "2026-02-25T16:55:45.408Z"
     },
     "blog/how-remix-makes-css-clashes-impossible/css-link-removed.gif": {
       "id": "blog/how-remix-makes-css-clashes-impossible/css-link-removed.gif",
       "checksum": "f0ba30a5b139dc7fb8004aa7e2a5e8273d3c5fee53b13e5812cccc87ab20d95c",
-      "sourcePath": "content/blog/how-remix-makes-css-clashes-impossible/css-link-removed.gif",
-      "uploadedAt": "2026-02-25T15:47:23.162Z"
+      "sourcePath": "r2://media/blog/how-remix-makes-css-clashes-impossible/css-link-removed.gif",
+      "uploadedAt": "2026-02-25T16:55:45.468Z"
     },
     "blog/my-modern-frontends-live-experience/venue.jpg": {
       "id": "blog/my-modern-frontends-live-experience/venue.jpg",
       "checksum": "11d21337359859bd33b9bc6ba4b7967e4c625bbef726d21713f3af002a640b95",
-      "sourcePath": "content/blog/my-modern-frontends-live-experience/venue.jpg",
-      "uploadedAt": "2026-02-25T15:47:23.265Z"
+      "sourcePath": "r2://media/blog/my-modern-frontends-live-experience/venue.jpg",
+      "uploadedAt": "2026-02-25T16:55:45.501Z"
     },
     "blog/super-simple-start-to-remix/app-running-in-production_hnbdvy.png": {
       "id": "blog/super-simple-start-to-remix/app-running-in-production_hnbdvy.png",
       "checksum": "a30c1591b1dc74b1b03c17079d32a44cc83a8490652ac433e41f03c15e1b506a",
-      "sourcePath": "content/blog/super-simple-start-to-remix/app-running-in-production_hnbdvy.png",
-      "uploadedAt": "2026-02-25T15:47:23.580Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-remix/app-running-in-production_hnbdvy.png",
+      "uploadedAt": "2026-02-25T16:55:45.509Z"
     },
     "blog/super-simple-start-to-remix/app_ol57hw.png": {
       "id": "blog/super-simple-start-to-remix/app_ol57hw.png",
       "checksum": "a65a1811b8824433ed6c90d77530c45e707a715f5af85c933fe999dfea9a44bb",
-      "sourcePath": "content/blog/super-simple-start-to-remix/app_ol57hw.png",
-      "uploadedAt": "2026-02-25T15:47:24.186Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-remix/app_ol57hw.png",
+      "uploadedAt": "2026-02-25T16:55:45.514Z"
     },
     "blog/super-simple-start-to-remix/favicon_vsvcsr.ico": {
       "id": "blog/super-simple-start-to-remix/favicon_vsvcsr.ico",
       "checksum": "5d8d95bd28ccbec5cfd923768b6b83de57a7b9dcd970682e47c6882ed5164b3f",
-      "sourcePath": "content/blog/super-simple-start-to-remix/favicon_vsvcsr.ico",
-      "uploadedAt": "2026-02-25T15:47:24.610Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-remix/favicon_vsvcsr.ico",
+      "uploadedAt": "2026-02-25T16:55:45.525Z"
     },
     "blog/super-simple-start-to-remix/network-tab-with-scripts_tdibpc.png": {
       "id": "blog/super-simple-start-to-remix/network-tab-with-scripts_tdibpc.png",
       "checksum": "a673195121301d101f788c30eebd538cf1e5e02abdbd3600c35d743a83a6a8ad",
-      "sourcePath": "content/blog/super-simple-start-to-remix/network-tab-with-scripts_tdibpc.png",
-      "uploadedAt": "2026-02-25T15:47:24.916Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-remix/network-tab-with-scripts_tdibpc.png",
+      "uploadedAt": "2026-02-25T16:55:45.540Z"
     },
     "blog/super-simple-start-to-remix/network-tab_iyg7iy.png": {
       "id": "blog/super-simple-start-to-remix/network-tab_iyg7iy.png",
       "checksum": "de6197eee0451252ab3a28731eddde87c4beb756422e08f47a9142fa98605880",
-      "sourcePath": "content/blog/super-simple-start-to-remix/network-tab_iyg7iy.png",
-      "uploadedAt": "2026-02-25T15:47:25.174Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-remix/network-tab_iyg7iy.png",
+      "uploadedAt": "2026-02-25T16:55:45.547Z"
     },
     "blog/the-testing-trophy-and-testing-classifications/trophy_wx9aen.png": {
       "id": "blog/the-testing-trophy-and-testing-classifications/trophy_wx9aen.png",
       "checksum": "f41b6faa342c0dddfacad264f9f08f80bbe2984f50c1e0938a76f1175607a015",
-      "sourcePath": "content/blog/the-testing-trophy-and-testing-classifications/trophy_wx9aen.png",
-      "uploadedAt": "2026-02-25T15:47:25.512Z"
+      "sourcePath": "r2://media/blog/the-testing-trophy-and-testing-classifications/trophy_wx9aen.png",
+      "uploadedAt": "2026-02-25T16:55:45.564Z"
     },
     "blog/2023-in-review/harry-potter-cursed-child": {
       "id": "blog/2023-in-review/harry-potter-cursed-child",
       "checksum": "6dcc05876a84ae1f21ba8bfcea2439d98170ec6b08befb8a78f0c7ad64cf1242",
-      "sourcePath": "content/blog/2023-in-review/harry-potter-cursed-child",
-      "uploadedAt": "2026-02-25T15:47:26.540Z"
+      "sourcePath": "r2://media/blog/2023-in-review/harry-potter-cursed-child",
+      "uploadedAt": "2026-02-25T16:55:45.662Z"
     },
     "blog/2023-in-review/kent-disneyland": {
       "id": "blog/2023-in-review/kent-disneyland",
       "checksum": "6d7f78c09a9232544b4e733ce3f77985a18e29a8eca178a98e16612dad0c01f4",
-      "sourcePath": "content/blog/2023-in-review/kent-disneyland",
-      "uploadedAt": "2026-02-25T15:47:27.250Z"
+      "sourcePath": "r2://media/blog/2023-in-review/kent-disneyland",
+      "uploadedAt": "2026-02-25T16:55:45.758Z"
     },
     "blog/2023-in-review/kent-speaking": {
       "id": "blog/2023-in-review/kent-speaking",
       "checksum": "29cd7075b892944def754cbe990cb3a861114cee12388ca94605030e5ad75afd",
-      "sourcePath": "content/blog/2023-in-review/kent-speaking",
-      "uploadedAt": "2026-02-25T15:47:28.284Z"
+      "sourcePath": "r2://media/blog/2023-in-review/kent-speaking",
+      "uploadedAt": "2026-02-25T16:55:46.328Z"
     },
     "blog/advanced-react-component-patterns/images/0.gif": {
       "id": "blog/advanced-react-component-patterns/images/0.gif",
       "checksum": "d65dcfacfd876eba8dfb7e48749201e57d9b8f8475a21b5b0202193a0c177380",
-      "sourcePath": "content/blog/advanced-react-component-patterns/images/0.gif",
-      "uploadedAt": "2026-02-25T15:47:28.764Z"
+      "sourcePath": "r2://media/blog/advanced-react-component-patterns/images/0.gif",
+      "uploadedAt": "2026-02-25T16:55:46.454Z"
     },
     "blog/advanced-react-component-patterns/images/1.gif": {
       "id": "blog/advanced-react-component-patterns/images/1.gif",
       "checksum": "138ef556f8e9ed38146acd5a442491e0026933f11bca4cba1e2b060d86da0e92",
-      "sourcePath": "content/blog/advanced-react-component-patterns/images/1.gif",
-      "uploadedAt": "2026-02-25T15:47:29.289Z"
+      "sourcePath": "r2://media/blog/advanced-react-component-patterns/images/1.gif",
+      "uploadedAt": "2026-02-25T16:55:46.479Z"
     },
     "blog/advanced-react-component-patterns/images/2.gif": {
       "id": "blog/advanced-react-component-patterns/images/2.gif",
       "checksum": "f0a0a5897676a77ee14c4ec4bc3f231acd87322153ac10526dfafe336e2cf431",
-      "sourcePath": "content/blog/advanced-react-component-patterns/images/2.gif",
-      "uploadedAt": "2026-02-25T15:47:29.967Z"
+      "sourcePath": "r2://media/blog/advanced-react-component-patterns/images/2.gif",
+      "uploadedAt": "2026-02-25T16:55:46.494Z"
     },
     "blog/advanced-react-component-patterns/images/3.gif": {
       "id": "blog/advanced-react-component-patterns/images/3.gif",
       "checksum": "90d90d20fe132d34d156bc0c2314512f5455c580ae1e47f4c36f718d615af872",
-      "sourcePath": "content/blog/advanced-react-component-patterns/images/3.gif",
-      "uploadedAt": "2026-02-25T15:47:30.843Z"
+      "sourcePath": "r2://media/blog/advanced-react-component-patterns/images/3.gif",
+      "uploadedAt": "2026-02-25T16:55:46.516Z"
     },
     "blog/advanced-react-component-patterns/images/4.gif": {
       "id": "blog/advanced-react-component-patterns/images/4.gif",
       "checksum": "e11377d44a13273677a052c0243f623d0013619654a01ccc3d4461fa8dba691a",
-      "sourcePath": "content/blog/advanced-react-component-patterns/images/4.gif",
-      "uploadedAt": "2026-02-25T15:47:31.336Z"
+      "sourcePath": "r2://media/blog/advanced-react-component-patterns/images/4.gif",
+      "uploadedAt": "2026-02-25T16:55:46.566Z"
     },
     "blog/automation/automation.png": {
       "id": "blog/automation/automation.png",
       "checksum": "743b2020e29e823929939155b26b54e103b72b263529ca1364c58b45403398bb",
-      "sourcePath": "content/blog/automation/automation.png",
-      "uploadedAt": "2026-02-25T15:47:31.562Z"
+      "sourcePath": "r2://media/blog/automation/automation.png",
+      "uploadedAt": "2026-02-25T16:55:46.573Z"
     },
     "blog/automation/is_it_worth_the_time.png": {
       "id": "blog/automation/is_it_worth_the_time.png",
       "checksum": "369ce1eb03e161d9161cb0b109dbe8cc65e2733cc381729776d1e7db20b9d51d",
-      "sourcePath": "content/blog/automation/is_it_worth_the_time.png",
-      "uploadedAt": "2026-02-25T15:47:31.808Z"
+      "sourcePath": "r2://media/blog/automation/is_it_worth_the_time.png",
+      "uploadedAt": "2026-02-25T16:55:46.580Z"
     },
     "blog/becoming-an-open-source-project-maintainer/0.gif": {
       "id": "blog/becoming-an-open-source-project-maintainer/0.gif",
       "checksum": "45f53568741261e9d2e8667e77fd2d9e606a6a64e10a45d671833c06b20fa331",
-      "sourcePath": "content/blog/becoming-an-open-source-project-maintainer/0.gif",
-      "uploadedAt": "2026-02-25T15:47:32.384Z"
+      "sourcePath": "r2://media/blog/becoming-an-open-source-project-maintainer/0.gif",
+      "uploadedAt": "2026-02-25T16:55:46.600Z"
     },
     "blog/becoming-an-open-source-project-maintainer/1.gif": {
       "id": "blog/becoming-an-open-source-project-maintainer/1.gif",
       "checksum": "3a8e49350f35209436761514d91641980dd78942600352e72d10680a61b940af",
-      "sourcePath": "content/blog/becoming-an-open-source-project-maintainer/1.gif",
-      "uploadedAt": "2026-02-25T15:47:32.887Z"
+      "sourcePath": "r2://media/blog/becoming-an-open-source-project-maintainer/1.gif",
+      "uploadedAt": "2026-02-25T16:55:46.618Z"
     },
     "blog/building-an-awesome-image-loading-experience/blurhash": {
       "id": "blog/building-an-awesome-image-loading-experience/blurhash",
       "checksum": "079437f37261a68f696032a88d984e241b79ef5427fac6fc7505f93780b0b709",
-      "sourcePath": "content/blog/building-an-awesome-image-loading-experience/blurhash",
-      "uploadedAt": "2026-02-25T15:47:33.604Z"
+      "sourcePath": "r2://media/blog/building-an-awesome-image-loading-experience/blurhash",
+      "uploadedAt": "2026-02-25T16:55:46.644Z"
     },
     "blog/building-an-awesome-image-loading-experience/blurred-placeholder": {
       "id": "blog/building-an-awesome-image-loading-experience/blurred-placeholder",
       "checksum": "1b6be0b2c0dda7767b06c173a9e203c86d721d9f2cdb2dcc0c984838367738eb",
-      "sourcePath": "content/blog/building-an-awesome-image-loading-experience/blurred-placeholder",
-      "uploadedAt": "2026-02-25T15:47:33.889Z"
+      "sourcePath": "r2://media/blog/building-an-awesome-image-loading-experience/blurred-placeholder",
+      "uploadedAt": "2026-02-25T16:55:46.663Z"
     },
     "blog/building-an-awesome-image-loading-experience/pixelated-placeholder": {
       "id": "blog/building-an-awesome-image-loading-experience/pixelated-placeholder",
       "checksum": "21ec08cb7df05455615d8ffeea53100fe67b56edf0fd2a1dd384b18076e1b9cb",
-      "sourcePath": "content/blog/building-an-awesome-image-loading-experience/pixelated-placeholder",
-      "uploadedAt": "2026-02-25T15:47:34.293Z"
+      "sourcePath": "r2://media/blog/building-an-awesome-image-loading-experience/pixelated-placeholder",
+      "uploadedAt": "2026-02-25T16:55:46.686Z"
     },
     "blog/building-production-apps-100-in-the-browser/0.png": {
       "id": "blog/building-production-apps-100-in-the-browser/0.png",
       "checksum": "78c4b5267df2d773ec2284727c8a8737575cbb9448b857313bcaa0e309ede4ef",
-      "sourcePath": "content/blog/building-production-apps-100-in-the-browser/0.png",
-      "uploadedAt": "2026-02-25T15:47:34.584Z"
+      "sourcePath": "r2://media/blog/building-production-apps-100-in-the-browser/0.png",
+      "uploadedAt": "2026-02-25T16:55:46.691Z"
     },
     "blog/building-production-apps-100-in-the-browser/1.gif": {
       "id": "blog/building-production-apps-100-in-the-browser/1.gif",
       "checksum": "b9f47336d66f56432e487e478af33c9dcfe74f6f5293a743d7af81fe5a48ecd3",
-      "sourcePath": "content/blog/building-production-apps-100-in-the-browser/1.gif",
-      "uploadedAt": "2026-02-25T15:47:35.048Z"
+      "sourcePath": "r2://media/blog/building-production-apps-100-in-the-browser/1.gif",
+      "uploadedAt": "2026-02-25T16:55:46.727Z"
     },
     "blog/building-the-open-source-community-we-want/sharon-and-larry.jpg": {
       "id": "blog/building-the-open-source-community-we-want/sharon-and-larry.jpg",
       "checksum": "43cd7749e743e268a94e8232bb71e0cabfe54a3436a9925a9237595048e12dbd",
-      "sourcePath": "content/blog/building-the-open-source-community-we-want/sharon-and-larry.jpg",
-      "uploadedAt": "2026-02-25T15:47:35.556Z"
+      "sourcePath": "r2://media/blog/building-the-open-source-community-we-want/sharon-and-larry.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.737Z"
     },
     "blog/but-really-what-is-a-javascript-test/0.png": {
       "id": "blog/but-really-what-is-a-javascript-test/0.png",
       "checksum": "f7a564b2f70b12d86b23f686141d77d3dc34282eb93060d67f22231e95d58b3b",
-      "sourcePath": "content/blog/but-really-what-is-a-javascript-test/0.png",
-      "uploadedAt": "2026-02-25T15:47:35.850Z"
+      "sourcePath": "r2://media/blog/but-really-what-is-a-javascript-test/0.png",
+      "uploadedAt": "2026-02-25T16:55:46.741Z"
     },
     "blog/classes-complexity-and-functional-programming/0.png": {
       "id": "blog/classes-complexity-and-functional-programming/0.png",
       "checksum": "851b0d92ea92d62a8d0a4195dc43f102c24e87d9dde5f9cd9e68b714985d9ac6",
-      "sourcePath": "content/blog/classes-complexity-and-functional-programming/0.png",
-      "uploadedAt": "2026-02-25T15:47:36.082Z"
+      "sourcePath": "r2://media/blog/classes-complexity-and-functional-programming/0.png",
+      "uploadedAt": "2026-02-25T16:55:46.745Z"
     },
     "blog/classes-complexity-and-functional-programming/1.png": {
       "id": "blog/classes-complexity-and-functional-programming/1.png",
       "checksum": "92fe2160415af488c43614576739580995db0f68842bf214d5b62cdfa0ea083c",
-      "sourcePath": "content/blog/classes-complexity-and-functional-programming/1.png",
-      "uploadedAt": "2026-02-25T15:47:36.311Z"
+      "sourcePath": "r2://media/blog/classes-complexity-and-functional-programming/1.png",
+      "uploadedAt": "2026-02-25T16:55:46.751Z"
     },
     "blog/classes-complexity-and-functional-programming/2.png": {
       "id": "blog/classes-complexity-and-functional-programming/2.png",
       "checksum": "78a38908af3b138b665b6db79efb716c50086a91fd9a04f40eed1408d5b76d23",
-      "sourcePath": "content/blog/classes-complexity-and-functional-programming/2.png",
-      "uploadedAt": "2026-02-25T15:47:36.601Z"
+      "sourcePath": "r2://media/blog/classes-complexity-and-functional-programming/2.png",
+      "uploadedAt": "2026-02-25T16:55:46.754Z"
     },
     "blog/classes-complexity-and-functional-programming/3.png": {
       "id": "blog/classes-complexity-and-functional-programming/3.png",
       "checksum": "dafa0dd6c88e591168d69036000018084291125eaf2c38cc3631f0f732956c17",
-      "sourcePath": "content/blog/classes-complexity-and-functional-programming/3.png",
-      "uploadedAt": "2026-02-25T15:47:37.116Z"
+      "sourcePath": "r2://media/blog/classes-complexity-and-functional-programming/3.png",
+      "uploadedAt": "2026-02-25T16:55:46.758Z"
     },
     "blog/concerning-toolkits/0.jpg": {
       "id": "blog/concerning-toolkits/0.jpg",
       "checksum": "247647d03edd6c50473b420331ec28a2b4686b703c1e80af245544054ef5fe0e",
-      "sourcePath": "content/blog/concerning-toolkits/0.jpg",
-      "uploadedAt": "2026-02-25T15:47:37.418Z"
+      "sourcePath": "r2://media/blog/concerning-toolkits/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.765Z"
     },
     "blog/control-props-vs-state-reducers/toggle1.gif": {
       "id": "blog/control-props-vs-state-reducers/toggle1.gif",
       "checksum": "2865fbc13bfabfdfd3272fae0d5c6218eaa796360d5cb326ee1d6ebd00f3246b",
-      "sourcePath": "content/blog/control-props-vs-state-reducers/toggle1.gif",
-      "uploadedAt": "2026-02-25T15:47:37.732Z"
+      "sourcePath": "r2://media/blog/control-props-vs-state-reducers/toggle1.gif",
+      "uploadedAt": "2026-02-25T16:55:46.773Z"
     },
     "blog/control-props-vs-state-reducers/toggle2.gif": {
       "id": "blog/control-props-vs-state-reducers/toggle2.gif",
       "checksum": "c725619f41b2647544cee027588e8a9e32451bdf9581bb7cd941c5a56546c2ae",
-      "sourcePath": "content/blog/control-props-vs-state-reducers/toggle2.gif",
-      "uploadedAt": "2026-02-25T15:47:38.128Z"
+      "sourcePath": "r2://media/blog/control-props-vs-state-reducers/toggle2.gif",
+      "uploadedAt": "2026-02-25T16:55:46.785Z"
     },
     "blog/downshift-2-0-0-released/0.png": {
       "id": "blog/downshift-2-0-0-released/0.png",
       "checksum": "b7d053b6c5775b13cd182c1dae039ed3dad63ce932616447a3a729649b3cecb8",
-      "sourcePath": "content/blog/downshift-2-0-0-released/0.png",
-      "uploadedAt": "2026-02-25T15:47:38.431Z"
+      "sourcePath": "r2://media/blog/downshift-2-0-0-released/0.png",
+      "uploadedAt": "2026-02-25T16:55:46.797Z"
     },
     "blog/effective-snapshot-testing/0.png": {
       "id": "blog/effective-snapshot-testing/0.png",
       "checksum": "d9e8a9c69200f3f6337e16dbf1f82678d6bf4c75dbe59cf61a9ed079a10127d9",
-      "sourcePath": "content/blog/effective-snapshot-testing/0.png",
-      "uploadedAt": "2026-02-25T15:47:38.863Z"
+      "sourcePath": "r2://media/blog/effective-snapshot-testing/0.png",
+      "uploadedAt": "2026-02-25T16:55:46.806Z"
     },
     "blog/effective-snapshot-testing/1.gif": {
       "id": "blog/effective-snapshot-testing/1.gif",
       "checksum": "9541c16cc52af97831d6d1fbd562e7568e5a8646b4665bd1e0ff2cbaac8adbe3",
-      "sourcePath": "content/blog/effective-snapshot-testing/1.gif",
-      "uploadedAt": "2026-02-25T15:47:39.202Z"
+      "sourcePath": "r2://media/blog/effective-snapshot-testing/1.gif",
+      "uploadedAt": "2026-02-25T16:55:46.825Z"
     },
     "blog/favor-progress-over-pride-in-open-source/glamorous-downloads.png": {
       "id": "blog/favor-progress-over-pride-in-open-source/glamorous-downloads.png",
       "checksum": "f134adb293883aebb2332c5a3ac8aba1c2dd704935029c3fd97925d299267e6e",
-      "sourcePath": "content/blog/favor-progress-over-pride-in-open-source/glamorous-downloads.png",
-      "uploadedAt": "2026-02-25T15:47:39.403Z"
+      "sourcePath": "r2://media/blog/favor-progress-over-pride-in-open-source/glamorous-downloads.png",
+      "uploadedAt": "2026-02-25T16:55:46.830Z"
     },
     "blog/fix-the-slow-render-before-you-fix-the-re-render/stop-hitting-yourself.gif": {
       "id": "blog/fix-the-slow-render-before-you-fix-the-re-render/stop-hitting-yourself.gif",
       "checksum": "c74642b72edbb05e1c9cc4a1ab69bf74cec52b134f8250cccb67121b078bd610",
-      "sourcePath": "content/blog/fix-the-slow-render-before-you-fix-the-re-render/stop-hitting-yourself.gif",
-      "uploadedAt": "2026-02-25T15:47:39.900Z"
+      "sourcePath": "r2://media/blog/fix-the-slow-render-before-you-fix-the-re-render/stop-hitting-yourself.gif",
+      "uploadedAt": "2026-02-25T16:55:46.852Z"
     },
     "blog/fixing-a-memory-leak-in-a-production-node-js-app/post-memory-leak": {
       "id": "blog/fixing-a-memory-leak-in-a-production-node-js-app/post-memory-leak",
       "checksum": "cc61b3caa040a13bd963c3b898c0418f4b2397aefe22613ffa1e508dbc5ff822",
-      "sourcePath": "content/blog/fixing-a-memory-leak-in-a-production-node-js-app/post-memory-leak",
-      "uploadedAt": "2026-02-25T15:47:40.247Z"
+      "sourcePath": "r2://media/blog/fixing-a-memory-leak-in-a-production-node-js-app/post-memory-leak",
+      "uploadedAt": "2026-02-25T16:55:46.866Z"
     },
     "blog/fixing-a-memory-leak-in-a-production-node-js-app/two-spikes": {
       "id": "blog/fixing-a-memory-leak-in-a-production-node-js-app/two-spikes",
       "checksum": "9f6468654f4e886bf7251b9e365bc055527970727517aba9547808012abfb9c7",
-      "sourcePath": "content/blog/fixing-a-memory-leak-in-a-production-node-js-app/two-spikes",
-      "uploadedAt": "2026-02-25T15:47:40.681Z"
+      "sourcePath": "r2://media/blog/fixing-a-memory-leak-in-a-production-node-js-app/two-spikes",
+      "uploadedAt": "2026-02-25T16:55:46.873Z"
     },
     "blog/full-time-educator/use-idle.png": {
       "id": "blog/full-time-educator/use-idle.png",
       "checksum": "069989ad561419cedc828760177e9d07b83bac5cc9a976e746cca49221c507f4",
-      "sourcePath": "content/blog/full-time-educator/use-idle.png",
-      "uploadedAt": "2026-02-25T15:47:40.958Z"
+      "sourcePath": "r2://media/blog/full-time-educator/use-idle.png",
+      "uploadedAt": "2026-02-25T16:55:46.881Z"
     },
     "blog/getting-noticed-and-widening-your-reach/0.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/0.jpg",
       "checksum": "b12bbd03321d6a69fc22aaabd975e4eaa80212e14cc1b4c19b3d7801a7beee55",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/0.jpg",
-      "uploadedAt": "2026-02-25T15:47:41.132Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.890Z"
     },
     "blog/getting-noticed-and-widening-your-reach/1.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/1.jpg",
       "checksum": "971212164a5ff99b4bd02d9c57b31296800c526718f78bd850affef64eeb030f",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/1.jpg",
-      "uploadedAt": "2026-02-25T15:47:41.345Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/1.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.895Z"
     },
     "blog/getting-noticed-and-widening-your-reach/2.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/2.jpg",
       "checksum": "64accc91210455dbed2a3a5f6e6fdb8859c6c37861d24eb71a9e82dbcd81e8e6",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/2.jpg",
-      "uploadedAt": "2026-02-25T15:47:41.538Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/2.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.899Z"
     },
     "blog/getting-noticed-and-widening-your-reach/3.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/3.jpg",
       "checksum": "da71f683b22663dab0df76a08d0077dc1c8f8f7e7c965881a818bb45d16e96a9",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/3.jpg",
-      "uploadedAt": "2026-02-25T15:47:41.837Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/3.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.904Z"
     },
     "blog/getting-noticed-and-widening-your-reach/4.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/4.jpg",
       "checksum": "cec3c3bc9d212dd1a2fe6863ce90ccf2e232c21b416689527e2de7477b0bd61a",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/4.jpg",
-      "uploadedAt": "2026-02-25T15:47:42.060Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/4.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.908Z"
     },
     "blog/getting-noticed-and-widening-your-reach/5.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/5.jpg",
       "checksum": "c2fdc0a4a65d3bc792c53a0dbb60a4d5f18090c40f6d9346087307775a5eb239",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/5.jpg",
-      "uploadedAt": "2026-02-25T15:47:42.424Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/5.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.914Z"
     },
     "blog/getting-noticed-and-widening-your-reach/6.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/6.jpg",
       "checksum": "6b898981b04b4c7d336ba00eba892b687be91a090a3fbea8b3361f1678cf979a",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/6.jpg",
-      "uploadedAt": "2026-02-25T15:47:42.718Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/6.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.921Z"
     },
     "blog/getting-noticed-and-widening-your-reach/typing.jpg": {
       "id": "blog/getting-noticed-and-widening-your-reach/typing.jpg",
       "checksum": "571ed5a98cb1aff76234c9805555d1293c55e4a6bde5c42d188d1a2342ce4281",
-      "sourcePath": "content/blog/getting-noticed-and-widening-your-reach/typing.jpg",
-      "uploadedAt": "2026-02-25T15:47:42.964Z"
+      "sourcePath": "r2://media/blog/getting-noticed-and-widening-your-reach/typing.jpg",
+      "uploadedAt": "2026-02-25T16:55:46.925Z"
     },
     "blog/giving-good-demos/0.gif": {
       "id": "blog/giving-good-demos/0.gif",
       "checksum": "c1ee0185c9efc69f60dc524f9e7e177ad436045bbe4ecbb4bc3c44c553380abb",
-      "sourcePath": "content/blog/giving-good-demos/0.gif",
-      "uploadedAt": "2026-02-25T15:47:43.275Z"
+      "sourcePath": "r2://media/blog/giving-good-demos/0.gif",
+      "uploadedAt": "2026-02-25T16:55:46.975Z"
     },
     "blog/giving-good-demos/1.gif": {
       "id": "blog/giving-good-demos/1.gif",
       "checksum": "89394ab606e3da3b4b959ca7a3992409a95cbf51e90cde51fed7d2c284f478b8",
-      "sourcePath": "content/blog/giving-good-demos/1.gif",
-      "uploadedAt": "2026-02-25T15:47:43.646Z"
+      "sourcePath": "r2://media/blog/giving-good-demos/1.gif",
+      "uploadedAt": "2026-02-25T16:55:46.982Z"
     },
     "blog/hi-thanks-for-reaching-out-to-me/wave.png": {
       "id": "blog/hi-thanks-for-reaching-out-to-me/wave.png",
       "checksum": "78a38908af3b138b665b6db79efb716c50086a91fd9a04f40eed1408d5b76d23",
-      "sourcePath": "content/blog/hi-thanks-for-reaching-out-to-me/wave.png",
-      "uploadedAt": "2026-02-25T15:47:43.869Z"
+      "sourcePath": "r2://media/blog/hi-thanks-for-reaching-out-to-me/wave.png",
+      "uploadedAt": "2026-02-25T16:55:46.986Z"
     },
     "blog/how-getting-into-open-source-has-been-awesome-for-me/0.png": {
       "id": "blog/how-getting-into-open-source-has-been-awesome-for-me/0.png",
       "checksum": "c8bb9b879d76b29b3809059c20400937e7473a377b2d3dc13f3ddcfde11099c6",
-      "sourcePath": "content/blog/how-getting-into-open-source-has-been-awesome-for-me/0.png",
-      "uploadedAt": "2026-02-25T15:47:44.334Z"
+      "sourcePath": "r2://media/blog/how-getting-into-open-source-has-been-awesome-for-me/0.png",
+      "uploadedAt": "2026-02-25T16:55:46.989Z"
     },
     "blog/how-getting-into-open-source-has-been-awesome-for-me/1.png": {
       "id": "blog/how-getting-into-open-source-has-been-awesome-for-me/1.png",
       "checksum": "2ade280c627aceff40dc25895b04c6fc7febe261549294b9a83b8683cfc1e7ba",
-      "sourcePath": "content/blog/how-getting-into-open-source-has-been-awesome-for-me/1.png",
-      "uploadedAt": "2026-02-25T15:47:44.836Z"
+      "sourcePath": "r2://media/blog/how-getting-into-open-source-has-been-awesome-for-me/1.png",
+      "uploadedAt": "2026-02-25T16:55:46.993Z"
     },
     "blog/how-gratitude-can-make-you-a-better-developer/0.png": {
       "id": "blog/how-gratitude-can-make-you-a-better-developer/0.png",
       "checksum": "13e4776bd8e353e447c7d83ef64d5bcf5479b408dad38ea0c3ddf01da669a68a",
-      "sourcePath": "content/blog/how-gratitude-can-make-you-a-better-developer/0.png",
-      "uploadedAt": "2026-02-25T15:47:45.116Z"
+      "sourcePath": "r2://media/blog/how-gratitude-can-make-you-a-better-developer/0.png",
+      "uploadedAt": "2026-02-25T16:55:46.997Z"
     },
     "blog/how-gratitude-can-make-you-a-better-developer/1.png": {
       "id": "blog/how-gratitude-can-make-you-a-better-developer/1.png",
       "checksum": "a5a18f9cea04f63c1ad4d18a5bc05ce2a87927f5bdabce9a9e02051659c7c237",
-      "sourcePath": "content/blog/how-gratitude-can-make-you-a-better-developer/1.png",
-      "uploadedAt": "2026-02-25T15:47:45.352Z"
+      "sourcePath": "r2://media/blog/how-gratitude-can-make-you-a-better-developer/1.png",
+      "uploadedAt": "2026-02-25T16:55:47.000Z"
     },
     "blog/how-gratitude-can-make-you-a-better-developer/2.png": {
       "id": "blog/how-gratitude-can-make-you-a-better-developer/2.png",
       "checksum": "13079e293917c50ec6f85706471d8021e103e8768e344e1590709573f845dcc1",
-      "sourcePath": "content/blog/how-gratitude-can-make-you-a-better-developer/2.png",
-      "uploadedAt": "2026-02-25T15:47:45.589Z"
+      "sourcePath": "r2://media/blog/how-gratitude-can-make-you-a-better-developer/2.png",
+      "uploadedAt": "2026-02-25T16:55:47.004Z"
     },
     "blog/how-gratitude-can-make-you-a-better-developer/3.png": {
       "id": "blog/how-gratitude-can-make-you-a-better-developer/3.png",
       "checksum": "956f04d064ffdbecff03c5c9076154bd4d4cd38a0b4665e0852f71258f145f2d",
-      "sourcePath": "content/blog/how-gratitude-can-make-you-a-better-developer/3.png",
-      "uploadedAt": "2026-02-25T15:47:45.803Z"
+      "sourcePath": "r2://media/blog/how-gratitude-can-make-you-a-better-developer/3.png",
+      "uploadedAt": "2026-02-25T16:55:47.009Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/auth-flow-dark": {
       "id": "blog/how-i-built-a-modern-website-in-2021/auth-flow-dark",
       "checksum": "b45156830bd56401288f3facf4858dee7e305a84934c5cc46c6ee540dc62cccf",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/auth-flow-dark",
-      "uploadedAt": "2026-02-25T15:47:46.349Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/auth-flow-dark",
+      "uploadedAt": "2026-02-25T16:55:47.028Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/auth-flow-light": {
       "id": "blog/how-i-built-a-modern-website-in-2021/auth-flow-light",
       "checksum": "68451f123b14923ffdfffb281c6b3facb7b98aa3f21234ae1aaf6a6caa3b12db",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/auth-flow-light",
-      "uploadedAt": "2026-02-25T15:47:46.740Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/auth-flow-light",
+      "uploadedAt": "2026-02-25T16:55:47.045Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/banner_iplhop": {
       "id": "blog/how-i-built-a-modern-website-in-2021/banner_iplhop",
       "checksum": "7fbea46a14005bd945af5f5aa05b5dd134bbcc400e48b5fc01f4d5650be1db1d",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop",
-      "uploadedAt": "2026-02-25T15:47:47.331Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/banner_iplhop",
+      "uploadedAt": "2026-02-25T16:55:47.085Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark": {
       "id": "blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark",
       "checksum": "cce34881f882b9a5b2e304ddf7f267060a954ef74075abaec48e12656b52938f",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark",
-      "uploadedAt": "2026-02-25T15:47:47.715Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/database-connectivity-dark",
+      "uploadedAt": "2026-02-25T16:55:47.111Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/database-connectivity-light": {
       "id": "blog/how-i-built-a-modern-website-in-2021/database-connectivity-light",
       "checksum": "eddb7b27c7c8814a67fdf64f39bc16775d1e190650e73c95ad344d1503405389",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/database-connectivity-light",
-      "uploadedAt": "2026-02-25T15:47:48.458Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/database-connectivity-light",
+      "uploadedAt": "2026-02-25T16:55:47.138Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark": {
       "id": "blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark",
       "checksum": "d883dd26a4f9ea630ffb8bfc7c5b2b3f2092ecbc45255fa8cacef53d859cfc0e",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark",
-      "uploadedAt": "2026-02-25T15:47:49.019Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-dark",
+      "uploadedAt": "2026-02-25T16:55:47.177Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light": {
       "id": "blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light",
       "checksum": "7bf4218bb743144f1d86421cc27d8810ca57e664aa1e2065750c20ef91639a50",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light",
-      "uploadedAt": "2026-02-25T15:47:49.548Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/deployment-pipeline-light",
+      "uploadedAt": "2026-02-25T16:55:47.216Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark": {
       "id": "blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark",
       "checksum": "630ecfe432be019733447677e2ed6de327204c8a6f5c960d6733da7cab65c459",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark",
-      "uploadedAt": "2026-02-25T15:47:49.956Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-dark",
+      "uploadedAt": "2026-02-25T16:55:47.236Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light": {
       "id": "blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light",
       "checksum": "ca914529123f766bcf21791c7d159852c350d5dbc3e15a10feaf2d1b9ebf86fc",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light",
-      "uploadedAt": "2026-02-25T15:47:50.557Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/fly-request-replays-light",
+      "uploadedAt": "2026-02-25T16:55:47.253Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/remix": {
       "id": "blog/how-i-built-a-modern-website-in-2021/remix",
       "checksum": "a20a3d1b6a03da87eba1bc86c7ef92c8bf115ab077a6bd9334d58a3f3946fe3f",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/remix",
-      "uploadedAt": "2026-02-25T15:47:50.806Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/remix",
+      "uploadedAt": "2026-02-25T16:55:47.262Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/session-flow-dark": {
       "id": "blog/how-i-built-a-modern-website-in-2021/session-flow-dark",
       "checksum": "c9eb3d5ef31504ec1157076ecae8abea80057cd276107ae1271070d8d496f2b6",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/session-flow-dark",
-      "uploadedAt": "2026-02-25T15:47:51.242Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/session-flow-dark",
+      "uploadedAt": "2026-02-25T16:55:47.292Z"
     },
     "blog/how-i-built-a-modern-website-in-2021/session-flow-light": {
       "id": "blog/how-i-built-a-modern-website-in-2021/session-flow-light",
       "checksum": "c594f1a13444e88c854a4a1ee308604744449abf69d014ecea9b87f56be13316",
-      "sourcePath": "content/blog/how-i-built-a-modern-website-in-2021/session-flow-light",
-      "uploadedAt": "2026-02-25T15:47:51.776Z"
+      "sourcePath": "r2://media/blog/how-i-built-a-modern-website-in-2021/session-flow-light",
+      "uploadedAt": "2026-02-25T16:55:47.313Z"
     },
     "blog/how-to-add-testing-to-an-existing-project/testing-trophy.png": {
       "id": "blog/how-to-add-testing-to-an-existing-project/testing-trophy.png",
       "checksum": "97a228baf63c78d56a59bf9bc91a247311b9fecd89b0fdaca7503b9f901bbff4",
-      "sourcePath": "content/blog/how-to-add-testing-to-an-existing-project/testing-trophy.png",
-      "uploadedAt": "2026-02-25T15:47:52.138Z"
+      "sourcePath": "r2://media/blog/how-to-add-testing-to-an-existing-project/testing-trophy.png",
+      "uploadedAt": "2026-02-25T16:55:47.320Z"
     },
     "blog/how-to-get-started-with-programming/1plus2.png": {
       "id": "blog/how-to-get-started-with-programming/1plus2.png",
       "checksum": "0d45191d4e0122d8a58b9a515cc1e4840ae56c3a72e8d10fb4b8e92d80bc0f5c",
-      "sourcePath": "content/blog/how-to-get-started-with-programming/1plus2.png",
-      "uploadedAt": "2026-02-25T15:47:52.372Z"
+      "sourcePath": "r2://media/blog/how-to-get-started-with-programming/1plus2.png",
+      "uploadedAt": "2026-02-25T16:55:47.323Z"
     },
     "blog/how-to-get-started-with-programming/devtools-console.png": {
       "id": "blog/how-to-get-started-with-programming/devtools-console.png",
       "checksum": "fc7cb7632651393df6ffc00042c15f91779bfba91a5f07ea60a5450ac5040c9a",
-      "sourcePath": "content/blog/how-to-get-started-with-programming/devtools-console.png",
-      "uploadedAt": "2026-02-25T15:47:52.614Z"
+      "sourcePath": "r2://media/blog/how-to-get-started-with-programming/devtools-console.png",
+      "uploadedAt": "2026-02-25T16:55:47.331Z"
     },
     "blog/how-to-get-started-with-programming/devtools-menu.png": {
       "id": "blog/how-to-get-started-with-programming/devtools-menu.png",
       "checksum": "54de9c7149bd29ab11367711723f03c729561ba45aac4e192075740f7efbd40c",
-      "sourcePath": "content/blog/how-to-get-started-with-programming/devtools-menu.png",
-      "uploadedAt": "2026-02-25T15:47:52.809Z"
+      "sourcePath": "r2://media/blog/how-to-get-started-with-programming/devtools-menu.png",
+      "uploadedAt": "2026-02-25T16:55:47.335Z"
     },
     "blog/how-to-get-started-with-programming/devtools.png": {
       "id": "blog/how-to-get-started-with-programming/devtools.png",
       "checksum": "ce50a76a4e03f58f2f7097916806c373457338a07ebf07085dccc3ab6002ded2",
-      "sourcePath": "content/blog/how-to-get-started-with-programming/devtools.png",
-      "uploadedAt": "2026-02-25T15:47:53.056Z"
+      "sourcePath": "r2://media/blog/how-to-get-started-with-programming/devtools.png",
+      "uploadedAt": "2026-02-25T16:55:47.340Z"
     },
     "blog/how-to-get-started-with-programming/my-first-program.png": {
       "id": "blog/how-to-get-started-with-programming/my-first-program.png",
       "checksum": "86165eced0d58ba12efd0651f8783a5cd2b8b49a415b96bb7ac6d2fde78a1557",
-      "sourcePath": "content/blog/how-to-get-started-with-programming/my-first-program.png",
-      "uploadedAt": "2026-02-25T15:47:53.340Z"
+      "sourcePath": "r2://media/blog/how-to-get-started-with-programming/my-first-program.png",
+      "uploadedAt": "2026-02-25T16:55:47.345Z"
     },
     "blog/how-to-give-rendering-control-to-users-with-prop-getters/0.gif": {
       "id": "blog/how-to-give-rendering-control-to-users-with-prop-getters/0.gif",
       "checksum": "cc486e1dfef19abf5263b9a7944096718163c8008944f022a8a730cbd050e28d",
-      "sourcePath": "content/blog/how-to-give-rendering-control-to-users-with-prop-getters/0.gif",
-      "uploadedAt": "2026-02-25T15:47:53.785Z"
+      "sourcePath": "r2://media/blog/how-to-give-rendering-control-to-users-with-prop-getters/0.gif",
+      "uploadedAt": "2026-02-25T16:55:47.358Z"
     },
     "blog/how-to-give-rendering-control-to-users-with-prop-getters/1.png": {
       "id": "blog/how-to-give-rendering-control-to-users-with-prop-getters/1.png",
       "checksum": "5215b61c8ce5abf36927d47a7a3fee261c8b44a4c8673202eebd513c10ff83fa",
-      "sourcePath": "content/blog/how-to-give-rendering-control-to-users-with-prop-getters/1.png",
-      "uploadedAt": "2026-02-25T15:47:54.080Z"
+      "sourcePath": "r2://media/blog/how-to-give-rendering-control-to-users-with-prop-getters/1.png",
+      "uploadedAt": "2026-02-25T16:55:47.362Z"
     },
     "blog/how-to-optimize-your-context-value/split-contexts.gif": {
       "id": "blog/how-to-optimize-your-context-value/split-contexts.gif",
       "checksum": "0b00fd0cec8ba8918c69e57a2229bd23c8780054031ac20c6f16be572b81ee86",
-      "sourcePath": "content/blog/how-to-optimize-your-context-value/split-contexts.gif",
-      "uploadedAt": "2026-02-25T15:47:54.383Z"
+      "sourcePath": "r2://media/blog/how-to-optimize-your-context-value/split-contexts.gif",
+      "uploadedAt": "2026-02-25T16:55:47.374Z"
     },
     "blog/how-to-use-react-context-effectively/auto-complete.png": {
       "id": "blog/how-to-use-react-context-effectively/auto-complete.png",
       "checksum": "e31cb3045d896dbcd42a1c70881a618d0cfbed61d15bdb666ca2c3d4d3f5e5b3",
-      "sourcePath": "content/blog/how-to-use-react-context-effectively/auto-complete.png",
-      "uploadedAt": "2026-02-25T15:47:54.649Z"
+      "sourcePath": "r2://media/blog/how-to-use-react-context-effectively/auto-complete.png",
+      "uploadedAt": "2026-02-25T16:55:47.380Z"
     },
     "blog/how-to-use-react-context-effectively/type-error.png": {
       "id": "blog/how-to-use-react-context-effectively/type-error.png",
       "checksum": "376dbd3b663289e81c26829065c51401b14c736917d3f04355a9085a5d7f4022",
-      "sourcePath": "content/blog/how-to-use-react-context-effectively/type-error.png",
-      "uploadedAt": "2026-02-25T15:47:54.857Z"
+      "sourcePath": "r2://media/blog/how-to-use-react-context-effectively/type-error.png",
+      "uploadedAt": "2026-02-25T16:55:47.386Z"
     },
     "blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/0.png": {
       "id": "blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/0.png",
       "checksum": "a1823eddd9d91fab8efd957f130da09f87fbd63c00110c8e84b4272aff1b30c3",
-      "sourcePath": "content/blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/0.png",
-      "uploadedAt": "2026-02-25T15:47:55.197Z"
+      "sourcePath": "r2://media/blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/0.png",
+      "uploadedAt": "2026-02-25T16:55:47.390Z"
     },
     "blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/1.png": {
       "id": "blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/1.png",
       "checksum": "848bddeb67ed99d895b9c0379479eb8b9c96048c651a7b01c738fedfef567ade",
-      "sourcePath": "content/blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/1.png",
-      "uploadedAt": "2026-02-25T15:47:55.459Z"
+      "sourcePath": "r2://media/blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/1.png",
+      "uploadedAt": "2026-02-25T16:55:47.393Z"
     },
     "blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/2.png": {
       "id": "blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/2.png",
       "checksum": "93f05b77ecb6bb6a761c4a74b71fbb408dd4359a22d4887c978e9122acaf9584",
-      "sourcePath": "content/blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/2.png",
-      "uploadedAt": "2026-02-25T15:47:55.748Z"
+      "sourcePath": "r2://media/blog/how-writing-custom-babel-and-eslint-plugins-can-increase-productivity-and-improve-user-experience/2.png",
+      "uploadedAt": "2026-02-25T16:55:47.397Z"
     },
     "blog/improve-test-error-messages-of-your-abstractions/one.png": {
       "id": "blog/improve-test-error-messages-of-your-abstractions/one.png",
       "checksum": "dafe9b5f49f9d629a261ab02b65866126d9bf2e554aa8aee7ae14568ddf68330",
-      "sourcePath": "content/blog/improve-test-error-messages-of-your-abstractions/one.png",
-      "uploadedAt": "2026-02-25T15:47:55.936Z"
+      "sourcePath": "r2://media/blog/improve-test-error-messages-of-your-abstractions/one.png",
+      "uploadedAt": "2026-02-25T16:55:47.400Z"
     },
     "blog/improve-test-error-messages-of-your-abstractions/two.png": {
       "id": "blog/improve-test-error-messages-of-your-abstractions/two.png",
       "checksum": "c4a9474969b19227ec008298edc8c2bc420c466618a7d689360205645ab22f88",
-      "sourcePath": "content/blog/improve-test-error-messages-of-your-abstractions/two.png",
-      "uploadedAt": "2026-02-25T15:47:56.173Z"
+      "sourcePath": "r2://media/blog/improve-test-error-messages-of-your-abstractions/two.png",
+      "uploadedAt": "2026-02-25T16:55:47.404Z"
     },
     "blog/improving-the-usability-of-your-modules/0.gif": {
       "id": "blog/improving-the-usability-of-your-modules/0.gif",
       "checksum": "08c242bcb46c8057db6a946524026523c58f89ea9b87c96ec6432c9bdc40956f",
-      "sourcePath": "content/blog/improving-the-usability-of-your-modules/0.gif",
-      "uploadedAt": "2026-02-25T15:47:56.755Z"
+      "sourcePath": "r2://media/blog/improving-the-usability-of-your-modules/0.gif",
+      "uploadedAt": "2026-02-25T16:55:47.441Z"
     },
     "blog/improving-the-usability-of-your-modules/1.gif": {
       "id": "blog/improving-the-usability-of-your-modules/1.gif",
       "checksum": "85f376aa3c7427062a386d30170e6f65fcf6c6f4a399421784a87c4a4c943041",
-      "sourcePath": "content/blog/improving-the-usability-of-your-modules/1.gif",
-      "uploadedAt": "2026-02-25T15:47:57.041Z"
+      "sourcePath": "r2://media/blog/improving-the-usability-of-your-modules/1.gif",
+      "uploadedAt": "2026-02-25T16:55:47.448Z"
     },
     "blog/introducing-downshift-for-react/0.gif": {
       "id": "blog/introducing-downshift-for-react/0.gif",
       "checksum": "e04501d1e5235570491a5832a924e6306568b1f65b92f42ec02ca570099a29c3",
-      "sourcePath": "content/blog/introducing-downshift-for-react/0.gif",
-      "uploadedAt": "2026-02-25T15:47:57.659Z"
+      "sourcePath": "r2://media/blog/introducing-downshift-for-react/0.gif",
+      "uploadedAt": "2026-02-25T16:55:47.477Z"
     },
     "blog/introducing-downshift-for-react/1.gif": {
       "id": "blog/introducing-downshift-for-react/1.gif",
       "checksum": "937ebbfb50ee672ed47eda5b585c3aa3c812f7a1500c43bcf483cc6f04064e24",
-      "sourcePath": "content/blog/introducing-downshift-for-react/1.gif",
-      "uploadedAt": "2026-02-25T15:47:58.259Z"
+      "sourcePath": "r2://media/blog/introducing-downshift-for-react/1.gif",
+      "uploadedAt": "2026-02-25T16:55:47.495Z"
     },
     "blog/introducing-downshift-for-react/2.gif": {
       "id": "blog/introducing-downshift-for-react/2.gif",
       "checksum": "e84b9023bfe7f7a27a4a6599c395bbcc6c56fe1879c3bbe67db61b27e8c71115",
-      "sourcePath": "content/blog/introducing-downshift-for-react/2.gif",
-      "uploadedAt": "2026-02-25T15:47:58.534Z"
+      "sourcePath": "r2://media/blog/introducing-downshift-for-react/2.gif",
+      "uploadedAt": "2026-02-25T16:55:47.504Z"
     },
     "blog/introducing-downshift-for-react/3.gif": {
       "id": "blog/introducing-downshift-for-react/3.gif",
       "checksum": "7d03951f82325d13c74fc5729f9ad6b5dc41ff53e131c329136aa3780b0e6784",
-      "sourcePath": "content/blog/introducing-downshift-for-react/3.gif",
-      "uploadedAt": "2026-02-25T15:47:58.755Z"
+      "sourcePath": "r2://media/blog/introducing-downshift-for-react/3.gif",
+      "uploadedAt": "2026-02-25T16:55:47.516Z"
     },
     "blog/introducing-downshift-for-react/4.gif": {
       "id": "blog/introducing-downshift-for-react/4.gif",
       "checksum": "018463de230fcb052c2b363888f39149f85c37d8f0941f32c2fa3fefd68e479f",
-      "sourcePath": "content/blog/introducing-downshift-for-react/4.gif",
-      "uploadedAt": "2026-02-25T15:47:59.023Z"
+      "sourcePath": "r2://media/blog/introducing-downshift-for-react/4.gif",
+      "uploadedAt": "2026-02-25T16:55:47.551Z"
     },
     "blog/introducing-glamorous/0.png": {
       "id": "blog/introducing-glamorous/0.png",
       "checksum": "1e3543b64f28b184e6bba983c03ca2b98a4edd46ead36ef501332569f6ca7a0c",
-      "sourcePath": "content/blog/introducing-glamorous/0.png",
-      "uploadedAt": "2026-02-25T15:47:59.230Z"
+      "sourcePath": "r2://media/blog/introducing-glamorous/0.png",
+      "uploadedAt": "2026-02-25T16:55:47.556Z"
     },
     "blog/introducing-the-new-kentcdodds.com/fathom_gx7md5.png": {
       "id": "blog/introducing-the-new-kentcdodds.com/fathom_gx7md5.png",
       "checksum": "478090f296f9aacbd9620cf1efe70fc116a3ef88ed73489a4cc4e6392477e22e",
-      "sourcePath": "content/blog/introducing-the-new-kentcdodds.com/fathom_gx7md5.png",
-      "uploadedAt": "2026-02-25T15:47:59.929Z"
+      "sourcePath": "r2://media/blog/introducing-the-new-kentcdodds.com/fathom_gx7md5.png",
+      "uploadedAt": "2026-02-25T16:55:47.606Z"
     },
     "blog/introducing-the-new-kentcdodds.com/metronome_b08gpc.png": {
       "id": "blog/introducing-the-new-kentcdodds.com/metronome_b08gpc.png",
       "checksum": "f7b37c20d726add647dbd8fed7a1755c67bd96f1ecb49bb7eacaf5211998c4ff",
-      "sourcePath": "content/blog/introducing-the-new-kentcdodds.com/metronome_b08gpc.png",
-      "uploadedAt": "2026-02-25T15:48:00.557Z"
+      "sourcePath": "r2://media/blog/introducing-the-new-kentcdodds.com/metronome_b08gpc.png",
+      "uploadedAt": "2026-02-25T16:55:47.671Z"
     },
     "blog/introducing-the-new-kentcdodds.com/new-kent_luxjl8.png": {
       "id": "blog/introducing-the-new-kentcdodds.com/new-kent_luxjl8.png",
       "checksum": "275a278a6f45690aab80550ffc625555cc7f83a7ddcf2ed3ea2a052142792367",
-      "sourcePath": "content/blog/introducing-the-new-kentcdodds.com/new-kent_luxjl8.png",
-      "uploadedAt": "2026-02-25T15:48:01.023Z"
+      "sourcePath": "r2://media/blog/introducing-the-new-kentcdodds.com/new-kent_luxjl8.png",
+      "uploadedAt": "2026-02-25T16:55:47.703Z"
     },
     "blog/introducing-the-react-testing-library/0.png": {
       "id": "blog/introducing-the-react-testing-library/0.png",
       "checksum": "53fd136bbe49ae5073cde48a46476793b059ba5cd402fbab30361e1461344319",
-      "sourcePath": "content/blog/introducing-the-react-testing-library/0.png",
-      "uploadedAt": "2026-02-25T15:48:01.220Z"
+      "sourcePath": "r2://media/blog/introducing-the-react-testing-library/0.png",
+      "uploadedAt": "2026-02-25T16:55:47.709Z"
     },
     "blog/kent-ooo-out-of-the-office/0.jpg": {
       "id": "blog/kent-ooo-out-of-the-office/0.jpg",
       "checksum": "62679393bf4afed75cf3a0f3bc6674d782951d441e530fedd09f2b6977de192b",
-      "sourcePath": "content/blog/kent-ooo-out-of-the-office/0.jpg",
-      "uploadedAt": "2026-02-25T15:48:01.515Z"
+      "sourcePath": "r2://media/blog/kent-ooo-out-of-the-office/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:47.715Z"
     },
     "blog/kent-ooo-out-of-the-office/1.jpg": {
       "id": "blog/kent-ooo-out-of-the-office/1.jpg",
       "checksum": "ec8fde09652cecbf1b67b4a47c39ab9e87b9b85350a6311ae26ef80c6832f524",
-      "sourcePath": "content/blog/kent-ooo-out-of-the-office/1.jpg",
-      "uploadedAt": "2026-02-25T15:48:01.928Z"
+      "sourcePath": "r2://media/blog/kent-ooo-out-of-the-office/1.jpg",
+      "uploadedAt": "2026-02-25T16:55:47.722Z"
     },
     "blog/launching-epic-web/building-train": {
       "id": "blog/launching-epic-web/building-train",
       "checksum": "13e7b8776ab9f3ad909203b51f292694bc1feff39d0761b5431c41cc88dc568a",
-      "sourcePath": "content/blog/launching-epic-web/building-train",
-      "uploadedAt": "2026-02-25T15:48:02.543Z"
+      "sourcePath": "r2://media/blog/launching-epic-web/building-train",
+      "uploadedAt": "2026-02-25T16:55:47.735Z"
     },
     "blog/make-impossible-states-impossible/0.png": {
       "id": "blog/make-impossible-states-impossible/0.png",
       "checksum": "3000d8887855ff428fc544d1e25cd294b19be8c88fbbb0497c978a6eef69e13e",
-      "sourcePath": "content/blog/make-impossible-states-impossible/0.png",
-      "uploadedAt": "2026-02-25T15:48:03.009Z"
+      "sourcePath": "r2://media/blog/make-impossible-states-impossible/0.png",
+      "uploadedAt": "2026-02-25T16:55:47.741Z"
     },
     "blog/make-maintainable-workarounds-with-codegen/0.gif": {
       "id": "blog/make-maintainable-workarounds-with-codegen/0.gif",
       "checksum": "adf4e982b349eb3eb14edad87db14dd383fb0befcec0ecce1a3a729bffb260df",
-      "sourcePath": "content/blog/make-maintainable-workarounds-with-codegen/0.gif",
-      "uploadedAt": "2026-02-25T15:48:03.326Z"
+      "sourcePath": "r2://media/blog/make-maintainable-workarounds-with-codegen/0.gif",
+      "uploadedAt": "2026-02-25T16:55:47.749Z"
     },
     "blog/make-maintainable-workarounds-with-codegen/1.gif": {
       "id": "blog/make-maintainable-workarounds-with-codegen/1.gif",
       "checksum": "3fc5f1035e91bcd8888dae24588432e551732a404c646cbc90a0ac2197e00b07",
-      "sourcePath": "content/blog/make-maintainable-workarounds-with-codegen/1.gif",
-      "uploadedAt": "2026-02-25T15:48:03.698Z"
+      "sourcePath": "r2://media/blog/make-maintainable-workarounds-with-codegen/1.gif",
+      "uploadedAt": "2026-02-25T16:55:47.766Z"
     },
     "blog/make-your-own-dev-tools/alianza.png": {
       "id": "blog/make-your-own-dev-tools/alianza.png",
       "checksum": "44a912784e5ddff8be689cfad0790ecb085f3716809a58d0aec1f55ab1af7829",
-      "sourcePath": "content/blog/make-your-own-dev-tools/alianza.png",
-      "uploadedAt": "2026-02-25T15:48:04.041Z"
+      "sourcePath": "r2://media/blog/make-your-own-dev-tools/alianza.png",
+      "uploadedAt": "2026-02-25T16:55:47.773Z"
     },
     "blog/making-your-ui-tests-resilient-to-change/login.png": {
       "id": "blog/making-your-ui-tests-resilient-to-change/login.png",
       "checksum": "2c2c09654642938c2785529d36d1a15a14e27a63f01918853580910e86c9a4e9",
-      "sourcePath": "content/blog/making-your-ui-tests-resilient-to-change/login.png",
-      "uploadedAt": "2026-02-25T15:48:04.236Z"
+      "sourcePath": "r2://media/blog/making-your-ui-tests-resilient-to-change/login.png",
+      "uploadedAt": "2026-02-25T16:55:47.777Z"
     },
     "blog/merry-christmas/0.png": {
       "id": "blog/merry-christmas/0.png",
       "checksum": "f31023835dcbdb145390f3b46b960f14c506a9375620ebf7bb846defd9c0b114",
-      "sourcePath": "content/blog/merry-christmas/0.png",
-      "uploadedAt": "2026-02-25T15:48:04.776Z"
+      "sourcePath": "r2://media/blog/merry-christmas/0.png",
+      "uploadedAt": "2026-02-25T16:55:47.781Z"
     },
     "blog/migrating-to-jest/0.png": {
       "id": "blog/migrating-to-jest/0.png",
       "checksum": "cf280a47b7710b5f0bf2d8e388958944907f7eab6c196f98476c380f0e38898d",
-      "sourcePath": "content/blog/migrating-to-jest/0.png",
-      "uploadedAt": "2026-02-25T15:48:05.017Z"
+      "sourcePath": "r2://media/blog/migrating-to-jest/0.png",
+      "uploadedAt": "2026-02-25T16:55:47.786Z"
     },
     "blog/migrating-to-jest/1.png": {
       "id": "blog/migrating-to-jest/1.png",
       "checksum": "78a38908af3b138b665b6db79efb716c50086a91fd9a04f40eed1408d5b76d23",
-      "sourcePath": "content/blog/migrating-to-jest/1.png",
-      "uploadedAt": "2026-02-25T15:48:05.247Z"
+      "sourcePath": "r2://media/blog/migrating-to-jest/1.png",
+      "uploadedAt": "2026-02-25T16:55:47.789Z"
     },
     "blog/my-car-accident/arial-view.jpg": {
       "id": "blog/my-car-accident/arial-view.jpg",
       "checksum": "486d10f2568f70ad44e8761e4f7bfed5905164bf9ba10cbbcbbae35d3a381d35",
-      "sourcePath": "content/blog/my-car-accident/arial-view.jpg",
-      "uploadedAt": "2026-02-25T15:48:06.777Z"
+      "sourcePath": "r2://media/blog/my-car-accident/arial-view.jpg",
+      "uploadedAt": "2026-02-25T16:55:47.866Z"
     },
     "blog/my-car-accident/ariel-view-broken-fence.jpg": {
       "id": "blog/my-car-accident/ariel-view-broken-fence.jpg",
       "checksum": "799a25e96c1b20510be7d1fc1350c1c3ae145a9112a916d10a1364a944602e0a",
-      "sourcePath": "content/blog/my-car-accident/ariel-view-broken-fence.jpg",
-      "uploadedAt": "2026-02-25T15:48:07.365Z"
+      "sourcePath": "r2://media/blog/my-car-accident/ariel-view-broken-fence.jpg",
+      "uploadedAt": "2026-02-25T16:55:47.969Z"
     },
     "blog/my-car-accident/car-in-daylight.jpg": {
       "id": "blog/my-car-accident/car-in-daylight.jpg",
       "checksum": "02ccae2c33d754fafb1bb6dd7881d3f2aa811624f84c50a2c1916d9f24e86bd7",
-      "sourcePath": "content/blog/my-car-accident/car-in-daylight.jpg",
-      "uploadedAt": "2026-02-25T15:48:07.993Z"
+      "sourcePath": "r2://media/blog/my-car-accident/car-in-daylight.jpg",
+      "uploadedAt": "2026-02-25T16:55:48.082Z"
     },
     "blog/my-car-accident/glass-out-of-the-knuckle.jpg": {
       "id": "blog/my-car-accident/glass-out-of-the-knuckle.jpg",
       "checksum": "30caf76cce59580afee87f846917abcac5fd5b8ab4823e0046c60fc80bcd826c",
-      "sourcePath": "content/blog/my-car-accident/glass-out-of-the-knuckle.jpg",
-      "uploadedAt": "2026-02-25T15:48:08.507Z"
+      "sourcePath": "r2://media/blog/my-car-accident/glass-out-of-the-knuckle.jpg",
+      "uploadedAt": "2026-02-25T16:55:48.146Z"
     },
     "blog/my-car-accident/kent-ghost.jpg": {
       "id": "blog/my-car-accident/kent-ghost.jpg",
       "checksum": "cd28777664ca86b8a111db6db9b49965871fdd2be65d509a76693b77f959ab27",
-      "sourcePath": "content/blog/my-car-accident/kent-ghost.jpg",
-      "uploadedAt": "2026-02-25T15:48:09.124Z"
+      "sourcePath": "r2://media/blog/my-car-accident/kent-ghost.jpg",
+      "uploadedAt": "2026-02-25T16:55:48.418Z"
     },
     "blog/my-car-accident/kent-with-his-plate.jpg": {
       "id": "blog/my-car-accident/kent-with-his-plate.jpg",
       "checksum": "979d945b04474d78051f945b938343c499913713c37a3ca42d11855a351a9cf6",
-      "sourcePath": "content/blog/my-car-accident/kent-with-his-plate.jpg",
-      "uploadedAt": "2026-02-25T15:48:09.685Z"
+      "sourcePath": "r2://media/blog/my-car-accident/kent-with-his-plate.jpg",
+      "uploadedAt": "2026-02-25T16:55:48.541Z"
     },
     "blog/my-car-accident/kents-broken-bones.jpg": {
       "id": "blog/my-car-accident/kents-broken-bones.jpg",
       "checksum": "0a70092bee16f83c4c47960e2d3d310d79234bc6ba37dedabe7b4dd4bc5a914f",
-      "sourcePath": "content/blog/my-car-accident/kents-broken-bones.jpg",
-      "uploadedAt": "2026-02-25T15:48:10.063Z"
+      "sourcePath": "r2://media/blog/my-car-accident/kents-broken-bones.jpg",
+      "uploadedAt": "2026-02-25T16:55:48.582Z"
     },
     "blog/my-car-accident/truck.jpg": {
       "id": "blog/my-car-accident/truck.jpg",
       "checksum": "0a832e6c61c26968e4c435b6299f08a70272e7e2864ed4d59fb63a17199cb8d9",
-      "sourcePath": "content/blog/my-car-accident/truck.jpg",
-      "uploadedAt": "2026-02-25T15:48:10.621Z"
+      "sourcePath": "r2://media/blog/my-car-accident/truck.jpg",
+      "uploadedAt": "2026-02-25T16:55:48.843Z"
     },
     "blog/my-car-accident/wrist-damage.jpg": {
       "id": "blog/my-car-accident/wrist-damage.jpg",
       "checksum": "977be075a8bb1b784dc317b7b3e72dd20c819567e4abb4cd9584402b11b535b4",
-      "sourcePath": "content/blog/my-car-accident/wrist-damage.jpg",
-      "uploadedAt": "2026-02-25T15:48:11.369Z"
+      "sourcePath": "r2://media/blog/my-car-accident/wrist-damage.jpg",
+      "uploadedAt": "2026-02-25T16:55:48.911Z"
     },
     "blog/profile-a-react-app-for-performance/1.png": {
       "id": "blog/profile-a-react-app-for-performance/1.png",
       "checksum": "6e791a7a21108de2b59a18db1c8a68c65832d104c61a85284c8c215fd60b6440",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/1.png",
-      "uploadedAt": "2026-02-25T15:48:11.720Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/1.png",
+      "uploadedAt": "2026-02-25T16:55:48.921Z"
     },
     "blog/profile-a-react-app-for-performance/2.png": {
       "id": "blog/profile-a-react-app-for-performance/2.png",
       "checksum": "0d8a36aec968ccc82cd657cf1c770a8aaa871537b3579c6a1c22e75a1669c266",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/2.png",
-      "uploadedAt": "2026-02-25T15:48:11.986Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/2.png",
+      "uploadedAt": "2026-02-25T16:55:48.929Z"
     },
     "blog/profile-a-react-app-for-performance/3.png": {
       "id": "blog/profile-a-react-app-for-performance/3.png",
       "checksum": "7100a5a0d004b3a3792cbf230d322535ab659cf1315af40080adfc25062e14ea",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/3.png",
-      "uploadedAt": "2026-02-25T15:48:12.421Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/3.png",
+      "uploadedAt": "2026-02-25T16:55:48.937Z"
     },
     "blog/profile-a-react-app-for-performance/4.png": {
       "id": "blog/profile-a-react-app-for-performance/4.png",
       "checksum": "d201d5605e9f7ad5aa3a981fb08c3436bf8b548b77a317d408e663272cbc0f79",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/4.png",
-      "uploadedAt": "2026-02-25T15:48:13.099Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/4.png",
+      "uploadedAt": "2026-02-25T16:55:48.945Z"
     },
     "blog/profile-a-react-app-for-performance/5.png": {
       "id": "blog/profile-a-react-app-for-performance/5.png",
       "checksum": "e2afed282e28eda05646d196714e6b6e1dbb922663f77c59704d820de05b73c4",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/5.png",
-      "uploadedAt": "2026-02-25T15:48:13.373Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/5.png",
+      "uploadedAt": "2026-02-25T16:55:48.952Z"
     },
     "blog/profile-a-react-app-for-performance/6.png": {
       "id": "blog/profile-a-react-app-for-performance/6.png",
       "checksum": "5c152c704d1ff470ca3b4e94590ec8d8b5311e430277e8ca04283fa11c0f1525",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/6.png",
-      "uploadedAt": "2026-02-25T15:48:13.634Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/6.png",
+      "uploadedAt": "2026-02-25T16:55:48.959Z"
     },
     "blog/profile-a-react-app-for-performance/7.png": {
       "id": "blog/profile-a-react-app-for-performance/7.png",
       "checksum": "cf0a50d8efd2e8b8b7c807b0501d8c412a803f39850b0931bd438e27d4c9c518",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/7.png",
-      "uploadedAt": "2026-02-25T15:48:14.045Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/7.png",
+      "uploadedAt": "2026-02-25T16:55:48.968Z"
     },
     "blog/profile-a-react-app-for-performance/8.png": {
       "id": "blog/profile-a-react-app-for-performance/8.png",
       "checksum": "2dd93fe0fda5f7a6faf5da80b6f0ab29a01460f9c44d1d0e7fc4a5234f029b46",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/8.png",
-      "uploadedAt": "2026-02-25T15:48:14.463Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/8.png",
+      "uploadedAt": "2026-02-25T16:55:48.975Z"
     },
     "blog/profile-a-react-app-for-performance/9.png": {
       "id": "blog/profile-a-react-app-for-performance/9.png",
       "checksum": "f3b68abdff96e6cefb87714da4aa21ffa6121ed548bed120db6c78cc8df62ed9",
-      "sourcePath": "content/blog/profile-a-react-app-for-performance/9.png",
-      "uploadedAt": "2026-02-25T15:48:14.758Z"
+      "sourcePath": "r2://media/blog/profile-a-react-app-for-performance/9.png",
+      "uploadedAt": "2026-02-25T16:55:48.986Z"
     },
     "blog/react-devtools/0.gif": {
       "id": "blog/react-devtools/0.gif",
       "checksum": "42358d21c6f5757bed566efd9e9aa89d3f25d0d207732bc48b86923985084c87",
-      "sourcePath": "content/blog/react-devtools/0.gif",
-      "uploadedAt": "2026-02-25T15:48:15.315Z"
+      "sourcePath": "r2://media/blog/react-devtools/0.gif",
+      "uploadedAt": "2026-02-25T16:55:49.036Z"
     },
     "blog/reacts-new-context-api/0.png": {
       "id": "blog/reacts-new-context-api/0.png",
       "checksum": "51ff6e4fbd175ed67f9e520a135a1e77751ba27bb8d4583f30cbee0a7ea8420c",
-      "sourcePath": "content/blog/reacts-new-context-api/0.png",
-      "uploadedAt": "2026-02-25T15:48:15.523Z"
+      "sourcePath": "r2://media/blog/reacts-new-context-api/0.png",
+      "uploadedAt": "2026-02-25T16:55:49.041Z"
     },
     "blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark": {
       "id": "blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark",
       "checksum": "167cc79ef1219d30175334efce427dea2ae6be98580fabc24509e429471db637",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark",
-      "uploadedAt": "2026-02-25T15:48:15.989Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-dark",
+      "uploadedAt": "2026-02-25T16:55:49.074Z"
     },
     "blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light": {
       "id": "blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light",
       "checksum": "6614a1bd88e5599a435f70f673002bbde675b91695f08cf1c012e7a6a98ff707",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light",
-      "uploadedAt": "2026-02-25T15:48:16.481Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/backend-for-frontend-light",
+      "uploadedAt": "2026-02-25T16:55:49.110Z"
     },
     "blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark": {
       "id": "blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark",
       "checksum": "ed9cf3897cebe33afaca0fe9ee985b8cd469ea52f14dbe9788301fda2686381a",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark",
-      "uploadedAt": "2026-02-25T15:48:16.541Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-dark",
+      "uploadedAt": "2026-02-25T16:55:49.135Z"
     },
     "blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light": {
       "id": "blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light",
       "checksum": "c5afd566ac671ba1c211ef6d4e72127feb7fc7670628dd72d95c6a9197c8680c",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light",
-      "uploadedAt": "2026-02-25T15:48:17.081Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/client-side-apps-only-light",
+      "uploadedAt": "2026-02-25T16:55:49.159Z"
     },
     "blog/remix-the-yang-to-react-s-yin/full-stack-dark": {
       "id": "blog/remix-the-yang-to-react-s-yin/full-stack-dark",
       "checksum": "c33d58a7c4610604c5112b09f050e2afe7556b253d0d06ad9277685c35495746",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/full-stack-dark",
-      "uploadedAt": "2026-02-25T15:48:17.589Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/full-stack-dark",
+      "uploadedAt": "2026-02-25T16:55:49.204Z"
     },
     "blog/remix-the-yang-to-react-s-yin/full-stack-light": {
       "id": "blog/remix-the-yang-to-react-s-yin/full-stack-light",
       "checksum": "d01a46303fd20daba025c1a02350b922f710ba8b28eeb07a7fdab9b47c41010a",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/full-stack-light",
-      "uploadedAt": "2026-02-25T15:48:18.129Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/full-stack-light",
+      "uploadedAt": "2026-02-25T16:55:49.252Z"
     },
     "blog/remix-the-yang-to-react-s-yin/network-chasm-dark": {
       "id": "blog/remix-the-yang-to-react-s-yin/network-chasm-dark",
       "checksum": "307da52ec240177149153e24c88fea1c2c429f4132b4527ddae6f618e9c3b023",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/network-chasm-dark",
-      "uploadedAt": "2026-02-25T15:48:18.481Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/network-chasm-dark",
+      "uploadedAt": "2026-02-25T16:55:49.271Z"
     },
     "blog/remix-the-yang-to-react-s-yin/network-chasm-light": {
       "id": "blog/remix-the-yang-to-react-s-yin/network-chasm-light",
       "checksum": "7bcaf069918dcf4804ee08e9a2f482b2bf5e20115900f00faf1d059934466a93",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/network-chasm-light",
-      "uploadedAt": "2026-02-25T15:48:18.834Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/network-chasm-light",
+      "uploadedAt": "2026-02-25T16:55:49.290Z"
     },
     "blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark": {
       "id": "blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark",
       "checksum": "b218a502874dfa2176d994423b9391455094e2ef29f0bd52be5fd900180b7936",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark",
-      "uploadedAt": "2026-02-25T15:48:19.298Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-dark",
+      "uploadedAt": "2026-02-25T16:55:49.319Z"
     },
     "blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light": {
       "id": "blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light",
       "checksum": "ac2c679b5515a88a87aad8e216b042afe9488263d98b6be34ae5c0f6dff5ef16",
-      "sourcePath": "content/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light",
-      "uploadedAt": "2026-02-25T15:48:19.798Z"
+      "sourcePath": "r2://media/blog/remix-the-yang-to-react-s-yin/remixed-router-apps-light",
+      "uploadedAt": "2026-02-25T16:55:49.348Z"
     },
     "blog/rendering-a-function-with-react/0.gif": {
       "id": "blog/rendering-a-function-with-react/0.gif",
       "checksum": "b17afc8de203976d02de351bf26ce2c2aeee34c301dd604e7d372bef73fe45c3",
-      "sourcePath": "content/blog/rendering-a-function-with-react/0.gif",
-      "uploadedAt": "2026-02-25T15:48:19.835Z"
+      "sourcePath": "r2://media/blog/rendering-a-function-with-react/0.gif",
+      "uploadedAt": "2026-02-25T16:55:49.384Z"
     },
     "blog/rendering-a-function-with-react/1.gif": {
       "id": "blog/rendering-a-function-with-react/1.gif",
       "checksum": "c8764bf12aec021a2f8d6d08502238770e7b584ccc8e299c0d756565d5d64487",
-      "sourcePath": "content/blog/rendering-a-function-with-react/1.gif",
-      "uploadedAt": "2026-02-25T15:48:20.386Z"
+      "sourcePath": "r2://media/blog/rendering-a-function-with-react/1.gif",
+      "uploadedAt": "2026-02-25T16:55:49.412Z"
     },
     "blog/rendering-a-function-with-react/2.gif": {
       "id": "blog/rendering-a-function-with-react/2.gif",
       "checksum": "e08512586aa7bb29d64bfe8c9a3e114a88dc6f0969d9ecb96a4ef8dd84387e1f",
-      "sourcePath": "content/blog/rendering-a-function-with-react/2.gif",
-      "uploadedAt": "2026-02-25T15:48:20.962Z"
+      "sourcePath": "r2://media/blog/rendering-a-function-with-react/2.gif",
+      "uploadedAt": "2026-02-25T16:55:49.425Z"
     },
     "blog/solidifying-what-you-learn/0.jpg": {
       "id": "blog/solidifying-what-you-learn/0.jpg",
       "checksum": "46fd79e175338838bbf4f96f7272da1e69af55c429b89c0784abffcb6509e0c3",
-      "sourcePath": "content/blog/solidifying-what-you-learn/0.jpg",
-      "uploadedAt": "2026-02-25T15:48:21.467Z"
+      "sourcePath": "r2://media/blog/solidifying-what-you-learn/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:49.430Z"
     },
     "blog/speed-up-your-app-with-web-workers/devtools.png": {
       "id": "blog/speed-up-your-app-with-web-workers/devtools.png",
       "checksum": "85ad16a251e5daa1bc7fbf05f4c1c7b070a990a77aaa41cfeec3453975141334",
-      "sourcePath": "content/blog/speed-up-your-app-with-web-workers/devtools.png",
-      "uploadedAt": "2026-02-25T15:48:22.055Z"
+      "sourcePath": "r2://media/blog/speed-up-your-app-with-web-workers/devtools.png",
+      "uploadedAt": "2026-02-25T16:55:49.439Z"
     },
     "blog/speed-up-your-app-with-web-workers/workerize.jpg": {
       "id": "blog/speed-up-your-app-with-web-workers/workerize.jpg",
       "checksum": "e82210abd419f392dfd05e87430bc83dba206a973bb3b415e86ff2a24eeb0771",
-      "sourcePath": "content/blog/speed-up-your-app-with-web-workers/workerize.jpg",
-      "uploadedAt": "2026-02-25T15:48:22.546Z"
+      "sourcePath": "r2://media/blog/speed-up-your-app-with-web-workers/workerize.jpg",
+      "uploadedAt": "2026-02-25T16:55:49.454Z"
     },
     "blog/spelunking-in-node-modules/0.jpg": {
       "id": "blog/spelunking-in-node-modules/0.jpg",
       "checksum": "6aaede3bac6dbf21ef8723f4786dcfe2a34cd471c9100b1a9fbb1895d5ab4a79",
-      "sourcePath": "content/blog/spelunking-in-node-modules/0.jpg",
-      "uploadedAt": "2026-02-25T15:48:22.907Z"
+      "sourcePath": "r2://media/blog/spelunking-in-node-modules/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:49.458Z"
     },
     "blog/state-colocation-will-make-your-react-app-faster/where-to-put-state.png": {
       "id": "blog/state-colocation-will-make-your-react-app-faster/where-to-put-state.png",
       "checksum": "bf3f135c8730f2086ada89d56296fcab5a429df1c166a7dae25b823706222485",
-      "sourcePath": "content/blog/state-colocation-will-make-your-react-app-faster/where-to-put-state.png",
-      "uploadedAt": "2026-02-25T15:48:23.263Z"
+      "sourcePath": "r2://media/blog/state-colocation-will-make-your-react-app-faster/where-to-put-state.png",
+      "uploadedAt": "2026-02-25T16:55:49.464Z"
     },
     "blog/sunsetting-javascript-air/0.png": {
       "id": "blog/sunsetting-javascript-air/0.png",
       "checksum": "78a38908af3b138b665b6db79efb716c50086a91fd9a04f40eed1408d5b76d23",
-      "sourcePath": "content/blog/sunsetting-javascript-air/0.png",
-      "uploadedAt": "2026-02-25T15:48:23.746Z"
+      "sourcePath": "r2://media/blog/sunsetting-javascript-air/0.png",
+      "uploadedAt": "2026-02-25T16:55:49.468Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-1-2-firebase-name.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-1-2-firebase-name.png",
       "checksum": "eeca281b7a3af2502641c82b006579b9ac92410ca5c5acdfdb1eff6d92d410b1",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-1-2-firebase-name.png",
-      "uploadedAt": "2026-02-25T15:48:23.974Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-1-2-firebase-name.png",
+      "uploadedAt": "2026-02-25T16:55:49.471Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-1-firebase-console.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-1-firebase-console.png",
       "checksum": "3d8985ccea05d93410d92702ec21d3f834815cddaadf3fb390b5c68ce15f01e3",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-1-firebase-console.png",
-      "uploadedAt": "2026-02-25T15:48:24.450Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-1-firebase-console.png",
+      "uploadedAt": "2026-02-25T16:55:49.481Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-11-firebase-billing-plans.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-11-firebase-billing-plans.png",
       "checksum": "032b256ee96fb7242d6d5d5eafde44373c415fa7e6b35924a0f190ba9812a006",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-11-firebase-billing-plans.png",
-      "uploadedAt": "2026-02-25T15:48:24.763Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-11-firebase-billing-plans.png",
+      "uploadedAt": "2026-02-25T16:55:49.488Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-11-usage-and-billing.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-11-usage-and-billing.png",
       "checksum": "94af55f7aee6814c92254d6bbb28896f9b8a9ebde8e4734d342bcfdac65098d2",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-11-usage-and-billing.png",
-      "uploadedAt": "2026-02-25T15:48:25.096Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-11-usage-and-billing.png",
+      "uploadedAt": "2026-02-25T16:55:49.494Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-12-deployed-fn-output.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-12-deployed-fn-output.png",
       "checksum": "b521cba30b973c6780b8f75b8ddc9aa00fbbcd83fdbb0dca107f7e1a6cf65b80",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-12-deployed-fn-output.png",
-      "uploadedAt": "2026-02-25T15:48:25.422Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-12-deployed-fn-output.png",
+      "uploadedAt": "2026-02-25T16:55:49.500Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-14-add-secret.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-14-add-secret.png",
       "checksum": "9aa5521a3247a039dc1f44641eb92737952411fc55549b1aba1c2099525bf4e4",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-14-add-secret.png",
-      "uploadedAt": "2026-02-25T15:48:25.896Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-14-add-secret.png",
+      "uploadedAt": "2026-02-25T16:55:49.508Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-16-action-output.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-16-action-output.png",
       "checksum": "902b1c96f3e734fb97bb6be31b798e65dd19ef17beaf9b5fc27e1041593bd26a",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-16-action-output.png",
-      "uploadedAt": "2026-02-25T15:48:26.334Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-16-action-output.png",
+      "uploadedAt": "2026-02-25T16:55:49.516Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-3-project-id.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-3-project-id.png",
       "checksum": "0818ffbae9e8532f88cc0f00ce6d3d16110e2032169c0f17545826ba6ca685c8",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-3-project-id.png",
-      "uploadedAt": "2026-02-25T15:48:26.970Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-3-project-id.png",
+      "uploadedAt": "2026-02-25T16:55:49.522Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-8-login.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-8-login.png",
       "checksum": "88ead550579d6dd47f7846bad1cb00611539b628ae39849759cb0fb2440d3c05",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-8-login.png",
-      "uploadedAt": "2026-02-25T15:48:27.308Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-8-login.png",
+      "uploadedAt": "2026-02-25T16:55:49.532Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-9-emulator-overview.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-9-emulator-overview.png",
       "checksum": "2bf4d0de61e9567518983964772bf3c35b0a0f9af1edd23f33d2185beae95407",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-9-emulator-overview.png",
-      "uploadedAt": "2026-02-25T15:48:27.762Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-9-emulator-overview.png",
+      "uploadedAt": "2026-02-25T16:55:49.539Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-9-fn-logs.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-9-fn-logs.png",
       "checksum": "a6a4887359e92b721ccc2a8699020f4a21c1759f77867c5acae73f5c842b8830",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-9-fn-logs.png",
-      "uploadedAt": "2026-02-25T15:48:28.103Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-9-fn-logs.png",
+      "uploadedAt": "2026-02-25T16:55:49.546Z"
     },
     "blog/super-simple-start-to-firebase-functions/step-9-fn-output.png": {
       "id": "blog/super-simple-start-to-firebase-functions/step-9-fn-output.png",
       "checksum": "45542f3b1ba4796f66fca22525b06a4d159df6c7353d390be8218c89c603facb",
-      "sourcePath": "content/blog/super-simple-start-to-firebase-functions/step-9-fn-output.png",
-      "uploadedAt": "2026-02-25T15:48:28.409Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-firebase-functions/step-9-fn-output.png",
+      "uploadedAt": "2026-02-25T16:55:49.551Z"
     },
     "blog/super-simple-start-to-netlify-functions/code.png": {
       "id": "blog/super-simple-start-to-netlify-functions/code.png",
       "checksum": "739283210c097cc5f7a409e80c4e503e6f9564e571fa3b928de9b2c79d3e97bd",
-      "sourcePath": "content/blog/super-simple-start-to-netlify-functions/code.png",
-      "uploadedAt": "2026-02-25T15:48:28.942Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-netlify-functions/code.png",
+      "uploadedAt": "2026-02-25T16:55:49.557Z"
     },
     "blog/super-simple-start-to-netlify-functions/create-new-site.png": {
       "id": "blog/super-simple-start-to-netlify-functions/create-new-site.png",
       "checksum": "fe8b246ec716410d1d6b7efdbe0cdb5aff1ab75878396b352b424849298504d0",
-      "sourcePath": "content/blog/super-simple-start-to-netlify-functions/create-new-site.png",
-      "uploadedAt": "2026-02-25T15:48:29.460Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-netlify-functions/create-new-site.png",
+      "uploadedAt": "2026-02-25T16:55:49.561Z"
     },
     "blog/super-simple-start-to-netlify-functions/function-log.png": {
       "id": "blog/super-simple-start-to-netlify-functions/function-log.png",
       "checksum": "e34764a19aaa77922e6bd792a4aa56372b31104e987555e94996ba022f48b9d4",
-      "sourcePath": "content/blog/super-simple-start-to-netlify-functions/function-log.png",
-      "uploadedAt": "2026-02-25T15:48:29.648Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-netlify-functions/function-log.png",
+      "uploadedAt": "2026-02-25T16:55:49.565Z"
     },
     "blog/super-simple-start-to-netlify-functions/function-output.png": {
       "id": "blog/super-simple-start-to-netlify-functions/function-output.png",
       "checksum": "2dc485332639a539fca561fef3754b7060790d653b52dddde4a65a8e8ce39a0e",
-      "sourcePath": "content/blog/super-simple-start-to-netlify-functions/function-output.png",
-      "uploadedAt": "2026-02-25T15:48:29.962Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-netlify-functions/function-output.png",
+      "uploadedAt": "2026-02-25T16:55:49.570Z"
     },
     "blog/super-simple-start-to-netlify-functions/functions.png": {
       "id": "blog/super-simple-start-to-netlify-functions/functions.png",
       "checksum": "56e1285d6eb0fd947e109179a4cc08f1958d8e204265ab981c7552cdd18c3499",
-      "sourcePath": "content/blog/super-simple-start-to-netlify-functions/functions.png",
-      "uploadedAt": "2026-02-25T15:48:30.586Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-netlify-functions/functions.png",
+      "uploadedAt": "2026-02-25T16:55:49.578Z"
     },
     "blog/super-simple-start-to-netlify-functions/overview.png": {
       "id": "blog/super-simple-start-to-netlify-functions/overview.png",
       "checksum": "07bc4a8d84fc1df0a5b4844c1475144671eea5946f6746940b9da19ea9c07ce7",
-      "sourcePath": "content/blog/super-simple-start-to-netlify-functions/overview.png",
-      "uploadedAt": "2026-02-25T15:48:30.894Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-netlify-functions/overview.png",
+      "uploadedAt": "2026-02-25T16:55:49.590Z"
     },
     "blog/super-simple-start-to-netlify-functions/repo.png": {
       "id": "blog/super-simple-start-to-netlify-functions/repo.png",
       "checksum": "0b83bebdaaad694e1fab6cf8bd275f4d44e08fee8f9550a1dc5c90eb5a6eea7d",
-      "sourcePath": "content/blog/super-simple-start-to-netlify-functions/repo.png",
-      "uploadedAt": "2026-02-25T15:48:31.545Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-netlify-functions/repo.png",
+      "uploadedAt": "2026-02-25T16:55:49.596Z"
     },
     "blog/super-simple-start-to-react/rubber-bands-ball.jpg": {
       "id": "blog/super-simple-start-to-react/rubber-bands-ball.jpg",
       "checksum": "d015ab4dcebee660443c043520c6f6c5a6755c051a11bf8087efb622552c7f06",
-      "sourcePath": "content/blog/super-simple-start-to-react/rubber-bands-ball.jpg",
-      "uploadedAt": "2026-02-25T15:48:31.953Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-react/rubber-bands-ball.jpg",
+      "uploadedAt": "2026-02-25T16:55:49.601Z"
     },
     "blog/super-simple-start-to-react/rubber-bands.jpg": {
       "id": "blog/super-simple-start-to-react/rubber-bands.jpg",
       "checksum": "1ae3763498acf7bcade30a063ba1147e9ff5bc12956537d3b50fc5a31f347c6e",
-      "sourcePath": "content/blog/super-simple-start-to-react/rubber-bands.jpg",
-      "uploadedAt": "2026-02-25T15:48:32.144Z"
+      "sourcePath": "r2://media/blog/super-simple-start-to-react/rubber-bands.jpg",
+      "uploadedAt": "2026-02-25T16:55:49.607Z"
     },
     "blog/test-isolation-with-react/0.gif": {
       "id": "blog/test-isolation-with-react/0.gif",
       "checksum": "033719bd4824e8171379dc44bfd0f7e063b55252bc215377804ea7b4ba43397f",
-      "sourcePath": "content/blog/test-isolation-with-react/0.gif",
-      "uploadedAt": "2026-02-25T15:48:32.543Z"
+      "sourcePath": "r2://media/blog/test-isolation-with-react/0.gif",
+      "uploadedAt": "2026-02-25T16:55:49.613Z"
     },
     "blog/test-isolation-with-react/1.png": {
       "id": "blog/test-isolation-with-react/1.png",
       "checksum": "3d13b0aaab27fb1d76e529880868a8d6fde367af740b0cd6502dc1637363807f",
-      "sourcePath": "content/blog/test-isolation-with-react/1.png",
-      "uploadedAt": "2026-02-25T15:48:32.856Z"
+      "sourcePath": "r2://media/blog/test-isolation-with-react/1.png",
+      "uploadedAt": "2026-02-25T16:55:49.618Z"
     },
     "blog/test-isolation-with-react/2.png": {
       "id": "blog/test-isolation-with-react/2.png",
       "checksum": "2599e1e785ea65abaf2ae1f9f10468db43bf0a5349c7adcfe5781a23be2e9e69",
-      "sourcePath": "content/blog/test-isolation-with-react/2.png",
-      "uploadedAt": "2026-02-25T15:48:33.092Z"
+      "sourcePath": "r2://media/blog/test-isolation-with-react/2.png",
+      "uploadedAt": "2026-02-25T16:55:49.622Z"
     },
     "blog/testing-components-using-render-props/0.png": {
       "id": "blog/testing-components-using-render-props/0.png",
       "checksum": "e97b415a32196c22142bf73169ae0d6ba121a984f7cda0cea9bd708996e37c11",
-      "sourcePath": "content/blog/testing-components-using-render-props/0.png",
-      "uploadedAt": "2026-02-25T15:48:33.591Z"
+      "sourcePath": "r2://media/blog/testing-components-using-render-props/0.png",
+      "uploadedAt": "2026-02-25T16:55:49.626Z"
     },
     "blog/testing-implementation-details/0.gif": {
       "id": "blog/testing-implementation-details/0.gif",
       "checksum": "30308d9b58fb0a39af7ac6e1c02fda94e8655df7820d3a934ee8d8bc1d8cf074",
-      "sourcePath": "content/blog/testing-implementation-details/0.gif",
-      "uploadedAt": "2026-02-25T15:48:33.997Z"
+      "sourcePath": "r2://media/blog/testing-implementation-details/0.gif",
+      "uploadedAt": "2026-02-25T16:55:49.638Z"
     },
     "blog/the-beginners-guide-to-reactjs/0.gif": {
       "id": "blog/the-beginners-guide-to-reactjs/0.gif",
       "checksum": "2258055081385de92c362b234e83030dcf9c910c9c840df6857d5b2390ec8c29",
-      "sourcePath": "content/blog/the-beginners-guide-to-reactjs/0.gif",
-      "uploadedAt": "2026-02-25T15:48:34.726Z"
+      "sourcePath": "r2://media/blog/the-beginners-guide-to-reactjs/0.gif",
+      "uploadedAt": "2026-02-25T16:55:49.803Z"
     },
     "blog/the-beginners-guide-to-reactjs/1.gif": {
       "id": "blog/the-beginners-guide-to-reactjs/1.gif",
       "checksum": "b78db780fdc0c8617da1f7ccf56c7c198247c5b2b552c8063529d692b2275c95",
-      "sourcePath": "content/blog/the-beginners-guide-to-reactjs/1.gif",
-      "uploadedAt": "2026-02-25T15:48:35.675Z"
+      "sourcePath": "r2://media/blog/the-beginners-guide-to-reactjs/1.gif",
+      "uploadedAt": "2026-02-25T16:55:49.835Z"
     },
     "blog/the-dows-start-on-the-covenant-path/bei-and-elder-philips-hug": {
       "id": "blog/the-dows-start-on-the-covenant-path/bei-and-elder-philips-hug",
       "checksum": "beda5e93a09994b2bef04d20cf942b837815b35c618387a7ad20df997da38386",
-      "sourcePath": "content/blog/the-dows-start-on-the-covenant-path/bei-and-elder-philips-hug",
-      "uploadedAt": "2026-02-25T15:48:36.477Z"
+      "sourcePath": "r2://media/blog/the-dows-start-on-the-covenant-path/bei-and-elder-philips-hug",
+      "uploadedAt": "2026-02-25T16:55:49.946Z"
     },
     "blog/the-dows-start-on-the-covenant-path/bei-being-baptized.jpg": {
       "id": "blog/the-dows-start-on-the-covenant-path/bei-being-baptized.jpg",
       "checksum": "76f9fae0516100215635a7af6c58fe44c4aa87a38a93e5c6e3e552a4d4229f7d",
-      "sourcePath": "content/blog/the-dows-start-on-the-covenant-path/bei-being-baptized.jpg",
-      "uploadedAt": "2026-02-25T15:48:36.871Z"
+      "sourcePath": "r2://media/blog/the-dows-start-on-the-covenant-path/bei-being-baptized.jpg",
+      "uploadedAt": "2026-02-25T16:55:49.996Z"
     },
     "blog/the-dows-start-on-the-covenant-path/jeremiah-and-kent-hug": {
       "id": "blog/the-dows-start-on-the-covenant-path/jeremiah-and-kent-hug",
       "checksum": "917576a5b062bdd1b1b0f27746e90eb74b7f67813b02fed8b70424661ffb1db4",
-      "sourcePath": "content/blog/the-dows-start-on-the-covenant-path/jeremiah-and-kent-hug",
-      "uploadedAt": "2026-02-25T15:48:37.795Z"
+      "sourcePath": "r2://media/blog/the-dows-start-on-the-covenant-path/jeremiah-and-kent-hug",
+      "uploadedAt": "2026-02-25T16:55:50.054Z"
     },
     "blog/the-dows-start-on-the-covenant-path/jeremiah-being-baptized.jpg": {
       "id": "blog/the-dows-start-on-the-covenant-path/jeremiah-being-baptized.jpg",
       "checksum": "dcff5c2e9286321017588580660cbb512f83d1e3045eae0c3af03c8b3a61250f",
-      "sourcePath": "content/blog/the-dows-start-on-the-covenant-path/jeremiah-being-baptized.jpg",
-      "uploadedAt": "2026-02-25T15:48:38.461Z"
+      "sourcePath": "r2://media/blog/the-dows-start-on-the-covenant-path/jeremiah-being-baptized.jpg",
+      "uploadedAt": "2026-02-25T16:55:50.128Z"
     },
     "blog/the-dows-start-on-the-covenant-path/kent-speaking": {
       "id": "blog/the-dows-start-on-the-covenant-path/kent-speaking",
       "checksum": "ab10a0481ef4a134e1eb90aa5182e4e4855f5d861a7e7c42bfcf70bbf81d1edd",
-      "sourcePath": "content/blog/the-dows-start-on-the-covenant-path/kent-speaking",
-      "uploadedAt": "2026-02-25T15:48:39.418Z"
+      "sourcePath": "r2://media/blog/the-dows-start-on-the-covenant-path/kent-speaking",
+      "uploadedAt": "2026-02-25T16:55:50.206Z"
     },
     "blog/the-dows-start-on-the-covenant-path/remix-jam-2025-photo-30": {
       "id": "blog/the-dows-start-on-the-covenant-path/remix-jam-2025-photo-30",
       "checksum": "19c051e494b36b95e1f3ac0a65ed17b6ce7da079050dbe597d225ed2c2c87810",
-      "sourcePath": "content/blog/the-dows-start-on-the-covenant-path/remix-jam-2025-photo-30",
-      "uploadedAt": "2026-02-25T15:48:40.742Z"
+      "sourcePath": "r2://media/blog/the-dows-start-on-the-covenant-path/remix-jam-2025-photo-30",
+      "uploadedAt": "2026-02-25T16:55:50.287Z"
     },
     "blog/the-next-chapter-epicai-pro/abstract-new-interaction-model": {
       "id": "blog/the-next-chapter-epicai-pro/abstract-new-interaction-model",
       "checksum": "4f13454e85103c34d4ba0ecbddda99516fe51df344e7a44ac954a20701c7e9e0",
-      "sourcePath": "content/blog/the-next-chapter-epicai-pro/abstract-new-interaction-model",
-      "uploadedAt": "2026-02-25T15:48:41.417Z"
+      "sourcePath": "r2://media/blog/the-next-chapter-epicai-pro/abstract-new-interaction-model",
+      "uploadedAt": "2026-02-25T16:55:50.343Z"
     },
     "blog/the-next-chapter-epicai-pro/architecting-mcps": {
       "id": "blog/the-next-chapter-epicai-pro/architecting-mcps",
       "checksum": "625eafb555fb1a5423b3355ffa75f9b2c7437a8eced5b4c06d2bef899cdcb08f",
-      "sourcePath": "content/blog/the-next-chapter-epicai-pro/architecting-mcps",
-      "uploadedAt": "2026-02-25T15:48:41.980Z"
+      "sourcePath": "r2://media/blog/the-next-chapter-epicai-pro/architecting-mcps",
+      "uploadedAt": "2026-02-25T16:55:50.429Z"
     },
     "blog/the-next-chapter-epicai-pro/kent-waves-mcps": {
       "id": "blog/the-next-chapter-epicai-pro/kent-waves-mcps",
       "checksum": "8491e4f79e686a68e91f8157c583e7ee20e99adbab0752a1a1ad67ae7275ca03",
-      "sourcePath": "content/blog/the-next-chapter-epicai-pro/kent-waves-mcps",
-      "uploadedAt": "2026-02-25T15:48:42.600Z"
+      "sourcePath": "r2://media/blog/the-next-chapter-epicai-pro/kent-waves-mcps",
+      "uploadedAt": "2026-02-25T16:55:50.518Z"
     },
     "blog/the-state-initializer-pattern/key-reset.gif": {
       "id": "blog/the-state-initializer-pattern/key-reset.gif",
       "checksum": "ce33fe15fd45eee8fc0e05c4d097eb1651751f564e06718f000b18f5ee123c44",
-      "sourcePath": "content/blog/the-state-initializer-pattern/key-reset.gif",
-      "uploadedAt": "2026-02-25T15:48:42.968Z"
+      "sourcePath": "r2://media/blog/the-state-initializer-pattern/key-reset.gif",
+      "uploadedAt": "2026-02-25T16:55:50.526Z"
     },
     "blog/the-state-initializer-pattern/state-initializer-pattern.gif": {
       "id": "blog/the-state-initializer-pattern/state-initializer-pattern.gif",
       "checksum": "1d3f3919977413e3ba3704bffe5f7d72dbd77b6b9c328062977d39c91e2bf251",
-      "sourcePath": "content/blog/the-state-initializer-pattern/state-initializer-pattern.gif",
-      "uploadedAt": "2026-02-25T15:48:43.277Z"
+      "sourcePath": "r2://media/blog/the-state-initializer-pattern/state-initializer-pattern.gif",
+      "uploadedAt": "2026-02-25T16:55:50.533Z"
     },
     "blog/the-time-i-messed-up/0.jpg": {
       "id": "blog/the-time-i-messed-up/0.jpg",
       "checksum": "7a8817dd2cc17ea14f9423378520f9e1d6bf266c07ed439b78c4775de5a8e168",
-      "sourcePath": "content/blog/the-time-i-messed-up/0.jpg",
-      "uploadedAt": "2026-02-25T15:48:43.534Z"
+      "sourcePath": "r2://media/blog/the-time-i-messed-up/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:50.539Z"
     },
     "blog/tips-for-making-a-cli-based-tool-with-node/0.png": {
       "id": "blog/tips-for-making-a-cli-based-tool-with-node/0.png",
       "checksum": "78a38908af3b138b665b6db79efb716c50086a91fd9a04f40eed1408d5b76d23",
-      "sourcePath": "content/blog/tips-for-making-a-cli-based-tool-with-node/0.png",
-      "uploadedAt": "2026-02-25T15:48:43.774Z"
+      "sourcePath": "r2://media/blog/tips-for-making-a-cli-based-tool-with-node/0.png",
+      "uploadedAt": "2026-02-25T16:55:50.542Z"
     },
     "blog/tools-without-config/0.gif": {
       "id": "blog/tools-without-config/0.gif",
       "checksum": "67203b083699b7375595533931a43587118a851e31e1ae0e69f5ba122d24227c",
-      "sourcePath": "content/blog/tools-without-config/0.gif",
-      "uploadedAt": "2026-02-25T15:48:44.606Z"
+      "sourcePath": "r2://media/blog/tools-without-config/0.gif",
+      "uploadedAt": "2026-02-25T16:55:50.567Z"
     },
     "blog/tracing-user-interactions-with-react/interactions-devtools.png": {
       "id": "blog/tracing-user-interactions-with-react/interactions-devtools.png",
       "checksum": "d33469d23704654e30f0803329e1b6ac22e3655c1e48a952ef76c802775f99e2",
-      "sourcePath": "content/blog/tracing-user-interactions-with-react/interactions-devtools.png",
-      "uploadedAt": "2026-02-25T15:48:44.912Z"
+      "sourcePath": "r2://media/blog/tracing-user-interactions-with-react/interactions-devtools.png",
+      "uploadedAt": "2026-02-25T16:55:50.571Z"
     },
     "blog/unit-vs-integration-vs-e2e-tests/confidence-coefficient.png": {
       "id": "blog/unit-vs-integration-vs-e2e-tests/confidence-coefficient.png",
       "checksum": "8e0389243194572f5fd65102343e74106a912a807e7292ccaa6913ec0f93be28",
-      "sourcePath": "content/blog/unit-vs-integration-vs-e2e-tests/confidence-coefficient.png",
-      "uploadedAt": "2026-02-25T15:48:45.332Z"
+      "sourcePath": "r2://media/blog/unit-vs-integration-vs-e2e-tests/confidence-coefficient.png",
+      "uploadedAt": "2026-02-25T16:55:50.578Z"
     },
     "blog/unit-vs-integration-vs-e2e-tests/testing-trophy.png": {
       "id": "blog/unit-vs-integration-vs-e2e-tests/testing-trophy.png",
       "checksum": "97a228baf63c78d56a59bf9bc91a247311b9fecd89b0fdaca7503b9f901bbff4",
-      "sourcePath": "content/blog/unit-vs-integration-vs-e2e-tests/testing-trophy.png",
-      "uploadedAt": "2026-02-25T15:48:45.764Z"
+      "sourcePath": "r2://media/blog/unit-vs-integration-vs-e2e-tests/testing-trophy.png",
+      "uploadedAt": "2026-02-25T16:55:50.584Z"
     },
     "blog/use-react-error-boundary-to-handle-errors-in-react/error-overlay.png": {
       "id": "blog/use-react-error-boundary-to-handle-errors-in-react/error-overlay.png",
       "checksum": "2c159aaeaa785ff7b48e66719cfc6b5afbef6db465d204800e32d5c0a58f8257",
-      "sourcePath": "content/blog/use-react-error-boundary-to-handle-errors-in-react/error-overlay.png",
-      "uploadedAt": "2026-02-25T15:48:46.203Z"
+      "sourcePath": "r2://media/blog/use-react-error-boundary-to-handle-errors-in-react/error-overlay.png",
+      "uploadedAt": "2026-02-25T16:55:50.590Z"
     },
     "blog/use-react-error-boundary-to-handle-errors-in-react/white-screen.png": {
       "id": "blog/use-react-error-boundary-to-handle-errors-in-react/white-screen.png",
       "checksum": "4f5732ae8cd3c7916b8d5ea7519c50624c7e507af942e9921a3d354b81a84b8f",
-      "sourcePath": "content/blog/use-react-error-boundary-to-handle-errors-in-react/white-screen.png",
-      "uploadedAt": "2026-02-25T15:48:46.618Z"
+      "sourcePath": "r2://media/blog/use-react-error-boundary-to-handle-errors-in-react/white-screen.png",
+      "uploadedAt": "2026-02-25T16:55:50.597Z"
     },
     "blog/use-ternaries-rather-than-and-and-in-jsx/contacts.png": {
       "id": "blog/use-ternaries-rather-than-and-and-in-jsx/contacts.png",
       "checksum": "87f71778510d6bcbe7271172d2e87daff5c4358df2bfdcabec0797c718c84967",
-      "sourcePath": "content/blog/use-ternaries-rather-than-and-and-in-jsx/contacts.png",
-      "uploadedAt": "2026-02-25T15:48:46.871Z"
+      "sourcePath": "r2://media/blog/use-ternaries-rather-than-and-and-in-jsx/contacts.png",
+      "uploadedAt": "2026-02-25T16:55:50.602Z"
     },
     "blog/use-ternaries-rather-than-and-and-in-jsx/no-contacts.png": {
       "id": "blog/use-ternaries-rather-than-and-and-in-jsx/no-contacts.png",
       "checksum": "e20c689a647bb21a31efae157d3a3655f45095c8c31cdc908d34204f1395d57b",
-      "sourcePath": "content/blog/use-ternaries-rather-than-and-and-in-jsx/no-contacts.png",
-      "uploadedAt": "2026-02-25T15:48:47.181Z"
+      "sourcePath": "r2://media/blog/use-ternaries-rather-than-and-and-in-jsx/no-contacts.png",
+      "uploadedAt": "2026-02-25T16:55:50.607Z"
     },
     "blog/what-open-source-project-should-i-contribute-to/pull-request-art.png": {
       "id": "blog/what-open-source-project-should-i-contribute-to/pull-request-art.png",
       "checksum": "4f2b59d74d16a250dd4fda911516a7c7b1f5f2f551575358d4706261a624fdee",
-      "sourcePath": "content/blog/what-open-source-project-should-i-contribute-to/pull-request-art.png",
-      "uploadedAt": "2026-02-25T15:48:47.392Z"
+      "sourcePath": "r2://media/blog/what-open-source-project-should-i-contribute-to/pull-request-art.png",
+      "uploadedAt": "2026-02-25T16:55:50.611Z"
     },
     "blog/when-i-follow-tdd/0.jpg": {
       "id": "blog/when-i-follow-tdd/0.jpg",
       "checksum": "7a8817dd2cc17ea14f9423378520f9e1d6bf266c07ed439b78c4775de5a8e168",
-      "sourcePath": "content/blog/when-i-follow-tdd/0.jpg",
-      "uploadedAt": "2026-02-25T15:48:47.594Z"
+      "sourcePath": "r2://media/blog/when-i-follow-tdd/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:50.615Z"
     },
     "blog/why-and-how-i-started-public-speaking/0.jpg": {
       "id": "blog/why-and-how-i-started-public-speaking/0.jpg",
       "checksum": "278fdf17099194c4c93ce6ed27dd22e12800b78be18ead560acddb139f09c56f",
-      "sourcePath": "content/blog/why-and-how-i-started-public-speaking/0.jpg",
-      "uploadedAt": "2026-02-25T15:48:47.873Z"
+      "sourcePath": "r2://media/blog/why-and-how-i-started-public-speaking/0.jpg",
+      "uploadedAt": "2026-02-25T16:55:50.620Z"
     },
     "blog/why-and-how-i-started-public-speaking/1.png": {
       "id": "blog/why-and-how-i-started-public-speaking/1.png",
       "checksum": "5c519aba4d90f308b49968bba2316a2e983d82aef87c879f12e1f3c247e41fb3",
-      "sourcePath": "content/blog/why-and-how-i-started-public-speaking/1.png",
-      "uploadedAt": "2026-02-25T15:48:48.174Z"
+      "sourcePath": "r2://media/blog/why-and-how-i-started-public-speaking/1.png",
+      "uploadedAt": "2026-02-25T16:55:50.624Z"
     },
     "blog/why-i-dont-commit-generated-files-to-master/0.png": {
       "id": "blog/why-i-dont-commit-generated-files-to-master/0.png",
       "checksum": "09560ab9c889c03a832878b481ad48c7a81ae20286e34df5ca4546cc34a4264d",
-      "sourcePath": "content/blog/why-i-dont-commit-generated-files-to-master/0.png",
-      "uploadedAt": "2026-02-25T15:48:48.724Z"
+      "sourcePath": "r2://media/blog/why-i-dont-commit-generated-files-to-master/0.png",
+      "uploadedAt": "2026-02-25T16:55:50.628Z"
     },
     "blog/why-i-dont-commit-generated-files-to-master/1.png": {
       "id": "blog/why-i-dont-commit-generated-files-to-master/1.png",
       "checksum": "083a11bcef512af3d2e55eef2ab05d8631672d4ce3333e40c4a2c8b12a2f5212",
-      "sourcePath": "content/blog/why-i-dont-commit-generated-files-to-master/1.png",
-      "uploadedAt": "2026-02-25T15:48:49.121Z"
+      "sourcePath": "r2://media/blog/why-i-dont-commit-generated-files-to-master/1.png",
+      "uploadedAt": "2026-02-25T16:55:50.633Z"
     },
     "blog/write-fewer-longer-tests/error.png": {
       "id": "blog/write-fewer-longer-tests/error.png",
       "checksum": "af2e6f2c46b21f5c13ef68807f9fe4314295404fcec00c27c040082e6ffc6d32",
-      "sourcePath": "content/blog/write-fewer-longer-tests/error.png",
-      "uploadedAt": "2026-02-25T15:48:49.510Z"
+      "sourcePath": "r2://media/blog/write-fewer-longer-tests/error.png",
+      "uploadedAt": "2026-02-25T16:55:50.638Z"
     },
     "blog/write-tests/2.png": {
       "id": "blog/write-tests/2.png",
       "checksum": "502e27ebe132cdfbabd2e0d7a33dba4b3b22b1edca03add992790378733a5a4f",
-      "sourcePath": "content/blog/write-tests/2.png",
-      "uploadedAt": "2026-02-25T15:48:49.810Z"
+      "sourcePath": "r2://media/blog/write-tests/2.png",
+      "uploadedAt": "2026-02-25T16:55:50.643Z"
     },
     "kentcdodds.com/content/teams/shirt-blue": {
       "id": "kentcdodds.com/content/teams/shirt-blue",
       "checksum": "f77c2e64282158985fc58df5590b36018a093c1934346f086a552b36b32fc053",
-      "sourcePath": "content/kentcdodds.com/content/teams/shirt-blue",
-      "uploadedAt": "2026-02-25T15:48:50.209Z"
+      "sourcePath": "r2://media/kentcdodds.com/content/teams/shirt-blue",
+      "uploadedAt": "2026-02-25T16:55:50.651Z"
     },
     "kentcdodds.com/content/teams/shirt-red": {
       "id": "kentcdodds.com/content/teams/shirt-red",
       "checksum": "d3c5e450387e6190b5f30501ebfbfbb7f7b2d04b025a1807a2db3596d02e995d",
-      "sourcePath": "content/kentcdodds.com/content/teams/shirt-red",
-      "uploadedAt": "2026-02-25T15:48:50.545Z"
+      "sourcePath": "r2://media/kentcdodds.com/content/teams/shirt-red",
+      "uploadedAt": "2026-02-25T16:55:50.659Z"
     },
     "kentcdodds.com/content/teams/shirt-yellow": {
       "id": "kentcdodds.com/content/teams/shirt-yellow",
       "checksum": "95c6ad40a6a088c8a19809a5ee43c15e5ce628d701dcd37000016038e43811c0",
-      "sourcePath": "content/kentcdodds.com/content/teams/shirt-yellow",
-      "uploadedAt": "2026-02-25T15:48:50.896Z"
+      "sourcePath": "r2://media/kentcdodds.com/content/teams/shirt-yellow",
+      "uploadedAt": "2026-02-25T16:55:50.670Z"
     },
     "writing-blog/first-conference-part-0/business-cards.jpg": {
       "id": "writing-blog/first-conference-part-0/business-cards.jpg",
       "checksum": "a6eece1126165fd9bdcd71c5e895f8fc10156c371eff80fcedfd01dea3406752",
-      "sourcePath": "content/writing-blog/first-conference-part-0/business-cards.jpg",
-      "uploadedAt": "2026-02-25T15:48:51.125Z"
+      "sourcePath": "r2://media/writing-blog/first-conference-part-0/business-cards.jpg",
+      "uploadedAt": "2026-02-25T16:55:50.677Z"
     },
     "writing-blog/first-conference-part-4/passageverge.jpg": {
       "id": "writing-blog/first-conference-part-4/passageverge.jpg",
       "checksum": "6ce081e7ef3ddc622129546f608966d1fb53f1fc06e2bf92baa09bf751cfd49c",
-      "sourcePath": "content/writing-blog/first-conference-part-4/passageverge.jpg",
-      "uploadedAt": "2026-02-25T15:48:51.866Z"
+      "sourcePath": "r2://media/writing-blog/first-conference-part-4/passageverge.jpg",
+      "uploadedAt": "2026-02-25T16:55:50.684Z"
     },
     "kentcdodds.com/illustrations/404_2_sprold": {
       "id": "kentcdodds.com/illustrations/404_2_sprold",
       "checksum": "3e0bfd1aeefc056e7b5f979a3dc963c4b22b2a0e1a9af3f0480f16b3e450f485",
-      "sourcePath": "content/kentcdodds.com/illustrations/404_2_sprold",
-      "uploadedAt": "2026-02-25T15:48:52.342Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/404_2_sprold",
+      "uploadedAt": "2026-02-25T16:55:50.730Z"
     },
     "kentcdodds.com/illustrations/helmet": {
       "id": "kentcdodds.com/illustrations/helmet",
       "checksum": "a2dfa20a557b261a4f43706c501435e243780a2f2a0a6c094ee6b44e7aafe099",
-      "sourcePath": "content/kentcdodds.com/illustrations/helmet",
-      "uploadedAt": "2026-02-25T15:48:53.103Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/helmet",
+      "uploadedAt": "2026-02-25T16:55:50.778Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_blue",
       "checksum": "ba0a81dd1d7a3cfc31303881598f03679812d005056705d54cf5e6ec220e69a6",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_blue",
-      "uploadedAt": "2026-02-25T15:48:55.393Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_blue",
+      "uploadedAt": "2026-02-25T16:55:50.908Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_flying_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_flying_blue",
       "checksum": "68e34d970a7a24d663a82d86561eefcfcd15d6bc46541bbdd4763398bd5e12c5",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_flying_blue",
-      "uploadedAt": "2026-02-25T15:48:55.786Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_flying_blue",
+      "uploadedAt": "2026-02-25T16:55:50.973Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_flying_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_flying_gray",
       "checksum": "7150b49f98b34b35812d884a8fd7f11a0af1f600555bbe0a7eda041222a0e6a8",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_flying_gray",
-      "uploadedAt": "2026-02-25T15:48:56.960Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_flying_gray",
+      "uploadedAt": "2026-02-25T16:55:51.035Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_flying_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_flying_red",
       "checksum": "aa8d218ae8d2eff905a0864bffba74c7f9d170282ac580a6064d8bfc80910dfd",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_flying_red",
-      "uploadedAt": "2026-02-25T15:48:57.807Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_flying_red",
+      "uploadedAt": "2026-02-25T16:55:51.094Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_flying_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_flying_yellow",
       "checksum": "c98a5b226a1777bdea06e3581b51f3f5bd93a5986d1f79a14244f25fb45bbb74",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_flying_yellow",
-      "uploadedAt": "2026-02-25T15:48:58.265Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_flying_yellow",
+      "uploadedAt": "2026-02-25T16:55:51.155Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_gray",
       "checksum": "ce33a4cf7bc0428133ccf6a3898fdc6b6186eec4f0bc920eaab4ae402baa93f1",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_gray",
-      "uploadedAt": "2026-02-25T15:48:59.461Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_gray",
+      "uploadedAt": "2026-02-25T16:55:51.282Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_red",
       "checksum": "16c0fba541f59ed233717551769193045f7e3a0e7e12715a06bbeeba35af6f5c",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_red",
-      "uploadedAt": "2026-02-25T15:49:00.282Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_red",
+      "uploadedAt": "2026-02-25T16:55:51.407Z"
     },
     "kentcdodds.com/illustrations/kody/kody_flipping_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_flipping_yellow",
       "checksum": "93482e7030bb164629f667910d9c29a273fe094e6eb01874713a86fef913fb27",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_flipping_yellow",
-      "uploadedAt": "2026-02-25T15:49:01.418Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_flipping_yellow",
+      "uploadedAt": "2026-02-25T16:55:51.533Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_blue",
       "checksum": "69a261cad6900eb7101a20d737a0b74584dbdb3b4ed29eb8b08d0b5d2606572c",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_blue",
-      "uploadedAt": "2026-02-25T15:49:02.673Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_blue",
+      "uploadedAt": "2026-02-25T16:55:51.630Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_blue",
       "checksum": "a9f91292c77f98f70cafd55775abba6225223d4881a61d80d2809468e74f7e9b",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_blue",
-      "uploadedAt": "2026-02-25T15:49:03.287Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_blue",
+      "uploadedAt": "2026-02-25T16:55:51.695Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_gray",
       "checksum": "1b24f6befb572a3018745b7fccfb193ca4fcae418346b7b7b69ccce26c29a2d6",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_gray",
-      "uploadedAt": "2026-02-25T15:49:04.230Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_gray",
+      "uploadedAt": "2026-02-25T16:55:51.759Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_red",
       "checksum": "f29d62b270fa3250ef2959152c9bca246aaf58a3c045bf8b1797ffe6113dca21",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_red",
-      "uploadedAt": "2026-02-25T15:49:04.773Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_red",
+      "uploadedAt": "2026-02-25T16:55:51.822Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_flying_yellow",
       "checksum": "8e75ba6fcd478228fba07c3e17555de3ae28fdcc3c07918d8f2fca86a5787256",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_yellow",
-      "uploadedAt": "2026-02-25T15:49:05.124Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_flying_yellow",
+      "uploadedAt": "2026-02-25T16:55:51.886Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_gray",
       "checksum": "0f4378e6360caabb8cbc11d5fd0297aaeaba4cc334ebcd8ac0d8ee2b07bb0fe3",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_gray",
-      "uploadedAt": "2026-02-25T15:49:06.926Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_gray",
+      "uploadedAt": "2026-02-25T16:55:51.982Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_red",
       "checksum": "61edd739e5716e6ac8027ea8e00b6aa3023f122686e2d8597814bf6877d871c1",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_red",
-      "uploadedAt": "2026-02-25T15:49:07.950Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_red",
+      "uploadedAt": "2026-02-25T16:55:52.086Z"
     },
     "kentcdodds.com/illustrations/kody/kody_onewheeling_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_onewheeling_yellow",
       "checksum": "48f2f5047d55827a41772506f6487127c5931edabe3b724b38d9d5f4774f055a",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_onewheeling_yellow",
-      "uploadedAt": "2026-02-25T15:49:08.629Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_onewheeling_yellow",
+      "uploadedAt": "2026-02-25T16:55:52.187Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_blue",
       "checksum": "e3b5d6889774e96432495ea81a0bc506a2dd71342c9f91d98ad7c7aeb7592f8a",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_blue",
-      "uploadedAt": "2026-02-25T15:49:09.921Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_blue",
+      "uploadedAt": "2026-02-25T16:55:52.348Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_blue",
       "checksum": "64023377035609c1588592c4259405d1d0047359bade74c831ae8bdb2eabb780",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_blue",
-      "uploadedAt": "2026-02-25T15:49:10.510Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_blue",
+      "uploadedAt": "2026-02-25T16:55:52.408Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_gray",
       "checksum": "bc2150621f2d302bc5d2861d246a8d927f0fd586dccc97597565cefd02d79b32",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_gray",
-      "uploadedAt": "2026-02-25T15:49:11.765Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_gray",
+      "uploadedAt": "2026-02-25T16:55:52.467Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_red",
       "checksum": "91fcb6d086470407443178a68e24180463de5c07637e25e614fa684fcaa57e3c",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_red",
-      "uploadedAt": "2026-02-25T15:49:12.530Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_red",
+      "uploadedAt": "2026-02-25T16:55:52.525Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_yellow",
       "checksum": "cd303a98d57b5e16925419347e51a93fdcbf1a155e5beed9f2c724faef99bd5b",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_yellow",
-      "uploadedAt": "2026-02-25T15:49:13.177Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_flying_yellow",
+      "uploadedAt": "2026-02-25T16:55:52.582Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_gray",
       "checksum": "46b53ffa8541ea2aee1f7b94c8d1a7712146b352f1b8d9ce74cf06bfb3885239",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_gray",
-      "uploadedAt": "2026-02-25T15:49:14.981Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_gray",
+      "uploadedAt": "2026-02-25T16:55:52.753Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_red",
       "checksum": "5e72e3aab6bae99aaf7bcc95e73cb6e6dc69d2a4eb09ef059681171cfa349cf2",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_red",
-      "uploadedAt": "2026-02-25T15:49:16.898Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_red",
+      "uploadedAt": "2026-02-25T16:55:52.932Z"
     },
     "kentcdodds.com/illustrations/kody/kody_playing_soccer_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_playing_soccer_yellow",
       "checksum": "a762666518abf489c896abc79b55c521f1945793e24842d880519dfa961cdc2a",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_playing_soccer_yellow",
-      "uploadedAt": "2026-02-25T15:49:18.818Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_playing_soccer_yellow",
+      "uploadedAt": "2026-02-25T16:55:53.095Z"
     },
     "kentcdodds.com/illustrations/kody/kody_profile_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_profile_blue",
       "checksum": "3316f6ca60907e2def8ef0054820ad1e0c0d3eba5a3f52e17616e670541bbe60",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_profile_blue",
-      "uploadedAt": "2026-02-25T15:49:19.858Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_profile_blue",
+      "uploadedAt": "2026-02-25T16:55:53.160Z"
     },
     "kentcdodds.com/illustrations/kody/kody_profile_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_profile_gray",
       "checksum": "7d907cea8e42c9f57122969389d4a7d092d30d0ff3039381b541b50246975c18",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_profile_gray",
-      "uploadedAt": "2026-02-25T15:49:20.434Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_profile_gray",
+      "uploadedAt": "2026-02-25T16:55:53.220Z"
     },
     "kentcdodds.com/illustrations/kody/kody_profile_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_profile_red",
       "checksum": "ecc226b94a16554e8881d67bebb6c8943353a87cb87125b10772def21327542c",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_profile_red",
-      "uploadedAt": "2026-02-25T15:49:21.025Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_profile_red",
+      "uploadedAt": "2026-02-25T16:55:53.282Z"
     },
     "kentcdodds.com/illustrations/kody/kody_profile_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_profile_yellow",
       "checksum": "79860ad0a1174207087ac475107abdb13533e449b2c9396ffa6ce61cc36ee904",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_profile_yellow",
-      "uploadedAt": "2026-02-25T15:49:21.074Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_profile_yellow",
+      "uploadedAt": "2026-02-25T16:55:53.343Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_blue",
       "checksum": "dee7c12faa89f39c3f9d89bc21bc2a41d1169e27762792591aa9240ee9e7174a",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_blue",
-      "uploadedAt": "2026-02-25T15:49:21.674Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_blue",
+      "uploadedAt": "2026-02-25T16:55:53.445Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_flying_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_flying_blue",
       "checksum": "6703316f2603b6ddc318be904cfa3f563079a4162a275b4878243c62c25991f8",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_flying_blue",
-      "uploadedAt": "2026-02-25T15:49:22.216Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_flying_blue",
+      "uploadedAt": "2026-02-25T16:55:53.501Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_flying_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_flying_gray",
       "checksum": "9894e304f39924e0f97e22a5fa4a95e96a7cea670cd9209e8c0bb2d6face05da",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_flying_gray",
-      "uploadedAt": "2026-02-25T15:49:22.979Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_flying_gray",
+      "uploadedAt": "2026-02-25T16:55:53.556Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_flying_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_flying_red",
       "checksum": "46e1e42ca016fce26ad8988eeae16410694689807cb16a2c7d578de745be58d2",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_flying_red",
-      "uploadedAt": "2026-02-25T15:49:23.431Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_flying_red",
+      "uploadedAt": "2026-02-25T16:55:53.609Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_flying_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_flying_yellow",
       "checksum": "1c9578376879cc567f89793d2e38b8616f8e3693c8a4bfa949b6b2a40ff43daa",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_flying_yellow",
-      "uploadedAt": "2026-02-25T15:49:23.955Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_flying_yellow",
+      "uploadedAt": "2026-02-25T16:55:53.664Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_gray",
       "checksum": "5070ea5a257c695dab2a2e0a6972f41cc9f85953d17be1bd0cf20816a9e68431",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_gray",
-      "uploadedAt": "2026-02-25T15:49:25.157Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_gray",
+      "uploadedAt": "2026-02-25T16:55:53.767Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_red",
       "checksum": "13869377a1dabe659c54face52c491eeda00dc8e9cdc4d5656c8f977ed77f563",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_red",
-      "uploadedAt": "2026-02-25T15:49:25.753Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_red",
+      "uploadedAt": "2026-02-25T16:55:53.878Z"
     },
     "kentcdodds.com/illustrations/kody/kody_skiing_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_skiing_yellow",
       "checksum": "6a8c59cb98e4013d84ef457853c092ff4f3cd805a68f006f51be79d49ca7b305",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_skiing_yellow",
-      "uploadedAt": "2026-02-25T15:49:26.816Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_skiing_yellow",
+      "uploadedAt": "2026-02-25T16:55:53.988Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_blue",
       "checksum": "29473811d64a12899ad0b21e579d08f29d167a3e07a7dee7498b06ae77439f52",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_blue",
-      "uploadedAt": "2026-02-25T15:49:27.732Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_blue",
+      "uploadedAt": "2026-02-25T16:55:54.132Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_blue": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_blue",
       "checksum": "7d8a67c7d654105299e42ef8724e175a228ecee0de830ba80ec9d37fa4bb4106",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_blue",
-      "uploadedAt": "2026-02-25T15:49:28.640Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_blue",
+      "uploadedAt": "2026-02-25T16:55:54.192Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_gray",
       "checksum": "e147199d7a17d1afaabc2481b6ad38bb81a444b5bdf44b26fc9c6c4ccdbb2624",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_gray",
-      "uploadedAt": "2026-02-25T15:49:29.203Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_gray",
+      "uploadedAt": "2026-02-25T16:55:54.250Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_red",
       "checksum": "cac3700cbabadd38a3e00632fbcd95e4b4083bb6d955b8bf617112bb90f06e9e",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_red",
-      "uploadedAt": "2026-02-25T15:49:29.697Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_red",
+      "uploadedAt": "2026-02-25T16:55:54.308Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_flying_yellow",
       "checksum": "642fb47d561f15e2f1a56ad7708f9a99640bb1d80983243676c0cfdcb504539c",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_yellow",
-      "uploadedAt": "2026-02-25T15:49:30.166Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_flying_yellow",
+      "uploadedAt": "2026-02-25T16:55:54.365Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_gray": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_gray",
       "checksum": "9c629559db9a59be12e8c7bc2b817febe5a56bc1538d10809d7cfac1bf6e7b1c",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_gray",
-      "uploadedAt": "2026-02-25T15:49:31.562Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_gray",
+      "uploadedAt": "2026-02-25T16:55:54.492Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_red": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_red",
       "checksum": "aeb3afaf5cb5d3f74c79e12ec6ce2aed5abbf460f151187aa9c1817711c9fd69",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_red",
-      "uploadedAt": "2026-02-25T15:49:32.712Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_red",
+      "uploadedAt": "2026-02-25T16:55:54.634Z"
     },
     "kentcdodds.com/illustrations/kody/kody_snowboarding_yellow": {
       "id": "kentcdodds.com/illustrations/kody/kody_snowboarding_yellow",
       "checksum": "bfd68cf6793ba2b5b317603e78cb7c8f9114726ee206e4d1bc5dfbec922987fb",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody/kody_snowboarding_yellow",
-      "uploadedAt": "2026-02-25T15:49:33.306Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody/kody_snowboarding_yellow",
+      "uploadedAt": "2026-02-25T16:55:54.773Z"
     },
     "kentcdodds.com/illustrations/kody_profile_white": {
       "id": "kentcdodds.com/illustrations/kody_profile_white",
       "checksum": "fd11cd91838991faddd6b9f5398c130b4f80bd9585cadf0c7f9fb322f8707741",
-      "sourcePath": "content/kentcdodds.com/illustrations/kody_profile_white",
-      "uploadedAt": "2026-02-25T15:49:34.061Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/kody_profile_white",
+      "uploadedAt": "2026-02-25T16:55:54.788Z"
     },
     "kentcdodds.com/illustrations/mic": {
       "id": "kentcdodds.com/illustrations/mic",
       "checksum": "71e8edb379c6afea15eb8bee99b53eb9fc03c9431b5e25f7053940dc29ba4a2f",
-      "sourcePath": "content/kentcdodds.com/illustrations/mic",
-      "uploadedAt": "2026-02-25T15:49:34.990Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/mic",
+      "uploadedAt": "2026-02-25T16:55:54.822Z"
     },
     "kentcdodds.com/illustrations/one_wheel": {
       "id": "kentcdodds.com/illustrations/one_wheel",
       "checksum": "48e3b76bde5ac8a16c0dc74efcd7bdca39ccc019eba858a86f1e99bfbacd5047",
-      "sourcePath": "content/kentcdodds.com/illustrations/one_wheel",
-      "uploadedAt": "2026-02-25T15:49:35.577Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/one_wheel",
+      "uploadedAt": "2026-02-25T16:55:54.874Z"
     },
     "kentcdodds.com/illustrations/rowing": {
       "id": "kentcdodds.com/illustrations/rowing",
       "checksum": "693925d31caeb630863b7dd53b62c4e8bae84a1006e62bbe8a6b2484954b9276",
-      "sourcePath": "content/kentcdodds.com/illustrations/rowing",
-      "uploadedAt": "2026-02-25T15:49:36.473Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/rowing",
+      "uploadedAt": "2026-02-25T16:55:54.916Z"
     },
     "kentcdodds.com/illustrations/skis_z5lkc3": {
       "id": "kentcdodds.com/illustrations/skis_z5lkc3",
       "checksum": "7e2e5dd2bfec295509c6d436f97dde8eb91f474d63ecb6dbdb0b46207ec214b0",
-      "sourcePath": "content/kentcdodds.com/illustrations/skis_z5lkc3",
-      "uploadedAt": "2026-02-25T15:49:37.119Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/skis_z5lkc3",
+      "uploadedAt": "2026-02-25T16:55:54.962Z"
     },
     "kentcdodds.com/illustrations/snowboard_nqqlyr": {
       "id": "kentcdodds.com/illustrations/snowboard_nqqlyr",
       "checksum": "94eda771a3329f60adc2157f01db0425bb81bfb641dedf88d654cc72a449f187",
-      "sourcePath": "content/kentcdodds.com/illustrations/snowboard_nqqlyr",
-      "uploadedAt": "2026-02-25T15:49:38.052Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/snowboard_nqqlyr",
+      "uploadedAt": "2026-02-25T16:55:55.006Z"
     },
     "kentcdodds.com/illustrations/solar_panels_2_ftbwvb": {
       "id": "kentcdodds.com/illustrations/solar_panels_2_ftbwvb",
       "checksum": "944f4e50f958ed706a3a888ab44840713bdb0e379f6dea1319b2bc80fc2ae5fb",
-      "sourcePath": "content/kentcdodds.com/illustrations/solar_panels_2_ftbwvb",
-      "uploadedAt": "2026-02-25T15:49:38.919Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/solar_panels_2_ftbwvb",
+      "uploadedAt": "2026-02-25T16:55:55.076Z"
     },
     "kentcdodds.com/illustrations/tesla_y2_j8kti2": {
       "id": "kentcdodds.com/illustrations/tesla_y2_j8kti2",
       "checksum": "0f7841f671c2df10deffb7aa43dad8cd8b3c392b6e33ffb6c62e8fd35838af5d",
-      "sourcePath": "content/kentcdodds.com/illustrations/tesla_y2_j8kti2",
-      "uploadedAt": "2026-02-25T15:49:39.267Z"
+      "sourcePath": "r2://media/kentcdodds.com/illustrations/tesla_y2_j8kti2",
+      "uploadedAt": "2026-02-25T16:55:55.126Z"
     },
     "kentcdodds.com/misc/kody.png": {
       "id": "kentcdodds.com/misc/kody.png",
       "checksum": "de2b1b36413088c00349f9ce6ec1d2c839cc894e5ed0e6867cb939c189f6fa98",
-      "sourcePath": "content/kentcdodds.com/misc/kody.png",
-      "uploadedAt": "2026-02-25T15:49:39.618Z"
+      "sourcePath": "r2://media/kentcdodds.com/misc/kody.png",
+      "uploadedAt": "2026-02-25T16:55:55.142Z"
     },
     "kentcdodds.com/pages/courses/advanced-react-component-patterns": {
       "id": "kentcdodds.com/pages/courses/advanced-react-component-patterns",
       "checksum": "49aed146b53a7be052659bb2470e300190f20fb0c5cdc593105d853d1952fc73",
-      "sourcePath": "content/kentcdodds.com/pages/courses/advanced-react-component-patterns",
-      "uploadedAt": "2026-02-25T15:49:39.968Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/advanced-react-component-patterns",
+      "uploadedAt": "2026-02-25T16:55:55.148Z"
     },
     "kentcdodds.com/pages/courses/asts": {
       "id": "kentcdodds.com/pages/courses/asts",
       "checksum": "a32adb7854c337fdabcbc5ef33814132cee2af1abaf61076647f13edd123d88c",
-      "sourcePath": "content/kentcdodds.com/pages/courses/asts",
-      "uploadedAt": "2026-02-25T15:49:40.186Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/asts",
+      "uploadedAt": "2026-02-25T16:55:55.151Z"
     },
     "kentcdodds.com/pages/courses/fem-advanced-remix": {
       "id": "kentcdodds.com/pages/courses/fem-advanced-remix",
       "checksum": "5cb4562afdddbec7f173327c0b3ea58259d5efa8da614739c0e3aa9d31698764",
-      "sourcePath": "content/kentcdodds.com/pages/courses/fem-advanced-remix",
-      "uploadedAt": "2026-02-25T15:49:40.431Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/fem-advanced-remix",
+      "uploadedAt": "2026-02-25T16:55:55.154Z"
     },
     "kentcdodds.com/pages/courses/fem-remix-fundamentals": {
       "id": "kentcdodds.com/pages/courses/fem-remix-fundamentals",
       "checksum": "55eb291475fbe6862a07678ef91c388466f3e86c4da74f8ed297c4044d87adb2",
-      "sourcePath": "content/kentcdodds.com/pages/courses/fem-remix-fundamentals",
-      "uploadedAt": "2026-02-25T15:49:40.745Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/fem-remix-fundamentals",
+      "uploadedAt": "2026-02-25T16:55:55.158Z"
     },
     "kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github": {
       "id": "kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github",
       "checksum": "39e05e1040c0b7e458a4702850bd61911b9750e368718fbd259f4e383f3f472c",
-      "sourcePath": "content/kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github",
-      "uploadedAt": "2026-02-25T15:49:40.953Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/how-to-contribute-to-an-open-source-project-on-github",
+      "uploadedAt": "2026-02-25T16:55:55.162Z"
     },
     "kentcdodds.com/pages/courses/how-to-write-an-open-source-javascript-library": {
       "id": "kentcdodds.com/pages/courses/how-to-write-an-open-source-javascript-library",
       "checksum": "1aba04881f03f3380b7813817a39f7459012a4faeb2b245bf2c91a14e9731d23",
-      "sourcePath": "content/kentcdodds.com/pages/courses/how-to-write-an-open-source-javascript-library",
-      "uploadedAt": "2026-02-25T15:49:41.231Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/how-to-write-an-open-source-javascript-library",
+      "uploadedAt": "2026-02-25T16:55:55.166Z"
     },
     "kentcdodds.com/pages/courses/simplify-react-apps-with-react-hooks": {
       "id": "kentcdodds.com/pages/courses/simplify-react-apps-with-react-hooks",
       "checksum": "ac5d90f1bfd700671febbb2b4bcdcacf2e147b712a7297826f6a250661e7fee9",
-      "sourcePath": "content/kentcdodds.com/pages/courses/simplify-react-apps-with-react-hooks",
-      "uploadedAt": "2026-02-25T15:49:41.404Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/simplify-react-apps-with-react-hooks",
+      "uploadedAt": "2026-02-25T16:55:55.171Z"
     },
     "kentcdodds.com/pages/courses/testing-principles": {
       "id": "kentcdodds.com/pages/courses/testing-principles",
       "checksum": "4cd2e4adc637844e0ed96fe1bd8cecc92ee60a2063409a9a47b844ca998b519e",
-      "sourcePath": "content/kentcdodds.com/pages/courses/testing-principles",
-      "uploadedAt": "2026-02-25T15:49:41.567Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/testing-principles",
+      "uploadedAt": "2026-02-25T16:55:55.176Z"
     },
     "kentcdodds.com/pages/courses/testing-react": {
       "id": "kentcdodds.com/pages/courses/testing-react",
       "checksum": "d2ec47a68d5d52dea49cf48b463ac4a20baf4aae282a0a7f12a9d695ec443258",
-      "sourcePath": "content/kentcdodds.com/pages/courses/testing-react",
-      "uploadedAt": "2026-02-25T15:49:41.860Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/testing-react",
+      "uploadedAt": "2026-02-25T16:55:55.179Z"
     },
     "kentcdodds.com/pages/courses/the-beginners-guide-to-react": {
       "id": "kentcdodds.com/pages/courses/the-beginners-guide-to-react",
       "checksum": "96ace6101396d2da10cede42649b566d343954a1c10bbfc1687774595e48f228",
-      "sourcePath": "content/kentcdodds.com/pages/courses/the-beginners-guide-to-react",
-      "uploadedAt": "2026-02-25T15:49:42.389Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/the-beginners-guide-to-react",
+      "uploadedAt": "2026-02-25T16:55:55.184Z"
     },
     "kentcdodds.com/pages/courses/up-and-running-with-remix": {
       "id": "kentcdodds.com/pages/courses/up-and-running-with-remix",
       "checksum": "72e0a844cd83b5c35c390d3c80b6974665fb4c3d69e594db898603e6040d0f00",
-      "sourcePath": "content/kentcdodds.com/pages/courses/up-and-running-with-remix",
-      "uploadedAt": "2026-02-25T15:49:42.702Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/up-and-running-with-remix",
+      "uploadedAt": "2026-02-25T16:55:55.188Z"
     },
     "kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui": {
       "id": "kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui",
       "checksum": "76141f116935412810da076fa764d8ab4fb45b624e4161d22f4a501658308f8c",
-      "sourcePath": "content/kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui",
-      "uploadedAt": "2026-02-25T15:49:42.923Z"
+      "sourcePath": "r2://media/kentcdodds.com/pages/courses/use-suspense-to-simplify-your-async-ui",
+      "uploadedAt": "2026-02-25T16:55:55.193Z"
     },
     "v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-dark": {
       "id": "v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-dark",
       "checksum": "319cf3bf4cf239c70e3aae46bb8f406ba8d2d68dfb689d49d7d35c66b5010206",
-      "sourcePath": "content/v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-dark",
-      "uploadedAt": "2026-02-25T15:49:43.819Z"
+      "sourcePath": "r2://media/v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-dark",
+      "uploadedAt": "2026-02-25T16:55:55.213Z"
     },
     "v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-light": {
       "id": "v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-light",
       "checksum": "208c952c62f71c051b8c5fa940ba5464cefcac7cb2ed43b9a6e8317af06fe785",
-      "sourcePath": "content/v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-light",
-      "uploadedAt": "2026-02-25T15:49:44.229Z"
+      "sourcePath": "r2://media/v1746462310/kentcdodds.com/pages/courses/v2/epic-ai-light",
+      "uploadedAt": "2026-02-25T16:55:55.232Z"
     },
     "v1746462310/kentcdodds.com/pages/courses/v2/epic-web": {
       "id": "v1746462310/kentcdodds.com/pages/courses/v2/epic-web",
       "checksum": "e9c32f24f1f180a85748b1b911889883d678aa42b5120a53b2cdf88cebcdca8c",
-      "sourcePath": "content/v1746462310/kentcdodds.com/pages/courses/v2/epic-web",
-      "uploadedAt": "2026-02-25T15:49:44.564Z"
+      "sourcePath": "r2://media/v1746462310/kentcdodds.com/pages/courses/v2/epic-web",
+      "uploadedAt": "2026-02-25T16:55:55.236Z"
     },
     "v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark": {
       "id": "v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark",
       "checksum": "292d517ce051ca120908f772657cebf4427af7050fec554a72c3e7d0563ebea8",
-      "sourcePath": "content/v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark",
-      "uploadedAt": "2026-02-25T15:49:44.808Z"
+      "sourcePath": "r2://media/v1746462310/kentcdodds.com/pages/courses/v2/epic-web-dark",
+      "uploadedAt": "2026-02-25T16:55:55.240Z"
     },
     "v1746462314/kentcdodds.com/pages/courses/v2/rocket": {
       "id": "v1746462314/kentcdodds.com/pages/courses/v2/rocket",
       "checksum": "a6637ab61cf68f1c2243eed5e14396e1361b80f93b7c28cf9f013d747223aaa9",
-      "sourcePath": "content/v1746462314/kentcdodds.com/pages/courses/v2/rocket",
-      "uploadedAt": "2026-02-25T15:49:45.680Z"
+      "sourcePath": "r2://media/v1746462314/kentcdodds.com/pages/courses/v2/rocket",
+      "uploadedAt": "2026-02-25T16:55:55.298Z"
     },
     "v1746462314/kentcdodds.com/pages/courses/v2/rocket-dark": {
       "id": "v1746462314/kentcdodds.com/pages/courses/v2/rocket-dark",
       "checksum": "bc4427a6d9c5d2b1999cad4401b9a629adab9aa2a66160552235a2af2f3dd165",
-      "sourcePath": "content/v1746462314/kentcdodds.com/pages/courses/v2/rocket-dark",
-      "uploadedAt": "2026-02-25T15:49:46.130Z"
+      "sourcePath": "r2://media/v1746462314/kentcdodds.com/pages/courses/v2/rocket-dark",
+      "uploadedAt": "2026-02-25T16:55:55.381Z"
     },
     "v1746462314/kentcdodds.com/pages/courses/v2/trophy": {
       "id": "v1746462314/kentcdodds.com/pages/courses/v2/trophy",
       "checksum": "c156c95ee8c51455cbbc8760d67de9107a392f2a1b5d539d055e0af5171f186d",
-      "sourcePath": "content/v1746462314/kentcdodds.com/pages/courses/v2/trophy",
-      "uploadedAt": "2026-02-25T15:49:46.591Z"
+      "sourcePath": "r2://media/v1746462314/kentcdodds.com/pages/courses/v2/trophy",
+      "uploadedAt": "2026-02-25T16:55:55.401Z"
     },
     "v1746462314/kentcdodds.com/pages/courses/v2/trophy-dark": {
       "id": "v1746462314/kentcdodds.com/pages/courses/v2/trophy-dark",
       "checksum": "5f7006384909133936f210057596fd1a893bc27c73c80fa4e22cea98efe530e3",
-      "sourcePath": "content/v1746462314/kentcdodds.com/pages/courses/v2/trophy-dark",
-      "uploadedAt": "2026-02-25T15:49:47.283Z"
+      "sourcePath": "r2://media/v1746462314/kentcdodds.com/pages/courses/v2/trophy-dark",
+      "uploadedAt": "2026-02-25T16:55:55.421Z"
     },
     "kentcdodds.com/misc/facepalm": {
       "id": "kentcdodds.com/misc/facepalm",
       "checksum": "6b14fa789df99238b5d6947da95e4ae2c4d72bda6fe21b636ffe1e40bc2aefc3",
-      "sourcePath": "content/kentcdodds.com/misc/facepalm",
-      "uploadedAt": "2026-02-25T15:49:48.327Z"
+      "sourcePath": "r2://media/kentcdodds.com/misc/facepalm",
+      "uploadedAt": "2026-02-25T16:55:55.436Z"
     },
     "kentcdodds.com/misc/grimmace": {
       "id": "kentcdodds.com/misc/grimmace",
       "checksum": "01ebae99e9320def302fe6c0ae28bb7483b860488833a40f12569773cf84124f",
-      "sourcePath": "content/kentcdodds.com/misc/grimmace",
-      "uploadedAt": "2026-02-25T15:49:48.492Z"
+      "sourcePath": "r2://media/kentcdodds.com/misc/grimmace",
+      "uploadedAt": "2026-02-25T16:55:55.963Z"
     },
     "kentcdodds.com/misc/where_am_i": {
       "id": "kentcdodds.com/misc/where_am_i",
       "checksum": "dc001ad3be6b89e4c488eda75b3a42e2c820588e4b510c2df0fab009ba589347",
-      "sourcePath": "content/kentcdodds.com/misc/where_am_i",
-      "uploadedAt": "2026-02-25T15:49:49.277Z"
+      "sourcePath": "r2://media/kentcdodds.com/misc/where_am_i",
+      "uploadedAt": "2026-02-25T16:55:56.053Z"
     }
   }
 }

@@ -4,38 +4,38 @@
     "blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4": {
       "id": "blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4",
       "checksum": "cc23a47750b304d1fa5dd657fb3e4ee03ceb575c8d365ad5dadbee3dedf21e7f",
-      "sourcePath": "content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4",
-      "uploadedAt": "2026-02-25T15:49:47.934Z"
+      "sourcePath": "r2://media/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4",
+      "uploadedAt": "2026-02-25T16:55:56.083Z"
     },
     "blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4": {
       "id": "blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4",
       "checksum": "58f1f14f2f74c6baa23d499eef16a1f7b1b80305bc3aa4af11b3297717a9bf15",
-      "sourcePath": "content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4",
-      "uploadedAt": "2026-02-25T15:49:48.266Z"
+      "sourcePath": "r2://media/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4",
+      "uploadedAt": "2026-02-25T16:55:56.119Z"
     },
     "blog/my-car-accident/all-good-here.mp4": {
       "id": "blog/my-car-accident/all-good-here.mp4",
       "checksum": "d41a60a714c9774ded00c706de7a395f980d9c8e05248386baf318f5e1771d8a",
-      "sourcePath": "content/blog/my-car-accident/all-good-here.mp4",
-      "uploadedAt": "2026-02-25T15:48:05.559Z"
+      "sourcePath": "r2://media/blog/my-car-accident/all-good-here.mp4",
+      "uploadedAt": "2026-02-25T16:55:56.127Z"
     },
     "kentcdodds.com/misc/facepalm": {
       "id": "kentcdodds.com/misc/facepalm",
       "checksum": "6b14fa789df99238b5d6947da95e4ae2c4d72bda6fe21b636ffe1e40bc2aefc3",
-      "sourcePath": "content/kentcdodds.com/misc/facepalm",
-      "uploadedAt": "2026-02-25T15:56:50.330Z"
+      "sourcePath": "r2://media/kentcdodds.com/misc/facepalm",
+      "uploadedAt": "2026-02-25T16:58:11.501Z"
     },
     "kentcdodds.com/misc/grimmace": {
       "id": "kentcdodds.com/misc/grimmace",
       "checksum": "01ebae99e9320def302fe6c0ae28bb7483b860488833a40f12569773cf84124f",
-      "sourcePath": "content/kentcdodds.com/misc/grimmace",
-      "uploadedAt": "2026-02-25T15:56:50.480Z"
+      "sourcePath": "r2://media/kentcdodds.com/misc/grimmace",
+      "uploadedAt": "2026-02-25T16:58:11.501Z"
     },
     "kentcdodds.com/misc/where_am_i": {
       "id": "kentcdodds.com/misc/where_am_i",
       "checksum": "dc001ad3be6b89e4c488eda75b3a42e2c820588e4b510c2df0fab009ba589347",
-      "sourcePath": "content/kentcdodds.com/misc/where_am_i",
-      "uploadedAt": "2026-02-25T15:56:50.522Z"
+      "sourcePath": "r2://media/kentcdodds.com/misc/where_am_i",
+      "uploadedAt": "2026-02-25T16:58:11.501Z"
     }
   }
 }

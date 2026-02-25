@@ -1,12 +1,12 @@
 # Cloudflare media migration runbook
 
 This runbook describes the **one-time** Cloudinary → Cloudflare migration and
-the ongoing repo-driven media sync workflow.
+the current R2-backed media workflow.
 
 ## Goals
 
-- Keep media source-of-truth in-repo under `content/**`.
-- Upload only changed media files to Cloudflare Images/Stream.
+- Keep media source-of-truth in Cloudflare R2.
+- Keep canonical app mappings in-repo (`repo-media-key -> cloudflare-id`).
 - Avoid legacy dead weight:
   - no compatibility branches after cutover
   - no committed legacy-ID mapping files
@@ -15,10 +15,10 @@ the ongoing repo-driven media sync workflow.
 ## Repo conventions
 
 - MDX entries live at `<collection>/<slug>/index.mdx`.
-- Co-located media files live beside each entry under `content/**`.
 - Canonical manifests:
   - `content/data/media-manifests/images.json`
   - `content/data/media-manifests/videos.json`
+  - `sourcePath` should point to `r2://<bucket>/<repo-media-key>` after upload.
 
 ## Scripts
 
@@ -29,28 +29,29 @@ the ongoing repo-driven media sync workflow.
 - Legacy reference scan:
   - `bun run media:scan-legacy-references`
   - `bun run media:scan-legacy-references:strict`
-- Media sync:
-  - `bun run media:sync-cloudflare -- --dry-run`
-  - `bun run media:sync-cloudflare -- --before <sha> --after <sha>`
+- Upload manifest-backed local media payloads to R2 and prune local binaries:
+  - `bun run media:upload-r2 -- --dry-run`
+  - `bun run media:upload-r2 -- --delete-local`
 
 ## One-time cutover
 
 1. Convert content to directory layout (if not already done).
-2. Download referenced media into co-located `content/**` paths.
+2. Download any missing media into local `content/**` paths (temporary).
 3. Run strict legacy scan and fix all remaining hits:
    - `bun run media:scan-legacy-references:strict`
-4. Upload media to Cloudflare:
-   - `bun run media:sync-cloudflare -- --dry-run`
-   - `bun run media:sync-cloudflare -- --before <base-sha> --after <head-sha>`
-5. Verify manifests contain only forward mappings (`repo key -> cloudflare id`).
+4. Upload media to R2 and prune local binaries:
+   - `bun run media:upload-r2 -- --dry-run`
+   - `bun run media:upload-r2 -- --delete-local`
+5. Verify manifests contain only forward mappings (`repo key -> cloudflare id`)
+   and `r2://` source paths.
 6. Remove transient migration artifacts from local workspace.
 
 ## Ongoing workflow
 
-- CI workflow: `.github/workflows/sync-media.yml`
-  - validates strict reference scan
-  - syncs changed media files and updates canonical manifests
-  - supports manual dry-run via `workflow_dispatch`.
+- Media requests resolve by canonical key and are served from R2-backed media
+  infrastructure.
+- Local media mock can proxy to R2 when online; otherwise it returns a
+  wireframe placeholder image.
 
 ## Verification checklist
 

@@ -51,11 +51,11 @@ describe('media service contract', () => {
 			for (const response of responses) {
 				expect(response.status).toBe(200)
 			}
-			expect(responses[0]?.headers.get('content-type')).toBe('image/webp')
-			expect(responses[1]?.headers.get('content-type')).toBe('image/webp')
-			expect(responses[2]?.headers.get('content-type')).toBe('image/webp')
-			expect(responses[3]?.headers.get('content-type')).toBe('image/webp')
-			expect(responses[4]?.headers.get('content-type')).toBe('video/mp4')
+			expect(responses[0]?.headers.get('content-type')).toBe('image/svg+xml')
+			expect(responses[1]?.headers.get('content-type')).toBe('image/svg+xml')
+			expect(responses[2]?.headers.get('content-type')).toBe('image/svg+xml')
+			expect(responses[3]?.headers.get('content-type')).toBe('image/svg+xml')
+			expect(responses[4]?.headers.get('content-type')).toBe('image/svg+xml')
 		} finally {
 			if (typeof originalMediaBaseUrl === 'undefined') {
 				delete process.env.MEDIA_BASE_URL
