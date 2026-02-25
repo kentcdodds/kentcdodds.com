@@ -204,7 +204,7 @@ test('renders lambda child expressions for render-prop components', () => {
 	expect(markup).toContain('<p>Hello Kent</p>')
 })
 
-test('falls back to undefined when prop expression parsing fails', () => {
+test('falls back to noop function when arrow prop expression parsing fails', () => {
 	const document: MdxRemoteDocument<Record<string, unknown>> = {
 		schemaVersion: 1,
 		slug: 'bad-prop-expression',
@@ -237,11 +237,13 @@ test('falls back to undefined when prop expression parsing fails', () => {
 						onSubmit,
 					}: {
 						onSubmit?: unknown
-					}) => <p>{typeof onSubmit === 'undefined' ? 'fallback' : 'value'}</p>,
+					}) => (
+						<p>{typeof onSubmit === 'function' ? String(onSubmit()) : 'value'}</p>
+					),
 				},
 			})}
 		</>,
 	)
 
-	expect(markup).toContain('<p>fallback</p>')
+	expect(markup).toContain('<p>undefined</p>')
 })
