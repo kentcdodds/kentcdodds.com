@@ -20,6 +20,7 @@ reference:
 | --------------- | --------------------------------------------------------------------------------- |
 | Dev server      | `bun run dev` (starts app + worker mock stack + mdx-remote content watcher; app runs on port 3000) |
 | Calls e2e local stack | `bun run dev:calls-e2e` (starts Worker runtime + mock workers + mdx-remote watcher, including queue bindings for Call Kent draft processing) |
+| Calls e2e with real container | `bun run dev:calls-e2e:real-container` (uses local ffmpeg container service at port 8810 instead of mock container worker) |
 | Local ffmpeg container (Node) | `bun run dev:call-kent-ffmpeg-container` (runs container-compatible HTTP ffmpeg service on port 8810) |
 | Lint            | `bun run lint`                                                                    |
 | Typecheck       | `bun run typecheck`                                                               |
