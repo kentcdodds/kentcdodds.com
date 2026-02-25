@@ -16,6 +16,9 @@ export type Person = {
 }
 
 type UnknownObj = Record<string, unknown>
+const isUnknownObj = (v: unknown): v is UnknownObj =>
+	typeof v === 'object' && v !== null
+
 function getValueWithFallback<PropertyType>(
 	obj: UnknownObj,
 	key: string,
@@ -43,6 +46,12 @@ function getValueWithFallback<PropertyType>(
 }
 
 const isString = (v: unknown): v is string => typeof v === 'string'
+const hasStringId = (v: unknown): v is UnknownObj & { id: string } =>
+	isUnknownObj(v) && isString(v.id)
+
+function normalizePeople(people: ReadonlyArray<unknown>) {
+	return people.filter(isUnknownObj).map(mapPerson).filter(typedBoolean)
+}
 
 function mapPerson(rawPerson: UnknownObj) {
 	try {
@@ -145,13 +154,17 @@ async function getPeople({
 					throw new Error('Credits is not an array.')
 				}
 
-				return rawCredits.map(mapPerson).filter(typedBoolean)
+				return normalizePeople(rawCredits)
 			},
-			checkValue: (value: unknown) => Array.isArray(value),
+			checkValue: (value: unknown) =>
+				Array.isArray(value) && value.every(hasStringId),
 		},
 		verboseReporter(),
 	)
-	return allPeople
+	// We normalize after `cachified` too because `checkValue` can reject stale data,
+	// `getFreshValue` can fail (for example if GitHub is unavailable), and
+	// `cachified` may still return fallbackToCache data under forceFresh semantics.
+	return normalizePeople(allPeople)
 }
 
 export { getPeople }
