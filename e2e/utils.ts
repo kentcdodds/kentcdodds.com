@@ -71,22 +71,6 @@ export async function readEmail(
 					return email
 				}
 			}
-			if (process.env.ALLOW_MSW_EMAIL_FIXTURE_FALLBACK === 'true') {
-				const fixtureModule = await import('../mocks/utils.ts')
-				const mswOutput = (await fixtureModule.readFixture()) as {
-					email: Record<string, Email>
-				}
-				const emails = Object.values(mswOutput.email).reverse()
-				let email: Email | undefined
-				if (typeof recipientOrFilter === 'string') {
-					email = emails.find((entry) => entry.to === recipientOrFilter)
-				} else {
-					email = emails.find(recipientOrFilter)
-				}
-				if (email) {
-					return email
-				}
-			}
 			// Email not found yet, retry after a delay
 			if (attempt < maxRetries - 1) {
 				await sleep(retryDelay)
