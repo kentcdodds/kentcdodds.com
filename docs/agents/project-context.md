@@ -40,8 +40,8 @@ reference:
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - Semantic search caveat: YouTube auto-captions can include cue-only chunks like
-  `[Music]`. Runtime search now filters these low-signal transcript chunks, but
-  old vectors can still linger until the next YouTube reindex.
+  `[Music]`. The YouTube indexer filters these low-signal caption lines at
+  ingest time, but old vectors can still linger until the next YouTube reindex.
 
 ## Cloud / headless manual testing
 

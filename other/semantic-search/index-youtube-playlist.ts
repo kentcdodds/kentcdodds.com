@@ -11,6 +11,7 @@ import {
 } from './cloudflare.ts'
 import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
+import { isLowSignalYoutubeCaptionCueLine } from './youtube-transcript-cue-filter.ts'
 
 type DocType = 'youtube'
 type TranscriptSource = 'manual' | 'auto' | 'none'
@@ -844,6 +845,7 @@ async function fetchTranscriptFromTrack(track: CaptionTrack, label: string) {
 			.replace(/\u200B/g, '')
 			.trim()
 		if (!line) continue
+		if (isLowSignalYoutubeCaptionCueLine(line)) continue
 		lines.push(line)
 		transcriptEvents.push({ startMs, durationMs, text: line })
 	}
