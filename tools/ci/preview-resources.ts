@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 type Command = 'ensure' | 'cleanup'
 
@@ -92,6 +93,17 @@ function parseArgs(argv: Array<string>) {
 	}
 }
 
+type BuildGeneratedWranglerConfigArgs = {
+	baseConfig: Record<string, unknown>
+	environment: string
+	workerName: string
+	d1DatabaseName: string
+	d1DatabaseId: string
+	siteCacheKvId: string
+	callsDraftQueueName: string
+	mdxRemoteR2BucketName: string | null
+}
+
 function runWrangler(
 	args: Array<string>,
 	options?: { input?: string; quiet?: boolean },
@@ -170,7 +182,7 @@ function isRetryableWranglerFailure(output: string) {
 	)
 }
 
-function buildPreviewResourceNames(workerName: string) {
+export function buildPreviewResourceNames(workerName: string) {
 	const maxLen = 63
 	const d1Suffix = '-db'
 	const kvSuffix = '-site-cache-kv'
@@ -435,16 +447,43 @@ async function writeGeneratedWranglerConfig({
 	mdxRemoteR2BucketName: string | null
 }) {
 	const baseText = await readFile(baseConfigPath, 'utf8')
-	const config = JSON.parse(baseText) as Record<string, unknown>
+	const baseConfig = JSON.parse(baseText) as Record<string, unknown>
+	const config = buildGeneratedWranglerConfig({
+		baseConfig,
+		environment,
+		workerName,
+		d1DatabaseName,
+		d1DatabaseId,
+		siteCacheKvId,
+		callsDraftQueueName,
+		mdxRemoteR2BucketName,
+	})
+	const resolvedOut = path.resolve(outConfigPath)
+	await mkdir(path.dirname(resolvedOut), { recursive: true })
+	await writeFile(resolvedOut, `${JSON.stringify(config, null, '\t')}\n`, 'utf8')
+	console.error(`Wrote generated Wrangler config: ${resolvedOut}`)
+	return resolvedOut
+}
 
+export function buildGeneratedWranglerConfig({
+	baseConfig,
+	environment,
+	workerName,
+	d1DatabaseName,
+	d1DatabaseId,
+	siteCacheKvId,
+	callsDraftQueueName,
+	mdxRemoteR2BucketName,
+}: BuildGeneratedWranglerConfigArgs) {
+	const config = structuredClone(baseConfig) as Record<string, unknown>
 	const env = config.env
 	if (!env || typeof env !== 'object') {
-		fail(`wrangler config "${baseConfigPath}" is missing "env".`)
+		fail(`wrangler config is missing "env".`)
 	}
 
 	const environmentConfig = (env as Record<string, unknown>)[environment]
 	if (!environmentConfig || typeof environmentConfig !== 'object') {
-		fail(`wrangler config "${baseConfigPath}" is missing "env.${environment}".`)
+		fail(`wrangler config is missing "env.${environment}".`)
 	}
 
 	const targetConfig = environmentConfig as Record<string, unknown>
@@ -542,12 +581,7 @@ async function writeGeneratedWranglerConfig({
 			},
 		],
 	}
-
-	const resolvedOut = path.resolve(outConfigPath)
-	await mkdir(path.dirname(resolvedOut), { recursive: true })
-	await writeFile(resolvedOut, `${JSON.stringify(config, null, '\t')}\n`, 'utf8')
-	console.error(`Wrote generated Wrangler config: ${resolvedOut}`)
-	return resolvedOut
+	return config
 }
 
 async function ensurePreviewResources(options: CliOptions) {
@@ -611,7 +645,13 @@ async function main() {
 	await cleanupPreviewResources(options)
 }
 
-main().catch((error: unknown) => {
-	console.error(error)
-	process.exit(1)
-})
+const isExecutedDirectly =
+	process.argv[1] &&
+	path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))
+
+if (isExecutedDirectly) {
+	main().catch((error: unknown) => {
+		console.error(error)
+		process.exit(1)
+	})
+}
