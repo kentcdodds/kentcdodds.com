@@ -15,12 +15,12 @@ describe('media image url generation', () => {
 	test('uses default media host when no override exists', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
-			MEDIA_BASE_URL: 'https://media.kentcdodds.com',
+			MEDIA_BASE_URL: 'https://media.kcd.dev',
 		}
 
 		const builder = getImageBuilder('kent/profile')
 		const url = builder()
-		expect(url.startsWith('https://media.kentcdodds.com/')).toBe(true)
+		expect(url.startsWith('https://media.kcd.dev/')).toBe(true)
 	})
 
 	test('rewrites media host when public env override is set', () => {

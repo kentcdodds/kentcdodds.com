@@ -21,12 +21,12 @@ const schemaBase = z.object({
 		.string()
 		.trim()
 		.optional()
-		.default('https://media.kentcdodds.com'),
+		.default('https://media.kcd.dev'),
 	MEDIA_STREAM_BASE_URL: z
 		.string()
 		.trim()
 		.optional()
-		.default('https://media.kentcdodds.com/stream'),
+		.default('https://media.kcd.dev/stream'),
 	ENABLE_MDX_REMOTE: z.enum(['true', 'false']).optional().default('false'),
 	MDX_REMOTE_BASE_URL: z.string().trim().optional(),
 	MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY: z

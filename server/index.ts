@@ -285,6 +285,7 @@ app.use(
 				'img-src': [
 					"'self'",
 					'data:',
+					'media.kcd.dev',
 					'media.kentcdodds.com',
 					'www.gravatar.com',
 					'cdn.usefathom.com',
@@ -307,6 +308,7 @@ app.use(
 				],
 				'media-src': [
 					"'self'",
+					'media.kcd.dev',
 					'media.kentcdodds.com',
 					'data:',
 					'blob:',

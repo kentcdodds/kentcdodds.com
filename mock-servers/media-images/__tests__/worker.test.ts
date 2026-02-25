@@ -85,7 +85,7 @@ describe('media images mock worker', () => {
 		expect(videoResponse.headers.get('content-type')).toBe('video/webm')
 	})
 
-	test('proxies media requests to r2 when proxy base url is configured', async () => {
+	test('proxies media requests when proxy base url is configured', async () => {
 		const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
 			new Response(new Uint8Array([9, 8, 7]), {
 				status: 200,
@@ -96,7 +96,7 @@ describe('media images mock worker', () => {
 			const response = await worker.fetch(
 				new Request('http://mock-media-images.local/images/blog/demo/image.png'),
 				{
-					MEDIA_R2_PROXY_BASE_URL: 'https://example-r2-proxy.test',
+					MEDIA_PROXY_BASE_URL: 'https://example-media-proxy.test',
 				},
 			)
 			expect(response.status).toBe(200)
@@ -104,7 +104,7 @@ describe('media images mock worker', () => {
 			expect(fetchSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
 					method: 'GET',
-					url: 'https://example-r2-proxy.test/blog/demo/image.png',
+					url: 'https://example-media-proxy.test/blog/demo/image.png',
 				}),
 			)
 		} finally {

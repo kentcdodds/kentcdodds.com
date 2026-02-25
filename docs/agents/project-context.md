@@ -61,18 +61,20 @@ reference:
 - Cloudflare R2 S3-compatible calls are served by a Bun mock server in dev
   (`mock-servers/cloudflare-r2/local-server.ts`, local port `8802`).
   - mock uploads persist to disk at `/tmp/mock-r2-cache` by default so local
-    media stays available across restarts/offline sessions.
+    non-media R2 fixtures stay available across restarts/offline sessions.
 - Media image calls are served by a Worker mock server in dev
   (`mock-servers/media-images/worker.ts`, local port `8803`).
-  - The media mock attempts to proxy `/images/*` and `/stream/*` requests to R2
-    first (via `MEDIA_R2_PROXY_BASE_URL` or path-style
-    `MEDIA_R2_ENDPOINT`/`MEDIA_R2_BUCKET`).
-  - If R2 is unreachable (offline/no internet), the media mock returns a
+  - The media mock attempts to serve assets from local `content/**` first.
+  - When local assets are unavailable, it can proxy `/images/*` and `/stream/*`
+    requests to remote media delivery infrastructure.
+  - If remote media is unreachable (offline/no internet), the media mock returns a
     wireframe SVG placeholder so route audits still pass.
 - Call Kent ffmpeg container simulation is served by a Worker mock server in dev
   (`mock-servers/call-kent-ffmpeg/worker.ts`, local port `8804`).
 - Stream video URLs can use `MEDIA_STREAM_BASE_URL` (defaults to
   `${MEDIA_BASE_URL}/stream`).
+  - current deployment default media base is `https://media.kcd.dev`
+    (planned production cutover target: `https://media.kentcdodds.com`).
 - `ENABLE_MDX_REMOTE=true` enables runtime rendering via the new mdx-remote
   JSON-tree interpreter path.
 - Runtime mdx-remote document loading order (when `ENABLE_MDX_REMOTE=true`):
@@ -85,13 +87,14 @@ reference:
   `app/utils/github.server.ts` (no network call required for content paths).
 - Media workflow:
   - canonical manifests live in `content/data/media-manifests/{images,videos}.json`
-  - one-time upload + local prune script: `bun run media:upload-r2 -- --delete-local`
-  - day-to-day local authoring flow:
-    1. place media under the intended `content/**` path
-    2. run `bun run media:add-local`
-    3. script uploads to R2, updates manifests, and deletes local media bytes
+  - one-time Cloudinary bootstrap to local `content/**`:
+    - `bun run media:bootstrap-cloudinary`
+  - upload/sync local media to Cloudflare Images (images) + Stream (videos):
+    - `bun run media:sync-cloudflare`
+    - requires `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
+  - `media:sync-cloudflare` uses Cloudflare IDs in manifest `id` values and
+    keeps `sourcePath` values as `content/<repo-media-key>`.
   - normalize legacy content URLs: `bun run media:normalize-legacy-paths`
-  - Cloudflare Images/Stream sync helper (legacy path): `bun run media:sync-cloudflare`
   - strict legacy scan gate: `bun run media:scan-legacy-references:strict`
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.

@@ -233,8 +233,17 @@ async function downloadCloudinaryAsset({
 	const lookupKeys = toCloudinaryLookupKeys(key)
 	const tryUrls = lookupKeys.flatMap((lookupKey) => {
 		const primaryUrl = getCloudinaryUrl({ cloudName, kind, key: lookupKey })
-		if (kind === 'video' && !/\.[a-z0-9]+$/i.test(lookupKey)) {
-			return [primaryUrl, `${primaryUrl}.mp4`]
+		if (kind === 'video') {
+			const candidates = [primaryUrl, `${primaryUrl}.mp4`]
+			// Some historical "video" assets were uploaded via Cloudinary's image
+			// endpoint but still stored as .mp4 files.
+			const imageEndpointUrl = getCloudinaryUrl({
+				cloudName,
+				kind: 'image',
+				key: lookupKey,
+			})
+			candidates.push(imageEndpointUrl, `${imageEndpointUrl}.mp4`)
+			return candidates
 		}
 		return [primaryUrl]
 	})

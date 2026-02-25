@@ -5,7 +5,7 @@ import { type CSSProperties } from 'react'
 import { resolveMediaImageId } from './utils/media-manifest-resolver.ts'
 import { optionalTeams, type OptionalTeam } from './utils/misc.ts'
 
-const defaultMediaBaseUrl = 'https://media.kentcdodds.com'
+const defaultMediaBaseUrl = 'https://media.kcd.dev'
 
 type ImageBuilder = {
 	(transformations?: TransformerOption): string

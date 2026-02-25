@@ -6,7 +6,7 @@ const { resolveMediaVideoIdMock } = vi.hoisted(() => ({
 }))
 
 vi.mock('#app/images.tsx', () => ({
-	getMediaStreamBaseUrl: () => 'https://media.kentcdodds.com/stream',
+	getMediaStreamBaseUrl: () => 'https://media.kcd.dev/stream',
 }))
 
 vi.mock('#app/utils/media-manifest-resolver.ts', () => ({
@@ -20,7 +20,7 @@ describe('MediaVideo', () => {
 		resolveMediaVideoIdMock.mockReturnValue('video-stream-id')
 		const html = renderToStaticMarkup(<MediaVideo imageId="content/my-video" />)
 		expect(html).toContain(
-			'src="https://media.kentcdodds.com/stream/video-stream-id.mp4?width=1000&amp;fit=fill"',
+			'src="https://media.kcd.dev/stream/video-stream-id.mp4?width=1000&amp;fit=fill"',
 		)
 	})
 
@@ -28,7 +28,7 @@ describe('MediaVideo', () => {
 		resolveMediaVideoIdMock.mockReturnValue('content/blog/demo/video.webm')
 		const html = renderToStaticMarkup(<MediaVideo imageId="content/blog/demo/video.webm" />)
 		expect(html).toContain(
-			'src="https://media.kentcdodds.com/stream/content/blog/demo/video.webm?width=1000&amp;fit=fill"',
+			'src="https://media.kcd.dev/stream/content/blog/demo/video.webm?width=1000&amp;fit=fill"',
 		)
 	})
 })

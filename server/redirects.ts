@@ -131,7 +131,7 @@ function getRedirectsMiddleware({
 }
 
 export const oldImgSocial: RequestHandler = (req, res) => {
-	const socialUrl = new URL('https://media.kentcdodds.com/social/generic.png')
+	const socialUrl = new URL('https://media.kcd.dev/social/generic.png')
 	socialUrl.searchParams.set(
 		'words',
 		'Helping people make the world a better place through quality software.',

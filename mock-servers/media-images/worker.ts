@@ -17,6 +17,7 @@ type Env = {
 	ASSETS?: {
 		fetch(request: Request): Promise<Response>
 	}
+	MEDIA_PROXY_BASE_URL?: string
 	MEDIA_R2_PROXY_BASE_URL?: string
 	MEDIA_R2_BUCKET?: string
 	MEDIA_R2_ENDPOINT?: string
@@ -105,8 +106,12 @@ export default {
 		) {
 			const repoMediaResponse = await tryServeRepoMediaAsset({ request, url, env })
 			if (repoMediaResponse) return repoMediaResponse
-			const r2ProxyResponse = await tryServeR2ProxyAsset({ request, url, env })
-			if (r2ProxyResponse) return r2ProxyResponse
+			const remoteProxyResponse = await tryServeRemoteMediaAsset({
+				request,
+				url,
+				env,
+			})
+			if (remoteProxyResponse) return remoteProxyResponse
 			return buildWireframeFallbackResponse({
 				pathname: url.pathname,
 				method: request.method,
@@ -154,7 +159,7 @@ async function tryServeRepoMediaAsset({
 	return null
 }
 
-async function tryServeR2ProxyAsset({
+async function tryServeRemoteMediaAsset({
 	request,
 	url,
 	env,
@@ -164,6 +169,8 @@ async function tryServeR2ProxyAsset({
 	env: Env
 }) {
 	const baseUrl =
+		env.MEDIA_PROXY_BASE_URL ??
+		readProcessEnv('MEDIA_PROXY_BASE_URL') ??
 		env.MEDIA_R2_PROXY_BASE_URL ??
 		readProcessEnv('MEDIA_R2_PROXY_BASE_URL') ??
 		buildPathStyleR2BaseUrl(env)

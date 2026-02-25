@@ -131,6 +131,55 @@ function inferMimeType(filePath: string) {
 	}
 }
 
+async function inferMimeTypeFromFile(filePath: string) {
+	const fromExtension = inferMimeType(filePath)
+	if (
+		fromExtension !== 'application/octet-stream' &&
+		fromExtension !== 'image/avif'
+	) {
+		return fromExtension
+	}
+
+	const bytes = await fs.readFile(filePath)
+	if (bytes.length >= 8) {
+		const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+		if (pngSignature.every((value, index) => bytes[index] === value)) {
+			return 'image/png'
+		}
+	}
+	if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+		return 'image/jpeg'
+	}
+	if (bytes.length >= 6) {
+		const header = bytes.subarray(0, 6).toString('ascii')
+		if (header === 'GIF87a' || header === 'GIF89a') {
+			return 'image/gif'
+		}
+	}
+	if (bytes.length >= 12) {
+		const riff = bytes.subarray(0, 4).toString('ascii')
+		const webp = bytes.subarray(8, 12).toString('ascii')
+		if (riff === 'RIFF' && webp === 'WEBP') {
+			return 'image/webp'
+		}
+	}
+	if (bytes.length >= 12) {
+		const boxType = bytes.subarray(4, 12).toString('ascii').toLowerCase()
+		if (boxType.includes('ftypavif')) {
+			return 'image/avif'
+		}
+	}
+	if (bytes.length >= 4 && bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x01 && bytes[3] === 0x00) {
+		return 'image/x-icon'
+	}
+	const preview = bytes.subarray(0, 200).toString('utf8').toLowerCase()
+	if (preview.includes('<svg') || preview.includes('<?xml')) {
+		return 'image/svg+xml'
+	}
+
+	return fromExtension
+}
+
 function getChangedFiles(before: string, after: string): ChangedFiles {
 	const output = execSync(`git diff --name-status ${before} ${after} -- content`, {
 		encoding: 'utf8',
@@ -240,10 +289,11 @@ async function uploadImage({
 	apiBaseUrl: string
 }): Promise<UploadResult> {
 	const bytes = await fs.readFile(filePath)
+	const mimeType = await inferMimeTypeFromFile(filePath)
 	const form = new FormData()
 	form.set(
 		'file',
-		new Blob([bytes], { type: inferMimeType(filePath) }),
+		new Blob([bytes], { type: mimeType }),
 		path.basename(filePath),
 	)
 	const response = await fetch(`${apiBaseUrl}/accounts/${accountId}/images/v1`, {
@@ -275,13 +325,19 @@ async function uploadVideo({
 	apiBaseUrl: string
 }): Promise<UploadResult> {
 	const bytes = await fs.readFile(filePath)
+	const mimeType = await inferMimeTypeFromFile(filePath)
+	const form = new FormData()
+	form.set(
+		'file',
+		new Blob([bytes], { type: mimeType }),
+		path.basename(filePath),
+	)
 	const response = await fetch(`${apiBaseUrl}/accounts/${accountId}/stream`, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${apiToken}`,
-			'Content-Type': inferMimeType(filePath),
 		},
-		body: bytes,
+		body: form,
 	})
 	const payload = (await response.json()) as {
 		success?: boolean
@@ -339,17 +395,23 @@ async function syncManifestForKind({
 	cloudflareEnv: ReturnType<typeof getCloudflareEnv>
 }) {
 	let manifestUpdated = false
+	const failedUploads: Array<string> = []
 	const { accountId, apiToken, apiBaseUrl } = cloudflareEnv
 
 	for (const filePath of candidates) {
-		const mediaKind = getMediaKind(filePath)
-		if (mediaKind !== kind) continue
-
 		const key = getMediaKey(filePath)
+		const mediaKind = getMediaKind(filePath)
+		const isMappedInManifest = Boolean(manifest.assets[key])
+		if (mediaKind !== kind && !isMappedInManifest) continue
 		const sourcePath = normalizePath(filePath)
 		const checksum = await checksumFile(sourcePath)
 		const existing = manifest.assets[key]
-		if (existing && existing.checksum === checksum) {
+		const shouldForceUpload =
+			!existing ||
+			existing.checksum !== checksum ||
+			existing.id === key ||
+			existing.sourcePath !== sourcePath
+		if (!shouldForceUpload) {
 			continue
 		}
 
@@ -365,18 +427,24 @@ async function syncManifestForKind({
 			)
 		}
 
-		const uploadResult =
-			kind === 'image'
-				? await uploadImage({ filePath: sourcePath, accountId, apiToken, apiBaseUrl })
-				: await uploadVideo({ filePath: sourcePath, accountId, apiToken, apiBaseUrl })
-		manifest.assets[key] = {
-			id: uploadResult.id,
-			checksum,
-			sourcePath,
-			uploadedAt: new Date().toISOString(),
+		try {
+			const uploadResult =
+				kind === 'image'
+					? await uploadImage({ filePath: sourcePath, accountId, apiToken, apiBaseUrl })
+					: await uploadVideo({ filePath: sourcePath, accountId, apiToken, apiBaseUrl })
+			manifest.assets[key] = {
+				id: uploadResult.id,
+				checksum,
+				sourcePath,
+				uploadedAt: new Date().toISOString(),
+			}
+			console.log(`uploaded ${kind}: ${sourcePath} -> ${uploadResult.id}`)
+			manifestUpdated = true
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error)
+			failedUploads.push(`${sourcePath}: ${message}`)
+			console.warn(`failed ${kind}: ${sourcePath}: ${message}`)
 		}
-		console.log(`uploaded ${kind}: ${sourcePath} -> ${uploadResult.id}`)
-		manifestUpdated = true
 	}
 
 	for (const filePath of deleted) {
@@ -395,22 +463,32 @@ async function syncManifestForKind({
 		await writeManifest(manifestPath, manifest)
 		console.log(`updated manifest: ${manifestPath}`)
 	}
-	return manifestUpdated
+	return { manifestUpdated, failedUploads }
 }
 
 async function main() {
 	const options = parseArgs(process.argv.slice(2))
 	const changedFiles = await collectCandidateMediaFiles(options)
+	const imagesManifestPath = path.join(options.manifestDirectory, imagesManifestFilename)
+	const videosManifestPath = path.join(options.manifestDirectory, videosManifestFilename)
+	const [imagesManifest, videosManifest] = await Promise.all([
+		readManifest(imagesManifestPath),
+		readManifest(videosManifestPath),
+	])
 
 	const candidateFiles = changedFiles.addedOrModified.filter((filePath) => {
 		if (!filePath.startsWith('content/')) return false
 		const mediaKind = getMediaKind(filePath)
-		return mediaKind !== null
+		if (mediaKind !== null) return true
+		const key = getMediaKey(filePath)
+		return Boolean(imagesManifest.assets[key] || videosManifest.assets[key])
 	})
 	const deletedFiles = changedFiles.deleted.filter((filePath) => {
 		if (!filePath.startsWith('content/')) return false
 		const mediaKind = getMediaKind(filePath)
-		return mediaKind !== null
+		if (mediaKind !== null) return true
+		const key = getMediaKey(filePath)
+		return Boolean(imagesManifest.assets[key] || videosManifest.assets[key])
 	})
 
 	console.log(`media candidates: ${candidateFiles.length}, deleted: ${deletedFiles.length}`)
@@ -419,15 +497,8 @@ async function main() {
 		return
 	}
 
-	const imagesManifestPath = path.join(options.manifestDirectory, imagesManifestFilename)
-	const videosManifestPath = path.join(options.manifestDirectory, videosManifestFilename)
-	const [imagesManifest, videosManifest] = await Promise.all([
-		readManifest(imagesManifestPath),
-		readManifest(videosManifestPath),
-	])
-
 	const cloudflareEnv = getCloudflareEnv()
-	const [imagesUpdated, videosUpdated] = await Promise.all([
+	const [imagesResult, videosResult] = await Promise.all([
 		syncManifestForKind({
 			kind: 'image',
 			candidates: candidateFiles,
@@ -447,8 +518,14 @@ async function main() {
 			cloudflareEnv,
 		}),
 	])
+	const failures = [...imagesResult.failedUploads, ...videosResult.failedUploads]
+	if (failures.length > 0) {
+		throw new Error(
+			`Media sync encountered ${failures.length} upload failures:\n${failures.join('\n')}`,
+		)
+	}
 
-	if (!imagesUpdated && !videosUpdated) {
+	if (!imagesResult.manifestUpdated && !videosResult.manifestUpdated) {
 		console.log('No media uploads required (manifests already up to date).')
 		return
 	}

@@ -186,6 +186,21 @@ CREATE INDEX "Favorite_contentType_contentId_idx" ON "Favorite"("contentType", "
 -- CreateIndex
 CREATE UNIQUE INDEX "Favorite_userId_contentType_contentId_key" ON "Favorite"("userId", "contentType", "contentId");
 
--- Normalize role values for existing databases and enforce initial admin.
-UPDATE "User" SET "role" = 'MEMBER' WHERE "role" NOT IN ('ADMIN', 'MEMBER');
-UPDATE "User" SET "role" = 'ADMIN' WHERE lower("email") = 'me@kentcdodds.com';
+-- Insert initial admin user for migration/runtime testing.
+-- Password plaintext is "9e86f147c660108f4d9bc36aa15dd16d" (will be overridden during manual migration).
+INSERT INTO "User" ("id", "updatedAt", "email", "firstName", "role", "team")
+VALUES (
+    '0f9b8476-2d45-4f23-a4eb-5fbb9c8a6b66',
+    CURRENT_TIMESTAMP,
+    'me@kentcdodds.com',
+    'Kent',
+    'ADMIN',
+    'BLUE'
+);
+
+INSERT INTO "Password" ("hash", "updatedAt", "userId")
+VALUES (
+    'pbkdf2$sha256$310000$XGwwoJOLpF_7hNtyI4eJcg$3mT-V9UlnDSSnyo_COHu_Ql0-GShvtjk-75r-lfE7KM',
+    CURRENT_TIMESTAMP,
+    '0f9b8476-2d45-4f23-a4eb-5fbb9c8a6b66'
+);
