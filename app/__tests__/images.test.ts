@@ -11,12 +11,12 @@ describe('cloudinary image url generation', () => {
 	test('uses default cloudinary host when no override exists', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
-			CLOUDINARY_BASE_URL: 'https://res.cloudinary.com',
+			CLOUDINARY_BASE_URL: 'https://media.kentcdodds.com',
 		}
 
 		const builder = getImageBuilder('kent/profile')
 		const url = builder()
-		expect(url.startsWith('https://res.cloudinary.com/')).toBe(true)
+		expect(url.startsWith('https://media.kentcdodds.com/')).toBe(true)
 	})
 
 	test('rewrites cloudinary host when public env override is set', () => {

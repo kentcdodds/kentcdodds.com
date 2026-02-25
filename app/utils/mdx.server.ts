@@ -1,4 +1,4 @@
-import { buildImageUrl } from 'cloudinary-build-url'
+import { getImageBuilder } from '#app/images.tsx'
 import { type GitHubFile, type MdxPage } from '#app/types.ts'
 import { compileMdx } from '#app/utils/compile-mdx.server.ts'
 import {
@@ -285,15 +285,13 @@ async function compileMdxCached({
 }
 
 async function getBlurDataUrl(imageId: string) {
-	const imageURL = buildImageUrl(imageId, {
-		transformations: {
-			resize: { width: 100 },
-			quality: 'auto',
-			format: 'webp',
-			effect: {
-				name: 'blur',
-				value: '1000',
-			},
+	const imageURL = getImageBuilder(imageId)({
+		resize: { width: 100 },
+		quality: 'auto',
+		format: 'webp',
+		effect: {
+			name: 'blur',
+			value: '1000',
 		},
 	})
 	const dataUrl = await getDataUrlForImage(imageURL)

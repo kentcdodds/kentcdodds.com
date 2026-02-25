@@ -1,15 +1,10 @@
 import { type TransformerOption } from '@cld-apis/types'
-import { buildImageUrl, setConfig } from 'cloudinary-build-url'
 import clsx from 'clsx'
 import emojiRegex from 'emoji-regex'
 import { type CSSProperties } from 'react'
 import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.ts'
 
-setConfig({
-	cloudName: 'kentcdodds-com',
-})
-
-const defaultCloudinaryBaseUrl = 'https://res.cloudinary.com'
+const defaultCloudinaryBaseUrl = 'https://media.kentcdodds.com'
 
 type ImageBuilder = {
 	(transformations?: TransformerOption): string
@@ -39,10 +34,12 @@ function getImageBuilder(
 	{ className, style }: { className?: string; style?: CSSProperties } = {},
 ): ImageBuilder {
 	function imageBuilder(transformations?: TransformerOption) {
-		return rewriteCloudinaryBaseUrl(
-			buildImageUrl(id, { transformations }),
-			getCloudinaryBaseUrl(),
-		)
+		const imageUrl = buildMediaImageUrl({
+			id,
+			transformations,
+			baseUrl: getCloudinaryImageUploadBaseUrl(),
+		})
+		return rewriteCloudinaryBaseUrl(imageUrl, getCloudinaryBaseUrl())
 	}
 	imageBuilder.alt = alt
 	imageBuilder.id = id
@@ -64,6 +61,11 @@ function getCloudinaryBaseUrl() {
 	return defaultCloudinaryBaseUrl
 }
 
+function getCloudinaryImageUploadBaseUrl() {
+	const baseUrl = getCloudinaryBaseUrl().replace(/\/+$/, '')
+	return `${baseUrl}/kentcdodds-com/image/upload`
+}
+
 function rewriteCloudinaryBaseUrl(url: string, baseUrl: string) {
 	if (!baseUrl || baseUrl === defaultCloudinaryBaseUrl) return url
 	try {
@@ -73,6 +75,67 @@ function rewriteCloudinaryBaseUrl(url: string, baseUrl: string) {
 	} catch {
 		return url
 	}
+}
+
+function buildMediaImageUrl({
+	id,
+	transformations,
+	baseUrl,
+}: {
+	id: string
+	transformations?: TransformerOption
+	baseUrl: string
+}) {
+	const transformSection = serializeTransformerOption(transformations)
+	const normalizedId = id.replace(/^\/+/, '')
+	return [baseUrl, transformSection, normalizedId].filter(Boolean).join('/')
+}
+
+function serializeTransformerOption(transformations?: TransformerOption) {
+	if (!transformations) return ''
+	const transform = transformations as Record<string, unknown>
+	const parts: Array<string> = []
+
+	const pushSimple = (prefix: string, value: unknown) => {
+		if (typeof value === 'string' || typeof value === 'number') {
+			parts.push(`${prefix}_${String(value)}`)
+		}
+	}
+
+	pushSimple('f', transform.format)
+	pushSimple('q', transform.quality)
+	pushSimple('dpr', transform.dpr)
+	pushSimple('b', transform.background)
+	pushSimple('c', transform.crop)
+	pushSimple('g', transform.gravity)
+	pushSimple('o', transform.opacity)
+
+	const resize = transform.resize
+	if (resize && typeof resize === 'object') {
+		const resizeConfig = resize as Record<string, unknown>
+		pushSimple('c', resizeConfig.type)
+		pushSimple('w', resizeConfig.width)
+		pushSimple('h', resizeConfig.height)
+		pushSimple('ar', resizeConfig.aspectRatio)
+	}
+
+	const effect = transform.effect
+	if (effect && typeof effect === 'object') {
+		const effectConfig = effect as Record<string, unknown>
+		const name = effectConfig.name
+		const value = effectConfig.value
+		if (typeof name === 'string') {
+			if (typeof value === 'string' || typeof value === 'number') {
+				parts.push(`e_${name}:${String(value)}`)
+			} else {
+				parts.push(`e_${name}`)
+			}
+		}
+	} else if (typeof effect === 'string') {
+		parts.push(`e_${effect}`)
+	}
+
+	return parts.join(',')
 }
 
 const square = { aspectRatio: '1/1' } satisfies CSSProperties
@@ -801,7 +864,7 @@ function getSocialImageWithPreTitle({
 	const featuredImageSection = `c_fill,ar_3:4,r_12,g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
 
 	return [
-		`https://res.cloudinary.com/kentcdodds-com/image/upload`,
+		getCloudinaryImageUploadBaseUrl(),
 		vars,
 		preTitleSection,
 		titleSection,
@@ -843,7 +906,7 @@ function getGenericSocialImage({
 
 	const backgroundSection = `c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
 	return [
-		`https://res.cloudinary.com/kentcdodds-com/image/upload`,
+		getCloudinaryImageUploadBaseUrl(),
 		vars,
 		primaryWordsSection,
 		kentProfileSection,
@@ -891,6 +954,7 @@ export {
 	kodyImages,
 	getImgProps,
 	getImageBuilder,
+	getCloudinaryBaseUrl,
 	getGenericSocialImage,
 	getSocialImageWithPreTitle,
 	illustrationImages,
