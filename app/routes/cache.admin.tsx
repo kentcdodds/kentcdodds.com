@@ -237,6 +237,8 @@ function DeleteAllMatchingCacheValuesButton({
 	instance: string
 	matchingCacheValuesCount: number
 }) {
+	if (matchingCacheValuesCount === 0) return null
+
 	const fetcher = useFetcher()
 	const dc = useDoubleCheck()
 	const isDeleting = fetcher.state !== 'idle'
@@ -248,7 +250,7 @@ function DeleteAllMatchingCacheValuesButton({
 			<Button
 				size="small"
 				variant="danger"
-				disabled={isDeleting || matchingCacheValuesCount === 0}
+				disabled={isDeleting}
 				{...dc.getButtonProps({ type: 'submit' })}
 			>
 				{isDeleting
