@@ -26,6 +26,11 @@ type Env = {
 	MEDIA_R2_ENDPOINT?: string
 }
 
+type ProxyConfig = {
+	baseUrl: string
+	strategy: 'path' | 'object-key'
+}
+
 type RequestLogEntry = {
 	id: number
 	method: string
@@ -171,14 +176,58 @@ async function tryServeRemoteMediaAsset({
 	url: URL
 	env: Env
 }) {
-	const baseUrl =
-		env.MEDIA_PROXY_BASE_URL ??
-		readProcessEnv('MEDIA_PROXY_BASE_URL') ??
-		env.MEDIA_R2_PROXY_BASE_URL ??
-		readProcessEnv('MEDIA_R2_PROXY_BASE_URL') ??
-		buildPathStyleR2BaseUrl(env)
-	if (!baseUrl) return null
+	const proxyConfig = resolveMediaProxyConfig(env)
+	if (!proxyConfig) return null
 	const proxyCacheBaseUrl = buildMediaProxyCacheBaseUrl(env)
+	if (proxyConfig.strategy === 'path') {
+		const cacheObjectKey = buildProxyCacheObjectKey({
+			objectKey: normalizeCachePathKey(url.pathname),
+			query: url.search,
+		})
+		if (proxyCacheBaseUrl) {
+			const cachedResponse = await tryServeProxyCacheAsset({
+				method: request.method,
+				baseUrl: proxyCacheBaseUrl,
+				objectKey: cacheObjectKey,
+			})
+			if (cachedResponse) return cachedResponse
+		}
+
+		const proxyUrl = buildProxyPathUrl({
+			baseUrl: proxyConfig.baseUrl,
+			pathname: url.pathname,
+			query: url.search,
+		})
+		let response: Response
+		try {
+			response = await fetch(new Request(proxyUrl, { method: request.method }))
+		} catch {
+			return null
+		}
+		if (!response.ok) return null
+		const responseBytes =
+			request.method === 'HEAD'
+				? null
+				: new Uint8Array(await response.arrayBuffer())
+		const responseContentType =
+			response.headers.get('content-type')?.trim() ??
+			'application/octet-stream'
+		if (proxyCacheBaseUrl && responseBytes) {
+			void writeProxyCacheAsset({
+				baseUrl: proxyCacheBaseUrl,
+				objectKey: cacheObjectKey,
+				contentType: responseContentType,
+				bytes: responseBytes,
+			})
+		}
+		const headers = new Headers(response.headers)
+		headers.set('cache-control', 'no-store')
+		return new Response(request.method === 'HEAD' ? null : responseBytes, {
+			status: response.status,
+			headers,
+		})
+	}
+
 	const keys = getCandidateAssetProxyKeys(url.pathname)
 	for (const key of keys) {
 		const normalizedKey = key.replace(/^\/+/, '')
@@ -195,7 +244,7 @@ async function tryServeRemoteMediaAsset({
 			if (cachedResponse) return cachedResponse
 		}
 		const proxyUrl = buildProxyObjectUrl({
-			baseUrl,
+			baseUrl: proxyConfig.baseUrl,
 			objectKey: normalizedKey,
 			query: url.search,
 		})
@@ -233,6 +282,36 @@ async function tryServeRemoteMediaAsset({
 			},
 		)
 	}
+	return null
+}
+
+function resolveMediaProxyConfig(env: Env): ProxyConfig | null {
+	const directMediaProxyBaseUrl =
+		env.MEDIA_PROXY_BASE_URL ?? readProcessEnv('MEDIA_PROXY_BASE_URL')
+	if (directMediaProxyBaseUrl?.trim()) {
+		return {
+			baseUrl: directMediaProxyBaseUrl.trim().replace(/\/+$/, ''),
+			strategy: 'path',
+		}
+	}
+
+	const r2ProxyBaseUrl =
+		env.MEDIA_R2_PROXY_BASE_URL ?? readProcessEnv('MEDIA_R2_PROXY_BASE_URL')
+	if (r2ProxyBaseUrl?.trim()) {
+		return {
+			baseUrl: r2ProxyBaseUrl.trim().replace(/\/+$/, ''),
+			strategy: 'object-key',
+		}
+	}
+
+	const derivedR2ProxyBaseUrl = buildPathStyleR2BaseUrl(env)
+	if (derivedR2ProxyBaseUrl) {
+		return {
+			baseUrl: derivedR2ProxyBaseUrl,
+			strategy: 'object-key',
+		}
+	}
+
 	return null
 }
 
@@ -401,6 +480,27 @@ function buildProxyObjectUrl({
 		resolvedUrl.search = query
 	}
 	return resolvedUrl.toString()
+}
+
+function buildProxyPathUrl({
+	baseUrl,
+	pathname,
+	query,
+}: {
+	baseUrl: string
+	pathname: string
+	query: string
+}) {
+	const resolvedUrl = new URL(`${baseUrl.replace(/\/+$/, '')}${pathname}`)
+	if (query) {
+		resolvedUrl.search = query
+	}
+	return resolvedUrl.toString()
+}
+
+function normalizeCachePathKey(pathname: string) {
+	const normalizedPath = pathname.replace(/^\/+/, '')
+	return normalizedPath || 'index'
 }
 
 async function tryServeProxyCacheAsset({

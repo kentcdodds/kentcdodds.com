@@ -115,7 +115,44 @@ describe('media images mock worker', () => {
 				.filter((value): value is Request => value instanceof Request)
 				.map((request) => request.url)
 			expect(requestUrls).toContain(
-				'https://example-media-proxy.test/blog/demo/image.png',
+				'https://example-media-proxy.test/images/blog/demo/image.png',
+			)
+		} finally {
+			fetchSpy.mockRestore()
+		}
+	})
+
+	test('proxies media requests using object-key strategy for r2 proxy urls', async () => {
+		const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
+			async (request: Request | URL | string) => {
+				const normalizedRequest =
+					request instanceof Request ? request : new Request(String(request))
+				const requestUrl = new URL(normalizedRequest.url)
+				if (requestUrl.origin === 'https://cache-miss.test') {
+					return new Response('not found', { status: 404 })
+				}
+				return new Response(new Uint8Array([6, 5, 4]), {
+					status: 200,
+					headers: { 'content-type': 'image/png' },
+				})
+			},
+		)
+		try {
+			const response = await worker.fetch(
+				new Request('http://mock-media-images.local/images/blog/demo/image.png'),
+				{
+					MEDIA_R2_PROXY_BASE_URL: 'https://example-r2-proxy.test',
+					MEDIA_PROXY_CACHE_BASE_URL: 'https://cache-miss.test',
+				},
+			)
+			expect(response.status).toBe(200)
+			expect(response.headers.get('content-type')).toBe('image/png')
+			const requestUrls = fetchSpy.mock.calls
+				.map((call) => call[0])
+				.filter((value): value is Request => value instanceof Request)
+				.map((request) => request.url)
+			expect(requestUrls).toContain(
+				'https://example-r2-proxy.test/blog/demo/image.png',
 			)
 		} finally {
 			fetchSpy.mockRestore()
