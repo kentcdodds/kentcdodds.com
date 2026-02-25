@@ -1,3 +1,10 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
+
+type Env = {
+	R2_MOCK_CACHE_DIRECTORY?: string
+}
+
 type RequestLogEntry = {
 	id: number
 	method: string
@@ -18,14 +25,16 @@ const requestLog: Array<RequestLogEntry> = []
 let nextRequestId = 1
 
 const bucketStores = new Map<string, Map<string, StoredObject>>()
+const hydratedBuckets = new Set<string>()
 
 export default {
 	async fetch(
 		request: Request,
-		_unusedEnv: unknown,
+		env: Env,
 		_unusedCtx: unknown,
 	): Promise<Response> {
 		const url = new URL(request.url)
+		const persistenceDirectory = getPersistenceDirectory(env)
 		recordRequest({
 			method: request.method,
 			path: url.pathname,
@@ -51,6 +60,11 @@ export default {
 			requestLog.length = 0
 			nextRequestId = 1
 			bucketStores.clear()
+			hydratedBuckets.clear()
+			const preserveDisk = url.searchParams.get('preserveDisk') === 'true'
+			if (persistenceDirectory && !preserveDisk) {
+				await clearPersistenceDirectory(persistenceDirectory)
+			}
 			return jsonResponse({ success: true })
 		}
 
@@ -69,6 +83,15 @@ export default {
 			)
 		}
 		const store = getOrCreateBucketStore(bucket)
+		try {
+			await hydrateBucketStoreFromDisk({
+				store,
+				bucket,
+				persistenceDirectory,
+			})
+		} catch (error: unknown) {
+			logPersistenceWarning('hydrate failed', error)
+		}
 
 		if (request.method === 'GET' && url.searchParams.get('list-type') === '2') {
 			const prefix = url.searchParams.get('prefix') ?? ''
@@ -79,7 +102,16 @@ export default {
 		}
 
 		if (request.method === 'DELETE') {
-			if (key) store.delete(key)
+			if (key) {
+				store.delete(key)
+				if (persistenceDirectory) {
+					await deleteStoredObjectFromDisk({
+						bucket,
+						key,
+						persistenceDirectory,
+					})
+				}
+			}
 			return new Response(null, { status: 204 })
 		}
 
@@ -106,6 +138,24 @@ export default {
 				lastModified,
 				size: bytes.byteLength,
 			})
+			if (persistenceDirectory) {
+				try {
+					await writeStoredObjectToDisk({
+						bucket,
+						key,
+						object: {
+							body: bytes,
+							contentType,
+							etag,
+							lastModified,
+							size: bytes.byteLength,
+						},
+						persistenceDirectory,
+					})
+				} catch (error: unknown) {
+					logPersistenceWarning('write failed', error)
+				}
+			}
 			return new Response(null, {
 				status: 200,
 				headers: {
@@ -125,7 +175,18 @@ export default {
 					404,
 				)
 			}
-			const object = store.get(key)
+			let object = store.get(key)
+			if (!object && persistenceDirectory) {
+				const persistedObject = await readStoredObjectFromDisk({
+					bucket,
+					key,
+					persistenceDirectory,
+				})
+				if (persistedObject) {
+					store.set(key, persistedObject)
+					object = persistedObject
+				}
+			}
 			if (!object) {
 				return xmlResponse(
 					errorXml({
@@ -157,7 +218,18 @@ export default {
 					404,
 				)
 			}
-			const object = store.get(key)
+			let object = store.get(key)
+			if (!object && persistenceDirectory) {
+				const persistedObject = await readStoredObjectFromDisk({
+					bucket,
+					key,
+					persistenceDirectory,
+				})
+				if (persistedObject) {
+					store.set(key, persistedObject)
+					object = persistedObject
+				}
+			}
 			if (!object) {
 				return xmlResponse(
 					errorXml({
@@ -225,6 +297,216 @@ function getOrCreateBucketStore(bucket: string) {
 		bucketStores.set(bucket, store)
 	}
 	return store
+}
+
+function getPersistenceDirectory(env: Env) {
+	const configuredDirectory =
+		env.R2_MOCK_CACHE_DIRECTORY?.trim() ||
+		readProcessEnv('R2_MOCK_CACHE_DIRECTORY') ||
+		'/tmp/mock-r2-cache'
+	return resolveAbsolutePath(configuredDirectory)
+}
+
+function resolveAbsolutePath(targetPath: string) {
+	if (!targetPath) return null
+	if (path.isAbsolute(targetPath)) return targetPath
+	return path.join(process.cwd(), targetPath)
+}
+
+function readProcessEnv(key: string) {
+	try {
+		return process.env[key]
+	} catch {
+		return undefined
+	}
+}
+
+function logPersistenceWarning(message: string, error: unknown) {
+	console.warn(`[cloudflare-r2-mock] ${message}`, error)
+}
+
+function getBucketDirectoryPath({
+	persistenceDirectory,
+	bucket,
+}: {
+	persistenceDirectory: string
+	bucket: string
+}) {
+	return path.join(persistenceDirectory, encodePathSegment(bucket))
+}
+
+function getObjectBodyPath({
+	persistenceDirectory,
+	bucket,
+	key,
+}: {
+	persistenceDirectory: string
+	bucket: string
+	key: string
+}) {
+	const keySegments = key
+		.split('/')
+		.filter(Boolean)
+		.map((segment) => encodePathSegment(segment))
+	return path.join(
+		getBucketDirectoryPath({ persistenceDirectory, bucket }),
+		...keySegments,
+	)
+}
+
+function getObjectMetadataPath(paths: { objectBodyPath: string }) {
+	return `${paths.objectBodyPath}.metadata.json`
+}
+
+function encodePathSegment(value: string) {
+	return encodeURIComponent(value)
+}
+
+function decodePathSegment(value: string) {
+	return decodeURIComponent(value)
+}
+
+async function writeStoredObjectToDisk({
+	persistenceDirectory,
+	bucket,
+	key,
+	object,
+}: {
+	persistenceDirectory: string
+	bucket: string
+	key: string
+	object: StoredObject
+}) {
+	const objectBodyPath = getObjectBodyPath({ persistenceDirectory, bucket, key })
+	const objectMetadataPath = getObjectMetadataPath({ objectBodyPath })
+	await fs.mkdir(path.dirname(objectBodyPath), { recursive: true })
+	await fs.writeFile(objectBodyPath, object.body)
+	await fs.writeFile(
+		objectMetadataPath,
+		JSON.stringify(
+			{
+				contentType: object.contentType,
+				lastModified: object.lastModified,
+				etag: object.etag,
+			},
+			null,
+			2,
+		),
+	)
+}
+
+async function readStoredObjectFromDisk({
+	persistenceDirectory,
+	bucket,
+	key,
+}: {
+	persistenceDirectory: string
+	bucket: string
+	key: string
+}) {
+	const objectBodyPath = getObjectBodyPath({ persistenceDirectory, bucket, key })
+	const objectMetadataPath = getObjectMetadataPath({ objectBodyPath })
+	const [bodyBuffer, metadataBuffer] = await Promise.all([
+		fs.readFile(objectBodyPath).catch(() => null),
+		fs.readFile(objectMetadataPath, 'utf8').catch(() => null),
+	])
+	if (!bodyBuffer || !metadataBuffer) return null
+	let metadata: {
+		contentType?: string
+		lastModified?: string
+		etag?: string
+	}
+	try {
+		metadata = JSON.parse(metadataBuffer) as {
+			contentType?: string
+			lastModified?: string
+			etag?: string
+		}
+	} catch {
+		return null
+	}
+	const body = new Uint8Array(bodyBuffer)
+	return {
+		body,
+		contentType: metadata.contentType || 'application/octet-stream',
+		lastModified: metadata.lastModified || new Date().toUTCString(),
+		etag: metadata.etag || md5HexBytes(body),
+		size: body.byteLength,
+	} satisfies StoredObject
+}
+
+async function deleteStoredObjectFromDisk({
+	persistenceDirectory,
+	bucket,
+	key,
+}: {
+	persistenceDirectory: string
+	bucket: string
+	key: string
+}) {
+	const objectBodyPath = getObjectBodyPath({ persistenceDirectory, bucket, key })
+	const objectMetadataPath = getObjectMetadataPath({ objectBodyPath })
+	await Promise.all([
+		fs.unlink(objectBodyPath).catch(() => {}),
+		fs.unlink(objectMetadataPath).catch(() => {}),
+	])
+}
+
+async function clearPersistenceDirectory(persistenceDirectory: string) {
+	await fs.rm(persistenceDirectory, { recursive: true, force: true }).catch(() => {})
+}
+
+async function hydrateBucketStoreFromDisk({
+	store,
+	persistenceDirectory,
+	bucket,
+}: {
+	store: Map<string, StoredObject>
+	persistenceDirectory: string | null
+	bucket: string
+}) {
+	if (!persistenceDirectory) return
+	const hydrationId = `${persistenceDirectory}::${bucket}`
+	if (hydratedBuckets.has(hydrationId)) return
+	hydratedBuckets.add(hydrationId)
+
+	const bucketDirectory = getBucketDirectoryPath({ persistenceDirectory, bucket })
+	const metadataPaths = await collectMetadataPaths(bucketDirectory)
+	for (const metadataPath of metadataPaths) {
+		const objectBodyPath = metadataPath.slice(
+			0,
+			'.metadata.json'.length * -1,
+		)
+		const relativeObjectPath = path.relative(bucketDirectory, objectBodyPath)
+		if (!relativeObjectPath || relativeObjectPath.startsWith('..')) continue
+		const key = relativeObjectPath
+			.split(path.sep)
+			.map((segment) => decodePathSegment(segment))
+			.join('/')
+		const object = await readStoredObjectFromDisk({
+			persistenceDirectory,
+			bucket,
+			key,
+		})
+		if (!object) continue
+		store.set(key, object)
+	}
+}
+
+async function collectMetadataPaths(directoryPath: string): Promise<Array<string>> {
+	const entries = await fs.readdir(directoryPath, { withFileTypes: true }).catch(() => [])
+	const metadataPaths: Array<string> = []
+	for (const entry of entries) {
+		const entryPath = path.join(directoryPath, entry.name)
+		if (entry.isDirectory()) {
+			metadataPaths.push(...(await collectMetadataPaths(entryPath)))
+			continue
+		}
+		if (entry.isFile() && entry.name.endsWith('.metadata.json')) {
+			metadataPaths.push(entryPath)
+		}
+	}
+	return metadataPaths
 }
 
 function parseRange(value: string | null, size: number) {

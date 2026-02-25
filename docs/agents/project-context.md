@@ -58,8 +58,10 @@ reference:
   (`mock-servers/mermaid-to-svg/worker.ts`, local port `8800`).
 - Cloudflare API + Workers AI Gateway calls are served by a Worker mock server
   in dev (`mock-servers/cloudflare/worker.ts`, local port `8801`).
-- Cloudflare R2 S3-compatible calls are served by a Worker mock server in dev
-  (`mock-servers/cloudflare-r2/worker.ts`, local port `8802`).
+- Cloudflare R2 S3-compatible calls are served by a Bun mock server in dev
+  (`mock-servers/cloudflare-r2/local-server.ts`, local port `8802`).
+  - mock uploads persist to disk at `/tmp/mock-r2-cache` by default so local
+    media stays available across restarts/offline sessions.
 - Media image calls are served by a Worker mock server in dev
   (`mock-servers/media-images/worker.ts`, local port `8803`).
   - The media mock attempts to proxy `/images/*` and `/stream/*` requests to R2
@@ -84,6 +86,10 @@ reference:
 - Media workflow:
   - canonical manifests live in `content/data/media-manifests/{images,videos}.json`
   - one-time upload + local prune script: `bun run media:upload-r2 -- --delete-local`
+  - day-to-day local authoring flow:
+    1. place media under the intended `content/**` path
+    2. run `bun run media:add-local`
+    3. script uploads to R2, updates manifests, and deletes local media bytes
   - normalize legacy content URLs: `bun run media:normalize-legacy-paths`
   - Cloudflare Images/Stream sync helper (legacy path): `bun run media:sync-cloudflare`
   - strict legacy scan gate: `bun run media:scan-legacy-references:strict`

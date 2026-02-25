@@ -32,6 +32,8 @@ the current R2-backed media workflow.
 - Upload manifest-backed local media payloads to R2 and prune local binaries:
   - `bun run media:upload-r2 -- --dry-run`
   - `bun run media:upload-r2 -- --delete-local`
+- Fast local authoring helper (upload + prune in one command):
+  - `bun run media:add-local`
 
 ## One-time cutover
 
@@ -52,6 +54,8 @@ the current R2-backed media workflow.
   infrastructure.
 - Local media mock can proxy to R2 when online; otherwise it returns a
   wireframe placeholder image.
+- Local R2 mock persists uploaded objects to `/tmp/mock-r2-cache` (outside git)
+  so content continues to resolve while offline.
 
 ## Verification checklist
 

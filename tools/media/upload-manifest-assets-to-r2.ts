@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
@@ -28,6 +29,19 @@ const manifestPaths = [
 	path.join(process.cwd(), 'content/data/media-manifests/images.json'),
 	path.join(process.cwd(), 'content/data/media-manifests/videos.json'),
 ]
+
+const imageExtensions = new Set([
+	'.jpg',
+	'.jpeg',
+	'.png',
+	'.gif',
+	'.webp',
+	'.avif',
+	'.svg',
+	'.ico',
+])
+
+const videoExtensions = new Set(['.mp4', '.mov', '.m4v', '.webm'])
 
 function parseArgs(argv: Array<string>): CliOptions {
 	const envBucket = process.env.MEDIA_R2_BUCKET ?? process.env.R2_BUCKET ?? ''
@@ -100,6 +114,47 @@ async function writeManifest(filePath: string, manifest: MediaManifest) {
 	await fs.writeFile(filePath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
 }
 
+async function discoverLocalContentMediaAssets() {
+	const contentRoot = path.resolve(process.cwd(), 'content')
+	const discovered: Array<{
+		mediaKey: string
+		sourcePath: string
+		checksum: string
+		kind: 'image' | 'video'
+	}> = []
+
+	async function walk(directory: string) {
+		const entries = await fs.readdir(directory, { withFileTypes: true })
+		for (const entry of entries) {
+			const absolutePath = path.join(directory, entry.name)
+			if (entry.isDirectory()) {
+				const normalized = absolutePath.split(path.sep).join('/')
+				if (normalized.includes('/content/data/')) continue
+				await walk(absolutePath)
+				continue
+			}
+			if (!entry.isFile()) continue
+			const extension = path.extname(entry.name).toLowerCase()
+			const kind = imageExtensions.has(extension)
+				? 'image'
+				: videoExtensions.has(extension)
+					? 'video'
+					: null
+			if (!kind) continue
+			const relativePath = path.relative(contentRoot, absolutePath)
+			if (!relativePath || relativePath.startsWith('..')) continue
+			const mediaKey = relativePath.split(path.sep).join('/')
+			const sourcePath = `content/${mediaKey}`
+			const fileBuffer = await fs.readFile(absolutePath)
+			const checksum = createHash('sha256').update(fileBuffer).digest('hex')
+			discovered.push({ mediaKey, sourcePath, checksum, kind })
+		}
+	}
+
+	await walk(contentRoot)
+	return discovered
+}
+
 function inferMimeType(filePath: string) {
 	const extension = path.extname(filePath).toLowerCase()
 	switch (extension) {
@@ -140,18 +195,53 @@ function toManifestR2Path(manifestBucket: string, mediaKey: string) {
 	return `r2://${manifestBucket}/${mediaKey}`
 }
 
+function upsertDiscoveredAssetsIntoManifests({
+	discoveredAssets,
+	imagesManifest,
+	videosManifest,
+}: {
+	discoveredAssets: Array<{
+		mediaKey: string
+		sourcePath: string
+		checksum: string
+		kind: 'image' | 'video'
+	}>
+	imagesManifest: MediaManifest
+	videosManifest: MediaManifest
+}) {
+	const nowIsoString = new Date().toISOString()
+	let upserted = 0
+	for (const asset of discoveredAssets) {
+		const targetManifest =
+			asset.kind === 'image' ? imagesManifest : videosManifest
+		const otherManifest =
+			asset.kind === 'image' ? videosManifest : imagesManifest
+		delete otherManifest.assets[asset.mediaKey]
+		const existingAsset = targetManifest.assets[asset.mediaKey]
+		targetManifest.assets[asset.mediaKey] = {
+			id: asset.mediaKey,
+			checksum: asset.checksum,
+			sourcePath: asset.sourcePath,
+			uploadedAt: existingAsset?.uploadedAt ?? nowIsoString,
+		}
+		upserted += 1
+	}
+	return upserted
+}
+
 async function uploadManifestAssets({
 	options,
 	manifestPath,
+	manifest,
 	client,
 	uploadedKeys,
 }: {
 	options: CliOptions
 	manifestPath: string
+	manifest: MediaManifest
 	client: S3Client
 	uploadedKeys: Set<string>
 }) {
-	const manifest = await readManifest(manifestPath)
 	let uploaded = 0
 	let skipped = 0
 	let missing = 0
@@ -208,20 +298,26 @@ async function uploadManifestAssets({
 		}
 	}
 
-	if (!options.dryRun) {
-		await writeManifest(manifestPath, manifest)
-	}
-
 	console.log(
 		`${path.basename(manifestPath)} uploaded=${uploaded} skipped=${skipped} missing=${missing} deletedLocal=${deleted}`,
 	)
 }
 
-async function removeEmptyContentDirectories(directory: string) {
+async function removeEmptyContentDirectories({
+	directory,
+	skipDirectories,
+}: {
+	directory: string
+	skipDirectories: Set<string>
+}) {
+	if (skipDirectories.has(directory)) return
 	const entries = await fs.readdir(directory, { withFileTypes: true })
 	for (const entry of entries) {
 		if (!entry.isDirectory()) continue
-		await removeEmptyContentDirectories(path.join(directory, entry.name))
+		await removeEmptyContentDirectories({
+			directory: path.join(directory, entry.name),
+			skipDirectories,
+		})
 	}
 	const remaining = await fs.readdir(directory)
 	if (remaining.length === 0) {
@@ -232,6 +328,28 @@ async function removeEmptyContentDirectories(directory: string) {
 async function main() {
 	const options = parseArgs(process.argv.slice(2))
 	const uploadedKeys = new Set<string>()
+	const [imagesManifestPath, videosManifestPath] = manifestPaths
+	if (!imagesManifestPath || !videosManifestPath) {
+		throw new Error('Missing required media manifest paths')
+	}
+	const manifestsByPath = new Map<string, MediaManifest>()
+	for (const manifestPath of manifestPaths) {
+		manifestsByPath.set(manifestPath, await readManifest(manifestPath))
+	}
+	const imagesManifest = manifestsByPath.get(imagesManifestPath)
+	const videosManifest = manifestsByPath.get(videosManifestPath)
+	if (!imagesManifest || !videosManifest) {
+		throw new Error('Unable to load media manifests')
+	}
+	const discoveredAssets = await discoverLocalContentMediaAssets()
+	const discoveredUpserts = upsertDiscoveredAssetsIntoManifests({
+		discoveredAssets,
+		imagesManifest,
+		videosManifest,
+	})
+	if (discoveredUpserts > 0) {
+		console.log(`discovered_local_media_assets=${discoveredUpserts}`)
+	}
 	const client = new S3Client({
 		region: 'auto',
 		endpoint: options.endpoint,
@@ -243,14 +361,26 @@ async function main() {
 	})
 
 	for (const manifestPath of manifestPaths) {
-		await uploadManifestAssets({ options, manifestPath, client, uploadedKeys })
+		const manifest = manifestsByPath.get(manifestPath)
+		if (!manifest) continue
+		await uploadManifestAssets({
+			options,
+			manifestPath,
+			manifest,
+			client,
+			uploadedKeys,
+		})
+		if (!options.dryRun) {
+			await writeManifest(manifestPath, manifest)
+		}
 	}
 
 	if (!options.dryRun && options.deleteLocal) {
-		for (const directory of ['content/blog', 'content/pages', 'content/writing-blog']) {
-			const absolutePath = path.resolve(process.cwd(), directory)
-			await removeEmptyContentDirectories(absolutePath).catch(() => {})
-		}
+		const contentRoot = path.resolve(process.cwd(), 'content')
+		await removeEmptyContentDirectories({
+			directory: contentRoot,
+			skipDirectories: new Set([path.join(contentRoot, 'data')]),
+		}).catch(() => {})
 	}
 }
 

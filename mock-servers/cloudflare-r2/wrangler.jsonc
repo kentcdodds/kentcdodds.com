@@ -4,6 +4,9 @@
 	"main": "worker.ts",
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+	},
 	"env": {
 		"development": {
 			"name": "kentcdodds-mock-cloudflare-r2-dev"

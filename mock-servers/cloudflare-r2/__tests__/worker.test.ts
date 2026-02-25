@@ -1,3 +1,6 @@
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import { describe, expect, test } from 'vitest'
 import worker from '../worker.ts'
 
@@ -72,5 +75,56 @@ describe('cloudflare-r2 mock worker', () => {
 			{},
 		)
 		expect(missingHeadResponse.status).toBe(404)
+	})
+
+	test('persists objects to disk-backed cache across memory resets', async () => {
+		const tempDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'r2-mock-cache-'))
+		try {
+			const env = { R2_MOCK_CACHE_DIRECTORY: tempDirectory }
+			const putResponse = await worker.fetch(
+				new Request('http://mock-r2.local/my-bucket/path/to/offline.png', {
+					method: 'PUT',
+					headers: { 'content-type': 'image/png' },
+					body: new Uint8Array([7, 8, 9]),
+				}),
+				env,
+				{},
+			)
+			expect(putResponse.status).toBe(200)
+
+			const memoryResetResponse = await worker.fetch(
+				new Request('http://mock-r2.local/__mocks/reset?preserveDisk=true', {
+					method: 'POST',
+				}),
+				env,
+				{},
+			)
+			expect(memoryResetResponse.status).toBe(200)
+
+			const restoredResponse = await worker.fetch(
+				new Request('http://mock-r2.local/my-bucket/path/to/offline.png'),
+				env,
+				{},
+			)
+			expect(restoredResponse.status).toBe(200)
+			const restoredBytes = new Uint8Array(await restoredResponse.arrayBuffer())
+			expect(Array.from(restoredBytes)).toEqual([7, 8, 9])
+
+			const fullResetResponse = await worker.fetch(
+				new Request('http://mock-r2.local/__mocks/reset', { method: 'POST' }),
+				env,
+				{},
+			)
+			expect(fullResetResponse.status).toBe(200)
+
+			const missingResponse = await worker.fetch(
+				new Request('http://mock-r2.local/my-bucket/path/to/offline.png'),
+				env,
+				{},
+			)
+			expect(missingResponse.status).toBe(404)
+		} finally {
+			await fs.rm(tempDirectory, { recursive: true, force: true })
+		}
 	})
 })
