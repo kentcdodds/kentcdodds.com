@@ -65,8 +65,8 @@ async function main() {
 	const port = await getPort()
 	const url = `http://127.0.0.1:${port}/healthcheck`
 
-	// LiteFS is Fly-specific (FUSE + consul lease). For CI we smoke-test the
-	// production build directly with a local SQLite DB + migrations applied.
+	// For CI we smoke-test the production build directly with a local SQLite DB
+	// and migrations applied.
 	const env = {
 		...process.env,
 		NODE_ENV: 'production',
