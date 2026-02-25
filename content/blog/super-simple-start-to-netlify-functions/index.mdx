@@ -110,12 +110,12 @@ form).
 
 ### Step 3: Commit and push
 
-![The above code in an editor](/media/kentcdodds.com/content/blog/super-simple-start-to-netlify-functions/code.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![The above code in an editor](/media/blog/super-simple-start-to-netlify-functions/code.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Now you can just do: `git add -A`, then `git commit -m 'init'`, and
 `git push -u origin master` and you're set! Now let's go over to Netlify.
 
-![The github repository](/media/kentcdodds.com/content/blog/super-simple-start-to-netlify-functions/repo.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![The github repository](/media/blog/super-simple-start-to-netlify-functions/repo.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 ### Step 4: Setup Netlify
 
@@ -124,12 +124,12 @@ Git." From there you'll connect your Netlify account to your GitHub account and
 it'll show you a list of repositories. Search for the one you want and click on
 it.
 
-![Create New Site page](/media/kentcdodds.com/content/blog/super-simple-start-to-netlify-functions/create-new-site.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![Create New Site page](/media/blog/super-simple-start-to-netlify-functions/create-new-site.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Go ahead and leave the "Build command" and "Publish directory" fields empty and
 ignore the advanced options. Just click "Deploy site."
 
-![Overview page](/media/kentcdodds.com/content/blog/super-simple-start-to-netlify-functions/overview.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![Overview page](/media/blog/super-simple-start-to-netlify-functions/overview.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Now you're on the Overview page of your site. It should only take a few seconds
 to deploy your site. You can see info about that on the "Deploys" page. While
@@ -138,13 +138,13 @@ you wait, you can edit the Site name to be something more memorable by clicking
 
 Once the deploy is finished, you can go to the "Functions" page:
 
-![Functions page showing hello.js](/media/kentcdodds.com/content/blog/super-simple-start-to-netlify-functions/functions.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![Functions page showing hello.js](/media/blog/super-simple-start-to-netlify-functions/functions.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 There you should see `hello.js`! If you click that it'll show you the function
 log. Calls from your function to `console.log` should appear here with a
 timestamp as well as a note for whenever your function is invoked:
 
-![Function log page](/media/kentcdodds.com/content/blog/super-simple-start-to-netlify-functions/function-log.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![Function log page](/media/blog/super-simple-start-to-netlify-functions/function-log.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Checkout the "Endpoint" and it shows your function is available on the World
 Wide Web at `https://<your-site-name>.netlify.com/.netlify/functions/hello`.
@@ -158,7 +158,7 @@ configurable AFAIK).
 
 Cool, so now we can hit that URL and boom, Hello Bob Ross!
 
-![Function output saying Hello Bob Ross](/media/kentcdodds.com/content/blog/super-simple-start-to-netlify-functions/function-output.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![Function output saying Hello Bob Ross](/media/blog/super-simple-start-to-netlify-functions/function-output.png?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Wahoo!
 

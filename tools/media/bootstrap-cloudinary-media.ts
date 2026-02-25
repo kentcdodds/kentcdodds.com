@@ -101,6 +101,19 @@ function isVideoKey(key: string) {
 	return videoExtensionRegex.test(key)
 }
 
+const repoManagedPrefixes = [
+	'blog/',
+	'pages/',
+	'writing-blog/',
+	'kent/',
+	'kentcdodds.com/',
+	'v174',
+]
+
+function isRepoManagedMediaKey(key: string) {
+	return repoManagedPrefixes.some((prefix) => key.startsWith(prefix))
+}
+
 async function walkFiles(directory: string): Promise<Array<string>> {
 	const entries = await fs.readdir(directory, { withFileTypes: true })
 	const files: Array<string> = []
@@ -134,7 +147,7 @@ async function collectContentMediaKeys() {
 			while ((match = regex.exec(source))) {
 				const key = normalizeKey(decodeURIComponent(match[1]?.split('?')[0] ?? ''))
 				if (!key || !isSafeKey(key)) continue
-				if (!key.startsWith('kentcdodds.com/')) continue
+				if (!isRepoManagedMediaKey(key)) continue
 				if (regex === streamRegex || isVideoKey(key)) {
 					videoKeys.add(key)
 				} else {
@@ -189,6 +202,25 @@ function getCloudinaryUrl({
 	return `https://res.cloudinary.com/${cloudName}/${kind}/upload/${encodedPath}`
 }
 
+function toCloudinaryLookupKeys(key: string) {
+	if (key.startsWith('blog/')) {
+		const suffix = key.slice('blog/'.length)
+		return [
+			`kentcdodds.com/content/blog/${suffix}`,
+			`kentcdodds.com/blog/${suffix}`,
+		]
+	}
+	if (key.startsWith('writing-blog/')) {
+		const suffix = key.slice('writing-blog/'.length)
+		return [`kentcdodds.com/content/writing-blog/${suffix}`]
+	}
+	if (key.startsWith('pages/')) {
+		const suffix = key.slice('pages/'.length)
+		return [`kentcdodds.com/content/pages/${suffix}`]
+	}
+	return [key]
+}
+
 async function downloadCloudinaryAsset({
 	cloudName,
 	kind,
@@ -198,11 +230,14 @@ async function downloadCloudinaryAsset({
 	kind: MediaKind
 	key: string
 }) {
-	const primaryUrl = getCloudinaryUrl({ cloudName, kind, key })
-	const tryUrls =
-		kind === 'video' && !/\.[a-z0-9]+$/i.test(key)
-			? [primaryUrl, `${primaryUrl}.mp4`]
-			: [primaryUrl]
+	const lookupKeys = toCloudinaryLookupKeys(key)
+	const tryUrls = lookupKeys.flatMap((lookupKey) => {
+		const primaryUrl = getCloudinaryUrl({ cloudName, kind, key: lookupKey })
+		if (kind === 'video' && !/\.[a-z0-9]+$/i.test(lookupKey)) {
+			return [primaryUrl, `${primaryUrl}.mp4`]
+		}
+		return [primaryUrl]
+	})
 
 	let lastError: Error | null = null
 	for (const url of tryUrls) {
@@ -263,7 +298,7 @@ async function syncKind({
 	for (const key of toProcess) {
 		if (!isSafeKey(key)) continue
 		const sourcePath = `content/${key}`
-		if (!options.dryRun && manifest.assets[key]) {
+		if (manifest.assets[key]) {
 			const exists = await fs
 				.stat(path.join(process.cwd(), sourcePath))
 				.then(() => true)

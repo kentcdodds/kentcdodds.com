@@ -61,7 +61,7 @@ https://codesandbox.io/s/ynn88nx9x?view=editor
 Not only do you not need to `useMemo` in this case, but you actually can avoid
 re-rendering the components that just use the updater context:
 
-![clicking "force render" three times and "Increment count" twice](/media/kentcdodds.com/content/blog/how-to-optimize-your-context-value/split-contexts.gif?tr=f_auto,q_auto,w_1600)
+![clicking "force render" three times and "Increment count" twice](/media/blog/how-to-optimize-your-context-value/split-contexts.gif?tr=f_auto,q_auto,w_1600)
 
 This is the same as with my original `useMemo` solution, except because the
 `<Counter />` component's context isn't getting updated, we avoid the re-render

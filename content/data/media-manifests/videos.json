@@ -1,22 +1,22 @@
 {
   "version": 1,
   "assets": {
-    "kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4": {
-      "id": "kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4",
+    "blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4": {
+      "id": "blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4",
       "checksum": "cc23a47750b304d1fa5dd657fb3e4ee03ceb575c8d365ad5dadbee3dedf21e7f",
-      "sourcePath": "content/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4",
+      "sourcePath": "content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4",
       "uploadedAt": "2026-02-25T15:49:47.934Z"
     },
-    "kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4": {
-      "id": "kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4",
+    "blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4": {
+      "id": "blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4",
       "checksum": "58f1f14f2f74c6baa23d499eef16a1f7b1b80305bc3aa4af11b3297717a9bf15",
-      "sourcePath": "content/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4",
+      "sourcePath": "content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4",
       "uploadedAt": "2026-02-25T15:49:48.266Z"
     },
-    "kentcdodds.com/content/blog/my-car-accident/all-good-here.mp4": {
-      "id": "kentcdodds.com/content/blog/my-car-accident/all-good-here.mp4",
+    "blog/my-car-accident/all-good-here.mp4": {
+      "id": "blog/my-car-accident/all-good-here.mp4",
       "checksum": "d41a60a714c9774ded00c706de7a395f980d9c8e05248386baf318f5e1771d8a",
-      "sourcePath": "content/kentcdodds.com/content/blog/my-car-accident/all-good-here.mp4",
+      "sourcePath": "content/blog/my-car-accident/all-good-here.mp4",
       "uploadedAt": "2026-02-25T15:48:05.559Z"
     },
     "kentcdodds.com/misc/facepalm": {

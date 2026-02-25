@@ -67,7 +67,7 @@ other content pages that are written in markdown as well.
 So now that you understand the scope of what we're dealing with (not your
 typical blog-pholio project), here's what we're dealing with:
 
-![Screenshot of the Fly metrics UI on a mobile device showing two firecracker graphs, one for load average and one for memory usage. There are two clear spikes of each and it looks not so good.](/media/kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/two-spikes?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![Screenshot of the Fly metrics UI on a mobile device showing two firecracker graphs, one for load average and one for memory usage. There are two clear spikes of each and it looks not so good.](/media/blog/fixing-a-memory-leak-in-a-production-node-js-app/two-spikes?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 Those giant spikes of memory are actually when I tried to do something about the
 problem, but I'll get to that in a minute. The main issue is once that CPU usage
@@ -528,7 +528,7 @@ and not experience any issues because V8 pretty much takes all the memory you
 give it even if it doesn't really need it (like I said... 🐷). So I've scaled it
 down from 2GB of memory to 512MB and check this out:
 
-![A screenshot of fly's metrics dashboard showing two firecracker charts over two days. On the left there is a memory and CPU spike, in the middle things have stabilized to ~500MB of memory and stable CPU usage, and on the right there is a sudden drop of memory allocation to 512MB and the usage is around 250MB.](/media/kentcdodds.com/content/blog/fixing-a-memory-leak-in-a-production-node-js-app/post-memory-leak?tr=f_auto,q_auto,dpr_2.0,w_1600)
+![A screenshot of fly's metrics dashboard showing two firecracker charts over two days. On the left there is a memory and CPU spike, in the middle things have stabilized to ~500MB of memory and stable CPU usage, and on the right there is a sudden drop of memory allocation to 512MB and the usage is around 250MB.](/media/blog/fixing-a-memory-leak-in-a-production-node-js-app/post-memory-leak?tr=f_auto,q_auto,dpr_2.0,w_1600)
 
 I'm looking forward to this two day view to no longer have those CPU and memory
 spikes. That sudden drop in memory is when I scaled down to 512MB and now my app
