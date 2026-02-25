@@ -1,0 +1,295 @@
+name: 🔎 Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+      - closed
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Deploy or cleanup preview resources
+        required: true
+        type: choice
+        default: deploy
+        options:
+          - deploy
+          - cleanup
+      preview_name:
+        description: Optional preview name override
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: >-
+    preview-${{ github.event.pull_request.number || inputs.preview_name ||
+    github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+  BUN_VERSION: 1.3.9
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: 🔎 Deploy preview resources
+    if: >-
+      (github.event_name == 'pull_request' &&
+        github.event.action != 'closed' &&
+        github.event.pull_request.head.repo.fork == false &&
+        github.event.pull_request.draft == false) ||
+      (github.event_name == 'workflow_dispatch' &&
+        inputs.action == 'deploy')
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🧾 Resolve preview worker name
+        id: names
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          INPUT_PREVIEW_NAME: ${{ inputs.preview_name }}
+        run: |
+          set -euo pipefail
+          APP_NAME="kentcdodds-com"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_NAME="pr-${PR_NUMBER}"
+          else
+            BASE_NAME="${INPUT_PREVIEW_NAME:-$REF_NAME}"
+          fi
+          slug="$(echo "$BASE_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g' | cut -c1-32)"
+          if [ -z "$slug" ]; then
+            slug="preview"
+          fi
+          WORKER_NAME="${APP_NAME}-${slug}"
+          echo "worker_name=$WORKER_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: 🧱 Ensure preview resources
+        id: resources
+        env:
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+        run: |
+          set -euo pipefail
+          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --out-config wrangler-preview.generated.jsonc | tee -a "$GITHUB_OUTPUT"
+
+      - name: 🧪 Deploy preview mock workers
+        id: deploy-mocks
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+        run: |
+          set -euo pipefail
+          summary=""
+          for dir in mock-servers/*; do
+            if [ ! -d "$dir" ] || [ ! -f "$dir/wrangler.jsonc" ]; then
+              continue
+            fi
+            service="$(basename "$dir")"
+            mock_worker_name="${WORKER_NAME}-mock-${service}"
+            log_file="deploy-mock-${service}.log"
+            bun run wrangler -- deploy --config "$dir/wrangler.jsonc" --env preview --name "$mock_worker_name" 2>&1 | tee "$log_file"
+            mock_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync(process.argv[1], 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')" "$log_file")"
+            if [ -n "$mock_url" ]; then
+              summary="${summary}\n- ${service}: ${mock_url}"
+            fi
+          done
+
+          if [ -n "$summary" ]; then
+            summary="$(printf "%b" "$summary" | sed '1{/^$/d;}')"
+          fi
+          {
+            echo "mock_summary<<EOF"
+            printf "%b\n" "$summary"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 🔐 Sync preview app secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+        run: >
+          bun tools/ci/sync-worker-secrets.ts --name "$WORKER_NAME" --env
+          preview --from-dotenv .env.example --generate-cookie-secret
+          --include-empty
+
+      - name: ☁️ Deploy preview app worker
+        id: deploy-preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+        run: |
+          set -euo pipefail
+          bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env preview --name "$WORKER_NAME" 2>&1 | tee deploy-preview.log
+          preview_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy-preview.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
+          if [ -n "$preview_url" ]; then
+            echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 💬 Comment preview URL on PR
+        if: >-
+          github.event_name == 'pull_request' &&
+          steps.deploy-preview.outputs.url != ''
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy-preview.outputs.url }}
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+          MOCK_SUMMARY: ${{ steps.deploy-mocks.outputs.mock_summary }}
+        with:
+          script: |
+            const marker = '<!-- kentcdodds-preview-url -->'
+            const bodyLines = [
+              marker,
+              `🔎 Preview deployed: ${process.env.PREVIEW_URL}`,
+              '',
+              `Worker: \`${process.env.WORKER_NAME}\``,
+            ]
+            if (process.env.MOCK_SUMMARY?.trim()) {
+              bodyLines.push('')
+              bodyLines.push('Mock workers:')
+              bodyLines.push(process.env.MOCK_SUMMARY.trim())
+            }
+            const body = bodyLines.join('\n')
+
+            const { owner, repo } = context.repo
+            const issue_number = context.payload.pull_request.number
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            })
+            const existing = comments.find((comment) => comment.body?.includes(marker))
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              })
+            }
+
+  cleanup:
+    runs-on: ubuntu-latest
+    name: 🧹 Cleanup preview resources
+    if: >-
+      (github.event_name == 'pull_request' &&
+        github.event.action == 'closed' &&
+        github.event.pull_request.head.repo.fork == false) ||
+      (github.event_name == 'workflow_dispatch' &&
+        inputs.action == 'cleanup')
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🧾 Resolve preview worker name
+        id: names
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          INPUT_PREVIEW_NAME: ${{ inputs.preview_name }}
+        run: |
+          set -euo pipefail
+          APP_NAME="kentcdodds-com"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_NAME="pr-${PR_NUMBER}"
+          else
+            BASE_NAME="${INPUT_PREVIEW_NAME:-$REF_NAME}"
+          fi
+          slug="$(echo "$BASE_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g' | cut -c1-32)"
+          if [ -z "$slug" ]; then
+            slug="preview"
+          fi
+          WORKER_NAME="${APP_NAME}-${slug}"
+          echo "worker_name=$WORKER_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: 🗑️ Delete preview workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+        run: |
+          set -euo pipefail
+          delete_worker() {
+            local name="$1"
+            set +e
+            output="$(bun run wrangler -- delete "$name" --env preview --force 2>&1)"
+            status="$?"
+            set -e
+            if [ "$status" -eq 0 ]; then
+              echo "$output"
+              return 0
+            fi
+            lower="$(echo "$output" | tr '[:upper:]' '[:lower:]')"
+            if [[ "$lower" == *"not found"* ]] || [[ "$lower" == *"does not exist"* ]]; then
+              echo "Worker $name already deleted."
+              return 0
+            fi
+            echo "$output" >&2
+            return "$status"
+          }
+
+          delete_worker "$WORKER_NAME"
+          for dir in mock-servers/*; do
+            if [ ! -d "$dir" ] || [ ! -f "$dir/wrangler.jsonc" ]; then
+              continue
+            fi
+            service="$(basename "$dir")"
+            delete_worker "${WORKER_NAME}-mock-${service}"
+          done
+
+      - name: 🧹 Cleanup generated preview config
+        env:
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
+        run: >
+          bun tools/ci/preview-resources.ts cleanup --worker-name "$WORKER_NAME"
+          --out-config wrangler-preview.generated.jsonc

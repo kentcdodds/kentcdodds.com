@@ -68,6 +68,7 @@
     "typecheck": "react-router typegen && tsc -b .",
     "validate": "./other/validate",
     "wrangler": "bun ./wrangler-env.ts",
+    "deploy": "bun run wrangler -- deploy",
     "setup": "bun install && bunx prisma@7 migrate reset --force && bun run validate && bun run prime-cache:mocks && bun run test:e2e:install && bun run test:e2e:run"
   },
   "dependencies": {

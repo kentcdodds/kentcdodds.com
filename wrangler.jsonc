@@ -25,6 +25,20 @@
 		"APP_ENV": "production"
 	},
 	"env": {
+		"production": {
+			"name": "kentcdodds-com",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
+			"vars": {
+				"APP_ENV": "production"
+			}
+		},
 		"development": {
 			"name": "kentcdodds-com-development",
 			"durable_objects": {
