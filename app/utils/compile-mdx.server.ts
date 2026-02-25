@@ -90,10 +90,8 @@ function trimCodeBlocks() {
 }
 
 // yes, I did write this myself 😬
-const mediaPathRegex =
-	/^\/media\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
-
-const mediaCloudName = 'kentcdodds-com'
+const legacyMediaUploadPathRegex =
+	/^\/media\/(?:(?<cloudName>[^/]+)\/)?image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
 
 function optimizeMediaImages() {
 	const baseUrl = getEnv().MEDIA_BASE_URL.replace(/\/+$/, '')
@@ -145,24 +143,32 @@ function optimizeMediaImages() {
 
 	function rewriteMediaHref(href: string, base: string): string | null {
 		if (!href.startsWith('/media/')) return null
-		const pathAfterMedia = href.slice('/media'.length)
-		return `${base}/${mediaCloudName}${pathAfterMedia}`
+		const mediaMatch = href.match(legacyMediaUploadPathRegex)
+		if (mediaMatch?.groups) {
+			const { publicId, transforms } = mediaMatch.groups as {
+				publicId: string
+				transforms?: string
+			}
+			return buildMediaImageDeliveryUrl({ base, publicId, transforms })
+		}
+		const publicId = href.slice('/media/'.length).replace(/^\/+/, '')
+		return buildMediaImageDeliveryUrl({ base, publicId })
 	}
 
 	function handleImageUrl(urlString: string, baseUrl: string): string | undefined {
 		// Canonical form: /media/image/upload/...
-		const mediaMatch = urlString.match(mediaPathRegex)
+		const mediaMatch = urlString.match(legacyMediaUploadPathRegex)
 		if (mediaMatch?.groups) {
-			const { transforms, version, publicId } = mediaMatch.groups as {
+			const { transforms, publicId } = mediaMatch.groups as {
 				transforms?: string
-				version?: string
 				publicId: string
 			}
 			if (transforms) {
-				return `${baseUrl}/${mediaCloudName}/image/upload/${transforms}/${version ?? ''}${publicId}`.replace(
-					/\/+/g,
-					'/',
-				)
+				return buildMediaImageDeliveryUrl({
+					base: baseUrl,
+					publicId,
+					transforms,
+				})
 			}
 			const defaultTransforms = [
 				'f_auto',
@@ -172,16 +178,37 @@ function optimizeMediaImages() {
 			]
 				.filter(Boolean)
 				.join(',')
-			return [
-				`${baseUrl}/${mediaCloudName}/image/upload`,
-				defaultTransforms,
-				version,
+			return buildMediaImageDeliveryUrl({
+				base: baseUrl,
 				publicId,
-			]
-				.filter(Boolean)
-				.join('/')
+				transforms: defaultTransforms,
+			})
+		}
+		if (urlString.startsWith('/media/')) {
+			return buildMediaImageDeliveryUrl({
+				base: baseUrl,
+				publicId: urlString.slice('/media/'.length),
+			})
 		}
 	}
+}
+
+function buildMediaImageDeliveryUrl({
+	base,
+	publicId,
+	transforms,
+}: {
+	base: string
+	publicId: string
+	transforms?: string
+}) {
+	const normalizedBase = base.replace(/\/+$/, '')
+	const normalizedPublicId = publicId.replace(/^\/+/, '')
+	const mediaUrl = new URL(`${normalizedBase}/images/${normalizedPublicId}`)
+	if (transforms) {
+		mediaUrl.searchParams.set('tr', transforms)
+	}
+	return mediaUrl.toString()
 }
 
 const twitterTransformer = {
