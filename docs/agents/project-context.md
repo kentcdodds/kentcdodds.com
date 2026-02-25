@@ -100,6 +100,12 @@ reference:
     branch/preview-specific queue names.
   - `bun run dev:calls-e2e` runs the app on Wrangler local runtime so queue
     producer/consumer flow can be exercised without Node-only dev server fallbacks.
+- Call Kent ffmpeg container handoff:
+  - set `CALL_KENT_FFMPEG_CONTAINER_BASE_URL` to route `createEpisodeAudio`
+    through a container HTTP endpoint (`POST /episode-audio`).
+  - expected response JSON fields: `callerMp3Base64`, `responseMp3Base64`,
+    and `episodeMp3Base64`.
+  - when unset, local/Node ffmpeg fallback remains in place.
 - Call Kent transcription payload mode:
   - default model is `@cf/openai/whisper` (raw binary `audio/mpeg` payload).
   - if using base64-only models (for example `@cf/openai/whisper-large-v3-turbo`),
