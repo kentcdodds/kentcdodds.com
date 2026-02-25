@@ -10,6 +10,11 @@ import {
 	getSocialImageWithPreTitle,
 } from '#app/images.tsx'
 import { KitForm } from '#app/kit/form.tsx'
+import {
+	createMdxRemoteRuntimeContext,
+	renderMdxRemoteDocument,
+	type MdxRemoteDocument,
+} from '#app/mdx-remote/index.ts'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type MdxPage } from '#app/types.ts'
 import {
@@ -130,6 +135,25 @@ const mdxComponents = {
 	OptionalUser,
 }
 
+function shouldUseMdxRemoteRuntime() {
+	if (typeof window !== 'undefined' && window.ENV?.ENABLE_MDX_REMOTE === 'true') {
+		return true
+	}
+	if (
+		typeof globalThis !== 'undefined' &&
+		globalThis.ENV?.ENABLE_MDX_REMOTE === 'true'
+	) {
+		return true
+	}
+	if (
+		typeof process !== 'undefined' &&
+		process.env.ENABLE_MDX_REMOTE === 'true'
+	) {
+		return true
+	}
+	return false
+}
+
 declare global {
 	type MDXProvidedComponents = typeof mdxComponents
 }
@@ -167,6 +191,40 @@ function getMdxComponent(code: string) {
 		)
 	}
 	return KCDMdxComponent
+}
+
+function getMdxRemoteComponent(
+	document: MdxRemoteDocument<Record<string, unknown>>,
+	{
+		user,
+	}: {
+		user: ReturnType<typeof useOptionalUser>
+	},
+) {
+	function KCDMdxRemoteComponent({
+		components,
+	}: {
+		components?: Record<string, React.ComponentType<any>>
+	}) {
+		return (
+			<>
+				{renderMdxRemoteDocument({
+					document: document as MdxRemoteDocument<Record<string, unknown>>,
+					context: createMdxRemoteRuntimeContext({
+						scope: {
+							user,
+							frontmatter: document.frontmatter,
+						},
+					}),
+					components: {
+						...mdxComponents,
+						...(components ?? {}),
+					},
+				})}
+			</>
+		)
+	}
+	return KCDMdxRemoteComponent
 }
 
 function BlogImage({
@@ -260,15 +318,29 @@ const mdxComponentCache = new LRUCache<
 	max: 1000,
 })
 
-function useMdxComponent(code: string) {
+function useMdxComponent(
+	input:
+		| string
+		| {
+				code: string
+				remoteDocument?: MdxRemoteDocument<Record<string, unknown>>
+		  },
+) {
+	const { code, remoteDocument } =
+		typeof input === 'string' ? { code: input, remoteDocument: undefined } : input
+	const user = useOptionalUser()
+
 	return React.useMemo(() => {
+		if (shouldUseMdxRemoteRuntime() && remoteDocument) {
+			return getMdxRemoteComponent(remoteDocument, { user })
+		}
 		if (mdxComponentCache.has(code)) {
 			return mdxComponentCache.get(code)!
 		}
 		const component = getMdxComponent(code)
 		mdxComponentCache.set(code, component)
 		return component
-	}, [code])
+	}, [code, remoteDocument, user])
 }
 
 export { getBannerAltProp, getBannerTitleProp, mdxPageMeta, useMdxComponent }

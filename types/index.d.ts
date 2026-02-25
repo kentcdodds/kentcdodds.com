@@ -2,6 +2,7 @@
 /// <reference types="vite/client" />
 
 import type calculateReadingTime from 'reading-time'
+import { type MdxRemoteDocument } from '#app/mdx-remote/compiler/types.ts'
 import {
 	type Call,
 	type Session,
@@ -13,6 +14,7 @@ type NonNullProperties<Type> = {
 }
 type MdxPage = {
 	code: string
+	remoteDocument?: MdxRemoteDocument<Record<string, unknown>>
 	slug: string
 	editLink: string
 	readTime?: ReturnType<typeof calculateReadingTime>

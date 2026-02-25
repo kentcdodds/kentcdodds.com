@@ -2,6 +2,7 @@ export {
 	compileMdxRemoteDocument,
 	isMdxComponentName,
 } from '#app/mdx-remote/compiler/compile.ts'
+export { compileMdxRemoteDocumentFromSource } from '#app/mdx-remote/compiler/from-mdast.ts'
 export {
 	assertMdxRemoteDocument,
 	assertMdxRemoteNode,
@@ -35,3 +36,4 @@ export {
 	renderMdxRemoteDocument,
 	renderMdxRemoteNode,
 } from '#app/mdx-remote/runtime/renderer.tsx'
+export { mdxRemoteComponentAllowlist } from '#app/mdx-remote/component-allowlist.ts'
