@@ -151,6 +151,7 @@ const schema = schemaBase.superRefine((values, ctx) => {
 
 type BaseEnv = z.infer<typeof schemaBase>
 type BaseEnvInput = z.input<typeof schemaBase>
+type EnvInput = Record<keyof BaseEnvInput, string | undefined>
 
 export type Env = Omit<
 	BaseEnv,
@@ -212,16 +213,28 @@ let _cache:
 			env: Env
 	  }
 	| undefined
+let _runtimeEnvSource: Partial<EnvInput> | undefined
+
+export function setRuntimeEnvSource(envSource: Partial<EnvInput>) {
+	_runtimeEnvSource = envSource
+	_cache = undefined
+}
+
+export function clearRuntimeEnvSource() {
+	_runtimeEnvSource = undefined
+	_cache = undefined
+}
 
 export function getEnv(): Env {
 	const keys = Object.keys(schemaBase.shape) as Array<keyof BaseEnv>
+	const envSource = getEnvSource()
 	const fingerprint = keys
-		.map((k) => `${String(k)}=${process.env[String(k)] ?? ''}`)
+		.map((k) => `${String(k)}=${envSource[String(k)] ?? ''}`)
 		.join('\0')
 
 	if (_cache?.fingerprint === fingerprint) return _cache.env
 
-	const parsed = schema.safeParse(process.env)
+	const parsed = schema.safeParse(envSource)
 
 	if (parsed.success === false) {
 		// Prefer throwing the ZodError; `init()` prints a nicer message.
@@ -304,6 +317,14 @@ export function getPublicEnv() {
 }
 
 type PublicEnv = ReturnType<typeof getPublicEnv>
+
+function getEnvSource(): Record<string, string | undefined> {
+	if (!_runtimeEnvSource) return process.env
+	return {
+		...process.env,
+		..._runtimeEnvSource,
+	}
+}
 
 declare global {
 	var ENV: PublicEnv
