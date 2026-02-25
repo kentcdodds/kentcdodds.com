@@ -5,7 +5,13 @@ import { getEnv } from './env.server.ts'
 import { getErrorMessage } from './misc.ts'
 import { prisma } from './prisma.server.ts'
 
-const VERIFIER_API_KEY = getEnv().VERIFIER_API_KEY
+function getVerifierConfig() {
+	const env = getEnv()
+	return {
+		apiKey: env.VERIFIER_API_KEY,
+		apiBaseUrl: env.VERIFIER_API_BASE_URL,
+	}
+}
 
 type VerifierResult =
 	| { status: true; email: string; domain: string }
@@ -15,8 +21,9 @@ type VerifierResult =
 	  }
 
 export async function verifyEmailAddress(emailAddress: string) {
-	const verifierUrl = new URL(`https://verifyright.co/verify/${emailAddress}`)
-	verifierUrl.searchParams.append('token', VERIFIER_API_KEY)
+	const { apiKey, apiBaseUrl } = getVerifierConfig()
+	const verifierUrl = new URL(`/verify/${emailAddress}`, apiBaseUrl)
+	verifierUrl.searchParams.append('token', apiKey)
 	const controller = new AbortController()
 	const timeoutId = setTimeout(() => controller.abort(), 2000)
 	try {
