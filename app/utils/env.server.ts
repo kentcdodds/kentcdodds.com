@@ -73,6 +73,11 @@ const schemaBase = z.object({
 	SENTRY_PROJECT_ID: z.string().trim().optional(),
 	SESSION_SECRET: nonEmptyString,
 	SIMPLECAST_KEY: nonEmptyString,
+	SIMPLECAST_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.simplecast.com'),
 	TRANSISTOR_API_SECRET: nonEmptyString,
 	TWITTER_BEARER_TOKEN: nonEmptyString,
 	VERIFIER_API_KEY: nonEmptyString,

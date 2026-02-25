@@ -18,7 +18,7 @@ reference:
 
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
-| Dev server      | `bun run dev` (starts app + kit mock worker; app runs on port 3000)               |
+| Dev server      | `bun run dev` (starts app + worker mock stack; app runs on port 3000)              |
 | Lint            | `bun run lint`                                                                    |
 | Typecheck       | `bun run typecheck`                                                               |
 | Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
@@ -41,6 +41,8 @@ reference:
   (`mock-servers/mailgun/worker.ts`, local port `8793`).
 - Discord API calls are served by a Worker mock server in dev
   (`mock-servers/discord/worker.ts`, local port `8794`).
+- Simplecast API calls are served by a Worker mock server in dev
+  (`mock-servers/simplecast/worker.ts`, local port `8795`).
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
