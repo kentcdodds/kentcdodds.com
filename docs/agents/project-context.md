@@ -52,3 +52,8 @@ reference:
   `/calls/record/new` can hit the route ErrorBoundary unless `localhost` is
   allowed mic/camera access in site settings (even if you intend to use the
   typed question → text-to-speech path).
+
+## Related operational docs
+
+- Cloudflare-managed controls (rate limiting, cron cleanup, KV cache binding):
+  `docs/agents/cloudflare-managed-controls.md`
