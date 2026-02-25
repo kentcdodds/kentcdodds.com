@@ -78,14 +78,14 @@ export async function action({ request }: Route.ActionArgs) {
 	await requireAdminUser(request)
 	const searchParams = new URL(request.url).searchParams
 	const formData = await request.formData()
-	const { currentInstance } = await getInstanceInfo()
+	const { currentInstance, currentIsPrimary, primaryInstance } =
+		await getInstanceInfo()
 	const instance = formData.get('instance') ?? currentInstance
 	invariantResponse(typeof instance === 'string', 'instance must be a string')
 	await ensureInstance(instance)
 
 	const intent = formData.get('intent')
 	if (intent === deleteAllMatchingIntent) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
 		invariantResponse(
 			currentIsPrimary,
 			`Bulk delete must run on the primary instance (${primaryInstance})`,
