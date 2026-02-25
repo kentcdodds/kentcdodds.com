@@ -16,7 +16,8 @@ type MediaManifest = {
 const imagesManifest = imagesManifestData as MediaManifest
 const videosManifest = videosManifestData as MediaManifest
 
-function normalizeMediaKey(mediaKey: string) {
+function normalizeMediaKey(mediaKey: string | null | undefined) {
+	if (typeof mediaKey !== 'string') return ''
 	const trimmedKey = mediaKey.replace(/^\/+/, '')
 	return trimmedKey.replace(/^content\//, '')
 }
@@ -26,18 +27,19 @@ function resolveManifestAssetId({
 	mediaKey,
 }: {
 	manifest: MediaManifest
-	mediaKey: string
+	mediaKey: string | null | undefined
 }) {
 	const normalizedKey = normalizeMediaKey(mediaKey)
+	if (!normalizedKey) return mediaKey ?? ''
 	const mappedAsset = manifest.assets[normalizedKey]
-	return mappedAsset?.id ?? mediaKey
+	return mappedAsset?.id ?? normalizedKey
 }
 
-export function resolveMediaImageId(mediaKey: string) {
+export function resolveMediaImageId(mediaKey: string | null | undefined) {
 	return resolveManifestAssetId({ manifest: imagesManifest, mediaKey })
 }
 
-export function resolveMediaVideoId(mediaKey: string) {
+export function resolveMediaVideoId(mediaKey: string | null | undefined) {
 	return resolveManifestAssetId({ manifest: videosManifest, mediaKey })
 }
 

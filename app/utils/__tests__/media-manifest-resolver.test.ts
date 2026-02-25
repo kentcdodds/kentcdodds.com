@@ -37,7 +37,14 @@ describe('media manifest resolver', () => {
 	})
 
 	test('resolveMediaImageId and resolveMediaVideoId fall back when missing', () => {
-		expect(resolveMediaImageId('kent/profile')).toBe('kent/profile')
-		expect(resolveMediaVideoId('kent/video-id')).toBe('kent/video-id')
+		expect(resolveMediaImageId('missing/profile-image')).toBe(
+			'missing/profile-image',
+		)
+		expect(resolveMediaVideoId('missing/video-id')).toBe('missing/video-id')
+	})
+
+	test('handles undefined media keys without throwing', () => {
+		expect(resolveMediaImageId(undefined)).toBe('')
+		expect(resolveMediaVideoId(undefined)).toBe('')
 	})
 })
