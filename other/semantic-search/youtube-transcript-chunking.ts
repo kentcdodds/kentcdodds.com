@@ -51,6 +51,19 @@ export function chunkTranscriptEvents(
 		minChunkChars = 200,
 	}: { targetChars?: number; maxChunkChars?: number; minChunkChars?: number } = {},
 ) {
+	const safeTargetChars = Math.max(
+		1,
+		Number.isFinite(targetChars) ? Math.floor(targetChars) : 3500,
+	)
+	const safeMaxChunkChars = Math.max(
+		safeTargetChars,
+		Number.isFinite(maxChunkChars) ? Math.floor(maxChunkChars) : 5500,
+	)
+	const safeMinChunkChars = Math.min(
+		safeMaxChunkChars,
+		Math.max(0, Number.isFinite(minChunkChars) ? Math.floor(minChunkChars) : 200),
+	)
+
 	const sorted = [...events].sort((a, b) => a.startMs - b.startMs)
 	const chunks: Array<TranscriptChunk> = []
 
@@ -70,30 +83,37 @@ export function chunkTranscriptEvents(
 		endMs = 0
 	}
 
+	const splitOversizedLine = (line: string, event: TranscriptEvent) => {
+		if (currentLines.length || line.length <= safeMaxChunkChars) return false
+
+		const eventStartMs = Math.max(0, Math.floor(event.startMs))
+		const eventEndMs = Math.max(
+			eventStartMs,
+			Math.floor(event.startMs + (event.durationMs || 0)),
+		)
+
+		for (let i = 0; i < line.length; i += safeTargetChars) {
+			const part = line.slice(i, i + safeTargetChars)
+			const body = normalizeText(part)
+			if (!body) continue
+			chunks.push({ body, startMs: eventStartMs, endMs: eventEndMs })
+		}
+
+		return true
+	}
+
 	for (const e of sorted) {
 		const line = normalizeText(e.text)
 		if (!line) continue
 
 		// If we don't have a current chunk and this line is huge, split it.
-		if (!currentLines.length && line.length > maxChunkChars) {
-			const eStartMs = Math.max(0, Math.floor(e.startMs))
-			const eEndMs = Math.max(
-				eStartMs,
-				Math.floor(e.startMs + (e.durationMs || 0)),
-			)
-			for (let i = 0; i < line.length; i += targetChars) {
-				const part = line.slice(i, i + targetChars)
-				const body = normalizeText(part)
-				if (!body) continue
-				chunks.push({ body, startMs: eStartMs, endMs: eEndMs })
-			}
-			continue
-		}
+		if (splitOversizedLine(line, e)) continue
 
 		const nextLen = currentLen + (currentLines.length ? 1 : 0) + line.length
-		if (currentLines.length && nextLen > targetChars) {
+		if (currentLines.length && nextLen > safeTargetChars) {
 			flush()
 		}
+		if (splitOversizedLine(line, e)) continue
 
 		if (startMs === null) startMs = Math.max(0, Math.floor(e.startMs))
 		const eventEnd = Math.max(0, Math.floor(e.startMs + (e.durationMs || 0)))
@@ -103,5 +123,5 @@ export function chunkTranscriptEvents(
 	}
 
 	flush()
-	return mergeTinyTrailingChunks({ chunks, minChunkChars })
+	return mergeTinyTrailingChunks({ chunks, minChunkChars: safeMinChunkChars })
 }

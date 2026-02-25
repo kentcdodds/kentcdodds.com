@@ -54,3 +54,37 @@ test('chunkTranscriptEvents keeps trailing chunks that meet minimum size', () =>
 	expect(chunks[0]?.body).toBe('A'.repeat(40))
 	expect(chunks[1]?.body).toBe('B'.repeat(25))
 })
+
+test('chunkTranscriptEvents re-checks oversized lines after flush', () => {
+	const events: Array<TranscriptEvent> = [
+		{ startMs: 0, durationMs: 800, text: 'A'.repeat(40) },
+		{ startMs: 1000, durationMs: 700, text: 'B'.repeat(120) },
+	]
+
+	const chunks = chunkTranscriptEvents(events, {
+		targetChars: 50,
+		maxChunkChars: 80,
+		minChunkChars: 0,
+	})
+
+	expect(chunks).toHaveLength(4)
+	expect(chunks[0]?.body).toBe('A'.repeat(40))
+	expect(chunks.slice(1).every((chunk) => (chunk.body.length || 0) <= 50)).toBe(
+		true,
+	)
+})
+
+test('chunkTranscriptEvents guards non-positive targetChars', () => {
+	const events: Array<TranscriptEvent> = [
+		{ startMs: 0, durationMs: 500, text: 'A'.repeat(12) },
+	]
+
+	const chunks = chunkTranscriptEvents(events, {
+		targetChars: 0,
+		maxChunkChars: 8,
+		minChunkChars: 0,
+	})
+
+	expect(chunks.length).toBeGreaterThan(0)
+	expect(chunks.every((chunk) => chunk.body.length >= 1)).toBe(true)
+})
