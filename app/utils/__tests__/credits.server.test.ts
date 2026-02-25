@@ -1,4 +1,5 @@
 import { expect, test, vi } from 'vitest'
+import { cachified } from '@epic-web/cachified'
 
 const staleCachedPeople = [
 	{
@@ -26,13 +27,43 @@ vi.mock('../github.server.ts', () => ({
 	downloadFile: vi.fn(async () => ''),
 }))
 
+import { downloadFile } from '../github.server.ts'
 import { getPeople } from '../credits.server.ts'
 
 test('getPeople normalizes stale cached people with missing id values', async () => {
-	const people = await getPeople({})
-	expect(people).toHaveLength(1)
-	expect(people[0]).toMatchObject({
-		id: 'jane-doe',
-		name: 'Jane Doe',
-	})
+	const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+	try {
+		vi.mocked(cachified).mockImplementationOnce(async () => staleCachedPeople)
+
+		const people = await getPeople({})
+		expect(people).toHaveLength(1)
+		expect(people[0]).toMatchObject({
+			id: 'jane-doe',
+			name: 'Jane Doe',
+		})
+	} finally {
+		warnSpy.mockRestore()
+	}
+})
+
+test('getPeople checkValue rejects missing ids and revalidates via getFreshValue', async () => {
+	const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+	try {
+		vi.mocked(downloadFile).mockResolvedValueOnce('- name: Fresh Person')
+		vi.mocked(cachified).mockImplementationOnce(async (...args) => {
+			const options = args[0]
+			expect(options.checkValue(staleCachedPeople)).toBe(false)
+			return options.getFreshValue()
+		})
+
+		const people = await getPeople({})
+		expect(people).toHaveLength(1)
+		expect(people[0]).toMatchObject({
+			id: 'fresh-person',
+			name: 'Fresh Person',
+		})
+		expect(downloadFile).toHaveBeenCalledWith('content/data/credits.yml')
+	} finally {
+		warnSpy.mockRestore()
+	}
 })

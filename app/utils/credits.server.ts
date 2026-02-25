@@ -161,6 +161,9 @@ async function getPeople({
 		},
 		verboseReporter(),
 	)
+	// We normalize after `cachified` too because `checkValue` can reject stale data,
+	// `getFreshValue` can fail (for example if GitHub is unavailable), and
+	// `cachified` may still return fallbackToCache data under forceFresh semantics.
 	return normalizePeople(allPeople)
 }
 
