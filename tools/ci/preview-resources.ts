@@ -164,8 +164,9 @@ function runWranglerWithRetry(
 	)
 }
 
-function isRetryableWranglerFailure(output: string) {
+export function isRetryableWranglerFailure(output: string) {
 	const lower = output.toLowerCase()
+	const has5xxStatusCode = /\b5\d{2}\b/.test(lower)
 	return (
 		lower.includes('timed out') ||
 		lower.includes('timeout') ||
@@ -178,7 +179,8 @@ function isRetryableWranglerFailure(output: string) {
 		lower.includes('connection reset') ||
 		lower.includes('429') ||
 		lower.includes('rate limit') ||
-		lower.includes('5xx')
+		lower.includes('5xx') ||
+		has5xxStatusCode
 	)
 }
 
