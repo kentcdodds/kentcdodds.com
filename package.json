@@ -218,7 +218,6 @@
     "@types/dom-mediacapture-record": "^1.0.22",
     "@types/express-http-proxy": "^1.6.7",
     "@types/fs-extra": "^11.0.4",
-    "@types/heapdump": "^0.3.4",
     "@types/lodash": "^4.17.23",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.10.9",
