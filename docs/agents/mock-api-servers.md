@@ -1,7 +1,7 @@
 # Mock API servers
 
-This repo is incrementally migrating from MSW-only mocks to Worker-based mock
-API servers (epicflare-style).
+This repo uses Worker-based mock API servers (epicflare-style) for local
+development and tests.
 
 ## Current worker-based mocks
 
@@ -117,5 +117,4 @@ API servers (epicflare-style).
   `MEDIA_BASE_URL` and `MEDIA_STREAM_BASE_URL` are pointed at the local
   media-image mock worker.
 
-MSW remains active for integrations that have not yet been migrated to Worker
-mock servers.
+All active integration mocks should be implemented as Worker mock servers.

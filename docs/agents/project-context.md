@@ -1,8 +1,8 @@
 # Project context
 
 This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
-with Express, SQLite (via Prisma), and extensive MSW mocks for all external
-APIs.
+with Express, SQLite (via Prisma), and Worker-based mock APIs for all external
+integrations.
 
 ## Prerequisites
 
@@ -29,11 +29,10 @@ reference:
 
 ## Non-obvious caveats
 
-- Most external APIs are now mocked via Worker mock servers in `bun run dev`.
-  MSW remains for residual one-off handlers while migration completes.
+- External APIs are mocked via Worker mock servers in `bun run dev` and test
+  workflows.
 - The Kit integration is now served by a Worker mock server in dev
-  (`mock-servers/kit/worker.ts`, local port `8790`). Other third-party
-  integrations still use MSW while migration is in progress.
+  (`mock-servers/kit/worker.ts`, local port `8790`).
 - The email verifier integration is served by a Worker mock server in dev
   (`mock-servers/verifier/worker.ts`, local port `8791`).
 - OAuth provider token validation is served by a Worker mock server in dev

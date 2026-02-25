@@ -66,8 +66,7 @@ jobs:
               'app/utils/github.server.ts',
               'app/utils/markdown.server.ts',
               'app/utils/mdx.server.ts',
-              'content/**',
-              'mocks/**'
+              'content/**'
             ) }}
           restore-keys: |
             site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-

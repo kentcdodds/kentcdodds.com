@@ -130,7 +130,7 @@ And open up `http://localhost:3000` and rock!
 
 Everything's mocked locally so you should be able to work completely offline.
 The DB runs locally, but all third party endpoints are mocked out via
-[`MSW`](https://mswjs.io/).
+Worker mock servers in `mock-servers/**`.
 
 ## Caching
 
