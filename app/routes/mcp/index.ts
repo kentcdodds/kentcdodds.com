@@ -1,38 +1,33 @@
 import { redirect } from 'react-router'
 import { getAuthInfoFromOAuthFromRequest } from '#app/utils/session.server.js'
 import { type Route } from './+types/index'
-import { connect, requestStorage } from './mcp.server.ts'
+import { connect } from './mcp.server.ts'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	if (request.headers.get('accept')?.includes('text/html')) {
 		throw redirect('/about-mcp')
 	}
-	const response = await requestStorage.run(request, async () => {
-		const sessionId = request.headers.get('mcp-session-id') ?? undefined
+	const sessionId = request.headers.get('mcp-session-id') ?? undefined
 
-		// right now, we have to block all requests that are not authenticated
-		// Eventually the spec will allow for public tools, but we're not there yet
-		const authInfo = await requireAuth(request)
+	// right now, we have to block all requests that are not authenticated
+	// Eventually the spec will allow for public tools, but we're not there yet
+	const authInfo = await requireAuth(request)
 
-		const transport = await connect(sessionId)
-		return transport.handleRequest(request, { authInfo })
-	})
+	const transport = await connect({ request, sessionId })
+	const response = await transport.handleRequest(request, { authInfo })
 
 	return response
 }
 
 export async function action({ request }: Route.ActionArgs) {
-	const response = await requestStorage.run(request, async () => {
-		const sessionId = request.headers.get('mcp-session-id') ?? undefined
+	const sessionId = request.headers.get('mcp-session-id') ?? undefined
 
-		// right now, we have to block all requests that are not authenticated
-		// Eventually the spec will allow for public tools, but we're not there yet
-		const authInfo = await requireAuth(request)
+	// right now, we have to block all requests that are not authenticated
+	// Eventually the spec will allow for public tools, but we're not there yet
+	const authInfo = await requireAuth(request)
 
-		const transport = await connect(sessionId)
-
-		return transport.handleRequest(request, { authInfo })
-	})
+	const transport = await connect({ request, sessionId })
+	const response = await transport.handleRequest(request, { authInfo })
 
 	return response
 }

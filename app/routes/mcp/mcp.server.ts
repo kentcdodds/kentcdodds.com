@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
 import { invariant } from '@epic-web/invariant'
 import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
@@ -14,15 +13,24 @@ import { semanticSearchKCD } from '#app/utils/semantic-search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
 
-export const requestStorage = new AsyncLocalStorage<Request>()
-
 type TransportEntry =
-	| WebStandardStreamableHTTPServerTransport
-	| Promise<WebStandardStreamableHTTPServerTransport>
+	| SessionTransport
+	| Promise<SessionTransport>
+
+type SessionTransport = {
+	transport: WebStandardStreamableHTTPServerTransport
+	setRequest: (request: Request) => void
+}
 
 const transports = new Map<string, TransportEntry>()
 
-function createServer() {
+function createServer(getRequest: () => Request) {
+	function requireRequest() {
+		const request = getRequest()
+		invariant(request, 'No request found')
+		return request
+	}
+
 	const server = new McpServer(
 		{
 			name: 'kentcdodds.com',
@@ -191,10 +199,7 @@ function createServer() {
 			},
 		},
 		async ({ query, category }) => {
-			const request = requestStorage.getStore()
-			if (!request) {
-				throw new Error('No request found')
-			}
+			const request = requireRequest()
 			const domainUrl = getDomainUrl(request)
 
 			const allowedTypesByCategory: Record<
@@ -319,10 +324,7 @@ function createServer() {
 			},
 		},
 		async ({ episodeNumber, seasonNumber }) => {
-			const request = requestStorage.getStore()
-			if (!request) {
-				throw new Error('No request found')
-			}
+			const request = requireRequest()
 			const seasons = await getChatsWithKentSeasons({ request })
 			const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 			if (!season) {
@@ -425,33 +427,56 @@ function createServer() {
 	return server
 }
 
-export async function connect(sessionId?: string | null) {
+export async function connect({
+	request,
+	sessionId,
+}: {
+	request: Request
+	sessionId?: string | null
+}) {
 	if (sessionId) {
 		const existingEntry = transports.get(sessionId)
 		if (existingEntry) {
-			return await existingEntry
+			const existingTransport = await existingEntry
+			existingTransport.setRequest(request)
+			return existingTransport.transport
 		}
 
 		const transportPromise = (async () => {
 			let transport: WebStandardStreamableHTTPServerTransport | undefined
 			let server: ReturnType<typeof createServer> | undefined
+			let latestRequest: Request | undefined
 			try {
 				transport = new WebStandardStreamableHTTPServerTransport({
 					sessionIdGenerator: () => sessionId,
 					async onsessioninitialized(initializedSessionId) {
-						if (transport) transports.set(initializedSessionId, transport)
+						if (sessionTransport) {
+							transports.set(initializedSessionId, sessionTransport)
+						}
 					},
 					async onsessionclosed(closedSessionId) {
 						transports.delete(closedSessionId)
 					},
 				})
 				transport.onclose = () => {
-					if (transport?.sessionId) transports.delete(transport.sessionId)
+					if (transport?.sessionId) {
+						transports.delete(transport.sessionId)
+					}
 				}
 
-				server = createServer()
+				const sessionTransport: SessionTransport = {
+					transport,
+					setRequest(nextRequest) {
+						latestRequest = nextRequest
+					},
+				}
+				sessionTransport.setRequest(request)
+				server = createServer(() => {
+					invariant(latestRequest, 'No request found')
+					return latestRequest
+				})
 				await server.connect(transport)
-				return transport
+				return sessionTransport
 			} catch (error) {
 				// Best-effort cleanup. `server.connect` should have connected the
 				// protocol callbacks, so closing the transport is sufficient, but we
@@ -468,16 +493,21 @@ export async function connect(sessionId?: string | null) {
 				transports.delete(sessionId)
 			}
 		})
-		return await transportPromise
+		const sessionTransport = await transportPromise
+		sessionTransport.setRequest(request)
+		return sessionTransport.transport
 	}
 
 	let transport: WebStandardStreamableHTTPServerTransport | undefined
 	let server: ReturnType<typeof createServer> | undefined
+	let latestRequest: Request | undefined
 	try {
 		transport = new WebStandardStreamableHTTPServerTransport({
 			sessionIdGenerator: () => crypto.randomUUID(),
 			async onsessioninitialized(initializedSessionId) {
-				if (transport) transports.set(initializedSessionId, transport)
+				if (sessionTransport) {
+					transports.set(initializedSessionId, sessionTransport)
+				}
 			},
 			async onsessionclosed(closedSessionId) {
 				transports.delete(closedSessionId)
@@ -486,14 +516,29 @@ export async function connect(sessionId?: string | null) {
 		transport.onclose = () => {
 			if (transport?.sessionId) transports.delete(transport.sessionId)
 		}
-		server = createServer()
+		const sessionTransport: SessionTransport = {
+			transport,
+			setRequest(nextRequest) {
+				latestRequest = nextRequest
+			},
+		}
+		sessionTransport.setRequest(request)
+		server = createServer(() => {
+			invariant(latestRequest, 'No request found')
+			return latestRequest
+		})
 		await server.connect(transport)
 		return transport
 	} catch (error) {
 		if (transport) {
 			// Defensive cleanup in case `onsessioninitialized` ran before the failure.
 			for (const [key, entry] of transports.entries()) {
-				if (entry === transport) transports.delete(key)
+				if (
+					!(entry instanceof Promise) &&
+					entry.transport === transport
+				) {
+					transports.delete(key)
+				}
 			}
 		}
 		await Promise.allSettled([transport?.close(), server?.close()])
@@ -531,10 +576,4 @@ async function requireUser(authInfo: AuthInfo | undefined) {
 	const user = await getUser(authInfo)
 	invariant(user, 'User not found')
 	return user
-}
-
-function requireRequest() {
-	const request = requestStorage.getStore()
-	invariant(request, 'No request found')
-	return request
 }
