@@ -157,6 +157,7 @@ POST,DELETE,PATCH,PUT  /                                                https://
 
 # Rewritten posts
 /blog/application-state-management                                      /blog/application-state-management-with-react
+/blog/an-ai-powered-kentcdodds-com                                     /blog/building-semantic-search-on-my-content
 /blog/how-to-start-testing                                              /blog/how-to-add-testing-to-an-existing-project
 /blog/super-simple-start-to-serverless                                  /blog/super-simple-start-to-netlify-functions
 /blog/unit-vs-integration-vs-e2e-tests                                  /blog/static-vs-unit-vs-integration-vs-e2e-tests
