@@ -35,6 +35,8 @@ reference:
   integrations still use MSW while migration is in progress.
 - The email verifier integration is served by a Worker mock server in dev
   (`mock-servers/verifier/worker.ts`, local port `8791`).
+- OAuth provider token validation is served by a Worker mock server in dev
+  (`mock-servers/oauth/worker.ts`, local port `8792`).
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No

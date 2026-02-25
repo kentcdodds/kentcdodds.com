@@ -45,6 +45,11 @@ const schemaBase = z.object({
 	DISCORD_SCOPES: nonEmptyString,
 	DISCORD_YELLOW_CHANNEL: nonEmptyString,
 	DISCORD_YELLOW_ROLE: nonEmptyString,
+	OAUTH_PROVIDER_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://kcd-oauth-provider.kentcdodds.workers.dev'),
 	INTERNAL_COMMAND_TOKEN: nonEmptyString,
 	MAGIC_LINK_SECRET: nonEmptyString,
 	MAILGUN_DOMAIN: nonEmptyString,

@@ -118,8 +118,7 @@ export async function getAuthInfoFromOAuthFromRequest(request: Request) {
 	if (!authHeader?.startsWith('Bearer ')) return undefined
 	const token = authHeader.slice('Bearer '.length)
 
-	const validateUrl =
-		'https://kcd-oauth-provider.kentcdodds.workers.dev/api/validate-token'
+	const validateUrl = new URL('/api/validate-token', getEnv().OAUTH_PROVIDER_BASE_URL)
 	const resp = await fetch(validateUrl, {
 		headers: { authorization: `Bearer ${token}` },
 	})
