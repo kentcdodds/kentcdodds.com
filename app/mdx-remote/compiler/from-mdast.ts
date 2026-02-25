@@ -253,15 +253,71 @@ function convertMdxJsxAttributes(
 			'type' in attribute.value &&
 			(attribute.value as { type?: string }).type === 'mdxJsxAttributeValueExpression'
 		) {
+			const expressionValue = String(
+				(attribute.value as { value?: string }).value ?? '',
+			)
+			const jsxPropNode = convertJsxAttributeExpressionToNode(expressionValue)
+			if (jsxPropNode) {
+				props[name] = {
+					type: 'node',
+					value: jsxPropNode,
+				}
+				continue
+			}
 			props[name] = {
 				type: 'expression',
-				value: String((attribute.value as { value?: string }).value ?? ''),
+				value: expressionValue,
 			}
 			continue
 		}
 		props[name] = String(attribute.value)
 	}
 	return props
+}
+
+function convertJsxAttributeExpressionToNode(
+	expressionSource: string,
+): MdxRemoteNode | null {
+	const source = unwrapWrappedExpression(expressionSource).trim()
+	if (!source.startsWith('<')) return null
+	try {
+		const mdast = unified().use(remarkParse).use(remarkMdx).parse(source) as Root
+		const remoteRoot = convertMdastToRemoteRoot(mdast)
+		if (remoteRoot.children.length === 0) return null
+		if (remoteRoot.children.length === 1) {
+			const [singleNode] = remoteRoot.children
+			if (!singleNode) return null
+			return unwrapMarkdownParagraphWrapper(singleNode)
+		}
+		return remoteRoot
+	} catch {
+		return null
+	}
+}
+
+function unwrapMarkdownParagraphWrapper(node: MdxRemoteNode) {
+	if (
+		node.type === 'element' &&
+		node.name === 'p' &&
+		!node.props &&
+		node.children?.length === 1
+	) {
+		const [singleChild] = node.children
+		if (singleChild?.type === 'element') {
+			return singleChild
+		}
+	}
+	return node
+}
+
+function unwrapWrappedExpression(source: string) {
+	let result = source.trim()
+	while (result.startsWith('(') && result.endsWith(')')) {
+		const next = result.slice(1, -1).trim()
+		if (!next || next === result) break
+		result = next
+	}
+	return result
 }
 
 function compactNodes(nodes: Array<MdxRemoteNode | null>) {

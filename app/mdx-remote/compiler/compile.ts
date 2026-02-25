@@ -10,6 +10,7 @@ import {
 	type MdxRemoteDocument,
 	type MdxRemoteExpressionValue,
 	type MdxRemoteNode,
+	type MdxRemoteNodeValue,
 	type MdxRemotePropValue,
 	type MdxRemoteRootNode,
 } from '#app/mdx-remote/compiler/types.ts'
@@ -91,6 +92,8 @@ function assertNodeTreeIsSafe({
 			for (const value of Object.values(node.props ?? {})) {
 				assertPropValueIsSafe({
 					value,
+					allowedComponentNames,
+					strictComponentValidation,
 					strictExpressionValidation,
 				})
 			}
@@ -113,9 +116,13 @@ function visitNode(node: MdxRemoteNode, visitor: (node: MdxRemoteNode) => void) 
 
 function assertPropValueIsSafe({
 	value,
+	allowedComponentNames,
+	strictComponentValidation,
 	strictExpressionValidation,
 }: {
 	value: MdxRemotePropValue
+	allowedComponentNames: ReadonlySet<string>
+	strictComponentValidation: boolean
 	strictExpressionValidation: boolean
 }) {
 	if (value === null) return
@@ -126,6 +133,8 @@ function assertPropValueIsSafe({
 		for (const item of value) {
 			assertPropValueIsSafe({
 				value: item,
+				allowedComponentNames,
+				strictComponentValidation,
 				strictExpressionValidation,
 			})
 		}
@@ -135,9 +144,27 @@ function assertPropValueIsSafe({
 		assertExpressionIsSafe(value.value)
 		return
 	}
+	if (isNodePropValue(value)) {
+		visitNode(value.value, (node) => {
+			if (
+				node.type === 'element' &&
+				strictComponentValidation &&
+				isMdxComponentName(node.name) &&
+				!allowedComponentNames.has(node.name)
+			) {
+				throw new Error(`Unknown MDX component "${node.name}"`)
+			}
+			if (node.type === 'expression' && strictExpressionValidation) {
+				assertExpressionIsSafe(node.value)
+			}
+		})
+		return
+	}
 	for (const item of Object.values(value)) {
 		assertPropValueIsSafe({
 			value: item,
+			allowedComponentNames,
+			strictComponentValidation,
 			strictExpressionValidation,
 		})
 	}
@@ -152,6 +179,19 @@ function isExpressionPropValue(value: MdxRemotePropValue): value is MdxRemoteExp
 		value.type === 'expression' &&
 		'value' in value &&
 		typeof value.value === 'string'
+	)
+}
+
+function isNodePropValue(value: MdxRemotePropValue): value is MdxRemoteNodeValue {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		!Array.isArray(value) &&
+		'type' in value &&
+		value.type === 'node' &&
+		'value' in value &&
+		typeof value.value === 'object' &&
+		value.value !== null
 	)
 }
 

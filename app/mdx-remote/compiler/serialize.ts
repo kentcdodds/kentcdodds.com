@@ -111,6 +111,10 @@ function assertMdxRemotePropValue(value: unknown): asserts value is MdxRemotePro
 		}
 		return
 	}
+	if (expressionValue.type === 'node') {
+		assertMdxRemoteNode(expressionValue.value)
+		return
+	}
 
 	for (const item of Object.values(value as Record<string, unknown>)) {
 		assertMdxRemotePropValue(item)

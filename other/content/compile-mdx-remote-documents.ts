@@ -14,6 +14,9 @@ type CliOptions = {
 	outputDirectory: string
 	dryRun: boolean
 	collections: Array<string>
+	strictComponentValidation: boolean
+	strictExpressionValidation: boolean
+	continueOnError: boolean
 }
 
 type FrontmatterParseResult = {
@@ -27,12 +30,22 @@ type CompiledEntry = {
 	outputPath: string
 }
 
+type FailedEntry = {
+	slug: string
+	collection: string
+	filePath: string
+	errorMessage: string
+}
+
 function parseArgs(argv: Array<string>): CliOptions {
 	const options: CliOptions = {
 		contentDirectory: 'content',
 		outputDirectory: 'other/content/mdx-remote',
 		dryRun: false,
 		collections: [...supportedCollections],
+		strictComponentValidation: false,
+		strictExpressionValidation: false,
+		continueOnError: false,
 	}
 
 	for (let index = 0; index < argv.length; index += 1) {
@@ -61,6 +74,19 @@ function parseArgs(argv: Array<string>): CliOptions {
 			}
 			case '--dry-run':
 				options.dryRun = true
+				break
+			case '--strict':
+				options.strictComponentValidation = true
+				options.strictExpressionValidation = true
+				break
+			case '--strict-components':
+				options.strictComponentValidation = true
+				break
+			case '--strict-expressions':
+				options.strictExpressionValidation = true
+				break
+			case '--continue-on-error':
+				options.continueOnError = true
 				break
 			default:
 				if (arg.startsWith('-')) {
@@ -150,19 +176,38 @@ async function compileMdxRemoteDocuments(options: CliOptions) {
 		)
 
 	const compiledEntries: Array<CompiledEntry> = []
+	const failedEntries: Array<FailedEntry> = []
 	for (const file of mdxFiles) {
 		const source = await fs.readFile(file.absolutePath, 'utf8')
 		const { frontmatter, body } = parseFrontmatter(source)
 		const collection = getCollectionFromPath(file.relativePath)
 		const slug = getSlugFromPath(file.relativePath)
-		const document = await compileMdxRemoteDocumentFromSource({
-			slug,
-			source: body,
-			frontmatter,
-			allowedComponentNames: mdxRemoteComponentAllowlist,
-			strictComponentValidation: false,
-			strictExpressionValidation: false,
-		})
+		let document
+		try {
+			document = await compileMdxRemoteDocumentFromSource({
+				slug,
+				source: body,
+				frontmatter,
+				allowedComponentNames: mdxRemoteComponentAllowlist,
+				strictComponentValidation: options.strictComponentValidation,
+				strictExpressionValidation: options.strictExpressionValidation,
+			})
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : `Unknown error: ${String(error)}`
+			if (!options.continueOnError) {
+				throw new Error(
+					`Failed to compile mdx-remote document "${collection}/${slug}": ${errorMessage}`,
+				)
+			}
+			failedEntries.push({
+				slug,
+				collection,
+				filePath: file.relativePath,
+				errorMessage,
+			})
+			continue
+		}
 		const outputPath = getOutputPath({ outputDirectory, collection, slug })
 		compiledEntries.push({
 			slug,
@@ -191,12 +236,29 @@ async function compileMdxRemoteDocuments(options: CliOptions) {
 		await fs.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
 	}
 
-	return { compiledEntries, manifestPath, dryRun: options.dryRun }
+	return {
+		compiledEntries,
+		failedEntries,
+		manifestPath,
+		dryRun: options.dryRun,
+	}
 }
 
 async function main() {
 	const options = parseArgs(process.argv.slice(2))
 	const result = await compileMdxRemoteDocuments(options)
+	if (result.failedEntries.length > 0) {
+		console.error(
+			`failed ${result.failedEntries.length} mdx-remote documents:`,
+			result.failedEntries
+				.map(
+					(entry) =>
+						`${entry.collection}/${entry.slug} (${entry.filePath}) — ${entry.errorMessage}`,
+				)
+				.join('\n'),
+		)
+		process.exitCode = 1
+	}
 	console.log(
 		`${result.dryRun ? '[dry-run] ' : ''}compiled ${result.compiledEntries.length} mdx-remote documents`,
 	)

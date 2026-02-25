@@ -3,12 +3,18 @@ type MdxRemoteExpressionValue = {
 	value: string
 }
 
+type MdxRemoteNodeValue = {
+	type: 'node'
+	value: MdxRemoteNode
+}
+
 type MdxRemotePropValue =
 	| string
 	| number
 	| boolean
 	| null
 	| MdxRemoteExpressionValue
+	| MdxRemoteNodeValue
 	| Array<MdxRemotePropValue>
 	| { [key: string]: MdxRemotePropValue }
 
@@ -54,6 +60,7 @@ export type {
 	MdxRemoteExpressionNode,
 	MdxRemoteExpressionValue,
 	MdxRemoteNode,
+	MdxRemoteNodeValue,
 	MdxRemotePropValue,
 	MdxRemoteRootNode,
 	MdxRemoteTextNode,

@@ -58,3 +58,29 @@ test('captures mdx expression attributes for runtime evaluation', async () => {
 		},
 	})
 })
+
+test('converts JSX attribute expressions into node prop values', async () => {
+	const document = await compileMdxRemoteDocumentFromSource({
+		slug: 'jsx-attribute',
+		source: `<Themed dark={<p>Dark theme</p>} light={<p>Light theme</p>} />`,
+		frontmatter: {
+			title: 'JSX attributes',
+		},
+		allowedComponentNames: mdxRemoteComponentAllowlist,
+	})
+
+	expect(document.root.children[0]).toMatchObject({
+		type: 'element',
+		name: 'Themed',
+		props: {
+			dark: {
+				type: 'node',
+				value: {
+					type: 'element',
+					name: 'p',
+					children: [{ type: 'text', value: 'Dark theme' }],
+				},
+			},
+		},
+	})
+})
