@@ -1,4 +1,3 @@
-import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import * as Sentry from '@sentry/react-router'
 import { getEnv } from '../../app/utils/env.server.ts'
 import { isModernBrowserByUA } from './browser-support.js'
@@ -24,7 +23,6 @@ export function init() {
 		integrations: [
 			Sentry.httpIntegration(),
 			Sentry.prismaIntegration(),
-			nodeProfilingIntegration(),
 		],
 		tracesSampler(samplingContext) {
 			// ignore healthcheck transactions by other services (consul, etc.)
