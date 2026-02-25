@@ -14,6 +14,9 @@ import {
 	clearRuntimeBindingSource,
 	setRuntimeBindingSource,
 } from '#app/utils/runtime-bindings.server.ts'
+import { McpDurableObject } from './mcp-durable-object.ts'
+
+export { McpDurableObject }
 
 const primaryHost = 'kentcdodds.com'
 const strictTransportSecurity = `max-age=${60 * 60 * 24 * 365 * 100}`
@@ -39,6 +42,16 @@ export default {
 				Response.json({ ok: true, runtime: 'cloudflare-worker' }),
 				request,
 			)
+		}
+
+		if (url.pathname === '/mcp') {
+			const mcpNamespace = getMcpDurableObjectNamespace(env)
+			if (mcpNamespace) {
+				const mcpId = mcpNamespace.idFromName('mcp-shared-session')
+				const mcpStub = mcpNamespace.get(mcpId)
+				const mcpResponse = await mcpStub.fetch(request)
+				return applyStandardResponseHeaders(mcpResponse, request)
+			}
 		}
 
 		if (
@@ -119,6 +132,24 @@ function getStringEnvBindings(env: Record<string, unknown>) {
 			return typeof entry[1] === 'string'
 		}),
 	)
+}
+
+function getMcpDurableObjectNamespace(env: Record<string, unknown>) {
+	const candidate = env.MCP_OBJECT
+	if (
+		candidate &&
+		typeof candidate === 'object' &&
+		'idFromName' in candidate &&
+		typeof candidate.idFromName === 'function' &&
+		'get' in candidate &&
+		typeof candidate.get === 'function'
+	) {
+		return candidate as {
+			idFromName: (name: string) => unknown
+			get: (id: unknown) => { fetch: (request: Request) => Promise<Response> }
+		}
+	}
+	return null
 }
 
 function getRequestHost(request: Request) {

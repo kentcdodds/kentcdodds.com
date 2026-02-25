@@ -1,6 +1,6 @@
 import { redirect } from 'react-router'
-import { getAuthInfoFromOAuthFromRequest } from '#app/utils/session.server.js'
 import { type Route } from './+types/index'
+import { requireAuthInfoForMcpRequest } from './mcp-auth.server.ts'
 import { connect } from './mcp.server.ts'
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -11,7 +11,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	// right now, we have to block all requests that are not authenticated
 	// Eventually the spec will allow for public tools, but we're not there yet
-	const authInfo = await requireAuth(request)
+	const authInfo = await requireAuthInfoForMcpRequest(request)
 
 	const transport = await connect({ request, sessionId })
 	const response = await transport.handleRequest(request, { authInfo })
@@ -24,23 +24,10 @@ export async function action({ request }: Route.ActionArgs) {
 
 	// right now, we have to block all requests that are not authenticated
 	// Eventually the spec will allow for public tools, but we're not there yet
-	const authInfo = await requireAuth(request)
+	const authInfo = await requireAuthInfoForMcpRequest(request)
 
 	const transport = await connect({ request, sessionId })
 	const response = await transport.handleRequest(request, { authInfo })
 
 	return response
-}
-
-async function requireAuth(request: Request) {
-	const authInfo = await getAuthInfoFromOAuthFromRequest(request)
-	if (!authInfo) {
-		throw new Response('Unauthorized', {
-			status: 401,
-			headers: {
-				'WWW-Authenticate': `Bearer error="unauthorized", error_description="Unauthorized"`,
-			},
-		})
-	}
-	return authInfo
 }

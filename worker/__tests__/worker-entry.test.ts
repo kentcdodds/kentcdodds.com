@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import worker from '../index.ts'
 
 test('health endpoint applies worker security headers', async () => {
@@ -37,4 +37,37 @@ test('http requests are redirected to https', async () => {
 	expect(response.headers.get('Location')).toBe(
 		'https://preview.kentcdodds.com/any-path?x=1',
 	)
+})
+
+test('mcp requests are forwarded to durable object binding', async () => {
+	const durableFetch = vi.fn(async () => {
+		return new Response('mcp-forwarded', { status: 202 })
+	})
+	const durableNamespace = {
+		idFromName(name: string) {
+			return `id:${name}`
+		},
+		get(_id: unknown) {
+			return {
+				fetch: durableFetch,
+			}
+		},
+	}
+
+	const request = new Request('https://kentcdodds.com/mcp', {
+		method: 'POST',
+		headers: {
+			Host: 'kentcdodds.com',
+		},
+	})
+	const response = await worker.fetch(
+		request,
+		{ MCP_OBJECT: durableNamespace },
+		{},
+	)
+
+	expect(durableFetch).toHaveBeenCalledTimes(1)
+	expect(response.status).toBe(202)
+	expect(await response.text()).toBe('mcp-forwarded')
+	expect(response.headers.get('X-Powered-By')).toBe('Kody the Koala')
 })
