@@ -85,7 +85,7 @@ if (SHOULD_INIT_SENTRY) {
 }
 
 const app = express()
-// fly is our proxy
+// Cloudflare/front-proxy sits in front of the app runtime.
 app.set('trust proxy', true)
 app.use(serverTiming())
 

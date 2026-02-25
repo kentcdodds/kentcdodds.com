@@ -481,7 +481,7 @@ export function ErrorBoundary() {
 					<ErrorPage
 						heroProps={{
 							title: '409 - Oh no, you should never see this.',
-							subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
+							subtitle: `"${location.pathname}" requested a replay and missed this one.`,
 							image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
 							action: <ArrowLink href="/">Go home</ArrowLink>,
 						}}

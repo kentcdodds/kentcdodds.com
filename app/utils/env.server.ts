@@ -11,6 +11,9 @@ const schemaBase = z.object({
 	EXPIRED_SESSIONS_CLEANUP_DISABLED: z.enum(['true', 'false']).optional(),
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
+
+	// Optional because it can be derived from `DATABASE_URL` when using SQLite
+	// `file:` URLs.
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
 	CACHE_DATABASE_PATH: nonEmptyString,
