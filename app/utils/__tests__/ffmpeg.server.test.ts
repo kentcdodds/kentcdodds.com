@@ -3,6 +3,7 @@ import {
 	clearRuntimeEnvSource,
 	setRuntimeEnvSource,
 } from '#app/utils/env.server.ts'
+import callKentFfmpegMockWorker from '#mock-servers/call-kent-ffmpeg/worker.ts'
 
 const { spawnMock } = vi.hoisted(() => ({
 	spawnMock: vi.fn(),
@@ -49,6 +50,42 @@ test('uses container ffmpeg endpoint when configured', async () => {
 			'https://ffmpeg-container.example/episode-audio',
 			expect.objectContaining({ method: 'POST' }),
 		)
+	} finally {
+		clearRuntimeEnvSource()
+		vi.unstubAllGlobals()
+	}
+})
+
+test('supports mock container endpoint contract end-to-end', async () => {
+	const containerBaseUrl = 'https://call-kent-ffmpeg.mock'
+	vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
+		const request = new Request(input, init)
+		const rewritten = new URL(request.url)
+		rewritten.protocol = 'http:'
+		rewritten.host = 'mock-call-kent-ffmpeg.local'
+		return (callKentFfmpegMockWorker.fetch as unknown as (
+			request: Request,
+			env: unknown,
+			ctx: unknown,
+		) => Promise<Response>)(
+			new Request(rewritten.toString(), request as unknown as RequestInit),
+			{},
+			{},
+		)
+	}) as unknown as typeof fetch)
+	setRuntimeEnvSource({
+		CALL_KENT_FFMPEG_CONTAINER_BASE_URL: containerBaseUrl,
+	})
+
+	try {
+		const result = await createEpisodeAudio(
+			new Uint8Array([1, 2, 3]),
+			new Uint8Array([4, 5, 6]),
+		)
+		expect(result.callerMp3.byteLength).toBeGreaterThan(0)
+		expect(result.responseMp3.byteLength).toBeGreaterThan(0)
+		expect(result.episodeMp3.byteLength).toBeGreaterThan(0)
+		expect(spawnMock).not.toHaveBeenCalled()
 	} finally {
 		clearRuntimeEnvSource()
 		vi.unstubAllGlobals()
