@@ -49,6 +49,8 @@ reference:
   server in dev (`mock-servers/twitter/worker.ts`, local port `8797`).
 - Pwned-password and gravatar calls are served by a Worker mock server in dev
   (`mock-servers/security/worker.ts`, local port `8798`).
+- oEmbed provider registry/response calls are served by a Worker mock server in
+  dev (`mock-servers/oembed/worker.ts`, local port `8799`).
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
