@@ -7,11 +7,64 @@ import { getEnv } from '#app/utils/env.server.ts'
 const ref = getEnv().GITHUB_REF
 
 const safePath = (s: string) => s.replace(/\\/g, '/')
+const workspaceRoot = process.cwd()
+
+type LocalFsModules = {
+	fs: {
+		readFile: (path: string, options: { encoding: 'utf-8' }) => Promise<string>
+		readdir: (
+			path: string,
+			options: { withFileTypes: true },
+		) => Promise<
+			Array<{
+				name: string
+				isDirectory: () => boolean
+				isFile: () => boolean
+			}>
+		>
+	}
+	path: {
+		resolve: (...parts: Array<string>) => string
+		relative: (from: string, to: string) => string
+		join: (...parts: Array<string>) => string
+	}
+}
+
+let localFsModulesPromise: Promise<LocalFsModules | null> | null = null
+
+function getLocalFsModules() {
+	if (localFsModulesPromise) return localFsModulesPromise
+	localFsModulesPromise = Promise.all([
+		import('node:fs/promises'),
+		import('node:path'),
+	])
+		.then(([fs, path]) => ({ fs, path }))
+		.catch(() => null)
+	return localFsModulesPromise
+}
+
+async function shouldUseLocalContentMocks() {
+	if (!getEnv().MOCKS) return false
+	const localFsModules = await getLocalFsModules()
+	return localFsModules !== null
+}
+
+function toWorkspacePath(relativePath: string, pathApi: LocalFsModules['path']) {
+	const absolutePath = pathApi.resolve(workspaceRoot, relativePath)
+	const relativeToRoot = pathApi.relative(workspaceRoot, absolutePath)
+	const isUnsafePath =
+		relativeToRoot.startsWith('..') || pathApi.resolve(absolutePath) !== absolutePath
+	if (isUnsafePath) {
+		throw new Error(`Refusing to read path outside workspace: ${relativePath}`)
+	}
+	return absolutePath
+}
 
 const Octokit = createOctokit.plugin(throttling)
 
 const octokit = new Octokit({
 	auth: getEnv().BOT_GITHUB_TOKEN,
+	baseUrl: getEnv().GITHUB_API_BASE_URL,
 	throttle: {
 		onRateLimit: (retryAfter, options) => {
 			const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
@@ -158,6 +211,16 @@ async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
  * @returns a promise that resolves to a string of the contents of the file
  */
 async function downloadFileBySha(sha: string) {
+	if (await shouldUseLocalContentMocks()) {
+		const localFsModules = await getLocalFsModules()
+		if (!localFsModules) {
+			throw new Error('Local content mocks requested but node fs modules unavailable')
+		}
+		const normalizedSha = safePath(sha)
+		const filePath = toWorkspacePath(normalizedSha, localFsModules.path)
+		return localFsModules.fs.readFile(filePath, { encoding: 'utf-8' })
+	}
+
 	const { data } = await octokit.git.getBlob({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
@@ -171,6 +234,15 @@ async function downloadFileBySha(sha: string) {
 // https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}
 // nice thing is it's not rate limited
 async function downloadFile(path: string) {
+	if (await shouldUseLocalContentMocks()) {
+		const localFsModules = await getLocalFsModules()
+		if (!localFsModules) {
+			throw new Error('Local content mocks requested but node fs modules unavailable')
+		}
+		const filePath = toWorkspacePath(safePath(path), localFsModules.path)
+		return localFsModules.fs.readFile(filePath, { encoding: 'utf-8' })
+	}
+
 	const { data } = await octokit.repos.getContent({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
@@ -195,6 +267,29 @@ async function downloadFile(path: string) {
  * @returns a promise that resolves to a file ListItem of the files/directories in the given directory (not recursive)
  */
 async function downloadDirList(path: string) {
+	if (await shouldUseLocalContentMocks()) {
+		const localFsModules = await getLocalFsModules()
+		if (!localFsModules) {
+			throw new Error('Local content mocks requested but node fs modules unavailable')
+		}
+
+		const normalizedPath = safePath(path)
+		const dirPath = toWorkspacePath(normalizedPath, localFsModules.path)
+		const dirEntries = await localFsModules.fs.readdir(dirPath, {
+			withFileTypes: true,
+		})
+
+		return dirEntries.map((entry) => {
+			const entryPath = safePath(localFsModules.path.join(normalizedPath, entry.name))
+			return {
+				name: entry.name,
+				path: entryPath,
+				sha: entryPath,
+				type: entry.isDirectory() ? 'dir' : 'file',
+			}
+		})
+	}
+
 	const resp = await octokit.repos.getContent({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
