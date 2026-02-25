@@ -5,8 +5,10 @@ import { type RecordingFormData } from '#app/components/calls/recording-form.tsx
 import {
 	deleteAudioObject,
 	getAudioBuffer,
+	putEpisodeDraftResponseAudioFromDataUrl,
 	putCallAudioFromDataUrl,
 } from '#app/utils/call-kent-audio-storage.server.ts'
+import { enqueueCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft-queue.server.ts'
 import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
 import {
@@ -449,9 +451,27 @@ async function createEpisodeDraft({
 		}),
 	])
 
-	void startCallKentEpisodeDraftProcessing(draft.id, {
-		responseBase64: responseAudio!,
+	const responseAudioObject = await putEpisodeDraftResponseAudioFromDataUrl({
+		draftId: draft.id,
+		dataUrl: responseAudio!,
 	})
+	let wasEnqueued = false
+	try {
+		wasEnqueued = await enqueueCallKentEpisodeDraftProcessing({
+			draftId: draft.id,
+			responseAudioKey: responseAudioObject.key,
+		})
+	} catch (error: unknown) {
+		console.error('Failed to enqueue Call Kent draft processing job', {
+			draftId: draft.id,
+			error: getErrorMessage(error),
+		})
+	}
+	if (!wasEnqueued) {
+		void startCallKentEpisodeDraftProcessing(draft.id, {
+			responseAudioKey: responseAudioObject.key,
+		})
+	}
 
 	return redirect(`/calls/admin/${callId}`)
 }

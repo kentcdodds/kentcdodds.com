@@ -202,6 +202,14 @@ export function getEpisodeDraftAudioKey(draftId: string) {
 	return `call-kent/drafts/${draftId}/episode.mp3`
 }
 
+export function getEpisodeDraftResponseAudioKey(
+	draftId: string,
+	contentType: string,
+) {
+	const ext = extFromContentType(contentType)
+	return `call-kent/drafts/${draftId}/response${ext}`
+}
+
 export async function putCallAudioFromDataUrl({
 	callId,
 	dataUrl,
@@ -239,6 +247,19 @@ export async function putEpisodeDraftAudioFromBuffer({
 	const { store } = getStore()
 	const key = getEpisodeDraftAudioKey(draftId)
 	return await store.put({ key, body: mp3, contentType: 'audio/mpeg' })
+}
+
+export async function putEpisodeDraftResponseAudioFromDataUrl({
+	draftId,
+	dataUrl,
+}: {
+	draftId: string
+	dataUrl: string
+}): Promise<PutAudioResult> {
+	const { buffer, contentType } = parseBase64DataUrl(dataUrl)
+	const { store } = getStore()
+	const key = getEpisodeDraftResponseAudioKey(draftId, contentType)
+	return await store.put({ key, body: buffer, contentType })
 }
 
 export async function getAudioStream({

@@ -1,4 +1,5 @@
 import { createRequestHandler, type AppLoadContext } from 'react-router'
+import { processCallKentEpisodeDraftQueueMessage } from '#app/utils/call-kent-episode-draft-queue.server.ts'
 import {
 	applyD1Bookmark,
 	getD1Bookmark,
@@ -112,6 +113,31 @@ export default {
 			clearRuntimeEnvSource()
 		}
 	},
+	async queue(
+		batch: {
+			messages: Array<{ body: unknown; retry?: () => void }>
+		},
+		env: Record<string, unknown>,
+	) {
+		try {
+			setRuntimeEnvSource(getStringEnvBindings(env))
+			setRuntimeBindingSource(env)
+			for (const message of batch.messages) {
+				try {
+					if (!isCallKentEpisodeDraftQueueMessage(message.body)) {
+						throw new Error('Unexpected Call Kent draft queue payload shape')
+					}
+					await processCallKentEpisodeDraftQueueMessage(message.body)
+				} catch (error) {
+					console.error('Failed to process Call Kent draft queue message', error)
+					message.retry?.()
+				}
+			}
+		} finally {
+			clearRuntimeBindingSource()
+			clearRuntimeEnvSource()
+		}
+	},
 }
 
 async function getRequestHandler() {
@@ -181,4 +207,21 @@ function applyStandardResponseHeaders(response: Response, request: Request) {
 		statusText: response.statusText,
 		headers,
 	})
+}
+
+function isCallKentEpisodeDraftQueueMessage(
+	value: unknown,
+): value is {
+	draftId: string
+	responseAudioKey: string | null
+} {
+	if (!value || typeof value !== 'object') return false
+	const payload = value as Record<string, unknown>
+	if (typeof payload.draftId !== 'string' || payload.draftId.length < 1) {
+		return false
+	}
+	return (
+		payload.responseAudioKey === null ||
+		typeof payload.responseAudioKey === 'string'
+	)
 }
