@@ -8,11 +8,7 @@ import {
 	useSubmit,
 } from 'react-router'
 import { Button } from '#app/components/button.tsx'
-import {
-	Field,
-	FieldContainer,
-	inputClassName,
-} from '#app/components/form-elements.tsx'
+import { Field } from '#app/components/form-elements.tsx'
 import { SearchIcon } from '#app/components/icons.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3 } from '#app/components/typography.tsx'
@@ -22,11 +18,6 @@ import {
 	lruCache,
 	searchCacheKeys,
 } from '#app/utils/cache.server.ts'
-import {
-	ensureInstance,
-	getAllInstances,
-	getInstanceInfo,
-} from '#app/utils/litefs-js.server.ts'
 import {
 	useDebounce,
 	useDoubleCheck,
@@ -64,32 +55,17 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const query = searchParams.get('query')
 	const limit = Number(searchParams.get('limit') ?? 100)
 
-	const currentInstanceInfo = await getInstanceInfo()
-	const instance =
-		searchParams.get('instance') ?? currentInstanceInfo.currentInstance
-	const instances = await getAllInstances()
-	await ensureInstance(instance)
-
 	const cacheKeys = await getMatchingCacheKeys({ query, limit })
-	return json({ cacheKeys, instance, instances, currentInstanceInfo })
+	return json({ cacheKeys })
 }
 
 export async function action({ request }: Route.ActionArgs) {
 	await requireAdminUser(request)
 	const searchParams = new URL(request.url).searchParams
 	const formData = await request.formData()
-	const { currentInstance, currentIsPrimary, primaryInstance } =
-		await getInstanceInfo()
-	const instance = formData.get('instance') ?? currentInstance
-	invariantResponse(typeof instance === 'string', 'instance must be a string')
-	await ensureInstance(instance)
 
 	const intent = formData.get('intent')
 	if (intent === deleteAllMatchingIntent) {
-		invariantResponse(
-			currentIsPrimary,
-			`Bulk delete must run on the primary instance (${primaryInstance})`,
-		)
 		const query = searchParams.get('query')
 		const limit = Number(searchParams.get('limit') ?? 100)
 		const { sqlite, lru } = await getMatchingCacheKeys({ query, limit })
@@ -131,7 +107,6 @@ export default function CacheAdminRoute({
 	const submit = useSubmit()
 	const query = searchParams.get('query') ?? ''
 	const limit = searchParams.get('limit') ?? '100'
-	const instance = searchParams.get('instance') ?? data.instance
 	const matchingCacheValuesCount =
 		data.cacheKeys.sqlite.length + data.cacheKeys.lru.length
 
@@ -181,62 +156,24 @@ export default function CacheAdminRoute({
 						max="10000"
 						placeholder="results limit"
 					/>
-					<FieldContainer label="Instance" id="instance">
-						{({ inputProps }) => (
-							<select
-								{...inputProps}
-								name="instance"
-								defaultValue={instance}
-								className={inputClassName}
-							>
-								{Object.entries(data.instances).map(([inst, region]) => (
-									<option key={inst} value={inst}>
-										{[
-											inst,
-											`(${region})`,
-											inst === data.currentInstanceInfo.currentInstance
-												? '(current)'
-												: '',
-											inst === data.currentInstanceInfo.primaryInstance
-												? ' (primary)'
-												: '',
-										]
-											.filter(Boolean)
-											.join(' ')}
-									</option>
-								))}
-							</select>
-						)}
-					</FieldContainer>
 				</div>
 			</Form>
 			<Spacer size="2xs" />
 			<DeleteAllMatchingCacheValuesButton
-				instance={instance}
 				matchingCacheValuesCount={matchingCacheValuesCount}
 			/>
 			<Spacer size="2xs" />
 			<div className="flex flex-col gap-4">
 				<H3>LRU Cache:</H3>
 				{data.cacheKeys.lru.map((key) => (
-					<CacheKeyRow
-						key={key}
-						cacheKey={key}
-						instance={instance}
-						type="lru"
-					/>
+					<CacheKeyRow key={key} cacheKey={key} type="lru" />
 				))}
 			</div>
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
-				<H3>SQLite Cache:</H3>
+				<H3>Shared Cache:</H3>
 				{data.cacheKeys.sqlite.map((key) => (
-					<CacheKeyRow
-						key={key}
-						cacheKey={key}
-						instance={instance}
-						type="sqlite"
-					/>
+					<CacheKeyRow key={key} cacheKey={key} type="sqlite" />
 				))}
 			</div>
 		</div>
@@ -244,10 +181,8 @@ export default function CacheAdminRoute({
 }
 
 function DeleteAllMatchingCacheValuesButton({
-	instance,
 	matchingCacheValuesCount,
 }: {
-	instance: string
 	matchingCacheValuesCount: number
 }) {
 	const fetcher = useFetcher()
@@ -258,7 +193,6 @@ function DeleteAllMatchingCacheValuesButton({
 	return (
 		<fetcher.Form method="POST">
 			<input type="hidden" name="intent" value={deleteAllMatchingIntent} />
-			<input type="hidden" name="instance" value={instance} />
 			<Button
 				size="small"
 				variant="danger"
@@ -277,11 +211,9 @@ function DeleteAllMatchingCacheValuesButton({
 
 function CacheKeyRow({
 	cacheKey,
-	instance,
 	type,
 }: {
 	cacheKey: string
-	instance?: string
 	type: string
 }) {
 	const fetcher = useFetcher()
@@ -290,7 +222,6 @@ function CacheKeyRow({
 		<div className="flex items-center gap-2 font-mono">
 			<fetcher.Form method="POST">
 				<input type="hidden" name="cacheKey" value={cacheKey} />
-				<input type="hidden" name="instance" value={instance} />
 				<input type="hidden" name="type" value={type} />
 				<Button
 					size="small"
@@ -305,9 +236,7 @@ function CacheKeyRow({
 				</Button>
 			</fetcher.Form>
 			<a
-				href={`/resources/cache/${type}/${encodeURIComponent(
-					cacheKey,
-				)}?instance=${instance}`}
+				href={`/resources/cache/${type}/${encodeURIComponent(cacheKey)}`}
 			>
 				{cacheKey}
 			</a>

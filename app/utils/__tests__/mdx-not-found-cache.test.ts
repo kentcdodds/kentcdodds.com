@@ -10,31 +10,18 @@ describe('mdx not-found caching', () => {
 	test('caches missing mdx pages for 1 day (no swr)', async () => {
 		const originalEnv = {
 			CACHE_DATABASE_PATH: process.env.CACHE_DATABASE_PATH,
-			LITEFS_DIR: process.env.LITEFS_DIR,
-			FLY_REGION: process.env.FLY_REGION,
-			FLY_MACHINE_ID: process.env.FLY_MACHINE_ID,
 		}
 
 		const cacheDbPath = path.join(os.tmpdir(), `kcd-cache-${randomUUID()}.db`)
 
 		try {
 			process.env.CACHE_DATABASE_PATH = cacheDbPath
-			// litefs-js requires these env vars to compute "primary instance" info.
-			process.env.LITEFS_DIR = path.resolve(process.cwd(), 'prisma')
-			process.env.FLY_REGION = 'test'
-			process.env.FLY_MACHINE_ID = 'test'
 
 			vi.resetModules()
 			// `cache.server.ts` imports `getUser` from `session.server.ts`, which pulls
 			// in Prisma + lots of env requirements. This test doesn't need that.
 			vi.doMock('../session.server.ts', () => {
 				return { getUser: async () => null }
-			})
-			// `cache.server.ts` imports `updatePrimaryCacheValue` from this route module,
-			// which uses the `vite-env-only` macro. That macro is not processed in the
-			// Vitest environment, so we stub the module for this unit test.
-			vi.doMock('#app/routes/resources/cache.sqlite.ts', () => {
-				return { updatePrimaryCacheValue: undefined }
 			})
 			// Avoid importing `mdx-bundler` (and therefore `esbuild`) in jsdom tests.
 			// For this test we only care about the "missing page -> null" path.
@@ -74,7 +61,6 @@ describe('mdx not-found caching', () => {
 			// Prevent mock/module state leaking if more tests are added later.
 			vi.restoreAllMocks()
 			vi.unmock('../session.server.ts')
-			vi.unmock('#app/routes/resources/cache.sqlite.ts')
 			vi.unmock('#app/utils/compile-mdx.server.ts')
 			vi.unmock('#app/utils/github.server.ts')
 			vi.resetModules()
