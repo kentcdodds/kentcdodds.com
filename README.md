@@ -42,6 +42,9 @@ Start the development server:
 
 Then open `http://localhost:3000`.
 
+`bun run dev` also starts the Kit mock worker at `http://127.0.0.1:8790`
+(`__mocks` dashboard available at `http://127.0.0.1:8790/__mocks`).
+
 ## Useful scripts
 
 - `bun run dev` - start local development server
