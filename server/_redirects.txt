@@ -7,7 +7,7 @@
 /call                                                                 /calls
 
 # Just a convenience for myself
-/photo                                                                https://media.kentcdodds.com/kentcdodds-com/image/upload/v1625699252/kent/profile
+/photo                                                                https://media.kentcdodds.com/images/kent/profile
 
 ################# lol, nice
 # not a single URL actually ends in .php... or .env
