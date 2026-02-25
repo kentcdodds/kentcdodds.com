@@ -21,7 +21,7 @@ type CallKentEpisodeArtworkOptions = {
 	/**
 	 * Avatar used in the artwork.
 	 * - Use `fetch` for remote images (ex: Gravatar).
-	 * - Use `public` for Cloudinary assets (ex: Kody) to keep URLs short.
+	 * - Use `public` for in-platform media assets (ex: Kody) to keep URLs short.
 	 */
 	avatar: CallKentEpisodeArtworkAvatar
 	/**
@@ -47,7 +47,7 @@ const KODY_PROFILE_BY_TEAM = {
 	UNKNOWN: images.kodyProfileGray,
 } as const
 
-// Cloudinary needs double-encoding for `l_text:` payloads.
+// Media transform URL text overlays require double-encoding.
 function doubleEncode(s: string) {
 	return encodeURIComponent(encodeURIComponent(s))
 }
@@ -77,7 +77,7 @@ export function getCallKentEpisodeArtworkAvatar({
 }
 
 /**
- * Generates the Cloudinary URL for Call Kent episode artwork.
+ * Generates the media URL for Call Kent episode artwork.
  *
  * Keep this in sync with the publish-time artwork generation so the "preview"
  * shown to callers matches what ultimately gets uploaded to Transistor.
@@ -103,7 +103,7 @@ export function getCallKentEpisodeArtworkUrl({
 	const textLines = Math.ceil(Math.min(title.length, 50) / 18)
 	const avatarYPosition = textLines + 0.6
 	const nameYPosition = -textLines + 5.2
-	const imageUploadBaseUrl = `${getEnv().CLOUDINARY_BASE_URL.replace(/\/+$/, '')}/kentcdodds-com/image/upload`
+	const imageUploadBaseUrl = `${getEnv().MEDIA_BASE_URL.replace(/\/+$/, '')}/kentcdodds-com/image/upload`
 
 	// Keep layout math consistent by always composing at 3000px, then scaling
 	// for previews. Generating the layout directly at small sizes can crop out

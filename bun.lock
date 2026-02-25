@@ -45,7 +45,6 @@
         "chalk": "^5.6.2",
         "chokidar": "^5.0.0",
         "close-with-grace": "^2.4.0",
-        "cloudinary-build-url": "^0.2.4",
         "clsx": "^2.1.1",
         "compression": "^1.8.1",
         "cross-env": "^10.1.0",
@@ -1645,8 +1644,6 @@
     "cliui": ["cliui@8.0.1", "", { "dependencies": { "string-width": "^4.2.0", "strip-ansi": "^6.0.1", "wrap-ansi": "^7.0.0" } }, "sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ=="],
 
     "close-with-grace": ["close-with-grace@2.4.0", "", {}, "sha512-bzAYS0Kax7I0ejiCFHVshsT9giz6MrOpkdpP1CEGpkDRG3mXVgHZ9QdzVGHRZR0jrAq6JyN1mB4Ty3ILnmzLdg=="],
-
-    "cloudinary-build-url": ["cloudinary-build-url@0.2.4", "", { "dependencies": { "@cld-apis/utils": "^0.2.0" } }, "sha512-Wi0aZPHOa90xDCCC4k9eoTVPIm3aWNyycO+rJUXvOyusQqmkPSprHSuJh3s2zNxEtuGj24aCM13iLDpilWMpSw=="],
 
     "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 

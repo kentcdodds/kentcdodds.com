@@ -33,7 +33,6 @@ const ignoredPathSegments = new Set([
 	'node_modules',
 	'build',
 	'server-build',
-	'public/build',
 	'.git',
 	'coverage',
 ])
@@ -75,9 +74,15 @@ function parseArgs(): ScanOptions {
 }
 
 function shouldIgnorePath(filePath: string) {
-	return [...ignoredPathSegments].some((segment) =>
-		filePath.replace(/\\/g, '/').includes(segment),
-	)
+	const normalizedPath = filePath.replace(/\\/g, '/')
+	if (
+		normalizedPath === 'public/build' ||
+		normalizedPath.startsWith('public/build/')
+	) {
+		return true
+	}
+	const segments = normalizedPath.split('/').filter(Boolean)
+	return segments.some((segment) => ignoredPathSegments.has(segment))
 }
 
 async function collectScannableFiles(

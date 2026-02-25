@@ -9,7 +9,7 @@ type RequestLogEntry = {
 const requestLog: Array<RequestLogEntry> = []
 let nextRequestId = 1
 
-const mockCloudinaryImageBase64 =
+const mockMediaImageBase64 =
 	'UklGRhoBAABXRUJQVlA4IA4BAABwCgCdASpkAEMAPqVInUq5sy+hqvqpuzAUiWcG+BsvrZQel/iYPLGE154ZiYwzeF8UJRAKZ0oAzLdTpjlp8qBuGwW1ntMTe6iQZbxzyP4gBeg7X7SH7NwyBcUDAAD+8MrTwbAD8OLmsoaL1QDPwEE+GrfqLQPn6xkgFHCB8lyjV3K2RvcQ7pSvgA87LOVuDtMrtkm+tTV0x1RcIe4Uvb6J+yygkV48DSejuyrMWrYgoZyjkf/0/L9+bAZgCam6+oHqjBSWTq5jF7wzBxYwfoGY7OdYZOdeGb4euuuLaCzDHz/QRbDCaIsJWJW3Jo4bkbz44AI/8UfFTGX4tMTRcKLXTDIviU+/u7UnlVaDQAA='
 
 export default {
@@ -23,8 +23,8 @@ export default {
 
 		if (url.pathname === '/__mocks/meta') {
 			return jsonResponse({
-				service: 'cloudinary',
-				description: 'Mock Cloudinary image worker',
+				service: 'media-images',
+				description: 'Mock media image worker',
 				dashboard: '/__mocks',
 				themeSupport: ['light', 'dark'],
 				responsive: true,
@@ -60,7 +60,7 @@ export default {
 					},
 				})
 			}
-			return new Response(decodeBase64(mockCloudinaryImageBase64), {
+			return new Response(decodeBase64(mockMediaImageBase64), {
 				status: 200,
 				headers: {
 					'content-type': 'image/webp',
@@ -146,7 +146,7 @@ function renderDashboard() {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cloudinary Mock Dashboard</title>
+    <title>Media Images Mock Dashboard</title>
     <style>
       :root { color-scheme: light dark; --bg: #fff; --fg: #0f172a; --muted: #64748b; --border: #cbd5e1; }
       @media (prefers-color-scheme: dark) { :root { --bg: #0b1120; --fg: #e2e8f0; --muted: #94a3b8; --border: #334155; } }
@@ -162,8 +162,8 @@ function renderDashboard() {
   </head>
   <body>
     <main class="layout">
-      <h1>Cloudinary Mock Dashboard</h1>
-      <p class="summary">Serves placeholder image responses for Cloudinary URLs.</p>
+      <h1>Media Images Mock Dashboard</h1>
+      <p class="summary">Serves placeholder image/video responses for media URLs.</p>
       <div class="toolbar">
         <button id="refresh" type="button">Refresh</button>
         <button id="reset" type="button">Reset state</button>

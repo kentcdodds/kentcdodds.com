@@ -49,14 +49,14 @@ function getImageBuilder(
 }
 
 function getMediaBaseUrl() {
-	if (typeof window !== 'undefined' && window.ENV?.CLOUDINARY_BASE_URL) {
-		return window.ENV.CLOUDINARY_BASE_URL
+	if (typeof window !== 'undefined' && window.ENV?.MEDIA_BASE_URL) {
+		return window.ENV.MEDIA_BASE_URL
 	}
-	if (typeof globalThis !== 'undefined' && globalThis.ENV?.CLOUDINARY_BASE_URL) {
-		return globalThis.ENV.CLOUDINARY_BASE_URL
+	if (typeof globalThis !== 'undefined' && globalThis.ENV?.MEDIA_BASE_URL) {
+		return globalThis.ENV.MEDIA_BASE_URL
 	}
-	if (typeof process !== 'undefined' && process.env.CLOUDINARY_BASE_URL) {
-		return process.env.CLOUDINARY_BASE_URL
+	if (typeof process !== 'undefined' && process.env.MEDIA_BASE_URL) {
+		return process.env.MEDIA_BASE_URL
 	}
 	return defaultMediaBaseUrl
 }

@@ -23,7 +23,7 @@ type FeaturedSectionProps = {
 	  }
 	| {
 			imageBuilder?: never
-			/** use the imageBuilder if possible. imageUrl is for things we don't have in cloudinary */
+			/** use imageBuilder when possible. imageUrl is for one-off external assets */
 			imageUrl?: string
 			imageAlt?: string
 	  }
