@@ -75,6 +75,10 @@ test.each([
 		contentPath: 'content/blog/the-state-initializer-pattern/index.mdx',
 		expectedText: 'The state initializer pattern',
 	},
+	{
+		contentPath: 'content/pages/uses/index.mdx',
+		expectedText: '<h1>Uses</h1>',
+	},
 ])(
 	'renders strict mdx-remote content parity for $contentPath',
 	async ({ contentPath, expectedText }) => {
