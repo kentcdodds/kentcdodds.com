@@ -174,7 +174,11 @@ const schemaBase = z.object({
 		.string()
 		.trim()
 		.optional()
-		.default('@cf/openai/whisper-large-v3-turbo'),
+		.default('@cf/openai/whisper'),
+	CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64: z
+		.enum(['true', 'false'])
+		.optional()
+		.default('false'),
 	CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL: z
 		.string()
 		.trim()
@@ -253,7 +257,13 @@ type EnvInput = Record<keyof BaseEnvInput, string | undefined>
 
 export type Env = Omit<
 	BaseEnv,
-	'PORT' | 'MOCKS' | 'DATABASE_PATH' | 'FLY_APP_NAME' | 'FLY_REGION' | 'FLY_MACHINE_ID'
+	| 'PORT'
+	| 'MOCKS'
+	| 'DATABASE_PATH'
+	| 'FLY_APP_NAME'
+	| 'FLY_REGION'
+	| 'FLY_MACHINE_ID'
+	| 'CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64'
 > & {
 	PORT: number
 	MOCKS: boolean
@@ -276,6 +286,7 @@ export type Env = Omit<
 	CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: string
 	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */
 	R2_ENDPOINT: string
+	CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64: boolean
 }
 
 declare global {
@@ -362,6 +373,8 @@ export function getEnv(): Env {
 		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL:
 			values.CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL ??
 			values.CLOUDFLARE_AI_TEXT_MODEL,
+		CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64:
+			values.CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64 === 'true',
 	}
 
 	_cache = { fingerprint, env }

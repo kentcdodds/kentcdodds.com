@@ -100,6 +100,11 @@ reference:
     branch/preview-specific queue names.
   - `bun run dev:calls-e2e` runs the app on Wrangler local runtime so queue
     producer/consumer flow can be exercised without Node-only dev server fallbacks.
+- Call Kent transcription payload mode:
+  - default model is `@cf/openai/whisper` (raw binary `audio/mpeg` payload).
+  - if using base64-only models (for example `@cf/openai/whisper-large-v3-turbo`),
+    set `CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64=true` explicitly.
+  - this guard exists to avoid accidental high-memory base64 payload mode.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - Mdx-remote compilation script:

@@ -32,9 +32,9 @@ export async function transcribeMp3WithWorkersAi({
 	 */
 	callerNotes?: string
 	/**
-	 * Recommended: `@cf/openai/whisper` because it supports raw binary audio via
-	 * the REST API. `@cf/openai/whisper-large-v3-turbo` typically expects base64,
-	 * which is more memory-heavy.
+	 * Default/recommended: `@cf/openai/whisper` because it supports raw binary
+	 * audio via the REST API. `@cf/openai/whisper-large-v3-turbo` typically
+	 * expects base64, which is more memory-heavy.
 	 */
 	model?: string
 }): Promise<string> {
@@ -51,6 +51,11 @@ export async function transcribeMp3WithWorkersAi({
 			: Uint8Array.from(mp3)
 
 	const isWhisperLargeV3Turbo = model.includes('whisper-large-v3-turbo')
+	if (isWhisperLargeV3Turbo && !env.CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64) {
+		throw new Error(
+			`Transcription model "${model}" requires base64 payloads. Set CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64=true to acknowledge higher memory usage, or switch to @cf/openai/whisper for binary audio payloads.`,
+		)
+	}
 	const body = isWhisperLargeV3Turbo
 		? JSON.stringify({
 				// `whisper-large-v3-turbo` expects base64 in the JSON payload.
