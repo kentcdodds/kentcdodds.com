@@ -12,9 +12,9 @@ const schemaBase = z.object({
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
-	FLY_APP_NAME: nonEmptyString,
-	FLY_REGION: nonEmptyString,
-	FLY_MACHINE_ID: nonEmptyString,
+	FLY_APP_NAME: z.string().trim().optional(),
+	FLY_REGION: z.string().trim().optional(),
+	FLY_MACHINE_ID: z.string().trim().optional(),
 	LITEFS_DIR: nonEmptyString,
 
 	// Used by LiteFS + tooling. Optional because it can be derived from
@@ -164,6 +164,8 @@ export type Env = Omit<
 	| 'PORT'
 	| 'MOCKS'
 	| 'DATABASE_PATH'
+	| 'FLY_APP_NAME'
+	| 'FLY_REGION'
 	| 'FLY_MACHINE_ID'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
@@ -171,6 +173,8 @@ export type Env = Omit<
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
+	FLY_APP_NAME: string
+	FLY_REGION: string
 	/** Instance identifier; fallback for startup race when env may not be injected yet. */
 	FLY_MACHINE_ID: string
 	/**
@@ -268,6 +272,8 @@ export function getEnv(): Env {
 		MOCKS: values.MOCKS === 'true',
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
+		FLY_APP_NAME: values.FLY_APP_NAME ?? 'unknown',
+		FLY_REGION: values.FLY_REGION ?? 'unknown',
 		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:
