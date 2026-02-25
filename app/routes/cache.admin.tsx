@@ -237,10 +237,9 @@ function DeleteAllMatchingCacheValuesButton({
 	instance: string
 	matchingCacheValuesCount: number
 }) {
-	if (matchingCacheValuesCount === 0) return null
-
 	const fetcher = useFetcher()
 	const dc = useDoubleCheck()
+	if (matchingCacheValuesCount === 0) return null
 	const isDeleting = fetcher.state !== 'idle'
 
 	return (
