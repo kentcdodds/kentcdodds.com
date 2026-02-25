@@ -11,10 +11,6 @@ describe('call-kent field validation', () => {
 		expect(getErrorForAudio(new File([], 'empty.webm'))).toBe(
 			'Audio file is required',
 		)
-	})
-
-	test('keeps string-based audio validation for compatibility', () => {
-		expect(getErrorForAudio('data:audio/webm;base64,AAAA')).toBeNull()
 		expect(getErrorForAudio(null)).toBe('Audio file is required')
 	})
 
