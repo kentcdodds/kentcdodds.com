@@ -104,6 +104,9 @@ reference:
   - `bun run content:compile-mdx-remote:dry-run`
   - `bun run content:compile-mdx-remote:strict-report` (strict validation report
     for component/expression compatibility; exits non-zero on failures)
+  - `bun run content:publish-mdx-remote -- --bucket <r2-bucket> [--before <sha> --after <sha>]`
+    publishes strict-validated mdx-remote artifacts to R2 (changed-entry upload +
+    deleted-entry cleanup when SHAs are provided).
   - generates serialized mdx-remote JSON docs + manifest under
     `other/content/mdx-remote/`.
 

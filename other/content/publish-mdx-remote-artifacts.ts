@@ -1,0 +1,323 @@
+import { execFileSync, execSync } from 'node:child_process'
+import path from 'node:path'
+import {
+	compileMdxRemoteDocuments,
+	type CompiledEntry,
+} from './compile-mdx-remote-documents.ts'
+
+type CliOptions = {
+	bucket: string
+	beforeSha?: string
+	afterSha?: string
+	outputDirectory: string
+	dryRun: boolean
+}
+
+type ChangedPathSummary = {
+	changedEntries: Set<string>
+	deletedEntries: Set<string>
+}
+
+type PublishPlan = {
+	uploadEntries: Array<CompiledEntry>
+	deleteKeys: Array<string>
+}
+
+function parseArgs(argv: Array<string>): CliOptions {
+	const options: CliOptions = {
+		bucket: '',
+		outputDirectory: 'other/content/mdx-remote',
+		dryRun: false,
+	}
+
+	for (let index = 0; index < argv.length; index += 1) {
+		const arg = argv[index]
+		if (!arg) continue
+		switch (arg) {
+			case '--bucket':
+				options.bucket = argv[index + 1] ?? options.bucket
+				index += 1
+				break
+			case '--before':
+				options.beforeSha = argv[index + 1]
+				index += 1
+				break
+			case '--after':
+				options.afterSha = argv[index + 1]
+				index += 1
+				break
+			case '--output-directory':
+				options.outputDirectory = argv[index + 1] ?? options.outputDirectory
+				index += 1
+				break
+			case '--dry-run':
+				options.dryRun = true
+				break
+			default:
+				if (arg.startsWith('-')) {
+					throw new Error(`Unknown argument: ${arg}`)
+				}
+		}
+	}
+
+	if (!options.bucket.trim()) {
+		throw new Error('Missing required --bucket argument')
+	}
+
+	return options
+}
+
+function normalizePath(filePath: string) {
+	return filePath.replace(/\\/g, '/')
+}
+
+function getMdxEntryPathKey(filePath: string): string | null {
+	const normalized = normalizePath(filePath)
+	const parts = normalized.split('/')
+	if (parts[0] !== 'content') return null
+	const collection = parts[1]
+	if (!collection) return null
+	if (collection !== 'blog' && collection !== 'pages' && collection !== 'writing-blog') {
+		return null
+	}
+	const slugSegment = parts[2]
+	if (!slugSegment) return null
+	const slug = slugSegment.replace(/\.mdx?$/, '')
+	return `${collection}:${slug}`
+}
+
+function parseNameStatusOutput(output: string): ChangedPathSummary {
+	const changedEntries = new Set<string>()
+	const deletedEntries = new Set<string>()
+	const lines = output.split('\n').filter(Boolean)
+
+	for (const line of lines) {
+		const columns = line.split('\t').filter(Boolean)
+		const [status = '', sourcePath, targetPath] = columns
+		if (!sourcePath) continue
+		const statusCode = status[0]
+		if (!statusCode) continue
+
+		if (statusCode === 'R' && sourcePath && targetPath) {
+			const oldEntry = getMdxEntryPathKey(sourcePath)
+			if (oldEntry) deletedEntries.add(oldEntry)
+			const newEntry = getMdxEntryPathKey(targetPath)
+			if (newEntry) changedEntries.add(newEntry)
+			continue
+		}
+
+		const entry = getMdxEntryPathKey(sourcePath)
+		if (!entry) continue
+		if (statusCode === 'D') {
+			deletedEntries.add(entry)
+			continue
+		}
+		if (statusCode === 'A' || statusCode === 'M') {
+			changedEntries.add(entry)
+		}
+	}
+
+	return { changedEntries, deletedEntries }
+}
+
+function getChangedMdxEntries({
+	beforeSha,
+	afterSha,
+}: {
+	beforeSha?: string
+	afterSha?: string
+}): ChangedPathSummary | null {
+	if (!beforeSha || !afterSha) return null
+	if (/^0+$/.test(beforeSha)) return null
+	const diffOutput = execSync(
+		`git diff --name-status ${beforeSha} ${afterSha} -- content/blog content/pages content/writing-blog`,
+		{
+			encoding: 'utf8',
+		},
+	)
+	return parseNameStatusOutput(diffOutput)
+}
+
+function toEntryKey({
+	collection,
+	slug,
+}: {
+	collection: string
+	slug: string
+}) {
+	return `${collection}:${slug}`
+}
+
+function toArtifactKey({
+	collection,
+	slug,
+}: {
+	collection: string
+	slug: string
+}) {
+	return `${collection}/${slug}.json`
+}
+
+function buildPublishPlan({
+	compiledEntries,
+	changedSummary,
+}: {
+	compiledEntries: Array<CompiledEntry>
+	changedSummary: ChangedPathSummary | null
+}): PublishPlan {
+	if (!changedSummary) {
+		return {
+			uploadEntries: compiledEntries,
+			deleteKeys: [],
+		}
+	}
+
+	const uploadEntries = compiledEntries.filter((entry) =>
+		changedSummary.changedEntries.has(toEntryKey(entry)),
+	)
+	const deleteKeys = Array.from(changedSummary.deletedEntries)
+		.filter((entryKey) => !changedSummary.changedEntries.has(entryKey))
+		.map((entryKey) => {
+			const [collection, slug] = entryKey.split(':')
+			return toArtifactKey({
+				collection: collection ?? '',
+				slug: slug ?? '',
+			})
+		})
+		.filter(Boolean)
+
+	return { uploadEntries, deleteKeys }
+}
+
+function getWranglerCommandPrefix() {
+	const wranglerPackage = process.env.WRANGLER_BUNX_PACKAGE ?? 'wrangler@4.67.0'
+	return {
+		command: 'bunx',
+		args: [wranglerPackage],
+	}
+}
+
+function runWranglerCommand(args: Array<string>) {
+	const { command, args: commandArgs } = getWranglerCommandPrefix()
+	execFileSync(command, [...commandArgs, ...args], {
+		env: process.env,
+		stdio: 'inherit',
+	})
+}
+
+function uploadArtifact({
+	bucket,
+	key,
+	filePath,
+	dryRun,
+}: {
+	bucket: string
+	key: string
+	filePath: string
+	dryRun: boolean
+}) {
+	if (dryRun) return
+	runWranglerCommand([
+		'r2',
+		'object',
+		'put',
+		`${bucket}/${key}`,
+		'--remote',
+		'--file',
+		filePath,
+		'--content-type',
+		'application/json',
+	])
+}
+
+function deleteArtifact({
+	bucket,
+	key,
+	dryRun,
+}: {
+	bucket: string
+	key: string
+	dryRun: boolean
+}) {
+	if (dryRun) return
+	runWranglerCommand(['r2', 'object', 'delete', `${bucket}/${key}`, '--remote'])
+}
+
+async function publishMdxRemoteArtifacts(options: CliOptions) {
+	const { compiledEntries, manifestPath } = await compileMdxRemoteDocuments({
+		contentDirectory: 'content',
+		outputDirectory: options.outputDirectory,
+		dryRun: options.dryRun,
+		collections: ['blog', 'pages', 'writing-blog'],
+		strictComponentValidation: true,
+		strictExpressionValidation: true,
+		continueOnError: false,
+	})
+
+	const changedSummary = getChangedMdxEntries({
+		beforeSha: options.beforeSha,
+		afterSha: options.afterSha,
+	})
+	const plan = buildPublishPlan({
+		compiledEntries,
+		changedSummary,
+	})
+
+	for (const entry of plan.uploadEntries) {
+		uploadArtifact({
+			bucket: options.bucket,
+			key: toArtifactKey(entry),
+			filePath: path.resolve(entry.outputPath),
+			dryRun: options.dryRun,
+		})
+	}
+
+	for (const deleteKey of plan.deleteKeys) {
+		deleteArtifact({
+			bucket: options.bucket,
+			key: deleteKey,
+			dryRun: options.dryRun,
+		})
+	}
+
+	uploadArtifact({
+		bucket: options.bucket,
+		key: 'manifest.json',
+		filePath: manifestPath,
+		dryRun: options.dryRun,
+	})
+
+	console.log(
+		`${options.dryRun ? '[dry-run] ' : ''}published mdx-remote artifacts`,
+		{
+			uploaded: plan.uploadEntries.length,
+			deleted: plan.deleteKeys.length,
+			bucket: options.bucket,
+		},
+	)
+}
+
+async function main() {
+	const options = parseArgs(process.argv.slice(2))
+	await publishMdxRemoteArtifacts(options)
+}
+
+if (process.argv[1]?.endsWith('publish-mdx-remote-artifacts.ts')) {
+	main().catch((error) => {
+		console.error(error)
+		process.exitCode = 1
+	})
+}
+
+export {
+	buildPublishPlan,
+	getChangedMdxEntries,
+	getMdxEntryPathKey,
+	parseArgs,
+	parseNameStatusOutput,
+	publishMdxRemoteArtifacts,
+	toArtifactKey,
+	toEntryKey,
+}
+
+export type { ChangedPathSummary, CliOptions, PublishPlan }

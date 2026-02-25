@@ -13,7 +13,7 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
         with:
-          fetch-depth: '50'
+          fetch-depth: '0'
 
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
@@ -27,6 +27,17 @@ jobs:
 
       - name: 📥 Download deps
         run: bun install --frozen-lockfile
+
+      - name: 📚 Publish mdx-remote artifacts
+        run: |
+          set -euo pipefail
+          bun run content:publish-mdx-remote -- \
+            --bucket "${{ secrets.R2_BUCKET }}" \
+            --before "${{ github.event.before }}" \
+            --after "${{ github.sha }}"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: 🥬 Refresh Content
         run: bun ./other/refresh-changed-content.js ${{ github.sha }}

@@ -23,6 +23,7 @@ other/postcss.ignored
 /playwright-report/
 /playwright/.cache/
 /other/cache.db
+/other/content/mdx-remote/
 
 *.bkp.*
 
