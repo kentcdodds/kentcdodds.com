@@ -51,9 +51,21 @@ test('getPeople checkValue rejects missing ids and revalidates via getFreshValue
 	try {
 		vi.mocked(downloadFile).mockResolvedValueOnce('- name: Fresh Person')
 		vi.mocked(cachified).mockImplementationOnce(async (...args) => {
-			const options = args[0]
-			expect(options.checkValue(staleCachedPeople)).toBe(false)
-			return options.getFreshValue()
+			const options = args[0] as {
+				checkValue?: (
+					value: unknown,
+					migrate: (value: unknown, updateCache?: boolean) => unknown,
+				) => unknown
+				getFreshValue: (context: {
+					metadata: { createdTime: number }
+					background: boolean
+				}) => Promise<unknown>
+			}
+			expect(options.checkValue?.(staleCachedPeople, () => undefined)).toBe(false)
+			return options.getFreshValue({
+				metadata: { createdTime: Date.now() },
+				background: false,
+			})
 		})
 
 		const people = await getPeople({})
