@@ -80,7 +80,8 @@ development and tests.
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
-  - image endpoints: `/:cloudName/image/upload/*`
+  - image endpoints: `/images/*`
+  - call artwork endpoint: `/artwork/call-kent.png`
 
 ## Local development wiring
 
