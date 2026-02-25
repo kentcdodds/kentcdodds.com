@@ -88,3 +88,19 @@ test('chunkTranscriptEvents guards non-positive targetChars', () => {
 	expect(chunks.length).toBeGreaterThan(0)
 	expect(chunks.every((chunk) => chunk.body.length >= 1)).toBe(true)
 })
+
+test('chunkTranscriptEvents keeps event end at or after start for negative durations', () => {
+	const events: Array<TranscriptEvent> = [
+		{ startMs: 1000, durationMs: -900, text: 'negative duration' },
+	]
+
+	const chunks = chunkTranscriptEvents(events, {
+		targetChars: 40,
+		maxChunkChars: 80,
+		minChunkChars: 0,
+	})
+
+	expect(chunks).toHaveLength(1)
+	expect(chunks[0]?.startMs).toBe(1000)
+	expect(chunks[0]?.endMs).toBe(1000)
+})

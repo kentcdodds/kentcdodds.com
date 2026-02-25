@@ -115,8 +115,12 @@ export function chunkTranscriptEvents(
 		}
 		if (splitOversizedLine(line, e)) continue
 
-		if (startMs === null) startMs = Math.max(0, Math.floor(e.startMs))
-		const eventEnd = Math.max(0, Math.floor(e.startMs + (e.durationMs || 0)))
+		const eventStart = Math.max(0, Math.floor(e.startMs))
+		if (startMs === null) startMs = eventStart
+		const eventEnd = Math.max(
+			eventStart,
+			Math.floor(e.startMs + (e.durationMs || 0)),
+		)
 		endMs = Math.max(endMs, eventEnd)
 		currentLines.push(line)
 		currentLen = currentLen + (currentLines.length > 1 ? 1 : 0) + line.length
