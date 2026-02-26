@@ -36,6 +36,7 @@ const SKIPPED_STATIC_ROUTES = new Set([
 	'/forgot-password',
 	'/login',
 	'/magic',
+	'/me',
 	'/reset-password',
 	'/resume',
 	'/signup',

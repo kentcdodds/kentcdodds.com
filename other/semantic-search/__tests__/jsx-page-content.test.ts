@@ -67,6 +67,9 @@ describe('jsx page content utils', () => {
 		expect(
 			shouldIndexJsxSitemapPath({ pathname: '/me/passkeys', mdxRoutes }),
 		).toBe(false)
+		expect(shouldIndexJsxSitemapPath({ pathname: '/me', mdxRoutes })).toBe(
+			false,
+		)
 	})
 
 	test('getJsxPageSlugFromPath and getJsxPagePathFromSlug are reversible', () => {
