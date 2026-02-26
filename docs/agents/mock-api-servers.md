@@ -6,63 +6,63 @@ development and tests.
 ## Current worker-based mocks
 
 - `mock-servers/kit/worker.ts`
-  - local dev URL: `http://127.0.0.1:8790`
+  - local dev URL: `http://localhost:8790`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/verifier/worker.ts`
-  - local dev URL: `http://127.0.0.1:8791`
+  - local dev URL: `http://localhost:8791`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/oauth/worker.ts`
-  - local dev URL: `http://127.0.0.1:8792`
+  - local dev URL: `http://localhost:8792`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/mailgun/worker.ts`
-  - local dev URL: `http://127.0.0.1:8793`
+  - local dev URL: `http://localhost:8793`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
   - captured messages: `GET /__mocks/emails`
 - `mock-servers/discord/worker.ts`
-  - local dev URL: `http://127.0.0.1:8794`
+  - local dev URL: `http://localhost:8794`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/simplecast/worker.ts`
-  - local dev URL: `http://127.0.0.1:8795`
+  - local dev URL: `http://localhost:8795`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/transistor/worker.ts`
-  - local dev URL: `http://127.0.0.1:8796`
+  - local dev URL: `http://localhost:8796`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/twitter/worker.ts`
-  - local dev URL: `http://127.0.0.1:8797`
+  - local dev URL: `http://localhost:8797`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/security/worker.ts`
-  - local dev URL: `http://127.0.0.1:8798`
+  - local dev URL: `http://localhost:8798`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/oembed/worker.ts`
-  - local dev URL: `http://127.0.0.1:8799`
+  - local dev URL: `http://localhost:8799`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/mermaid-to-svg/worker.ts`
-  - local dev URL: `http://127.0.0.1:8800`
+  - local dev URL: `http://localhost:8800`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
 - `mock-servers/cloudflare/worker.ts`
-  - local dev URL: `http://127.0.0.1:8801`
+  - local dev URL: `http://localhost:8801`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
@@ -70,13 +70,13 @@ development and tests.
     - `/client/v4` (Cloudflare API + Vectorize + `ai/run`)
     - `/gateway/v1` (Workers AI Gateway)
 - `mock-servers/cloudflare-r2/worker.ts`
-  - local dev URL: `http://127.0.0.1:8802`
+  - local dev URL: `http://localhost:8802`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`
   - S3 path-style API: `/:bucket/:key`
 - `mock-servers/media-images/worker.ts`
-  - local dev URL: `http://127.0.0.1:8803`
+  - local dev URL: `http://localhost:8803`
   - dashboard: `GET /__mocks`
   - metadata: `GET /__mocks/meta`
   - reset state: `POST /__mocks/reset`

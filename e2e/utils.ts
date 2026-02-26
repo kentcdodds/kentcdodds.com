@@ -71,14 +71,14 @@ async function resetMockMailgunEmails() {
 
 function getLocalMailgunBaseUrl() {
 	const configuredBaseUrl = process.env.MAILGUN_API_BASE_URL?.trim()
-	if (configuredBaseUrl?.startsWith('http://127.0.0.1')) {
+	if (configuredBaseUrl?.startsWith('http://localhost')) {
 		return configuredBaseUrl
 	}
-	if (configuredBaseUrl?.startsWith('http://localhost')) {
-		return configuredBaseUrl.replace('http://localhost', 'http://127.0.0.1')
+	if (configuredBaseUrl?.startsWith('http://127.0.0.1')) {
+		return configuredBaseUrl.replace('http://127.0.0.1', 'http://localhost')
 	}
 	if (process.env.PLAYWRIGHT_TEST_BASE_URL?.startsWith('http://localhost')) {
-		return 'http://127.0.0.1:8793'
+		return 'http://localhost:8793'
 	}
 	return null
 }

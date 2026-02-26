@@ -47,7 +47,7 @@ const server = Bun.serve({
 	},
 })
 
-console.log(`[mock-cloudflare-r2] listening on http://127.0.0.1:${server.port}`)
+console.log(`[mock-cloudflare-r2] listening on http://localhost:${server.port}`)
 console.log(`[mock-cloudflare-r2] persistence directory: ${persistenceDirectory}`)
 
 async function handleRequest(request: Request) {

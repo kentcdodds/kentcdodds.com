@@ -44,20 +44,20 @@ Then open `http://localhost:3000`.
 
 `bun run dev` also starts mock workers:
 
-- Kit mock worker at `http://127.0.0.1:8790`
-- Verifier mock worker at `http://127.0.0.1:8791`
-- OAuth mock worker at `http://127.0.0.1:8792`
-- Mailgun mock worker at `http://127.0.0.1:8793`
-- Discord mock worker at `http://127.0.0.1:8794`
-- Simplecast mock worker at `http://127.0.0.1:8795`
-- Transistor mock worker at `http://127.0.0.1:8796`
-- Twitter mock worker at `http://127.0.0.1:8797`
-- Security mock worker at `http://127.0.0.1:8798`
-- oEmbed mock worker at `http://127.0.0.1:8799`
-- Mermaid-to-SVG mock worker at `http://127.0.0.1:8800`
-- Cloudflare API/AI mock worker at `http://127.0.0.1:8801`
-- Cloudflare R2 mock worker at `http://127.0.0.1:8802`
-- Media image mock worker at `http://127.0.0.1:8803`
+- Kit mock worker at `http://localhost:8790`
+- Verifier mock worker at `http://localhost:8791`
+- OAuth mock worker at `http://localhost:8792`
+- Mailgun mock worker at `http://localhost:8793`
+- Discord mock worker at `http://localhost:8794`
+- Simplecast mock worker at `http://localhost:8795`
+- Transistor mock worker at `http://localhost:8796`
+- Twitter mock worker at `http://localhost:8797`
+- Security mock worker at `http://localhost:8798`
+- oEmbed mock worker at `http://localhost:8799`
+- Mermaid-to-SVG mock worker at `http://localhost:8800`
+- Cloudflare API/AI mock worker at `http://localhost:8801`
+- Cloudflare R2 mock worker at `http://localhost:8802`
+- Media image mock worker at `http://localhost:8803`
 
 Each exposes a `__mocks` dashboard for request/state inspection.
 

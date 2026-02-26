@@ -133,7 +133,7 @@ const cloudflarePort = getMockPort(11)
 const r2Port = getMockPort(12)
 const mediaPort = getMockPort(13)
 
-const mockBase = (port: number) => `http://127.0.0.1:${port}`
+const mockBase = (port: number) => `http://localhost:${port}`
 const mediaBaseUrl = mockBase(mediaPort)
 const cloudflareBaseUrl = mockBase(cloudflarePort)
 
@@ -145,7 +145,7 @@ if (appPort !== preferredAppPort) {
 console.log(
 	`🔌 Selected mock port range: ${mockRangeStart}-${mockRangeStart + mockServices.length - 1}`,
 )
-console.log(`🌐 App URL: http://127.0.0.1:${appPort}`)
+console.log(`🌐 App URL: http://localhost:${appPort}`)
 
 const commands = [
 	'bun run --silent dev:app',

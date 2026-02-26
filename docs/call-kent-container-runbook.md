@@ -40,7 +40,7 @@ This starts:
 
 - Worker runtime with queue producer/consumer bindings
 - all integration mock workers
-- Call Kent ffmpeg **mock container** endpoint at `http://127.0.0.1:8804`
+- Call Kent ffmpeg **mock container** endpoint at `http://localhost:8804`
 
 ### Queue + real local container path
 
@@ -51,7 +51,7 @@ bun run dev:calls-e2e:real-container
 ```
 
 This starts the queue-enabled Worker stack plus the local Node ffmpeg container
-service (`http://127.0.0.1:8810`) and points
+service (`http://localhost:8810`) and points
 `CALL_KENT_FFMPEG_CONTAINER_BASE_URL` at that service.
 
 ### Local real ffmpeg path
@@ -62,12 +62,12 @@ Run container-compatible service directly:
 bun run dev:call-kent-ffmpeg-container
 ```
 
-This starts the service at `http://127.0.0.1:8810`.
+This starts the service at `http://localhost:8810`.
 
 To use it with Worker runtime, set:
 
 ```sh
-CALL_KENT_FFMPEG_CONTAINER_BASE_URL=http://127.0.0.1:8810
+CALL_KENT_FFMPEG_CONTAINER_BASE_URL=http://localhost:8810
 ```
 
 before starting the Worker runtime stack.

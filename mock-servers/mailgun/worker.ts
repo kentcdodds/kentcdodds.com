@@ -267,8 +267,8 @@ function renderDashboard() {
       </section>`
 		: '<section class="verification-summary"><h2>Latest verification email</h2><p>No verification emails captured yet.</p></section>'
 
-	const emailApiExamples = `curl -sS http://127.0.0.1:8793/__mocks/emails/latest?to=user@example.com
-curl -sS http://127.0.0.1:8793/__mocks/emails?subject=verification&limit=5`
+	const emailApiExamples = `curl -sS http://localhost:8793/__mocks/emails/latest?to=user@example.com
+curl -sS http://localhost:8793/__mocks/emails?subject=verification&limit=5`
 
 	const rowsMarkup = rows
 		.map(

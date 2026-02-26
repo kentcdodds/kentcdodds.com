@@ -26,26 +26,26 @@ describe('media image url generation', () => {
 	test('rewrites media host when public env override is set', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
-			MEDIA_BASE_URL: 'http://127.0.0.1:8803',
+			MEDIA_BASE_URL: 'http://localhost:8803',
 		}
 
 		const builder = getImageBuilder('kent/profile')
 		const url = builder()
-		expect(url.startsWith('http://127.0.0.1:8803/')).toBe(true)
+		expect(url.startsWith('http://localhost:8803/')).toBe(true)
 		expect(url).toContain('/images/')
 	})
 
 	test('generic social images use media social endpoint', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
-			MEDIA_BASE_URL: 'http://127.0.0.1:8803',
+			MEDIA_BASE_URL: 'http://localhost:8803',
 		}
 		const url = getGenericSocialImage({
 			words: 'Hello world',
 			featuredImage: 'kent/profile',
 			url: 'kentcdodds.com/blog',
 		})
-		expect(url.startsWith('http://127.0.0.1:8803/social/generic.png')).toBe(
+		expect(url.startsWith('http://localhost:8803/social/generic.png')).toBe(
 			true,
 		)
 	})
@@ -53,7 +53,7 @@ describe('media image url generation', () => {
 	test('pre-title social images use media social endpoint', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
-			MEDIA_BASE_URL: 'http://127.0.0.1:8803',
+			MEDIA_BASE_URL: 'http://localhost:8803',
 		}
 		const url = getSocialImageWithPreTitle({
 			title: 'A title',
@@ -62,7 +62,7 @@ describe('media image url generation', () => {
 			url: 'kentcdodds.com/blog/my-post',
 		})
 		expect(
-			url.startsWith('http://127.0.0.1:8803/social/pre-title.png'),
+			url.startsWith('http://localhost:8803/social/pre-title.png'),
 		).toBe(true)
 	})
 })
