@@ -13,6 +13,7 @@ export type ParsedArgs = {
 	fromDotenv: Array<string>
 	setFromEnv: Array<string>
 	setFromEnvOptional: Array<string>
+	generateSecrets: Array<string>
 	includeEmpty: boolean
 	generateCookieSecret: boolean
 }
@@ -86,6 +87,10 @@ export async function collectSecrets(args: ParsedArgs) {
 		)
 	}
 
+	for (const key of args.generateSecrets) {
+		assignSecret(secrets, key, randomBytes(32).toString('base64url'), true)
+	}
+
 	return secrets
 }
 
@@ -145,6 +150,7 @@ export function parseArgs(rawArgs: Array<string>): ParsedArgs {
 		'from-dotenv',
 		'set-from-env',
 		'set-from-env-optional',
+		'generate-secret',
 	])
 
 	for (let index = 0; index < rawArgs.length; index++) {
@@ -182,6 +188,7 @@ export function parseArgs(rawArgs: Array<string>): ParsedArgs {
 		fromDotenv: options.get('from-dotenv') ?? [],
 		setFromEnv: options.get('set-from-env') ?? [],
 		setFromEnvOptional: options.get('set-from-env-optional') ?? [],
+		generateSecrets: options.get('generate-secret') ?? [],
 		includeEmpty: flags.has('include-empty'),
 		generateCookieSecret: flags.has('generate-cookie-secret'),
 	}

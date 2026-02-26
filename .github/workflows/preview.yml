@@ -147,6 +147,8 @@ jobs:
             mock_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync(process.argv[1], 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')" "$log_file")"
             if [ -n "$mock_url" ]; then
               summary="${summary}\n- ${service}: ${mock_url}"
+              output_key="url_${service//-/_}"
+              echo "${output_key}=${mock_url}" >> "$GITHUB_OUTPUT"
             fi
           done
 
@@ -159,6 +161,80 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: 🧩 Inject preview mock API URLs
+        env:
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+          KIT_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_kit }}
+          VERIFIER_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_verifier }}
+          OAUTH_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_oauth }}
+          MAILGUN_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_mailgun }}
+          DISCORD_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_discord }}
+          SIMPLECAST_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_simplecast }}
+          TRANSISTOR_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_transistor }}
+          TWITTER_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_twitter }}
+          SECURITY_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_security }}
+          OEMBED_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_oembed }}
+          MERMAID_TO_SVG_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_mermaid_to_svg }}
+          CLOUDFLARE_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_cloudflare }}
+          R2_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_cloudflare_r2 }}
+          MEDIA_IMAGES_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_media_images }}
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('node:fs')
+
+          const wranglerConfig = process.env.WRANGLER_CONFIG
+          if (!wranglerConfig) throw new Error('WRANGLER_CONFIG is required')
+
+          const text = fs.readFileSync(wranglerConfig, 'utf8')
+          const config = JSON.parse(text)
+          const preview = config?.env?.preview
+          if (!preview || typeof preview !== 'object') {
+            throw new Error('Generated wrangler config is missing env.preview')
+          }
+          const vars = {
+            ...(preview.vars && typeof preview.vars === 'object' ? preview.vars : {}),
+          }
+
+          const assignUrl = (key, value) => {
+            if (typeof value === 'string' && value.length > 0) vars[key] = value
+          }
+
+          assignUrl('KIT_API_BASE_URL', process.env.KIT_MOCK_URL)
+          assignUrl('VERIFIER_API_BASE_URL', process.env.VERIFIER_MOCK_URL)
+          assignUrl('OAUTH_PROVIDER_BASE_URL', process.env.OAUTH_MOCK_URL)
+          assignUrl('MAILGUN_API_BASE_URL', process.env.MAILGUN_MOCK_URL)
+          assignUrl('DISCORD_API_BASE_URL', process.env.DISCORD_MOCK_URL)
+          assignUrl('SIMPLECAST_API_BASE_URL', process.env.SIMPLECAST_MOCK_URL)
+          assignUrl('TRANSISTOR_API_BASE_URL', process.env.TRANSISTOR_MOCK_URL)
+          assignUrl('OEMBED_API_BASE_URL', process.env.OEMBED_MOCK_URL)
+          assignUrl('MERMAID_TO_SVG_BASE_URL', process.env.MERMAID_TO_SVG_MOCK_URL)
+          assignUrl('R2_ENDPOINT', process.env.R2_MOCK_URL)
+          assignUrl('MEDIA_BASE_URL', process.env.MEDIA_IMAGES_MOCK_URL)
+          if (typeof process.env.MEDIA_IMAGES_MOCK_URL === 'string' && process.env.MEDIA_IMAGES_MOCK_URL.length > 0) {
+            vars.MEDIA_STREAM_BASE_URL = `${process.env.MEDIA_IMAGES_MOCK_URL}/stream`
+          }
+
+          if (typeof process.env.TWITTER_MOCK_URL === 'string' && process.env.TWITTER_MOCK_URL.length > 0) {
+            vars.TWITTER_SYNDICATION_BASE_URL = process.env.TWITTER_MOCK_URL
+            vars.TWITTER_SHORTENER_BASE_URL = process.env.TWITTER_MOCK_URL
+            vars.TWITTER_OEMBED_BASE_URL = process.env.TWITTER_MOCK_URL
+          }
+
+          if (typeof process.env.SECURITY_MOCK_URL === 'string' && process.env.SECURITY_MOCK_URL.length > 0) {
+            vars.PWNED_PASSWORDS_API_BASE_URL = process.env.SECURITY_MOCK_URL
+            vars.GRAVATAR_BASE_URL = process.env.SECURITY_MOCK_URL
+          }
+
+          if (typeof process.env.CLOUDFLARE_MOCK_URL === 'string' && process.env.CLOUDFLARE_MOCK_URL.length > 0) {
+            vars.CLOUDFLARE_API_BASE_URL = `${process.env.CLOUDFLARE_MOCK_URL}/client/v4`
+            vars.CLOUDFLARE_AI_GATEWAY_BASE_URL = `${process.env.CLOUDFLARE_MOCK_URL}/gateway/v1`
+          }
+
+          preview.vars = vars
+          fs.writeFileSync(wranglerConfig, `${JSON.stringify(config, null, '\t')}\n`)
+          NODE
+
       - name: 🔐 Sync preview app secrets
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
@@ -167,6 +243,10 @@ jobs:
         run: >
           bun tools/ci/sync-worker-secrets.ts --name "$WORKER_NAME" --env
           preview --from-dotenv .env.example --generate-cookie-secret
+          --generate-secret MAGIC_LINK_SECRET
+          --generate-secret REFRESH_CACHE_SECRET
+          --generate-secret INTERNAL_COMMAND_TOKEN
+          --generate-secret CF_INTERNAL_SECRET
           --include-empty
 
       - name: 📚 Compile + publish mdx-remote artifacts to preview KV

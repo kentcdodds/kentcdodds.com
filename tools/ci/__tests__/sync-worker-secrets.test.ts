@@ -20,6 +20,10 @@ test('parseArgs supports repeated secret sources and flags', () => {
 		'OPTIONAL_SECRET',
 		'--set-from-env-optional',
 		'SECOND_OPTIONAL_SECRET',
+		'--generate-secret',
+		'MAGIC_LINK_SECRET',
+		'--generate-secret',
+		'CF_INTERNAL_SECRET',
 		'--include-empty',
 		'--generate-cookie-secret',
 	])
@@ -31,6 +35,7 @@ test('parseArgs supports repeated secret sources and flags', () => {
 		fromDotenv: ['.env.example'],
 		setFromEnv: ['REQUIRED_SECRET'],
 		setFromEnvOptional: ['OPTIONAL_SECRET', 'SECOND_OPTIONAL_SECRET'],
+		generateSecrets: ['MAGIC_LINK_SECRET', 'CF_INTERNAL_SECRET'],
 		includeEmpty: true,
 		generateCookieSecret: true,
 	})
@@ -71,6 +76,7 @@ test('collectSecrets merges dotenv, set, env, and generated values', async () =>
 			fromDotenv: [dotenvPath],
 			setFromEnv: ['REQUIRED_SECRET'],
 			setFromEnvOptional: ['OPTIONAL_SECRET', 'MISSING_OPTIONAL_SECRET'],
+			generateSecrets: ['MAGIC_LINK_SECRET', 'REFRESH_CACHE_SECRET'],
 			includeEmpty: false,
 			generateCookieSecret: true,
 		})
@@ -85,6 +91,10 @@ test('collectSecrets merges dotenv, set, env, and generated values', async () =>
 		expect(secrets.SESSION_SECRET).toBeTypeOf('string')
 		expect(secrets.SESSION_SECRET).toBeDefined()
 		expect((secrets.SESSION_SECRET ?? '').length).toBeGreaterThan(10)
+		expect(secrets.MAGIC_LINK_SECRET).toBeTypeOf('string')
+		expect((secrets.MAGIC_LINK_SECRET ?? '').length).toBeGreaterThan(10)
+		expect(secrets.REFRESH_CACHE_SECRET).toBeTypeOf('string')
+		expect((secrets.REFRESH_CACHE_SECRET ?? '').length).toBeGreaterThan(10)
 	} finally {
 		await rm(tempDir, { recursive: true, force: true })
 		if (previousRequired === undefined) delete process.env.REQUIRED_SECRET
@@ -106,6 +116,7 @@ test('collectSecrets throws when required env var is missing', async () => {
 				fromDotenv: [],
 				setFromEnv: ['MISSING_REQUIRED_SECRET'],
 				setFromEnvOptional: [],
+				generateSecrets: [],
 				includeEmpty: false,
 				generateCookieSecret: false,
 			}),
@@ -133,6 +144,7 @@ test('collectSecrets includes empty values when includeEmpty is true', async () 
 			fromDotenv: [dotenvPath],
 			setFromEnv: [],
 			setFromEnvOptional: [],
+			generateSecrets: [],
 			includeEmpty: true,
 			generateCookieSecret: false,
 		})
