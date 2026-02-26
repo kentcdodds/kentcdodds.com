@@ -38,8 +38,8 @@ const SKIPPED_STATIC_ROUTES = new Set([
 	'/magic',
 	'/reset-password',
 	'/resume',
-	'/sitemap.xml',
 	'/signup',
+	'/sitemap.xml',
 	'/testimonials',
 ])
 const SKIPPED_PREFIX_ROUTES = ['/blog/', '/calls/', '/chats/', '/me/', '/talks/']
