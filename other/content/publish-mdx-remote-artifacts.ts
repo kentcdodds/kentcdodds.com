@@ -277,6 +277,8 @@ function uploadArtifact({
 		wranglerConfigPath,
 		'--env',
 		wranglerEnv,
+		'--preview',
+		'false',
 		'--path',
 		filePath,
 	])
@@ -308,6 +310,8 @@ function deleteArtifact({
 		wranglerConfigPath,
 		'--env',
 		wranglerEnv,
+		'--preview',
+		'false',
 	])
 }
 
