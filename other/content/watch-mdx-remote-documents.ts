@@ -1,4 +1,4 @@
-import { rm } from 'node:fs/promises'
+import { readFile, rm } from 'node:fs/promises'
 import path from 'node:path'
 import chokidar from 'chokidar'
 import { compileMdxRemoteDocuments } from './compile-mdx-remote-documents.ts'
@@ -7,13 +7,20 @@ type CliOptions = {
 	contentDirectory: string
 	outputDirectory: string
 	once: boolean
+	syncUrl: string | null
+	syncToken: string | null
 }
 
 function parseArgs(argv: Array<string>): CliOptions {
+	const defaultSyncPort = process.env.PORT ?? '3000'
 	const options: CliOptions = {
 		contentDirectory: 'content',
 		outputDirectory: 'other/content/mdx-remote',
 		once: false,
+		syncUrl:
+			process.env.MDX_REMOTE_SYNC_URL ??
+			`http://localhost:${defaultSyncPort}/resources/mdx-remote-sync`,
+		syncToken: process.env.INTERNAL_COMMAND_TOKEN ?? null,
 	}
 
 	for (let index = 0; index < argv.length; index += 1) {
@@ -31,6 +38,17 @@ function parseArgs(argv: Array<string>): CliOptions {
 			case '--once':
 				options.once = true
 				break
+			case '--sync-url':
+				options.syncUrl = argv[index + 1] ?? options.syncUrl
+				index += 1
+				break
+			case '--sync-token':
+				options.syncToken = argv[index + 1] ?? options.syncToken
+				index += 1
+				break
+			case '--no-sync':
+				options.syncUrl = null
+				break
 			default:
 				if (arg.startsWith('-')) {
 					throw new Error(`Unknown argument: ${arg}`)
@@ -41,10 +59,17 @@ function parseArgs(argv: Array<string>): CliOptions {
 	return options
 }
 
+type ArtifactSnapshot = Map<string, string>
+
+type ArtifactDiff = {
+	upserts: Array<{ key: string; value: string }>
+	deletes: Array<string>
+}
+
 async function rebuildArtifacts(options: CliOptions) {
 	const outputDirectory = path.resolve(options.outputDirectory)
 	await rm(outputDirectory, { recursive: true, force: true })
-	const { compiledEntries } = await compileMdxRemoteDocuments({
+	const result = await compileMdxRemoteDocuments({
 		contentDirectory: options.contentDirectory,
 		outputDirectory: options.outputDirectory,
 		dryRun: false,
@@ -53,11 +78,100 @@ async function rebuildArtifacts(options: CliOptions) {
 		strictExpressionValidation: true,
 		continueOnError: false,
 	})
-	console.log(`Rebuilt ${compiledEntries.length} mdx-remote artifacts`)
+	const nextSnapshot = await readArtifactSnapshot(result)
+	console.log(`Rebuilt ${result.compiledEntries.length} mdx-remote artifacts`)
+	return nextSnapshot
+}
+
+async function readArtifactSnapshot({
+	compiledEntries,
+	manifestPath,
+}: {
+	compiledEntries: Array<{ collection: string; slug: string; outputPath: string }>
+	manifestPath: string
+}) {
+	const snapshot: ArtifactSnapshot = new Map()
+	for (const entry of compiledEntries) {
+		const value = await readFile(entry.outputPath, 'utf8')
+		snapshot.set(`${entry.collection}/${entry.slug}.json`, value)
+	}
+	const manifestValue = await readFile(manifestPath, 'utf8')
+	snapshot.set('manifest.json', manifestValue)
+	return snapshot
+}
+
+function buildArtifactDiff({
+	previous,
+	next,
+}: {
+	previous: ArtifactSnapshot
+	next: ArtifactSnapshot
+}) {
+	const upserts: Array<{ key: string; value: string }> = []
+	const deletes: Array<string> = []
+
+	for (const [key, value] of next.entries()) {
+		if (previous.get(key) !== value) {
+			upserts.push({ key, value })
+		}
+	}
+
+	for (const key of previous.keys()) {
+		if (!next.has(key)) {
+			deletes.push(key)
+		}
+	}
+
+	return { upserts, deletes } satisfies ArtifactDiff
+}
+
+async function syncArtifactDiff({
+	diff,
+	options,
+}: {
+	diff: ArtifactDiff
+	options: CliOptions
+}) {
+	if (diff.upserts.length === 0 && diff.deletes.length === 0) return
+	if (!options.syncUrl) return
+	if (!options.syncToken) {
+		console.warn('Skipping mdx-remote KV sync because INTERNAL_COMMAND_TOKEN is unset.')
+		return
+	}
+
+	const response = await fetch(options.syncUrl, {
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json',
+			authorization: `Bearer ${options.syncToken}`,
+		},
+		body: JSON.stringify(diff),
+	})
+	if (!response.ok) {
+		const text = await response.text().catch(() => '')
+		throw new Error(
+			`mdx-remote sync failed (${response.status}): ${text || response.statusText}`,
+		)
+	}
+	console.log(
+		`Synced mdx-remote artifacts (${diff.upserts.length} upserts, ${diff.deletes.length} deletes)`,
+	)
 }
 
 async function watchMdxRemoteDocuments(options: CliOptions) {
-	await rebuildArtifacts(options)
+	let previousSnapshot: ArtifactSnapshot = new Map()
+
+	const runRebuild = async () => {
+		const nextSnapshot = await rebuildArtifacts(options)
+		const diff = buildArtifactDiff({
+			previous: previousSnapshot,
+			next: nextSnapshot,
+		})
+		await syncArtifactDiff({ diff, options })
+		previousSnapshot = nextSnapshot
+	}
+
+	await runRebuild()
 	if (options.once) return
 
 	const watcher = chokidar.watch(
@@ -75,21 +189,21 @@ async function watchMdxRemoteDocuments(options: CliOptions) {
 	let rebuilding = false
 	let queued = false
 
-	async function runRebuild() {
+	async function runQueuedRebuild() {
 		if (rebuilding) {
 			queued = true
 			return
 		}
 		rebuilding = true
 		try {
-			await rebuildArtifacts(options)
+			await runRebuild()
 		} catch (error: unknown) {
 			console.error('Failed to rebuild mdx-remote artifacts', error)
 		} finally {
 			rebuilding = false
 			if (queued) {
 				queued = false
-				await runRebuild()
+				await runQueuedRebuild()
 			}
 		}
 	}
@@ -100,7 +214,7 @@ async function watchMdxRemoteDocuments(options: CliOptions) {
 		}
 		rebuildTimer = setTimeout(() => {
 			rebuildTimer = null
-			void runRebuild()
+			void runQueuedRebuild()
 		}, 150)
 	}
 

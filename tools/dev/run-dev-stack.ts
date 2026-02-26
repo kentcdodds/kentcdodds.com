@@ -195,6 +195,7 @@ const runner = spawn(
 			R2_ENDPOINT: mockBase(r2Port),
 			MEDIA_BASE_URL: mediaBaseUrl,
 			MEDIA_STREAM_BASE_URL: `${mediaBaseUrl}/stream`,
+			MDX_REMOTE_SYNC_URL: `http://localhost:${appPort}/resources/mdx-remote-sync`,
 			R2_MOCK_CACHE_DIRECTORY:
 				process.env.R2_MOCK_CACHE_DIRECTORY ?? '.local/mock-r2-cache',
 		},
