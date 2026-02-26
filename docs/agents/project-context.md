@@ -85,6 +85,8 @@ reference:
     `mock-media-cache` so already-fetched assets continue working offline.
   - If remote media is unreachable (offline/no internet), the media mock returns a
     wireframe SVG placeholder so route audits still pass.
+  - Preview deployments no longer deploy the media-images mock; preview envs use
+    configured real media URLs (`MEDIA_BASE_URL` / `MEDIA_STREAM_BASE_URL`).
 - Call Kent ffmpeg container simulation is served by a Worker mock server in dev
   (`mock-servers/call-kent-ffmpeg/worker.ts`, local port `8804`).
 - Stream video URLs can use `MEDIA_STREAM_BASE_URL` (defaults to

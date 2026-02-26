@@ -148,6 +148,9 @@ jobs:
               continue
             fi
             service="$(basename "$dir")"
+            if [ "$service" = "media-images" ]; then
+              continue
+            fi
             mock_worker_name="${WORKER_NAME}-mock-${service}"
             log_file="deploy-mock-${service}.log"
             bun run wrangler -- deploy --config "$dir/wrangler.jsonc" --env preview --name "$mock_worker_name" "${dry_run_flag[@]}" 2>&1 | tee "$log_file"
@@ -183,7 +186,6 @@ jobs:
           MERMAID_TO_SVG_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_mermaid_to_svg }}
           CLOUDFLARE_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_cloudflare }}
           R2_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_cloudflare_r2 }}
-          MEDIA_IMAGES_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_media_images }}
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -215,10 +217,6 @@ jobs:
           assignUrl('OEMBED_API_BASE_URL', process.env.OEMBED_MOCK_URL)
           assignUrl('MERMAID_TO_SVG_BASE_URL', process.env.MERMAID_TO_SVG_MOCK_URL)
           assignUrl('R2_ENDPOINT', process.env.R2_MOCK_URL)
-          assignUrl('MEDIA_BASE_URL', process.env.MEDIA_IMAGES_MOCK_URL)
-          if (typeof process.env.MEDIA_IMAGES_MOCK_URL === 'string' && process.env.MEDIA_IMAGES_MOCK_URL.length > 0) {
-            vars.MEDIA_STREAM_BASE_URL = `${process.env.MEDIA_IMAGES_MOCK_URL}/stream`
-          }
 
           if (typeof process.env.TWITTER_MOCK_URL === 'string' && process.env.TWITTER_MOCK_URL.length > 0) {
             vars.TWITTER_SYNDICATION_BASE_URL = process.env.TWITTER_MOCK_URL
@@ -431,6 +429,9 @@ jobs:
               continue
             fi
             service="$(basename "$dir")"
+            if [ "$service" = "media-images" ]; then
+              continue
+            fi
             delete_worker "${WORKER_NAME}-mock-${service}"
           done
 

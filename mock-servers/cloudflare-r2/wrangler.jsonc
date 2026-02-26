@@ -9,13 +9,22 @@
 	},
 	"env": {
 		"development": {
-			"name": "kentcdodds-mock-cloudflare-r2-dev"
+			"name": "kentcdodds-mock-cloudflare-r2-dev",
+			"vars": {
+				"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+			}
 		},
 		"preview": {
-			"name": "kentcdodds-mock-cloudflare-r2-preview"
+			"name": "kentcdodds-mock-cloudflare-r2-preview",
+			"vars": {
+				"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+			}
 		},
 		"production": {
-			"name": "kentcdodds-mock-cloudflare-r2"
+			"name": "kentcdodds-mock-cloudflare-r2",
+			"vars": {
+				"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+			}
 		}
 	}
 }
