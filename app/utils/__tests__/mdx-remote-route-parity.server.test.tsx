@@ -65,24 +65,13 @@ async function renderRemoteMdxFromContentPath(contentPath: string) {
 		strictExpressionValidation: true,
 	})
 
-	const originalFlag = process.env.ENABLE_MDX_REMOTE
-	process.env.ENABLE_MDX_REMOTE = 'true'
-	try {
-		function TestRoute() {
-			const Component = useMdxComponent({
-				code: 'unused when remote document is present',
-				remoteDocument,
-			})
-			return <Component />
-		}
-		return renderToStaticMarkup(<TestRoute />)
-	} finally {
-		if (typeof originalFlag === 'undefined') {
-			delete process.env.ENABLE_MDX_REMOTE
-		} else {
-			process.env.ENABLE_MDX_REMOTE = originalFlag
-		}
+	function TestRoute() {
+		const Component = useMdxComponent({
+			remoteDocument,
+		})
+		return <Component />
 	}
+	return renderToStaticMarkup(<TestRoute />)
 }
 
 async function getContentPagePaths() {

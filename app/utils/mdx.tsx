@@ -1,5 +1,3 @@
-import { LRUCache } from 'lru-cache'
-import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { type MetaFunction } from 'react-router'
 import {
@@ -217,25 +215,6 @@ const mdxComponents = {
 	'C.KeyPropReset': KeyPropReset,
 }
 
-function shouldUseMdxRemoteRuntime() {
-	if (typeof window !== 'undefined' && window.ENV?.ENABLE_MDX_REMOTE === 'true') {
-		return true
-	}
-	if (
-		typeof globalThis !== 'undefined' &&
-		globalThis.ENV?.ENABLE_MDX_REMOTE === 'true'
-	) {
-		return true
-	}
-	if (
-		typeof process !== 'undefined' &&
-		process.env.ENABLE_MDX_REMOTE === 'true'
-	) {
-		return true
-	}
-	return false
-}
-
 declare global {
 	type MDXProvidedComponents = typeof mdxComponents
 }
@@ -255,24 +234,6 @@ declare module 'react' {
 			'callout-warning': CalloutProps
 		}
 	}
-}
-
-/**
- * This should be rendered within a useMemo
- * @param code the code to get the component from
- * @returns the component
- */
-function getMdxComponent(code: string) {
-	const Component = mdxBundler.getMDXComponent(code)
-	function KCDMdxComponent({
-		components,
-		...rest
-	}: Parameters<typeof Component>['0']) {
-		return (
-			<Component components={{ ...mdxComponents, ...components }} {...rest} />
-		)
-	}
-	return KCDMdxComponent
 }
 
 function getMdxRemoteComponent(
@@ -391,38 +352,17 @@ function SubscribeForm(props: Record<string, unknown>) {
 	)
 }
 
-// This exists so we don't have to call new Function for the given code
-// for every request for a given blog post/mdx file.
-const mdxComponentCache = new LRUCache<
-	string,
-	ReturnType<typeof getMdxComponent>
->({
-	max: 1000,
-})
-
 function useMdxComponent(
-	input:
-		| string
-		| {
-				code: string
-				remoteDocument?: MdxRemoteDocument<Record<string, unknown>>
-		  },
+	input: {
+		remoteDocument: MdxRemoteDocument<Record<string, unknown>>
+	},
 ) {
-	const { code, remoteDocument } =
-		typeof input === 'string' ? { code: input, remoteDocument: undefined } : input
+	const { remoteDocument } = input
 	const user = useOptionalUser()
 
 	return React.useMemo(() => {
-		if (shouldUseMdxRemoteRuntime() && remoteDocument) {
-			return getMdxRemoteComponent(remoteDocument, { user })
-		}
-		if (mdxComponentCache.has(code)) {
-			return mdxComponentCache.get(code)!
-		}
-		const component = getMdxComponent(code)
-		mdxComponentCache.set(code, component)
-		return component
-	}, [code, remoteDocument, user])
+		return getMdxRemoteComponent(remoteDocument, { user })
+	}, [remoteDocument, user])
 }
 
 export { getBannerAltProp, getBannerTitleProp, mdxPageMeta, useMdxComponent }

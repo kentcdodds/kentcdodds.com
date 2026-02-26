@@ -10,17 +10,7 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 	useOptionalUser: () => useOptionalUserMock(),
 }))
 
-const { getMdxComponentMock } = vi.hoisted(() => ({
-	getMdxComponentMock: vi.fn((_code: string) => () => <p>bundled-mdx</p>),
-}))
-
-vi.mock('mdx-bundler/client/index.js', () => ({
-	getMDXComponent: (code: string) => getMdxComponentMock(code),
-}))
-
-test('useMdxComponent renders mdx-remote document when runtime flag is enabled', () => {
-	const originalFlag = process.env.ENABLE_MDX_REMOTE
-	process.env.ENABLE_MDX_REMOTE = 'true'
+test('useMdxComponent renders mdx-remote documents', () => {
 	const remoteDocument = {
 		schemaVersion: 1 as const,
 		slug: 'hello',
@@ -45,57 +35,11 @@ test('useMdxComponent renders mdx-remote document when runtime flag is enabled',
 
 	function TestRoute() {
 		const Component = useMdxComponent({
-			code: 'unused when remote is enabled',
 			remoteDocument,
 		})
 		return <Component />
 	}
 
-	try {
-		const markup = renderToStaticMarkup(<TestRoute />)
-		expect(markup).toContain('<p>Hello Kent</p>')
-		expect(getMdxComponentMock).not.toHaveBeenCalled()
-	} finally {
-		if (typeof originalFlag === 'undefined') {
-			delete process.env.ENABLE_MDX_REMOTE
-		} else {
-			process.env.ENABLE_MDX_REMOTE = originalFlag
-		}
-	}
-})
-
-test('useMdxComponent falls back to bundled mdx when runtime flag is disabled', () => {
-	const originalFlag = process.env.ENABLE_MDX_REMOTE
-	process.env.ENABLE_MDX_REMOTE = 'false'
-	getMdxComponentMock.mockClear()
-	const remoteDocument = {
-		schemaVersion: 1 as const,
-		slug: 'fallback',
-		frontmatter: {},
-		compiledAt: '2026-02-25T00:00:00.000Z',
-		root: {
-			type: 'root' as const,
-			children: [{ type: 'text' as const, value: 'remote' }],
-		},
-	}
-
-	function TestRoute() {
-		const Component = useMdxComponent({
-			code: 'compiled bundled code',
-			remoteDocument,
-		})
-		return <Component />
-	}
-
-	try {
-		const markup = renderToStaticMarkup(<TestRoute />)
-		expect(markup).toContain('bundled-mdx')
-		expect(getMdxComponentMock).toHaveBeenCalledWith('compiled bundled code')
-	} finally {
-		if (typeof originalFlag === 'undefined') {
-			delete process.env.ENABLE_MDX_REMOTE
-		} else {
-			process.env.ENABLE_MDX_REMOTE = originalFlag
-		}
-	}
+	const markup = renderToStaticMarkup(<TestRoute />)
+	expect(markup).toContain('<p>Hello Kent</p>')
 })

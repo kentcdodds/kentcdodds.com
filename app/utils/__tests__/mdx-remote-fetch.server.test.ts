@@ -1,6 +1,5 @@
 import { expect, test, vi } from 'vitest'
 import { serializeMdxRemoteDocument } from '#app/mdx-remote/index.ts'
-import { clearRuntimeEnvSource, setRuntimeEnvSource } from '#app/utils/env.server.ts'
 
 const githubMocks = vi.hoisted(() => ({
 	downloadDirList: vi.fn(),
@@ -45,7 +44,6 @@ test('getMdxPage prefers mdx-remote documents when available', async () => {
 	const slug = `remote-${crypto.randomUUID()}`
 	compileMdxMocks.compileMdx.mockReset()
 	githubMocks.downloadMdxFileOrDirectory.mockReset()
-	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
 	setRuntimeBindingSource({
 		MDX_REMOTE_KV: {
 			get: vi.fn(async () =>
@@ -66,41 +64,6 @@ test('getMdxPage prefers mdx-remote documents when available', async () => {
 		expect(compileMdxMocks.compileMdx).not.toHaveBeenCalled()
 	} finally {
 		clearRuntimeBindingSource()
-		clearRuntimeEnvSource()
-	}
-})
-
-test('getMdxPage falls back to github + compile path when mdx-remote missing', async () => {
-	const slug = `fallback-${crypto.randomUUID()}`
-	compileMdxMocks.compileMdx.mockReset()
-	githubMocks.downloadMdxFileOrDirectory.mockReset()
-	githubMocks.downloadMdxFileOrDirectory.mockResolvedValue({
-		entry: `content/blog/${slug}/index.mdx`,
-		files: [{ filepath: `content/blog/${slug}/index.mdx`, content: '# test' }],
-	})
-	compileMdxMocks.compileMdx.mockResolvedValue({
-		code: 'export default function Page() { return null }',
-		frontmatter: { title: 'Fallback path' },
-	})
-	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
-	setRuntimeBindingSource({
-		MDX_REMOTE_KV: {
-			get: vi.fn(async () => null),
-		},
-	})
-
-	try {
-		const page = await getMdxPage(
-			{ contentDir: 'blog', slug },
-			{ forceFresh: true },
-		)
-		expect(page?.remoteDocument).toBeUndefined()
-		expect(page?.frontmatter.title).toBe('Fallback path')
-		expect(githubMocks.downloadMdxFileOrDirectory).toHaveBeenCalledTimes(1)
-		expect(compileMdxMocks.compileMdx).toHaveBeenCalledTimes(1)
-	} finally {
-		clearRuntimeBindingSource()
-		clearRuntimeEnvSource()
 	}
 })
 
@@ -110,7 +73,6 @@ test('getMdxPagesInDirectory uses mdx-remote manifest and skips github listing',
 	compileMdxMocks.compileMdx.mockReset()
 	githubMocks.downloadDirList.mockReset()
 	githubMocks.downloadMdxFileOrDirectory.mockReset()
-	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
 	setRuntimeBindingSource({
 		MDX_REMOTE_KV: {
 			get: vi.fn(async (key: string) => {
@@ -144,7 +106,6 @@ test('getMdxPagesInDirectory uses mdx-remote manifest and skips github listing',
 		expect(compileMdxMocks.compileMdx).not.toHaveBeenCalled()
 	} finally {
 		clearRuntimeBindingSource()
-		clearRuntimeEnvSource()
 	}
 })
 
@@ -152,7 +113,6 @@ test('getMdxDirList uses mdx-remote manifest when enabled', async () => {
 	const firstSlug = `page-${crypto.randomUUID()}`
 	const secondSlug = `page-${crypto.randomUUID()}`
 	githubMocks.downloadDirList.mockReset()
-	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
 	setRuntimeBindingSource({
 		MDX_REMOTE_KV: {
 			get: vi.fn(async (key: string) => {
@@ -177,6 +137,5 @@ test('getMdxDirList uses mdx-remote manifest when enabled', async () => {
 		expect(githubMocks.downloadDirList).not.toHaveBeenCalled()
 	} finally {
 		clearRuntimeBindingSource()
-		clearRuntimeEnvSource()
 	}
 })

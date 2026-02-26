@@ -92,10 +92,13 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta = mdxPageMeta
 
 export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
-	const { code, frontmatter, remoteDocument } = data.page
+	const { frontmatter, remoteDocument } = data.page
+	if (!remoteDocument) {
+		throw new Error('Page is missing required mdx-remote document.')
+	}
 	const isDraft = Boolean(frontmatter.draft)
 	const isArchived = Boolean(frontmatter.archived)
-	const Component = useMdxComponent({ code, remoteDocument })
+	const Component = useMdxComponent({ remoteDocument })
 
 	return (
 		<>

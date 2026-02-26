@@ -23,46 +23,31 @@ describe('mdx not-found caching', () => {
 			vi.doMock('../session.server.ts', () => {
 				return { getUser: async () => null }
 			})
-			// Avoid importing `mdx-bundler` (and therefore `esbuild`) in jsdom tests.
-			// For this test we only care about the "missing page -> null" path.
-			vi.doMock('#app/utils/compile-mdx.server.ts', () => {
-				return { compileMdx: async () => null }
-			})
-			vi.doMock('#app/utils/github.server.ts', () => {
-				return {
-					downloadDirList: async () => [],
-					downloadMdxFileOrDirectory: async () => ({
-						entry: `content/blog/definitely-does-not-exist`,
-						files: [],
-					}),
-				}
-			})
 
 			const { getMdxPage } = await import('../mdx.server.ts')
 			const { cache } = await import('../cache.server.ts')
+			const { setRuntimeBindingSource, clearRuntimeBindingSource } = await import(
+				'../runtime-bindings.server.ts'
+			)
 
 			const slug = `definitely-does-not-exist-${randomUUID()}`
+			setRuntimeBindingSource({
+				MDX_REMOTE_KV: {
+					get: async () => null,
+				},
+			})
 			const page = await getMdxPage({ contentDir: 'blog', slug }, {})
+			clearRuntimeBindingSource()
 			expect(page).toBeNull()
 
-			const keys = [
-				`mdx-page:blog:${slug}:compiled`,
-				`blog:${slug}:downloaded`,
-				`blog:${slug}:compiled`,
-			]
-
-			for (const key of keys) {
-				const entry = await cache.get(key)
-				expect(entry).not.toBeNull()
-				expect(entry!.metadata.ttl).toBe(oneDay)
-				expect(entry!.metadata.swr).toBe(0)
-			}
+			const entry = await cache.get(`mdx-page:blog:${slug}:compiled`)
+			expect(entry).not.toBeNull()
+			expect(entry!.metadata.ttl).toBe(oneDay)
+			expect(entry!.metadata.swr).toBe(0)
 		} finally {
 			// Prevent mock/module state leaking if more tests are added later.
 			vi.restoreAllMocks()
 			vi.unmock('../session.server.ts')
-			vi.unmock('#app/utils/compile-mdx.server.ts')
-			vi.unmock('#app/utils/github.server.ts')
 			vi.resetModules()
 
 			for (const [key, value] of Object.entries(originalEnv)) {

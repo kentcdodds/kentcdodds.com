@@ -1,19 +1,12 @@
-import { getImageBuilder } from '#app/images.tsx'
-import { type GitHubFile, type MdxPage } from '#app/types.ts'
-import { compileMdx } from '#app/utils/compile-mdx.server.ts'
-import {
-	downloadDirList,
-	downloadMdxFileOrDirectory,
-} from '#app/utils/github.server.ts'
+import { type MdxPage } from '#app/types.ts'
+import { downloadMdxFileOrDirectory } from '#app/utils/github.server.ts'
 import {
 	buildMdxPageFromRemoteDocument,
 	getMdxRemoteDirectoryEntries,
 	getMdxRemoteDocument,
-	shouldUseMdxRemoteDocuments,
 } from '#app/utils/mdx-remote-documents.server.ts'
-import { formatDate, typedBoolean } from '#app/utils/misc.ts'
+import { typedBoolean } from '#app/utils/misc.ts'
 import { cache, cachified } from './cache.server.ts'
-import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
 
 type CachifiedOptions = {
@@ -70,25 +63,10 @@ export async function getMdxPage(
 				slug,
 				options,
 			})
-			if (remotePage) return remotePage
-
-			const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
-			const compiledPage = await compileMdxCached({
-				contentDir,
-				slug,
-				...pageFiles,
-				options,
-			}).catch((err) => {
-				console.error(`Failed to get a fresh value for mdx:`, {
-					contentDir,
-					slug,
-				})
-				return Promise.reject(err)
-			})
-			if (!compiledPage) {
+			if (!remotePage) {
 				applyNotFoundCacheMetadata(context.metadata, ttl)
 			}
-			return compiledPage
+			return remotePage
 		},
 	})
 	return page
@@ -101,20 +79,15 @@ export async function getMdxPagesInDirectory(
 	const dirList = await getMdxDirList(contentDir, options)
 	const pages = await Promise.all(
 		dirList.map(async ({ slug }) => {
-			const remotePage = await getMdxRemotePageCached({
+			return getMdxRemotePageCached({
 				contentDir,
 				slug,
 				options,
 			})
-			if (remotePage) return remotePage
-			const pageData = await downloadMdxFilesCached(contentDir, slug, options)
-			return compileMdxCached({ contentDir, slug, ...pageData, options })
 		}),
 	)
 	return pages.filter(typedBoolean)
 }
-
-const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
 export async function getMdxDirList(
 	contentDir: string,
@@ -124,32 +97,7 @@ export async function getMdxDirList(
 		contentDir,
 		options: options ?? {},
 	})
-	if (remoteDirList) return remoteDirList
-	const { forceFresh, ttl = defaultTTL, request, timings } = options ?? {}
-	const key = getDirListKey(contentDir)
-	return cachified({
-		cache,
-		request,
-		timings,
-		ttl,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		forceFresh,
-		key,
-		checkValue: (value: unknown) => Array.isArray(value),
-		getFreshValue: async () => {
-			const fullContentDirPath = `content/${contentDir}`
-			const dirList = (await downloadDirList(fullContentDirPath))
-				.map(({ name, path }) => ({
-					name,
-					slug: path
-						.replace(/\\/g, '/')
-						.replace(`${fullContentDirPath}/`, '')
-						.replace(/\.mdx$/, ''),
-				}))
-				.filter(({ name }) => name !== 'README.md')
-			return dirList
-		},
-	})
+	return remoteDirList ?? []
 }
 
 async function getMdxRemotePageCached({
@@ -161,7 +109,6 @@ async function getMdxRemotePageCached({
 	slug: string
 	options: CachifiedOptions
 }) {
-	if (!shouldUseMdxRemoteDocuments()) return null
 	const { forceFresh, ttl = defaultTTL, request, timings } = options
 	return cachified({
 		key: `${contentDir}:${slug}:compiled:remote`,
@@ -191,7 +138,6 @@ async function getMdxRemoteDirListCached({
 	contentDir: string
 	options: CachifiedOptions
 }) {
-	if (!shouldUseMdxRemoteDocuments()) return null
 	const { forceFresh, ttl = defaultTTL, request, timings } = options
 	return cachified({
 		key: `${contentDir}:dir-list:remote`,
@@ -203,7 +149,7 @@ async function getMdxRemoteDirListCached({
 		forceFresh,
 		checkValue: (value: unknown) => Array.isArray(value),
 		getFreshValue: async () => {
-			return getMdxRemoteDirectoryEntries(contentDir)
+			return (await getMdxRemoteDirectoryEntries(contentDir)) ?? []
 		},
 	})
 }
@@ -280,99 +226,4 @@ export async function downloadMdxFilesCached(
 		},
 	})
 	return downloaded
-}
-
-async function compileMdxCached({
-	contentDir,
-	slug,
-	entry,
-	files,
-	options,
-}: {
-	contentDir: string
-	slug: string
-	entry: string
-	files: Array<GitHubFile>
-	options: CachifiedOptions
-}) {
-	const { ttl = defaultTTL } = options
-	const key = `${contentDir}:${slug}:compiled`
-	const page = await cachified({
-		cache,
-		ttl: defaultTTL,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		...options,
-		key,
-		checkValue: checkCompiledValue,
-		getFreshValue: async (context) => {
-			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
-			if (compiledPage) {
-				if (
-					compiledPage.frontmatter.bannerImageId &&
-					!compiledPage.frontmatter.bannerBlurDataUrl
-				) {
-					try {
-						compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
-							compiledPage.frontmatter.bannerImageId,
-						)
-					} catch (error: unknown) {
-						console.error(
-							'oh no, there was an error getting the blur image data url',
-							error,
-						)
-					}
-				}
-				if (compiledPage.frontmatter.bannerCredit) {
-					const credit = await markdownToHtmlUnwrapped(
-						compiledPage.frontmatter.bannerCredit,
-					)
-					compiledPage.frontmatter.bannerCredit = credit
-					const noHtml = await stripHtml(credit)
-					if (!compiledPage.frontmatter.bannerAlt) {
-						compiledPage.frontmatter.bannerAlt = noHtml
-							.replace(/(photo|image)/i, '')
-							.trim()
-					}
-					if (!compiledPage.frontmatter.bannerTitle) {
-						compiledPage.frontmatter.bannerTitle = noHtml
-					}
-				}
-				return {
-					dateDisplay: compiledPage.frontmatter.date
-						? formatDate(compiledPage.frontmatter.date)
-						: undefined,
-					...compiledPage,
-					slug,
-					editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
-				}
-			} else {
-				applyNotFoundCacheMetadata(context.metadata, ttl)
-				return null
-			}
-		},
-	})
-	return page
-}
-
-async function getBlurDataUrl(imageId: string) {
-	const imageURL = getImageBuilder(imageId)({
-		resize: { width: 100 },
-		quality: 'auto',
-		format: 'webp',
-		effect: {
-			name: 'blur',
-			value: '1000',
-		},
-	})
-	const dataUrl = await getDataUrlForImage(imageURL)
-	return dataUrl
-}
-
-async function getDataUrlForImage(imageUrl: string) {
-	const res = await fetch(imageUrl)
-	const arrayBuffer = await res.arrayBuffer()
-	const base64 = Buffer.from(arrayBuffer).toString('base64')
-	const mime = res.headers.get('Content-Type') ?? 'image/webp'
-	const dataUrl = `data:${mime};base64,${base64}`
-	return dataUrl
 }

@@ -1,16 +1,11 @@
-import fs from 'node:fs/promises'
-import os from 'node:os'
-import path from 'node:path'
 import { expect, test, vi } from 'vitest'
 import { serializeMdxRemoteDocument } from '#app/mdx-remote/index.ts'
-import { clearRuntimeEnvSource, setRuntimeEnvSource } from '#app/utils/env.server.ts'
 import {
 	buildMdxPageFromRemoteDocument,
 	getMdxRemoteDirectoryEntries,
 	getMdxRemoteDocument,
 	getMdxRemoteDocumentKey,
 	getMdxRemoteManifest,
-	shouldUseMdxRemoteDocuments,
 } from '#app/utils/mdx-remote-documents.server.ts'
 import {
 	clearRuntimeBindingSource,
@@ -45,15 +40,6 @@ function createRemoteDocument({
 	}
 }
 
-test('shouldUseMdxRemoteDocuments reads env toggle', () => {
-	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
-	try {
-		expect(shouldUseMdxRemoteDocuments()).toBe(true)
-	} finally {
-		clearRuntimeEnvSource()
-	}
-})
-
 test('getMdxRemoteDocumentKey maps supported content directories', () => {
 	expect(getMdxRemoteDocumentKey({ contentDir: 'blog', slug: 'post' })).toBe(
 		'blog/post.json',
@@ -66,7 +52,6 @@ test('getMdxRemoteDocumentKey maps supported content directories', () => {
 
 test('getMdxRemoteDocument loads from runtime KV binding first', async () => {
 	const document = createRemoteDocument({ slug: 'kv-post' })
-	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
 	setRuntimeBindingSource({
 		MDX_REMOTE_KV: {
 			get: vi.fn(async () => serializeMdxRemoteDocument(document)),
@@ -86,99 +71,37 @@ test('getMdxRemoteDocument loads from runtime KV binding first', async () => {
 		})
 	} finally {
 		clearRuntimeBindingSource()
-		clearRuntimeEnvSource()
 	}
 })
 
-test('getMdxRemoteDocument falls back to remote base url fetch', async () => {
-	const document = createRemoteDocument({ slug: 'remote-fetch' })
-	const fetchMock = vi.fn(
-		async (_input: RequestInfo | URL) =>
-			new Response(serializeMdxRemoteDocument(document), { status: 200 }),
-	)
-	vi.stubGlobal('fetch', fetchMock)
-	setRuntimeEnvSource({
-		ENABLE_MDX_REMOTE: 'true',
-		MDX_REMOTE_BASE_URL: 'https://mdx-remote.example.com',
-	})
-
-	try {
-		const result = await getMdxRemoteDocument({
-			contentDir: 'blog',
-			slug: 'remote-fetch',
-		})
-		expect(result?.slug).toBe('remote-fetch')
-		expect(fetchMock).toHaveBeenCalledTimes(1)
-		const [fetchInput] = fetchMock.mock.calls[0] ?? []
-		expect(String(fetchInput)).toBe(
-			'https://mdx-remote.example.com/blog/remote-fetch.json',
-		)
-	} finally {
-		vi.unstubAllGlobals()
-		clearRuntimeEnvSource()
-	}
-})
-
-test('getMdxRemoteDocument falls back to runtime R2 binding before base url', async () => {
-	const document = createRemoteDocument({ slug: 'r2-post' })
-	const fetchMock = vi.fn()
-	vi.stubGlobal('fetch', fetchMock)
-	setRuntimeEnvSource({
-		ENABLE_MDX_REMOTE: 'true',
-		MDX_REMOTE_BASE_URL: 'https://mdx-remote.example.com',
-	})
+test('getMdxRemoteDocument returns null when kv artifact is missing', async () => {
 	setRuntimeBindingSource({
-		MDX_REMOTE_R2: {
-			get: vi.fn(async () => ({
-				text: async () => serializeMdxRemoteDocument(document),
-			})),
+		MDX_REMOTE_KV: {
+			get: vi.fn(async () => null),
 		},
 	})
 
 	try {
 		const result = await getMdxRemoteDocument({
 			contentDir: 'blog',
-			slug: 'r2-post',
+			slug: 'missing-post',
 		})
-		expect(result?.slug).toBe('r2-post')
-		expect(fetchMock).not.toHaveBeenCalled()
+		expect(result).toBeNull()
 	} finally {
 		clearRuntimeBindingSource()
-		clearRuntimeEnvSource()
-		vi.unstubAllGlobals()
 	}
 })
 
-test('getMdxRemoteDocument falls back to local artifact files in mocks mode', async () => {
-	const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mdx-remote-artifacts-'))
-	const artifactPath = path.join(tempDir, 'blog')
-	await fs.mkdir(artifactPath, { recursive: true })
-	const document = createRemoteDocument({ slug: 'local-artifact' })
-	await fs.writeFile(
-		path.join(artifactPath, 'local-artifact.json'),
-		serializeMdxRemoteDocument(document),
-		'utf8',
-	)
-
-	setRuntimeEnvSource({
-		ENABLE_MDX_REMOTE: 'true',
-		MOCKS: 'true',
-		MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY: tempDir,
-	})
-
-	try {
-		const result = await getMdxRemoteDocument({
+test('getMdxRemoteDocument throws when MDX_REMOTE_KV binding is missing', async () => {
+	await expect(
+		getMdxRemoteDocument({
 			contentDir: 'blog',
-			slug: 'local-artifact',
-		})
-		expect(result?.slug).toBe('local-artifact')
-	} finally {
-		clearRuntimeEnvSource()
-	}
+			slug: 'no-binding',
+		}),
+	).rejects.toThrow('Missing required runtime binding: MDX_REMOTE_KV')
 })
 
 test('getMdxRemoteManifest loads entries from runtime bindings', async () => {
-	setRuntimeEnvSource({ ENABLE_MDX_REMOTE: 'true' })
 	setRuntimeBindingSource({
 		MDX_REMOTE_KV: {
 			get: vi.fn(async (key: string) => {
@@ -205,7 +128,6 @@ test('getMdxRemoteManifest loads entries from runtime bindings', async () => {
 		expect(blogEntries).toEqual([{ name: 'first-post', slug: 'first-post' }])
 	} finally {
 		clearRuntimeBindingSource()
-		clearRuntimeEnvSource()
 	}
 })
 

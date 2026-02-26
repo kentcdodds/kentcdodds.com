@@ -2,21 +2,12 @@ import { type MdxRemoteDocument } from '#app/mdx-remote/compiler/types.ts'
 import { deserializeMdxRemoteDocument } from '#app/mdx-remote/index.ts'
 import { type MdxPage } from '#app/types.ts'
 import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
-import { getEnv } from './env.server.ts'
 import { formatDate } from './misc.ts'
 
 type MdxRemoteCollection = 'blog' | 'pages' | 'writing-blog'
 
 type KvNamespaceLike = {
 	get(key: string, type?: 'text'): Promise<string | null>
-}
-
-type R2ObjectBodyLike = {
-	text(): Promise<string>
-}
-
-type R2BucketLike = {
-	get(key: string): Promise<R2ObjectBodyLike | null>
 }
 
 type MdxRemoteDocumentLookupOptions = {
@@ -31,10 +22,6 @@ type MdxRemoteManifestEntry = {
 
 type MdxRemoteManifest = {
 	entries: Array<MdxRemoteManifestEntry>
-}
-
-function shouldUseMdxRemoteDocuments() {
-	return getEnv().ENABLE_MDX_REMOTE === 'true'
 }
 
 function getMdxRemoteCollection(contentDir: string): MdxRemoteCollection | null {
@@ -57,12 +44,10 @@ async function getMdxRemoteDocument({
 	contentDir,
 	slug,
 }: MdxRemoteDocumentLookupOptions) {
-	if (!shouldUseMdxRemoteDocuments()) return null
-
 	const documentKey = getMdxRemoteDocumentKey({ contentDir, slug })
 	if (!documentKey) return null
 
-	const source = await getMdxRemoteArtifactSource(documentKey)
+	const source = await getMdxRemoteDocumentSourceFromBinding(documentKey)
 	if (!source) return null
 
 	try {
@@ -73,18 +58,8 @@ async function getMdxRemoteDocument({
 	}
 }
 
-async function getMdxRemoteArtifactSource(artifactKey: string) {
-	return (
-		(await getMdxRemoteDocumentSourceFromBinding(artifactKey)) ??
-		(await getMdxRemoteDocumentSourceFromR2Binding(artifactKey)) ??
-		(await getMdxRemoteDocumentSourceFromBaseUrl(artifactKey)) ??
-		(await getMdxRemoteDocumentSourceFromLocalArtifacts(artifactKey))
-	)
-}
-
 async function getMdxRemoteManifest() {
-	if (!shouldUseMdxRemoteDocuments()) return null
-	const source = await getMdxRemoteArtifactSource('manifest.json')
+	const source = await getMdxRemoteDocumentSourceFromBinding('manifest.json')
 	if (!source) return null
 	try {
 		const parsed = JSON.parse(source) as {
@@ -131,7 +106,9 @@ async function getMdxRemoteDirectoryEntries(contentDir: string) {
 
 async function getMdxRemoteDocumentSourceFromBinding(artifactKey: string) {
 	const kvBinding = getRuntimeBinding<KvNamespaceLike>('MDX_REMOTE_KV')
-	if (!kvBinding) return null
+	if (!kvBinding) {
+		throw new Error('Missing required runtime binding: MDX_REMOTE_KV')
+	}
 	try {
 		return await kvBinding.get(artifactKey, 'text')
 	} catch (error: unknown) {
@@ -139,56 +116,6 @@ async function getMdxRemoteDocumentSourceFromBinding(artifactKey: string) {
 			`Unable to read mdx-remote artifact "${artifactKey}" from KV binding`,
 			error,
 		)
-		return null
-	}
-}
-
-async function getMdxRemoteDocumentSourceFromR2Binding(artifactKey: string) {
-	const r2Binding = getRuntimeBinding<R2BucketLike>('MDX_REMOTE_R2')
-	if (!r2Binding) return null
-	try {
-		const object = await r2Binding.get(artifactKey)
-		if (!object) return null
-		return object.text()
-	} catch (error: unknown) {
-		console.warn(
-			`Unable to read mdx-remote artifact "${artifactKey}" from R2 binding`,
-			error,
-		)
-		return null
-	}
-}
-
-async function getMdxRemoteDocumentSourceFromBaseUrl(artifactKey: string) {
-	const baseUrl = getEnv().MDX_REMOTE_BASE_URL
-	if (!baseUrl) return null
-	try {
-		const remoteUrl = new URL(artifactKey, `${baseUrl.replace(/\/+$/, '')}/`)
-		const response = await fetch(remoteUrl)
-		if (!response.ok) return null
-		return response.text()
-	} catch (error: unknown) {
-		console.warn(
-			`Unable to fetch mdx-remote artifact "${artifactKey}" from base URL`,
-			error,
-		)
-		return null
-	}
-}
-
-async function getMdxRemoteDocumentSourceFromLocalArtifacts(artifactKey: string) {
-	const env = getEnv()
-	if (!env.MOCKS) return null
-	try {
-		const fs = await import('node:fs/promises')
-		const path = await import('node:path')
-		const artifactPath = path.resolve(
-			process.cwd(),
-			env.MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY,
-			artifactKey,
-		)
-		return await fs.readFile(artifactPath, 'utf8')
-	} catch {
 		return null
 	}
 }
@@ -219,5 +146,4 @@ export {
 	getMdxRemoteDocument,
 	getMdxRemoteDocumentKey,
 	getMdxRemoteManifest,
-	shouldUseMdxRemoteDocuments,
 }
