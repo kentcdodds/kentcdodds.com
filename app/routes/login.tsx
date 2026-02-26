@@ -27,6 +27,7 @@ import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
+import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
@@ -44,6 +45,10 @@ import { prisma } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/login'
+
+export const handle: KCDHandle = {
+	getSitemapEntries: () => null,
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)

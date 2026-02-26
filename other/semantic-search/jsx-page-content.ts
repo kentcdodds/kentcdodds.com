@@ -33,11 +33,17 @@ const SKIPPED_CLASS_NAMES = new Set([
 const SKIPPED_ROLES = new Set(['dialog', 'alert', 'status', 'navigation'])
 const SKIPPED_STATIC_ROUTES = new Set([
 	'/credits',
+	'/forgot-password',
+	'/login',
+	'/magic',
+	'/me',
+	'/reset-password',
 	'/resume',
+	'/signup',
 	'/sitemap.xml',
 	'/testimonials',
 ])
-const SKIPPED_PREFIX_ROUTES = ['/blog/', '/calls/', '/chats/', '/talks/']
+const SKIPPED_PREFIX_ROUTES = ['/blog/', '/calls/', '/chats/', '/me/', '/talks/']
 const NON_HTML_EXTENSION_PATTERN = /\.[a-z0-9]+$/i
 const BLOCK_LEVEL_TAG_NAMES = new Set([
 	'address',
