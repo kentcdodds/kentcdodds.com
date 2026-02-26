@@ -71,3 +71,23 @@ test('mcp requests are forwarded to durable object binding', async () => {
 	expect(await response.text()).toBe('mcp-forwarded')
 	expect(response.headers.get('X-Powered-By')).toBe('Kody the Koala')
 })
+
+test('oauth protected resource metadata endpoint is served by main worker', async () => {
+	const request = new Request(
+		'https://preview.example.com/.well-known/oauth-protected-resource',
+		{
+			headers: {
+				Host: 'preview.example.com',
+			},
+		},
+	)
+	const response = await worker.fetch(request, {}, {})
+	const payload = (await response.json()) as {
+		resource?: string
+		authorization_servers?: Array<string>
+	}
+
+	expect(response.status).toBe(200)
+	expect(payload.resource).toBe('https://preview.example.com/mcp')
+	expect(payload.authorization_servers).toEqual(['https://preview.example.com'])
+})

@@ -1,6 +1,7 @@
+import { type AuthRequest, type OAuthHelpers } from '@cloudflare/workers-oauth-provider'
 import { data as json, redirect, Form } from 'react-router'
 import { Button } from '#app/components/button.tsx'
-import { getEnv } from '#app/utils/env.server.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/oauth.authorize'
 
@@ -33,30 +34,40 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	if (decision === 'approve') {
-		const params = Object.fromEntries(url.searchParams)
-		// Call the Cloudflare Worker to complete authorization
-		const response = await fetch(
-			'https://kcd-oauth-provider.kentcdodds.workers.dev/internal/complete-authorization',
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					authorization: `Bearer ${getEnv().CF_INTERNAL_SECRET}`,
-				},
-				body: JSON.stringify({
-					requestParams: {
-						state: '',
-						...params,
-						scope: params.scope?.split(' ') ?? [],
-					},
-					userId: user.id,
-					props: { userId: user.id },
-					metadata: {},
-				}),
-			},
-		)
-		if (!response.ok) {
-			console.error('Authorization failed', await response.text())
+		const oauthProvider = getOAuthProviderBinding()
+		if (!oauthProvider) {
+			return json(
+				{
+					status: 'error',
+					message: 'OAuth provider binding is unavailable',
+				} as const,
+				{ status: 500 },
+			)
+		}
+
+		const scope = requestParams.scope?.split(' ').filter(Boolean) ?? []
+		const oauthRequest: AuthRequest = {
+			responseType: requestParams.response_type ?? 'code',
+			clientId: requestParams.client_id,
+			redirectUri: requestParams.redirect_uri,
+			scope,
+			state: requestParams.state ?? '',
+			codeChallenge: requestParams.code_challenge,
+			codeChallengeMethod: requestParams.code_challenge_method,
+			resource: requestParams.resource,
+		}
+
+		try {
+			const { redirectTo } = await oauthProvider.completeAuthorization({
+				request: oauthRequest,
+				userId: user.id,
+				props: { userId: user.id },
+				metadata: {},
+				scope,
+			})
+			return redirect(redirectTo)
+		} catch (e) {
+			console.error('Authorization failed', e)
 			return json(
 				{
 					status: 'error',
@@ -65,30 +76,6 @@ export async function action({ request }: Route.ActionArgs) {
 				{ status: 500 },
 			)
 		}
-		let redirectTo: string | undefined = undefined
-		try {
-			const data = (await response.json()) as any
-			if (typeof data.redirectTo === 'string') {
-				redirectTo = data.redirectTo
-			}
-		} catch (e) {
-			console.error('Invalid response from authorization server', e)
-		}
-		if (!redirectTo) {
-			return json(
-				{
-					status: 'error',
-					message: 'Invalid response from authorization server',
-				} as const,
-				{ status: 500 },
-			)
-		}
-		// Add state param if present
-		const redirectUrl = new URL(redirectTo)
-		if (requestParams.state) {
-			redirectUrl.searchParams.set('state', requestParams.state)
-		}
-		return redirect(redirectUrl.toString())
 	} else {
 		// Denied
 		const params = new URLSearchParams({ error: 'access_denied' })
@@ -139,4 +126,16 @@ export default function OAuthAuthorizeRoute({
 			) : null}
 		</div>
 	)
+}
+
+function getOAuthProviderBinding() {
+	const binding = getRuntimeBinding<OAuthHelpers>('OAUTH_PROVIDER')
+	if (
+		!binding ||
+		typeof binding !== 'object' ||
+		typeof binding.completeAuthorization !== 'function'
+	) {
+		return null
+	}
+	return binding
 }

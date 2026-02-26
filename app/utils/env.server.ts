@@ -65,8 +65,7 @@ const schemaBase = z.object({
 	OAUTH_PROVIDER_BASE_URL: z
 		.string()
 		.trim()
-		.optional()
-		.default('https://kcd-oauth-provider.kentcdodds.workers.dev'),
+		.optional(),
 	OEMBED_API_BASE_URL: z
 		.string()
 		.trim()
@@ -83,7 +82,6 @@ const schemaBase = z.object({
 		.optional()
 		.default('https://api.pwnedpasswords.com'),
 	INTERNAL_COMMAND_TOKEN: nonEmptyString,
-	MAGIC_LINK_SECRET: nonEmptyString,
 	MAILGUN_DOMAIN: nonEmptyString,
 	MAILGUN_SENDING_KEY: nonEmptyString,
 	MAILGUN_API_BASE_URL: z
@@ -96,7 +94,6 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://www.gravatar.com'),
-	REFRESH_CACHE_SECRET: nonEmptyString,
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
 	// Sentry is optional; validate required combos in `superRefine`.
 	SENTRY_DSN: z.string().trim().optional(),
@@ -138,7 +135,6 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://verifyright.co'),
-	CF_INTERNAL_SECRET: nonEmptyString,
 
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
 	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,

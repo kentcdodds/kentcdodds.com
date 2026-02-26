@@ -118,7 +118,9 @@ export async function getAuthInfoFromOAuthFromRequest(request: Request) {
 	if (!authHeader?.startsWith('Bearer ')) return undefined
 	const token = authHeader.slice('Bearer '.length)
 
-	const validateUrl = new URL('/api/validate-token', getEnv().OAUTH_PROVIDER_BASE_URL)
+	const oauthProviderBaseUrl =
+		getEnv().OAUTH_PROVIDER_BASE_URL ?? new URL(request.url).origin
+	const validateUrl = new URL('/api/validate-token', oauthProviderBaseUrl)
 	const resp = await fetch(validateUrl, {
 		headers: { authorization: `Bearer ${token}` },
 	})

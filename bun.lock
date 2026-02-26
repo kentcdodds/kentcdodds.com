@@ -6,6 +6,7 @@
       "name": "kentcdodds.com",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.995.0",
+        "@cloudflare/workers-oauth-provider": "^0.2.3",
         "@conform-to/react": "^1.17.1",
         "@conform-to/zod": "^1.17.1",
         "@epic-web/cachified": "^5.6.1",
@@ -380,6 +381,8 @@
     "@cloudflare/workerd-linux-arm64": ["@cloudflare/workerd-linux-arm64@1.20260302.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-7M25noGI4WlSBOhrIaY8xZrnn87OQKtJg9YWAO2EFqGjF1Su5QXGaLlQVF4fAKbqTywbHnI8BAuIsIlUSNkhCg=="],
 
     "@cloudflare/workerd-windows-64": ["@cloudflare/workerd-windows-64@1.20260302.0", "", { "os": "win32", "cpu": "x64" }, "sha512-jK1L3ADkiWxFzlqZTq2iHW1Bd2Nzu1fmMWCGZw4sMZ2W1B2WCm2wHwO2SX/py4BgylyEN3wuF+5zagbkNKht9A=="],
+
+    "@cloudflare/workers-oauth-provider": ["@cloudflare/workers-oauth-provider@0.2.3", "", {}, "sha512-86a5eJZR+kXoRBWVYEf47RmHM4FjqETOtJSBv7MpzmkcfHU27XhahhwVOO4i4OQDNIPGOOubVcbWDVDLydfD7g=="],
 
     "@cloudflare/workers-types": ["@cloudflare/workers-types@4.20260304.0", "", {}, "sha512-oQ0QJpWnCWK9tx5q/ZHQeSsf5EcQWa4KqdDMY/R5Ln0ojFzv6UYO0RWsfDPsoXUAwK671VwaXqAW0Mx0uWz7yw=="],
 

@@ -82,11 +82,6 @@ jobs:
           path: other/content/mdx-remote
           key: mdx-remote-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
 
-      - name: 🥬 Refresh Content
-        run: bun ./other/refresh-changed-content.js ${{ github.sha }}
-        env:
-          REFRESH_CACHE_SECRET: ${{ secrets.REFRESH_CACHE_SECRET }}
-
       - name: 🧹 Cleanup generated content config
         if: always()
         run: rm -f wrangler-content.generated.jsonc

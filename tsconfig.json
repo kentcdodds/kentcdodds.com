@@ -1,7 +1,7 @@
 {
 	"include": [".react-router/types/**/*", "**/*.mdx", "**/*.ts", "**/*.tsx"],
 	"extends": ["@epic-web/config/typescript"],
-	"exclude": ["node_modules", "./oauth/**/*"],
+	"exclude": ["node_modules"],
 	"compilerOptions": {
 		"rootDirs": [".", "./.react-router/types"],
 		"typeRoots": ["./types", "./node_modules/@types"],

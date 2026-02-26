@@ -102,6 +102,7 @@ type BuildGeneratedWranglerConfigArgs = {
 	d1DatabaseId: string
 	siteCacheKvId: string
 	mdxRemoteKvId: string
+	oauthKvId: string
 	callsDraftQueueName: string
 	dotenvVars?: Record<string, string>
 }
@@ -191,10 +192,12 @@ export function buildPreviewResourceNames(workerName: string) {
 	const d1Suffix = '-db'
 	const kvSuffix = '-site-cache-kv'
 	const mdxKvSuffix = '-mdx-remote-kv'
+	const oauthKvSuffix = '-oauth-kv'
 	const queueSuffix = '-calls-draft-queue'
 	const d1DatabaseName = truncateWithSuffix(workerName, d1Suffix, maxLen)
 	const siteCacheKvTitle = truncateWithSuffix(workerName, kvSuffix, maxLen)
 	const mdxRemoteKvTitle = truncateWithSuffix(workerName, mdxKvSuffix, maxLen)
+	const oauthKvTitle = truncateWithSuffix(workerName, oauthKvSuffix, maxLen)
 	const callsDraftQueueName = truncateWithSuffix(
 		workerName,
 		queueSuffix,
@@ -204,6 +207,7 @@ export function buildPreviewResourceNames(workerName: string) {
 		d1DatabaseName,
 		siteCacheKvTitle,
 		mdxRemoteKvTitle,
+		oauthKvTitle,
 		callsDraftQueueName,
 	}
 }
@@ -445,6 +449,7 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseId,
 	siteCacheKvId,
 	mdxRemoteKvId,
+	oauthKvId,
 	callsDraftQueueName,
 	varsFromDotenv,
 }: {
@@ -456,6 +461,7 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseId: string
 	siteCacheKvId: string
 	mdxRemoteKvId: string
+	oauthKvId: string
 	callsDraftQueueName: string
 	varsFromDotenv: string | null
 }) {
@@ -473,6 +479,7 @@ async function writeGeneratedWranglerConfig({
 		d1DatabaseId,
 		siteCacheKvId,
 		mdxRemoteKvId,
+		oauthKvId,
 		callsDraftQueueName,
 		dotenvVars,
 	})
@@ -491,6 +498,7 @@ export function buildGeneratedWranglerConfig({
 	d1DatabaseId,
 	siteCacheKvId,
 	mdxRemoteKvId,
+	oauthKvId,
 	callsDraftQueueName,
 	dotenvVars,
 }: BuildGeneratedWranglerConfigArgs) {
@@ -536,7 +544,9 @@ export function buildGeneratedWranglerConfig({
 	const kvWithoutBinding = existingKvNamespaces.filter((entry) => {
 		return !(
 			isRecord(entry) &&
-			(entry.binding === 'SITE_CACHE_KV' || entry.binding === 'MDX_REMOTE_KV')
+			(entry.binding === 'SITE_CACHE_KV' ||
+				entry.binding === 'MDX_REMOTE_KV' ||
+				entry.binding === 'OAUTH_KV')
 		)
 	})
 	targetConfig.kv_namespaces = [
@@ -550,6 +560,11 @@ export function buildGeneratedWranglerConfig({
 			binding: 'MDX_REMOTE_KV',
 			id: mdxRemoteKvId,
 			preview_id: mdxRemoteKvId,
+		},
+		{
+			binding: 'OAUTH_KV',
+			id: oauthKvId,
+			preview_id: oauthKvId,
 		},
 	]
 
@@ -632,7 +647,13 @@ function resolveNodeEnv(environment: string) {
 }
 
 async function ensurePreviewResources(options: CliOptions) {
-	const { d1DatabaseName, siteCacheKvTitle, mdxRemoteKvTitle, callsDraftQueueName } =
+	const {
+		d1DatabaseName,
+		siteCacheKvTitle,
+		mdxRemoteKvTitle,
+		oauthKvTitle,
+		callsDraftQueueName,
+	} =
 		buildPreviewResourceNames(options.workerName)
 
 	const queue = ensureQueue({
@@ -645,6 +666,10 @@ async function ensurePreviewResources(options: CliOptions) {
 		title: mdxRemoteKvTitle,
 		dryRun: options.dryRun,
 	})
+	const oauthKv = ensureKvNamespace({
+		title: oauthKvTitle,
+		dryRun: options.dryRun,
+	})
 
 	const generatedConfigPath = await writeGeneratedWranglerConfig({
 		baseConfigPath: options.wranglerConfigPath,
@@ -655,6 +680,7 @@ async function ensurePreviewResources(options: CliOptions) {
 		d1DatabaseId: d1.id,
 		siteCacheKvId: kv.id,
 		mdxRemoteKvId: mdxRemoteKv.id,
+		oauthKvId: oauthKv.id,
 		callsDraftQueueName: queue.name,
 		varsFromDotenv: options.varsFromDotenv,
 	})
@@ -666,16 +692,25 @@ async function ensurePreviewResources(options: CliOptions) {
 	console.log(`site_cache_kv_id=${kv.id}`)
 	console.log(`mdx_remote_kv_title=${mdxRemoteKv.title}`)
 	console.log(`mdx_remote_kv_id=${mdxRemoteKv.id}`)
+	console.log(`oauth_kv_title=${oauthKv.title}`)
+	console.log(`oauth_kv_id=${oauthKv.id}`)
 	console.log(`calls_draft_queue_name=${queue.name}`)
 }
 
 async function cleanupPreviewResources(options: CliOptions) {
-	const { d1DatabaseName, siteCacheKvTitle, mdxRemoteKvTitle, callsDraftQueueName } =
+	const {
+		d1DatabaseName,
+		siteCacheKvTitle,
+		mdxRemoteKvTitle,
+		oauthKvTitle,
+		callsDraftQueueName,
+	} =
 		buildPreviewResourceNames(options.workerName)
 
 	deleteQueue({ name: callsDraftQueueName, dryRun: options.dryRun })
 	deleteKvNamespace({ title: siteCacheKvTitle, dryRun: options.dryRun })
 	deleteKvNamespace({ title: mdxRemoteKvTitle, dryRun: options.dryRun })
+	deleteKvNamespace({ title: oauthKvTitle, dryRun: options.dryRun })
 	deleteD1Database({ name: d1DatabaseName, dryRun: options.dryRun })
 	const outputConfigPath = path.resolve(options.outConfigPath)
 	await rm(outputConfigPath, { force: true })

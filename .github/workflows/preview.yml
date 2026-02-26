@@ -25,6 +25,10 @@ on:
         description: Optional preview name override
         required: false
         type: string
+      pr_number:
+        description: Optional PR number override (uses pr-<number> naming)
+        required: false
+        type: string
       dry_run:
         description: Run preview workflow in dry-run mode
         required: false
@@ -38,8 +42,8 @@ permissions:
 
 concurrency:
   group: >-
-    preview-${{ github.event.pull_request.number || inputs.preview_name ||
-    github.ref_name }}
+    preview-${{ github.event.pull_request.number || inputs.pr_number ||
+    inputs.preview_name || github.ref_name }}
   cancel-in-progress: true
 
 env:
@@ -84,11 +88,14 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           INPUT_PREVIEW_NAME: ${{ inputs.preview_name }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
           APP_NAME="kentcdodds-com"
           if [ "$EVENT_NAME" = "pull_request" ]; then
             BASE_NAME="pr-${PR_NUMBER}"
+          elif [ -n "${INPUT_PR_NUMBER:-}" ]; then
+            BASE_NAME="pr-${INPUT_PR_NUMBER}"
           else
             BASE_NAME="${INPUT_PREVIEW_NAME:-$REF_NAME}"
           fi
@@ -166,7 +173,6 @@ jobs:
           WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
           KIT_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_kit }}
           VERIFIER_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_verifier }}
-          OAUTH_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_oauth }}
           MAILGUN_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_mailgun }}
           DISCORD_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_discord }}
           SIMPLECAST_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_simplecast }}
@@ -202,7 +208,6 @@ jobs:
 
           assignUrl('KIT_API_BASE_URL', process.env.KIT_MOCK_URL)
           assignUrl('VERIFIER_API_BASE_URL', process.env.VERIFIER_MOCK_URL)
-          assignUrl('OAUTH_PROVIDER_BASE_URL', process.env.OAUTH_MOCK_URL)
           assignUrl('MAILGUN_API_BASE_URL', process.env.MAILGUN_MOCK_URL)
           assignUrl('DISCORD_API_BASE_URL', process.env.DISCORD_MOCK_URL)
           assignUrl('SIMPLECAST_API_BASE_URL', process.env.SIMPLECAST_MOCK_URL)
@@ -243,10 +248,7 @@ jobs:
         run: >
           bun tools/ci/sync-worker-secrets.ts --name "$WORKER_NAME" --env
           preview --from-dotenv .env.example --generate-cookie-secret
-          --generate-secret MAGIC_LINK_SECRET
-          --generate-secret REFRESH_CACHE_SECRET
           --generate-secret INTERNAL_COMMAND_TOKEN
-          --generate-secret CF_INTERNAL_SECRET
           --include-empty
 
       - name: 📚 Compile + publish mdx-remote artifacts to preview KV
@@ -379,11 +381,14 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           INPUT_PREVIEW_NAME: ${{ inputs.preview_name }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -euo pipefail
           APP_NAME="kentcdodds-com"
           if [ "$EVENT_NAME" = "pull_request" ]; then
             BASE_NAME="pr-${PR_NUMBER}"
+          elif [ -n "${INPUT_PR_NUMBER:-}" ]; then
+            BASE_NAME="pr-${INPUT_PR_NUMBER}"
           else
             BASE_NAME="${INPUT_PREVIEW_NAME:-$REF_NAME}"
           fi
@@ -442,10 +447,12 @@ jobs:
           bun tools/ci/preview-resources.ts cleanup --worker-name "$WORKER_NAME" --environment preview --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}"
 
       - name: 🗑️ Delete PR mdx-remote caches
-        if: ${{ github.event_name == 'pull_request' }}
+        if: >-
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'workflow_dispatch' && inputs.pr_number != '')
         uses: actions/github-script@v7
         env:
-          CACHE_KEY_PREFIX: mdx-remote-${{ runner.os }}-pr-${{ github.event.pull_request.number }}-
+          CACHE_KEY_PREFIX: mdx-remote-${{ runner.os }}-pr-${{ github.event.pull_request.number || inputs.pr_number }}-
         with:
           script: |
             const { owner, repo } = context.repo

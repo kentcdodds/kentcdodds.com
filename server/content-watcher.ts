@@ -2,28 +2,8 @@ import type http from 'http'
 import path from 'path'
 import chokidar from 'chokidar'
 import { WebSocket, WebSocketServer } from 'ws'
-import { postRefreshCache } from '../other/utils.js'
 
 const safePath = (s: string) => s.replace(/\\/g, '/')
-
-async function refreshOnContentChanges(filePath: string) {
-	const http = await import('http')
-	return postRefreshCache({
-		http,
-		options: {
-			hostname: 'localhost',
-			port: 3000,
-		},
-		postData: {
-			contentPaths: [getContentPath(filePath)],
-		},
-	}).then(
-		(response: unknown) =>
-			console.log(`Content change request finished.`, { response }),
-		(error: unknown) =>
-			console.error(`Content change request errored`, { error }),
-	)
-}
 
 function getContentPath(filePath: string) {
 	return safePath(filePath).replace(`${safePath(process.cwd())}/content/`, '')
@@ -57,7 +37,6 @@ function addWatcher(wss: WebSocketServer) {
 	const contentDir = safePath(path.join(process.cwd(), 'content'))
 	const watcher = chokidar.watch(contentDir, { ignoreInitial: true })
 	watcher.on('change', async (filePath) => {
-		await refreshOnContentChanges(filePath)
 		const reloadPaths = getReloadPaths({ contentDir, filePath })
 		for (const client of wss.clients) {
 			if (client.readyState === WebSocket.OPEN) {

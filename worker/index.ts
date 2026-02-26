@@ -16,17 +16,20 @@ import {
 	setRuntimeBindingSource,
 } from '#app/utils/runtime-bindings.server.ts'
 import { McpDurableObject } from './mcp-durable-object.ts'
+import { createWorkerOAuthProvider } from './oauth-provider.ts'
 
 export { McpDurableObject }
 
 const primaryHost = 'kentcdodds.com'
 const strictTransportSecurity = `max-age=${60 * 60 * 24 * 365 * 100}`
+const mcpResourcePath = '/mcp'
+const protectedResourceMetadataPath = '/.well-known/oauth-protected-resource'
 
 let cachedRequestHandler:
 	| ((request: Request, loadContext?: AppLoadContext) => Promise<Response>)
 	| null = null
 
-export default {
+const defaultWorkerHandler = {
 	async fetch(request: Request, env: Record<string, unknown>, ctx: unknown) {
 		const url = new URL(request.url)
 		const host = getRequestHost(request)
@@ -39,19 +42,19 @@ export default {
 		}
 
 		if (url.pathname === '/health') {
-			return applyStandardResponseHeaders(
-				Response.json({ ok: true, runtime: 'cloudflare-worker' }),
-				request,
-			)
+			return Response.json({ ok: true, runtime: 'cloudflare-worker' })
 		}
 
-		if (url.pathname === '/mcp') {
+		if (isProtectedResourceMetadataRequest(url.pathname)) {
+			return buildProtectedResourceMetadataResponse(request)
+		}
+
+		if (url.pathname === mcpResourcePath) {
 			const mcpNamespace = getMcpDurableObjectNamespace(env)
 			if (mcpNamespace) {
 				const mcpId = mcpNamespace.idFromName('mcp-shared-session')
 				const mcpStub = mcpNamespace.get(mcpId)
-				const mcpResponse = await mcpStub.fetch(request)
-				return applyStandardResponseHeaders(mcpResponse, request)
+				return mcpStub.fetch(request)
 			}
 		}
 
@@ -64,7 +67,7 @@ export default {
 		) {
 			const assetResponse = await env.ASSETS.fetch(request)
 			if (assetResponse.ok) {
-				return applyStandardResponseHeaders(assetResponse, request)
+				return assetResponse
 			}
 		}
 
@@ -85,15 +88,28 @@ export default {
 			const response = await requestHandler(request, {
 				cloudflare: { env: requestEnv, ctx },
 			})
-			const responseWithBookmark = applyD1Bookmark(
-				response,
-				getD1Bookmark(dbSession),
-			)
-			return applyStandardResponseHeaders(responseWithBookmark, request)
+			return applyD1Bookmark(response, getD1Bookmark(dbSession))
 		} finally {
 			clearRuntimeBindingSource()
 			clearRuntimeEnvSource()
 		}
+	},
+}
+
+const oauthProvider = createWorkerOAuthProvider(defaultWorkerHandler)
+
+export default {
+	async fetch(request: Request, env: Record<string, unknown>, ctx: unknown) {
+		const response = hasOAuthKvBinding(env)
+			? await oauthProvider.fetch(
+					request,
+					env as {
+						[key: string]: unknown
+					},
+					ctx,
+				)
+			: await defaultWorkerHandler.fetch(request, env, ctx)
+		return applyStandardResponseHeaders(response, request)
 	},
 	async scheduled(
 		controller: { cron: string },
@@ -187,6 +203,34 @@ function getRequestProtocol(request: Request, url: URL) {
 	const forwarded = request.headers.get('x-forwarded-proto')
 	if (forwarded) return forwarded
 	return url.protocol.replace(':', '')
+}
+
+function buildProtectedResourceMetadataResponse(request: Request) {
+	const url = new URL(request.url)
+	const origin = url.origin
+	return Response.json({
+		resource: `${origin}${mcpResourcePath}`,
+		authorization_servers: [origin],
+	})
+}
+
+function isProtectedResourceMetadataRequest(pathname: string) {
+	return (
+		pathname === protectedResourceMetadataPath ||
+		pathname === `${protectedResourceMetadataPath}${mcpResourcePath}`
+	)
+}
+
+function hasOAuthKvBinding(env: Record<string, unknown>) {
+	const candidate = env.OAUTH_KV
+	return (
+		candidate &&
+		typeof candidate === 'object' &&
+		'get' in candidate &&
+		typeof candidate.get === 'function' &&
+		'put' in candidate &&
+		typeof candidate.put === 'function'
+	)
 }
 
 function applyStandardResponseHeaders(response: Response, request: Request) {

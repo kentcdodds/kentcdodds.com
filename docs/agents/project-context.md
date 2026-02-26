@@ -43,6 +43,10 @@ reference:
   (`mock-servers/verifier/worker.ts`, local port `8791`).
 - OAuth provider token validation is served by a Worker mock server in dev
   (`mock-servers/oauth/worker.ts`, local port `8792`).
+  - Cloudflare Worker runtime now serves OAuth endpoints from the main worker
+    when the `OAUTH_KV` binding is configured; `OAUTH_PROVIDER_BASE_URL` can be
+    left unset in preview/production so token validation resolves against the
+    current request origin.
 - Outbound Mailgun delivery is served by a Worker mock server in dev
   (`mock-servers/mailgun/worker.ts`, local port `8793`).
   - Useful inbox APIs:
@@ -105,10 +109,6 @@ reference:
   - strict legacy scan gate: `bun run media:scan-legacy-references:strict`
 - No real API keys are needed for local development; `.env.example` values are
   sufficient.
-- Content-refresh helper scripts (`other/refresh-changed-content.js`,
-  `other/is-deployable.js`) default to
-  `kentcdodds-com-development.workers.dev` on `dev` branch and support explicit
-  overrides via `REFRESH_CONTENT_BASE_URL` / `REFRESH_CONTENT_HOSTNAME`.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
   external database server is required.
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run
@@ -164,6 +164,10 @@ reference:
     for runtime mdx docs (`MDX_REMOTE_KV`) via `tools/ci/preview-resources.ts`.
   - generates serialized mdx-remote JSON docs + manifest under
     `other/content/mdx-remote/`.
+- Preview cleanup workflow:
+  - `.github/workflows/preview.yml` supports manual cleanup dispatch with
+    `action=cleanup` and optional `pr_number` input so a PR preview resource set
+    can be reset on demand.
 
 ## Cloud / headless manual testing
 

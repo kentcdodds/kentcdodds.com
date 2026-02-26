@@ -11,10 +11,12 @@ test('buildPreviewResourceNames keeps queue/db/kv names within limits', () => {
 	expect(names.d1DatabaseName.endsWith('-db')).toBe(true)
 	expect(names.siteCacheKvTitle.endsWith('-site-cache-kv')).toBe(true)
 	expect(names.mdxRemoteKvTitle.endsWith('-mdx-remote-kv')).toBe(true)
+	expect(names.oauthKvTitle.endsWith('-oauth-kv')).toBe(true)
 	expect(names.callsDraftQueueName.endsWith('-calls-draft-queue')).toBe(true)
 	expect(names.d1DatabaseName.length).toBeLessThanOrEqual(63)
 	expect(names.siteCacheKvTitle.length).toBeLessThanOrEqual(63)
 	expect(names.mdxRemoteKvTitle.length).toBeLessThanOrEqual(63)
+	expect(names.oauthKvTitle.length).toBeLessThanOrEqual(63)
 	expect(names.callsDraftQueueName.length).toBeLessThanOrEqual(63)
 })
 
@@ -39,6 +41,7 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 				kv_namespaces: [
 					{ binding: 'SITE_CACHE_KV', id: 'old-kv-id', preview_id: 'old-kv-id' },
 					{ binding: 'MDX_REMOTE_KV', id: 'old-mdx-kv-id', preview_id: 'old-mdx-kv-id' },
+					{ binding: 'OAUTH_KV', id: 'old-oauth-kv-id', preview_id: 'old-oauth-kv-id' },
 					{ binding: 'ANOTHER_KV', id: 'keep-kv-id', preview_id: 'keep-kv-id' },
 				],
 				r2_buckets: [{ binding: 'ANOTHER_R2', bucket_name: 'keep-r2-bucket' }],
@@ -81,6 +84,7 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 		d1DatabaseId: 'new-db-id',
 		siteCacheKvId: 'new-kv-id',
 		mdxRemoteKvId: 'new-mdx-kv-id',
+		oauthKvId: 'new-oauth-kv-id',
 		callsDraftQueueName: 'new-calls-draft-queue',
 	})
 	const previewConfig = (
@@ -121,6 +125,11 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 			binding: 'MDX_REMOTE_KV',
 			id: 'new-mdx-kv-id',
 			preview_id: 'new-mdx-kv-id',
+		},
+		{
+			binding: 'OAUTH_KV',
+			id: 'new-oauth-kv-id',
+			preview_id: 'new-oauth-kv-id',
 		},
 	])
 	expect(previewConfig.r2_buckets).toEqual([
@@ -182,6 +191,7 @@ test('buildGeneratedWranglerConfig can merge dotenv vars for preview', () => {
 		d1DatabaseId: 'new-db-id',
 		siteCacheKvId: 'new-kv-id',
 		mdxRemoteKvId: 'new-mdx-kv-id',
+		oauthKvId: 'new-oauth-kv-id',
 		callsDraftQueueName: 'new-calls-draft-queue',
 		dotenvVars: {
 			PORT: '3000',
@@ -220,6 +230,7 @@ test('buildGeneratedWranglerConfig leaves ffmpeg service binding untouched outsi
 		d1DatabaseId: 'new-db-id',
 		siteCacheKvId: 'new-kv-id',
 		mdxRemoteKvId: 'new-mdx-kv-id',
+		oauthKvId: 'new-oauth-kv-id',
 		callsDraftQueueName: 'new-calls-draft-queue',
 	})
 	const productionConfig = (
