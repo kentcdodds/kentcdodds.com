@@ -1,6 +1,6 @@
 import { type RequestHandler } from 'express'
-import { LRUCache } from 'lru-cache'
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
+import { LRUCache } from 'lru-cache'
 import { prisma } from '../app/utils/prisma.server.ts'
 import { getSession } from '../app/utils/session.server.ts'
 
