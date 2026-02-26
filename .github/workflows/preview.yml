@@ -437,6 +437,7 @@ jobs:
 
       - name: 🧹 Cleanup generated preview config
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: |
