@@ -1,4 +1,4 @@
-@import 'tailwindcss' source(none);
+@import '../../node_modules/tailwindcss/index.css' source(none);
 @source '../**/*.{js,jsx,ts,tsx,mdx,md}';
 @plugin '@tailwindcss/typography';
 @custom-variant dark (&:is(.dark *));
