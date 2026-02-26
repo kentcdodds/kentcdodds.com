@@ -37,6 +37,9 @@ type TemporaryJsonFile = {
 	[Symbol.asyncDispose]: () => Promise<void>
 }
 
+const kvBulkGetChunkSize = 100
+const kvBulkMutationChunkSize = 1_000
+
 function parseArgs(argv: Array<string>): CliOptions {
 	const options: CliOptions = {
 		kvBinding: '',
@@ -399,10 +402,11 @@ async function getExistingBulkValues({
 	dryRun: boolean
 }) {
 	if (keys.length === 0 || dryRun) return {}
-	return await (async () => {
+	const values: Record<string, string | null> = {}
+	for (const keyChunk of chunkArray(keys, kvBulkGetChunkSize)) {
 		await using temporaryJsonFile = await createTemporaryJsonFile({
-		data: keys,
-		prefix: 'mdx-remote-bulk-get',
+			data: keyChunk,
+			prefix: 'mdx-remote-bulk-get',
 		})
 		const output = runWranglerCommand(
 			[
@@ -426,8 +430,7 @@ async function getExistingBulkValues({
 		if (!parsed) {
 			throw new Error(`Failed to parse wrangler kv bulk get output:\n${output}`)
 		}
-		const values: Record<string, string | null> = {}
-		for (const key of keys) {
+		for (const key of keyChunk) {
 			const item = parsed[key]
 			if (!item || typeof item !== 'object') {
 				values[key] = null
@@ -440,8 +443,8 @@ async function getExistingBulkValues({
 			const itemValue = (item as { value?: unknown }).value
 			values[key] = typeof itemValue === 'string' ? itemValue : null
 		}
-		return values
-	})()
+	}
+	return values
 }
 
 async function uploadArtifactsBulk({
@@ -458,7 +461,7 @@ async function uploadArtifactsBulk({
 	dryRun: boolean
 }) {
 	if (dryRun || entries.length === 0) return
-	for (const chunk of chunkArray(entries, 1_000)) {
+	for (const chunk of chunkArray(entries, kvBulkMutationChunkSize)) {
 		await using temporaryJsonFile = await createTemporaryJsonFile({
 			data: chunk,
 			prefix: 'mdx-remote-bulk-put',
@@ -495,7 +498,7 @@ async function deleteArtifactsBulk({
 	dryRun: boolean
 }) {
 	if (dryRun || keys.length === 0) return
-	for (const chunk of chunkArray(keys, 1_000)) {
+	for (const chunk of chunkArray(keys, kvBulkMutationChunkSize)) {
 		await using temporaryJsonFile = await createTemporaryJsonFile({
 			data: chunk,
 			prefix: 'mdx-remote-bulk-delete',
