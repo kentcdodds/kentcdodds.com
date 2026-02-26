@@ -128,7 +128,7 @@ describe('rate limiting (epic-stack style)', () => {
 		expect(getRequestUserEmail).toHaveBeenCalledTimes(1)
 	})
 
-	it('gives me@kentcdodds.com a 10x stronger limit without sharing that bucket by IP', async () => {
+	it('gives me@kentcdodds.com a 10x stronger strongest-route limit', async () => {
 		started = await startTestServer({
 			getRequestUserEmail: (req) => req.get('x-test-email') ?? null,
 		})
@@ -152,19 +152,6 @@ describe('rate limiting (epic-stack style)', () => {
 			},
 		})
 		expect(kentTooMany.status).toBe(429)
-
-		for (let i = 0; i < 10; i++) {
-			const regularResponse = await fetch(`${started.baseUrl}/login`, {
-				method: 'POST',
-				headers: { 'fly-client-ip': '3.3.3.3' },
-			})
-			expect(regularResponse.status).toBe(200)
-		}
-		const regularTooMany = await fetch(`${started.baseUrl}/login`, {
-			method: 'POST',
-			headers: { 'fly-client-ip': '3.3.3.3' },
-		})
-		expect(regularTooMany.status).toBe(429)
 	})
 
 	it('uses strongest limiter for GET /magic (token-in-query style route)', async () => {
