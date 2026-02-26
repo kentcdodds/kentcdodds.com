@@ -18,6 +18,11 @@ export type ParsedArgs = {
 	generateCookieSecret: boolean
 }
 
+type TemporarySecretsFile = {
+	path: string
+	[Symbol.asyncDispose]: () => Promise<void>
+}
+
 async function main() {
 	const args = parseArgs(process.argv.slice(2))
 	const secrets = await collectSecrets(args)
@@ -26,19 +31,34 @@ async function main() {
 		return
 	}
 
-	const tempFile = path.join(
+	await using temporarySecretsFile = await createTemporarySecretsFile({
+		secrets,
+		filePrefix: `worker-secrets-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+	})
+	await runWranglerSecretBulk({
+		secretFile: temporarySecretsFile.path,
+		name: args.name,
+		envName: args.envName,
+	})
+}
+
+async function createTemporarySecretsFile({
+	secrets,
+	filePrefix,
+}: {
+	secrets: Record<string, string>
+	filePrefix: string
+}): Promise<TemporarySecretsFile> {
+	const filePath = path.join(
 		os.tmpdir(),
-		`worker-secrets-${Date.now()}-${Math.random().toString(16).slice(2)}.json`,
+		`${filePrefix}.json`,
 	)
-	await writeFile(tempFile, JSON.stringify(secrets, null, 2), 'utf-8')
-	try {
-		await runWranglerSecretBulk({
-			secretFile: tempFile,
-			name: args.name,
-			envName: args.envName,
-		})
-	} finally {
-		await rm(tempFile, { force: true })
+	await writeFile(filePath, JSON.stringify(secrets, null, 2), 'utf-8')
+	return {
+		path: filePath,
+		async [Symbol.asyncDispose]() {
+			await rm(filePath, { force: true })
+		},
 	}
 }
 

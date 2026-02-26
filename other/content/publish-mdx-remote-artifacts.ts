@@ -32,6 +32,11 @@ type BulkPutEntry = {
 	value: string
 }
 
+type TemporaryJsonFile = {
+	path: string
+	[Symbol.asyncDispose]: () => Promise<void>
+}
+
 function parseArgs(argv: Array<string>): CliOptions {
 	const options: CliOptions = {
 		kvBinding: '',
@@ -330,22 +335,21 @@ function runWranglerCommand(
 	return ''
 }
 
-async function withTemporaryJsonFile<T>({
+async function createTemporaryJsonFile({
 	data,
 	prefix,
-	operation,
 }: {
 	data: unknown
 	prefix: string
-	operation: (filePath: string) => T | Promise<T>
-}) {
+}): Promise<TemporaryJsonFile> {
 	const directory = await mkdtemp(path.join(os.tmpdir(), `${prefix}-`))
 	const filePath = path.join(directory, 'payload.json')
 	await writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf8')
-	try {
-		return await operation(filePath)
-	} finally {
-		await rm(directory, { recursive: true, force: true })
+	return {
+		path: filePath,
+		async [Symbol.asyncDispose]() {
+			await rm(directory, { recursive: true, force: true })
+		},
 	}
 }
 
@@ -395,49 +399,49 @@ async function getExistingBulkValues({
 	dryRun: boolean
 }) {
 	if (keys.length === 0 || dryRun) return {}
-	return withTemporaryJsonFile({
+	return await (async () => {
+		await using temporaryJsonFile = await createTemporaryJsonFile({
 		data: keys,
 		prefix: 'mdx-remote-bulk-get',
-		operation: (filePath) => {
-			const output = runWranglerCommand(
-				[
-					'kv',
-					'bulk',
-					'get',
-					filePath,
-					'--binding',
-					kvBinding,
-					'--remote',
-					'--config',
-					wranglerConfigPath,
-					'--env',
-					wranglerEnv,
-					'--preview',
-					'false',
-				],
-				{ captureOutput: true },
-			)
-			const parsed = extractJsonObject(output ?? '')
-			if (!parsed) {
-				throw new Error(`Failed to parse wrangler kv bulk get output:\n${output}`)
+		})
+		const output = runWranglerCommand(
+			[
+				'kv',
+				'bulk',
+				'get',
+				temporaryJsonFile.path,
+				'--binding',
+				kvBinding,
+				'--remote',
+				'--config',
+				wranglerConfigPath,
+				'--env',
+				wranglerEnv,
+				'--preview',
+				'false',
+			],
+			{ captureOutput: true },
+		)
+		const parsed = extractJsonObject(output ?? '')
+		if (!parsed) {
+			throw new Error(`Failed to parse wrangler kv bulk get output:\n${output}`)
+		}
+		const values: Record<string, string | null> = {}
+		for (const key of keys) {
+			const item = parsed[key]
+			if (!item || typeof item !== 'object') {
+				values[key] = null
+				continue
 			}
-			const values: Record<string, string | null> = {}
-			for (const key of keys) {
-				const item = parsed[key]
-				if (!item || typeof item !== 'object') {
-					values[key] = null
-					continue
-				}
-				if (!('value' in item)) {
-					values[key] = null
-					continue
-				}
-				const itemValue = (item as { value?: unknown }).value
-				values[key] = typeof itemValue === 'string' ? itemValue : null
+			if (!('value' in item)) {
+				values[key] = null
+				continue
 			}
-			return values
-		},
-	})
+			const itemValue = (item as { value?: unknown }).value
+			values[key] = typeof itemValue === 'string' ? itemValue : null
+		}
+		return values
+	})()
 }
 
 async function uploadArtifactsBulk({
@@ -455,26 +459,25 @@ async function uploadArtifactsBulk({
 }) {
 	if (dryRun || entries.length === 0) return
 	for (const chunk of chunkArray(entries, 1_000)) {
-		await withTemporaryJsonFile({
+		await using temporaryJsonFile = await createTemporaryJsonFile({
 			data: chunk,
 			prefix: 'mdx-remote-bulk-put',
-			operation: (filePath) =>
-				runWranglerCommand([
-					'kv',
-					'bulk',
-					'put',
-					filePath,
-					'--binding',
-					kvBinding,
-					'--remote',
-					'--config',
-					wranglerConfigPath,
-					'--env',
-					wranglerEnv,
-					'--preview',
-					'false',
-				]),
 		})
+		runWranglerCommand([
+			'kv',
+			'bulk',
+			'put',
+			temporaryJsonFile.path,
+			'--binding',
+			kvBinding,
+			'--remote',
+			'--config',
+			wranglerConfigPath,
+			'--env',
+			wranglerEnv,
+			'--preview',
+			'false',
+		])
 	}
 }
 
@@ -493,27 +496,26 @@ async function deleteArtifactsBulk({
 }) {
 	if (dryRun || keys.length === 0) return
 	for (const chunk of chunkArray(keys, 1_000)) {
-		await withTemporaryJsonFile({
+		await using temporaryJsonFile = await createTemporaryJsonFile({
 			data: chunk,
 			prefix: 'mdx-remote-bulk-delete',
-			operation: (filePath) =>
-				runWranglerCommand([
-					'kv',
-					'bulk',
-					'delete',
-					filePath,
-					'--binding',
-					kvBinding,
-					'--remote',
-					'--config',
-					wranglerConfigPath,
-					'--env',
-					wranglerEnv,
-					'--preview',
-					'false',
-					'--force',
-				]),
 		})
+		runWranglerCommand([
+			'kv',
+			'bulk',
+			'delete',
+			temporaryJsonFile.path,
+			'--binding',
+			kvBinding,
+			'--remote',
+			'--config',
+			wranglerConfigPath,
+			'--env',
+			wranglerEnv,
+			'--preview',
+			'false',
+			'--force',
+		])
 	}
 }
 
