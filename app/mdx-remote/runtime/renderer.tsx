@@ -1,10 +1,10 @@
 import * as React from 'react'
 import {
 	type MdxRemoteDocument,
-	type MdxRemoteExpressionValue,
-	type MdxRemoteNodeValue,
 	type MdxRemoteNode,
 	type MdxRemotePropValue,
+	isExpressionPropValue,
+	isNodePropValue,
 } from '#app/mdx-remote/compiler/types.ts'
 import {
 	type MdxRemoteComponentRegistry,
@@ -220,31 +220,6 @@ function resolvePropValue({
 			})
 			return [key, resolvedValue]
 		}),
-	)
-}
-
-function isExpressionPropValue(value: MdxRemotePropValue): value is MdxRemoteExpressionValue {
-	return (
-		typeof value === 'object' &&
-		value !== null &&
-		!Array.isArray(value) &&
-		'type' in value &&
-		value.type === 'expression' &&
-		'value' in value &&
-		typeof value.value === 'string'
-	)
-}
-
-function isNodePropValue(value: MdxRemotePropValue): value is MdxRemoteNodeValue {
-	return (
-		typeof value === 'object' &&
-		value !== null &&
-		!Array.isArray(value) &&
-		'type' in value &&
-		value.type === 'node' &&
-		'value' in value &&
-		typeof value.value === 'object' &&
-		value.value !== null
 	)
 }
 

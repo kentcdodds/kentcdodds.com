@@ -8,11 +8,11 @@ import {
 } from '#app/mdx-remote/compiler/serialize.ts'
 import {
 	type MdxRemoteDocument,
-	type MdxRemoteExpressionValue,
 	type MdxRemoteNode,
-	type MdxRemoteNodeValue,
 	type MdxRemotePropValue,
 	type MdxRemoteRootNode,
+	isExpressionPropValue,
+	isNodePropValue,
 } from '#app/mdx-remote/compiler/types.ts'
 
 const forbiddenExpressionPatterns = [
@@ -185,31 +185,6 @@ function assertPropValueIsSafe({
 			strictExpressionValidation,
 		})
 	}
-}
-
-function isExpressionPropValue(value: MdxRemotePropValue): value is MdxRemoteExpressionValue {
-	return (
-		typeof value === 'object' &&
-		value !== null &&
-		!Array.isArray(value) &&
-		'type' in value &&
-		value.type === 'expression' &&
-		'value' in value &&
-		typeof value.value === 'string'
-	)
-}
-
-function isNodePropValue(value: MdxRemotePropValue): value is MdxRemoteNodeValue {
-	return (
-		typeof value === 'object' &&
-		value !== null &&
-		!Array.isArray(value) &&
-		'type' in value &&
-		value.type === 'node' &&
-		'value' in value &&
-		typeof value.value === 'object' &&
-		value.value !== null
-	)
 }
 
 function assertExpressionIsSafe(source: string) {

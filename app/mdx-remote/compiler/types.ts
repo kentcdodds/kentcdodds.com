@@ -73,6 +73,35 @@ type MdxRemoteDocument<Frontmatter extends Record<string, unknown>> = {
 	compiledAt: string
 }
 
+function isExpressionPropValue(
+	value: MdxRemotePropValue,
+): value is MdxRemoteExpressionValue {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		!Array.isArray(value) &&
+		'type' in value &&
+		value.type === 'expression' &&
+		'value' in value &&
+		typeof value.value === 'string'
+	)
+}
+
+function isNodePropValue(value: MdxRemotePropValue): value is MdxRemoteNodeValue {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		!Array.isArray(value) &&
+		'type' in value &&
+		value.type === 'node' &&
+		'value' in value &&
+		typeof value.value === 'object' &&
+		value.value !== null
+	)
+}
+
+export { isExpressionPropValue, isNodePropValue }
+
 export type {
 	MdxRemoteDocument,
 	MdxRemoteElementNode,
