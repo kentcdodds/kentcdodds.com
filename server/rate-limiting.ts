@@ -1,18 +1,18 @@
-import { type RequestHandler } from 'express'
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
+import { type RequestHandler, type Response } from 'express'
+import rateLimit, { ipKeyGenerator, type Options } from 'express-rate-limit'
 import { LRUCache } from 'lru-cache'
 import { prisma } from '../app/utils/prisma.server.ts'
 import { getSession } from '../app/utils/session.server.ts'
 
 type ExpressRequest = Parameters<RequestHandler>[0]
+type GetRequestUserEmail = (
+	req: ExpressRequest,
+) => Promise<string | null | undefined> | string | null | undefined
 
 type CreateRateLimitingMiddlewareOptions = {
 	mode?: string | undefined
 	playwrightTestBaseUrl?: string | undefined
-	getRequestUserEmail?:
-		| ((req: ExpressRequest) => Promise<string | null | undefined>)
-		| ((req: ExpressRequest) => string | null | undefined)
-		| undefined
+	getRequestUserEmail?: GetRequestUserEmail | undefined
 }
 
 const kcdSessionCookieName = 'KCD_root_session'
@@ -23,6 +23,10 @@ const sessionEmailCache = new LRUCache<string, string | null>({
 	ttl: 60 * 1000,
 })
 const requestEmailPromiseSymbol = Symbol('request-email-promise')
+type RateLimitDefaults = Pick<
+	Options,
+	'windowMs' | 'standardHeaders' | 'legacyHeaders' | 'validate' | 'keyGenerator'
+>
 
 type RequestWithEmailPromise = ExpressRequest & {
 	[requestEmailPromiseSymbol]?: Promise<string | null>
@@ -95,6 +99,50 @@ async function getCachedRequestUserEmail(
 	return requestWithEmailPromise[requestEmailPromiseSymbol]
 }
 
+async function sendRateLimitExceededResponse(
+	req: ExpressRequest,
+	res: Response,
+	optionsUsed: Options,
+) {
+	const message =
+		typeof optionsUsed.message === 'function'
+			? await optionsUsed.message(req, res)
+			: optionsUsed.message
+	res.status(optionsUsed.statusCode).send(message)
+}
+
+function createRateLimiterWithKentBoost({
+	baseLimit,
+	rateLimitDefault,
+	getRequestUserEmail,
+}: {
+	baseLimit: number
+	rateLimitDefault: RateLimitDefaults
+	getRequestUserEmail: GetRequestUserEmail
+}): RequestHandler {
+	const kentOverageLimit = baseLimit * (kentRateLimitMultiplier - 1)
+	const kentOverageRateLimit = rateLimit({
+		...rateLimitDefault,
+		limit: kentOverageLimit,
+		keyGenerator: (req: ExpressRequest) => `kent:${getRequestIpKey(req)}`,
+	})
+
+	return rateLimit({
+		...rateLimitDefault,
+		limit: baseLimit,
+		handler: (req, res, next, optionsUsed) => {
+			void getCachedRequestUserEmail(req, getRequestUserEmail)
+				.then((userEmail) => {
+					if (userEmail === kentEmail) {
+						return kentOverageRateLimit(req, res, next)
+					}
+					return sendRateLimitExceededResponse(req, res, optionsUsed)
+				})
+				.catch((error: unknown) => next(error))
+		},
+	})
+}
+
 /**
  * Rate limiting middleware modeled after Epic Stack's `server/index.ts`.
  *
@@ -118,21 +166,10 @@ export function createRateLimitingMiddleware(
 	// When running tests or running in development, we want to effectively disable
 	// rate limiting because Playwright tests are very fast and we don't want to
 	// have to wait for the rate limit to reset between tests.
-	async function getMaxMultiple(req: ExpressRequest) {
-		if (!isProd || isPlaywright) return 10_000
-		const userEmail = await getCachedRequestUserEmail(req, getRequestUserEmail)
-		return userEmail === kentEmail ? kentRateLimitMultiplier : 1
-	}
-
-	async function isKentRequest(req: ExpressRequest) {
-		if (!isProd || isPlaywright) return false
-		const userEmail = await getCachedRequestUserEmail(req, getRequestUserEmail)
-		return userEmail === kentEmail
-	}
+	const maxMultiple = !isProd || isPlaywright ? 10_000 : 1
 
 	const rateLimitDefault = {
 		windowMs: 60 * 1000,
-		limit: async (req: ExpressRequest) => 1000 * (await getMaxMultiple(req)),
 		standardHeaders: true,
 		legacyHeaders: false,
 		validate: { trustProxy: false },
@@ -140,27 +177,44 @@ export function createRateLimitingMiddleware(
 		// to trusting req.ip when hosted on Fly.io. However, users cannot spoof Fly-Client-Ip.
 		// When sitting behind a CDN such as cloudflare, replace fly-client-ip with the CDN
 		// specific header such as cf-connecting-ip
-		keyGenerator: async (req: ExpressRequest) => {
-			const ipKey = getRequestIpKey(req)
-			if (await isKentRequest(req)) {
-				// Keep Kent's boosted quota isolated from other users sharing an IP.
-				return `kent:${ipKey}`
-			}
-			return ipKey
-		},
+		keyGenerator: getRequestIpKey,
 	}
 
-	const strongestRateLimit = rateLimit({
-		...rateLimitDefault,
-		limit: async (req: ExpressRequest) => 10 * (await getMaxMultiple(req)),
-	})
+	const strongestRateLimit =
+		isProd && !isPlaywright
+			? createRateLimiterWithKentBoost({
+					baseLimit: 10,
+					rateLimitDefault,
+					getRequestUserEmail,
+				})
+			: rateLimit({
+					...rateLimitDefault,
+					limit: 10 * maxMultiple,
+				})
 
-	const strongRateLimit = rateLimit({
-		...rateLimitDefault,
-		limit: async (req: ExpressRequest) => 100 * (await getMaxMultiple(req)),
-	})
+	const strongRateLimit =
+		isProd && !isPlaywright
+			? createRateLimiterWithKentBoost({
+					baseLimit: 100,
+					rateLimitDefault,
+					getRequestUserEmail,
+				})
+			: rateLimit({
+					...rateLimitDefault,
+					limit: 100 * maxMultiple,
+				})
 
-	const generalRateLimit = rateLimit(rateLimitDefault)
+	const generalRateLimit =
+		isProd && !isPlaywright
+			? createRateLimiterWithKentBoost({
+					baseLimit: 1000,
+					rateLimitDefault,
+					getRequestUserEmail,
+				})
+			: rateLimit({
+					...rateLimitDefault,
+					limit: 1000 * maxMultiple,
+				})
 
 	return (req, res, next) => {
 		// These should match real app routes. Update alongside

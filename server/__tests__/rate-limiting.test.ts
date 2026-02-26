@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { type Server } from 'node:http'
 import express from 'express'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createRateLimitingMiddleware } from '../rate-limiting.js'
 
 async function startTestServer(
@@ -42,6 +42,9 @@ async function startTestServer(
 }
 
 type Started = Awaited<ReturnType<typeof startTestServer>>
+type RateLimitingMiddlewareOptions = Parameters<
+	typeof createRateLimitingMiddleware
+>[0]
 
 let started: Started | null = null
 afterEach(async () => {
@@ -91,6 +94,38 @@ describe('rate limiting (epic-stack style)', () => {
 			method: 'POST',
 		})
 		expect(tooMany.status).toBe(429)
+	})
+
+	it('only resolves user email after requests exceed the base limit', async () => {
+		const resolveEmail: NonNullable<
+			RateLimitingMiddlewareOptions['getRequestUserEmail']
+		> = (req) => req.get('x-test-email') ?? null
+		const getRequestUserEmail = vi.fn(resolveEmail)
+		started = await startTestServer({
+			getRequestUserEmail,
+		})
+
+		for (let i = 0; i < 10; i++) {
+			const r = await fetch(`${started.baseUrl}/login`, {
+				method: 'POST',
+				headers: {
+					'fly-client-ip': '4.4.4.4',
+					'x-test-email': 'me@kentcdodds.com',
+				},
+			})
+			expect(r.status).toBe(200)
+		}
+		expect(getRequestUserEmail).not.toHaveBeenCalled()
+
+		const eleventh = await fetch(`${started.baseUrl}/login`, {
+			method: 'POST',
+			headers: {
+				'fly-client-ip': '4.4.4.4',
+				'x-test-email': 'me@kentcdodds.com',
+			},
+		})
+		expect(eleventh.status).toBe(200)
+		expect(getRequestUserEmail).toHaveBeenCalledTimes(1)
 	})
 
 	it('gives me@kentcdodds.com a 10x stronger limit without sharing that bucket by IP', async () => {
