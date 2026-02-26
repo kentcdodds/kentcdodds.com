@@ -85,7 +85,7 @@ async function addSubscriberToForm({
 	firstName: string
 	kitFormId: string
 }) {
-	const { apiKey, apiSecret } = getKitAuth()
+	const { apiKey, apiSecret, apiBaseUrl } = getKitAuth()
 	const subscriberData = {
 		api_key: apiKey,
 		api_secret: apiSecret,
@@ -95,7 +95,6 @@ async function addSubscriberToForm({
 
 	// this is a basic form that doesn't really do anything. It's just a way to
 	// get the users on the mailing list
-	const { apiBaseUrl } = getKitAuth()
 	const subscribeUrl = new URL(`/v3/forms/${kitFormId}/subscribe`, apiBaseUrl)
 	const response = await fetch(subscribeUrl.toString(), {
 		method: 'POST',

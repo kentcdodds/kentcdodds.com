@@ -122,14 +122,20 @@ function serializeTransformerOption(transformations?: TransformerOption) {
 	pushSimple('q', transform.quality)
 	pushSimple('dpr', transform.dpr)
 	pushSimple('b', transform.background)
-	pushSimple('c', transform.crop)
+	const resize = transform.resize
+	const resizeConfig =
+		resize && typeof resize === 'object'
+			? (resize as Record<string, unknown>)
+			: null
+	const cropValue =
+		typeof transform.crop === 'string' || typeof transform.crop === 'number'
+			? transform.crop
+			: resizeConfig?.type
+	pushSimple('c', cropValue)
 	pushSimple('g', transform.gravity)
 	pushSimple('o', transform.opacity)
 
-	const resize = transform.resize
-	if (resize && typeof resize === 'object') {
-		const resizeConfig = resize as Record<string, unknown>
-		pushSimple('c', resizeConfig.type)
+	if (resizeConfig) {
 		pushSimple('w', resizeConfig.width)
 		pushSimple('h', resizeConfig.height)
 		pushSimple('ar', resizeConfig.aspectRatio)
