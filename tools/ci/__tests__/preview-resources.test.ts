@@ -10,9 +10,11 @@ test('buildPreviewResourceNames keeps queue/db/kv names within limits', () => {
 
 	expect(names.d1DatabaseName.endsWith('-db')).toBe(true)
 	expect(names.siteCacheKvTitle.endsWith('-site-cache-kv')).toBe(true)
+	expect(names.mdxRemoteKvTitle.endsWith('-mdx-remote-kv')).toBe(true)
 	expect(names.callsDraftQueueName.endsWith('-calls-draft-queue')).toBe(true)
 	expect(names.d1DatabaseName.length).toBeLessThanOrEqual(63)
 	expect(names.siteCacheKvTitle.length).toBeLessThanOrEqual(63)
+	expect(names.mdxRemoteKvTitle.length).toBeLessThanOrEqual(63)
 	expect(names.callsDraftQueueName.length).toBeLessThanOrEqual(63)
 })
 
@@ -36,12 +38,10 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 				],
 				kv_namespaces: [
 					{ binding: 'SITE_CACHE_KV', id: 'old-kv-id', preview_id: 'old-kv-id' },
+					{ binding: 'MDX_REMOTE_KV', id: 'old-mdx-kv-id', preview_id: 'old-mdx-kv-id' },
 					{ binding: 'ANOTHER_KV', id: 'keep-kv-id', preview_id: 'keep-kv-id' },
 				],
-				r2_buckets: [
-					{ binding: 'MDX_REMOTE_R2', bucket_name: 'old-mdx-bucket' },
-					{ binding: 'ANOTHER_R2', bucket_name: 'keep-r2-bucket' },
-				],
+				r2_buckets: [{ binding: 'ANOTHER_R2', bucket_name: 'keep-r2-bucket' }],
 				services: [
 					{ binding: 'CALL_KENT_FFMPEG', service: 'old-ffmpeg-service' },
 					{ binding: 'ANOTHER_SERVICE', service: 'keep-service' },
@@ -80,8 +80,8 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 		d1DatabaseName: 'new-db-name',
 		d1DatabaseId: 'new-db-id',
 		siteCacheKvId: 'new-kv-id',
+		mdxRemoteKvId: 'new-mdx-kv-id',
 		callsDraftQueueName: 'new-calls-draft-queue',
-		mdxRemoteR2BucketName: null,
 	})
 	const previewConfig = (
 		(generated.env as Record<string, unknown>).preview as Record<string, unknown>
@@ -116,12 +116,14 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 			id: 'new-kv-id',
 			preview_id: 'new-kv-id',
 		},
+		{
+			binding: 'MDX_REMOTE_KV',
+			id: 'new-mdx-kv-id',
+			preview_id: 'new-mdx-kv-id',
+		},
 	])
 	expect(previewConfig.r2_buckets).toEqual([
-		{
-			binding: 'ANOTHER_R2',
-			bucket_name: 'keep-r2-bucket',
-		},
+		{ binding: 'ANOTHER_R2', bucket_name: 'keep-r2-bucket' },
 	])
 	expect(previewConfig.services).toEqual([
 		{
@@ -163,40 +165,6 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 	).toBe('old-worker')
 })
 
-test('buildGeneratedWranglerConfig adds mdx remote r2 binding when configured', () => {
-	const generated = buildGeneratedWranglerConfig({
-		baseConfig: {
-			env: {
-				preview: {
-					name: 'old-worker',
-					r2_buckets: [{ binding: 'ANOTHER_R2', bucket_name: 'keep-r2-bucket' }],
-				},
-			},
-		},
-		environment: 'preview',
-		workerName: 'new-worker',
-		d1DatabaseName: 'new-db-name',
-		d1DatabaseId: 'new-db-id',
-		siteCacheKvId: 'new-kv-id',
-		callsDraftQueueName: 'new-calls-draft-queue',
-		mdxRemoteR2BucketName: 'mdx-remote-bucket',
-	})
-	const previewConfig = (
-		(generated.env as Record<string, unknown>).preview as Record<string, unknown>
-	)
-
-	expect(previewConfig.r2_buckets).toEqual([
-		{
-			binding: 'ANOTHER_R2',
-			bucket_name: 'keep-r2-bucket',
-		},
-		{
-			binding: 'MDX_REMOTE_R2',
-			bucket_name: 'mdx-remote-bucket',
-		},
-	])
-})
-
 test('buildGeneratedWranglerConfig leaves ffmpeg service binding untouched outside preview', () => {
 	const generated = buildGeneratedWranglerConfig({
 		baseConfig: {
@@ -215,8 +183,8 @@ test('buildGeneratedWranglerConfig leaves ffmpeg service binding untouched outsi
 		d1DatabaseName: 'new-db-name',
 		d1DatabaseId: 'new-db-id',
 		siteCacheKvId: 'new-kv-id',
+		mdxRemoteKvId: 'new-mdx-kv-id',
 		callsDraftQueueName: 'new-calls-draft-queue',
-		mdxRemoteR2BucketName: null,
 	})
 	const productionConfig = (
 		(generated.env as Record<string, unknown>).production as Record<string, unknown>

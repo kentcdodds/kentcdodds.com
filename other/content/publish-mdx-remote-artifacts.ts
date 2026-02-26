@@ -6,7 +6,9 @@ import {
 } from './compile-mdx-remote-documents.ts'
 
 type CliOptions = {
-	bucket: string
+	kvBinding: string
+	wranglerConfigPath: string
+	wranglerEnv: string
 	beforeSha?: string
 	afterSha?: string
 	outputDirectory: string
@@ -25,7 +27,9 @@ type PublishPlan = {
 
 function parseArgs(argv: Array<string>): CliOptions {
 	const options: CliOptions = {
-		bucket: '',
+		kvBinding: '',
+		wranglerConfigPath: 'wrangler.jsonc',
+		wranglerEnv: process.env.CLOUDFLARE_ENV ?? 'development',
 		outputDirectory: 'other/content/mdx-remote',
 		dryRun: false,
 	}
@@ -34,8 +38,17 @@ function parseArgs(argv: Array<string>): CliOptions {
 		const arg = argv[index]
 		if (!arg) continue
 		switch (arg) {
-			case '--bucket':
-				options.bucket = argv[index + 1] ?? options.bucket
+			case '--kv-binding':
+				options.kvBinding = argv[index + 1] ?? options.kvBinding
+				index += 1
+				break
+			case '--wrangler-config':
+				options.wranglerConfigPath =
+					argv[index + 1] ?? options.wranglerConfigPath
+				index += 1
+				break
+			case '--wrangler-env':
+				options.wranglerEnv = argv[index + 1] ?? options.wranglerEnv
 				index += 1
 				break
 			case '--before':
@@ -60,8 +73,8 @@ function parseArgs(argv: Array<string>): CliOptions {
 		}
 	}
 
-	if (!options.bucket.trim()) {
-		throw new Error('Missing required --bucket argument')
+	if (!options.kvBinding.trim()) {
+		throw new Error('Missing required --kv-binding argument')
 	}
 
 	return options
@@ -206,41 +219,65 @@ function runWranglerCommand(args: Array<string>) {
 }
 
 function uploadArtifact({
-	bucket,
+	kvBinding,
+	wranglerConfigPath,
+	wranglerEnv,
 	key,
 	filePath,
 	dryRun,
 }: {
-	bucket: string
+	kvBinding: string
+	wranglerConfigPath: string
+	wranglerEnv: string
 	key: string
 	filePath: string
 	dryRun: boolean
 }) {
 	if (dryRun) return
 	runWranglerCommand([
-		'r2',
-		'object',
+		'kv',
+		'key',
 		'put',
-		`${bucket}/${key}`,
+		key,
+		'--binding',
+		kvBinding,
 		'--remote',
-		'--file',
+		'--config',
+		wranglerConfigPath,
+		'--env',
+		wranglerEnv,
+		'--path',
 		filePath,
-		'--content-type',
-		'application/json',
 	])
 }
 
 function deleteArtifact({
-	bucket,
+	kvBinding,
+	wranglerConfigPath,
+	wranglerEnv,
 	key,
 	dryRun,
 }: {
-	bucket: string
+	kvBinding: string
+	wranglerConfigPath: string
+	wranglerEnv: string
 	key: string
 	dryRun: boolean
 }) {
 	if (dryRun) return
-	runWranglerCommand(['r2', 'object', 'delete', `${bucket}/${key}`, '--remote'])
+	runWranglerCommand([
+		'kv',
+		'key',
+		'delete',
+		key,
+		'--binding',
+		kvBinding,
+		'--remote',
+		'--config',
+		wranglerConfigPath,
+		'--env',
+		wranglerEnv,
+	])
 }
 
 async function publishMdxRemoteArtifacts(options: CliOptions) {
@@ -265,7 +302,9 @@ async function publishMdxRemoteArtifacts(options: CliOptions) {
 
 	for (const entry of plan.uploadEntries) {
 		uploadArtifact({
-			bucket: options.bucket,
+			kvBinding: options.kvBinding,
+			wranglerConfigPath: options.wranglerConfigPath,
+			wranglerEnv: options.wranglerEnv,
 			key: toArtifactKey(entry),
 			filePath: path.resolve(entry.outputPath),
 			dryRun: options.dryRun,
@@ -274,14 +313,18 @@ async function publishMdxRemoteArtifacts(options: CliOptions) {
 
 	for (const deleteKey of plan.deleteKeys) {
 		deleteArtifact({
-			bucket: options.bucket,
+			kvBinding: options.kvBinding,
+			wranglerConfigPath: options.wranglerConfigPath,
+			wranglerEnv: options.wranglerEnv,
 			key: deleteKey,
 			dryRun: options.dryRun,
 		})
 	}
 
 	uploadArtifact({
-		bucket: options.bucket,
+		kvBinding: options.kvBinding,
+		wranglerConfigPath: options.wranglerConfigPath,
+		wranglerEnv: options.wranglerEnv,
 		key: 'manifest.json',
 		filePath: manifestPath,
 		dryRun: options.dryRun,
@@ -292,7 +335,9 @@ async function publishMdxRemoteArtifacts(options: CliOptions) {
 		{
 			uploaded: plan.uploadEntries.length,
 			deleted: plan.deleteKeys.length,
-			bucket: options.bucket,
+			kvBinding: options.kvBinding,
+			wranglerConfigPath: options.wranglerConfigPath,
+			wranglerEnv: options.wranglerEnv,
 		},
 	)
 }

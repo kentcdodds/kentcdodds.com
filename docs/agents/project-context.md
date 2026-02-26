@@ -87,16 +87,11 @@ reference:
   `${MEDIA_BASE_URL}/stream`).
   - current deployment default media base is `https://media.kcd.dev`
     (planned production cutover target: `https://media.kentcdodds.com`).
-- `ENABLE_MDX_REMOTE=true` enables runtime rendering via the new mdx-remote
-  JSON-tree interpreter path.
-- Runtime mdx-remote document loading order (when `ENABLE_MDX_REMOTE=true`):
-  1) KV binding (`MDX_REMOTE_KV`)
-  2) R2 binding (`MDX_REMOTE_R2`)
-  3) HTTP artifact host (`MDX_REMOTE_BASE_URL`)
-  4) local artifact files in mocks mode (`MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY`,
-     defaults to `other/content/mdx-remote`)
-- GitHub content fetches in mocks mode use local filesystem fallback in
-  `app/utils/github.server.ts` (no network call required for content paths).
+- Runtime MDX rendering now uses a single path:
+  - `MDX_REMOTE_KV` binding only (no runtime fallback chain).
+- GitHub content fetches in mocks mode still use local filesystem fallback in
+  `app/utils/github.server.ts` for tools/routes that explicitly read source
+  files, but page rendering no longer uses GitHub fallback compilation.
 - Media workflow:
   - canonical manifests live in `content/data/media-manifests/{images,videos}.json`
   - one-time Cloudinary bootstrap to local `content/**`:
@@ -159,15 +154,14 @@ reference:
   - `bun run content:compile-mdx-remote:dry-run`
   - `bun run content:compile-mdx-remote:strict-report` (strict validation report
     for component/expression compatibility; exits non-zero on failures)
-  - `bun run content:publish-mdx-remote -- --bucket <r2-bucket> [--before <sha> --after <sha>]`
-    publishes strict-validated mdx-remote artifacts to R2 (changed-entry upload +
+  - `bun run content:publish-mdx-remote -- --kv-binding MDX_REMOTE_KV --wrangler-config <config-path> --wrangler-env <env> [--before <sha> --after <sha>]`
+    publishes strict-validated mdx-remote artifacts to KV (changed-entry upload +
     deleted-entry cleanup when SHAs are provided).
   - `bun run content:watch-mdx-remote` watches content collections locally and
     continuously rebuilds strict mdx-remote artifacts into
     `other/content/mdx-remote/` (use `--once` for a single local rebuild pass).
-  - Preview/production generated Wrangler configs can attach an R2 binding for
-    runtime mdx docs via `--mdx-remote-r2-bucket <bucket-name>` on
-    `tools/ci/preview-resources.ts`.
+  - Preview/production generated Wrangler configs attach dedicated KV bindings
+    for runtime mdx docs (`MDX_REMOTE_KV`) via `tools/ci/preview-resources.ts`.
   - generates serialized mdx-remote JSON docs + manifest under
     `other/content/mdx-remote/`.
 

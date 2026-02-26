@@ -11,7 +11,6 @@ type CliOptions = {
 	outConfigPath: string
 	environment: string
 	dryRun: boolean
-	mdxRemoteR2BucketName: string | null
 }
 
 type D1DatabaseListEntry = {
@@ -43,7 +42,6 @@ function parseArgs(argv: Array<string>) {
 		outConfigPath: 'wrangler-preview.generated.jsonc',
 		environment: 'preview',
 		dryRun: false,
-		mdxRemoteR2BucketName: null,
 	}
 
 	for (let index = 1; index < argv.length; index += 1) {
@@ -68,10 +66,6 @@ function parseArgs(argv: Array<string>) {
 				break
 			case '--dry-run':
 				options.dryRun = true
-				break
-			case '--mdx-remote-r2-bucket':
-				options.mdxRemoteR2BucketName = argv[index + 1] ?? null
-				index += 1
 				break
 			default:
 				if (arg.startsWith('-')) {
@@ -100,8 +94,8 @@ type BuildGeneratedWranglerConfigArgs = {
 	d1DatabaseName: string
 	d1DatabaseId: string
 	siteCacheKvId: string
+	mdxRemoteKvId: string
 	callsDraftQueueName: string
-	mdxRemoteR2BucketName: string | null
 }
 
 function runWrangler(
@@ -188,15 +182,22 @@ export function buildPreviewResourceNames(workerName: string) {
 	const maxLen = 63
 	const d1Suffix = '-db'
 	const kvSuffix = '-site-cache-kv'
+	const mdxKvSuffix = '-mdx-remote-kv'
 	const queueSuffix = '-calls-draft-queue'
 	const d1DatabaseName = truncateWithSuffix(workerName, d1Suffix, maxLen)
 	const siteCacheKvTitle = truncateWithSuffix(workerName, kvSuffix, maxLen)
+	const mdxRemoteKvTitle = truncateWithSuffix(workerName, mdxKvSuffix, maxLen)
 	const callsDraftQueueName = truncateWithSuffix(
 		workerName,
 		queueSuffix,
 		maxLen,
 	)
-	return { d1DatabaseName, siteCacheKvTitle, callsDraftQueueName }
+	return {
+		d1DatabaseName,
+		siteCacheKvTitle,
+		mdxRemoteKvTitle,
+		callsDraftQueueName,
+	}
 }
 
 function truncateWithSuffix(base: string, suffix: string, maxLen: number) {
@@ -435,8 +436,8 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseName,
 	d1DatabaseId,
 	siteCacheKvId,
+	mdxRemoteKvId,
 	callsDraftQueueName,
-	mdxRemoteR2BucketName,
 }: {
 	baseConfigPath: string
 	outConfigPath: string
@@ -445,8 +446,8 @@ async function writeGeneratedWranglerConfig({
 	d1DatabaseName: string
 	d1DatabaseId: string
 	siteCacheKvId: string
+	mdxRemoteKvId: string
 	callsDraftQueueName: string
-	mdxRemoteR2BucketName: string | null
 }) {
 	const baseText = await readFile(baseConfigPath, 'utf8')
 	const baseConfig = JSON.parse(baseText) as Record<string, unknown>
@@ -457,8 +458,8 @@ async function writeGeneratedWranglerConfig({
 		d1DatabaseName,
 		d1DatabaseId,
 		siteCacheKvId,
+		mdxRemoteKvId,
 		callsDraftQueueName,
-		mdxRemoteR2BucketName,
 	})
 	const resolvedOut = path.resolve(outConfigPath)
 	await mkdir(path.dirname(resolvedOut), { recursive: true })
@@ -474,8 +475,8 @@ export function buildGeneratedWranglerConfig({
 	d1DatabaseName,
 	d1DatabaseId,
 	siteCacheKvId,
+	mdxRemoteKvId,
 	callsDraftQueueName,
-	mdxRemoteR2BucketName,
 }: BuildGeneratedWranglerConfigArgs) {
 	const config = structuredClone(baseConfig) as Record<string, unknown>
 	const env = config.env
@@ -515,7 +516,10 @@ export function buildGeneratedWranglerConfig({
 		? targetConfig.kv_namespaces
 		: []
 	const kvWithoutBinding = existingKvNamespaces.filter((entry) => {
-		return !(isRecord(entry) && entry.binding === 'SITE_CACHE_KV')
+		return !(
+			isRecord(entry) &&
+			(entry.binding === 'SITE_CACHE_KV' || entry.binding === 'MDX_REMOTE_KV')
+		)
 	})
 	targetConfig.kv_namespaces = [
 		...kvWithoutBinding,
@@ -524,25 +528,12 @@ export function buildGeneratedWranglerConfig({
 			id: siteCacheKvId,
 			preview_id: siteCacheKvId,
 		},
+		{
+			binding: 'MDX_REMOTE_KV',
+			id: mdxRemoteKvId,
+			preview_id: mdxRemoteKvId,
+		},
 	]
-
-	const existingR2Buckets = Array.isArray(targetConfig.r2_buckets)
-		? targetConfig.r2_buckets
-		: []
-	const r2WithoutMdxBinding = existingR2Buckets.filter((entry) => {
-		return !(isRecord(entry) && entry.binding === 'MDX_REMOTE_R2')
-	})
-	if (mdxRemoteR2BucketName) {
-		targetConfig.r2_buckets = [
-			...r2WithoutMdxBinding,
-			{
-				binding: 'MDX_REMOTE_R2',
-				bucket_name: mdxRemoteR2BucketName,
-			},
-		]
-	} else {
-		targetConfig.r2_buckets = r2WithoutMdxBinding
-	}
 
 	const existingServices = Array.isArray(targetConfig.services)
 		? targetConfig.services
@@ -605,7 +596,7 @@ export function buildGeneratedWranglerConfig({
 }
 
 async function ensurePreviewResources(options: CliOptions) {
-	const { d1DatabaseName, siteCacheKvTitle, callsDraftQueueName } =
+	const { d1DatabaseName, siteCacheKvTitle, mdxRemoteKvTitle, callsDraftQueueName } =
 		buildPreviewResourceNames(options.workerName)
 
 	const queue = ensureQueue({
@@ -614,6 +605,10 @@ async function ensurePreviewResources(options: CliOptions) {
 	})
 	const d1 = ensureD1Database({ name: d1DatabaseName, dryRun: options.dryRun })
 	const kv = ensureKvNamespace({ title: siteCacheKvTitle, dryRun: options.dryRun })
+	const mdxRemoteKv = ensureKvNamespace({
+		title: mdxRemoteKvTitle,
+		dryRun: options.dryRun,
+	})
 
 	const generatedConfigPath = await writeGeneratedWranglerConfig({
 		baseConfigPath: options.wranglerConfigPath,
@@ -623,8 +618,8 @@ async function ensurePreviewResources(options: CliOptions) {
 		d1DatabaseName: d1.name,
 		d1DatabaseId: d1.id,
 		siteCacheKvId: kv.id,
+		mdxRemoteKvId: mdxRemoteKv.id,
 		callsDraftQueueName: queue.name,
-		mdxRemoteR2BucketName: options.mdxRemoteR2BucketName,
 	})
 
 	console.log(`wrangler_config=${generatedConfigPath}`)
@@ -632,16 +627,18 @@ async function ensurePreviewResources(options: CliOptions) {
 	console.log(`d1_database_id=${d1.id}`)
 	console.log(`site_cache_kv_title=${kv.title}`)
 	console.log(`site_cache_kv_id=${kv.id}`)
+	console.log(`mdx_remote_kv_title=${mdxRemoteKv.title}`)
+	console.log(`mdx_remote_kv_id=${mdxRemoteKv.id}`)
 	console.log(`calls_draft_queue_name=${queue.name}`)
-	console.log(`mdx_remote_r2_bucket=${options.mdxRemoteR2BucketName ?? ''}`)
 }
 
 async function cleanupPreviewResources(options: CliOptions) {
-	const { d1DatabaseName, siteCacheKvTitle, callsDraftQueueName } =
+	const { d1DatabaseName, siteCacheKvTitle, mdxRemoteKvTitle, callsDraftQueueName } =
 		buildPreviewResourceNames(options.workerName)
 
 	deleteQueue({ name: callsDraftQueueName, dryRun: options.dryRun })
 	deleteKvNamespace({ title: siteCacheKvTitle, dryRun: options.dryRun })
+	deleteKvNamespace({ title: mdxRemoteKvTitle, dryRun: options.dryRun })
 	deleteD1Database({ name: d1DatabaseName, dryRun: options.dryRun })
 	const outputConfigPath = path.resolve(options.outConfigPath)
 	await rm(outputConfigPath, { force: true })

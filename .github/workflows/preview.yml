@@ -32,6 +32,7 @@ on:
         default: false
 
 permissions:
+  actions: write
   contents: read
   pull-requests: write
 
@@ -101,18 +102,23 @@ jobs:
         env:
           WORKER_NAME: ${{ steps.names.outputs.worker_name }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
-          MDX_REMOTE_R2_BUCKET: ${{ secrets.MDX_REMOTE_R2_BUCKET || secrets.R2_BUCKET }}
         run: |
           set -euo pipefail
           dry_run_flag=()
-          mdx_remote_r2_flag=()
           if [ "$DRY_RUN" = "true" ]; then
             dry_run_flag+=(--dry-run)
           fi
-          if [ -n "${MDX_REMOTE_R2_BUCKET:-}" ]; then
-            mdx_remote_r2_flag+=(--mdx-remote-r2-bucket "$MDX_REMOTE_R2_BUCKET")
-          fi
-          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}" "${mdx_remote_r2_flag[@]}" | tee -a "$GITHUB_OUTPUT"
+          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: ♻️ Restore mdx-remote cache (PR + main warm baseline)
+        id: mdx-cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: other/content/mdx-remote
+          key: mdx-remote-${{ runner.os }}-pr-${{ github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            mdx-remote-${{ runner.os }}-pr-${{ github.event.pull_request.number || github.ref_name }}-
+            mdx-remote-${{ runner.os }}-main-
 
       - name: 🧪 Deploy preview mock workers
         id: deploy-mocks
@@ -159,6 +165,31 @@ jobs:
           bun tools/ci/sync-worker-secrets.ts --name "$WORKER_NAME" --env
           preview --from-dotenv .env.example --generate-cookie-secret
           --include-empty
+
+      - name: 📚 Compile + publish mdx-remote artifacts to preview KV
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+          BEFORE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          publish_args=(--kv-binding MDX_REMOTE_KV --wrangler-config "$WRANGLER_CONFIG" --wrangler-env preview)
+          if [ -n "${BEFORE_SHA:-}" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            publish_args+=(--before "$BEFORE_SHA" --after "$AFTER_SHA")
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            publish_args+=(--dry-run)
+          fi
+          bun run content:publish-mdx-remote -- "${publish_args[@]}"
+
+      - name: ♻️ Save mdx-remote cache
+        if: ${{ always() && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        uses: actions/cache/save@v4
+        with:
+          path: other/content/mdx-remote
+          key: mdx-remote-${{ runner.os }}-pr-${{ github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
 
       - name: ☁️ Deploy preview app worker
         id: deploy-preview
@@ -326,3 +357,30 @@ jobs:
             dry_run_flag+=(--dry-run)
           fi
           bun tools/ci/preview-resources.ts cleanup --worker-name "$WORKER_NAME" --environment preview --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}"
+
+      - name: 🗑️ Delete PR mdx-remote caches
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        env:
+          CACHE_KEY_PREFIX: mdx-remote-${{ runner.os }}-pr-${{ github.event.pull_request.number }}-
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const keyPrefix = process.env.CACHE_KEY_PREFIX
+            const cacheResponse = await github.rest.actions.getActionsCacheList({
+              owner,
+              repo,
+              key: keyPrefix,
+              per_page: 100,
+            })
+            const caches = cacheResponse.data.actions_caches ?? []
+            const matching = caches.filter((cache) => cache.key?.startsWith(keyPrefix))
+            core.info(`Found ${matching.length} cache entries with prefix ${keyPrefix}`)
+            for (const cache of matching) {
+              await github.rest.actions.deleteActionsCacheById({
+                owner,
+                repo,
+                cache_id: cache.id,
+              })
+              core.info(`Deleted cache ${cache.id} (${cache.key})`)
+            }

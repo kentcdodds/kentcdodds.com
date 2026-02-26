@@ -8,15 +8,19 @@ import {
 	toEntryKey,
 } from '../publish-mdx-remote-artifacts.ts'
 
-test('parseArgs requires bucket and supports optional flags', () => {
+test('parseArgs requires kv binding and supports optional flags', () => {
 	expect(() =>
 		parseArgs(['--before', 'abc', '--after', 'def']),
-	).toThrow(/missing required --bucket/i)
+	).toThrow(/missing required --kv-binding/i)
 
 	expect(
 		parseArgs([
-			'--bucket',
-			'mdx-artifacts',
+			'--kv-binding',
+			'MDX_REMOTE_KV',
+			'--wrangler-config',
+			'wrangler-preview.generated.jsonc',
+			'--wrangler-env',
+			'preview',
 			'--before',
 			'abc',
 			'--after',
@@ -26,7 +30,9 @@ test('parseArgs requires bucket and supports optional flags', () => {
 			'--dry-run',
 		]),
 	).toEqual({
-		bucket: 'mdx-artifacts',
+		kvBinding: 'MDX_REMOTE_KV',
+		wranglerConfigPath: 'wrangler-preview.generated.jsonc',
+		wranglerEnv: 'preview',
 		beforeSha: 'abc',
 		afterSha: 'def',
 		outputDirectory: 'tmp/mdx',
