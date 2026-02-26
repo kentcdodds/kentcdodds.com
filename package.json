@@ -24,8 +24,9 @@
   "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "type": "module",
   "scripts": {
-    "postinstall": "bunx prisma@7 generate && bun run prisma:patch-generated-client",
+    "postinstall": "bunx prisma@7 generate && bun run prisma:patch-generated-client && bun run prisma:patch-runtime-client",
     "prisma:patch-generated-client": "bun tools/prisma/patch-generated-client-for-workers.ts",
+    "prisma:patch-runtime-client": "bun tools/prisma/patch-prisma-runtime-client-for-workers.ts",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build",
     "prebuild": "bun run clean && echo All clean ✨",
     "build": "run-s build:*",
