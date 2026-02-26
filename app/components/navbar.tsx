@@ -242,7 +242,7 @@ function NavSearch({
 		void fetcher.load(
 			`/resources/search?query=${encodeURIComponent(nextQuery.trim())}`,
 		)
-	}, 200)
+	}, 250)
 
 	React.useEffect(() => {
 		// Normalize the fetcher response into local state so we can clear results
