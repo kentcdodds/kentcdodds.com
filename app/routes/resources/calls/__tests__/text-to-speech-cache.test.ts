@@ -28,15 +28,9 @@ vi.mock('#app/utils/cloudflare-ai-text-to-speech.server.ts', () => {
 	}
 })
 
-const defaultUserEmail = 'friend@example.com'
-const mockUser = {
-	id: 'user_1',
-	email: defaultUserEmail,
-}
-
 vi.mock('#app/utils/session.server.ts', () => {
 	return {
-		getUser: async () => mockUser,
+		getUser: async () => ({ id: 'user_1' }),
 	}
 })
 
@@ -64,7 +58,6 @@ function makeRequest({ text, voice }: { text: string; voice: string }) {
 test('does not cache audio bytes; repeated requests invoke workers ai', async () => {
 	synthesizeSpeechWithWorkersAi.mockClear()
 	rateLimit.mockClear()
-	mockUser.email = defaultUserEmail
 
 	const { action } = await import('../text-to-speech.tsx')
 
@@ -86,52 +79,14 @@ test('does not cache audio bytes; repeated requests invoke workers ai', async ()
 
 	expect(synthesizeSpeechWithWorkersAi).toHaveBeenCalledTimes(2)
 	expect(rateLimit).toHaveBeenCalledTimes(2)
-	expect(rateLimit).toHaveBeenNthCalledWith(
-		1,
-		expect.objectContaining({
-			key: 'call-kent-tts:user_1',
-			max: 20,
-		}),
-	)
-	expect(rateLimit).toHaveBeenNthCalledWith(
-		2,
-		expect.objectContaining({
-			key: 'call-kent-tts:user_1',
-			max: 20,
-		}),
-	)
 	expect(synthesizeSpeechWithWorkersAi.mock.calls[1]?.[0]).toEqual(
 		synthesizeSpeechWithWorkersAi.mock.calls[0]?.[0],
-	)
-})
-
-test('uses a 10x higher text-to-speech rate limit for me@kentcdodds.com', async () => {
-	synthesizeSpeechWithWorkersAi.mockClear()
-	rateLimit.mockClear()
-	mockUser.email = 'me@kentcdodds.com'
-
-	const { action } = await import('../text-to-speech.tsx')
-
-	const req = makeRequest({
-		text: 'This should use a much higher quota for Kent\'s account email.',
-		voice: 'luna',
-	})
-	const res = (await action({ request: req } as any)) as Response
-
-	expect(res.ok).toBe(true)
-	expect(rateLimit).toHaveBeenCalledTimes(1)
-	expect(rateLimit).toHaveBeenCalledWith(
-		expect.objectContaining({
-			key: 'call-kent-tts:user_1',
-			max: 200,
-		}),
 	)
 })
 
 test('validates normalized question text before synthesis', async () => {
 	synthesizeSpeechWithWorkersAi.mockClear()
 	rateLimit.mockClear()
-	mockUser.email = defaultUserEmail
 
 	const { action } = await import('../text-to-speech.tsx')
 
@@ -157,7 +112,6 @@ test('validates normalized question text before synthesis', async () => {
 test('falls back to audio/mpeg when workers ai omits content type', async () => {
 	synthesizeSpeechWithWorkersAi.mockClear()
 	rateLimit.mockClear()
-	mockUser.email = defaultUserEmail
 	synthesizeSpeechWithWorkersAi.mockImplementationOnce(
 		async ({
 			text,

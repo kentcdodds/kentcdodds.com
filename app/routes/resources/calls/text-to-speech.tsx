@@ -28,15 +28,6 @@ const textToSpeechResourceRoute = '/resources/calls/text-to-speech'
 
 const TTS_RATE_LIMIT_MAX = 20
 const TTS_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
-const KENT_EMAIL = 'me@kentcdodds.com'
-const KENT_RATE_LIMIT_MULTIPLIER = 10
-
-function getTextToSpeechRateLimitMax(email: string | null | undefined) {
-	if (email?.toLowerCase() === KENT_EMAIL) {
-		return TTS_RATE_LIMIT_MAX * KENT_RATE_LIMIT_MULTIPLIER
-	}
-	return TTS_RATE_LIMIT_MAX
-}
 
 function normalizeQuestionText(text: string) {
 	// Normalize input by trimming and collapsing consecutive whitespace.
@@ -113,10 +104,9 @@ export async function action({ request }: Route.ActionArgs) {
 	try {
 		// Intentionally consume quota before synthesis to cap paid API usage, even
 		// when upstream calls fail.
-		const maxRequests = getTextToSpeechRateLimitMax(user.email)
 		const limit = rateLimit({
 			key: `call-kent-tts:${user.id}`,
-			max: maxRequests,
+			max: TTS_RATE_LIMIT_MAX,
 			windowMs: TTS_RATE_LIMIT_WINDOW_MS,
 		})
 		if (!limit.allowed) {

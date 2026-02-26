@@ -4,14 +4,21 @@ import express from 'express'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createRateLimitingMiddleware } from '../rate-limiting.js'
 
-async function startTestServer() {
+async function startTestServer(
+	options: Parameters<typeof createRateLimitingMiddleware>[0] = {},
+) {
 	const previousPlaywrightBaseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL
 	// Ensure production-mode limits are enforced for these tests.
 	process.env.PLAYWRIGHT_TEST_BASE_URL = ''
 
 	const app = express()
 	app.set('trust proxy', true)
-	app.use(createRateLimitingMiddleware({ mode: 'production' }))
+	app.use(
+		createRateLimitingMiddleware({
+			mode: 'production',
+			...options,
+		}),
+	)
 
 	app.all(/.*/, (_req, res) => res.status(200).send('ok'))
 
@@ -84,6 +91,45 @@ describe('rate limiting (epic-stack style)', () => {
 			method: 'POST',
 		})
 		expect(tooMany.status).toBe(429)
+	})
+
+	it('gives me@kentcdodds.com a 10x stronger limit without sharing that bucket by IP', async () => {
+		started = await startTestServer({
+			getRequestUserEmail: (req) => req.get('x-test-email') ?? null,
+		})
+
+		for (let i = 0; i < 100; i++) {
+			const kentResponse = await fetch(`${started.baseUrl}/login`, {
+				method: 'POST',
+				headers: {
+					'fly-client-ip': '3.3.3.3',
+					'x-test-email': 'me@kentcdodds.com',
+				},
+			})
+			expect(kentResponse.status).toBe(200)
+		}
+
+		const kentTooMany = await fetch(`${started.baseUrl}/login`, {
+			method: 'POST',
+			headers: {
+				'fly-client-ip': '3.3.3.3',
+				'x-test-email': 'me@kentcdodds.com',
+			},
+		})
+		expect(kentTooMany.status).toBe(429)
+
+		for (let i = 0; i < 10; i++) {
+			const regularResponse = await fetch(`${started.baseUrl}/login`, {
+				method: 'POST',
+				headers: { 'fly-client-ip': '3.3.3.3' },
+			})
+			expect(regularResponse.status).toBe(200)
+		}
+		const regularTooMany = await fetch(`${started.baseUrl}/login`, {
+			method: 'POST',
+			headers: { 'fly-client-ip': '3.3.3.3' },
+		})
+		expect(regularTooMany.status).toBe(429)
 	})
 
 	it('uses strongest limiter for GET /magic (token-in-query style route)', async () => {
