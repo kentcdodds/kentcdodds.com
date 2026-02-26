@@ -179,18 +179,28 @@ function useOnRead({
 		const parentEl = parentElRef.current
 		if (!parentEl || !time) return
 
-		const visibilityEl = document.createElement('div')
+		let visibilityEl: HTMLDivElement | null = document.createElement('div')
+
+		function removeVisibilityEl() {
+			if (!visibilityEl) return
+			visibilityEl.remove()
+			visibilityEl = null
+		}
 
 		let scrolledTheMain = false
 		const observer = new IntersectionObserver((entries) => {
+			if (!visibilityEl) return
+			const currentVisibilityEl = visibilityEl
 			const isVisible = entries.some((entry) => {
-				return entry.target === visibilityEl && entry.isIntersecting
+				return (
+					entry.target === currentVisibilityEl && entry.isIntersecting
+				)
 			})
 			if (isVisible) {
 				scrolledTheMain = true
 				maybeMarkAsRead()
 				observer.disconnect()
-				visibilityEl.remove()
+				removeVisibilityEl()
 			}
 		})
 
@@ -234,7 +244,7 @@ function useOnRead({
 			document.removeEventListener('visibilitychange', handleVisibilityChange)
 			clearTimeout(timerId)
 			observer.disconnect()
-			visibilityEl.remove()
+			removeVisibilityEl()
 		}
 		return cleanup
 	}, [time, onRead, parentElRef])
