@@ -195,18 +195,6 @@ export function getUrl(requestInfo?: { origin: string; path: string }) {
 	)
 }
 
-export function toBase64(string: string) {
-	if (typeof window === 'undefined') {
-		return Buffer.from(string, 'utf8').toString('base64')
-	} else {
-		// `btoa` only supports Latin-1, so we encode as UTF-8 bytes first.
-		const bytes = new TextEncoder().encode(string)
-		let binary = ''
-		for (const byte of bytes) binary += String.fromCharCode(byte)
-		return window.btoa(binary)
-	}
-}
-
 export const reuseUsefulLoaderHeaders: HeadersFunction = ({
 	loaderHeaders,
 	parentHeaders,
