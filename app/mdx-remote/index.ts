@@ -25,7 +25,6 @@ export {
 	type MdxRemoteRuntimeContext,
 } from '#app/mdx-remote/runtime/context.ts'
 export {
-	createMdxRemoteComponentRegistry,
 	type MdxRemoteComponentRegistry,
 } from '#app/mdx-remote/runtime/components.ts'
 export {

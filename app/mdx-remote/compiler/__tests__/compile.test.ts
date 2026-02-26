@@ -163,6 +163,22 @@ test('allows expression syntax when strict expression mode is disabled', async (
 	})
 })
 
+test('allows safe string literals containing forbidden keywords', async () => {
+	const { document } = await compileMdxRemoteDocument({
+		slug: 'keyword-literal',
+		frontmatter: {},
+		root: {
+			type: 'root',
+			children: [{ type: 'expression', value: '"new"' }],
+		},
+		allowedComponentNames: [],
+	})
+	expect(document.root.children[0]).toMatchObject({
+		type: 'expression',
+		value: '"new"',
+	})
+})
+
 test('executes compiler plugins with document context', async () => {
 	const plugin = vi.fn(async () => {})
 	await compileMdxRemoteDocument({

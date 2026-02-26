@@ -27,13 +27,6 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://media.kcd.dev/stream'),
-	ENABLE_MDX_REMOTE: z.enum(['true', 'false']).optional().default('false'),
-	MDX_REMOTE_BASE_URL: z.string().trim().optional(),
-	MDX_REMOTE_LOCAL_ARTIFACT_DIRECTORY: z
-		.string()
-		.trim()
-		.optional()
-		.default('other/content/mdx-remote'),
 
 	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,
@@ -422,7 +415,6 @@ export function getPublicEnv() {
 		SENTRY_DSN: env.SENTRY_DSN,
 		MEDIA_BASE_URL: env.MEDIA_BASE_URL,
 		MEDIA_STREAM_BASE_URL: env.MEDIA_STREAM_BASE_URL,
-		ENABLE_MDX_REMOTE: env.ENABLE_MDX_REMOTE,
 	}
 }
 

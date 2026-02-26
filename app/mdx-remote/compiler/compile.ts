@@ -14,14 +14,28 @@ import {
 	isExpressionPropValue,
 	isNodePropValue,
 } from '#app/mdx-remote/compiler/types.ts'
+import { parseMdxRemoteExpression } from '#app/mdx-remote/runtime/expression.ts'
 
-const forbiddenExpressionPatterns = [
-	/\bimport\b/,
-	/\bexport\b/,
-	/\bnew\b/,
-	/\beval\b/,
-	/\bFunction\b/,
-]
+const blockedPropertyNames = new Set(['__proto__', 'prototype', 'constructor'])
+const blockedIdentifierNames = new Set(['import', 'export', 'new'])
+const blockedCallCalleeNames = new Set(['eval', 'Function'])
+const allowedUnaryOperators = new Set(['!', '+', '-'])
+const allowedBinaryOperators = new Set([
+	'+',
+	'-',
+	'*',
+	'/',
+	'%',
+	'===',
+	'!==',
+	'==',
+	'!=',
+	'<',
+	'<=',
+	'>',
+	'>=',
+])
+const allowedLogicalOperators = new Set(['&&', '||', '??'])
 
 function compileMdxRemoteDocument<Frontmatter extends Record<string, unknown>>({
 	slug,
@@ -188,11 +202,176 @@ function assertPropValueIsSafe({
 }
 
 function assertExpressionIsSafe(source: string) {
-	for (const pattern of forbiddenExpressionPatterns) {
-		if (pattern.test(source)) {
-			throw new Error(`Forbidden expression syntax: ${source}`)
-		}
+	const ast = parseExpressionAstOrThrow(source)
+	assertExpressionAstNodeIsSafe({ source, node: ast })
+}
+
+function parseExpressionAstOrThrow(source: string) {
+	try {
+		return parseMdxRemoteExpression(source)
+	} catch (error) {
+		throw new Error(
+			`Invalid MDX expression syntax "${source}": ${error instanceof Error ? error.message : String(error)}`,
+		)
 	}
+}
+
+function assertExpressionAstNodeIsSafe({
+	source,
+	node,
+}: {
+	source: string
+	node: Record<string, unknown>
+}) {
+	const nodeType = String(node.type ?? '')
+	switch (nodeType) {
+		case 'Literal':
+			return
+		case 'Identifier': {
+			const identifierName = String(node.name ?? '')
+			if (blockedIdentifierNames.has(identifierName)) {
+				throw new Error(`Forbidden expression syntax: ${source}`)
+			}
+			return
+		}
+		case 'ArrayExpression': {
+			const elements = Array.isArray(node.elements) ? node.elements : []
+			for (const element of elements) {
+				if (!element || typeof element !== 'object') continue
+				assertExpressionAstNodeIsSafe({
+					source,
+					node: element as Record<string, unknown>,
+				})
+			}
+			return
+		}
+		case 'ConditionalExpression': {
+			assertChildExpressionNodeIsSafe({ source, node: node.test })
+			assertChildExpressionNodeIsSafe({ source, node: node.consequent })
+			assertChildExpressionNodeIsSafe({ source, node: node.alternate })
+			return
+		}
+		case 'UnaryExpression': {
+			const operator = String(node.operator ?? '')
+			if (!allowedUnaryOperators.has(operator)) {
+				throw new Error(`Unsupported unary operator "${operator}" in expression: ${source}`)
+			}
+			assertChildExpressionNodeIsSafe({ source, node: node.argument })
+			return
+		}
+		case 'BinaryExpression': {
+			const operator = String(node.operator ?? '')
+			if (!allowedBinaryOperators.has(operator)) {
+				throw new Error(
+					`Unsupported binary operator "${operator}" in expression: ${source}`,
+				)
+			}
+			assertChildExpressionNodeIsSafe({ source, node: node.left })
+			assertChildExpressionNodeIsSafe({ source, node: node.right })
+			return
+		}
+		case 'LogicalExpression': {
+			const operator = String(node.operator ?? '')
+			if (!allowedLogicalOperators.has(operator)) {
+				throw new Error(
+					`Unsupported logical operator "${operator}" in expression: ${source}`,
+				)
+			}
+			assertChildExpressionNodeIsSafe({ source, node: node.left })
+			assertChildExpressionNodeIsSafe({ source, node: node.right })
+			return
+		}
+		case 'MemberExpression': {
+			assertChildExpressionNodeIsSafe({ source, node: node.object })
+			const computed = Boolean(node.computed)
+			if (!computed) {
+				assertIdentifierPropertyIsSafe({
+					source,
+					property: node.property,
+				})
+				return
+			}
+			assertChildExpressionNodeIsSafe({ source, node: node.property })
+			assertLiteralPropertyIsSafe({
+				source,
+				property: node.property,
+			})
+			return
+		}
+		case 'CallExpression': {
+			const callee = asRecord(node.callee)
+			const calleeType = String(callee?.type ?? '')
+			if (calleeType !== 'Identifier') {
+				throw new Error(`Forbidden expression syntax: ${source}`)
+			}
+			const calleeName = String(callee?.name ?? '')
+			if (blockedCallCalleeNames.has(calleeName)) {
+				throw new Error(`Forbidden expression syntax: ${source}`)
+			}
+			const args = Array.isArray(node.arguments) ? node.arguments : []
+			for (const arg of args) {
+				assertChildExpressionNodeIsSafe({ source, node: arg })
+			}
+			return
+		}
+		default:
+			throw new Error(`Forbidden expression syntax: ${source}`)
+	}
+}
+
+function assertChildExpressionNodeIsSafe({
+	source,
+	node,
+}: {
+	source: string
+	node: unknown
+}) {
+	const child = asRecord(node)
+	if (!child) {
+		throw new Error(`Forbidden expression syntax: ${source}`)
+	}
+	assertExpressionAstNodeIsSafe({ source, node: child })
+}
+
+function assertIdentifierPropertyIsSafe({
+	source,
+	property,
+}: {
+	source: string
+	property: unknown
+}) {
+	const propertyRecord = asRecord(property)
+	const propertyType = String(propertyRecord?.type ?? '')
+	if (propertyType !== 'Identifier') {
+		throw new Error(`Forbidden expression syntax: ${source}`)
+	}
+	const propertyName = String(propertyRecord?.name ?? '')
+	if (blockedPropertyNames.has(propertyName)) {
+		throw new Error(`Forbidden expression syntax: ${source}`)
+	}
+}
+
+function assertLiteralPropertyIsSafe({
+	source,
+	property,
+}: {
+	source: string
+	property: unknown
+}) {
+	const propertyRecord = asRecord(property)
+	if (!propertyRecord || String(propertyRecord.type ?? '') !== 'Literal') return
+	const propertyValue = propertyRecord.value
+	if (
+		(typeof propertyValue === 'string' || typeof propertyValue === 'number') &&
+		blockedPropertyNames.has(String(propertyValue))
+	) {
+		throw new Error(`Forbidden expression syntax: ${source}`)
+	}
+}
+
+function asRecord(value: unknown) {
+	if (!value || typeof value !== 'object') return null
+	return value as Record<string, unknown>
 }
 
 function isMdxComponentName(name: string) {
