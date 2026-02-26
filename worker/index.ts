@@ -98,62 +98,74 @@ const defaultWorkerHandler = {
 
 const oauthProvider = createWorkerOAuthProvider(defaultWorkerHandler)
 
-export default {
-	async fetch(request: Request, env: Record<string, unknown>, ctx: unknown) {
-		const response = hasOAuthKvBinding(env)
-			? await oauthProvider.fetch(
-					request,
-					env as {
-						[key: string]: unknown
-					},
-					ctx,
-				)
-			: await defaultWorkerHandler.fetch(request, env, ctx)
-		return applyStandardResponseHeaders(response, request)
+async function handleFetch(
+	request: Request,
+	env: Record<string, unknown>,
+	ctx: unknown,
+) {
+	const response = hasOAuthKvBinding(env)
+		? await oauthProvider.fetch(
+				request,
+				env as {
+					[key: string]: unknown
+				},
+				ctx,
+			)
+		: await defaultWorkerHandler.fetch(request, env, ctx)
+	return applyStandardResponseHeaders(response, request)
+}
+
+async function handleScheduled(
+	controller: { cron: string },
+	env: Record<string, unknown>,
+) {
+	try {
+		setRuntimeEnvSource(getStringEnvBindings(env))
+		setRuntimeBindingSource(env)
+		await runExpiredDataCleanup({
+			reason: `worker-cron:${controller.cron}`,
+		})
+	} catch (error) {
+		console.error('Scheduled cleanup failed', error)
+		throw error
+	} finally {
+		clearRuntimeBindingSource()
+		clearRuntimeEnvSource()
+	}
+}
+
+async function handleQueue(
+	batch: {
+		messages: Array<{ body: unknown; retry?: () => void }>
 	},
-	async scheduled(
-		controller: { cron: string },
-		env: Record<string, unknown>,
-	) {
-		try {
-			setRuntimeEnvSource(getStringEnvBindings(env))
-			setRuntimeBindingSource(env)
-			await runExpiredDataCleanup({
-				reason: `worker-cron:${controller.cron}`,
-			})
-		} catch (error) {
-			console.error('Scheduled cleanup failed', error)
-			throw error
-		} finally {
-			clearRuntimeBindingSource()
-			clearRuntimeEnvSource()
-		}
-	},
-	async queue(
-		batch: {
-			messages: Array<{ body: unknown; retry?: () => void }>
-		},
-		env: Record<string, unknown>,
-	) {
-		try {
-			setRuntimeEnvSource(getStringEnvBindings(env))
-			setRuntimeBindingSource(env)
-			for (const message of batch.messages) {
-				try {
-					if (!isCallKentEpisodeDraftQueueMessage(message.body)) {
-						throw new Error('Unexpected Call Kent draft queue payload shape')
-					}
-					await processCallKentEpisodeDraftQueueMessage(message.body)
-				} catch (error) {
-					console.error('Failed to process Call Kent draft queue message', error)
-					message.retry?.()
+	env: Record<string, unknown>,
+) {
+	try {
+		setRuntimeEnvSource(getStringEnvBindings(env))
+		setRuntimeBindingSource(env)
+		for (const message of batch.messages) {
+			try {
+				if (!isCallKentEpisodeDraftQueueMessage(message.body)) {
+					throw new Error('Unexpected Call Kent draft queue payload shape')
 				}
+				await processCallKentEpisodeDraftQueueMessage(message.body)
+			} catch (error) {
+				console.error('Failed to process Call Kent draft queue message', error)
+				message.retry?.()
 			}
-		} finally {
-			clearRuntimeBindingSource()
-			clearRuntimeEnvSource()
 		}
-	},
+	} finally {
+		clearRuntimeBindingSource()
+		clearRuntimeEnvSource()
+	}
+}
+
+export { handleFetch as fetch, handleScheduled as scheduled, handleQueue as queue }
+
+export default {
+	fetch: handleFetch,
+	scheduled: handleScheduled,
+	queue: handleQueue,
 }
 
 async function getRequestHandler() {
