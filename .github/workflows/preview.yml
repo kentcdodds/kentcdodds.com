@@ -111,7 +111,7 @@ jobs:
           if [ "$DRY_RUN" = "true" ]; then
             dry_run_flag+=(--dry-run)
           fi
-          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc "${dry_run_flag[@]}" | tee -a "$GITHUB_OUTPUT"
+          bun tools/ci/preview-resources.ts ensure --worker-name "$WORKER_NAME" --environment preview --wrangler-config wrangler.jsonc --out-config wrangler-preview.generated.jsonc --vars-from-dotenv .env.example "${dry_run_flag[@]}" | tee -a "$GITHUB_OUTPUT"
 
       - name: ♻️ Restore mdx-remote cache (PR + main warm baseline)
         id: mdx-cache-restore

@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parse as parseDotenv } from 'dotenv'
 
 type Command = 'ensure' | 'cleanup'
 
@@ -11,6 +12,7 @@ type CliOptions = {
 	outConfigPath: string
 	environment: string
 	dryRun: boolean
+	varsFromDotenv: string | null
 }
 
 type D1DatabaseListEntry = {
@@ -42,6 +44,7 @@ function parseArgs(argv: Array<string>) {
 		outConfigPath: 'wrangler-preview.generated.jsonc',
 		environment: 'preview',
 		dryRun: false,
+		varsFromDotenv: null,
 	}
 
 	for (let index = 1; index < argv.length; index += 1) {
@@ -66,6 +69,10 @@ function parseArgs(argv: Array<string>) {
 				break
 			case '--dry-run':
 				options.dryRun = true
+				break
+			case '--vars-from-dotenv':
+				options.varsFromDotenv = argv[index + 1] ?? ''
+				index += 1
 				break
 			default:
 				if (arg.startsWith('-')) {
@@ -96,6 +103,7 @@ type BuildGeneratedWranglerConfigArgs = {
 	siteCacheKvId: string
 	mdxRemoteKvId: string
 	callsDraftQueueName: string
+	dotenvVars?: Record<string, string>
 }
 
 function runWrangler(
@@ -438,6 +446,7 @@ async function writeGeneratedWranglerConfig({
 	siteCacheKvId,
 	mdxRemoteKvId,
 	callsDraftQueueName,
+	varsFromDotenv,
 }: {
 	baseConfigPath: string
 	outConfigPath: string
@@ -448,9 +457,14 @@ async function writeGeneratedWranglerConfig({
 	siteCacheKvId: string
 	mdxRemoteKvId: string
 	callsDraftQueueName: string
+	varsFromDotenv: string | null
 }) {
 	const baseText = await readFile(baseConfigPath, 'utf8')
 	const baseConfig = JSON.parse(baseText) as Record<string, unknown>
+	const dotenvVars =
+		typeof varsFromDotenv === 'string'
+			? await readDotenvVars(varsFromDotenv)
+			: undefined
 	const config = buildGeneratedWranglerConfig({
 		baseConfig,
 		environment,
@@ -460,6 +474,7 @@ async function writeGeneratedWranglerConfig({
 		siteCacheKvId,
 		mdxRemoteKvId,
 		callsDraftQueueName,
+		dotenvVars,
 	})
 	const resolvedOut = path.resolve(outConfigPath)
 	await mkdir(path.dirname(resolvedOut), { recursive: true })
@@ -477,6 +492,7 @@ export function buildGeneratedWranglerConfig({
 	siteCacheKvId,
 	mdxRemoteKvId,
 	callsDraftQueueName,
+	dotenvVars,
 }: BuildGeneratedWranglerConfigArgs) {
 	const config = structuredClone(baseConfig) as Record<string, unknown>
 	const env = config.env
@@ -492,8 +508,10 @@ export function buildGeneratedWranglerConfig({
 	const targetConfig = environmentConfig as Record<string, unknown>
 	targetConfig.name = workerName
 	targetConfig.vars = {
+		...(dotenvVars ?? {}),
 		...(isRecord(targetConfig.vars) ? targetConfig.vars : {}),
 		APP_ENV: environment,
+		NODE_ENV: resolveNodeEnv(environment),
 	}
 
 	const existingD1Databases = Array.isArray(targetConfig.d1_databases)
@@ -595,6 +613,24 @@ export function buildGeneratedWranglerConfig({
 	return config
 }
 
+async function readDotenvVars(dotenvPath: string) {
+	const absolutePath = path.resolve(dotenvPath)
+	try {
+		const text = await readFile(absolutePath, 'utf8')
+		return parseDotenv(text)
+	} catch (error) {
+		fail(
+			`Failed to read dotenv vars from "${absolutePath}": ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+}
+
+function resolveNodeEnv(environment: string) {
+	if (environment === 'development') return 'development'
+	if (environment === 'test') return 'test'
+	return 'production'
+}
+
 async function ensurePreviewResources(options: CliOptions) {
 	const { d1DatabaseName, siteCacheKvTitle, mdxRemoteKvTitle, callsDraftQueueName } =
 		buildPreviewResourceNames(options.workerName)
@@ -620,6 +656,7 @@ async function ensurePreviewResources(options: CliOptions) {
 		siteCacheKvId: kv.id,
 		mdxRemoteKvId: mdxRemoteKv.id,
 		callsDraftQueueName: queue.name,
+		varsFromDotenv: options.varsFromDotenv,
 	})
 
 	console.log(`wrangler_config=${generatedConfigPath}`)

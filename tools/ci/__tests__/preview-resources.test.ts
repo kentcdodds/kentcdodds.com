@@ -91,6 +91,7 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 	expect(previewConfig.vars).toEqual({
 		EXISTING: 'value',
 		APP_ENV: 'preview',
+		NODE_ENV: 'production',
 	})
 	expect(previewConfig.d1_databases).toEqual([
 		{
@@ -163,6 +164,41 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 		((baseConfig.env as Record<string, unknown>).preview as Record<string, unknown>)
 			.name,
 	).toBe('old-worker')
+})
+
+test('buildGeneratedWranglerConfig can merge dotenv vars for preview', () => {
+	const generated = buildGeneratedWranglerConfig({
+		baseConfig: {
+			env: {
+				preview: {
+					name: 'old-worker',
+					vars: { EXISTING: 'value' },
+				},
+			},
+		},
+		environment: 'preview',
+		workerName: 'new-worker',
+		d1DatabaseName: 'new-db-name',
+		d1DatabaseId: 'new-db-id',
+		siteCacheKvId: 'new-kv-id',
+		mdxRemoteKvId: 'new-mdx-kv-id',
+		callsDraftQueueName: 'new-calls-draft-queue',
+		dotenvVars: {
+			PORT: '3000',
+			DATABASE_URL: 'file:./prisma/sqlite.db',
+		},
+	})
+	const previewConfig = (
+		(generated.env as Record<string, unknown>).preview as Record<string, unknown>
+	)
+
+	expect(previewConfig.vars).toEqual({
+		PORT: '3000',
+		DATABASE_URL: 'file:./prisma/sqlite.db',
+		EXISTING: 'value',
+		APP_ENV: 'preview',
+		NODE_ENV: 'production',
+	})
 })
 
 test('buildGeneratedWranglerConfig leaves ffmpeg service binding untouched outside preview', () => {
