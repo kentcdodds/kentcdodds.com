@@ -1,4 +1,14 @@
 import { expect, test, vi } from 'vitest'
+
+vi.mock('../oauth-provider.ts', () => ({
+	createWorkerOAuthProvider: (defaultHandler: {
+		fetch: (request: Request, env: Record<string, unknown>, ctx: unknown) => Promise<Response>
+	}) => ({
+		fetch: (request: Request, env: Record<string, unknown>, ctx: unknown) =>
+			defaultHandler.fetch(request, env, ctx),
+	}),
+}))
+
 import worker from '../index.ts'
 
 test('health endpoint applies worker security headers', async () => {

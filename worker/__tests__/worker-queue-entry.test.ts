@@ -9,6 +9,15 @@ vi.mock('#app/utils/call-kent-episode-draft-queue.server.ts', () => ({
 		processCallKentEpisodeDraftQueueMessageMock,
 }))
 
+vi.mock('../oauth-provider.ts', () => ({
+	createWorkerOAuthProvider: (defaultHandler: {
+		fetch: (request: Request, env: Record<string, unknown>, ctx: unknown) => Promise<Response>
+	}) => ({
+		fetch: (request: Request, env: Record<string, unknown>, ctx: unknown) =>
+			defaultHandler.fetch(request, env, ctx),
+	}),
+}))
+
 import worker from '../index.ts'
 
 test('queue handler processes all Call Kent draft messages', async () => {
