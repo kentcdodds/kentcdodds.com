@@ -1,5 +1,4 @@
 import {
-	OAuthProvider,
 	type OAuthHelpers,
 	type TokenSummary,
 } from '@cloudflare/workers-oauth-provider'
@@ -17,6 +16,11 @@ type DefaultHandler = {
 }
 
 export function createWorkerOAuthProvider(defaultHandler: DefaultHandler) {
+	return createOAuthProviderRuntime(defaultHandler)
+}
+
+async function createOAuthProviderRuntime(defaultHandler: DefaultHandler) {
+	const { OAuthProvider } = await import('@cloudflare/workers-oauth-provider')
 	return new OAuthProvider({
 		apiRoute: ['/api/'],
 		apiHandler: {

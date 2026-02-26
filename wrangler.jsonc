@@ -3,7 +3,7 @@
 	"name": "kentcdodds-com",
 	"main": "worker/index.ts",
 	"compatibility_date": "2026-02-24",
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": ["nodejs_compat", "enable_ctx_exports"],
 	"triggers": {
 		"crons": ["0 * * * *"]
 	},

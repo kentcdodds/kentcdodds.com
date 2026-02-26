@@ -96,7 +96,22 @@ const defaultWorkerHandler = {
 	},
 }
 
-const oauthProvider = createWorkerOAuthProvider(defaultWorkerHandler)
+let oauthProviderPromise:
+	| Promise<{
+			fetch: (
+				request: Request,
+				env: Record<string, unknown>,
+				ctx: unknown,
+			) => Promise<Response>
+	  }>
+	| null = null
+
+function getOAuthProvider() {
+	if (!oauthProviderPromise) {
+		oauthProviderPromise = createWorkerOAuthProvider(defaultWorkerHandler)
+	}
+	return oauthProviderPromise
+}
 
 async function handleFetch(
 	request: Request,
@@ -104,7 +119,7 @@ async function handleFetch(
 	ctx: unknown,
 ) {
 	const response = hasOAuthKvBinding(env)
-		? await oauthProvider.fetch(
+		? await (await getOAuthProvider()).fetch(
 				request,
 				env as {
 					[key: string]: unknown
