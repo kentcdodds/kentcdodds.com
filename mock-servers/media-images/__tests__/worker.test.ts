@@ -165,8 +165,50 @@ describe('media images mock worker', () => {
 				.filter((value): value is Request => value instanceof Request)
 				.map((request) => request.url)
 			expect(requestUrls).toContain(
+				'https://imagedelivery.net/-P7RfnLm6GMsEkkSxgg7ZQ/6f98f046-4cbd-41ea-6834-a31dc62da900/public',
+			)
+			expect(requestUrls).not.toContain(
 				'https://example-media-proxy.test/images/6f98f046-4cbd-41ea-6834-a31dc62da900',
 			)
+		} finally {
+			fetchSpy.mockRestore()
+		}
+	})
+
+	test('uses direct Cloudflare delivery when proxy base url is absent', async () => {
+		const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
+			async (request: Request | URL | string) => {
+				const normalizedRequest =
+					request instanceof Request ? request : new Request(String(request))
+				const requestUrl = new URL(normalizedRequest.url)
+				if (requestUrl.origin === 'https://cache-miss.test') {
+					return new Response('not found', { status: 404 })
+				}
+				if (requestUrl.origin === 'https://imagedelivery.net') {
+					return new Response(new Uint8Array([5, 4, 3]), {
+						status: 200,
+						headers: { 'content-type': 'image/png' },
+					})
+				}
+				throw new Error(`Unexpected fetch URL: ${requestUrl.toString()}`)
+			},
+		)
+		try {
+			const response = await worker.fetch(
+				new Request(
+					'http://mock-media-images.local/images/6f98f046-4cbd-41ea-6834-a31dc62da900',
+				),
+				{
+					MEDIA_PROXY_CACHE_BASE_URL: 'https://cache-miss.test',
+				},
+			)
+			expect(response.status).toBe(200)
+			expect(response.headers.get('content-type')).toBe('image/png')
+			expect(response.headers.get('access-control-allow-origin')).toBe('*')
+			const requestUrls = fetchSpy.mock.calls
+				.map((call) => call[0])
+				.filter((value): value is Request => value instanceof Request)
+				.map((request) => request.url)
 			expect(requestUrls).toContain(
 				'https://imagedelivery.net/-P7RfnLm6GMsEkkSxgg7ZQ/6f98f046-4cbd-41ea-6834-a31dc62da900/public',
 			)

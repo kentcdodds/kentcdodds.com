@@ -5,7 +5,8 @@ import { cache, cachified } from './cache.server.ts'
 import * as discord from './discord.server.ts'
 import { getEnv } from './env.server.ts'
 import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
-import { getAvatar, getOptionalTeam } from './misc-react.tsx'
+import { getAvatar } from './misc-react.tsx'
+import { getAvatarFallbackTeam } from './misc.ts'
 import { type Timings } from './timing.server.ts'
 
 type UserInfo = {
@@ -93,6 +94,7 @@ async function getDirectAvatarForUser(
 			avatar: getGravatarRequestUrl(email, { size, fallback: null }),
 		}
 	} else {
+		const fallbackTeam = getAvatarFallbackTeam({ team, email })
 		const imageProfileIds = {
 			RED: images.kodyProfileRed.id,
 			BLUE: images.kodyProfileBlue.id,
@@ -101,7 +103,7 @@ async function getDirectAvatarForUser(
 		}
 		return {
 			hasGravatar,
-			avatar: getImageBuilder(imageProfileIds[getOptionalTeam(team)])({
+			avatar: getImageBuilder(imageProfileIds[fallbackTeam])({
 				resize: {
 					type: 'pad',
 					width: size,

@@ -15,7 +15,7 @@ import {
 } from 'react-router'
 import { type OptionalTeam, type User } from '#app/types.ts'
 import { images } from '../images.tsx'
-import { getOptionalTeam } from './misc.ts'
+import { getAvatarFallbackTeam } from './misc.ts'
 
 export * from './misc.ts'
 
@@ -55,9 +55,10 @@ export function getAvatarForUser(
 	{ email, team, firstName }: Pick<User, 'email' | 'team' | 'firstName'>,
 	{ size = defaultAvatarSize, origin }: { size?: number; origin?: string } = {},
 ) {
+	const fallbackTeam = getAvatarFallbackTeam({ team, email })
 	return {
 		src: getAvatar(email, {
-			fallback: avatarFallbacks[getOptionalTeam(team)](size),
+			fallback: avatarFallbacks[fallbackTeam](size),
 			size,
 			origin,
 		}),

@@ -52,5 +52,14 @@ describe('security mock worker', () => {
 			{},
 		)
 		expect(avatarHeadResponse.status).toBe(200)
+
+		const missingAvatarHeadResponse = await worker.fetch(
+			new Request('http://mock-security.local/avatar/notarealgravatarhash', {
+				method: 'HEAD',
+			}),
+			{},
+			{},
+		)
+		expect(missingAvatarHeadResponse.status).toBe(404)
 	})
 })

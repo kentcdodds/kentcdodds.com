@@ -17,11 +17,9 @@ const commonPasswordRanges = new Map<string, string>([
 	],
 ])
 
-const transparentPngBytes = new Uint8Array([
-	137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,
-	0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 13, 73, 68, 65, 84,
-	120, 156, 99, 248, 255, 255, 63, 0, 5, 254, 2, 254, 167, 138, 95, 92, 0, 0,
-	0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+const hashesWithMockGravatars = new Set([
+	'c1c563b36d23e34002036e1de405f9ca', // me@kentcdodds.com
+	'f8fee5dd63f8ef8f8ce83d4f92f5508f',
 ])
 
 export default {
@@ -81,15 +79,21 @@ export default {
 			(request.method === 'HEAD' || request.method === 'GET') &&
 			/^\/(?:gravatar\/)?avatar\/[^/]+$/.test(url.pathname)
 		) {
+			const hash = url.pathname.split('/').pop()?.toLowerCase() ?? ''
+			if (!hashesWithMockGravatars.has(hash)) {
+				return new Response(null, { status: 404 })
+			}
+
+			const svg = buildMockGravatarSvg(hash)
 			if (request.method === 'HEAD') {
 				return new Response(null, {
 					status: 200,
-					headers: { 'content-type': 'image/png' },
+					headers: { 'content-type': 'image/svg+xml' },
 				})
 			}
-			return new Response(transparentPngBytes, {
+			return new Response(svg, {
 				status: 200,
-				headers: { 'content-type': 'image/png' },
+				headers: { 'content-type': 'image/svg+xml' },
 			})
 		}
 
@@ -100,6 +104,15 @@ export default {
 			404,
 		)
 	},
+}
+
+function buildMockGravatarSvg(hash: string) {
+	const color = hash.startsWith('c1c563') ? '#2563eb' : '#0f766e'
+	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="mock gravatar">
+<rect width="128" height="128" fill="${color}" />
+<circle cx="64" cy="48" r="22" fill="#f8fafc"/>
+<rect x="28" y="78" width="72" height="36" rx="18" fill="#e2e8f0"/>
+</svg>`
 }
 
 function recordRequest({

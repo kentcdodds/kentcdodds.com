@@ -29,6 +29,27 @@ export const getTeam = (team?: string): Team | null =>
 export const getOptionalTeam = (team?: string): OptionalTeam =>
 	isTeam(team) ? team : 'UNKNOWN'
 
+export function getAvatarFallbackTeam({
+	team,
+	email,
+}: {
+	team?: string | null
+	email?: string | null
+}): OptionalTeam {
+	const optionalTeam = getOptionalTeam(team ?? undefined)
+	if (optionalTeam !== 'UNKNOWN') return optionalTeam
+	return getPseudoRandomTeamFromEmail(email ?? '')
+}
+
+function getPseudoRandomTeamFromEmail(email: string): Team {
+	if (!email) return 'BLUE'
+	let hash = 0
+	for (let index = 0; index < email.length; index += 1) {
+		hash = (hash * 31 + email.charCodeAt(index)) >>> 0
+	}
+	return teams[hash % teams.length] ?? 'BLUE'
+}
+
 export const teamTextColorClasses: Record<OptionalTeam, string> = {
 	YELLOW: 'text-team-yellow',
 	BLUE: 'text-team-blue',

@@ -167,13 +167,28 @@ async function tryServeRemoteMediaAsset({
 	url: URL
 	env: Env
 }) {
-	const proxyBaseUrl = getMediaProxyBaseUrl(env)
-	if (!proxyBaseUrl) return null
 	const proxyCacheBaseUrl = buildMediaProxyCacheBaseUrl(env)
 	const cacheObjectKey = buildProxyCacheObjectKey({
 		objectKey: normalizeCachePathKey(url.pathname),
 		query: url.search,
 	})
+
+	if (shouldPreferDirectCloudflareImageDelivery(url.pathname)) {
+		const directDeliveryResponse = await tryServeDirectCloudflareImageDelivery({
+			request,
+			url,
+			env,
+		})
+		if (directDeliveryResponse) {
+			return buildServedMediaResponse({
+				method: request.method,
+				response: directDeliveryResponse,
+				proxyCacheBaseUrl,
+				cacheObjectKey,
+			})
+		}
+	}
+
 	if (proxyCacheBaseUrl) {
 		const cachedResponse = await tryServeProxyCacheAsset({
 			method: request.method,
@@ -181,6 +196,11 @@ async function tryServeRemoteMediaAsset({
 			objectKey: cacheObjectKey,
 		})
 		if (cachedResponse) return cachedResponse
+	}
+
+	const proxyBaseUrl = getMediaProxyBaseUrl(env)
+	if (!proxyBaseUrl) {
+		return tryServeDirectCloudflareImageDelivery({ request, url, env })
 	}
 
 	const proxyUrl = buildProxyPathUrl({
@@ -215,6 +235,18 @@ async function tryServeRemoteMediaAsset({
 		proxyCacheBaseUrl,
 		cacheObjectKey,
 	})
+}
+
+function shouldPreferDirectCloudflareImageDelivery(pathname: string) {
+	if (!pathname.startsWith('/images/')) return false
+	const imageId = decodeURIComponent(pathname.slice('/images/'.length))
+	return looksLikeCloudflareImageId(imageId)
+}
+
+function looksLikeCloudflareImageId(imageId: string) {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+		imageId,
+	)
 }
 
 function getMediaProxyBaseUrl(env: Env) {
