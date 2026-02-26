@@ -241,12 +241,81 @@ function getWranglerCommandPrefix() {
 	}
 }
 
+function isRetryableWranglerFailure(output: string) {
+	const lower = output.toLowerCase()
+	const has5xxStatusCode = /\b5\d{2}\b/.test(lower)
+	return (
+		lower.includes('timed out') ||
+		lower.includes('timeout') ||
+		lower.includes('temporarily unavailable') ||
+		lower.includes('internal error') ||
+		lower.includes('econnreset') ||
+		lower.includes('etimedout') ||
+		lower.includes('fetch failed') ||
+		lower.includes('network error') ||
+		lower.includes('connection reset') ||
+		lower.includes('429') ||
+		lower.includes('rate limit') ||
+		lower.includes('malformed response') ||
+		lower.includes('gateway timeout') ||
+		lower.includes('5xx') ||
+		has5xxStatusCode
+	)
+}
+
+function sleepSync(durationMs: number) {
+	const shared = new SharedArrayBuffer(4)
+	const view = new Int32Array(shared)
+	Atomics.wait(view, 0, 0, durationMs)
+}
+
+function getCommandErrorOutput(error: unknown) {
+	if (!error || typeof error !== 'object') {
+		return String(error)
+	}
+	const output = error as { stdout?: unknown; stderr?: unknown; message?: unknown }
+	const stderr =
+		typeof output.stderr === 'string'
+			? output.stderr
+			: Buffer.isBuffer(output.stderr)
+				? output.stderr.toString('utf8')
+				: ''
+	const stdout =
+		typeof output.stdout === 'string'
+			? output.stdout
+			: Buffer.isBuffer(output.stdout)
+				? output.stdout.toString('utf8')
+				: ''
+	const message =
+		typeof output.message === 'string' ? output.message : String(output.message)
+	return `${stderr}\n${stdout}\n${message}`.trim()
+}
+
 function runWranglerCommand(args: Array<string>) {
 	const { command, args: commandArgs } = getWranglerCommandPrefix()
-	execFileSync(command, [...commandArgs, ...args], {
-		env: process.env,
-		stdio: 'inherit',
-	})
+	const maxAttempts = 4
+	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+		try {
+			execFileSync(command, [...commandArgs, ...args], {
+				env: process.env,
+				stdio: 'inherit',
+			})
+			return
+		} catch (error) {
+			const errorOutput = getCommandErrorOutput(error)
+			const canRetry =
+				attempt < maxAttempts && isRetryableWranglerFailure(errorOutput)
+			if (!canRetry) {
+				throw error
+			}
+
+			const backoffMs = 2 ** attempt * 1000
+			console.warn(
+				`Wrangler command failed (attempt ${attempt}/${maxAttempts}); retrying in ${backoffMs}ms.`,
+			)
+			sleepSync(backoffMs)
+		}
+	}
 }
 
 function uploadArtifact({
@@ -393,6 +462,7 @@ export {
 	buildPublishPlan,
 	getChangedMdxEntries,
 	getMdxEntryPathKey,
+	isRetryableWranglerFailure,
 	parseArgs,
 	parseNameStatusOutput,
 	publishMdxRemoteArtifacts,

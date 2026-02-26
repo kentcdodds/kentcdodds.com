@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import {
 	buildPublishPlan,
 	getMdxEntryPathKey,
+	isRetryableWranglerFailure,
 	parseArgs,
 	parseNameStatusOutput,
 	toArtifactKey,
@@ -97,4 +98,13 @@ test('buildPublishPlan filters uploads to changed entries', () => {
 	])
 	expect(plan.deleteKeys).toEqual(['blog/old-slug.json'])
 	expect(toArtifactKey({ collection: 'blog', slug: 'one' })).toBe('blog/one.json')
+})
+
+test('isRetryableWranglerFailure matches transient Cloudflare API errors', () => {
+	expect(isRetryableWranglerFailure('504 Gateway Timeout')).toBe(true)
+	expect(isRetryableWranglerFailure('Received a malformed response from the API')).toBe(
+		true,
+	)
+	expect(isRetryableWranglerFailure('Error 429: rate limit exceeded')).toBe(true)
+	expect(isRetryableWranglerFailure('Unknown binding')).toBe(false)
 })
