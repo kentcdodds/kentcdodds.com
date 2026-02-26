@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {
 	buildPublishPlan,
+	filterChangedBulkEntries,
 	getMdxEntryPathKey,
 	isRetryableWranglerFailure,
 	parseArgs,
@@ -98,6 +99,21 @@ test('buildPublishPlan filters uploads to changed entries', () => {
 	])
 	expect(plan.deleteKeys).toEqual(['blog/old-slug.json'])
 	expect(toArtifactKey({ collection: 'blog', slug: 'one' })).toBe('blog/one.json')
+})
+
+test('filterChangedBulkEntries excludes values already present in KV', () => {
+	const filtered = filterChangedBulkEntries({
+		bulkEntries: [
+			{ key: 'blog/one.json', value: '{"slug":"one"}' },
+			{ key: 'manifest.json', value: '{"count":1}' },
+		],
+		existingValues: {
+			'blog/one.json': '{"slug":"one"}',
+			'manifest.json': null,
+		},
+	})
+
+	expect(filtered).toEqual([{ key: 'manifest.json', value: '{"count":1}' }])
 })
 
 test('isRetryableWranglerFailure matches transient Cloudflare API errors', () => {

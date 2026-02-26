@@ -1,4 +1,6 @@
 import { execFileSync, execSync } from 'node:child_process'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import {
 	compileMdxRemoteDocuments,
@@ -23,6 +25,11 @@ type ChangedPathSummary = {
 type PublishPlan = {
 	uploadEntries: Array<CompiledEntry>
 	deleteKeys: Array<string>
+}
+
+type BulkPutEntry = {
+	key: string
+	value: string
 }
 
 function parseArgs(argv: Array<string>): CliOptions {
@@ -291,16 +298,20 @@ function getCommandErrorOutput(error: unknown) {
 	return `${stderr}\n${stdout}\n${message}`.trim()
 }
 
-function runWranglerCommand(args: Array<string>) {
+function runWranglerCommand(
+	args: Array<string>,
+	{ captureOutput = false }: { captureOutput?: boolean } = {},
+) {
 	const { command, args: commandArgs } = getWranglerCommandPrefix()
 	const maxAttempts = 4
 	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
 		try {
-			execFileSync(command, [...commandArgs, ...args], {
+			const output = execFileSync(command, [...commandArgs, ...args], {
 				env: process.env,
-				stdio: 'inherit',
+				stdio: captureOutput ? 'pipe' : 'inherit',
+				encoding: captureOutput ? 'utf8' : undefined,
 			})
-			return
+			return typeof output === 'string' ? output : ''
 		} catch (error) {
 			const errorOutput = getCommandErrorOutput(error)
 			const canRetry =
@@ -316,72 +327,194 @@ function runWranglerCommand(args: Array<string>) {
 			sleepSync(backoffMs)
 		}
 	}
+	return ''
 }
 
-function uploadArtifact({
+async function withTemporaryJsonFile<T>({
+	data,
+	prefix,
+	operation,
+}: {
+	data: unknown
+	prefix: string
+	operation: (filePath: string) => T | Promise<T>
+}) {
+	const directory = await mkdtemp(path.join(os.tmpdir(), `${prefix}-`))
+	const filePath = path.join(directory, 'payload.json')
+	await writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf8')
+	try {
+		return await operation(filePath)
+	} finally {
+		await rm(directory, { recursive: true, force: true })
+	}
+}
+
+function extractJsonObject(text: string) {
+	const start = text.indexOf('{')
+	const end = text.lastIndexOf('}')
+	if (start < 0 || end < start) return null
+	try {
+		return JSON.parse(text.slice(start, end + 1)) as Record<string, unknown>
+	} catch {
+		return null
+	}
+}
+
+function filterChangedBulkEntries({
+	bulkEntries,
+	existingValues,
+}: {
+	bulkEntries: Array<BulkPutEntry>
+	existingValues: Record<string, string | null>
+}) {
+	return bulkEntries.filter(
+		(entry) => existingValues[entry.key] !== entry.value,
+	)
+}
+
+function chunkArray<T>(items: Array<T>, size: number) {
+	if (size < 1) return [items]
+	const chunks: Array<Array<T>> = []
+	for (let index = 0; index < items.length; index += size) {
+		chunks.push(items.slice(index, index + size))
+	}
+	return chunks
+}
+
+async function getExistingBulkValues({
 	kvBinding,
 	wranglerConfigPath,
 	wranglerEnv,
-	key,
-	filePath,
+	keys,
 	dryRun,
 }: {
 	kvBinding: string
 	wranglerConfigPath: string
 	wranglerEnv: string
-	key: string
-	filePath: string
+	keys: Array<string>
 	dryRun: boolean
 }) {
-	if (dryRun) return
-	runWranglerCommand([
-		'kv',
-		'key',
-		'put',
-		key,
-		'--binding',
-		kvBinding,
-		'--remote',
-		'--config',
-		wranglerConfigPath,
-		'--env',
-		wranglerEnv,
-		'--preview',
-		'false',
-		'--path',
-		filePath,
-	])
+	if (keys.length === 0 || dryRun) return {}
+	return withTemporaryJsonFile({
+		data: keys,
+		prefix: 'mdx-remote-bulk-get',
+		operation: (filePath) => {
+			const output = runWranglerCommand(
+				[
+					'kv',
+					'bulk',
+					'get',
+					filePath,
+					'--binding',
+					kvBinding,
+					'--remote',
+					'--config',
+					wranglerConfigPath,
+					'--env',
+					wranglerEnv,
+					'--preview',
+					'false',
+				],
+				{ captureOutput: true },
+			)
+			const parsed = extractJsonObject(output ?? '')
+			if (!parsed) {
+				throw new Error(`Failed to parse wrangler kv bulk get output:\n${output}`)
+			}
+			const values: Record<string, string | null> = {}
+			for (const key of keys) {
+				const item = parsed[key]
+				if (!item || typeof item !== 'object') {
+					values[key] = null
+					continue
+				}
+				if (!('value' in item)) {
+					values[key] = null
+					continue
+				}
+				const itemValue = (item as { value?: unknown }).value
+				values[key] = typeof itemValue === 'string' ? itemValue : null
+			}
+			return values
+		},
+	})
 }
 
-function deleteArtifact({
+async function uploadArtifactsBulk({
 	kvBinding,
 	wranglerConfigPath,
 	wranglerEnv,
-	key,
+	entries,
 	dryRun,
 }: {
 	kvBinding: string
 	wranglerConfigPath: string
 	wranglerEnv: string
-	key: string
+	entries: Array<BulkPutEntry>
 	dryRun: boolean
 }) {
-	if (dryRun) return
-	runWranglerCommand([
-		'kv',
-		'key',
-		'delete',
-		key,
-		'--binding',
-		kvBinding,
-		'--remote',
-		'--config',
-		wranglerConfigPath,
-		'--env',
-		wranglerEnv,
-		'--preview',
-		'false',
-	])
+	if (dryRun || entries.length === 0) return
+	for (const chunk of chunkArray(entries, 1_000)) {
+		await withTemporaryJsonFile({
+			data: chunk,
+			prefix: 'mdx-remote-bulk-put',
+			operation: (filePath) =>
+				runWranglerCommand([
+					'kv',
+					'bulk',
+					'put',
+					filePath,
+					'--binding',
+					kvBinding,
+					'--remote',
+					'--config',
+					wranglerConfigPath,
+					'--env',
+					wranglerEnv,
+					'--preview',
+					'false',
+				]),
+		})
+	}
+}
+
+async function deleteArtifactsBulk({
+	kvBinding,
+	wranglerConfigPath,
+	wranglerEnv,
+	keys,
+	dryRun,
+}: {
+	kvBinding: string
+	wranglerConfigPath: string
+	wranglerEnv: string
+	keys: Array<string>
+	dryRun: boolean
+}) {
+	if (dryRun || keys.length === 0) return
+	for (const chunk of chunkArray(keys, 1_000)) {
+		await withTemporaryJsonFile({
+			data: chunk,
+			prefix: 'mdx-remote-bulk-delete',
+			operation: (filePath) =>
+				runWranglerCommand([
+					'kv',
+					'bulk',
+					'delete',
+					filePath,
+					'--binding',
+					kvBinding,
+					'--remote',
+					'--config',
+					wranglerConfigPath,
+					'--env',
+					wranglerEnv,
+					'--preview',
+					'false',
+					'--force',
+				]),
+		})
+	}
 }
 
 async function publishMdxRemoteArtifacts(options: CliOptions) {
@@ -404,40 +537,50 @@ async function publishMdxRemoteArtifacts(options: CliOptions) {
 		changedSummary,
 	})
 
-	for (const entry of plan.uploadEntries) {
-		uploadArtifact({
-			kvBinding: options.kvBinding,
-			wranglerConfigPath: options.wranglerConfigPath,
-			wranglerEnv: options.wranglerEnv,
-			key: toArtifactKey(entry),
-			filePath: path.resolve(entry.outputPath),
-			dryRun: options.dryRun,
-		})
-	}
-
-	for (const deleteKey of plan.deleteKeys) {
-		deleteArtifact({
-			kvBinding: options.kvBinding,
-			wranglerConfigPath: options.wranglerConfigPath,
-			wranglerEnv: options.wranglerEnv,
-			key: deleteKey,
-			dryRun: options.dryRun,
-		})
-	}
-
-	uploadArtifact({
+	const bulkEntries = await Promise.all(
+		[
+			...plan.uploadEntries.map(async (entry) => ({
+				key: toArtifactKey(entry),
+				value: await readFile(path.resolve(entry.outputPath), 'utf8'),
+			})),
+			{
+				key: 'manifest.json',
+				value: await readFile(manifestPath, 'utf8'),
+			},
+		],
+	)
+	const existingValues = await getExistingBulkValues({
 		kvBinding: options.kvBinding,
 		wranglerConfigPath: options.wranglerConfigPath,
 		wranglerEnv: options.wranglerEnv,
-		key: 'manifest.json',
-		filePath: manifestPath,
+		keys: bulkEntries.map((entry) => entry.key),
+		dryRun: options.dryRun,
+	})
+	const changedBulkEntries = filterChangedBulkEntries({
+		bulkEntries,
+		existingValues,
+	})
+
+	await uploadArtifactsBulk({
+		kvBinding: options.kvBinding,
+		wranglerConfigPath: options.wranglerConfigPath,
+		wranglerEnv: options.wranglerEnv,
+		entries: changedBulkEntries,
+		dryRun: options.dryRun,
+	})
+	await deleteArtifactsBulk({
+		kvBinding: options.kvBinding,
+		wranglerConfigPath: options.wranglerConfigPath,
+		wranglerEnv: options.wranglerEnv,
+		keys: plan.deleteKeys,
 		dryRun: options.dryRun,
 	})
 
 	console.log(
 		`${options.dryRun ? '[dry-run] ' : ''}published mdx-remote artifacts`,
 		{
-			uploaded: plan.uploadEntries.length,
+			uploaded: changedBulkEntries.length,
+			skippedUnchanged: bulkEntries.length - changedBulkEntries.length,
 			deleted: plan.deleteKeys.length,
 			kvBinding: options.kvBinding,
 			wranglerConfigPath: options.wranglerConfigPath,
@@ -460,6 +603,7 @@ if (process.argv[1]?.endsWith('publish-mdx-remote-artifacts.ts')) {
 
 export {
 	buildPublishPlan,
+	filterChangedBulkEntries,
 	getChangedMdxEntries,
 	getMdxEntryPathKey,
 	isRetryableWranglerFailure,
