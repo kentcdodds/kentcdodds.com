@@ -112,7 +112,7 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 		// If the loader already fetched this query (e.g. initial page load), reuse it.
 		if (nextQuery === loaderData.q) return
 		void load(`/search?q=${encodeURIComponent(nextQuery)}`)
-	}, 250)
+	}, 200)
 
 	React.useEffect(() => {
 		// Schedule a debounced fetch; calling with '' cancels any pending timer.
