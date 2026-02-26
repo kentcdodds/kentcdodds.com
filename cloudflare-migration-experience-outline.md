@@ -91,7 +91,25 @@
 - **your ask:** remove it.
 - **implemented:** deleted from repo and verified clean build/gates afterward.
 
-### 3.9 images + avatars follow-up fixes
+### 3.9 the image strategy pivots (big part of this story)
+
+- **your asks over time (and why this is blog-worthy):**
+  - first: colocate media with content in-repo for clarity and local mocking
+  - then: reverse course when repo size became too heavy
+  - then: move media handling away from “put images in r2” and use **cloudflare images** for images, **stream** for video
+  - repeatedly: remove legacy/dead migration paths and keep only final architecture
+- **implemented arc:**
+  - content/media reorganization and reference rewrites
+  - migration pipeline updates to upload media from repo/manifests
+  - cloudinary off-ramp hardening
+  - local media mock behavior updates to preserve offline/dev UX while matching cloudflare runtime behavior
+  - final architecture convergence:
+    - images via cloudflare images
+    - videos via cloudflare stream
+    - no image runtime delivery through r2
+- **blog call-out:** this section is a good “real migration” chapter because requirements changed based on observed tradeoffs, not just up-front design.
+
+### 3.10 images + avatars follow-up fixes
 
 - **your ask:** stop fallback placeholders and restore gravatar->kody fallback behavior.
 - **implemented:**
@@ -146,14 +164,15 @@
 1. why we left fly.io/litefs
 2. defining strict migration rules before coding
 3. the architecture pivots we made mid-migration
-4. building a cloudflare-native local dev experience
-5. making previews trustworthy (resource + cache isolation)
-6. debugging visual regressions (images/avatars)
-7. what made us confident enough to mark the pr ready
-8. what we’d do differently next time
+4. the media saga: repo media, rollback, images/stream split, and why
+5. building a cloudflare-native local dev experience
+6. making previews trustworthy (resource + cache isolation)
+7. debugging visual regressions (images/avatars)
+8. what made us confident enough to mark the pr ready
+9. what we’d do differently next time
 
 ## 9. optional appendix notes to expand later
 
-- commit milestones by theme (mdx runtime, sidecar sync, ffmpeg binding, preview cache lifecycle, media/avatar fixes)
+- commit milestones by theme (mdx runtime, sidecar sync, ffmpeg binding, preview cache lifecycle, media strategy pivots, media/avatar fixes)
 - checklist template for future large migrations
 - “quality bar before ready-for-review” rubric used in this project
