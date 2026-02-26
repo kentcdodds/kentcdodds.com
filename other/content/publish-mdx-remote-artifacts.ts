@@ -249,10 +249,9 @@ function buildPublishPlan({
 }
 
 function getWranglerCommandPrefix() {
-	const wranglerPackage = process.env.WRANGLER_BUNX_PACKAGE ?? 'wrangler@4.67.0'
 	return {
-		command: 'bunx',
-		args: [wranglerPackage],
+		command: 'bun',
+		args: ['./wrangler-env.ts'],
 	}
 }
 
@@ -318,6 +317,7 @@ function runWranglerCommand(
 				env: process.env,
 				stdio: captureOutput ? 'pipe' : 'inherit',
 				encoding: captureOutput ? 'utf8' : undefined,
+				maxBuffer: 1024 * 1024 * 64,
 			})
 			return typeof output === 'string' ? output : ''
 		} catch (error) {
