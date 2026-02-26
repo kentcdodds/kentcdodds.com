@@ -142,13 +142,44 @@ function getChangedMdxEntries({
 }): ChangedPathSummary | null {
 	if (!beforeSha || !afterSha) return null
 	if (/^0+$/.test(beforeSha)) return null
-	const diffOutput = execSync(
-		`git diff --name-status ${beforeSha} ${afterSha} -- content/blog content/pages content/writing-blog`,
-		{
-			encoding: 'utf8',
-		},
-	)
-	return parseNameStatusOutput(diffOutput)
+	if (!canResolveCommit(beforeSha) || !canResolveCommit(afterSha)) {
+		console.warn(
+			`Unable to resolve one or both git SHAs for incremental mdx publish. Falling back to full publish (before=${beforeSha}, after=${afterSha}).`,
+		)
+		return null
+	}
+	try {
+		const diffOutput = execFileSync(
+			'git',
+			[
+				'diff',
+				'--name-status',
+				beforeSha,
+				afterSha,
+				'--',
+				'content/blog',
+				'content/pages',
+				'content/writing-blog',
+			],
+			{ encoding: 'utf8' },
+		)
+		return parseNameStatusOutput(diffOutput)
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error)
+		console.warn(
+			`Failed to compute incremental mdx diff. Falling back to full publish. ${message}`,
+		)
+		return null
+	}
+}
+
+function canResolveCommit(sha: string) {
+	try {
+		execSync(`git cat-file -e ${sha}^{commit}`, { stdio: 'ignore' })
+		return true
+	} catch {
+		return false
+	}
 }
 
 function toEntryKey({

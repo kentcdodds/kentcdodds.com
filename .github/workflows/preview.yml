@@ -60,6 +60,8 @@ jobs:
     steps:
       - name: 📦 Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: ⎔ Setup Node
         uses: actions/setup-node@v6
