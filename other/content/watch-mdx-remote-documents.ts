@@ -138,24 +138,42 @@ async function syncArtifactDiff({
 		console.warn('Skipping mdx-remote KV sync because INTERNAL_COMMAND_TOKEN is unset.')
 		return
 	}
+	const maxAttempts = 8
+	for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+		try {
+			const response = await fetch(options.syncUrl, {
+				method: 'POST',
+				headers: {
+					'content-type': 'application/json',
+					authorization: `Bearer ${options.syncToken}`,
+				},
+				body: JSON.stringify(diff),
+			})
+			if (response.ok) {
+				console.log(
+					`Synced mdx-remote artifacts (${diff.upserts.length} upserts, ${diff.deletes.length} deletes)`,
+				)
+				return
+			}
 
-	const response = await fetch(options.syncUrl, {
-		method: 'POST',
-		headers: {
-			'content-type': 'application/json',
-			authorization: `Bearer ${options.syncToken}`,
-		},
-		body: JSON.stringify(diff),
-	})
-	if (!response.ok) {
-		const text = await response.text().catch(() => '')
-		throw new Error(
-			`mdx-remote sync failed (${response.status}): ${text || response.statusText}`,
-		)
+			const text = await response.text().catch(() => '')
+			const errorMessage = `mdx-remote sync failed (${response.status}): ${text || response.statusText}`
+			const shouldRetry = response.status >= 500 || response.status === 429
+			if (!shouldRetry || attempt >= maxAttempts) {
+				throw new Error(errorMessage)
+			}
+			console.warn(
+				`${errorMessage}. Retrying (${attempt}/${maxAttempts})...`,
+			)
+		} catch (error: unknown) {
+			if (attempt >= maxAttempts) throw error
+			console.warn(
+				`Unable to reach mdx-remote sync endpoint (attempt ${attempt}/${maxAttempts}). Retrying...`,
+			)
+		}
+
+		await new Promise((resolve) => setTimeout(resolve, attempt * 500))
 	}
-	console.log(
-		`Synced mdx-remote artifacts (${diff.upserts.length} upserts, ${diff.deletes.length} deletes)`,
-	)
 }
 
 async function watchMdxRemoteDocuments(options: CliOptions) {
@@ -171,7 +189,15 @@ async function watchMdxRemoteDocuments(options: CliOptions) {
 		previousSnapshot = nextSnapshot
 	}
 
-	await runRebuild()
+	try {
+		await runRebuild()
+	} catch (error: unknown) {
+		if (options.once) throw error
+		console.error(
+			'Initial mdx-remote rebuild/sync failed. Continuing to watch for changes.',
+			error,
+		)
+	}
 	if (options.once) return
 
 	const watcher = chokidar.watch(
