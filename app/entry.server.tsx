@@ -146,6 +146,7 @@ async function renderDocumentResponse({
 }) {
 	let didError = false
 	const abortController = new AbortController()
+	setTimeout(() => abortController.abort(), ABORT_DELAY)
 	const stream = await renderToReadableStream(
 		<NonceProvider value={nonce}>
 			<ServerRouter context={reactRouterContext} url={request.url} nonce={nonce} />
@@ -159,7 +160,6 @@ async function renderDocumentResponse({
 			},
 		},
 	)
-	setTimeout(() => abortController.abort(), ABORT_DELAY)
 
 	if (waitForAllReady) {
 		await stream.allReady

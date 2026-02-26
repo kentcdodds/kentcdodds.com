@@ -33,8 +33,11 @@ function applyNotFoundCacheMetadata(
 }
 
 const checkCompiledValue = (value: unknown) =>
-	typeof value === 'object' &&
-	(value === null || ('code' in value && 'frontmatter' in value))
+	value === null ||
+	(typeof value === 'object' &&
+		'code' in value &&
+		'frontmatter' in value &&
+		'remoteDocument' in value)
 
 export async function getMdxPage(
 	{
