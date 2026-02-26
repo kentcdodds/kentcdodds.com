@@ -3,9 +3,14 @@ import { type PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/ser
 import { data as json, Form, useRevalidator } from 'react-router'
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
+import { type KCDHandle } from '#app/types.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.passkeys'
+
+export const handle: KCDHandle = {
+	getSitemapEntries: () => null,
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)

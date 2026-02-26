@@ -58,6 +58,15 @@ describe('jsx page content utils', () => {
 		expect(
 			shouldIndexJsxSitemapPath({ pathname: '/feed.json', mdxRoutes }),
 		).toBe(false)
+		expect(shouldIndexJsxSitemapPath({ pathname: '/login', mdxRoutes })).toBe(
+			false,
+		)
+		expect(
+			shouldIndexJsxSitemapPath({ pathname: '/me/password', mdxRoutes }),
+		).toBe(false)
+		expect(
+			shouldIndexJsxSitemapPath({ pathname: '/me/passkeys', mdxRoutes }),
+		).toBe(false)
 	})
 
 	test('getJsxPageSlugFromPath and getJsxPagePathFromSlug are reversible', () => {
