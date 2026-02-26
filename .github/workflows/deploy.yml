@@ -100,7 +100,6 @@ jobs:
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CALL_KENT_FFMPEG_CONTAINER_BASE_URL: ${{ secrets.CALL_KENT_FFMPEG_CONTAINER_BASE_URL }}
         run: >
           bun tools/ci/sync-worker-secrets.ts --name kentcdodds-com --env
           production --set-from-env-optional SESSION_SECRET
@@ -110,7 +109,6 @@ jobs:
           --set-from-env-optional DISCORD_BOT_TOKEN
           --set-from-env-optional DISCORD_CLIENT_SECRET
           --set-from-env-optional MAILGUN_SENDING_KEY
-          --set-from-env-optional CALL_KENT_FFMPEG_CONTAINER_BASE_URL
           --generate-cookie-secret
 
       - name: 🧱 Ensure production resources

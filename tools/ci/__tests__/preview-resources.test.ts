@@ -42,6 +42,10 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 					{ binding: 'MDX_REMOTE_R2', bucket_name: 'old-mdx-bucket' },
 					{ binding: 'ANOTHER_R2', bucket_name: 'keep-r2-bucket' },
 				],
+				services: [
+					{ binding: 'CALL_KENT_FFMPEG', service: 'old-ffmpeg-service' },
+					{ binding: 'ANOTHER_SERVICE', service: 'keep-service' },
+				],
 				queues: {
 					producers: [
 						{ binding: 'CALLS_DRAFT_QUEUE', queue: 'old-calls-draft-queue' },
@@ -119,6 +123,16 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 			bucket_name: 'keep-r2-bucket',
 		},
 	])
+	expect(previewConfig.services).toEqual([
+		{
+			binding: 'ANOTHER_SERVICE',
+			service: 'keep-service',
+		},
+		{
+			binding: 'CALL_KENT_FFMPEG',
+			service: 'new-worker-mock-call-kent-ffmpeg',
+		},
+	])
 	expect(previewConfig.queues).toEqual({
 		producers: [
 			{
@@ -179,6 +193,43 @@ test('buildGeneratedWranglerConfig adds mdx remote r2 binding when configured', 
 		{
 			binding: 'MDX_REMOTE_R2',
 			bucket_name: 'mdx-remote-bucket',
+		},
+	])
+})
+
+test('buildGeneratedWranglerConfig leaves ffmpeg service binding untouched outside preview', () => {
+	const generated = buildGeneratedWranglerConfig({
+		baseConfig: {
+			env: {
+				production: {
+					name: 'old-worker',
+					services: [
+						{ binding: 'CALL_KENT_FFMPEG', service: 'kentcdodds-com-call-kent-ffmpeg' },
+						{ binding: 'ANOTHER_SERVICE', service: 'keep-service' },
+					],
+				},
+			},
+		},
+		environment: 'production',
+		workerName: 'kentcdodds-com',
+		d1DatabaseName: 'new-db-name',
+		d1DatabaseId: 'new-db-id',
+		siteCacheKvId: 'new-kv-id',
+		callsDraftQueueName: 'new-calls-draft-queue',
+		mdxRemoteR2BucketName: null,
+	})
+	const productionConfig = (
+		(generated.env as Record<string, unknown>).production as Record<string, unknown>
+	)
+
+	expect(productionConfig.services).toEqual([
+		{
+			binding: 'CALL_KENT_FFMPEG',
+			service: 'kentcdodds-com-call-kent-ffmpeg',
+		},
+		{
+			binding: 'ANOTHER_SERVICE',
+			service: 'keep-service',
 		},
 	])
 })

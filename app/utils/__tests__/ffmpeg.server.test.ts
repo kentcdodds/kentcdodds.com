@@ -1,8 +1,8 @@
 import { expect, test, vi } from 'vitest'
 import {
-	clearRuntimeEnvSource,
-	setRuntimeEnvSource,
-} from '#app/utils/env.server.ts'
+	clearRuntimeBindingSource,
+	setRuntimeBindingSource,
+} from '#app/utils/runtime-bindings.server.ts'
 import callKentFfmpegMockWorker from '#mock-servers/call-kent-ffmpeg/worker.ts'
 
 const { spawnMock } = vi.hoisted(() => ({
@@ -19,7 +19,7 @@ test('uses container ffmpeg endpoint when configured', async () => {
 	const callerMp3 = Buffer.from([1, 2, 3, 4])
 	const responseMp3 = Buffer.from([5, 6, 7, 8])
 	const episodeMp3 = Buffer.from([9, 10, 11, 12])
-	const fetchMock = vi.fn(async () => {
+	const bindingFetchMock = vi.fn(async () => {
 		return new Response(
 			JSON.stringify({
 				callerMp3Base64: callerMp3.toString('base64'),
@@ -32,9 +32,10 @@ test('uses container ffmpeg endpoint when configured', async () => {
 			},
 		)
 	})
-	vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
-	setRuntimeEnvSource({
-		CALL_KENT_FFMPEG_CONTAINER_BASE_URL: 'https://ffmpeg-container.example',
+	setRuntimeBindingSource({
+		CALL_KENT_FFMPEG: {
+			fetch: bindingFetchMock,
+		},
 	})
 
 	try {
@@ -46,19 +47,19 @@ test('uses container ffmpeg endpoint when configured', async () => {
 		expect(result.responseMp3).toEqual(responseMp3)
 		expect(result.episodeMp3).toEqual(episodeMp3)
 		expect(spawnMock).not.toHaveBeenCalled()
-		expect(fetchMock).toHaveBeenCalledWith(
-			'https://ffmpeg-container.example/episode-audio',
+		expect(bindingFetchMock).toHaveBeenCalledWith(
+			'https://call-kent-ffmpeg.internal/episode-audio',
 			expect.objectContaining({ method: 'POST' }),
 		)
 	} finally {
-		clearRuntimeEnvSource()
-		vi.unstubAllGlobals()
+		clearRuntimeBindingSource()
 	}
 })
 
 test('supports mock container endpoint contract end-to-end', async () => {
-	const containerBaseUrl = 'https://call-kent-ffmpeg.mock'
-	vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
+	setRuntimeBindingSource({
+		CALL_KENT_FFMPEG: {
+			fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
 		const request = new Request(input, init)
 		const rewritten = new URL(request.url)
 		rewritten.protocol = 'http:'
@@ -72,9 +73,8 @@ test('supports mock container endpoint contract end-to-end', async () => {
 			{},
 			{},
 		)
-	}) as unknown as typeof fetch)
-	setRuntimeEnvSource({
-		CALL_KENT_FFMPEG_CONTAINER_BASE_URL: containerBaseUrl,
+			},
+		},
 	})
 
 	try {
@@ -87,7 +87,6 @@ test('supports mock container endpoint contract end-to-end', async () => {
 		expect(result.episodeMp3.byteLength).toBeGreaterThan(0)
 		expect(spawnMock).not.toHaveBeenCalled()
 	} finally {
-		clearRuntimeEnvSource()
-		vi.unstubAllGlobals()
+		clearRuntimeBindingSource()
 	}
 })

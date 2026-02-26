@@ -38,6 +38,12 @@
 			"vars": {
 				"APP_ENV": "production"
 			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-com-call-kent-ffmpeg"
+				}
+			],
 			"queues": {
 				"producers": [
 					{
@@ -67,6 +73,12 @@
 			"vars": {
 				"APP_ENV": "development"
 			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-mock-call-kent-ffmpeg-dev"
+				}
+			],
 			"queues": {
 				"producers": [
 					{
@@ -96,6 +108,12 @@
 			"vars": {
 				"APP_ENV": "preview"
 			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-mock-call-kent-ffmpeg-preview"
+				}
+			],
 			"queues": {
 				"producers": [
 					{
@@ -125,6 +143,12 @@
 			"vars": {
 				"APP_ENV": "test"
 			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-mock-call-kent-ffmpeg-dev"
+				}
+			],
 			"queues": {
 				"producers": [
 					{

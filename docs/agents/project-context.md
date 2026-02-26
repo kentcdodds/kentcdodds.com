@@ -134,11 +134,12 @@ reference:
   - `bun run dev:calls-e2e` runs the app on Wrangler local runtime so queue
     producer/consumer flow can be exercised without Node-only dev server fallbacks.
 - Call Kent ffmpeg container handoff:
-  - set `CALL_KENT_FFMPEG_CONTAINER_BASE_URL` to route `createEpisodeAudio`
-    through a container HTTP endpoint (`POST /episode-audio`).
+  - runtime now uses a Worker service binding named `CALL_KENT_FFMPEG` for
+    `createEpisodeAudio` container handoff (`POST /episode-audio` contract).
+  - local Node dev can point the binding adapter with
+    `CALL_KENT_FFMPEG_BINDING_BASE_URL` (defaults to `http://localhost:8804`).
   - expected response JSON fields: `callerMp3Base64`, `responseMp3Base64`,
     and `episodeMp3Base64`.
-  - when unset, local/Node ffmpeg fallback remains in place.
   - lightweight container-compatible Node service source lives in
     `containers/call-kent-ffmpeg/` and can be image-built via
     `bun run container:build:call-kent-ffmpeg`.

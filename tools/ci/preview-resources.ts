@@ -544,6 +544,24 @@ export function buildGeneratedWranglerConfig({
 		targetConfig.r2_buckets = r2WithoutMdxBinding
 	}
 
+	const existingServices = Array.isArray(targetConfig.services)
+		? targetConfig.services
+		: []
+	const servicesWithoutFfmpeg = existingServices.filter((entry) => {
+		return !(isRecord(entry) && entry.binding === 'CALL_KENT_FFMPEG')
+	})
+	if (environment === 'preview') {
+		targetConfig.services = [
+			...servicesWithoutFfmpeg,
+			{
+				binding: 'CALL_KENT_FFMPEG',
+				service: `${workerName}-mock-call-kent-ffmpeg`,
+			},
+		]
+	} else {
+		targetConfig.services = existingServices
+	}
+
 	const existingQueues = isRecord(targetConfig.queues)
 		? (targetConfig.queues as Record<string, unknown>)
 		: {}

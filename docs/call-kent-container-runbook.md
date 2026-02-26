@@ -52,7 +52,8 @@ bun run dev:calls-e2e:real-container
 
 This starts the queue-enabled Worker stack plus the local Node ffmpeg container
 service (`http://localhost:8810`) and points
-`CALL_KENT_FFMPEG_CONTAINER_BASE_URL` at that service.
+`CALL_KENT_FFMPEG_BINDING_BASE_URL` at that service for the local Node binding
+adapter.
 
 ### Local real ffmpeg path
 
@@ -67,7 +68,7 @@ This starts the service at `http://localhost:8810`.
 To use it with Worker runtime, set:
 
 ```sh
-CALL_KENT_FFMPEG_CONTAINER_BASE_URL=http://localhost:8810
+CALL_KENT_FFMPEG_BINDING_BASE_URL=http://localhost:8810
 ```
 
 before starting the Worker runtime stack.
@@ -88,12 +89,13 @@ The Docker build uses:
 
 ## Preview/production wiring
 
-- Secret name:
-  - `CALL_KENT_FFMPEG_CONTAINER_BASE_URL`
-- Synced in:
-  - `.github/workflows/preview.yml`
-  - `.github/workflows/deploy.yml`
-- If unset, app falls back to local in-process ffmpeg behavior.
+- Worker binding name:
+  - `CALL_KENT_FFMPEG` (service binding)
+- Preview generated config rewrites this binding to:
+  - `<preview-worker-name>-mock-call-kent-ffmpeg`
+- Production config keeps:
+  - `kentcdodds-com-call-kent-ffmpeg`
+- No ffmpeg base-URL secret is required for preview/deploy workflows.
 
 ## Current limitations
 

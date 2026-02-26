@@ -4,7 +4,7 @@ import { Buffer } from 'node:buffer'
 import path from 'path'
 import fsExtra from 'fs-extra'
 import * as uuid from 'uuid'
-import { getEnv } from '#app/utils/env.server.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 
 const asset = (...p: Array<string>) =>
 	path.join(process.cwd(), 'app/assets', ...p)
@@ -15,30 +15,36 @@ async function createEpisodeAudio(
 	callAudio: Uint8Array,
 	responseAudio: Uint8Array,
 ) {
-	const containerBaseUrl = getCallKentFfmpegContainerBaseUrl()
-	if (containerBaseUrl) {
-		return createEpisodeAudioInContainer({
-			containerBaseUrl,
+	const ffmpegBinding = getCallKentFfmpegBinding()
+	if (ffmpegBinding) {
+		return createEpisodeAudioViaBinding({
+			binding: ffmpegBinding,
 			callAudio,
 			responseAudio,
 		})
 	}
 
+	if (typeof process === 'undefined' || process.release?.name !== 'node') {
+		throw new Error('Missing required runtime binding: CALL_KENT_FFMPEG')
+	}
+
 	return createEpisodeAudioLocally(callAudio, responseAudio)
 }
 
-function getCallKentFfmpegContainerBaseUrl() {
-	const value = getEnv().CALL_KENT_FFMPEG_CONTAINER_BASE_URL?.trim()
-	if (!value) return null
-	return value.replace(/\/+$/, '')
+type FfmpegBinding = {
+	fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 }
 
-async function createEpisodeAudioInContainer({
-	containerBaseUrl,
+function getCallKentFfmpegBinding() {
+	return getRuntimeBinding<FfmpegBinding>('CALL_KENT_FFMPEG')
+}
+
+async function createEpisodeAudioViaBinding({
+	binding,
 	callAudio,
 	responseAudio,
 }: {
-	containerBaseUrl: string
+	binding: FfmpegBinding
 	callAudio: Uint8Array
 	responseAudio: Uint8Array
 }) {
@@ -67,10 +73,13 @@ async function createEpisodeAudioInContainer({
 		'response.mp3',
 	)
 
-	const response = await fetch(`${containerBaseUrl}/episode-audio`, {
+	const response = await binding.fetch(
+		'https://call-kent-ffmpeg.internal/episode-audio',
+		{
 		method: 'POST',
 		body,
-	})
+		},
+	)
 	if (!response.ok) {
 		const responseBody = await response.text().catch(() => '')
 		throw new Error(

@@ -24,6 +24,7 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
+import { getLocalCallKentFfmpegBinding } from '../app/utils/local-call-kent-ffmpeg-binding.server.ts'
 import { getLocalMdxRemoteKvBinding } from '../app/utils/local-mdx-remote-kv.server.ts'
 import { setRuntimeBindingSource } from '../app/utils/runtime-bindings.server.ts'
 import { createRateLimitingMiddleware } from './rate-limiting.js'
@@ -41,6 +42,7 @@ const MODE = env.NODE_ENV
 const localDevCspSources =
 	MODE === 'development' ? ['http://127.0.0.1:*', 'http://localhost:*'] : []
 setRuntimeBindingSource({
+	CALL_KENT_FFMPEG: getLocalCallKentFfmpegBinding,
 	MDX_REMOTE_KV: getLocalMdxRemoteKvBinding,
 })
 
