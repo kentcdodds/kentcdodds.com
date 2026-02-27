@@ -322,11 +322,14 @@ jobs:
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: |
           set -euo pipefail
+          bundle_dir="$(mktemp -d)"
           if [ "$DRY_RUN" = "true" ]; then
-            bun run wrangler -- deploy worker/index.ts --config "$WRANGLER_CONFIG" --env preview --dry-run 2>&1 | tee deploy-preview.log
+            bun run wrangler -- deploy worker/index.ts --config "$WRANGLER_CONFIG" --env preview --dry-run --minify --outdir "$bundle_dir" 2>&1 | tee deploy-preview-build.log
+            bun run wrangler -- deploy "$bundle_dir/index.js" --config "$WRANGLER_CONFIG" --env preview --dry-run --no-bundle 2>&1 | tee deploy-preview.log
           else
             bun run wrangler -- d1 migrations apply APP_DB --remote --config "$WRANGLER_CONFIG" --env preview
-            bun run wrangler -- deploy worker/index.ts --config "$WRANGLER_CONFIG" --env preview 2>&1 | tee deploy-preview.log
+            bun run wrangler -- deploy worker/index.ts --config "$WRANGLER_CONFIG" --env preview --dry-run --minify --outdir "$bundle_dir" 2>&1 | tee deploy-preview-build.log
+            bun run wrangler -- deploy "$bundle_dir/index.js" --config "$WRANGLER_CONFIG" --env preview --no-bundle 2>&1 | tee deploy-preview.log
             preview_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy-preview.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
             if [ -n "$preview_url" ]; then
               echo "url=$preview_url" >> "$GITHUB_OUTPUT"
