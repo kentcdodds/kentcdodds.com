@@ -29,7 +29,7 @@ function wranglerR2ObjectPath(bucket: string, key: string) {
 
 function getWranglerBunxPackage() {
 	// Pin by default for reproducibility in GitHub Actions.
-	return process.env.WRANGLER_BUNX_PACKAGE ?? 'wrangler@4.67.0'
+	return process.env.WRANGLER_BUNX_PACKAGE ?? 'wrangler@4.69.0'
 }
 
 function getObjectViaWrangler(bucket: string, key: string) {
