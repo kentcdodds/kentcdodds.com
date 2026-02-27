@@ -62,27 +62,35 @@ function toWorkspacePath(relativePath: string, pathApi: LocalFsModules['path']) 
 
 const Octokit = createOctokit.plugin(throttling)
 
-const octokit = new Octokit({
-	auth: getEnv().BOT_GITHUB_TOKEN,
-	baseUrl: getEnv().GITHUB_API_BASE_URL,
-	throttle: {
-		onRateLimit: (retryAfter, options) => {
-			const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
-			const url = 'url' in options ? options.url : 'URL_UNKNOWN'
-			console.warn(
-				`Request quota exhausted for request ${method} ${url}. Retrying after ${retryAfter} seconds.`,
-			)
+let octokitClient: InstanceType<typeof Octokit> | null = null
 
-			return true
+function getOctokitClient() {
+	if (octokitClient) return octokitClient
+	octokitClient = new Octokit({
+		auth: getEnv().BOT_GITHUB_TOKEN,
+		baseUrl: getEnv().GITHUB_API_BASE_URL,
+		throttle: {
+			onRateLimit: (retryAfter, options) => {
+				const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
+				const url = 'url' in options ? options.url : 'URL_UNKNOWN'
+				console.warn(
+					`Request quota exhausted for request ${method} ${url}. Retrying after ${retryAfter} seconds.`,
+				)
+
+				return true
+			},
+			onSecondaryRateLimit: (retryAfter, options) => {
+				const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
+				const url = 'url' in options ? options.url : 'URL_UNKNOWN'
+				// does not retry, only logs a warning
+				console.warn(
+					`Abuse detected for request ${method} ${url}. Retry after ${retryAfter} seconds.`,
+				)
+			},
 		},
-		onSecondaryRateLimit: (retryAfter, options) => {
-			const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
-			const url = 'url' in options ? options.url : 'URL_UNKNOWN'
-			// does not retry, only logs a warning
-			octokit.log.warn(`Abuse detected for request ${method} ${url}`)
-		},
-	},
-})
+	})
+	return octokitClient
+}
 
 async function downloadFirstMdxFile(
 	list: Array<{ name: string; type: string; path: string; sha: string }>,
@@ -221,6 +229,7 @@ async function downloadFileBySha(sha: string) {
 		return localFsModules.fs.readFile(filePath, { encoding: 'utf-8' })
 	}
 
+	const octokit = getOctokitClient()
 	const { data } = await octokit.git.getBlob({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
@@ -243,6 +252,7 @@ async function downloadFile(path: string) {
 		return localFsModules.fs.readFile(filePath, { encoding: 'utf-8' })
 	}
 
+	const octokit = getOctokitClient()
 	const { data } = await octokit.repos.getContent({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
@@ -290,6 +300,7 @@ async function downloadDirList(path: string) {
 		})
 	}
 
+	const octokit = getOctokitClient()
 	const resp = await octokit.repos.getContent({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',

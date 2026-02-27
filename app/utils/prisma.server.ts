@@ -18,7 +18,6 @@ type PrismaClientAdapterOptions = {
 	eagerConnect?: boolean
 }
 
-const sqlitePrisma = remember('prisma', createPrismaClient)
 const d1PrismaClients = new WeakMap<object, PrismaClient>()
 
 function createPrismaClient({
@@ -76,12 +75,16 @@ function getD1PrismaClient(dbBinding: D1Binding) {
 	return client
 }
 
+function getSqlitePrismaClient() {
+	return remember('prisma', createPrismaClient)
+}
+
 function getActivePrismaClient() {
 	const dbBinding = getRuntimeBinding('DB')
 	if (isD1Binding(dbBinding)) {
 		return getD1PrismaClient(dbBinding)
 	}
-	return sqlitePrisma
+	return getSqlitePrismaClient()
 }
 
 const prisma = new Proxy({} as PrismaClient, {
