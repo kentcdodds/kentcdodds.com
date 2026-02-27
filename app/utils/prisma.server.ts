@@ -19,6 +19,7 @@ type PrismaClientAdapterOptions = {
 }
 
 const d1PrismaClients = new WeakMap<object, PrismaClient>()
+let lastKnownD1Binding: D1Binding | null = null
 
 function createPrismaClient({
 	d1,
@@ -80,11 +81,22 @@ function getSqlitePrismaClient() {
 }
 
 function getActivePrismaClient() {
-	const dbBinding = getRuntimeBinding('DB')
+	const dbBinding = getRuntimeBinding('APP_DB')
 	if (isD1Binding(dbBinding)) {
+		lastKnownD1Binding = dbBinding
 		return getD1PrismaClient(dbBinding)
 	}
+	if (isCloudflareWorkerRuntime() && isD1Binding(lastKnownD1Binding)) {
+		return getD1PrismaClient(lastKnownD1Binding)
+	}
+	if (isCloudflareWorkerRuntime()) {
+		throw new Error('Missing required runtime binding: APP_DB')
+	}
 	return getSqlitePrismaClient()
+}
+
+function isCloudflareWorkerRuntime() {
+	return 'WebSocketPair' in globalThis
 }
 
 const prisma = new Proxy({} as PrismaClient, {

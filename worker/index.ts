@@ -79,20 +79,16 @@ const defaultWorkerHandler = {
 		}
 
 		const requestBookmark = readD1Bookmark(request)
-		const dbSession = withD1Session(env.DB, requestBookmark)
-		const requestEnv = dbSession === env.DB ? env : { ...env, DB: dbSession }
+		const dbSession = withD1Session(env.APP_DB, requestBookmark)
+		const requestEnv =
+			dbSession === env.APP_DB ? env : { ...env, APP_DB: dbSession }
 
-		try {
-			setRuntimeEnvSource(getStringEnvBindings(requestEnv))
-			setRuntimeBindingSource(requestEnv)
-			const response = await requestHandler(request, {
-				cloudflare: { env: requestEnv, ctx },
-			})
-			return applyD1Bookmark(response, getD1Bookmark(dbSession))
-		} finally {
-			clearRuntimeBindingSource()
-			clearRuntimeEnvSource()
-		}
+		setRuntimeEnvSource(getStringEnvBindings(requestEnv))
+		setRuntimeBindingSource(requestEnv)
+		const response = await requestHandler(request, {
+			cloudflare: { env: requestEnv, ctx },
+		})
+		return applyD1Bookmark(response, getD1Bookmark(dbSession))
 	},
 }
 
