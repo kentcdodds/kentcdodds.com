@@ -310,6 +310,9 @@ jobs:
           path: other/content/mdx-remote
           key: mdx-remote-${{ runner.os }}-pr-${{ github.event.pull_request.number || github.ref_name }}-${{ github.sha }}
 
+      - name: 🏗️ Build app server bundle
+        run: bun run build
+
       - name: ☁️ Deploy preview app worker
         id: deploy-preview
         env:
