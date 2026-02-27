@@ -107,7 +107,7 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 			binding: 'APP_DB',
 			database_name: 'new-db-name',
 			database_id: 'new-db-id',
-			migrations_dir: 'prisma/migrations',
+			migrations_dir: 'd1-migrations',
 		},
 	])
 	expect(previewConfig.kv_namespaces).toEqual([

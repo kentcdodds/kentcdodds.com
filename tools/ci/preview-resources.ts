@@ -534,7 +534,7 @@ export function buildGeneratedWranglerConfig({
 			binding: 'APP_DB',
 			database_name: d1DatabaseName,
 			database_id: d1DatabaseId,
-			migrations_dir: 'prisma/migrations',
+			migrations_dir: 'd1-migrations',
 		},
 	]
 

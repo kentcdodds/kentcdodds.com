@@ -17,24 +17,28 @@ const safeDirnameAssignment =
 async function patchGeneratedPrismaClientForWorkers() {
 	const source = await readFile(generatedClientPath, 'utf8')
 
-	if (source.includes(safeDirnameAssignment)) {
-		console.info('Prisma generated client already contains safe __dirname patch.')
+	const clientAlreadyPatched = source.includes(safeDirnameAssignment)
+
+	if (clientAlreadyPatched) {
+		console.info('Prisma generated client already contains worker-safe patch.')
 		return
 	}
 
-	if (!source.includes(unsafeDirnameAssignment)) {
-		console.warn(
-			`Skipping Prisma generated client patch; expected line was not found in ${generatedClientPath}`,
+	let patchedClientSource = source
+	if (!clientAlreadyPatched && source.includes(unsafeDirnameAssignment)) {
+		patchedClientSource = source.replace(
+			unsafeDirnameAssignment,
+			safeDirnameAssignment,
 		)
-		return
+	} else if (!clientAlreadyPatched) {
+		console.warn(
+			`Skipping __dirname patch; expected line was not found in ${generatedClientPath}`,
+		)
 	}
 
-	const patchedSource = source.replace(
-		unsafeDirnameAssignment,
-		safeDirnameAssignment,
-	)
-
-	await writeFile(generatedClientPath, patchedSource, 'utf8')
+	if (patchedClientSource !== source) {
+		await writeFile(generatedClientPath, patchedClientSource, 'utf8')
+	}
 	console.info('Patched Prisma generated client for Worker deploy compatibility.')
 }
 
