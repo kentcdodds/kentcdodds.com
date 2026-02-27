@@ -331,11 +331,11 @@ jobs:
             node -e "const fs=require('node:fs'); const config=JSON.parse(fs.readFileSync(process.env.WORKER_CONFIG_PATH, 'utf8')); config.main=process.env.BUNDLE_ENTRY_PATH; fs.writeFileSync(process.env.DEPLOY_CONFIG_PATH, JSON.stringify(config, null, '\t') + '\n')"
           if [ "$DRY_RUN" = "true" ]; then
             bun run wrangler -- deploy worker/index.ts --config "$WRANGLER_CONFIG" --env preview --dry-run --minify --outdir "$bundle_dir" 2>&1 | tee deploy-preview-build.log
-            bun run wrangler -- deploy --config "$deploy_wrangler_config" --env preview --dry-run --no-bundle 2>&1 | tee deploy-preview.log
+            bun run wrangler -- deploy --config "$deploy_wrangler_config" --env preview --dry-run --no-bundle --assets build/client 2>&1 | tee deploy-preview.log
           else
             bun run wrangler -- d1 migrations apply APP_DB --remote --config "$WRANGLER_CONFIG" --env preview
             bun run wrangler -- deploy worker/index.ts --config "$WRANGLER_CONFIG" --env preview --dry-run --minify --outdir "$bundle_dir" 2>&1 | tee deploy-preview-build.log
-            bun run wrangler -- deploy --config "$deploy_wrangler_config" --env preview --no-bundle 2>&1 | tee deploy-preview.log
+            bun run wrangler -- deploy --config "$deploy_wrangler_config" --env preview --no-bundle --assets build/client 2>&1 | tee deploy-preview.log
             preview_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy-preview.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
             if [ -n "$preview_url" ]; then
               echo "url=$preview_url" >> "$GITHUB_OUTPUT"
