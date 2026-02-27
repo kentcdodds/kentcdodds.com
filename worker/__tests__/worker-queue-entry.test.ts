@@ -18,7 +18,7 @@ vi.mock('../oauth-provider.ts', () => ({
 	}),
 }))
 
-import worker from '../index.ts'
+import * as worker from '../index.ts'
 
 test('queue handler processes all Call Kent draft messages', async () => {
 	processCallKentEpisodeDraftQueueMessageMock.mockResolvedValue(undefined)
