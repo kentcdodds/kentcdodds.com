@@ -33,7 +33,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_branch == 'dev' &&
         github.event.workflow_run.event == 'push')
     outputs:
       should_deploy: ${{ steps.sha-guard.outputs.should_deploy }}
@@ -44,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 🧾 Ensure validated SHA is main HEAD
+      - name: 🧾 Ensure validated SHA is dev HEAD
         id: sha-guard
         shell: bash
         env:
@@ -52,8 +52,8 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          git fetch origin main
-          head_sha="$(git rev-parse origin/main)"
+          git fetch origin dev
+          head_sha="$(git rev-parse origin/dev)"
 
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
@@ -64,7 +64,7 @@ jobs:
           if [ "$head_sha" != "$WORKFLOW_SHA" ]; then
             echo "should_deploy=false" >> "$GITHUB_OUTPUT"
             echo "deploy_sha=$head_sha" >> "$GITHUB_OUTPUT"
-            echo "Skipping deploy because validated SHA is not the current main HEAD."
+            echo "Skipping deploy because validated SHA is not the current dev HEAD."
             exit 0
           fi
 
