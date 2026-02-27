@@ -70,6 +70,27 @@ describe('media manifest resolver', () => {
 		).toBe('cf-banner-id')
 	})
 
+	test('resolveManifestAssetId applies kentcdodds.com prefix fallback', () => {
+		const manifest = {
+			version: 1,
+			assets: {
+				'kentcdodds.com/illustrations/kody/kody_profile_gray': {
+					id: 'cf-kody-gray',
+					checksum: 'checksum',
+					sourcePath:
+						'content/kentcdodds.com/illustrations/kody/kody_profile_gray',
+					uploadedAt: '2026-02-25T00:00:00.000Z',
+				},
+			},
+		}
+		expect(
+			resolveManifestAssetId({
+				manifest,
+				mediaKey: 'illustrations/kody/kody_profile_gray',
+			}),
+		).toBe('cf-kody-gray')
+	})
+
 	test('resolveMediaImageId and resolveMediaVideoId fall back when missing', () => {
 		expect(resolveMediaImageId('missing/profile-image')).toBe(
 			'missing/profile-image',

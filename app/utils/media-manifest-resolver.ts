@@ -76,14 +76,21 @@ function resolveAliasForMediaKey({
 	aliases: ReturnType<typeof createManifestAliases>
 	normalizedKey: string
 }) {
-	const exactMatch = manifest.assets[normalizedKey]
-	if (exactMatch) return exactMatch.id
+	const candidates = [normalizedKey]
+	if (!normalizedKey.startsWith('kentcdodds.com/')) {
+		candidates.push(`kentcdodds.com/${normalizedKey}`)
+	}
 
-	const bannerAlias = aliases.bannerAliases.get(normalizedKey)
-	if (bannerAlias) return manifest.assets[bannerAlias]?.id ?? null
+	for (const candidate of candidates) {
+		const exactMatch = manifest.assets[candidate]
+		if (exactMatch) return exactMatch.id
 
-	const extensionlessAlias = aliases.extensionlessAliases.get(normalizedKey)
-	if (extensionlessAlias) return manifest.assets[extensionlessAlias]?.id ?? null
+		const bannerAlias = aliases.bannerAliases.get(candidate)
+		if (bannerAlias) return manifest.assets[bannerAlias]?.id ?? null
+
+		const extensionlessAlias = aliases.extensionlessAliases.get(candidate)
+		if (extensionlessAlias) return manifest.assets[extensionlessAlias]?.id ?? null
+	}
 
 	return null
 }
