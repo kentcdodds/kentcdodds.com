@@ -9,7 +9,7 @@ vi.mock('../oauth-provider.ts', () => ({
 	}),
 }))
 
-import * as worker from '../index.ts'
+import worker from '../index.ts'
 
 test('health endpoint applies worker security headers', async () => {
 	const request = new Request('https://preview.example.com/health', {

@@ -113,7 +113,7 @@ function getOAuthProvider() {
 	return oauthProviderPromise
 }
 
-export async function fetch(
+async function handleFetch(
 	request: Request,
 	env: Record<string, unknown>,
 	ctx: unknown,
@@ -130,7 +130,7 @@ export async function fetch(
 	return applyStandardResponseHeaders(response, request)
 }
 
-export async function scheduled(
+async function handleScheduled(
 	controller: { cron: string },
 	env: Record<string, unknown>,
 ) {
@@ -149,7 +149,7 @@ export async function scheduled(
 	}
 }
 
-export async function queue(
+async function handleQueue(
 	batch: {
 		messages: Array<{ body: unknown; retry?: () => void }>
 	},
@@ -173,6 +173,12 @@ export async function queue(
 		clearRuntimeBindingSource()
 		clearRuntimeEnvSource()
 	}
+}
+
+export default {
+	fetch: handleFetch,
+	scheduled: handleScheduled,
+	queue: handleQueue,
 }
 
 async function getRequestHandler() {
