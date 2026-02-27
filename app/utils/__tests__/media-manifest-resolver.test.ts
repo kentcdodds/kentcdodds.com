@@ -96,6 +96,9 @@ describe('media manifest resolver', () => {
 			'missing/profile-image',
 		)
 		expect(resolveMediaVideoId('missing/video-id')).toBe('missing/video-id')
+		expect(
+			resolveMediaImageId('kentcdodds.com/content/blog/unmapped/banner'),
+		).toBe('kentcdodds.com/content/blog/unmapped/banner')
 	})
 
 	test('handles undefined media keys without throwing', () => {

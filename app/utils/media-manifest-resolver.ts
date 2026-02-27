@@ -104,15 +104,21 @@ function resolveManifestAssetId({
 	aliases?: ReturnType<typeof createManifestAliases>
 	mediaKey: string | null | undefined
 }) {
+	const fallbackKey =
+		typeof mediaKey === 'string'
+			? decodeURIComponent(mediaKey.trim())
+					.split(/[?#]/, 1)[0]!
+					.replace(/^\/+/, '')
+			: mediaKey ?? ''
 	const normalizedKey = normalizeMediaKey(mediaKey)
-	if (!normalizedKey) return mediaKey ?? ''
+	if (!normalizedKey) return fallbackKey
 	const manifestAliases = aliases ?? createManifestAliases(manifest)
 	return (
 		resolveAliasForMediaKey({
 			manifest,
 			aliases: manifestAliases,
 			normalizedKey,
-		}) ?? normalizedKey
+		}) ?? fallbackKey
 	)
 }
 
