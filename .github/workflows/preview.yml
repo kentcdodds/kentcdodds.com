@@ -210,6 +210,7 @@ jobs:
       - name: 🧩 Inject preview mock API URLs
         env:
           WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+          WORKER_NAME: ${{ steps.names.outputs.worker_name }}
           KIT_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_kit }}
           VERIFIER_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_verifier }}
           MAILGUN_MOCK_URL: ${{ steps.deploy-mocks.outputs.url_mailgun }}
@@ -268,6 +269,11 @@ jobs:
           if (typeof process.env.CLOUDFLARE_MOCK_URL === 'string' && process.env.CLOUDFLARE_MOCK_URL.length > 0) {
             vars.CLOUDFLARE_API_BASE_URL = `${process.env.CLOUDFLARE_MOCK_URL}/client/v4`
             vars.CLOUDFLARE_AI_GATEWAY_BASE_URL = `${process.env.CLOUDFLARE_MOCK_URL}/gateway/v1`
+          }
+
+          const workerName = process.env.WORKER_NAME
+          if (typeof workerName === 'string' && workerName.length > 0) {
+            vars.MEDIA_IMAGES_BASE_URL = `https://${workerName}.kentcdodds.workers.dev/images`
           }
 
           preview.vars = vars

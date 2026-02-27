@@ -15,6 +15,7 @@ import {
 	clearRuntimeBindingSource,
 	setRuntimeBindingSource,
 } from '#app/utils/runtime-bindings.server.ts'
+import { maybeHandleMediaProxyRequest } from './media-proxy.ts'
 import { McpDurableObject } from './mcp-durable-object.ts'
 import { createWorkerOAuthProvider } from './oauth-provider.ts'
 
@@ -56,6 +57,11 @@ const defaultWorkerHandler = {
 				const mcpStub = mcpNamespace.get(mcpId)
 				return mcpStub.fetch(request)
 			}
+		}
+
+		const mediaProxyResponse = await maybeHandleMediaProxyRequest(request, env)
+		if (mediaProxyResponse) {
+			return mediaProxyResponse
 		}
 
 		if (

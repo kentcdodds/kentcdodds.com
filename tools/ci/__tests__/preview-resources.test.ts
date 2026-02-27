@@ -96,6 +96,7 @@ test('buildGeneratedWranglerConfig rewrites preview bindings and queue consumers
 		EXISTING: 'value',
 		APP_ENV: 'preview',
 		NODE_ENV: 'production',
+		MEDIA_IMAGES_BASE_URL: 'https://new-worker.kentcdodds.workers.dev/images',
 	})
 	expect(previewConfig.d1_databases).toEqual([
 		{
@@ -208,6 +209,7 @@ test('buildGeneratedWranglerConfig can merge dotenv vars for preview', () => {
 		EXISTING: 'value',
 		APP_ENV: 'preview',
 		NODE_ENV: 'production',
+		MEDIA_IMAGES_BASE_URL: 'https://new-worker.kentcdodds.workers.dev/images',
 	})
 })
 

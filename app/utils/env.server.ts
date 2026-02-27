@@ -22,6 +22,7 @@ const schemaBase = z.object({
 		.trim()
 		.optional()
 		.default('https://media.kcd.dev'),
+	MEDIA_IMAGES_BASE_URL: z.string().trim().optional(),
 	MEDIA_STREAM_BASE_URL: z
 		.string()
 		.trim()
@@ -414,6 +415,7 @@ export function getPublicEnv() {
 		DISCORD_CLIENT_ID: env.DISCORD_CLIENT_ID,
 		SENTRY_DSN: env.SENTRY_DSN,
 		MEDIA_BASE_URL: env.MEDIA_BASE_URL,
+		MEDIA_IMAGES_BASE_URL: env.MEDIA_IMAGES_BASE_URL,
 		MEDIA_STREAM_BASE_URL: env.MEDIA_STREAM_BASE_URL,
 	}
 }

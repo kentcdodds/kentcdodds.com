@@ -521,6 +521,11 @@ export function buildGeneratedWranglerConfig({
 		APP_ENV: environment,
 		NODE_ENV: resolveNodeEnv(environment),
 	}
+	const targetVars = targetConfig.vars as Record<string, unknown>
+	if (environment === 'preview') {
+		targetVars.MEDIA_IMAGES_BASE_URL =
+			`https://${workerName}.kentcdodds.workers.dev/images`
+	}
 
 	const existingD1Databases = Array.isArray(targetConfig.d1_databases)
 		? targetConfig.d1_databases

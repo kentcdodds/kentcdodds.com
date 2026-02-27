@@ -85,6 +85,17 @@ function getMediaStreamBaseUrl() {
 }
 
 function getMediaImageDeliveryBaseUrl() {
+	const explicitImageBaseUrl =
+		typeof window !== 'undefined' && window.ENV?.MEDIA_IMAGES_BASE_URL
+			? window.ENV.MEDIA_IMAGES_BASE_URL
+			: typeof globalThis !== 'undefined' && globalThis.ENV?.MEDIA_IMAGES_BASE_URL
+				? globalThis.ENV.MEDIA_IMAGES_BASE_URL
+				: typeof process !== 'undefined' && process.env.MEDIA_IMAGES_BASE_URL
+					? process.env.MEDIA_IMAGES_BASE_URL
+					: null
+	if (explicitImageBaseUrl) {
+		return explicitImageBaseUrl.replace(/\/+$/, '')
+	}
 	const baseUrl = getMediaBaseUrl().replace(/\/+$/, '')
 	return `${baseUrl}/images`
 }

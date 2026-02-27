@@ -35,6 +35,18 @@ describe('media image url generation', () => {
 		expect(url).toContain('/images/')
 	})
 
+	test('uses media images base override when provided', () => {
+		globalThis.ENV = {
+			...(originalEnv ?? {}),
+			MEDIA_BASE_URL: 'https://media.kcd.dev',
+			MEDIA_IMAGES_BASE_URL: 'https://example.com/images',
+		}
+
+		const builder = getImageBuilder('kent/profile')
+		const url = builder()
+		expect(url.startsWith('https://example.com/images/')).toBe(true)
+	})
+
 	test('generic social images use media social endpoint', () => {
 		globalThis.ENV = {
 			...(originalEnv ?? {}),
