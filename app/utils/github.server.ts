@@ -66,8 +66,13 @@ let octokitClient: InstanceType<typeof Octokit> | null = null
 
 function getOctokitClient() {
 	if (octokitClient) return octokitClient
+	const githubToken = getEnv().BOT_GITHUB_TOKEN.trim()
+	const hasAuthenticatedGitHubToken =
+		githubToken.length > 0 &&
+		githubToken !== '1a2b3c4d5e6f7g8g9i0j' &&
+		!githubToken.toLowerCase().startsWith('mock_')
 	octokitClient = new Octokit({
-		auth: getEnv().BOT_GITHUB_TOKEN,
+		...(hasAuthenticatedGitHubToken ? { auth: githubToken } : {}),
 		baseUrl: getEnv().GITHUB_API_BASE_URL,
 		throttle: {
 			onRateLimit: (retryAfter, options) => {
