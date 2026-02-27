@@ -10,7 +10,7 @@ const generatedWasmSourcePath = path.join(
 	'app/utils/prisma-generated.server/internal/query_compiler_fast_bg.wasm',
 )
 const wasmModuleImportPattern =
-	/["'](\.\/workspace\/app\/utils\/prisma-generated\.server\/internal\/query_compiler_fast_bg\.wasm\?module)["']/g
+	/["'](\.\/[^"']*app\/utils\/prisma-generated\.server\/internal\/query_compiler_fast_bg\.wasm\?module)["']/g
 
 async function patchBuiltQueryCompilerWasm() {
 	const buildServerSource = await readFile(buildServerIndexPath, 'utf8')
