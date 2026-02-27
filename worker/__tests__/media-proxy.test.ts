@@ -9,7 +9,7 @@ afterEach(() => {
 })
 
 describe('maybeHandleMediaProxyRequest', () => {
-	it('falls back to media base url for non-cloudflare image ids', async () => {
+	it('falls back to media base url for unmapped image ids', async () => {
 		const fetchSpy = vi.fn((input: RequestInfo | URL) => {
 			const request = input instanceof Request ? input : new Request(input)
 			const url = new URL(request.url)
@@ -17,7 +17,7 @@ describe('maybeHandleMediaProxyRequest', () => {
 				return Promise.resolve(new Response('not found', { status: 404 }))
 			}
 			expect(url.toString()).toBe(
-				'https://media.kcd.dev/images/unsplash/photo-1494088644719-c75cad020cff?tr=f_auto%2Cq_auto%2Cw_900',
+				'https://media.kcd.dev/images/legacy/path/image-no-id?tr=f_auto%2Cq_auto%2Cw_900',
 			)
 			return Promise.resolve(
 				new Response('ok', {
@@ -30,7 +30,7 @@ describe('maybeHandleMediaProxyRequest', () => {
 
 		const response = await maybeHandleMediaProxyRequest(
 			new Request(
-				'https://preview.example.com/images/unsplash/photo-1494088644719-c75cad020cff?tr=f_auto%2Cq_auto%2Cw_900',
+				'https://preview.example.com/images/legacy/path/image-no-id?tr=f_auto%2Cq_auto%2Cw_900',
 			),
 			{},
 		)
@@ -38,6 +38,28 @@ describe('maybeHandleMediaProxyRequest', () => {
 		expect(response).not.toBeNull()
 		expect(response?.status).toBe(200)
 		expect(fetchSpy.mock.calls).toHaveLength(3)
+	})
+
+	it('fetches unsplash images directly through Cloudflare transforms', async () => {
+		const fetchSpy = vi.fn((input: RequestInfo | URL) => {
+			const request = input instanceof Request ? input : new Request(input)
+			const url = new URL(request.url)
+			expect(url.toString()).toBe(
+				'https://images.unsplash.com/photo-1494088644719-c75cad020cff',
+			)
+			return Promise.resolve(new Response('ok', { status: 200 }))
+		})
+		globalThis.fetch = fetchSpy as unknown as typeof fetch
+
+		const response = await maybeHandleMediaProxyRequest(
+			new Request(
+				'https://preview.example.com/images/unsplash/photo-1494088644719-c75cad020cff?tr=f_auto%2Cq_auto%2Cw_900',
+			),
+			{},
+		)
+
+		expect(response?.status).toBe(200)
+		expect(fetchSpy.mock.calls).toHaveLength(1)
 	})
 
 	it('derives missing dimensions from ar transform values', async () => {

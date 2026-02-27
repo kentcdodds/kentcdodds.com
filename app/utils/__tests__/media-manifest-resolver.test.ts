@@ -14,6 +14,14 @@ describe('media manifest resolver', () => {
 		expect(normalizeMediaKey('/content/blog/post/image.png')).toBe(
 			'blog/post/image.png',
 		)
+		expect(
+			normalizeMediaKey(
+				'https://kentcdodds.com/content/blog/post/image.png?foo=bar',
+			),
+		).toBe('blog/post/image.png')
+		expect(normalizeMediaKey('kentcdodds.com/content/blog/post/image.png')).toBe(
+			'blog/post/image.png',
+		)
 	})
 
 	test('resolveManifestAssetId resolves mapped ids', () => {
@@ -34,6 +42,32 @@ describe('media manifest resolver', () => {
 				mediaKey: 'content/blog/post/image.png',
 			}),
 		).toBe('cf-image-id')
+		expect(
+			resolveManifestAssetId({
+				manifest,
+				mediaKey: 'content/blog/post/image',
+			}),
+		).toBe('cf-image-id')
+	})
+
+	test('resolveManifestAssetId maps banner aliases to numbered files', () => {
+		const manifest = {
+			version: 1,
+			assets: {
+				'blog/post/0.png': {
+					id: 'cf-banner-id',
+					checksum: 'checksum',
+					sourcePath: 'content/blog/post/0.png',
+					uploadedAt: '2026-02-25T00:00:00.000Z',
+				},
+			},
+		}
+		expect(
+			resolveManifestAssetId({
+				manifest,
+				mediaKey: 'kentcdodds.com/content/blog/post/banner',
+			}),
+		).toBe('cf-banner-id')
 	})
 
 	test('resolveMediaImageId and resolveMediaVideoId fall back when missing', () => {

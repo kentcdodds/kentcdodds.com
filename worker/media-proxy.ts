@@ -16,10 +16,10 @@ export async function maybeHandleMediaProxyRequest(
 	}
 
 	const resolvedImageId = resolveMediaImageId(requestedImageId)
-	const deliveryBaseUrl = getCloudflareImagesDeliveryBaseUrl(env)
-	const sourceUrl = buildCloudflareImagesDeliveryUrl({
-		baseUrl: deliveryBaseUrl,
-		imageId: resolvedImageId,
+	const sourceUrl = buildImageSourceUrl({
+		requestedImageId,
+		resolvedImageId,
+		env,
 	})
 
 	const transformOptions = parseTransformOptions(url.searchParams.get('tr'))
@@ -94,6 +94,42 @@ function buildCloudflareImagesDeliveryUrl({
 		.map((segment) => encodeURIComponent(segment))
 		.join('/')
 	return `${baseUrl}/${normalizedId}/public`
+}
+
+function buildImageSourceUrl({
+	requestedImageId,
+	resolvedImageId,
+	env,
+}: {
+	requestedImageId: string
+	resolvedImageId: string
+	env: Record<string, unknown>
+}) {
+	const unsplashPath = resolveUnsplashPath(requestedImageId, resolvedImageId)
+	if (unsplashPath) {
+		const normalizedPath = unsplashPath
+			.replace(/^\/+/, '')
+			.split('/')
+			.filter(Boolean)
+			.map((segment) => encodeURIComponent(segment))
+			.join('/')
+		return `https://images.unsplash.com/${normalizedPath}`
+	}
+
+	const deliveryBaseUrl = getCloudflareImagesDeliveryBaseUrl(env)
+	return buildCloudflareImagesDeliveryUrl({
+		baseUrl: deliveryBaseUrl,
+		imageId: resolvedImageId,
+	})
+}
+
+function resolveUnsplashPath(requestedImageId: string, resolvedImageId: string) {
+	for (const candidate of [requestedImageId, resolvedImageId]) {
+		if (!candidate.toLowerCase().startsWith('unsplash/')) continue
+		const unsplashPath = candidate.slice('unsplash/'.length)
+		if (unsplashPath) return unsplashPath
+	}
+	return null
 }
 
 function parseTransformOptions(tr: string | null) {
