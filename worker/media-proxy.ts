@@ -37,9 +37,19 @@ export async function maybeHandleMediaProxyRequest(
 		sourceUrl,
 		transformOptions: null,
 	})
-	if (!untransformedResponse?.ok) return null
+	if (untransformedResponse?.ok) {
+		return buildMediaProxyResponse(untransformedResponse, request.method)
+	}
 
-	return buildMediaProxyResponse(untransformedResponse, request.method)
+	const mediaBaseProxyResponse = await fetchFromMediaBase({
+		request,
+		env,
+	})
+	if (mediaBaseProxyResponse?.ok) {
+		return buildMediaProxyResponse(mediaBaseProxyResponse, request.method)
+	}
+
+	return null
 }
 
 function isMediaProxyRequest(request: Request) {
@@ -57,6 +67,13 @@ function getCloudflareImagesDeliveryBaseUrl(env: Record<string, unknown>) {
 		/\/+$/,
 		'',
 	)
+}
+
+function getMediaBaseUrl(env: Record<string, unknown>) {
+	const explicitBaseUrl =
+		readStringBinding(env.MEDIA_BASE_URL) ??
+		readStringBinding(process.env.MEDIA_BASE_URL)
+	return (explicitBaseUrl || 'https://media.kcd.dev').replace(/\/+$/, '')
 }
 
 function readStringBinding(value: unknown) {
@@ -130,10 +147,55 @@ function parseTransformOptions(tr: string | null) {
 								? 'scale-down'
 								: null
 			if (fit) options.fit = fit
+			continue
+		}
+
+		if (key === 'ar') {
+			const ratioMatch = rawValue.match(/^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/)
+			if (!ratioMatch) continue
+			const widthRatio = Number(ratioMatch[1])
+			const heightRatio = Number(ratioMatch[2])
+			if (
+				!Number.isFinite(widthRatio) ||
+				!Number.isFinite(heightRatio) ||
+				widthRatio <= 0 ||
+				heightRatio <= 0
+			) {
+				continue
+			}
+
+			const currentWidth =
+				typeof options.width === 'number' ? options.width : null
+			const currentHeight =
+				typeof options.height === 'number' ? options.height : null
+			if (currentWidth && !currentHeight) {
+				options.height = Math.round((currentWidth * heightRatio) / widthRatio)
+			} else if (currentHeight && !currentWidth) {
+				options.width = Math.round((currentHeight * widthRatio) / heightRatio)
+			}
 		}
 	}
 
 	return Object.keys(options).length > 0 ? options : null
+}
+
+async function fetchFromMediaBase({
+	request,
+	env,
+}: {
+	request: Request
+	env: Record<string, unknown>
+}) {
+	try {
+		const baseUrl = getMediaBaseUrl(env)
+		const requestUrl = new URL(request.url)
+		const proxyUrl = new URL(
+			`${baseUrl}${requestUrl.pathname}${requestUrl.search}`,
+		)
+		return await fetch(new Request(proxyUrl, { method: request.method }))
+	} catch {
+		return null
+	}
 }
 
 async function fetchCloudflareImage({
