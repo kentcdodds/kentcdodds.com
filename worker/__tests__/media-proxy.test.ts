@@ -37,7 +37,7 @@ describe('maybeHandleMediaProxyRequest', () => {
 
 		expect(response).not.toBeNull()
 		expect(response?.status).toBe(200)
-		expect(fetchSpy.mock.calls.length).toBe(3)
+		expect(fetchSpy.mock.calls).toHaveLength(3)
 	})
 
 	it('derives missing dimensions from ar transform values', async () => {

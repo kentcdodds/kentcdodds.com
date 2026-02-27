@@ -15,8 +15,8 @@ import {
 	clearRuntimeBindingSource,
 	setRuntimeBindingSource,
 } from '#app/utils/runtime-bindings.server.ts'
-import { maybeHandleMediaProxyRequest } from './media-proxy.ts'
 import { McpDurableObject } from './mcp-durable-object.ts'
+import { maybeHandleMediaProxyRequest } from './media-proxy.ts'
 import { createWorkerOAuthProvider } from './oauth-provider.ts'
 
 export { McpDurableObject }
