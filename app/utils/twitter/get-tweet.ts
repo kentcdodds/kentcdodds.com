@@ -1,6 +1,9 @@
+import { getEnv } from '#app/utils/env.server.ts'
 import { type Tweet } from './types/index.ts'
 
-const SYNDICATION_URL = 'https://cdn.syndication.twimg.com'
+function getSyndicationBaseUrl() {
+	return getEnv().TWITTER_SYNDICATION_BASE_URL
+}
 
 export class TwitterApiError extends Error {
 	status: number
@@ -35,7 +38,7 @@ export async function getTweet(id: string): Promise<Tweet | null> {
 		throw new Error(`Invalid tweet id: ${id}`)
 	}
 
-	const url = new URL(`${SYNDICATION_URL}/tweet-result`)
+	const url = new URL('tweet-result', `${getSyndicationBaseUrl().replace(/\/+$/, '')}/`)
 
 	url.searchParams.set('id', id)
 	url.searchParams.set('lang', 'en')

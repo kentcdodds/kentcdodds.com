@@ -1,0 +1,201 @@
+import { expect, test, vi } from 'vitest'
+import { compileMdxRemoteDocument } from '#app/mdx-remote/compiler/compile.ts'
+import { deserializeMdxRemoteDocument } from '#app/mdx-remote/compiler/serialize.ts'
+
+test('compiles and serializes validated mdx remote document', async () => {
+	const { document, serialized } = await compileMdxRemoteDocument({
+		slug: 'hello',
+		frontmatter: {
+			title: 'Hello',
+		},
+		root: {
+			type: 'root',
+			children: [
+				{
+					type: 'element',
+					name: 'p',
+					children: [{ type: 'text', value: 'Hello world' }],
+				},
+			],
+		},
+		allowedComponentNames: [],
+		compiledAt: '2026-02-25T00:00:00.000Z',
+	})
+
+	expect(document.slug).toBe('hello')
+	expect(deserializeMdxRemoteDocument(serialized).frontmatter).toEqual({
+		title: 'Hello',
+	})
+})
+
+test('rejects unknown component names that are not allowlisted', async () => {
+	expect(() =>
+		compileMdxRemoteDocument({
+			slug: 'unknown-component',
+			frontmatter: {},
+			root: {
+				type: 'root',
+				children: [{ type: 'element', name: 'SubscribeForm' }],
+			},
+			allowedComponentNames: [],
+		}),
+	).toThrow(/unknown mdx component/i)
+})
+
+test('allows unknown component names when strict mode is disabled', async () => {
+	const { document } = await compileMdxRemoteDocument({
+		slug: 'unknown-component-non-strict',
+		frontmatter: {},
+		root: {
+			type: 'root',
+			children: [{ type: 'element', name: 'LegacyComponent' }],
+		},
+		allowedComponentNames: [],
+		strictComponentValidation: false,
+	})
+	expect(document.root.children[0]).toMatchObject({
+		type: 'element',
+		name: 'LegacyComponent',
+	})
+})
+
+test('rejects forbidden expression syntax in nodes and props', async () => {
+	expect(() =>
+		compileMdxRemoteDocument({
+			slug: 'forbidden-expression',
+			frontmatter: {},
+			root: {
+				type: 'root',
+				children: [
+					{ type: 'expression', value: 'new Date()' },
+					{
+						type: 'element',
+						name: 'p',
+						props: {
+							label: {
+								type: 'expression',
+								value: 'eval(user.name)',
+							},
+						},
+					},
+				],
+			},
+			allowedComponentNames: [],
+		}),
+	).toThrow(/forbidden expression syntax/i)
+})
+
+test('validates node prop values for unknown components', async () => {
+	expect(() =>
+		compileMdxRemoteDocument({
+			slug: 'invalid-node-prop',
+			frontmatter: {},
+			root: {
+				type: 'root',
+				children: [
+					{
+						type: 'element',
+						name: 'Themed',
+						props: {
+							dark: {
+								type: 'node',
+								value: {
+									type: 'element',
+									name: 'UnknownComponent',
+								},
+							},
+						},
+					},
+				],
+			},
+			allowedComponentNames: ['Themed'],
+		}),
+	).toThrow(/unknown mdx component/i)
+})
+
+test('rejects forbidden conditional test syntax in lambda nodes', async () => {
+	expect(() =>
+		compileMdxRemoteDocument({
+			slug: 'forbidden-lambda-test',
+			frontmatter: {},
+			root: {
+				type: 'root',
+				children: [
+					{
+						type: 'lambda',
+						parameter: 'value',
+						body: {
+							kind: 'conditional',
+							test: 'new Date()',
+							consequent: {
+								type: 'element',
+								name: 'p',
+								children: [{ type: 'text', value: 'yes' }],
+							},
+							alternate: {
+								type: 'element',
+								name: 'p',
+								children: [{ type: 'text', value: 'no' }],
+							},
+						},
+					},
+				],
+			},
+			allowedComponentNames: [],
+		}),
+	).toThrow(/forbidden expression syntax/i)
+})
+
+test('allows expression syntax when strict expression mode is disabled', async () => {
+	const { document } = await compileMdxRemoteDocument({
+		slug: 'non-strict-expression',
+		frontmatter: {},
+		root: {
+			type: 'root',
+			children: [{ type: 'expression', value: 'new Date()' }],
+		},
+		allowedComponentNames: [],
+		strictExpressionValidation: false,
+	})
+	expect(document.root.children[0]).toMatchObject({
+		type: 'expression',
+		value: 'new Date()',
+	})
+})
+
+test('allows safe string literals containing forbidden keywords', async () => {
+	const { document } = await compileMdxRemoteDocument({
+		slug: 'keyword-literal',
+		frontmatter: {},
+		root: {
+			type: 'root',
+			children: [{ type: 'expression', value: '"new"' }],
+		},
+		allowedComponentNames: [],
+	})
+	expect(document.root.children[0]).toMatchObject({
+		type: 'expression',
+		value: '"new"',
+	})
+})
+
+test('executes compiler plugins with document context', async () => {
+	const plugin = vi.fn(async () => {})
+	await compileMdxRemoteDocument({
+		slug: 'plugin-test',
+		frontmatter: { title: 'Plugin Test' },
+		root: {
+			type: 'root',
+			children: [{ type: 'element', name: 'p', children: [] }],
+		},
+		allowedComponentNames: [],
+		plugins: [plugin],
+	})
+
+	expect(plugin).toHaveBeenCalledWith(
+		expect.objectContaining({
+			slug: 'plugin-test',
+			frontmatter: { title: 'Plugin Test' },
+		}),
+	)
+})

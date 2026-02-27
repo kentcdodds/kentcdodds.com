@@ -1,0 +1,169 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kentcdodds-com",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"triggers": {
+		"crons": ["0 * * * *"]
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "MCP_OBJECT",
+				"class_name": "McpDurableObject"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1-mcp-durable-object",
+			"new_classes": ["McpDurableObject"]
+		}
+	],
+	"vars": {
+		"APP_ENV": "production"
+	},
+	"env": {
+		"production": {
+			"name": "kentcdodds-com",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
+			"vars": {
+				"APP_ENV": "production"
+			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-com-call-kent-ffmpeg"
+				}
+			],
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
+			}
+		},
+		"development": {
+			"name": "kentcdodds-com-development",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
+			"vars": {
+				"APP_ENV": "development"
+			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-mock-call-kent-ffmpeg-dev"
+				}
+			],
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-development-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-development-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
+			}
+		},
+		"preview": {
+			"name": "kentcdodds-com-preview",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
+			"vars": {
+				"APP_ENV": "preview"
+			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-mock-call-kent-ffmpeg-preview"
+				}
+			],
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-preview-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-preview-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
+			}
+		},
+		"test": {
+			"name": "kentcdodds-com-test",
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "MCP_OBJECT",
+						"class_name": "McpDurableObject"
+					}
+				]
+			},
+			"vars": {
+				"APP_ENV": "test"
+			},
+			"services": [
+				{
+					"binding": "CALL_KENT_FFMPEG",
+					"service": "kentcdodds-mock-call-kent-ffmpeg-dev"
+				}
+			],
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALLS_DRAFT_QUEUE",
+						"queue": "kentcdodds-com-test-calls-draft-queue"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "kentcdodds-com-test-calls-draft-queue",
+						"max_batch_size": 1,
+						"max_batch_timeout": 5
+					}
+				]
+			}
+		}
+	}
+}

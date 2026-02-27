@@ -15,6 +15,7 @@ datasource db {
 generator client {
   provider = "prisma-client"
   output   = "../app/utils/prisma-generated.server"
+  runtime = "workerd"
 }
 
 model User {

@@ -79,7 +79,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 type Person = SerializeFrom<typeof loader>['people'][number]
 type Socials = keyof Omit<
 	Person,
-	'id' | 'name' | 'role' | 'cloudinaryId' | 'description'
+	'id' | 'name' | 'role' | 'imageId' | 'description'
 >
 
 const icons = {
@@ -99,7 +99,7 @@ function ProfileCard({ person }: { person: Person }) {
 		<div id={person.id} className="relative flex w-full scroll-mt-24 flex-col">
 			<div className="mb-8 aspect-square w-full flex-none">
 				<img
-					{...getImgProps(getImageBuilder(person.cloudinaryId, person.name), {
+					{...getImgProps(getImageBuilder(person.imageId, person.name), {
 						className: 'rounded-lg object-contain',
 						widths: [280, 560, 840, 1100, 1300, 1650],
 						sizes: [
@@ -280,11 +280,11 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 				</Paragraph>
 				<Paragraph className="col-span-4">
 					{`The folks at `}
-					<a href="https://fly.io">Fly.io</a>
+					<a href="https://cloudflare.com">Cloudflare</a>
 					{`
-            were an enormous help in getting me off the ground with hosting the
-            site and databases. The backend is totally not my domain and they
-            seriously helped me be successful.
+            have been an enormous help in running and evolving the hosting stack
+            for this site. Backend and infrastructure are not my strongest domain,
+            and their platform + docs have made a huge difference.
           `}
 				</Paragraph>
 			</Grid>

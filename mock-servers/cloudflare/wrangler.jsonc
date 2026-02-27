@@ -1,0 +1,18 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "kentcdodds-mock-cloudflare",
+	"main": "worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"env": {
+		"development": {
+			"name": "kentcdodds-mock-cloudflare-dev"
+		},
+		"preview": {
+			"name": "kentcdodds-mock-cloudflare-preview"
+		},
+		"production": {
+			"name": "kentcdodds-mock-cloudflare"
+		}
+	}
+}

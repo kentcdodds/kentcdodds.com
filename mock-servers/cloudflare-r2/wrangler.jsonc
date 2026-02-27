@@ -1,0 +1,30 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "kentcdodds-mock-cloudflare-r2",
+	"main": "worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+	},
+	"env": {
+		"development": {
+			"name": "kentcdodds-mock-cloudflare-r2-dev",
+			"vars": {
+				"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+			}
+		},
+		"preview": {
+			"name": "kentcdodds-mock-cloudflare-r2-preview",
+			"vars": {
+				"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+			}
+		},
+		"production": {
+			"name": "kentcdodds-mock-cloudflare-r2",
+			"vars": {
+				"R2_MOCK_CACHE_DIRECTORY": "/tmp/mock-r2-cache"
+			}
+		}
+	}
+}

@@ -1,8 +1,10 @@
 import { spawn } from 'child_process'
 import fs from 'fs'
+import { Buffer } from 'node:buffer'
 import path from 'path'
 import fsExtra from 'fs-extra'
 import * as uuid from 'uuid'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 
 const asset = (...p: Array<string>) =>
 	path.join(process.cwd(), 'app/assets', ...p)
@@ -10,6 +12,104 @@ const cache = (...p: Array<string>) =>
 	path.join(process.cwd(), '.cache/calls', ...p)
 
 async function createEpisodeAudio(
+	callAudio: Uint8Array,
+	responseAudio: Uint8Array,
+) {
+	const ffmpegBinding = getCallKentFfmpegBinding()
+	if (ffmpegBinding) {
+		return createEpisodeAudioViaBinding({
+			binding: ffmpegBinding,
+			callAudio,
+			responseAudio,
+		})
+	}
+
+	if (typeof process === 'undefined' || process.release?.name !== 'node') {
+		throw new Error('Missing required runtime binding: CALL_KENT_FFMPEG')
+	}
+
+	return createEpisodeAudioLocally(callAudio, responseAudio)
+}
+
+type FfmpegBinding = {
+	fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+}
+
+function getCallKentFfmpegBinding() {
+	return getRuntimeBinding<FfmpegBinding>('CALL_KENT_FFMPEG')
+}
+
+async function createEpisodeAudioViaBinding({
+	binding,
+	callAudio,
+	responseAudio,
+}: {
+	binding: FfmpegBinding
+	callAudio: Uint8Array
+	responseAudio: Uint8Array
+}) {
+	const callAudioBody =
+		callAudio.buffer instanceof ArrayBuffer
+			? new Uint8Array(callAudio.buffer, callAudio.byteOffset, callAudio.byteLength)
+			: Uint8Array.from(callAudio)
+	const responseAudioBody =
+		responseAudio.buffer instanceof ArrayBuffer
+			? new Uint8Array(
+					responseAudio.buffer,
+					responseAudio.byteOffset,
+					responseAudio.byteLength,
+				)
+			: Uint8Array.from(responseAudio)
+
+	const body = new FormData()
+	body.append(
+		'callAudio',
+		new Blob([callAudioBody], { type: 'audio/mpeg' }),
+		'call.mp3',
+	)
+	body.append(
+		'responseAudio',
+		new Blob([responseAudioBody], { type: 'audio/mpeg' }),
+		'response.mp3',
+	)
+
+	const response = await binding.fetch(
+		'https://call-kent-ffmpeg.internal/episode-audio',
+		{
+		method: 'POST',
+		body,
+		},
+	)
+	if (!response.ok) {
+		const responseBody = await response.text().catch(() => '')
+		throw new Error(
+			`Container ffmpeg request failed: ${response.status} ${response.statusText}${responseBody ? `\n${responseBody}` : ''}`,
+		)
+	}
+
+	const payload = (await response.json()) as {
+		callerMp3Base64?: string
+		responseMp3Base64?: string
+		episodeMp3Base64?: string
+	}
+	return {
+		callerMp3: decodeBase64Audio(payload.callerMp3Base64, 'callerMp3Base64'),
+		responseMp3: decodeBase64Audio(
+			payload.responseMp3Base64,
+			'responseMp3Base64',
+		),
+		episodeMp3: decodeBase64Audio(payload.episodeMp3Base64, 'episodeMp3Base64'),
+	}
+}
+
+function decodeBase64Audio(value: unknown, field: string) {
+	if (typeof value !== 'string' || value.length === 0) {
+		throw new Error(`Container ffmpeg response missing ${field}`)
+	}
+	return Buffer.from(value, 'base64')
+}
+
+async function createEpisodeAudioLocally(
 	callAudio: Uint8Array,
 	responseAudio: Uint8Array,
 ) {

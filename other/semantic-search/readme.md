@@ -47,7 +47,7 @@ secrets):
 For repo content indexing you can limit which docs get indexed:
 
 - CLI:
-  `npx tsx other/semantic-search/index-repo-content.ts --only "blog:react-hooks-pitfalls,page:uses"`
+  `bun other/semantic-search/index-repo-content.ts --only "blog:react-hooks-pitfalls,page:uses"`
 - Env: `SEMANTIC_SEARCH_ONLY="blog:react-hooks-pitfalls,page:uses"`
 
 Indexed sources (via `index-repo-content.ts`):
@@ -82,7 +82,7 @@ When a doc is ignored, indexers will:
 
 Script:
 
-- `node other/semantic-search/index-youtube-playlist.ts`
+- `bun other/semantic-search/index-youtube-playlist.ts`
 - The script indexes:
   - videos from the configured YouTube playlist
   - additional YouTube video links found in `content/pages/appearances.mdx`

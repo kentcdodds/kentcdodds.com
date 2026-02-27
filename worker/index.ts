@@ -1,0 +1,299 @@
+import { createRequestHandler, type AppLoadContext } from 'react-router'
+import { processCallKentEpisodeDraftQueueMessage } from '#app/utils/call-kent-episode-draft-queue.server.ts'
+import {
+	applyD1Bookmark,
+	getD1Bookmark,
+	readD1Bookmark,
+	withD1Session,
+} from '#app/utils/d1-session.server.ts'
+import {
+	clearRuntimeEnvSource,
+	setRuntimeEnvSource,
+} from '#app/utils/env.server.ts'
+import { runExpiredDataCleanup } from '#app/utils/expired-data-cleanup.server.ts'
+import {
+	clearRuntimeBindingSource,
+	setRuntimeBindingSource,
+} from '#app/utils/runtime-bindings.server.ts'
+import { McpDurableObject } from './mcp-durable-object.ts'
+import { maybeHandleMediaProxyRequest } from './media-proxy.ts'
+import { createWorkerOAuthProvider } from './oauth-provider.ts'
+
+export { McpDurableObject }
+
+const primaryHost = 'kentcdodds.com'
+const strictTransportSecurity = `max-age=${60 * 60 * 24 * 365 * 100}`
+const mcpResourcePath = '/mcp'
+const protectedResourceMetadataPath = '/.well-known/oauth-protected-resource'
+
+let cachedRequestHandler:
+	| ((request: Request, loadContext?: AppLoadContext) => Promise<Response>)
+	| null = null
+
+const defaultWorkerHandler = {
+	async fetch(request: Request, env: Record<string, unknown>, ctx: unknown) {
+		const url = new URL(request.url)
+		const host = getRequestHost(request)
+		const protocol = getRequestProtocol(request, url)
+		if (protocol === 'http' && host) {
+			return Response.redirect(
+				`https://${host}${url.pathname}${url.search}`,
+				301,
+			)
+		}
+
+		if (url.pathname === '/health') {
+			return Response.json({ ok: true, runtime: 'cloudflare-worker' })
+		}
+
+		if (isProtectedResourceMetadataRequest(url.pathname)) {
+			return buildProtectedResourceMetadataResponse(request)
+		}
+
+		if (url.pathname === mcpResourcePath) {
+			const mcpNamespace = getMcpDurableObjectNamespace(env)
+			if (mcpNamespace) {
+				const mcpId = mcpNamespace.idFromName('mcp-shared-session')
+				const mcpStub = mcpNamespace.get(mcpId)
+				return mcpStub.fetch(request)
+			}
+		}
+
+		const mediaProxyResponse = await maybeHandleMediaProxyRequest(request, env)
+		if (mediaProxyResponse) {
+			return mediaProxyResponse
+		}
+
+		if (
+			env.ASSETS &&
+			typeof env.ASSETS === 'object' &&
+			'fetch' in env.ASSETS &&
+			typeof env.ASSETS.fetch === 'function' &&
+			(request.method === 'GET' || request.method === 'HEAD')
+		) {
+			const assetResponse = await env.ASSETS.fetch(request)
+			if (assetResponse.ok) {
+				return assetResponse
+			}
+		}
+
+		const requestHandler = await getRequestHandler()
+		if (!requestHandler) {
+			return new Response('Cloudflare worker scaffold is ready.', {
+				headers: { 'content-type': 'text/plain; charset=utf-8' },
+			})
+		}
+
+		const requestBookmark = readD1Bookmark(request)
+		const dbSession = withD1Session(env.APP_DB, requestBookmark)
+		const requestEnv =
+			dbSession === env.APP_DB ? env : { ...env, APP_DB: dbSession }
+
+		setRuntimeEnvSource(getStringEnvBindings(requestEnv))
+		setRuntimeBindingSource(requestEnv)
+		const response = await requestHandler(request, {
+			cloudflare: { env: requestEnv, ctx },
+		})
+		return applyD1Bookmark(response, getD1Bookmark(dbSession))
+	},
+}
+
+let oauthProviderPromise:
+	| Promise<{
+			fetch: (
+				request: Request,
+				env: Record<string, unknown>,
+				ctx: unknown,
+			) => Promise<Response>
+	  }>
+	| null = null
+
+function getOAuthProvider() {
+	if (!oauthProviderPromise) {
+		oauthProviderPromise = createWorkerOAuthProvider(defaultWorkerHandler)
+	}
+	return oauthProviderPromise
+}
+
+async function handleFetch(
+	request: Request,
+	env: Record<string, unknown>,
+	ctx: unknown,
+) {
+	const response = hasOAuthKvBinding(env)
+		? await (await getOAuthProvider()).fetch(
+				request,
+				env as {
+					[key: string]: unknown
+				},
+				ctx,
+			)
+		: await defaultWorkerHandler.fetch(request, env, ctx)
+	return applyStandardResponseHeaders(response, request)
+}
+
+async function handleScheduled(
+	controller: { cron: string },
+	env: Record<string, unknown>,
+) {
+	try {
+		setRuntimeEnvSource(getStringEnvBindings(env))
+		setRuntimeBindingSource(env)
+		await runExpiredDataCleanup({
+			reason: `worker-cron:${controller.cron}`,
+		})
+	} catch (error) {
+		console.error('Scheduled cleanup failed', error)
+		throw error
+	} finally {
+		clearRuntimeBindingSource()
+		clearRuntimeEnvSource()
+	}
+}
+
+async function handleQueue(
+	batch: {
+		messages: Array<{ body: unknown; retry?: () => void }>
+	},
+	env: Record<string, unknown>,
+) {
+	try {
+		setRuntimeEnvSource(getStringEnvBindings(env))
+		setRuntimeBindingSource(env)
+		for (const message of batch.messages) {
+			try {
+				if (!isCallKentEpisodeDraftQueueMessage(message.body)) {
+					throw new Error('Unexpected Call Kent draft queue payload shape')
+				}
+				await processCallKentEpisodeDraftQueueMessage(message.body)
+			} catch (error) {
+				console.error('Failed to process Call Kent draft queue message', error)
+				message.retry?.()
+			}
+		}
+	} finally {
+		clearRuntimeBindingSource()
+		clearRuntimeEnvSource()
+	}
+}
+
+export default {
+	fetch: handleFetch,
+	scheduled: handleScheduled,
+	queue: handleQueue,
+}
+
+async function getRequestHandler() {
+	if (cachedRequestHandler) return cachedRequestHandler
+	try {
+		// @ts-ignore - generated by react-router build during deploy/runtime startup
+		const build = await import('../build/server/index.js')
+		cachedRequestHandler = createRequestHandler(build as any, 'production')
+		return cachedRequestHandler
+	} catch (error) {
+		console.warn('Worker request handler unavailable, serving scaffold response.', error)
+		return null
+	}
+}
+
+function getStringEnvBindings(env: Record<string, unknown>) {
+	return Object.fromEntries(
+		Object.entries(env).filter((entry): entry is [string, string] => {
+			return typeof entry[1] === 'string'
+		}),
+	)
+}
+
+function getMcpDurableObjectNamespace(env: Record<string, unknown>) {
+	const candidate = env.MCP_OBJECT
+	if (
+		candidate &&
+		typeof candidate === 'object' &&
+		'idFromName' in candidate &&
+		typeof candidate.idFromName === 'function' &&
+		'get' in candidate &&
+		typeof candidate.get === 'function'
+	) {
+		return candidate as {
+			idFromName: (name: string) => unknown
+			get: (id: unknown) => { fetch: (request: Request) => Promise<Response> }
+		}
+	}
+	return null
+}
+
+function getRequestHost(request: Request) {
+	return request.headers.get('x-forwarded-host') ?? request.headers.get('host')
+}
+
+function getRequestProtocol(request: Request, url: URL) {
+	const forwarded = request.headers.get('x-forwarded-proto')
+	if (forwarded) return forwarded
+	return url.protocol.replace(':', '')
+}
+
+function buildProtectedResourceMetadataResponse(request: Request) {
+	const url = new URL(request.url)
+	const origin = url.origin
+	return Response.json({
+		resource: `${origin}${mcpResourcePath}`,
+		authorization_servers: [origin],
+	})
+}
+
+function isProtectedResourceMetadataRequest(pathname: string) {
+	return (
+		pathname === protectedResourceMetadataPath ||
+		pathname === `${protectedResourceMetadataPath}${mcpResourcePath}`
+	)
+}
+
+function hasOAuthKvBinding(env: Record<string, unknown>) {
+	const candidate = env.OAUTH_KV
+	return (
+		candidate &&
+		typeof candidate === 'object' &&
+		'get' in candidate &&
+		typeof candidate.get === 'function' &&
+		'put' in candidate &&
+		typeof candidate.put === 'function'
+	)
+}
+
+function applyStandardResponseHeaders(response: Response, request: Request) {
+	const headers = new Headers(response.headers)
+	const host = getRequestHost(request)
+	const protocol = getRequestProtocol(request, new URL(request.url))
+	const originProto = protocol === 'http' ? 'https' : protocol
+	if (host) {
+		if (!host.endsWith(primaryHost)) {
+			headers.set('X-Robots-Tag', 'noindex')
+		}
+		headers.set('Access-Control-Allow-Origin', `${originProto}://${host}`)
+	}
+	headers.set('X-Powered-By', 'Kody the Koala')
+	headers.set('X-Frame-Options', 'SAMEORIGIN')
+	headers.set('Strict-Transport-Security', strictTransportSecurity)
+	return new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers,
+	})
+}
+
+function isCallKentEpisodeDraftQueueMessage(
+	value: unknown,
+): value is {
+	draftId: string
+	responseAudioKey: string | null
+} {
+	if (!value || typeof value !== 'object') return false
+	const payload = value as Record<string, unknown>
+	if (typeof payload.draftId !== 'string' || payload.draftId.length < 1) {
+		return false
+	}
+	return (
+		payload.responseAudioKey === null ||
+		typeof payload.responseAudioKey === 'string'
+	)
+}

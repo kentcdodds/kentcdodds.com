@@ -54,7 +54,9 @@ async function synthesizeSpeechDirect({
 	if (!accountId) throw new Error('Missing CLOUDFLARE_ACCOUNT_ID')
 	if (!apiToken) throw new Error('Missing CLOUDFLARE_API_TOKEN')
 
-	const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`
+	const apiBaseUrl =
+		process.env.CLOUDFLARE_API_BASE_URL ?? 'https://api.cloudflare.com/client/v4'
+	const url = `${apiBaseUrl}/accounts/${accountId}/ai/run/${model}`
 	const lowerModel = model.toLowerCase()
 	const payload =
 		lowerModel.includes('deepgram/aura') || lowerModel.includes('aura-')

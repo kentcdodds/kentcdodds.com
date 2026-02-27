@@ -23,26 +23,15 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 import { RecordingForm } from '#app/components/calls/recording-form.tsx'
 
 describe('RecordingForm', () => {
-	it('recovers when FileReader.readAsDataURL throws synchronously', async () => {
+	it('recovers when submission request fails', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: null },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
-		const readAsDataURL = vi.fn(() => {
-			throw new TypeError('Unexpected blob state')
-		})
-		const addEventListener = vi.fn()
-		const removeEventListener = vi.fn()
-		class ThrowingFileReader {
-			result: string | ArrayBuffer | null = null
-			addEventListener = addEventListener
-			removeEventListener = removeEventListener
-			readAsDataURL = readAsDataURL
-		}
-		vi.stubGlobal(
-			'FileReader',
-			ThrowingFileReader as unknown as typeof FileReader,
-		)
+		const fetchMock = vi
+			.fn()
+			.mockRejectedValue(new TypeError('Unexpected upload failure'))
+		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
 			.mockReturnValue('blob:recording')
@@ -66,21 +55,12 @@ describe('RecordingForm', () => {
 				.toHaveTextContent('Submit Recording')
 			await expect
 				.element(
-					screen.getByText('Unable to read recording. Please try again.'),
+					screen.getByText('Unable to submit recording. Please try again.'),
 				)
 				.toBeVisible()
-			expect(readAsDataURL).toHaveBeenCalledTimes(1)
-			expect(addEventListener).toHaveBeenCalledWith(
-				'loadend',
-				expect.any(Function),
-				{ once: true },
-			)
-			expect(removeEventListener).toHaveBeenCalledWith(
-				'loadend',
-				expect.any(Function),
-			)
+			expect(fetchMock).toHaveBeenCalledTimes(1)
 			expect(errorSpy).toHaveBeenCalledWith(
-				'Unable to read recording',
+				'Unable to submit recording',
 				expect.any(TypeError),
 			)
 		} finally {
@@ -94,31 +74,8 @@ describe('RecordingForm', () => {
 	it('submits and navigates using the redirected response URL', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: 'primary-abc123' },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
-
-		let loadEndListener: (() => void) | null = null
-		const readAsDataURL = vi.fn(function (this: SuccessfulFileReader) {
-			this.result = 'data:audio/wav;base64,ZmFrZQ=='
-			loadEndListener?.()
-		})
-
-		class SuccessfulFileReader {
-			result: string | ArrayBuffer | null = null
-			addEventListener(
-				eventName: string,
-				listener: EventListenerOrEventListenerObject,
-			) {
-				if (eventName === 'loadend') {
-					loadEndListener =
-						typeof listener === 'function'
-							? () => listener(new Event('loadend'))
-							: null
-				}
-			}
-			removeEventListener() {}
-			readAsDataURL = readAsDataURL
-		}
 
 		const jsonMock = vi.fn()
 		const fetchMock = vi.fn().mockResolvedValue({
@@ -129,10 +86,6 @@ describe('RecordingForm', () => {
 			json: jsonMock,
 		} as unknown as Response)
 
-		vi.stubGlobal(
-			'FileReader',
-			SuccessfulFileReader as unknown as typeof FileReader,
-		)
 		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
@@ -153,17 +106,16 @@ describe('RecordingForm', () => {
 			expect(requestUrl).toBe('/resources/calls/save')
 			expect(requestInit?.method).toBe('POST')
 			expect(requestInit?.redirect).toBeUndefined()
-			const requestHeaders = requestInit?.headers as Headers
-			expect(requestHeaders.get('Content-Type')).toContain(
-				'application/x-www-form-urlencoded',
-			)
-			expect(requestHeaders.get('fly-force-instance-id')).toBe('primary-abc123')
+			expect(requestInit?.headers).toBeUndefined()
 
-			const requestBody = requestInit?.body as URLSearchParams
+			const requestBody = requestInit?.body as FormData
+			expect(requestBody).toBeInstanceOf(FormData)
 			expect(requestBody.get('intent')).toBe('create-call')
-			expect(requestBody.get('audio')).toBe('data:audio/wav;base64,ZmFrZQ==')
 			expect(requestBody.get('title')).toBe('My First Call')
 			expect(requestBody.get('notes')).toBe('')
+			const audioField = requestBody.get('audio')
+			expect(audioField).toBeInstanceOf(File)
+			expect((audioField as File).name).toBe('recording.webm')
 
 			await expect.poll(() => mockNavigate.mock.calls.length).toBe(1)
 			expect(mockNavigate).toHaveBeenCalledWith(
@@ -181,31 +133,8 @@ describe('RecordingForm', () => {
 	it('preserves server validation errors across equivalent data prop rerenders', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: null },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
-
-		let loadEndListener: (() => void) | null = null
-		const readAsDataURL = vi.fn(function (this: SuccessfulFileReader) {
-			this.result = 'data:audio/wav;base64,ZmFrZQ=='
-			loadEndListener?.()
-		})
-
-		class SuccessfulFileReader {
-			result: string | ArrayBuffer | null = null
-			addEventListener(
-				eventName: string,
-				listener: EventListenerOrEventListenerObject,
-			) {
-				if (eventName === 'loadend') {
-					loadEndListener =
-						typeof listener === 'function'
-							? () => listener(new Event('loadend'))
-							: null
-				}
-			}
-			removeEventListener() {}
-			readAsDataURL = readAsDataURL
-		}
 
 		const fetchMock = vi.fn().mockResolvedValue({
 			ok: false,
@@ -222,10 +151,6 @@ describe('RecordingForm', () => {
 			}),
 		} as unknown as Response)
 
-		vi.stubGlobal(
-			'FileReader',
-			SuccessfulFileReader as unknown as typeof FileReader,
-		)
 		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
 		const createObjectURL = vi
 			.spyOn(URL, 'createObjectURL')
@@ -283,7 +208,7 @@ describe('RecordingForm', () => {
 	it('shows validation feedback on blur or submit (and keeps native validation off)', async () => {
 		vi.clearAllMocks()
 		mockUseRootData.mockReturnValue({
-			requestInfo: { flyPrimaryInstance: null },
+			requestInfo: { origin: 'http://localhost:3000' },
 		})
 		const fetchMock = vi.fn()
 		vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)

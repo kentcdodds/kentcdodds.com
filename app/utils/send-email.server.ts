@@ -1,4 +1,4 @@
-import { getRandomFlyingKody } from '#app/images.tsx'
+import { getImageBuilder, getRandomFlyingKody } from '#app/images.tsx'
 import { getEnv } from '#app/utils/env.server.ts'
 import { markdownToHtmlDocument } from './markdown.server.ts'
 import { getOptionalTeam } from './misc.ts'
@@ -6,6 +6,7 @@ import { getOptionalTeam } from './misc.ts'
 const {
 	MAILGUN_DOMAIN: mailgunDomain,
 	MAILGUN_SENDING_KEY: mailgunSendingKey,
+	MAILGUN_API_BASE_URL: mailgunApiBaseUrl,
 } = getEnv()
 
 type MailgunMessage = {
@@ -34,7 +35,8 @@ async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
 		html,
 	})
 
-	await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
+	const url = new URL(`/v3/${mailgunDomain}/messages`, mailgunApiBaseUrl)
+	await fetch(url.toString(), {
 		method: 'POST',
 		body,
 		headers: {
@@ -65,6 +67,11 @@ async function sendVerificationCodeEmail({
 	const randomSportyKody = getRandomFlyingKody(
 		team ? getOptionalTeam(team) : undefined,
 	)
+	const randomSportyKodyImageUrl = getImageBuilder(randomSportyKody.id)({
+		resize: { width: 800 },
+		quality: 'auto',
+		format: 'auto',
+	})
 
 	const text = `
 ${title} for ${hostname}
@@ -101,7 +108,7 @@ This code expires soon. If you did not request this email, you can safely ignore
 
       <br />
 
-      <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/${randomSportyKody.id}" style="max-width: 80%;${
+      <center><img src="${randomSportyKodyImageUrl}" style="max-width: 80%;${
 				randomSportyKody.style?.aspectRatio
 					? `aspect-ratio: ${randomSportyKody.style.aspectRatio};`
 					: ''

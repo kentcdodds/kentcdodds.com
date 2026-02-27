@@ -37,10 +37,10 @@ function unshorten(
 ): Promise<string> {
 	return new Promise((resolve, reject) => {
 		try {
-			const url = new URL(urlString)
+			const url = rewriteShortUrlForRuntime(new URL(urlString))
 			if (url.protocol) {
 				const { request } = url.protocol === 'https:' ? https : http
-				request(urlString, { method: 'HEAD' }, (response) => {
+				request(url.toString(), { method: 'HEAD' }, (response) => {
 					const {
 						headers: { location },
 					} = response
@@ -60,6 +60,16 @@ function unshorten(
 			reject(error)
 		}
 	})
+}
+
+function rewriteShortUrlForRuntime(url: URL) {
+	const isTwitterShortLink = url.hostname === 't.co'
+	if (!isTwitterShortLink) return url
+	const shortenerBase = getEnv().TWITTER_SHORTENER_BASE_URL
+	if (shortenerBase === 'https://t.co') return url
+	const rewritten = new URL(url.pathname.replace(/^\//, ''), `${shortenerBase.replace(/\/+$/, '')}/`)
+	rewritten.search = url.search
+	return rewritten
 }
 
 async function getTweetCached(tweetId: string) {

@@ -1,12 +1,14 @@
 # Project context
 
 This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
-with Express, SQLite (via Prisma), and extensive MSW mocks for all external
-APIs.
+with Express, SQLite (via Prisma), and Worker-based mock APIs for all external
+integrations.
 
 ## Prerequisites
 
-- Node.js 24 is required (`engines` in `package.json`).
+- Bun 1.3.9+ is required (`packageManager` in `package.json`).
+  - Install via `curl -fsSL https://bun.sh/install | bash`.
+- Node.js 24 is still required for some tooling/runtime scripts.
   - Install via `nvm install 24 && nvm alias default 24`.
 
 ## Key commands
@@ -16,33 +18,158 @@ reference:
 
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
-| Dev server      | `npm run dev` (starts on port 3000 with `MOCKS=true`)                             |
-| Lint            | `npm run lint`                                                                    |
-| Typecheck       | `npm run typecheck`                                                               |
-| Unit tests      | `npm run test` (runs backend + browser-mode tests)                                |
-| Backend tests   | `npm run test:backend`                                                            |
-| Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
-| E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
-| DB reset + seed | `npx prisma@7 migrate reset --force` then `npm run runfile -- prisma/seed.ts`     |
+| Dev server      | `bun run dev` (starts app + worker mock stack + mdx-remote content watcher; app runs on port 3000) |
+| Calls e2e local stack | `bun run dev:calls-e2e` (starts Worker runtime + mock workers + mdx-remote watcher, including queue bindings for Call Kent draft processing) |
+| Calls e2e with real container | `bun run dev:calls-e2e:real-container` (uses local ffmpeg container service at port 8810 instead of mock container worker) |
+| Local ffmpeg container (Node) | `bun run dev:call-kent-ffmpeg-container` (runs container-compatible HTTP ffmpeg service on port 8810) |
+| Lint            | `bun run lint`                                                                    |
+| Typecheck       | `bun run typecheck`                                                               |
+| Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
+| Backend tests   | `bun run test:backend`                                                            |
+| Browser tests   | `bun run test:browser` (requires Playwright browsers: `bun run test:e2e:install`) |
+| E2E tests       | `bun run test:e2e:dev` (requires Playwright browsers: `bun run test:e2e:install`) |
+| DB reset + seed | `bunx prisma@7 migrate reset --force` then `bun run runfile -- prisma/seed.ts`     |
 
 ## Non-obvious caveats
 
-- All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
-  No real API keys are needed for local development; `.env.example` values are
+- External APIs are mocked via Worker mock servers in `bun run dev` and test
+  workflows.
+- `bun run dev` now auto-selects a free contiguous local mock-port range
+  (prefers `8790-8803`) so stale local processes do not fail startup with
+  `Address already in use` errors.
+- The Kit integration is now served by a Worker mock server in dev
+  (`mock-servers/kit/worker.ts`, local port `8790`).
+- The email verifier integration is served by a Worker mock server in dev
+  (`mock-servers/verifier/worker.ts`, local port `8791`).
+- OAuth provider token validation is served by a Worker mock server in dev
+  (`mock-servers/oauth/worker.ts`, local port `8792`).
+  - Cloudflare Worker runtime now serves OAuth endpoints from the main worker
+    when the `OAUTH_KV` binding is configured; `OAUTH_PROVIDER_BASE_URL` can be
+    left unset in preview/production so token validation resolves against the
+    current request origin.
+- Outbound Mailgun delivery is served by a Worker mock server in dev
+  (`mock-servers/mailgun/worker.ts`, local port `8793`).
+  - Useful inbox APIs:
+    - `GET /__mocks/emails/latest?to=<email>`
+    - `GET /__mocks/emails?to=<email>&subject=<query>&limit=<n>`
+    - `GET /__mocks/emails/<id>`
+- Discord API calls are served by a Worker mock server in dev
+  (`mock-servers/discord/worker.ts`, local port `8794`).
+- Simplecast API calls are served by a Worker mock server in dev
+  (`mock-servers/simplecast/worker.ts`, local port `8795`).
+- Transistor API calls are served by a Worker mock server in dev
+  (`mock-servers/transistor/worker.ts`, local port `8796`).
+- Twitter/X syndication + short-link/oEmbed calls are served by a Worker mock
+  server in dev (`mock-servers/twitter/worker.ts`, local port `8797`).
+- Pwned-password and gravatar calls are served by a Worker mock server in dev
+  (`mock-servers/security/worker.ts`, local port `8798`).
+- oEmbed provider registry/response calls are served by a Worker mock server in
+  dev (`mock-servers/oembed/worker.ts`, local port `8799`).
+- Mermaid SVG rendering calls are served by a Worker mock server in dev
+  (`mock-servers/mermaid-to-svg/worker.ts`, local port `8800`).
+- Cloudflare API + Workers AI Gateway calls are served by a Worker mock server
+  in dev (`mock-servers/cloudflare/worker.ts`, local port `8801`).
+- Cloudflare R2 S3-compatible calls are served by a Bun mock server in dev
+  (`mock-servers/cloudflare-r2/local-server.ts`, local port `8802`).
+  - mock uploads persist to disk at `.local/mock-r2-cache` (gitignored) so local
+    non-media R2 fixtures stay available across restarts/offline sessions.
+- Media image calls are served by a Worker mock server in dev
+  (`mock-servers/media-images/worker.ts`, local port `8803`).
+  - The media mock attempts to serve assets from local `content/**` first.
+  - When local assets are unavailable, it can proxy `/images/*` and `/stream/*`
+    requests to remote media delivery infrastructure.
+  - If `MEDIA_PROXY_BASE_URL` is unreachable for image requests, the mock
+    falls back to direct Cloudflare Images delivery
+    (`MEDIA_IMAGES_DELIVERY_BASE_URL`) to avoid local placeholder-only pages.
+  - Proxied media responses are persisted into local R2 cache bucket
+    `mock-media-cache` so already-fetched assets continue working offline.
+  - If remote media is unreachable (offline/no internet), the media mock returns a
+    wireframe SVG placeholder so route audits still pass.
+  - Preview deployments no longer deploy the media-images mock; preview envs use
+    configured real media URLs (`MEDIA_BASE_URL` / `MEDIA_STREAM_BASE_URL`).
+- Call Kent ffmpeg container simulation is served by a Worker mock server in dev
+  (`mock-servers/call-kent-ffmpeg/worker.ts`, local port `8804`).
+- Stream video URLs can use `MEDIA_STREAM_BASE_URL` (defaults to
+  `${MEDIA_BASE_URL}/stream`).
+  - current deployment default media base is `https://media.kcd.dev`
+    (planned production cutover target: `https://media.kentcdodds.com`).
+- Runtime MDX rendering now uses a single path:
+  - `MDX_REMOTE_KV` binding only (no runtime fallback chain).
+- GitHub content fetches in mocks mode still use local filesystem fallback in
+  `app/utils/github.server.ts` for tools/routes that explicitly read source
+  files, but page rendering no longer uses GitHub fallback compilation.
+- Media workflow:
+  - canonical manifests live in `content/data/media-manifests/{images,videos}.json`
+  - one-time Cloudinary bootstrap to local `content/**`:
+    - `bun run media:bootstrap-cloudinary`
+  - upload/sync local media to Cloudflare Images (images) + Stream (videos):
+    - `bun run media:sync-cloudflare`
+    - requires `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
+  - `media:sync-cloudflare` uses Cloudflare IDs in manifest `id` values and
+    keeps `sourcePath` values as `content/<repo-media-key>`.
+  - normalize legacy content URLs: `bun run media:normalize-legacy-paths`
+  - strict legacy scan gate: `bun run media:scan-legacy-references:strict`
+- No real API keys are needed for local development; `.env.example` values are
   sufficient.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
   external database server is required.
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run
   the DB reset + seed command from the table above to apply migrations and seed
   data.
-- Cache database: a separate SQLite cache DB is created at `other/cache.db`.
-  It's populated on first request or via `npm run prime-cache:mocks`.
+- Shared cache backend:
+  - Worker runtime uses the `SITE_CACHE_KV` binding when configured.
+  - If `SITE_CACHE_KV` is not bound (including most local Node workflows), the
+    app falls back to the SQLite cache file at `other/cache.db`.
+  - Add `SITE_CACHE_KV` in Wrangler env config per environment before relying on
+    KV-backed shared cache behavior.
+- MCP Worker routing expects a Durable Object binding named `MCP_OBJECT`
+  (`McpDurableObject` class in `worker/mcp-durable-object.ts`).
+- Call Kent draft processing queue:
+  - Wrangler env config now binds `CALLS_DRAFT_QUEUE` in each env.
+  - Generated preview/production Wrangler configs rewrite queue bindings to
+    branch/preview-specific queue names.
+  - `bun run dev:calls-e2e` runs the app on Wrangler local runtime so queue
+    producer/consumer flow can be exercised without Node-only dev server fallbacks.
+- Call Kent ffmpeg container handoff:
+  - runtime now uses a Worker service binding named `CALL_KENT_FFMPEG` for
+    `createEpisodeAudio` container handoff (`POST /episode-audio` contract).
+  - local Node dev can point the binding adapter with
+    `CALL_KENT_FFMPEG_BINDING_BASE_URL` (defaults to `http://localhost:8804`).
+  - expected response JSON fields: `callerMp3Base64`, `responseMp3Base64`,
+    and `episodeMp3Base64`.
+  - lightweight container-compatible Node service source lives in
+    `containers/call-kent-ffmpeg/` and can be image-built via
+    `bun run container:build:call-kent-ffmpeg`.
+- Call Kent transcription payload mode:
+  - default model is `@cf/openai/whisper` (raw binary `audio/mpeg` payload).
+  - if using base64-only models (for example `@cf/openai/whisper-large-v3-turbo`),
+    set `CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64=true` explicitly.
+  - this guard exists to avoid accidental high-memory base64 payload mode.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - Semantic search caveat: YouTube auto-captions can include cue-only chunks like
   `[Music]`. The YouTube indexer filters these low-signal caption lines and
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
+- Mdx-remote compilation script:
+  - `bun run content:compile-mdx-remote`
+  - `bun run content:compile-mdx-remote:dry-run`
+  - `bun run content:compile-mdx-remote:strict-report` (strict validation report
+    for component/expression compatibility; exits non-zero on failures)
+  - `bun run content:publish-mdx-remote -- --kv-binding MDX_REMOTE_KV --wrangler-config <config-path> --wrangler-env <env> [--before <sha> --after <sha>]`
+    publishes strict-validated mdx-remote artifacts to KV (changed-entry upload +
+    deleted-entry cleanup when SHAs are provided).
+  - `bun run content:watch-mdx-remote` watches content collections locally and
+    continuously rebuilds strict mdx-remote artifacts into
+    `other/content/mdx-remote/` (use `--once` for a single local rebuild pass).
+  - Preview/production generated Wrangler configs attach dedicated KV bindings
+    for runtime mdx docs (`MDX_REMOTE_KV`) via `tools/ci/preview-resources.ts`.
+  - generates serialized mdx-remote JSON docs + manifest under
+    `other/content/mdx-remote/`.
+- Preview cleanup workflow:
+  - `.github/workflows/preview.yml` supports manual cleanup dispatch with
+    `action=cleanup` and optional `pr_number` input so a PR preview resource set
+    can be reset on demand.
 
 ## Cloud / headless manual testing
 
@@ -50,3 +177,14 @@ reference:
   `/calls/record/new` can hit the route ErrorBoundary unless `localhost` is
   allowed mic/camera access in site settings (even if you intend to use the
   typed question → text-to-speech path).
+
+## Related operational docs
+
+- Cloudflare-managed controls (rate limiting, cron cleanup, KV cache binding):
+  `docs/agents/cloudflare-managed-controls.md`
+- Cloudflare cutover runbook (data parity, rollout, rollback):
+  `docs/cloudflare-cutover-runbook.md`
+- Cloudflare media migration + sync runbook:
+  `docs/cloudflare-media-migration.md`
+- Call Kent ffmpeg container runbook:
+  `docs/call-kent-container-runbook.md`

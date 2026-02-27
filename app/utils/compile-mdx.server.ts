@@ -12,7 +12,12 @@ import gfm from 'remark-gfm'
 import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
+import {
+	compileMdxRemoteDocumentFromSource,
+} from '#app/mdx-remote/compiler/from-mdast.ts'
+import { mdxRemoteComponentAllowlist } from '#app/mdx-remote/component-allowlist.ts'
 import { type GitHubFile } from '#app/types.ts'
+import { getEnv } from './env.server.ts'
 import * as x from './x.server.ts'
 
 // Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
@@ -88,77 +93,102 @@ function trimCodeBlocks() {
 	}
 }
 
-// yes, I did write this myself 😬
-const cloudinaryUrlRegex =
-	/^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
+function optimizeMediaImages() {
+	const baseUrl = getEnv().MEDIA_BASE_URL.replace(/\/+$/, '')
 
-function optimizeCloudinaryImages() {
 	return async function transformer(tree: H.Root) {
 		// `unist-util-visit` types can differ between mdast/hast; this tree is hast
 		// but can still contain MDX nodes. Use `any` to avoid type churn.
 		visit(tree as any, 'mdxJsxFlowElement' as any, function visitor(node: any) {
-			if (node?.name !== 'img') return
-			const srcAttr = node.attributes?.find(
+			const srcAttr = node?.attributes?.find(
 				(attr: any) => attr?.type === 'mdxJsxAttribute' && attr?.name === 'src',
 			)
-			const urlString = srcAttr?.value ? String(srcAttr.value) : null
-			if (!srcAttr || !urlString) {
-				console.error('image without url?', node)
-				return
-			}
-			const newUrl = handleImageUrl(urlString)
+			if (!srcAttr) return
+			const urlString = srcAttr.value ? String(srcAttr.value) : null
+			if (!urlString) return
+			// img, MediaVideo, or any element with media src
+			const newUrl =
+				node?.name === 'img'
+					? handleImageUrl(urlString, baseUrl)
+					: rewriteMediaHref(urlString, baseUrl) ?? handleImageUrl(urlString, baseUrl)
 			if (newUrl) {
 				srcAttr.value = newUrl
 			}
 		})
 
 		visit(tree, 'element', function visitor(node: H.Element) {
-			if (node.tagName !== 'img') return
-			const urlString = node.properties?.src
-				? String(node.properties.src)
-				: null
-			if (!node.properties?.src || !urlString) {
-				console.error('image without url?', node)
+			if (node.tagName === 'img') {
+				const urlString = node.properties?.src
+					? String(node.properties.src)
+					: null
+				if (!node.properties?.src || !urlString) {
+					console.error('image without url?', node)
+					return
+				}
+				const newUrl = handleImageUrl(urlString, baseUrl)
+				if (newUrl) {
+					node.properties.src = newUrl
+				}
 				return
 			}
-			const newUrl = handleImageUrl(urlString)
-			if (newUrl) {
-				node.properties.src = newUrl
+			if (node.tagName === 'a' && node.properties?.href) {
+				const href = String(node.properties.href)
+				const newHref = rewriteMediaHref(href, baseUrl)
+				if (newHref) {
+					node.properties.href = newHref
+				}
 			}
 		})
 	}
 
-	function handleImageUrl(urlString: string) {
-		const match = urlString.match(cloudinaryUrlRegex)
-		const groups = match?.groups
-		if (groups) {
-			const { cloudName, transforms, version, publicId } = groups as {
-				cloudName: string
-				transforms?: string
-				version?: string
-				publicId: string
-			}
-			// don't add transforms if they're already included
-			if (transforms) return
-			const defaultTransforms = [
-				'f_auto',
-				'q_auto',
-				// gifs can't do dpr transforms
-				publicId.endsWith('.gif') ? '' : 'dpr_2.0',
-				'w_1600',
-			]
-				.filter(Boolean)
-				.join(',')
-			return [
-				`https://res.cloudinary.com/${cloudName}/image/upload`,
-				defaultTransforms,
-				version,
-				publicId,
-			]
-				.filter(Boolean)
-				.join('/')
-		}
+	function rewriteMediaHref(href: string, base: string): string | null {
+		const mediaReference = parseMediaReference(href)
+		if (!mediaReference) return null
+		return buildMediaImageDeliveryUrl({
+			base,
+			publicId: mediaReference.publicId,
+			transforms: mediaReference.transforms,
+		})
 	}
+
+	function handleImageUrl(urlString: string, baseUrl: string): string | undefined {
+		const mediaReference = parseMediaReference(urlString)
+		if (!mediaReference) return
+		return buildMediaImageDeliveryUrl({
+			base: baseUrl,
+			publicId: mediaReference.publicId,
+			transforms: mediaReference.transforms,
+		})
+	}
+}
+
+function parseMediaReference(urlString: string) {
+	if (!urlString.startsWith('/media/')) return null
+	const mediaUrl = new URL(urlString, 'https://media.local')
+	const publicId = mediaUrl.pathname.slice('/media/'.length).replace(/^\/+/, '')
+	if (!publicId) return null
+	return {
+		publicId,
+		transforms: mediaUrl.searchParams.get('tr') ?? undefined,
+	}
+}
+
+function buildMediaImageDeliveryUrl({
+	base,
+	publicId,
+	transforms,
+}: {
+	base: string
+	publicId: string
+	transforms?: string
+}) {
+	const normalizedBase = base.replace(/\/+$/, '')
+	const normalizedPublicId = publicId.replace(/^\/+/, '')
+	const mediaUrl = new URL(`${normalizedBase}/images/${normalizedPublicId}`)
+	if (transforms) {
+		mediaUrl.searchParams.set('tr', transforms)
+	}
+	return mediaUrl.toString()
 }
 
 const twitterTransformer = {
@@ -283,7 +313,10 @@ async function getMermaidSvg({
 	const compressed = lz.compressToEncodedURIComponent(trimmed)
 	if (!compressed) return null
 
-	const url = new URL('https://mermaid-to-svg.kentcdodds.workers.dev/svg')
+	const url = new URL(
+		'svg',
+		`${getEnv().MERMAID_TO_SVG_BASE_URL.replace(/\/+$/, '')}/`,
+	)
 	url.searchParams.set('mermaid', compressed)
 	url.searchParams.set('theme', theme)
 
@@ -356,11 +389,39 @@ const remarkPlugins: U.PluggableList = [
 ]
 
 const rehypePlugins: U.PluggableList = [
-	optimizeCloudinaryImages,
+	optimizeMediaImages,
 	trimCodeBlocks,
 	rehypeCodeBlocksShiki,
 	removePreContainerDivs,
 ]
+
+async function withOembedApiRouting<T>(fn: () => Promise<T>) {
+	const oembedApiBaseUrl = getEnv().OEMBED_API_BASE_URL
+	if (oembedApiBaseUrl === 'https://oembed.com') {
+		return fn()
+	}
+	const originalFetch = globalThis.fetch
+	globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+		const originalRequestUrl =
+			typeof input === 'string' || input instanceof URL
+				? new URL(String(input))
+				: new URL(input.url)
+		if (originalRequestUrl.origin !== 'https://oembed.com') {
+			return originalFetch(input, init)
+		}
+		const routedUrl = new URL(
+			originalRequestUrl.pathname.replace(/^\//, ''),
+			`${oembedApiBaseUrl.replace(/\/+$/, '')}/`,
+		)
+		routedUrl.search = originalRequestUrl.search
+		return originalFetch(routedUrl.toString(), init)
+	}) as typeof fetch
+	try {
+		return await fn()
+	} finally {
+		globalThis.fetch = originalFetch
+	}
+}
 
 async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 	slug: string,
@@ -383,30 +444,42 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 	})
 
 	try {
-		const { frontmatter, code } = await bundleMDX({
-			source: indexFile.content,
-			files,
-			mdxOptions(options) {
-				options.remarkPlugins = [
-					...(options.remarkPlugins ?? []),
-					remarkSlug,
-					[remarkAutolinkHeadings, { behavior: 'wrap' }],
-					gfm,
-					...remarkPlugins,
-				]
-				options.rehypePlugins = [
-					...(options.rehypePlugins ?? []),
-					...rehypePlugins,
-				]
-				return options
-			},
-		})
+		const { frontmatter, code } = await withOembedApiRouting(() =>
+			bundleMDX({
+				source: indexFile.content,
+				files,
+				mdxOptions(options) {
+					options.remarkPlugins = [
+						...(options.remarkPlugins ?? []),
+						remarkSlug,
+						[remarkAutolinkHeadings, { behavior: 'wrap' }],
+						gfm,
+						...remarkPlugins,
+					]
+					options.rehypePlugins = [
+						...(options.rehypePlugins ?? []),
+						...rehypePlugins,
+					]
+					return options
+				},
+			}),
+		)
 		const readTime = calculateReadingTime(indexFile.content)
+		const remoteDocument = await compileMdxRemoteDocumentFromSource({
+			slug,
+			source: indexFile.content,
+			frontmatter: frontmatter as FrontmatterType,
+			allowedComponentNames: mdxRemoteComponentAllowlist,
+		}).catch((error: unknown) => {
+			console.warn(`Failed to compile mdx-remote document for slug "${slug}"`, error)
+			return undefined
+		})
 
 		return {
 			code,
 			readTime,
 			frontmatter: frontmatter as FrontmatterType,
+			remoteDocument,
 		}
 	} catch (error: unknown) {
 		console.error(`Compilation error for slug: `, slug)

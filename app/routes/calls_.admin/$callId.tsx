@@ -13,7 +13,6 @@ import {
 	getNavigationPathFromResponse,
 	recordingFormActionPath,
 } from '#app/components/calls/recording-form.tsx'
-import { useInterval } from '#app/components/hooks/use-interval.tsx'
 import { MailIcon } from '#app/components/icons.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
@@ -23,7 +22,7 @@ import { formatDate, useDoubleCheck } from '#app/utils/misc-react.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
-import { useRootData, useUser } from '#app/utils/use-root-data.ts'
+import { useUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/$callId'
 
 export const handle: KCDHandle = {
@@ -227,8 +226,6 @@ function ResponseAudioDraftForm({
 	const navigate = useNavigate()
 	const location = useLocation()
 	const revalidator = useRevalidator()
-	const { requestInfo } = useRootData()
-	const flyPrimaryInstance = requestInfo.flyPrimaryInstance
 	const audioURL = React.useMemo(() => URL.createObjectURL(audio), [audio])
 	const abortControllerRef = React.useRef<AbortController | null>(null)
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -241,7 +238,7 @@ function ResponseAudioDraftForm({
 		}
 	}, [audioURL])
 
-	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
 		if (isSubmitting) return
 		setError(null)
@@ -250,74 +247,51 @@ function ResponseAudioDraftForm({
 		const callTitleValue = String(formData.get('callTitle') ?? '')
 		const notesValue = String(formData.get('notes') ?? '')
 
-		const reader = new FileReader()
-		const handleLoadEnd = async () => {
-			try {
-				if (typeof reader.result !== 'string') {
-					setError('Unable to read recording. Please try again.')
-					return
-				}
+		const body = new FormData()
+		body.set('intent', 'create-episode-draft')
+		body.set('callId', callId)
+		body.set('callTitle', callTitleValue)
+		body.set('notes', notesValue)
+		body.set('audio', audio, 'response-recording.webm')
 
-				const body = new URLSearchParams()
-				body.set('intent', 'create-episode-draft')
-				body.set('callId', callId)
-				body.set('audio', reader.result)
-				body.set('callTitle', callTitleValue)
-				body.set('notes', notesValue)
-
-				const headers = new Headers({
-					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-				})
-				if (flyPrimaryInstance) {
-					headers.set('fly-force-instance-id', flyPrimaryInstance)
-				}
-
-				abortControllerRef.current?.abort()
-				const abortController = new AbortController()
-				abortControllerRef.current = abortController
-
-				const response = await fetch(recordingFormActionPath, {
-					method: 'POST',
-					body,
-					headers,
-					signal: abortController.signal,
-				})
-
-				const redirectPath = getNavigationPathFromResponse(response)
-				if (redirectPath) {
-					// Avoid scroll-to-top when the action redirects back to this page.
-					// (Also avoid unnecessary navigation if the redirect target is the same URL.)
-					if (redirectPath !== `${location.pathname}${location.search}`) {
-						await navigate(redirectPath, { preventScrollReset: true })
-					} else {
-						await revalidator.revalidate()
-					}
-					return
-				}
-
-				if (response.ok) {
-					await revalidator.revalidate()
-					return
-				}
-
-				const text = await response.text().catch(() => '')
-				setError(text.trim() || 'Unable to submit response. Please try again.')
-			} catch (e: unknown) {
-				if (e instanceof DOMException && e.name === 'AbortError') return
-				setError(e instanceof Error ? e.message : 'Unable to submit response.')
-			} finally {
-				setIsSubmitting(false)
-			}
-		}
-
-		reader.addEventListener('loadend', handleLoadEnd, { once: true })
 		setIsSubmitting(true)
+		abortControllerRef.current?.abort()
+		const abortController = new AbortController()
+		abortControllerRef.current = abortController
 		try {
-			reader.readAsDataURL(audio)
+			const response = await fetch(recordingFormActionPath, {
+				method: 'POST',
+				body,
+				signal: abortController.signal,
+			})
+
+			const redirectPath = getNavigationPathFromResponse(response)
+			if (redirectPath) {
+				// Avoid scroll-to-top when the action redirects back to this page.
+				// (Also avoid unnecessary navigation if the redirect target is the same URL.)
+				if (redirectPath !== `${location.pathname}${location.search}`) {
+					await navigate(redirectPath, { preventScrollReset: true })
+				} else {
+					await revalidator.revalidate()
+				}
+				return
+			}
+
+			if (response.ok) {
+				await revalidator.revalidate()
+				return
+			}
+
+			const text = await response.text().catch(() => '')
+			setError(text.trim() || 'Unable to submit response. Please try again.')
 		} catch (e: unknown) {
-			reader.removeEventListener('loadend', handleLoadEnd)
+			if (e instanceof DOMException && e.name === 'AbortError') return
+			setError(e instanceof Error ? e.message : 'Unable to submit response.')
+		} finally {
+			if (abortControllerRef.current === abortController) {
+				abortControllerRef.current = null
+			}
 			setIsSubmitting(false)
-			setError(e instanceof Error ? e.message : 'Unable to read recording.')
 		}
 	}
 
@@ -579,7 +553,7 @@ function DraftEditor({
 	)
 }
 
-const draftStatusResourcePath = '/resources/calls/draft-status'
+const draftStatusStreamResourcePath = '/resources/calls/draft-status-stream'
 
 function RecordingDetailScreen({
 	data,
@@ -599,31 +573,47 @@ function RecordingDetailScreen({
 		setPolledStatus(null)
 	}, [draft?.id])
 
-	// Use lightweight status-only endpoint when polling to avoid re-fetching
-	// transcript, title, description, keywords on every 1.5s poll.
-	useInterval(
-		async () => {
-			if (revalidator.state !== 'idle') return
+	React.useEffect(() => {
+		if (draft?.status !== 'PROCESSING') return
+
+		let isClosed = false
+		const handleStatusUpdate = (statusUpdate: {
+			status: string
+			step: string
+			errorMessage: string | null
+		}) => {
+			setPolledStatus(statusUpdate)
+			if (statusUpdate.status !== 'PROCESSING' && revalidator.state === 'idle') {
+				void revalidator.revalidate()
+			}
+		}
+
+		const eventSource = new EventSource(
+			`${draftStatusStreamResourcePath}?callId=${data.call.id}`,
+		)
+		eventSource.onmessage = (event) => {
+			if (isClosed) return
 			try {
-				const res = await fetch(
-					`${draftStatusResourcePath}?callId=${data.call.id}`,
-				)
-				if (!res.ok) return
-				const json = (await res.json()) as {
+				const json = JSON.parse(event.data) as {
 					status: string
 					step: string
 					errorMessage: string | null
 				}
-				setPolledStatus(json)
+				handleStatusUpdate(json)
 				if (json.status !== 'PROCESSING') {
-					void revalidator.revalidate()
+					eventSource.close()
+					isClosed = true
 				}
 			} catch {
-				// Ignore fetch errors; next poll will retry
+				// Ignore malformed status payloads.
 			}
-		},
-		draft?.status === 'PROCESSING' ? 1500 : 0,
-	)
+		}
+
+		return () => {
+			isClosed = true
+			eventSource.close()
+		}
+	}, [data.call.id, draft?.status, revalidator])
 
 	return (
 		<div key={data.call.id} className="flex flex-col gap-6">

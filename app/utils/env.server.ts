@@ -12,22 +12,29 @@ const schemaBase = z.object({
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
-	FLY_APP_NAME: nonEmptyString,
-	FLY_REGION: nonEmptyString,
-	FLY_MACHINE_ID: nonEmptyString,
-	LITEFS_DIR: nonEmptyString,
-
-	// Used by LiteFS + tooling. Optional because it can be derived from
-	// `DATABASE_URL` when using SQLite `file:` URLs.
+	// Optional because it can be derived from `DATABASE_URL` when using SQLite
+	// `file:` URLs.
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
 	CACHE_DATABASE_PATH: nonEmptyString,
+	MEDIA_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://media.kcd.dev'),
+	MEDIA_IMAGES_BASE_URL: z.string().trim().optional(),
+	MEDIA_STREAM_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://media.kcd.dev/stream'),
 
 	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,
 	CHATS_WITH_KENT_PODCAST_ID: nonEmptyString,
 	KIT_API_KEY: nonEmptyString,
 	KIT_API_SECRET: nonEmptyString,
+	KIT_API_BASE_URL: z.string().trim().optional().default('https://api.kit.com'),
 	DISCORD_ADMIN_USER_ID: nonEmptyString,
 	DISCORD_BLUE_CHANNEL: nonEmptyString,
 	DISCORD_BLUE_ROLE: nonEmptyString,
@@ -35,6 +42,11 @@ const schemaBase = z.object({
 	DISCORD_CALL_KENT_CHANNEL: nonEmptyString,
 	DISCORD_CLIENT_ID: nonEmptyString,
 	DISCORD_CLIENT_SECRET: nonEmptyString,
+	DISCORD_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://discord.com/api'),
 	DISCORD_GUILD_ID: nonEmptyString,
 	DISCORD_LEADERBOARD_CHANNEL: nonEmptyString,
 	DISCORD_MEMBER_ROLE: nonEmptyString,
@@ -44,11 +56,38 @@ const schemaBase = z.object({
 	DISCORD_SCOPES: nonEmptyString,
 	DISCORD_YELLOW_CHANNEL: nonEmptyString,
 	DISCORD_YELLOW_ROLE: nonEmptyString,
+	OAUTH_PROVIDER_BASE_URL: z
+		.string()
+		.trim()
+		.optional(),
+	OEMBED_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://oembed.com'),
+	MERMAID_TO_SVG_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://mermaid-to-svg.kentcdodds.workers.dev'),
+	PWNED_PASSWORDS_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.pwnedpasswords.com'),
 	INTERNAL_COMMAND_TOKEN: nonEmptyString,
-	MAGIC_LINK_SECRET: nonEmptyString,
 	MAILGUN_DOMAIN: nonEmptyString,
 	MAILGUN_SENDING_KEY: nonEmptyString,
-	REFRESH_CACHE_SECRET: nonEmptyString,
+	MAILGUN_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.mailgun.net'),
+	GRAVATAR_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://www.gravatar.com'),
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
 	// Sentry is optional; validate required combos in `superRefine`.
 	SENTRY_DSN: z.string().trim().optional(),
@@ -57,14 +96,53 @@ const schemaBase = z.object({
 	SENTRY_PROJECT_ID: z.string().trim().optional(),
 	SESSION_SECRET: nonEmptyString,
 	SIMPLECAST_KEY: nonEmptyString,
+	SIMPLECAST_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.simplecast.com'),
 	TRANSISTOR_API_SECRET: nonEmptyString,
+	TRANSISTOR_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.transistor.fm'),
+	TWITTER_SYNDICATION_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://cdn.syndication.twimg.com'),
+	TWITTER_SHORTENER_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://t.co'),
+	TWITTER_OEMBED_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://publish.twitter.com'),
 	TWITTER_BEARER_TOKEN: nonEmptyString,
 	VERIFIER_API_KEY: nonEmptyString,
-	CF_INTERNAL_SECRET: nonEmptyString,
+	VERIFIER_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://verifyright.co'),
 
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
 	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,
 	CLOUDFLARE_API_TOKEN: nonEmptyString,
+	CLOUDFLARE_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.cloudflare.com/client/v4'),
+	CLOUDFLARE_AI_GATEWAY_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://gateway.ai.cloudflare.com/v1'),
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,
 	/**
@@ -87,7 +165,11 @@ const schemaBase = z.object({
 		.string()
 		.trim()
 		.optional()
-		.default('@cf/openai/whisper-large-v3-turbo'),
+		.default('@cf/openai/whisper'),
+	CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64: z
+		.enum(['true', 'false'])
+		.optional()
+		.default('false'),
 	CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL: z
 		.string()
 		.trim()
@@ -117,6 +199,11 @@ const schemaBase = z.object({
 		.default('manifests/ignore-list.json'),
 
 	GITHUB_REF: z.string().trim().optional().default('main'),
+	GITHUB_API_BASE_URL: z
+		.string()
+		.trim()
+		.optional()
+		.default('https://api.github.com'),
 
 	// Optional: /youtube route + indexing scripts.
 	YOUTUBE_PLAYLIST_ID: z
@@ -157,21 +244,20 @@ const schema = schemaBase.superRefine((values, ctx) => {
 
 type BaseEnv = z.infer<typeof schemaBase>
 type BaseEnvInput = z.input<typeof schemaBase>
+type EnvInput = Record<keyof BaseEnvInput, string | undefined>
 
 export type Env = Omit<
 	BaseEnv,
 	| 'PORT'
 	| 'MOCKS'
 	| 'DATABASE_PATH'
-	| 'FLY_MACHINE_ID'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
+	| 'CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64'
 > & {
 	PORT: number
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
-	/** Instance identifier; fallback for startup race when env may not be injected yet. */
-	FLY_MACHINE_ID: string
 	/**
 	 * Defaults to `CLOUDFLARE_AI_TEXT_MODEL` when not explicitly set.
 	 * This keeps Call Kent metadata generation aligned with the site's configured
@@ -191,6 +277,7 @@ export type Env = Omit<
 	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: string
 	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */
 	R2_ENDPOINT: string
+	CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64: boolean
 }
 
 declare global {
@@ -208,12 +295,7 @@ function computeAllowedActionOrigins(values: BaseEnv) {
 	if (configuredOrigins.length > 0) return configuredOrigins
 	if (values.NODE_ENV !== 'production') return ['**']
 
-	const productionOrigins = ['kentcdodds.com', '*.kentcdodds.com']
-	// Fly.io app name is required by schema; keep the old behavior anyway.
-	if (values.FLY_APP_NAME) {
-		productionOrigins.push(`${values.FLY_APP_NAME}.fly.dev`)
-	}
-	return productionOrigins
+	return ['kentcdodds.com', '*.kentcdodds.com']
 }
 
 function deriveDatabasePath(values: BaseEnv) {
@@ -228,16 +310,28 @@ let _cache:
 			env: Env
 	  }
 	| undefined
+let _runtimeEnvSource: Partial<EnvInput> | undefined
+
+export function setRuntimeEnvSource(envSource: Partial<EnvInput>) {
+	_runtimeEnvSource = envSource
+	_cache = undefined
+}
+
+export function clearRuntimeEnvSource() {
+	_runtimeEnvSource = undefined
+	_cache = undefined
+}
 
 export function getEnv(): Env {
 	const keys = Object.keys(schemaBase.shape) as Array<keyof BaseEnv>
+	const envSource = getEnvSource()
 	const fingerprint = keys
-		.map((k) => `${String(k)}=${process.env[String(k)] ?? ''}`)
+		.map((k) => `${String(k)}=${envSource[String(k)] ?? ''}`)
 		.join('\0')
 
 	if (_cache?.fingerprint === fingerprint) return _cache.env
 
-	const parsed = schema.safeParse(process.env)
+	const parsed = schema.safeParse(envSource)
 
 	if (parsed.success === false) {
 		// Prefer throwing the ZodError; `init()` prints a nicer message.
@@ -255,7 +349,6 @@ export function getEnv(): Env {
 		MOCKS: values.MOCKS === 'true',
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
-		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:
 			values.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID ||
@@ -266,6 +359,8 @@ export function getEnv(): Env {
 		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL:
 			values.CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL ??
 			values.CLOUDFLARE_AI_TEXT_MODEL,
+		CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64:
+			values.CLOUDFLARE_AI_TRANSCRIPTION_ALLOW_BASE64 === 'true',
 	}
 
 	_cache = { fingerprint, env }
@@ -319,10 +414,21 @@ export function getPublicEnv() {
 		MODE: env.NODE_ENV,
 		DISCORD_CLIENT_ID: env.DISCORD_CLIENT_ID,
 		SENTRY_DSN: env.SENTRY_DSN,
+		MEDIA_BASE_URL: env.MEDIA_BASE_URL,
+		MEDIA_IMAGES_BASE_URL: env.MEDIA_IMAGES_BASE_URL,
+		MEDIA_STREAM_BASE_URL: env.MEDIA_STREAM_BASE_URL,
 	}
 }
 
 type PublicEnv = ReturnType<typeof getPublicEnv>
+
+function getEnvSource(): Record<string, string | undefined> {
+	if (!_runtimeEnvSource) return process.env
+	return {
+		...process.env,
+		..._runtimeEnvSource,
+	}
+}
 
 declare global {
 	var ENV: PublicEnv

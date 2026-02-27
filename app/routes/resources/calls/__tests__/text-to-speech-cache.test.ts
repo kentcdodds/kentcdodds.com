@@ -34,19 +34,6 @@ vi.mock('#app/utils/session.server.ts', () => {
 	}
 })
 
-const rateLimit = vi.fn(() => {
-	return {
-		allowed: true,
-		remaining: 999,
-		retryAfterMs: null,
-		resetAt: Date.now() + 1000,
-	}
-})
-
-vi.mock('#app/utils/rate-limit.server.ts', () => {
-	return { rateLimit }
-})
-
 function makeRequest({ text, voice }: { text: string; voice: string }) {
 	return new Request('http://localhost/resources/calls/text-to-speech', {
 		method: 'POST',
@@ -57,7 +44,6 @@ function makeRequest({ text, voice }: { text: string; voice: string }) {
 
 test('does not cache audio bytes; repeated requests invoke workers ai', async () => {
 	synthesizeSpeechWithWorkersAi.mockClear()
-	rateLimit.mockClear()
 
 	const { action } = await import('../text-to-speech.tsx')
 
@@ -78,7 +64,6 @@ test('does not cache audio bytes; repeated requests invoke workers ai', async ()
 	expect(res2.ok).toBe(true)
 
 	expect(synthesizeSpeechWithWorkersAi).toHaveBeenCalledTimes(2)
-	expect(rateLimit).toHaveBeenCalledTimes(2)
 	expect(synthesizeSpeechWithWorkersAi.mock.calls[1]?.[0]).toEqual(
 		synthesizeSpeechWithWorkersAi.mock.calls[0]?.[0],
 	)
@@ -86,7 +71,6 @@ test('does not cache audio bytes; repeated requests invoke workers ai', async ()
 
 test('validates normalized question text before synthesis', async () => {
 	synthesizeSpeechWithWorkersAi.mockClear()
-	rateLimit.mockClear()
 
 	const { action } = await import('../text-to-speech.tsx')
 
@@ -106,12 +90,10 @@ test('validates normalized question text before synthesis', async () => {
 		error: 'Question text must be at least 20 characters',
 	})
 	expect(synthesizeSpeechWithWorkersAi).not.toHaveBeenCalled()
-	expect(rateLimit).not.toHaveBeenCalled()
 })
 
 test('falls back to audio/mpeg when workers ai omits content type', async () => {
 	synthesizeSpeechWithWorkersAi.mockClear()
-	rateLimit.mockClear()
 	synthesizeSpeechWithWorkersAi.mockImplementationOnce(
 		async ({
 			text,
@@ -142,5 +124,4 @@ test('falls back to audio/mpeg when workers ai omits content type', async () => 
 	expect(res.ok).toBe(true)
 	expect(res.headers.get('content-type')).toBe('audio/mpeg')
 	expect(synthesizeSpeechWithWorkersAi).toHaveBeenCalledTimes(1)
-	expect(rateLimit).toHaveBeenCalledTimes(1)
 })

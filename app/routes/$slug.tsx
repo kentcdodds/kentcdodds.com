@@ -92,10 +92,13 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta = mdxPageMeta
 
 export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
-	const { code, frontmatter } = data.page
+	const { frontmatter, remoteDocument } = data.page
+	if (!remoteDocument) {
+		throw new Error('Page is missing required mdx-remote document.')
+	}
 	const isDraft = Boolean(frontmatter.draft)
 	const isArchived = Boolean(frontmatter.archived)
-	const Component = useMdxComponent(code)
+	const Component = useMdxComponent({ remoteDocument })
 
 	return (
 		<>
@@ -132,10 +135,10 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 						</H6>
 					) : null}
 				</div>
-				{frontmatter.bannerCloudinaryId ? (
+				{frontmatter.bannerImageId ? (
 					<div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
 						<BlurrableImage
-							key={frontmatter.bannerCloudinaryId}
+							key={frontmatter.bannerImageId}
 							blurDataUrl={frontmatter.bannerBlurDataUrl}
 							className="md:aspect-1 aspect-[3/4] md:aspect-[3/2]"
 							img={
@@ -143,7 +146,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 									title={getBannerTitleProp(frontmatter)}
 									{...getImgProps(
 										getImageBuilder(
-											frontmatter.bannerCloudinaryId,
+											frontmatter.bannerImageId,
 											getBannerAltProp(frontmatter),
 										),
 										{

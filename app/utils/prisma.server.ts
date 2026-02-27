@@ -1,24 +1,36 @@
 import { remember } from '@epic-web/remember'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaD1 } from '@prisma/adapter-d1'
 import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
-import { PrismaClient } from './prisma-generated.server/client.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
+import { PrismaClient, type User } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
 const logThreshold = 500
+const ADMIN_EMAIL = 'me@kentcdodds.com'
+type D1Binding = ConstructorParameters<typeof PrismaD1>[0]
+type PrismaClientAdapterOptions = {
+	d1?: D1Binding
+	url?: string
+	eagerConnect?: boolean
+}
 
-const prisma = remember('prisma', getClient)
+const d1PrismaClients = new WeakMap<object, PrismaClient>()
+let lastKnownD1Binding: D1Binding | null = null
 
-function getClient(): PrismaClient {
+function createPrismaClient({
+	d1,
+	url = getEnv().DATABASE_URL,
+	eagerConnect = true,
+}: PrismaClientAdapterOptions = {}): PrismaClient {
 	// NOTE: during development if you change anything in this function, remember
 	// that this only runs once per server restart and won't automatically be
 	// re-run per request like everything else is.
-	const url = getEnv().DATABASE_URL
 	const client = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
+		adapter: d1 ? new PrismaD1(d1) : new PrismaBetterSqlite3({ url }),
 		log: [
 			{ level: 'query', emit: 'event' },
 			{ level: 'error', emit: 'stdout' },
@@ -42,16 +54,64 @@ function getClient(): PrismaClient {
 		console.info(`prisma:query - ${dur} - ${e.query}`)
 	})
 	// make the connection eagerly so the first request doesn't have to wait
-	void client.$connect()
+	if (eagerConnect) {
+		void client.$connect()
+	}
 	return client
 }
+
+function createPrismaClientForD1(d1: D1Binding) {
+	return createPrismaClient({ d1, eagerConnect: false })
+}
+
+function isD1Binding(value: unknown): value is D1Binding {
+	return typeof value === 'object' && value !== null
+}
+
+function getD1PrismaClient(dbBinding: D1Binding) {
+	const existingClient = d1PrismaClients.get(dbBinding)
+	if (existingClient) return existingClient
+	const client = createPrismaClientForD1(dbBinding)
+	d1PrismaClients.set(dbBinding, client)
+	return client
+}
+
+function getSqlitePrismaClient() {
+	return remember('prisma', createPrismaClient)
+}
+
+function getActivePrismaClient() {
+	const dbBinding = getRuntimeBinding('APP_DB')
+	if (isD1Binding(dbBinding)) {
+		lastKnownD1Binding = dbBinding
+		return getD1PrismaClient(dbBinding)
+	}
+	if (isCloudflareWorkerRuntime() && isD1Binding(lastKnownD1Binding)) {
+		return getD1PrismaClient(lastKnownD1Binding)
+	}
+	if (isCloudflareWorkerRuntime()) {
+		throw new Error('Missing required runtime binding: APP_DB')
+	}
+	return getSqlitePrismaClient()
+}
+
+function isCloudflareWorkerRuntime() {
+	return 'WebSocketPair' in globalThis
+}
+
+const prisma = new Proxy({} as PrismaClient, {
+	get(_, prop) {
+		const client = getActivePrismaClient()
+		const value = (client as unknown as Record<PropertyKey, unknown>)[prop]
+		return typeof value === 'function' ? value.bind(client) : value
+	},
+})
 
 const sessionExpirationTime = 1000 * 60 * 60 * 24 * 365
 
 async function createSession(
 	sessionData: Omit<Session, 'id' | 'expirationDate' | 'createdAt'>,
 ) {
-	await ensurePrimary()
 	return prisma.session.create({
 		data: {
 			...sessionData,
@@ -63,7 +123,6 @@ async function createSession(
 async function deleteExpiredSessions({
 	now = new Date(),
 }: { now?: Date } = {}) {
-	await ensurePrimary()
 	const result = await prisma.session.deleteMany({
 		where: { expirationDate: { lt: now } },
 	})
@@ -73,7 +132,6 @@ async function deleteExpiredSessions({
 async function deleteExpiredVerifications({
 	now = new Date(),
 }: { now?: Date } = {}) {
-	await ensurePrimary()
 	const result = await prisma.verification.deleteMany({
 		where: { expiresAt: { lt: now } },
 	})
@@ -96,7 +154,6 @@ async function getUserFromSessionId(
 	}
 
 	if (Date.now() > session.expirationDate.getTime()) {
-		await ensurePrimary()
 		await prisma.session.delete({ where: { id: sessionId } })
 		throw new Error('Session expired. Please log in again.')
 	}
@@ -104,7 +161,6 @@ async function getUserFromSessionId(
 	// if there's less than ~six months left, extend the session
 	const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
 	if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
-		await ensurePrimary()
 		const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
 		await prisma.session.update({
 			data: { expirationDate: newExpirationDate },
@@ -112,7 +168,25 @@ async function getUserFromSessionId(
 		})
 	}
 
-	return session.user
+	return normalizeUserRole(session.user)
+}
+
+async function normalizeUserRole(user: User) {
+	if (user.email === ADMIN_EMAIL && user.role !== 'ADMIN') {
+		await prisma.user.update({
+			where: { id: user.id },
+			data: { role: 'ADMIN' },
+		})
+		return { ...user, role: 'ADMIN' }
+	}
+	if (user.role === 'USER') {
+		await prisma.user.update({
+			where: { id: user.id },
+			data: { role: 'MEMBER' },
+		})
+		return { ...user, role: 'MEMBER' }
+	}
+	return user
 }
 
 async function getAllUserData(userId: string) {
@@ -163,6 +237,8 @@ export {
 	deleteExpiredVerifications,
 	getAllUserData,
 	getUserFromSessionId,
+	normalizeUserRole,
 	prisma,
+	createPrismaClientForD1,
 	sessionExpirationTime,
 }

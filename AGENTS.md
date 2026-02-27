@@ -16,6 +16,10 @@ and stable.
 - `docs/agents/code-style.md`
 - `docs/agents/bugfix-workflow.md`
 - `docs/agents/testing-principles.md`
+- `docs/cloudflare-cutover-runbook.md` (release/cutover/rollback checklist)
+- `docs/cloudflare-media-migration.md` (media migration + sync workflow)
+- `docs/agents/cloudflare-managed-controls.md`
+- `docs/agents/mock-api-servers.md`
 
 If you discover a new sharp edge, workflow, or non-obvious project behavior,
 update the relevant doc(s) in `docs/agents/` so future agent runs are faster and

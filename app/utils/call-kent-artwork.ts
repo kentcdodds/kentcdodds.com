@@ -1,5 +1,5 @@
-import { images } from '#app/images.tsx'
-import { getOptionalTeam, toBase64 } from './misc.ts'
+import { getMediaBaseUrl, images } from '#app/images.tsx'
+import { getOptionalTeam } from './misc.ts'
 
 export type CallKentEpisodeArtworkAvatar =
 	| { kind: 'fetch'; url: string }
@@ -20,7 +20,7 @@ type CallKentEpisodeArtworkOptions = {
 	/**
 	 * Avatar used in the artwork.
 	 * - Use `fetch` for remote images (ex: Gravatar).
-	 * - Use `public` for Cloudinary assets (ex: Kody) to keep URLs short.
+	 * - Use `public` for in-platform media assets (ex: Kody) to keep URLs short.
 	 */
 	avatar: CallKentEpisodeArtworkAvatar
 	/**
@@ -45,11 +45,6 @@ const KODY_PROFILE_BY_TEAM = {
 	YELLOW: images.kodyProfileYellow,
 	UNKNOWN: images.kodyProfileGray,
 } as const
-
-// Cloudinary needs double-encoding for `l_text:` payloads.
-function doubleEncode(s: string) {
-	return encodeURIComponent(encodeURIComponent(s))
-}
 
 export function getCallKentEpisodeArtworkAvatar({
 	isAnonymous,
@@ -76,7 +71,7 @@ export function getCallKentEpisodeArtworkAvatar({
 }
 
 /**
- * Generates the Cloudinary URL for Call Kent episode artwork.
+ * Generates the media URL for Call Kent episode artwork.
  *
  * Keep this in sync with the publish-time artwork generation so the "preview"
  * shown to callers matches what ultimately gets uploaded to Transistor.
@@ -89,48 +84,18 @@ export function getCallKentEpisodeArtworkUrl({
 	avatarIsRound,
 	size = DESIGN_SIZE,
 }: CallKentEpisodeArtworkOptions) {
-	const encodedTitle = doubleEncode(title)
-	const encodedUrl = doubleEncode(url)
-	const encodedName = doubleEncode(name)
-
-	const avatarLayer =
-		avatar.kind === 'public'
-			? `l_${avatar.publicId.replace(/\//g, ':')}`
-			: `l_fetch:${encodeURIComponent(toBase64(avatar.url))}`
-	const radius = avatarIsRound ? ',r_max' : ''
-
-	const textLines = Math.ceil(Math.min(title.length, 50) / 18)
-	const avatarYPosition = textLines + 0.6
-	const nameYPosition = -textLines + 5.2
-
-	// Keep layout math consistent by always composing at 3000px, then scaling
-	// for previews. Generating the layout directly at small sizes can crop out
-	// content due to the underlying background asset being non-square.
-	const vars = `$th_${DESIGN_SIZE},$tw_${DESIGN_SIZE},$gw_$tw_div_12,$gh_$th_div_12`
-
-	const baseTransforms = [
-		`https://res.cloudinary.com/kentcdodds-com/image/upload`,
-		vars,
-		`w_$tw,h_$th,l_kentcdodds.com:social-background`,
-		`co_white,c_fit,g_north_west,w_$gw_mul_6,h_$gh_mul_2.6,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Medium.woff2_180:${encodedTitle}`,
-		`c_crop${radius},g_north_west,h_$gh_mul_5.5,w_$gh_mul_5.5,x_$gw_mul_0.8,y_$gh_mul_${avatarYPosition},${avatarLayer}`,
-		`co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_0.8,l_text:kentcdodds.com:Matter-Regular.woff2_120:${encodedUrl}`,
-		`co_rgb:a9adc1,c_fit,g_south_west,w_$gw_mul_8,h_$gh_mul_4,x_$gw_mul_0.8,y_$gh_mul_${nameYPosition},l_text:kentcdodds.com:Matter-Regular.woff2_140:${encodedName}`,
-		`c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,l_kentcdodds.com:illustrations:mic`,
-	]
-
-	// Preserve the exact publish-time URL for production uploads.
-	if (size === DESIGN_SIZE) {
-		return [
-			...baseTransforms,
-			`c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`,
-		].join('/')
-	}
-
-	return [
-		...baseTransforms,
-		`c_fill,w_$tw,h_$th`,
-		`c_scale,w_${size},h_${size}`,
-		`kentcdodds.com/social-background.png`,
-	].join('/')
+	const mediaBaseUrl = getMediaBaseUrl().replace(/\/+$/, '')
+	const artworkUrl = new URL(`${mediaBaseUrl}/artwork/call-kent.png`)
+	artworkUrl.searchParams.set('title', title)
+	artworkUrl.searchParams.set('url', url)
+	artworkUrl.searchParams.set('name', name)
+	artworkUrl.searchParams.set('size', String(size))
+	artworkUrl.searchParams.set('designSize', String(DESIGN_SIZE))
+	artworkUrl.searchParams.set('avatarRound', avatarIsRound ? '1' : '0')
+	artworkUrl.searchParams.set('avatarKind', avatar.kind)
+	artworkUrl.searchParams.set(
+		'avatar',
+		avatar.kind === 'public' ? avatar.publicId : avatar.url,
+	)
+	return artworkUrl.toString()
 }

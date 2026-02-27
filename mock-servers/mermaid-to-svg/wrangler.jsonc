@@ -1,0 +1,12 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "mock-mermaid-to-svg",
+	"main": "worker.ts",
+	"compatibility_date": "2025-03-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"env": {
+		"development": {},
+		"preview": {},
+		"production": {}
+	}
+}

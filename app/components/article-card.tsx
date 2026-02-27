@@ -18,7 +18,7 @@ function ArticleCard({
 		frontmatter,
 		frontmatter: {
 			title = 'Untitled Post',
-			bannerCloudinaryId,
+			bannerImageId,
 			bannerBlurDataUrl,
 		},
 	},
@@ -43,9 +43,9 @@ function ArticleCard({
 				className="group peer relative block w-full focus:outline-none"
 				to={`/blog/${slug}`}
 			>
-				{bannerCloudinaryId ? (
+				{bannerImageId ? (
 					<BlurrableImage
-						key={bannerCloudinaryId}
+						key={bannerImageId}
 						blurDataUrl={bannerBlurDataUrl}
 						className="aspect-[3/4] rounded-lg"
 						img={
@@ -53,7 +53,7 @@ function ArticleCard({
 								title={frontmatter.title ?? getBannerTitleProp(frontmatter)}
 								{...getImgProps(
 									getImageBuilder(
-										bannerCloudinaryId,
+										bannerImageId,
 										getBannerAltProp(frontmatter),
 									),
 									{

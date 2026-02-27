@@ -231,9 +231,13 @@ export async function getMdxPageRoutes(repoRoot = process.cwd()) {
 				continue
 			}
 			if (!entry.isFile() || !entry.name.endsWith('.mdx')) continue
-			routes.add(
-				`/${nextRelativePath.replace(/\\/g, '/').replace(/\.mdx$/, '')}`,
-			)
+			const normalizedRelativePath = nextRelativePath.replace(/\\/g, '/')
+			if (normalizedRelativePath.endsWith('/index.mdx')) {
+				const routeDir = normalizedRelativePath.replace(/\/index\.mdx$/, '')
+				routes.add(routeDir ? `/${routeDir}` : '/')
+				continue
+			}
+			routes.add(`/${normalizedRelativePath.replace(/\.mdx$/, '')}`)
 		}
 	}
 

@@ -1,6 +1,4 @@
-import { http, HttpResponse } from 'msw'
 import { beforeEach, expect, test, vi } from 'vitest'
-import { mswServer } from '#tests/msw-server.ts'
 import {
 	fetchJsonWithRetryAfter,
 	getRetryDelayMsFromResponse,
@@ -10,58 +8,68 @@ let requestCount = 0
 let always429Count = 0
 let flaky500Count = 0
 let networkErrorCount = 0
-const handlers = [
-	http.get('https://example.com/test', () => {
-		requestCount++
-		if (requestCount === 1) {
-			return HttpResponse.json(
-				{ error: 'too_many_requests' },
-				{
-					status: 429,
-					headers: { 'Retry-After': '2' },
-				},
-			)
-		}
-		return HttpResponse.json({ ok: true })
-	}),
-	http.get('https://example.com/always-429', () => {
-		always429Count++
-		return HttpResponse.json(
-			{ error: 'too_many_requests' },
-			{
-				status: 429,
-				headers: { 'Retry-After': '1' },
-			},
-		)
-	}),
-	http.get('https://example.com/flaky-500', () => {
-		flaky500Count++
-		if (flaky500Count === 1) {
-			return HttpResponse.json({ error: 'server' }, { status: 500 })
-		}
-		return HttpResponse.json({ ok: true })
-	}),
-	http.get('https://example.com/network-error', () => {
-		networkErrorCount++
-		if (networkErrorCount === 1) {
-			return HttpResponse.error()
-		}
-		return HttpResponse.json({ ok: true })
-	}),
-	http.get('https://example.com/bad-json', () => {
-		return HttpResponse.text('not-json', {
-			status: 200,
-			headers: { 'Content-Type': 'application/json' },
-		})
-	}),
-]
 
 beforeEach(() => {
-	mswServer.use(...handlers)
 	requestCount = 0
 	always429Count = 0
 	flaky500Count = 0
 	networkErrorCount = 0
+	vi.stubGlobal(
+		'fetch',
+		vi.fn(async (input: RequestInfo | URL) => {
+			const url =
+				typeof input === 'string'
+					? input
+					: input instanceof URL
+						? input.toString()
+						: input.url
+			if (url === 'https://example.com/test') {
+				requestCount++
+				if (requestCount === 1) {
+					return Response.json(
+						{ error: 'too_many_requests' },
+						{
+							status: 429,
+							headers: { 'Retry-After': '2' },
+						},
+					)
+				}
+				return Response.json({ ok: true })
+			}
+			if (url === 'https://example.com/always-429') {
+				always429Count++
+				return Response.json(
+					{ error: 'too_many_requests' },
+					{
+						status: 429,
+						headers: { 'Retry-After': '1' },
+					},
+				)
+			}
+			if (url === 'https://example.com/flaky-500') {
+				flaky500Count++
+				if (flaky500Count === 1) {
+					return Response.json({ error: 'server' }, { status: 500 })
+				}
+				return Response.json({ ok: true })
+			}
+			if (url === 'https://example.com/network-error') {
+				networkErrorCount++
+				if (networkErrorCount === 1) {
+					throw new TypeError('network error')
+				}
+				return Response.json({ ok: true })
+			}
+			if (url === 'https://example.com/bad-json') {
+				return new Response('not-json', {
+					status: 200,
+					statusText: 'OK',
+					headers: { 'Content-Type': 'application/json' },
+				})
+			}
+			throw new Error(`Unexpected fetch in test: ${url}`)
+		}),
+	)
 })
 
 test('fetchJsonWithRetryAfter waits Retry-After seconds on 429 then retries', async () => {

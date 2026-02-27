@@ -15,7 +15,7 @@ type PutAudioResult = {
 }
 
 type GetAudioStreamResult = {
-	body: Readable
+	body: ReadableStream<Uint8Array>
 }
 
 type HeadAudioResult = {
@@ -59,21 +59,6 @@ export function parseHttpByteRangeHeader(rangeHeader: string, size: number) {
 	if (start < 0 || end < start) return null
 	if (start >= size) return null
 	return { start, end: Math.min(end, size - 1) }
-}
-
-function parseBase64DataUrl(dataUrl: string): {
-	buffer: Buffer
-	contentType: string
-} {
-	// MediaRecorder often emits data URLs like:
-	// `data:audio/webm;codecs=opus;base64,...`
-	const match = dataUrl.match(/^data:(?<type>.+?);base64,(?<data>.+)$/)
-	const contentType = match?.groups?.type
-	const base64 = match?.groups?.data
-	if (!contentType || !base64) {
-		throw new Error('Invalid base64 data URL')
-	}
-	return { buffer: Buffer.from(base64, 'base64'), contentType }
 }
 
 function extFromContentType(contentType: string) {
@@ -159,10 +144,7 @@ function createR2Store({ bucket }: { bucket: string }): AudioStore {
 				}),
 			)
 			const body = res.Body
-			if (!(body instanceof Readable)) {
-				throw new Error('Unexpected R2 response body type')
-			}
-			return { body }
+			return { body: toWebReadableStream(body) }
 		},
 		async head({ key }) {
 			const res = await client.send(
@@ -205,17 +187,12 @@ export function getEpisodeDraftAudioKey(draftId: string) {
 	return `call-kent/drafts/${draftId}/episode.mp3`
 }
 
-export async function putCallAudioFromDataUrl({
-	callId,
-	dataUrl,
-}: {
-	callId: string
-	dataUrl: string
-}): Promise<PutAudioResult> {
-	const { buffer, contentType } = parseBase64DataUrl(dataUrl)
-	const { store } = getStore()
-	const key = getCallAudioKey(callId, contentType)
-	return await store.put({ key, body: buffer, contentType })
+export function getEpisodeDraftResponseAudioKey(
+	draftId: string,
+	contentType: string,
+) {
+	const ext = extFromContentType(contentType)
+	return `call-kent/drafts/${draftId}/response${ext}`
 }
 
 export async function putCallAudioFromBuffer({
@@ -244,6 +221,20 @@ export async function putEpisodeDraftAudioFromBuffer({
 	return await store.put({ key, body: mp3, contentType: 'audio/mpeg' })
 }
 
+export async function putEpisodeDraftResponseAudioFromBuffer({
+	draftId,
+	audio,
+	contentType,
+}: {
+	draftId: string
+	audio: Uint8Array
+	contentType: string
+}): Promise<PutAudioResult> {
+	const { store } = getStore()
+	const key = getEpisodeDraftResponseAudioKey(draftId, contentType)
+	return await store.put({ key, body: audio, contentType })
+}
+
 export async function getAudioStream({
 	key,
 	range,
@@ -267,11 +258,45 @@ export async function deleteAudioObject({ key }: { key: string }) {
 
 export async function getAudioBuffer({ key }: { key: string }) {
 	const { body } = await getAudioStream({ key })
-	const chunks: Buffer[] = []
-	for await (const chunk of body) {
-		chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-	}
-	return Buffer.concat(chunks)
+	return readStreamIntoBuffer(body)
 }
 
-export { parseBase64DataUrl }
+function toWebReadableStream(body: unknown): ReadableStream<Uint8Array> {
+	if (body instanceof ReadableStream) {
+		return body as ReadableStream<Uint8Array>
+	}
+	if (
+		body &&
+		typeof body === 'object' &&
+		'transformToWebStream' in body &&
+		typeof body.transformToWebStream === 'function'
+	) {
+		return body.transformToWebStream() as ReadableStream<Uint8Array>
+	}
+	if (body instanceof Readable) {
+		return Readable.toWeb(body) as ReadableStream<Uint8Array>
+	}
+	throw new Error('Unexpected R2 response body type')
+}
+
+async function readStreamIntoBuffer(stream: ReadableStream<Uint8Array>) {
+	const reader = stream.getReader()
+	const chunks: Array<Uint8Array> = []
+	let totalLength = 0
+
+	while (true) {
+		const { done, value } = await reader.read()
+		if (done) break
+		if (!value) continue
+		chunks.push(value)
+		totalLength += value.byteLength
+	}
+
+	const merged = new Uint8Array(totalLength)
+	let offset = 0
+	for (const chunk of chunks) {
+		merged.set(chunk, offset)
+		offset += chunk.byteLength
+	}
+	return Buffer.from(merged.buffer, merged.byteOffset, merged.byteLength)
+}

@@ -1,11 +1,12 @@
 import { createCookieSessionStorage, redirect } from 'react-router'
 import { z } from 'zod'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
+import { isUserAdmin } from '#app/utils/authorization.server.ts'
 import { type User } from '#app/utils/prisma-generated.server/client.ts'
 import { getEnv } from './env.server.ts'
 import {
 	createSession,
 	getUserFromSessionId,
+	normalizeUserRole,
 	prisma,
 	sessionExpirationTime,
 } from './prisma.server.ts'
@@ -58,7 +59,6 @@ async function getSession(request: Request) {
 		signOut: async () => {
 			const sessionId = getSessionId()
 			if (sessionId) {
-				await ensurePrimary()
 				unsetSessionId()
 				prisma.session
 					.delete({ where: { id: sessionId } })
@@ -108,7 +108,6 @@ async function deleteOtherSessions(request: Request) {
 		return
 	}
 	const user = await getUserFromSessionId(token)
-	await ensurePrimary()
 	await prisma.session.deleteMany({
 		where: { userId: user.id, NOT: { id: token } },
 	})
@@ -119,8 +118,9 @@ export async function getAuthInfoFromOAuthFromRequest(request: Request) {
 	if (!authHeader?.startsWith('Bearer ')) return undefined
 	const token = authHeader.slice('Bearer '.length)
 
-	const validateUrl =
-		'https://kcd-oauth-provider.kentcdodds.workers.dev/api/validate-token'
+	const oauthProviderBaseUrl =
+		getEnv().OAUTH_PROVIDER_BASE_URL ?? new URL(request.url).origin
+	const validateUrl = new URL('/api/validate-token', oauthProviderBaseUrl)
 	const resp = await fetch(validateUrl, {
 		headers: { authorization: `Bearer ${token}` },
 	})
@@ -153,7 +153,10 @@ async function getUser(
 		type: 'getAuthInfoFromOAuthFromRequest',
 	})
 	if (authInfo?.extra.userId) {
-		return prisma.user.findUnique({ where: { id: authInfo.extra.userId } })
+		const user = await prisma.user.findUnique({
+			where: { id: authInfo.extra.userId },
+		})
+		return user ? normalizeUserRole(user) : null
 	}
 	const { session } = await getSession(request)
 
@@ -173,7 +176,7 @@ async function requireAdminUser(request: Request): Promise<User> {
 		await session.signOut()
 		throw redirect('/login', { headers: await session.getHeaders() })
 	}
-	if (user.role !== 'ADMIN') {
+	if (!isUserAdmin(user)) {
 		throw redirect('/')
 	}
 	return user

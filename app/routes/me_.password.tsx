@@ -5,10 +5,10 @@ import { Grid } from '#app/components/grid.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import {
 	getPasswordHash,
 	getPasswordStrengthError,
+	isLegacyPasswordHash,
 	verifyPassword,
 } from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
@@ -35,9 +35,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
 	const password = await prisma.password.findUnique({
 		where: { userId: user.id },
-		select: { userId: true },
+		select: { hash: true },
 	})
-	return json({ hasPassword: Boolean(password) })
+	return json({
+		hasPassword: Boolean(password && !isLegacyPasswordHash(password.hash)),
+	})
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -59,7 +61,7 @@ export async function action({ request }: Route.ActionArgs) {
 		select: { hash: true },
 	})
 
-	if (existingPassword) {
+	if (existingPassword && !isLegacyPasswordHash(existingPassword.hash)) {
 		if (typeof currentPassword !== 'string' || !currentPassword) {
 			return json<ActionData>(
 				{
@@ -106,7 +108,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const passwordHash = await getPasswordHash(password)
 
-	await ensurePrimary()
 	await prisma.$transaction([
 		prisma.password.upsert({
 			where: { userId: user.id },

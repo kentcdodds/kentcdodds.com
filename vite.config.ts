@@ -79,7 +79,7 @@ export default defineConfig(async () => {
 			sourcemap: true,
 			cssMinify: MODE === 'production',
 			rollupOptions: {
-				external: [/node:.*/, 'stream', 'crypto'],
+				external: [/node:.*/, 'stream', 'crypto', /\.wasm\?module$/],
 			},
 		},
 	}

@@ -98,4 +98,26 @@ function Rendered(props) {
 	)
 }
 
-export { UsernameForm, UsernameFormClass, UsernameFormClassWithBug, Rendered }
+function updateUsernameWithDelay(username) {
+	return new Promise((resolve) => {
+		alert(`You typed ${username}! Updating the database...`)
+		setTimeout(() => resolve(), 2000)
+	})
+}
+
+function UsernameFormClassDemo() {
+	return <UsernameFormClass updateUsername={updateUsernameWithDelay} />
+}
+
+function UsernameFormClassWithBugDemo() {
+	return <UsernameFormClassWithBug updateUsername={updateUsernameWithDelay} />
+}
+
+export {
+	Rendered,
+	UsernameForm,
+	UsernameFormClass,
+	UsernameFormClassDemo,
+	UsernameFormClassWithBug,
+	UsernameFormClassWithBugDemo,
+}

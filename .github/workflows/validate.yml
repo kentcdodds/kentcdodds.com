@@ -1,0 +1,213 @@
+name: ✅ Validate
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: >-
+    validate-${{ github.event_name }}-${{ github.event.pull_request.number ||
+    github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+  BUN_VERSION: 1.3.9
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: 🧹 Lint
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🧹 Lint
+        run: bun run lint
+
+  media-references:
+    runs-on: ubuntu-latest
+    name: 🖼️ Media reference scan
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🖼️ Scan media references
+        run: bun run media:scan-legacy-references:strict
+
+  mdx-remote-compile:
+    runs-on: ubuntu-latest
+    name: 📚 mdx-remote compile dry-run
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 📚 Compile mdx-remote docs (dry-run)
+        run: bun run content:compile-mdx-remote:dry-run
+
+  mdx-remote-strict:
+    runs-on: ubuntu-latest
+    name: 📚 mdx-remote strict compatibility
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 📚 Compile mdx-remote docs (strict report)
+        run: bun run content:compile-mdx-remote:strict-report
+
+  typecheck:
+    runs-on: ubuntu-latest
+    name: 🧪 Typecheck
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🧪 Typecheck
+        run: bun run typecheck
+
+  test-backend:
+    runs-on: ubuntu-latest
+    name: ✅ Backend tests
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: ✅ Run backend tests
+        run: bun run test:backend
+
+  build:
+    runs-on: ubuntu-latest
+    name: 🏗️ Build
+    if: >-
+      github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🏗️ Build
+        run: bun run build

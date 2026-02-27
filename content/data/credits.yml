@@ -4,7 +4,7 @@
 
 # - name: Name
 #   id: name-in-kebab-case
-#   cloudinaryId: cloudinary-path (leave blank if you don't have it)
+#   imageId: cloudinary-path (leave blank if you don't have it)
 #   role: some role
 #   description: >-
 #     Summary of what they did here
@@ -17,7 +17,7 @@
 
 - name: Kent C. Dodds
   id: kent-c-dodds
-  cloudinaryId: kent/profile
+  imageId: kent/profile
   role: A bit of everything
   description: >-
     Hi! It's me. Yeah, I worked on this project too. I was the "client" for
@@ -28,7 +28,7 @@
 
 - name: Stephan Meijer
   id: stephan-meijer
-  cloudinaryId: kentcdodds.com/content/credits/stephan
+  imageId: kentcdodds.com/content/credits/stephan
   role: Design Implementation
   description: >-
     Took the designs and implemented them using Tailwind. Did a terrific job of
@@ -40,7 +40,7 @@
 
 - name: Gil Huybrecht
   id: gil-huybrecht
-  cloudinaryId: kentcdodds.com/content/credits/gil
+  imageId: kentcdodds.com/content/credits/gil
   role: Design
   description: >-
     Responsible for the overall web design and the information architecture.
@@ -53,7 +53,7 @@
 
 - name: Daniel Miller
   id: daniel-miller
-  cloudinaryId: kentcdodds.com/content/credits/daniel
+  imageId: kentcdodds.com/content/credits/daniel
   role: Project Manager
   description: >-
     Daniel managed the redesign project, acting as phone switch operator  and
@@ -63,7 +63,7 @@
 
 - name: Kevin Winzeler
   id: kevin-winzeler
-  cloudinaryId: kentcdodds.com/content/credits/kevin
+  imageId: kentcdodds.com/content/credits/kevin
   role: Video Production
   description: >-
     Kevin directed, shot, and edited Kent's bio video.
@@ -71,7 +71,7 @@
 
 - name: Haze Provinsal
   id: haze-provinsal
-  cloudinaryId: kentcdodds.com/content/credits/haze
+  imageId: kentcdodds.com/content/credits/haze
   role: Video Editing
   description: >-
     Haze did additional video editing.
@@ -79,7 +79,7 @@
 
 - name: Cree Provinsal
   id: cree-provinsal
-  cloudinaryId: kentcdodds.com/content/credits/cree
+  imageId: kentcdodds.com/content/credits/cree
   role: Podcast Production
   description: >-
     Cree helped produce and edit the new season of Chats with Kent.
@@ -87,7 +87,7 @@
 
 - name: Maggie Appleton
   id: maggie-appleton
-  cloudinaryId: kentcdodds.com/content/credits/maggie
+  imageId: kentcdodds.com/content/credits/maggie
   role: Art Direction
   description: >-
     Maggie led the production of illustrations for the site as well as  the
@@ -97,7 +97,7 @@
 
 - name: Jhey Tompkins
   id: jhey-tompkins
-  cloudinaryId: kentcdodds.com/content/credits/jhey
+  imageId: kentcdodds.com/content/credits/jhey
   role: Motion Wizard
   description: >-
     Jhey worked on making using the site visually interesting by adding motion.
@@ -111,7 +111,7 @@
 
 - name: Mohamed Chahin
   id: mohamed-chahin
-  cloudinaryId: kentcdodds.com/content/credits/mohamed
+  imageId: kentcdodds.com/content/credits/mohamed
   role: Illustration
   description: >-
     All these beautiful illustrations you see on the website were created by
@@ -122,7 +122,7 @@
 
 - name: Sean Olszewski
   id: sean-olszewski
-  cloudinaryId: kentcdodds.com/content/credits/sean-olszewski
+  imageId: kentcdodds.com/content/credits/sean-olszewski
   role: Audio Magic
   description: >-
     Sean worked on the audio for the launch video as well as the Chats with Kent
@@ -132,7 +132,7 @@
 
 - name: Daniel Nisttahuz
   id: daniel-nisttahuz
-  cloudinaryId: kentcdodds.com/content/credits/daniel-nisttahuz
+  imageId: kentcdodds.com/content/credits/daniel-nisttahuz
   role: Launch Video
   description: >-
     Daniel was the guy behind the amazing launch video.

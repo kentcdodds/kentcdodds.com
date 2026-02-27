@@ -1,13 +1,12 @@
-import { buildImageUrl } from 'cloudinary-build-url'
-import { type GitHubFile, type MdxPage } from '#app/types.ts'
-import { compileMdx } from '#app/utils/compile-mdx.server.ts'
+import { type MdxPage } from '#app/types.ts'
+import { downloadMdxFileOrDirectory } from '#app/utils/github.server.ts'
 import {
-	downloadDirList,
-	downloadMdxFileOrDirectory,
-} from '#app/utils/github.server.ts'
-import { formatDate, typedBoolean } from '#app/utils/misc.ts'
+	buildMdxPageFromRemoteDocument,
+	getMdxRemoteDirectoryEntries,
+	getMdxRemoteDocument,
+} from '#app/utils/mdx-remote-documents.server.ts'
+import { typedBoolean } from '#app/utils/misc.ts'
 import { cache, cachified } from './cache.server.ts'
-import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
 
 type CachifiedOptions = {
@@ -34,8 +33,11 @@ function applyNotFoundCacheMetadata(
 }
 
 const checkCompiledValue = (value: unknown) =>
-	typeof value === 'object' &&
-	(value === null || ('code' in value && 'frontmatter' in value))
+	value === null ||
+	(typeof value === 'object' &&
+		'code' in value &&
+		'frontmatter' in value &&
+		'remoteDocument' in value)
 
 export async function getMdxPage(
 	{
@@ -59,23 +61,15 @@ export async function getMdxPage(
 		forceFresh,
 		checkValue: checkCompiledValue,
 		getFreshValue: async (context) => {
-			const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
-			const compiledPage = await compileMdxCached({
+			const remotePage = await getMdxRemotePageCached({
 				contentDir,
 				slug,
-				...pageFiles,
 				options,
-			}).catch((err) => {
-				console.error(`Failed to get a fresh value for mdx:`, {
-					contentDir,
-					slug,
-				})
-				return Promise.reject(err)
 			})
-			if (!compiledPage) {
+			if (!remotePage) {
 				applyNotFoundCacheMetadata(context.metadata, ttl)
 			}
-			return compiledPage
+			return remotePage
 		},
 	})
 	return page
@@ -86,54 +80,79 @@ export async function getMdxPagesInDirectory(
 	options: CachifiedOptions,
 ) {
 	const dirList = await getMdxDirList(contentDir, options)
-
-	// our octokit throttle plugin will make sure we don't hit the rate limit
-	const pageDatas = await Promise.all(
-		dirList.map(async ({ slug }) => {
-			return {
-				...(await downloadMdxFilesCached(contentDir, slug, options)),
-				slug,
-			}
-		}),
-	)
-
 	const pages = await Promise.all(
-		pageDatas.map((pageData) =>
-			compileMdxCached({ contentDir, ...pageData, options }),
-		),
+		dirList.map(async ({ slug }) => {
+			return getMdxRemotePageCached({
+				contentDir,
+				slug,
+				options,
+			})
+		}),
 	)
 	return pages.filter(typedBoolean)
 }
-
-const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
 export async function getMdxDirList(
 	contentDir: string,
 	options?: CachifiedOptions,
 ) {
-	const { forceFresh, ttl = defaultTTL, request, timings } = options ?? {}
-	const key = getDirListKey(contentDir)
+	const remoteDirList = await getMdxRemoteDirListCached({
+		contentDir,
+		options: options ?? {},
+	})
+	return remoteDirList ?? []
+}
+
+async function getMdxRemotePageCached({
+	contentDir,
+	slug,
+	options,
+}: {
+	contentDir: string
+	slug: string
+	options: CachifiedOptions
+}) {
+	const { forceFresh, ttl = defaultTTL, request, timings } = options
 	return cachified({
+		key: `${contentDir}:${slug}:compiled:remote`,
 		cache,
 		request,
 		timings,
 		ttl,
 		staleWhileRevalidate: defaultStaleWhileRevalidate,
 		forceFresh,
-		key,
+		checkValue: checkCompiledValue,
+		getFreshValue: async () => {
+			const remoteDocument = await getMdxRemoteDocument({ contentDir, slug })
+			if (!remoteDocument) return null
+			return buildMdxPageFromRemoteDocument({
+				contentDir,
+				slug,
+				document: remoteDocument,
+			})
+		},
+	})
+}
+
+async function getMdxRemoteDirListCached({
+	contentDir,
+	options,
+}: {
+	contentDir: string
+	options: CachifiedOptions
+}) {
+	const { forceFresh, ttl = defaultTTL, request, timings } = options
+	return cachified({
+		key: `${contentDir}:dir-list:remote`,
+		cache,
+		request,
+		timings,
+		ttl,
+		staleWhileRevalidate: defaultStaleWhileRevalidate,
+		forceFresh,
 		checkValue: (value: unknown) => Array.isArray(value),
 		getFreshValue: async () => {
-			const fullContentDirPath = `content/${contentDir}`
-			const dirList = (await downloadDirList(fullContentDirPath))
-				.map(({ name, path }) => ({
-					name,
-					slug: path
-						.replace(/\\/g, '/')
-						.replace(`${fullContentDirPath}/`, '')
-						.replace(/\.mdx$/, ''),
-				}))
-				.filter(({ name }) => name !== 'README.md')
-			return dirList
+			return (await getMdxRemoteDirectoryEntries(contentDir)) ?? []
 		},
 	})
 }
@@ -210,101 +229,4 @@ export async function downloadMdxFilesCached(
 		},
 	})
 	return downloaded
-}
-
-async function compileMdxCached({
-	contentDir,
-	slug,
-	entry,
-	files,
-	options,
-}: {
-	contentDir: string
-	slug: string
-	entry: string
-	files: Array<GitHubFile>
-	options: CachifiedOptions
-}) {
-	const { ttl = defaultTTL } = options
-	const key = `${contentDir}:${slug}:compiled`
-	const page = await cachified({
-		cache,
-		ttl: defaultTTL,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		...options,
-		key,
-		checkValue: checkCompiledValue,
-		getFreshValue: async (context) => {
-			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
-			if (compiledPage) {
-				if (
-					compiledPage.frontmatter.bannerCloudinaryId &&
-					!compiledPage.frontmatter.bannerBlurDataUrl
-				) {
-					try {
-						compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
-							compiledPage.frontmatter.bannerCloudinaryId,
-						)
-					} catch (error: unknown) {
-						console.error(
-							'oh no, there was an error getting the blur image data url',
-							error,
-						)
-					}
-				}
-				if (compiledPage.frontmatter.bannerCredit) {
-					const credit = await markdownToHtmlUnwrapped(
-						compiledPage.frontmatter.bannerCredit,
-					)
-					compiledPage.frontmatter.bannerCredit = credit
-					const noHtml = await stripHtml(credit)
-					if (!compiledPage.frontmatter.bannerAlt) {
-						compiledPage.frontmatter.bannerAlt = noHtml
-							.replace(/(photo|image)/i, '')
-							.trim()
-					}
-					if (!compiledPage.frontmatter.bannerTitle) {
-						compiledPage.frontmatter.bannerTitle = noHtml
-					}
-				}
-				return {
-					dateDisplay: compiledPage.frontmatter.date
-						? formatDate(compiledPage.frontmatter.date)
-						: undefined,
-					...compiledPage,
-					slug,
-					editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
-				}
-			} else {
-				applyNotFoundCacheMetadata(context.metadata, ttl)
-				return null
-			}
-		},
-	})
-	return page
-}
-
-async function getBlurDataUrl(cloudinaryId: string) {
-	const imageURL = buildImageUrl(cloudinaryId, {
-		transformations: {
-			resize: { width: 100 },
-			quality: 'auto',
-			format: 'webp',
-			effect: {
-				name: 'blur',
-				value: '1000',
-			},
-		},
-	})
-	const dataUrl = await getDataUrlForImage(imageURL)
-	return dataUrl
-}
-
-async function getDataUrlForImage(imageUrl: string) {
-	const res = await fetch(imageUrl)
-	const arrayBuffer = await res.arrayBuffer()
-	const base64 = Buffer.from(arrayBuffer).toString('base64')
-	const mime = res.headers.get('Content-Type') ?? 'image/webp'
-	const dataUrl = `data:${mime};base64,${base64}`
-	return dataUrl
 }

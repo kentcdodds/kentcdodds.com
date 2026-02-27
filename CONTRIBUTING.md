@@ -60,7 +60,8 @@ instructions:
 
 ### System Requirements
 
-- [Node.js](https://nodejs.org/) >= 16.0.0
+- [Bun](https://bun.sh/) >= 1.3.9
+- [Node.js](https://nodejs.org/) >= 24.0.0
 - [git](https://git-scm.com/) >= 2.7.0
 - [Docker](https://www.docker.com/)
 
@@ -68,7 +69,7 @@ instructions:
 
 1.  Fork and clone the repo
 2.  Copy `.env.example` into `.env`
-3.  Run `npm run setup -s` to install dependencies and run validation
+3.  Run `bun run setup -s` to install dependencies and run validation
 4.  Create a branch for your PR with `git checkout -b pr/your-branch-name`
 
 > Tip: Keep your `main` branch pointing at the original repository and make pull
@@ -98,29 +99,29 @@ cd ./kentcdodds.com
 cp .env.example .env
 
 # Install deps
-npm install
+bun install
 
 # setup database
 prisma migrate reset --force
 
 # run build, typecheck, linting
-npm run validate
+bun run validate
 
 # setup cache database
-npm run prime-cache:mocks
+bun run prime-cache:mocks
 
 # Install playwright browsers
-npm run test:e2e:install
+bun run test:e2e:install
 
 # run e2e tests
-npm run test:e2e:run
+bun run test:e2e:run
 ```
 
 If that all worked without trouble, you should be able to start development
 with:
 
 ```sh
-npm run dev
+bun run dev
 ```
 
 And open up `http://localhost:3000` and rock!
@@ -129,7 +130,7 @@ And open up `http://localhost:3000` and rock!
 
 Everything's mocked locally so you should be able to work completely offline.
 The DB runs locally, but all third party endpoints are mocked out via
-[`MSW`](https://mswjs.io/).
+Worker mock servers in `mock-servers/**`.
 
 ## Caching
 
@@ -147,13 +148,13 @@ with Playwright.
 
 ```sh
 # run the unit and component tests with jest via:
-npm run test
+bun run test
 
 # run the Playwright tests in dev mode:
-npm run test:e2e:dev
+bun run test:e2e:dev
 
 # run the Playwright tests in headless mode:
-npm run test:e2e:run
+bun run test:e2e:run
 ```
 
 ## Running static tests (Formatting/Linting/Typing)
@@ -163,9 +164,9 @@ commit (only relevant files are checked). You can run them individually though
 if you want:
 
 ```sh
-npm run format
-npm run lint
-npm run typecheck
+bun run format
+bun run lint
+bun run typecheck
 ```
 
 These are all configured in the project to hopefully work with whatever editor
@@ -185,213 +186,32 @@ what commands you can run in `./prisma/schema.prisma`.
 One common command you might need to run is to re-seed the database:
 
 ```sh
-npx prisma@7 migrate reset --force
+bunx prisma@7 migrate reset --force
 ```
 
 In addition to resetting your database to the latest schema, it'll also run the
 seed script which will populate the database with some example data.
 
-## Maintenance Tips
+## Maintenance tips
 
-### Backup the database
+The production platform is Cloudflare Workers + D1 + KV + Queues + container
+helpers. For operational procedures, use these runbooks:
 
-```sh
-fly ssh console -C bash -s
-# select a specific instance
+- `docs/cloudflare-cutover-runbook.md`
+- `docs/call-kent-container-runbook.md`
 
-# make a backup of the database
-cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db.bkp
-
-# do an integrity check
-sqlite3 /data/sqlite.db.bkp "PRAGMA integrity_check;"
-
-# make a gzip copy so it downloads faster
-gzip -c /data/sqlite.db.bkp > /data/sqlite.db.bkp.gz
-```
-
-In another tab, download that backup:
+Useful commands for local verification:
 
 ```sh
-fly sftp get -s /data/sqlite.db.bkp.gz ./sqlite.db.bkp.gz
-# select the same instance as above
+# queue + mock container stack
+bun run dev:calls-e2e
+
+# queue + real local ffmpeg container stack
+bun run dev:calls-e2e:real-container
+
+# strict content compile report (CI parity)
+bun run content:compile-mdx-remote:strict-report
 ```
-
-### Handle LiteFS checksum errors
-
-We use LiteFS to proxy the file system for SQLite for multi-regional SQLite. If
-things go wrong, this is what you do. First, backup the database, then scale
-down to a single region (one that's a primary candidate):
-
-```sh
-fly scale count 1
-```
-
-Then delete the litefs database and import the backup:
-
-```sh
-# ssh into fly console
-fly ssh console -C bash -s
-
-# delete the litefs database
-rm -rf /data/litefs/dbs/sqlite.db
-# import the backup
-litefs import -name sqlite.db /data/sqlite.db.bkp
-```
-
-Then you should be good to go again.
-
-### Disabling LiteFS
-
-If LiteFS is giving you grief. Then you may want to disable it. To do that,
-first backup the database.
-
-In one terminal, ssh into fly:
-
-```sh
-fly ssh console -C bash
-
-# make a copy of the database
-cp /data/litefs/dbs/sqlite.db/database /data/sqlite.db
-
-# do an integrity check
-sqlite3 /data/sqlite.db "PRAGMA integrity_check;"
-```
-
-Then make sure to scale down to a single region:
-
-```sh
-fly vol list
-# grab the ID for all but the primary you want to keep
-fly vol delete {id}
-fly scale count 1
-```
-
-Copy the sqlite database and the cache database to `/data/litefs-disabled`:
-
-```sh
-fly ssh console -C bash
-
-cp /data/litefs/dbs/sqlite.db/database /data/litefs-disabled/sqlite.db
-cp /data/litefs/dbs/cache.db/database /data/litefs-disabled/cache.db
-```
-
-Update the Dockerfile:
-
-```Dockerfile
-# TODO: enable litefs
-# ENV LITEFS_DIR="/litefs"
-ENV LITEFS_DIR="/data/litefs-disabled"
-
-...
-
-# TODO: enable litefs proxy
-# ENV PORT="8081"
-ENV PORT="8080"
-
-...
-
-# TODO: enable litefs
-# COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
-# ADD other/litefs.yml /etc/litefs.yml
-# RUN mkdir -p /data ${LITEFS_DIR}
-
-# CMD ["litefs", "mount"]
-CMD ["npm", "start"]
-```
-
-> NOTE: this will **not** run migrations or setup the swap file like it does in
-> the current startup process. But hopefully what you're doing is temporary
-> anyway.
-
-And disable the litefs proxy healthcheck in `fly.toml`:
-
-```toml
-# TODO: enable litefs proxy
-#   [[services.http_checks]]
-#     grace_period = "10s"
-#     interval = "30s"
-#     method = "GET"
-#     timeout = "5s"
-#     path = "/litefs/health"
-```
-
-Then push that to fly.
-
-You'll lose any data created between when you did the backup and when the deploy
-finishes, but hopefully you won't have LiteFS issues.
-
-### Adding more regions
-
-When doing stuff like this it's not a bad idea to do a database backup first
-(even though Fly backs-up your volumes daily for you).
-
-Even though fly has a specific command for adding and removing regions, when
-regions have volumes, you instead control the regions by adding more volumes to
-specific regions and then scaling up. For example:
-
-```sh
-fly vol create data --size 3 --region ams
-fly scale count 2
-```
-
-For this app, avoid bringing up many regions simultaneously. Prefer cloning one
-machine at a time from the current primary and waiting for checks to pass
-before adding the next region:
-
-```sh
-fly machine clone <PRIMARY_MACHINE_ID> -a kcd --region <REGION>
-fly machine status <NEW_MACHINE_ID> -a kcd
-fly checks list -a kcd
-```
-
-### Removing regions
-
-Similar to adding regions, maybe backup the data.
-
-First, you should know which volume is the current primary region. It's kinda
-hard to tell without SSH-ing into the boxes and looking for the `.primary` file,
-but instead you can hit the site and check the `x-fly-primary-instance` header
-which will be the hostname of the primary instance. Just make sure you don't
-take that one down. If you need to change the primary, make sure to update
-`litefs.yml` first so another region can take over as candidate.
-
-Now that you know the volume you _don't_ want to delete, run:
-
-```sh
-fly vol list
-```
-
-That'll show you all the volumes, then run:
-
-```sh
-fly vol destroy <VOL_ID>
-```
-
-And when you're finished, scale down to the number of volumes you have:
-
-```sh
-fly scale count <COUNT>
-```
-
-If cleanup leaves any machines in a non-started state, destroy them:
-
-```sh
-for id in $(fly m list -a kcd --json | jq -r '.[] | select(.state != "started") | .id'); do
-  fly machine destroy "$id" -a kcd --force
-done
-```
-
-After removing regions, also clean up unattached volumes in those regions so
-you are not paying for orphaned storage:
-
-```sh
-for id in $(fly vol list -a kcd --json | jq -r '.[] | select(.attached_machine_id == null and (.region=="jnb" or .region=="ams" or .region=="sin" or .region=="bom" or .region=="syd" or .region=="cdg")) | .id'); do
-  fly vol destroy "$id" -a kcd --yes
-done
-```
-
-Run `fly vol list -a kcd` first and do not delete volumes attached to active
-machines.
 
 ## Help needed
 

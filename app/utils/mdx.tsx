@@ -1,8 +1,45 @@
-import { LRUCache } from 'lru-cache'
-import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { type MetaFunction } from 'react-router'
-import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
+import {
+	Add,
+	AddWithInput,
+	BadApp,
+	BoundaryApp,
+	BrokenContact,
+	BugReproduced,
+	CandyDispenser,
+	CounterParent,
+	DelayedCounterBug,
+	DelayedCounterWorking,
+	Example,
+	FastApp,
+	FinishedCounter,
+	FixedBugApp,
+	GoodApp,
+	HiddenBugApp,
+	InitialCounterAlmostThere,
+	KeyPropReset,
+	Layout,
+	Login,
+	Poll,
+	RecoveryApp,
+	Rendered,
+	RevealedBugApp,
+	SimpleCounter,
+	SlowRenderCounter,
+	StateColocationApp,
+	TheSpectrumOfAbstraction,
+	TryCatchApp,
+	UseUndoExample,
+	UserProfileExample,
+	UsernameForm,
+	UsernameFormClass,
+	UsernameFormClassDemo,
+	UsernameFormClassWithBug,
+	UsernameFormClassWithBugDemo,
+	WorkingContact,
+} from '#app/components/mdx-legacy-examples.tsx'
+import { MediaVideo } from '#app/components/media-video.tsx'
 import { MermaidDiagram } from '#app/components/mermaid.tsx'
 import {
 	getImageBuilder,
@@ -10,6 +47,11 @@ import {
 	getSocialImageWithPreTitle,
 } from '#app/images.tsx'
 import { KitForm } from '#app/kit/form.tsx'
+import {
+	createMdxRemoteRuntimeContext,
+	renderMdxRemoteDocument,
+	type MdxRemoteDocument,
+} from '#app/mdx-remote/index.ts'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type MdxPage } from '#app/types.ts'
 import {
@@ -76,7 +118,7 @@ const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
 				image: getSocialImageWithPreTitle({
 					url: getDisplayUrl(requestInfo),
 					featuredImage:
-						data.page.frontmatter.bannerCloudinaryId ??
+						data.page.frontmatter.bannerImageId ??
 						'kentcdodds.com/illustrations/kody-flying_blue',
 					title:
 						data.page.frontmatter.socialImageTitle ??
@@ -122,12 +164,55 @@ const mdxComponents = {
 	a: AnchorOrLink,
 	table: MdxTable,
 	Themed,
-	CloudinaryVideo,
+	MediaVideo,
 	MermaidDiagram,
 	ThemedBlogImage,
 	BlogImage,
 	SubscribeForm,
 	OptionalUser,
+	Rendered,
+	Layout,
+	UsernameForm,
+	UsernameFormClass,
+	UsernameFormClassDemo,
+	UsernameFormClassWithBug,
+	UsernameFormClassWithBugDemo,
+	TryCatchApp,
+	BoundaryApp,
+	RecoveryApp,
+	Example,
+	HiddenBugApp,
+	RevealedBugApp,
+	FixedBugApp,
+	DelayedCounterBug,
+	DelayedCounterWorking,
+	CandyDispenser,
+	Poll,
+	WorkingContact,
+	BrokenContact,
+	CounterParent,
+	TheSpectrumOfAbstraction,
+	Add,
+	AddWithInput,
+	UserProfileExample,
+	Login,
+	SimpleCounter,
+	InitialCounterAlmostThere,
+	BugReproduced,
+	FinishedCounter,
+	KeyPropReset,
+	Counter: SlowRenderCounter,
+	App: StateColocationApp,
+	FastApp,
+	UseUndoExample,
+	'Comps.Rendered': Rendered,
+	'Comps.BadApp': BadApp,
+	'Comps.GoodApp': GoodApp,
+	'C.SimpleCounter': SimpleCounter,
+	'C.InitialCounterAlmostThere': InitialCounterAlmostThere,
+	'C.BugReproduced': BugReproduced,
+	'C.FinishedCounter': FinishedCounter,
+	'C.KeyPropReset': KeyPropReset,
 }
 
 declare global {
@@ -151,30 +236,46 @@ declare module 'react' {
 	}
 }
 
-/**
- * This should be rendered within a useMemo
- * @param code the code to get the component from
- * @returns the component
- */
-function getMdxComponent(code: string) {
-	const Component = mdxBundler.getMDXComponent(code)
-	function KCDMdxComponent({
+function getMdxRemoteComponent(
+	document: MdxRemoteDocument<Record<string, unknown>>,
+	{
+		user,
+	}: {
+		user: ReturnType<typeof useOptionalUser>
+	},
+) {
+	function KCDMdxRemoteComponent({
 		components,
-		...rest
-	}: Parameters<typeof Component>['0']) {
+	}: {
+		components?: Record<string, React.ComponentType<any>>
+	}) {
 		return (
-			<Component components={{ ...mdxComponents, ...components }} {...rest} />
+			<>
+				{renderMdxRemoteDocument({
+					document: document as MdxRemoteDocument<Record<string, unknown>>,
+					context: createMdxRemoteRuntimeContext({
+						scope: {
+							user,
+							frontmatter: document.frontmatter,
+						},
+					}),
+					components: {
+						...mdxComponents,
+						...(components ?? {}),
+					},
+				})}
+			</>
 		)
 	}
-	return KCDMdxComponent
+	return KCDMdxRemoteComponent
 }
 
 function BlogImage({
-	cloudinaryId,
+	imageId,
 	imgProps,
 	transparentBackground,
 }: {
-	cloudinaryId: string
+	imageId: string
 	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
@@ -182,7 +283,7 @@ function BlogImage({
 		<img
 			// @ts-expect-error classname is overridden by getImgProps
 			className="w-full rounded-lg object-cover py-8"
-			{...getImgProps(getImageBuilder(cloudinaryId, imgProps.alt), {
+			{...getImgProps(getImageBuilder(imageId, imgProps.alt), {
 				widths: [350, 550, 700, 845, 1250, 1700, 2550],
 				sizes: [
 					'(max-width:1023px) 80vw',
@@ -199,13 +300,13 @@ function BlogImage({
 }
 
 function ThemedBlogImage({
-	darkCloudinaryId,
-	lightCloudinaryId,
+	darkImageId,
+	lightImageId,
 	imgProps,
 	transparentBackground,
 }: {
-	darkCloudinaryId: string
-	lightCloudinaryId: string
+	darkImageId: string
+	lightImageId: string
 	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
@@ -213,14 +314,14 @@ function ThemedBlogImage({
 		<Themed
 			light={
 				<BlogImage
-					cloudinaryId={lightCloudinaryId}
+					imageId={lightImageId}
 					imgProps={imgProps}
 					transparentBackground={transparentBackground}
 				/>
 			}
 			dark={
 				<BlogImage
-					cloudinaryId={darkCloudinaryId}
+					imageId={darkImageId}
 					imgProps={imgProps}
 					transparentBackground={transparentBackground}
 				/>
@@ -251,24 +352,17 @@ function SubscribeForm(props: Record<string, unknown>) {
 	)
 }
 
-// This exists so we don't have to call new Function for the given code
-// for every request for a given blog post/mdx file.
-const mdxComponentCache = new LRUCache<
-	string,
-	ReturnType<typeof getMdxComponent>
->({
-	max: 1000,
-})
+function useMdxComponent(
+	input: {
+		remoteDocument: MdxRemoteDocument<Record<string, unknown>>
+	},
+) {
+	const { remoteDocument } = input
+	const user = useOptionalUser()
 
-function useMdxComponent(code: string) {
 	return React.useMemo(() => {
-		if (mdxComponentCache.has(code)) {
-			return mdxComponentCache.get(code)!
-		}
-		const component = getMdxComponent(code)
-		mdxComponentCache.set(code, component)
-		return component
-	}, [code])
+		return getMdxRemoteComponent(remoteDocument, { user })
+	}, [remoteDocument, user])
 }
 
 export { getBannerAltProp, getBannerTitleProp, mdxPageMeta, useMdxComponent }

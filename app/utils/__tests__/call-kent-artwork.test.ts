@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { getCallKentEpisodeArtworkUrl } from '../call-kent-artwork.ts'
 
 describe('getCallKentEpisodeArtworkUrl', () => {
-	test('double-encodes title and scales to requested output size', () => {
+	test('returns artwork endpoint with requested output size', () => {
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Hello world',
 			url: 'kentcdodds.com/calls/01/01',
@@ -12,14 +12,14 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			size: 900,
 		})
 
-		// Layout is composed at 3000, then scaled for preview sizes.
-		expect(url).toContain('$th_3000,$tw_3000')
-		expect(url).toContain('c_scale,w_900,h_900')
-		// "Hello world" => "Hello%20world" => "Hello%2520world"
-		expect(url).toContain('Hello%2520world')
+		const parsed = new URL(url)
+		expect(parsed.pathname).toBe('/artwork/call-kent.png')
+		expect(parsed.searchParams.get('title')).toBe('Hello world')
+		expect(parsed.searchParams.get('size')).toBe('900')
+		expect(parsed.searchParams.get('designSize')).toBe('3000')
 	})
 
-	test('adds r_max when avatarIsRound is true', () => {
+	test('marks avatar as round when avatarIsRound is true', () => {
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',
@@ -27,10 +27,11 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			avatar: { kind: 'fetch', url: 'https://example.com/avatar.png' },
 			avatarIsRound: true,
 		})
-		expect(url).toContain('c_crop,r_max')
+		const parsed = new URL(url)
+		expect(parsed.searchParams.get('avatarRound')).toBe('1')
 	})
 
-	test('omits r_max when avatarIsRound is false', () => {
+	test('marks avatar as non-round when avatarIsRound is false', () => {
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',
@@ -38,13 +39,12 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			avatar: { kind: 'fetch', url: 'https://example.com/avatar.png' },
 			avatarIsRound: false,
 		})
-		expect(url).toContain('c_crop,g_north_west')
-		expect(url).not.toContain('r_max')
+		const parsed = new URL(url)
+		expect(parsed.searchParams.get('avatarRound')).toBe('0')
 	})
 
-	test('encodes fetch avatar URL into l_fetch', () => {
+	test('stores fetch avatar URL when avatar kind is fetch', () => {
 		const fetchUrl = 'https://example.com/avatar.png'
-		const expectedBase64 = Buffer.from(fetchUrl).toString('base64')
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',
@@ -52,23 +52,25 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 			avatar: { kind: 'fetch', url: fetchUrl },
 			avatarIsRound: false,
 		})
-		expect(url).toContain(`l_fetch:${encodeURIComponent(expectedBase64)}`)
+		const parsed = new URL(url)
+		expect(parsed.searchParams.get('avatarKind')).toBe('fetch')
+		expect(parsed.searchParams.get('avatar')).toBe(fetchUrl)
 	})
 
-	test('uses publicId overlays without l_fetch', () => {
+	test('stores public avatar id when avatar kind is public', () => {
+		const publicId = 'kentcdodds.com/illustrations/kody/kody_profile_gray'
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',
 			name: '- Alice',
 			avatar: {
 				kind: 'public',
-				publicId: 'kentcdodds.com/illustrations/kody/kody_profile_gray',
+				publicId,
 			},
 			avatarIsRound: false,
 		})
-		expect(url).toContain(
-			'l_kentcdodds.com:illustrations:kody:kody_profile_gray',
-		)
-		expect(url).not.toContain('l_fetch:')
+		const parsed = new URL(url)
+		expect(parsed.searchParams.get('avatarKind')).toBe('public')
+		expect(parsed.searchParams.get('avatar')).toBe(publicId)
 	})
 })

@@ -9,7 +9,6 @@ import {
 } from '@react-router/express'
 import {
 	init as sentryInit,
-	setContext as sentrySetContext,
 } from '@sentry/react-router'
 import { ip as ipAddress } from 'address'
 import chalk from 'chalk'
@@ -25,8 +24,9 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
-import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
-import { scheduleExpiredDataCleanup } from './expired-sessions-cleanup.js'
+import { getLocalCallKentFfmpegBinding } from '../app/utils/local-call-kent-ffmpeg-binding.server.ts'
+import { getLocalMdxRemoteKvBinding } from '../app/utils/local-mdx-remote-kv.server.ts'
+import { setRuntimeBindingSource } from '../app/utils/runtime-bindings.server.ts'
 import { createRateLimitingMiddleware } from './rate-limiting.js'
 import {
 	getRedirectsMiddleware,
@@ -39,6 +39,12 @@ sourceMapSupport.install()
 
 const env = getEnv()
 const MODE = env.NODE_ENV
+const localDevCspSources =
+	MODE === 'development' ? ['http://127.0.0.1:*', 'http://localhost:*'] : []
+setRuntimeBindingSource({
+	CALL_KENT_FFMPEG: getLocalCallKentFfmpegBinding,
+	MDX_REMOTE_KV: getLocalMdxRemoteKvBinding,
+})
 
 const viteDevServer =
 	MODE === 'production'
@@ -85,14 +91,10 @@ if (SHOULD_INIT_SENTRY) {
 		tracesSampleRate: 0.3,
 		environment: env.NODE_ENV,
 	})
-	sentrySetContext('fly', {
-		region: env.FLY_REGION,
-		machineId: env.FLY_MACHINE_ID,
-	})
 }
 
 const app = express()
-// fly is our proxy
+// Cloudflare/front-proxy sits in front of the app runtime.
 app.set('trust proxy', true)
 app.use(serverTiming())
 
@@ -108,13 +110,6 @@ const startServerMetric = (
 ) => {
 	res.startTime?.(name, description)
 }
-
-const endServerMetric = (res: ServerTimingResponse, name: string) => {
-	res.endTime?.(name)
-}
-
-const expiredDataCleanup = scheduleExpiredDataCleanup()
-
 app.get('/img/social', oldImgSocial)
 
 // TODO: remove this once all clients are updated
@@ -124,33 +119,19 @@ app.post('/__metronome', (req: any, res: any) => {
 })
 
 app.use((req, res, next) => {
-	const metricName = 'middleware-get-instance-info'
-	startServerMetric(res, metricName, 'populate fly response headers')
-	getInstanceInfo()
-		.then(({ currentInstance, primaryInstance }) => {
-			res.set('X-Powered-By', 'Kody the Koala')
-			res.set('X-Fly-Region', env.FLY_REGION)
-			res.set('X-Fly-App', env.FLY_APP_NAME)
-			res.set('X-Fly-Instance', currentInstance)
-			res.set('X-Fly-Primary-Instance', primaryInstance)
-			res.set('X-Frame-Options', 'SAMEORIGIN')
-			const proto = req.get('X-Forwarded-Proto') ?? req.protocol
+	res.set('X-Powered-By', 'Kody the Koala')
+	res.set('X-Frame-Options', 'SAMEORIGIN')
+	const proto = req.get('X-Forwarded-Proto') ?? req.protocol
 
-			const host = getHost(req)
-			if (!host.endsWith(primaryHost)) {
-				res.set('X-Robots-Tag', 'noindex')
-			}
-			res.set('Access-Control-Allow-Origin', `${proto}://${host}`)
+	const host = getHost(req)
+	if (!host.endsWith(primaryHost)) {
+		res.set('X-Robots-Tag', 'noindex')
+	}
+	res.set('Access-Control-Allow-Origin', `${proto}://${host}`)
 
-			// if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
-			res.set(
-				'Strict-Transport-Security',
-				`max-age=${60 * 60 * 24 * 365 * 100}`,
-			)
-		})
-		.then(() => next())
-		.catch(next)
-		.finally(() => endServerMetric(res, metricName))
+	// if they connect once with HTTPS, then they'll connect with HTTPS for the next hundred years
+	res.set('Strict-Transport-Security', `max-age=${60 * 60 * 24 * 365 * 100}`)
+	next()
 })
 
 app.use((req, res, next) => {
@@ -293,6 +274,7 @@ app.use(
 				'connect-src': [
 					...(MODE === 'development' ? ['ws:'] : []),
 					"'self'",
+					...localDevCspSources,
 				].filter(Boolean),
 				'font-src': ["'self'"],
 				'frame-src': [
@@ -313,7 +295,8 @@ app.use(
 				'img-src': [
 					"'self'",
 					'data:',
-					'res.cloudinary.com',
+					'media.kcd.dev',
+					'media.kentcdodds.com',
 					'www.gravatar.com',
 					'cdn.usefathom.com',
 					'pbs.twimg.com',
@@ -332,14 +315,17 @@ app.use(
 					...(MODE === 'development'
 						? ['cloudflare-ipfs.com', 'cdn.jsdelivr.net']
 						: []),
+					...localDevCspSources,
 				],
 				'media-src': [
 					"'self'",
-					'res.cloudinary.com',
+					'media.kcd.dev',
+					'media.kentcdodds.com',
 					'data:',
 					'blob:',
 					'www.dropbox.com',
 					'*.dropboxusercontent.com',
+					...localDevCspSources,
 				],
 				'script-src': [
 					"'strict-dynamic'",
@@ -504,7 +490,6 @@ if (MODE === 'development') {
 
 closeWithGrace(() => {
 	return Promise.all([
-		expiredDataCleanup.stop(),
 		new Promise((resolve, reject) => {
 			server.close((e) => (e ? reject(e) : resolve('ok')))
 		}),

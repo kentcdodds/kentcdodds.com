@@ -17,7 +17,7 @@ meta:
     - state initialization
     - reset state
     - key prop
-bannerCloudinaryId: unsplash/photo-1455612693675-112974d4880b
+bannerImageId: unsplash/photo-1455612693675-112974d4880b
 bannerAlt: white abstract geometric artwork
 bannerCredit: Photo by [Silvio Kundt](https://unsplash.com/photos/Fixg8KipOg8)
 translations:
@@ -192,11 +192,11 @@ Check out the impact of the `key` approach on that:
 
 **With the key reset approach** (notice there's no animation):
 
-[![Clicking a toggle component, then a reset button which shows no animation on reset](https://res.cloudinary.com/kentcdodds-com/image/upload/v1636121505/kentcdodds.com/content/blog/the-state-initializer-pattern/key-reset.gif)](https://advanced-react-patterns-next.netlify.app/isolated/examples/resetting-via-key-prop.tsx)
+[![Clicking a toggle component, then a reset button which shows no animation on reset](/media/blog/the-state-initializer-pattern/key-reset.gif?tr=f_auto,q_auto,w_1600)](https://advanced-react-patterns-next.netlify.app/isolated/examples/resetting-via-key-prop.tsx)
 
 **With the state initializer pattern** (notice there is an animation):
 
-[![Clicking a toggle component, then a reset button which shows no animation on reset](https://res.cloudinary.com/kentcdodds-com/image/upload/v1636121497/kentcdodds.com/content/blog/the-state-initializer-pattern/state-initializer-pattern.gif)](https://advanced-react-patterns-next.netlify.app/isolated/final/05.extra-1.tsx)
+[![Clicking a toggle component, then a reset button which shows no animation on reset](/media/blog/the-state-initializer-pattern/state-initializer-pattern.gif?tr=f_auto,q_auto,w_1600)](https://advanced-react-patterns-next.netlify.app/isolated/final/05.extra-1.tsx)
 
 Also unmounting and remounting components will call `useEffect` cleanups and
 callbacks as well. That might be what you want, but it might not be.

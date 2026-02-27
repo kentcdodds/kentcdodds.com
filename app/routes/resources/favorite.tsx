@@ -195,12 +195,11 @@ export function FavoriteToggle({
 }
 
 async function getFavoritesServerServices() {
-	const [{ prisma }, { ensurePrimary }, { getUser }] = await Promise.all([
+	const [{ prisma }, { getUser }] = await Promise.all([
 		import('#app/utils/prisma.server.ts'),
-		import('#app/utils/litefs-js.server.ts'),
 		import('#app/utils/session.server.ts'),
 	])
-	return { prisma, ensurePrimary, getUser }
+	return { prisma, getUser }
 }
 
 const FavoriteFormSchema = z.object({
@@ -210,7 +209,7 @@ const FavoriteFormSchema = z.object({
 })
 
 export async function action({ request }: Route.ActionArgs) {
-	const { prisma, ensurePrimary, getUser } = await getFavoritesServerServices()
+	const { prisma, getUser } = await getFavoritesServerServices()
 
 	const user = await getUser(request)
 	if (!user) {
@@ -240,8 +239,6 @@ export async function action({ request }: Route.ActionArgs) {
 			})
 		}
 	}
-
-	await ensurePrimary()
 
 	const where = { userId: user.id, contentType, contentId }
 

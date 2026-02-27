@@ -1,6 +1,8 @@
 import crypto from 'node:crypto'
-import bcrypt from 'bcrypt'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
+import {
+	getVerificationCodeHash,
+	verifyVerificationCode,
+} from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 
 const VERIFICATION_CODE_DIGITS = 6
@@ -25,10 +27,9 @@ export async function createVerification({
 	target: string
 }) {
 	const code = generateVerificationCode()
-	const codeHash = await bcrypt.hash(code, 10)
+	const codeHash = await getVerificationCodeHash(code)
 	const expiresAt = new Date(Date.now() + VERIFICATION_CODE_MAX_AGE_MS)
 
-	await ensurePrimary()
 	const verification = await prisma.verification.create({
 		data: {
 			type,
@@ -66,10 +67,12 @@ export async function consumeVerification({
 	if (verification.type !== type) return null
 	if (Date.now() > verification.expiresAt.getTime()) return null
 
-	const isValid = await bcrypt.compare(code, verification.codeHash)
+	const isValid = await verifyVerificationCode({
+		code,
+		hash: verification.codeHash,
+	})
 	if (!isValid) return null
 
-	await ensurePrimary()
 	try {
 		await prisma.verification.delete({ where: { id: verification.id } })
 	} catch (error: unknown) {
@@ -114,10 +117,12 @@ export async function consumeVerificationForTarget({
 	})
 	if (!verification) return null
 
-	const isValid = await bcrypt.compare(code, verification.codeHash)
+	const isValid = await verifyVerificationCode({
+		code,
+		hash: verification.codeHash,
+	})
 	if (!isValid) return null
 
-	await ensurePrimary()
 	try {
 		await prisma.verification.delete({ where: { id: verification.id } })
 	} catch (error: unknown) {

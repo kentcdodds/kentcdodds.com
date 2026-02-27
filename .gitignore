@@ -23,6 +23,7 @@ other/postcss.ignored
 /playwright-report/
 /playwright/.cache/
 /other/cache.db
+/other/content/mdx-remote/
 
 *.bkp.*
 
@@ -32,3 +33,16 @@ other/postcss.ignored
 .wrangler
 other/wrangler-logs/
 .react-router/
+.local/mock-r2-cache/
+content/**/*.png
+content/**/*.jpg
+content/**/*.jpeg
+content/**/*.gif
+content/**/*.webp
+content/**/*.avif
+content/**/*.svg
+content/**/*.ico
+content/**/*.mp4
+content/**/*.mov
+content/**/*.m4v
+content/**/*.webm

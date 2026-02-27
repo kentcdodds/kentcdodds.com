@@ -1,0 +1,202 @@
+name: 🚀 Deploy (production)
+
+on:
+  workflow_run:
+    workflows:
+      - '✅ Validate'
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Run production workflow in dry-run mode
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+  BUN_VERSION: 1.3.9
+
+jobs:
+  sha-guard:
+    runs-on: ubuntu-latest
+    name: 🧾 Production deploy guard
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'dev' &&
+        github.event.workflow_run.event == 'push')
+    outputs:
+      should_deploy: ${{ steps.sha-guard.outputs.should_deploy }}
+      deploy_sha: ${{ steps.sha-guard.outputs.deploy_sha }}
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🧾 Ensure validated SHA is dev HEAD
+        id: sha-guard
+        shell: bash
+        env:
+          WORKFLOW_SHA: ${{ github.event.workflow_run.head_sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          git fetch origin dev
+          head_sha="$(git rev-parse origin/dev)"
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "deploy_sha=$head_sha" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$head_sha" != "$WORKFLOW_SHA" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "deploy_sha=$head_sha" >> "$GITHUB_OUTPUT"
+            echo "Skipping deploy because validated SHA is not the current dev HEAD."
+            exit 0
+          fi
+
+          echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          echo "deploy_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: 🚀 Deploy to production
+    needs: sha-guard
+    if: needs.sha-guard.outputs.should_deploy == 'true'
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.sha-guard.outputs.deploy_sha }}
+          fetch-depth: 0
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔐 Sync Cloudflare secrets
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          KIT_API_KEY: ${{ secrets.KIT_API_KEY }}
+          KIT_API_SECRET: ${{ secrets.KIT_API_SECRET }}
+          VERIFIER_API_KEY: ${{ secrets.VERIFIER_API_KEY }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
+          MAILGUN_SENDING_KEY: ${{ secrets.MAILGUN_SENDING_KEY }}
+        run: >
+          bun tools/ci/sync-worker-secrets.ts --name kentcdodds-com --env
+          production --set-from-env-optional SESSION_SECRET
+          --set-from-env-optional DATABASE_URL --set-from-env-optional BOT_GITHUB_TOKEN
+          --set-from-env-optional KIT_API_KEY --set-from-env-optional KIT_API_SECRET
+          --set-from-env-optional VERIFIER_API_KEY
+          --set-from-env-optional DISCORD_BOT_TOKEN
+          --set-from-env-optional DISCORD_CLIENT_SECRET
+          --set-from-env-optional MAILGUN_SENDING_KEY
+          --generate-cookie-secret
+
+      - name: 🧱 Ensure production resources
+        id: resources
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+          dry_run_flag=()
+          if [ "$DRY_RUN" = "true" ]; then
+            dry_run_flag+=(--dry-run)
+          fi
+          bun tools/ci/preview-resources.ts ensure --worker-name kentcdodds-com --environment production --wrangler-config wrangler.jsonc --out-config wrangler-production.generated.jsonc "${dry_run_flag[@]}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: 📚 Publish mdx-remote artifacts to production KV
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+          publish_args=(--kv-binding MDX_REMOTE_KV --wrangler-config "$WRANGLER_CONFIG" --wrangler-env production)
+          if [ "$DRY_RUN" = "true" ]; then
+            publish_args+=(--dry-run)
+          fi
+          bun run content:publish-mdx-remote -- "${publish_args[@]}"
+
+      - name: 🗄️ Apply D1 migrations
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+        run: bun run wrangler -- d1 migrations apply APP_DB --remote --config "$WRANGLER_CONFIG" --env production
+
+      - name: ☁️ Deploy worker
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_CONFIG: ${{ steps.resources.outputs.wrangler_config }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then
+            bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env production --name kentcdodds-com --dry-run 2>&1 | tee deploy.log
+          else
+            bun run wrangler -- deploy --config "$WRANGLER_CONFIG" --env production --name kentcdodds-com 2>&1 | tee deploy.log
+            deploy_url="$(node -e "const fs = require('node:fs'); const text = fs.readFileSync('deploy.log', 'utf8'); const urls = text.match(/https:\\/\\/[a-zA-Z0-9._-]+\\.workers\\.dev/g); process.stdout.write(urls?.at(-1) ?? '')")"
+            if [ -n "$deploy_url" ]; then
+              echo "url=$deploy_url" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: 🩺 Healthcheck
+        if: >-
+          steps.deploy.outputs.url != '' &&
+          !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        shell: bash
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          health_url="${DEPLOY_URL%/}/health"
+          attempts=20
+          delay_seconds=3
+          for i in $(seq 1 "$attempts"); do
+            echo "Healthcheck attempt $i/$attempts"
+            if curl --fail --silent --show-error --location --max-time 10 "$health_url" > health.json && \
+              node -e "const fs=require('node:fs'); const body = JSON.parse(fs.readFileSync('health.json','utf8')); if (body?.ok !== true) process.exit(1);"; then
+              exit 0
+            fi
+            sleep "$delay_seconds"
+          done
+          echo "Healthcheck failed at $health_url" >&2
+          if [ -f health.json ]; then
+            cat health.json >&2
+          fi
+          exit 1
+
+      - name: 🧹 Cleanup generated production config
+        if: always()
+        run: rm -f wrangler-production.generated.jsonc

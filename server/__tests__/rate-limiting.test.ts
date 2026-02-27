@@ -45,27 +45,27 @@ afterEach(async () => {
 })
 
 describe('rate limiting (epic-stack style)', () => {
-	it('uses strongest limiter for POST /login and keys by Fly-Client-Ip', async () => {
+	it('uses strongest limiter for POST /login and keys by CF-Connecting-IP', async () => {
 		started = await startTestServer()
 
 		for (let i = 0; i < 10; i++) {
 			const r = await fetch(`${started.baseUrl}/login`, {
 				method: 'POST',
-				headers: { 'fly-client-ip': '1.1.1.1' },
+				headers: { 'cf-connecting-ip': '1.1.1.1' },
 			})
 			expect(r.status).toBe(200)
 		}
 
 		const tooMany = await fetch(`${started.baseUrl}/login`, {
 			method: 'POST',
-			headers: { 'fly-client-ip': '1.1.1.1' },
+			headers: { 'cf-connecting-ip': '1.1.1.1' },
 		})
 		expect(tooMany.status).toBe(429)
 
-		// A different Fly-Client-Ip should get its own bucket.
+		// A different client IP should get its own bucket.
 		const differentIp = await fetch(`${started.baseUrl}/login`, {
 			method: 'POST',
-			headers: { 'fly-client-ip': '2.2.2.2' },
+			headers: { 'cf-connecting-ip': '2.2.2.2' },
 		})
 		expect(differentIp.status).toBe(200)
 	})

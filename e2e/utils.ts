@@ -1,26 +1,86 @@
-import path from 'path'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { parse } from 'cookie'
-import fsExtra from 'fs-extra'
-import {
-	PrismaClient,
-	type User,
-} from '#app/utils/prisma-generated.server/client.ts'
+import { type User } from '#app/utils/prisma-generated.server/client.ts'
+import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
 
-type MSWData = {
-	email: Record<string, Email>
-}
-
 type Email = {
+	id?: number
 	to: string
 	from: string
 	subject: string
 	text: string
 	html: string
+	verificationCode?: string | null
+	verificationUrl?: string | null
+}
+
+type MockMailgunResponse = {
+	emails: Array<Email>
+}
+
+type MockMailgunLatestResponse = {
+	email: Email
+}
+
+async function getMockMailgunEmails() {
+	const mailgunBaseUrl = getLocalMailgunBaseUrl()
+	if (!mailgunBaseUrl) return null
+	const url = new URL('/__mocks/emails', mailgunBaseUrl)
+	try {
+		const response = await fetch(url)
+		if (!response.ok) return null
+		const payload = (await response.json()) as MockMailgunResponse
+		return payload.emails
+	} catch {
+		return null
+	}
+}
+
+async function getMockMailgunLatestEmail({
+	to,
+}: {
+	to: string
+}) {
+	const mailgunBaseUrl = getLocalMailgunBaseUrl()
+	if (!mailgunBaseUrl) return null
+	const url = new URL('/__mocks/emails/latest', mailgunBaseUrl)
+	url.searchParams.set('to', to)
+	try {
+		const response = await fetch(url)
+		if (!response.ok) return null
+		const payload = (await response.json()) as MockMailgunLatestResponse
+		return payload.email
+	} catch {
+		return null
+	}
+}
+
+async function resetMockMailgunEmails() {
+	const mailgunBaseUrl = getLocalMailgunBaseUrl()
+	if (!mailgunBaseUrl) return
+	const url = new URL('/__mocks/reset', mailgunBaseUrl)
+	try {
+		await fetch(url, { method: 'POST' })
+	} catch {
+		// best effort
+	}
+}
+
+function getLocalMailgunBaseUrl() {
+	const configuredBaseUrl = process.env.MAILGUN_API_BASE_URL?.trim()
+	if (configuredBaseUrl?.startsWith('http://localhost')) {
+		return configuredBaseUrl
+	}
+	if (configuredBaseUrl?.startsWith('http://127.0.0.1')) {
+		return configuredBaseUrl.replace('http://127.0.0.1', 'http://localhost')
+	}
+	if (process.env.PLAYWRIGHT_TEST_BASE_URL?.startsWith('http://localhost')) {
+		return 'http://localhost:8793'
+	}
+	return null
 }
 
 async function sleep(ms: number) {
@@ -36,19 +96,24 @@ export async function readEmail(
 ) {
 	for (let attempt = 0; attempt < maxRetries; attempt++) {
 		try {
-			const mswOutput = fsExtra.readJsonSync(
-				path.join(process.cwd(), './mocks/msw.local.json'),
-			) as unknown as MSWData
-			const emails = Object.values(mswOutput.email).reverse() // reverse so we get the most recent email first
-			// TODO: add validation
-			let email: Email | undefined
+			const mockEmails = await getMockMailgunEmails()
 			if (typeof recipientOrFilter === 'string') {
-				email = emails.find((email: Email) => email.to === recipientOrFilter)
-			} else {
-				email = emails.find(recipientOrFilter)
+				const latestEmail = await getMockMailgunLatestEmail({
+					to: recipientOrFilter,
+				})
+				if (latestEmail) return latestEmail
 			}
-			if (email) {
-				return email
+			if (mockEmails) {
+				const emails = [...mockEmails]
+				let email: Email | undefined
+				if (typeof recipientOrFilter === 'string') {
+					email = emails.find((entry) => entry.to === recipientOrFilter)
+				} else {
+					email = emails.find(recipientOrFilter)
+				}
+				if (email) {
+					return email
+				}
 			}
 			// Email not found yet, retry after a delay
 			if (attempt < maxRetries - 1) {
@@ -76,28 +141,15 @@ export function extractUrl(text: string) {
 const users = new Set<User>()
 
 export async function insertNewUser(userOverrides?: Partial<User>) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
-
 	const user = await prisma.user.create({
 		data: { ...createUser(), ...userOverrides },
 	})
-	await prisma.$disconnect()
 	users.add(user)
 	return user
 }
 
 export async function deleteUserByEmail(email: string) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
 	await prisma.user.delete({ where: { email } })
-	await prisma.$disconnect()
 }
 
 export const test = base.extend<{
@@ -137,13 +189,8 @@ export const test = base.extend<{
 export const { expect } = test
 
 test.afterEach(async () => {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
 	await prisma.user.deleteMany({
 		where: { id: { in: [...users].map((u) => u.id) } },
 	})
-	await prisma.$disconnect()
+	await resetMockMailgunEmails()
 })

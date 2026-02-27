@@ -38,6 +38,8 @@ test('A new user can create an account', async ({ page }) => {
 	expect(email.to).toBe(emailAddress)
 	expect(email.from).toMatch(/team\+kcd@kentcdodds.com/)
 	expect(email.subject).toMatch(/verification/i)
+	expect(email.verificationCode).toMatch(/[A-Za-z0-9-]+/)
+	expect(email.verificationUrl).toMatch(/\/signup\?verification=/)
 	const verifyLink = extractUrl(email.text)
 	invariant(verifyLink, 'Verification link not found')
 	await page.goto(verifyLink)

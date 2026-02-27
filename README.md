@@ -18,8 +18,8 @@ Vite, and an Express server.
 
 ## Prerequisites
 
+- [Bun](https://bun.sh/) `>=1.3.9`
 - [Node.js](https://nodejs.org/) `24`
-- `npm` `>=10`
 - [git](https://git-scm.com/)
 
 ## Setup
@@ -28,7 +28,7 @@ Vite, and an Express server.
 2. Copy environment variables:
    - `cp .env.example .env`
 3. Run the full setup script:
-   - `npm run setup -s`
+   - `bun run setup -s`
 
 The setup script installs dependencies, resets the local database, validates the
 project, primes local cache data, installs Playwright browsers, and runs
@@ -38,18 +38,37 @@ end-to-end tests.
 
 Start the development server:
 
-- `npm run dev`
+- `bun run dev`
 
 Then open `http://localhost:3000`.
 
+`bun run dev` also starts mock workers:
+
+- Kit mock worker at `http://localhost:8790`
+- Verifier mock worker at `http://localhost:8791`
+- OAuth mock worker at `http://localhost:8792`
+- Mailgun mock worker at `http://localhost:8793`
+- Discord mock worker at `http://localhost:8794`
+- Simplecast mock worker at `http://localhost:8795`
+- Transistor mock worker at `http://localhost:8796`
+- Twitter mock worker at `http://localhost:8797`
+- Security mock worker at `http://localhost:8798`
+- oEmbed mock worker at `http://localhost:8799`
+- Mermaid-to-SVG mock worker at `http://localhost:8800`
+- Cloudflare API/AI mock worker at `http://localhost:8801`
+- Cloudflare R2 mock worker at `http://localhost:8802`
+- Media image mock worker at `http://localhost:8803`
+
+Each exposes a `__mocks` dashboard for request/state inspection.
+
 ## Useful scripts
 
-- `npm run dev` - start local development server
-- `npm run test` - run unit/component tests
-- `npm run test:e2e:dev` - run Playwright tests against dev server
-- `npm run lint` - run ESLint
-- `npm run typecheck` - run TypeScript checks
-- `npm run build` - build the app
+- `bun run dev` - start local development server
+- `bun run test` - run unit/component tests
+- `bun run test:e2e:dev` - run Playwright tests against dev server
+- `bun run lint` - run ESLint
+- `bun run typecheck` - run TypeScript checks
+- `bun run build` - build the app
 
 ## Contributing
 
@@ -57,8 +76,8 @@ For contribution guidelines and manual setup details, read
 [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 <!-- prettier-ignore-start -->
-[build-badge]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/deployment.yml/badge.svg?branch=main
-[build]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/deployment.yml
+[build-badge]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/validate.yml/badge.svg?branch=main
+[build]: https://github.com/kentcdodds/kentcdodds.com/actions/workflows/validate.yml
 [license-badge]: https://img.shields.io/badge/license-GPL%203.0%20License-blue.svg?style=flat-square
 [license]: https://github.com/kentcdodds/kentcdodds.com/blob/main/LICENSE.md
 <!-- prettier-ignore-end -->

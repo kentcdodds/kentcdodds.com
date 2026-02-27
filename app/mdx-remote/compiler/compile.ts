@@ -1,0 +1,207 @@
+import {
+	runMdxRemoteCompilerPlugins,
+	type MdxRemoteCompilerPlugin,
+} from '#app/mdx-remote/compiler/plugins.ts'
+import {
+	assertMdxRemoteRootNode,
+	serializeMdxRemoteDocument,
+} from '#app/mdx-remote/compiler/serialize.ts'
+import {
+	type MdxRemoteDocument,
+	type MdxRemoteNode,
+	type MdxRemotePropValue,
+	type MdxRemoteRootNode,
+	isExpressionPropValue,
+	isNodePropValue,
+} from '#app/mdx-remote/compiler/types.ts'
+
+const forbiddenExpressionPatterns = [
+	/\bimport\b/,
+	/\bexport\b/,
+	/\bnew\b/,
+	/\beval\b/,
+	/\bFunction\b/,
+]
+
+function compileMdxRemoteDocument<Frontmatter extends Record<string, unknown>>({
+	slug,
+	frontmatter,
+	root,
+	allowedComponentNames,
+	strictComponentValidation = true,
+	strictExpressionValidation = true,
+	plugins = [],
+	compiledAt = new Date().toISOString(),
+}: {
+	slug: string
+	frontmatter: Frontmatter
+	root: MdxRemoteRootNode
+	allowedComponentNames: Array<string>
+	strictComponentValidation?: boolean
+	strictExpressionValidation?: boolean
+	plugins?: Array<MdxRemoteCompilerPlugin<Frontmatter>>
+	compiledAt?: string
+}) {
+	assertMdxRemoteRootNode(root)
+	const allowedComponentNameSet = new Set(allowedComponentNames)
+	assertNodeTreeIsSafe({
+		root,
+		allowedComponentNames: allowedComponentNameSet,
+		strictComponentValidation,
+		strictExpressionValidation,
+	})
+
+	const document: MdxRemoteDocument<Frontmatter> = {
+		schemaVersion: 1,
+		slug,
+		frontmatter,
+		root,
+		compiledAt,
+	}
+
+	return runMdxRemoteCompilerPlugins({
+		document,
+		plugins,
+		allowedComponentNames: allowedComponentNameSet,
+	}).then(() => ({
+		document,
+		serialized: serializeMdxRemoteDocument(document),
+	}))
+}
+
+function assertNodeTreeIsSafe({
+	root,
+	allowedComponentNames,
+	strictComponentValidation,
+	strictExpressionValidation,
+}: {
+	root: MdxRemoteRootNode
+	allowedComponentNames: ReadonlySet<string>
+	strictComponentValidation: boolean
+	strictExpressionValidation: boolean
+}) {
+	visitNode(root, (node) => {
+		if (node.type === 'element') {
+			if (
+				strictComponentValidation &&
+				isMdxComponentName(node.name) &&
+				!allowedComponentNames.has(node.name)
+			) {
+				throw new Error(`Unknown MDX component "${node.name}"`)
+			}
+			for (const value of Object.values(node.props ?? {})) {
+				assertPropValueIsSafe({
+					value,
+					allowedComponentNames,
+					strictComponentValidation,
+					strictExpressionValidation,
+				})
+			}
+			return
+		}
+		if (node.type === 'expression' && strictExpressionValidation) {
+			assertExpressionIsSafe(node.value)
+		}
+		if (
+			node.type === 'lambda' &&
+			node.body.kind === 'conditional' &&
+			strictExpressionValidation
+		) {
+			assertExpressionIsSafe(node.body.test)
+		}
+	})
+}
+
+function visitNode(node: MdxRemoteNode, visitor: (node: MdxRemoteNode) => void) {
+	visitor(node)
+	if (node.type === 'lambda') {
+		if (node.body.kind === 'node') {
+			visitNode(node.body.node, visitor)
+		}
+		if (node.body.kind === 'conditional') {
+			visitNode(node.body.consequent, visitor)
+			visitNode(node.body.alternate, visitor)
+		}
+		return
+	}
+	if (node.type === 'root' || node.type === 'element') {
+		for (const child of node.children ?? []) {
+			visitNode(child, visitor)
+		}
+	}
+}
+
+function assertPropValueIsSafe({
+	value,
+	allowedComponentNames,
+	strictComponentValidation,
+	strictExpressionValidation,
+}: {
+	value: MdxRemotePropValue
+	allowedComponentNames: ReadonlySet<string>
+	strictComponentValidation: boolean
+	strictExpressionValidation: boolean
+}) {
+	if (value === null) return
+	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return
+	}
+	if (Array.isArray(value)) {
+		for (const item of value) {
+			assertPropValueIsSafe({
+				value: item,
+				allowedComponentNames,
+				strictComponentValidation,
+				strictExpressionValidation,
+			})
+		}
+		return
+	}
+	if (isExpressionPropValue(value) && strictExpressionValidation) {
+		assertExpressionIsSafe(value.value)
+		return
+	}
+	if (isNodePropValue(value)) {
+		visitNode(value.value, (node) => {
+			if (
+				node.type === 'element' &&
+				strictComponentValidation &&
+				isMdxComponentName(node.name) &&
+				!allowedComponentNames.has(node.name)
+			) {
+				throw new Error(`Unknown MDX component "${node.name}"`)
+			}
+			if (node.type === 'expression' && strictExpressionValidation) {
+				assertExpressionIsSafe(node.value)
+			}
+		})
+		return
+	}
+	for (const item of Object.values(value)) {
+		assertPropValueIsSafe({
+			value: item,
+			allowedComponentNames,
+			strictComponentValidation,
+			strictExpressionValidation,
+		})
+	}
+}
+
+function assertExpressionIsSafe(source: string) {
+	const normalizedSource = stripStringLiterals(source)
+	for (const pattern of forbiddenExpressionPatterns) {
+		if (pattern.test(normalizedSource)) {
+			throw new Error(`Forbidden expression syntax: ${source}`)
+		}
+	}
+}
+
+function stripStringLiterals(source: string) {
+	return source.replaceAll(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g, '""')
+}
+
+function isMdxComponentName(name: string) {
+	return /^[A-Z]/.test(name)
+}
+
+export { compileMdxRemoteDocument, isMdxComponentName }
