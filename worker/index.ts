@@ -175,8 +175,6 @@ async function handleQueue(
 	}
 }
 
-export { handleFetch as fetch, handleScheduled as scheduled, handleQueue as queue }
-
 export default {
 	fetch: handleFetch,
 	scheduled: handleScheduled,

@@ -89,7 +89,7 @@ test('preview deploy step applies d1 migrations before app worker deploy', () =>
 		'bun run wrangler -- d1 migrations apply APP_DB',
 	)
 	const deployAfterMigrationIndex = runScript.indexOf(
-		'bun run wrangler -- deploy --config',
+		'bun run wrangler -- deploy',
 		migrationIndex,
 	)
 
