@@ -16,7 +16,7 @@ test('getCloudflareConfig prefers embedding gateway for indexing when configured
 	expect(config.gatewayId).toBe('indexing-gateway')
 })
 
-test('getCloudflareConfig falls back to regular gateway when embedding override is unset', () => {
+test('getCloudflareConfig throws when embedding gateway is unset', () => {
 	using ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_API_TOKEN: 'cf-token',
@@ -26,6 +26,7 @@ test('getCloudflareConfig falls back to regular gateway when embedding override 
 		CLOUDFLARE_VECTORIZE_INDEX: 'vector-index',
 	})
 
-	const config = getCloudflareConfig()
-	expect(config.gatewayId).toBe('runtime-gateway')
+	expect(() => getCloudflareConfig()).toThrow(
+		'Missing required env var: CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID',
+	)
 })
