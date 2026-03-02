@@ -24,6 +24,7 @@ import {
 } from '#app/utils/call-kent.ts'
 import { orderBy } from '#app/utils/cjs/lodash.ts'
 import {
+	formatDate,
 	formatDuration,
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
@@ -142,8 +143,16 @@ export default function CallsSeason({ loaderData }: Route.ComponentProps) {
 
 								{episode.title}
 							</div>
-							<div className="text-lg font-medium text-gray-400">
-								{formatDuration(episode.duration)}
+							<div className="flex flex-col text-gray-400 lg:items-end">
+								<time
+									className="text-xs font-normal"
+									dateTime={episode.publishedAt}
+								>
+									{formatDate(episode.publishedAt, 'yyyy-MM-dd')}
+								</time>
+								<div className="text-lg font-medium">
+									{formatDuration(episode.duration)}
+								</div>
 							</div>
 						</div>
 					</Grid>
