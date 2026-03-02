@@ -184,7 +184,7 @@ function getRequiredSemanticSearchEnv() {
 	return {
 		accountId: env.CLOUDFLARE_ACCOUNT_ID,
 		apiToken: env.CLOUDFLARE_API_TOKEN,
-		gatewayId: env.CLOUDFLARE_AI_GATEWAY_ID,
+		embeddingGatewayId: env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID,
 		gatewayAuthToken: env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN,
 		indexName: env.CLOUDFLARE_VECTORIZE_INDEX,
 		embeddingModel: env.CLOUDFLARE_AI_EMBEDDING_MODEL,
@@ -227,21 +227,21 @@ async function cloudflareFetch(
 async function getEmbedding({
 	accountId,
 	apiToken,
-	gatewayId,
+	embeddingGatewayId,
 	gatewayAuthToken,
 	model,
 	text,
 }: {
 	accountId: string
 	apiToken: string
-	gatewayId: string
+	embeddingGatewayId: string
 	gatewayAuthToken: string
 	model: string
 	text: string
 }) {
 	const url = getWorkersAiRunUrl({
 		accountId,
-		gatewayId,
+		gatewayId: embeddingGatewayId,
 		model,
 	})
 	const res = await fetch(url, {
@@ -502,7 +502,7 @@ export async function semanticSearchKCD({
 	const {
 		accountId,
 		apiToken,
-		gatewayId,
+		embeddingGatewayId,
 		gatewayAuthToken,
 		indexName,
 		embeddingModel,
@@ -539,7 +539,7 @@ export async function semanticSearchKCD({
 			const vector = await getEmbedding({
 				accountId,
 				apiToken,
-				gatewayId,
+				embeddingGatewayId,
 				gatewayAuthToken,
 				model: embeddingModel,
 				text: cleanedQuery,
