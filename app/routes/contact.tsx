@@ -151,6 +151,16 @@ export default function ContactRoute() {
 								<a href="mailto:support@egghead.io">support@egghead.io</a>
 								{`) instead. I'll just forward your message to them anyway.`}
 							</Paragraph>
+							<div className="bg-secondary mt-6 rounded-lg p-4">
+								<Paragraph>
+									Have a general question? The best place is the{' '}
+									<Link to="/calls" className="underline">
+										Call Kent podcast
+									</Link>
+									. You can record your question or type it if you don&apos;t
+									want to record yourself.
+								</Paragraph>
+							</div>
 						</div>
 
 						<div className="col-span-full lg:col-span-8 lg:col-start-3">

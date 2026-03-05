@@ -18,6 +18,14 @@ test('Users can send an email', async ({ page, login }) => {
 
 	// verify name and email are prefilled
 	const mainContent = page.getByRole('main')
+	await expect(
+		mainContent.getByText(
+			/have a general question\? the best place is the call kent podcast\./i,
+		),
+	).toBeVisible()
+	await expect(
+		mainContent.getByRole('link', { name: /call kent podcast/i }),
+	).toHaveAttribute('href', '/calls')
 	await expect(mainContent.getByRole('textbox', { name: /name/i })).toHaveValue(
 		user.firstName,
 	)
