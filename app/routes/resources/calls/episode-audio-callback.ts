@@ -3,7 +3,6 @@ import {
 	parseCallKentAudioProcessorEvent,
 	verifyCallKentAudioProcessorCallbackSignature,
 } from '#app/utils/call-kent-audio-processor-callback.server.ts'
-import { getEnv } from '#app/utils/env.server.ts'
 
 const callbackTimestampHeader = 'x-call-kent-audio-timestamp'
 const callbackSignatureHeader = 'x-call-kent-audio-signature'
@@ -15,10 +14,6 @@ export async function action({ request }: { request: Request }) {
 	const rawBody = await request.text()
 	const timestamp = request.headers.get(callbackTimestampHeader)
 	const signature = request.headers.get(callbackSignatureHeader)
-	const mode = getEnv().CALL_KENT_AUDIO_PROCESSOR_MODE
-	if (mode !== 'cloudflare') {
-		return new Response('Callback not available', { status: 404 })
-	}
 	if (!timestamp || !signature) {
 		return new Response('Missing callback signature', { status: 401 })
 	}

@@ -1,12 +1,4 @@
-import {
-	getAudioBuffer,
-	putEpisodeDraftAudioFromBuffer,
-	putEpisodeDraftCallerSegmentAudioFromBuffer,
-	putEpisodeDraftResponseSegmentAudioFromBuffer,
-} from '#app/utils/call-kent-audio-storage.server.ts'
-import { handleCallKentAudioProcessorEvent } from '#app/utils/call-kent-audio-processor-callback.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { createEpisodeAudio } from '#app/utils/ffmpeg.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
 
 type EpisodeAudioJob = {
@@ -79,80 +71,14 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 	}
 }
 
-async function runMockLocalEpisodeAudioJob({
-	draftId,
-	callAudioKey,
-	responseAudioKey,
-}: EpisodeAudioJob) {
-	try {
-		await handleCallKentAudioProcessorEvent({
-			type: 'audio_generation_started',
-			draftId,
-		})
-		const [callAudio, responseAudio] = await Promise.all([
-			getAudioBuffer({ key: callAudioKey }),
-			getAudioBuffer({ key: responseAudioKey }),
-		])
-		const generated = await createEpisodeAudio(callAudio, responseAudio)
-		const [episodeStored, callerStored, responseStored] = await Promise.all([
-			putEpisodeDraftAudioFromBuffer({
-				draftId,
-				mp3: generated.episodeMp3,
-			}),
-			putEpisodeDraftCallerSegmentAudioFromBuffer({
-				draftId,
-				mp3: generated.callerMp3,
-			}),
-			putEpisodeDraftResponseSegmentAudioFromBuffer({
-				draftId,
-				mp3: generated.responseMp3,
-			}),
-		])
-		await handleCallKentAudioProcessorEvent({
-			type: 'audio_generation_completed',
-			draftId,
-			episodeAudioKey: episodeStored.key,
-			episodeAudioContentType: episodeStored.contentType,
-			episodeAudioSize: episodeStored.size,
-			callerSegmentAudioKey: callerStored.key,
-			responseSegmentAudioKey: responseStored.key,
-		})
-	} catch (error: unknown) {
-		await handleCallKentAudioProcessorEvent({
-			type: 'audio_generation_failed',
-			draftId,
-			errorMessage: getErrorMessage(error),
-		})
-	}
-}
-
 export async function requestCallKentEpisodeAudioGeneration({
 	draftId,
 	callAudioKey,
 	responseAudioKey,
 }: EpisodeAudioJob) {
-	const mode = getEnv().CALL_KENT_AUDIO_PROCESSOR_MODE
-	switch (mode) {
-		case 'mock-local': {
-			// Keep mock-local async like cloudflare mode: the caller should return
-			// immediately while status changes are written via callback handlers.
-			void runMockLocalEpisodeAudioJob({
-				draftId,
-				callAudioKey,
-				responseAudioKey,
-			})
-			return
-		}
-		case 'cloudflare': {
-			await enqueueCallKentEpisodeAudioJobToCloudflare({
-				draftId,
-				callAudioKey,
-				responseAudioKey,
-			})
-			return
-		}
-		default: {
-			throw new Error(`Unsupported CALL_KENT_AUDIO_PROCESSOR_MODE: ${mode}`)
-		}
-	}
+	await enqueueCallKentEpisodeAudioJobToCloudflare({
+		draftId,
+		callAudioKey,
+		responseAudioKey,
+	})
 }
