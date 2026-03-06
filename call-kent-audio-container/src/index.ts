@@ -1,4 +1,4 @@
-import { createHmac, randomUUID } from 'node:crypto'
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
@@ -212,6 +212,15 @@ function createSignature({
 		.digest('hex')
 }
 
+function timingSafeEqualString(left: string, right: string) {
+	const leftBuffer = Buffer.from(left)
+	const rightBuffer = Buffer.from(right)
+	if (leftBuffer.length !== rightBuffer.length) {
+		return false
+	}
+	return timingSafeEqual(leftBuffer, rightBuffer)
+}
+
 async function sendCallback({
 	callbackUrl,
 	callbackSecret,
@@ -247,8 +256,8 @@ async function sendCallback({
 
 app.post('/jobs/episode-audio', async (req, res) => {
 	try {
-		const token = req.headers.authorization?.slice('Bearer '.length)
-		if (token !== env.CALL_KENT_AUDIO_CONTAINER_TOKEN) {
+		const token = req.headers.authorization?.slice('Bearer '.length) ?? ''
+		if (!timingSafeEqualString(token, env.CALL_KENT_AUDIO_CONTAINER_TOKEN)) {
 			return res.status(401).send('Unauthorized')
 		}
 		const job = jobSchema.parse(req.body)

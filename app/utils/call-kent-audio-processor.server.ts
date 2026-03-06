@@ -56,7 +56,7 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 		} catch {
 			throw new Error('Cloudflare queue enqueue failed: invalid JSON response')
 		}
-		if (parsed.success === false) {
+		if (parsed?.success === false) {
 			throw new Error('Cloudflare queue enqueue failed: success=false')
 		}
 	}
