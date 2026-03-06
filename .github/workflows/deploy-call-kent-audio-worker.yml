@@ -1,0 +1,43 @@
+name: ☁️ Deploy Call Kent Audio Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - call-kent-audio-worker/**
+      - .github/workflows/deploy-call-kent-audio-worker.yml
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-call-kent-audio-worker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: 🚀 Deploy Call Kent Audio Worker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: call-kent-audio-worker/package-lock.json
+
+      - name: 📥 Install audio worker deps
+        run: npm ci
+        working-directory: call-kent-audio-worker
+
+      - name: ☁️ Deploy via Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: call-kent-audio-worker
+          command: deploy
