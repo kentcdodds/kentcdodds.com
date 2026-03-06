@@ -6,6 +6,7 @@ import {
 	useLocation,
 	useNavigate,
 	useRevalidator,
+	useSubmit,
 } from 'react-router'
 import { Button } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
@@ -102,6 +103,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 }
 
 function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
+	const submit = useSubmit()
 	const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
 	const [playbackRate, setPlaybackRate] = React.useState(2)
 	const dc = useDoubleCheck()
@@ -124,6 +126,27 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 	React.useEffect(() => {
 		setCallerTranscriptValue(callerTranscript)
 	}, [callerTranscript])
+
+	function handleSameRouteFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+		event.preventDefault()
+		const submitter =
+			event.nativeEvent instanceof SubmitEvent
+				? event.nativeEvent.submitter
+				: null
+		const formData = new FormData(event.currentTarget)
+		if (
+			(submitter instanceof HTMLButtonElement ||
+				submitter instanceof HTMLInputElement) &&
+			submitter.name
+		) {
+			formData.set(submitter.name, submitter.value)
+		}
+		submit(formData, {
+			method: 'post',
+			action: recordingFormActionPath,
+			preventScrollReset: true,
+		})
+	}
 
 	return (
 		<section
@@ -157,7 +180,10 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 							<span>{call.formattedCreatedAt}</span>
 						</div>
 					</div>
-					<Form method="post" action={recordingFormActionPath}>
+					<Form
+						method="post"
+						action={recordingFormActionPath}
+					>
 						<input type="hidden" name="intent" value="delete-call" />
 						<input type="hidden" name="callId" value={call.id} />
 						<Button
@@ -188,7 +214,12 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 					<H6 as="h3" id="caller-transcript">
 						Caller transcript
 					</H6>
-					<Form method="post" action={recordingFormActionPath}>
+					<Form
+						method="post"
+						action={recordingFormActionPath}
+						preventScrollReset
+						onSubmit={handleSameRouteFormSubmit}
+					>
 						<input type="hidden" name="intent" value="generate-caller-transcript" />
 						<input type="hidden" name="callId" value={call.id} />
 						<Button
@@ -240,6 +271,8 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						method="post"
 						action={recordingFormActionPath}
 						className="mt-3 flex flex-col gap-3"
+						preventScrollReset
+						onSubmit={handleSameRouteFormSubmit}
 					>
 						<input type="hidden" name="intent" value="update-caller-transcript" />
 						<input type="hidden" name="callId" value={call.id} />
@@ -504,7 +537,12 @@ function DraftPending({
 			<Paragraph className="mt-2 text-gray-500 dark:text-slate-400">
 				{`This may take a bit. You can undo if you want to re-record right away.`}
 			</Paragraph>
-			<Form method="post" action={recordingFormActionPath} className="mt-6">
+			<Form
+				method="post"
+				action={recordingFormActionPath}
+				className="mt-6"
+				preventScrollReset
+			>
 				<input type="hidden" name="intent" value="undo-episode-draft" />
 				<input type="hidden" name="callId" value={callId} />
 				<Button type="submit" variant="secondary">
@@ -527,7 +565,37 @@ function DraftEditor({
 	callTitle: string
 }) {
 	const dc = useDoubleCheck()
+	const submit = useSubmit()
 	const disabled = draft.status !== 'READY'
+
+	function handleDraftFormSubmit(event: React.FormEvent<HTMLFormElement>) {
+		const submitter =
+			event.nativeEvent instanceof SubmitEvent
+				? event.nativeEvent.submitter
+				: null
+
+		if (
+			submitter instanceof HTMLButtonElement &&
+			submitter.name === 'intent' &&
+			submitter.value === 'publish-episode-draft'
+		) {
+			return
+		}
+
+		event.preventDefault()
+		const formData = new FormData(event.currentTarget)
+		if (submitter instanceof HTMLButtonElement && submitter.name) {
+			formData.set(submitter.name, submitter.value)
+		} else {
+			formData.set('intent', 'update-episode-draft')
+		}
+		submit(formData, {
+			method: 'post',
+			action: recordingFormActionPath,
+			preventScrollReset: true,
+		})
+	}
+
 	return (
 		<div className="flex flex-col gap-6">
 			{draft.hasEpisodeAudio && draft.episodeAudioUrl ? (
@@ -544,7 +612,11 @@ function DraftEditor({
 				</div>
 			) : null}
 
-			<Form method="post" action={recordingFormActionPath}>
+			<Form
+				method="post"
+				action={recordingFormActionPath}
+				onSubmit={handleDraftFormSubmit}
+			>
 				<input type="hidden" name="callId" value={callId} />
 				{/* Ensure Enter submits as "save" by default */}
 				<button
@@ -679,7 +751,7 @@ function DraftEditor({
 				</div>
 			</Form>
 
-			<Form method="post" action={recordingFormActionPath}>
+			<Form method="post" action={recordingFormActionPath} preventScrollReset>
 				<input type="hidden" name="intent" value="undo-episode-draft" />
 				<input type="hidden" name="callId" value={callId} />
 				<Button type="submit" variant="secondary">
@@ -789,6 +861,7 @@ function RecordingDetailScreen({
 								method="post"
 								action={recordingFormActionPath}
 								className="mt-6"
+								preventScrollReset
 							>
 								<input type="hidden" name="intent" value="undo-episode-draft" />
 								<input type="hidden" name="callId" value={data.call.id} />
