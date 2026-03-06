@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write .",
-    "lint": "oxlint .",
+    "lint": "oxlint . --ignore-pattern worker-configuration.d.ts --ignore-pattern .wrangler",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --env local",
     "start": "wrangler dev --env local",
