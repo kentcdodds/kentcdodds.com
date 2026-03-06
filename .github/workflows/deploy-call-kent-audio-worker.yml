@@ -42,6 +42,17 @@ jobs:
         run: npx tsc --noEmit
         working-directory: call-kent-audio-worker
 
+      - name: 🔐 Sync shared callback secret to Worker
+        run:
+          printf '%s' "$CALL_KENT_AUDIO_CALLBACK_SECRET" | npx wrangler secret
+          put CALL_KENT_AUDIO_CALLBACK_SECRET
+        working-directory: call-kent-audio-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CALL_KENT_AUDIO_CALLBACK_SECRET:
+            ${{ secrets.CALL_KENT_AUDIO_CALLBACK_SECRET }}
+
       - name: ☁️ Deploy via Wrangler
         uses: cloudflare/wrangler-action@v3
         with:
