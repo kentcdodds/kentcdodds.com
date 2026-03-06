@@ -15,8 +15,6 @@ import { action } from '../episode-audio-callback.ts'
 
 test('episode-audio-callback rejects unsigned cloudflare callback', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'cloudflare'
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
 	process.env.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET = 'callback-secret'
 	const request = new Request(
 		'http://localhost/resources/calls/episode-audio-callback',
@@ -34,31 +32,8 @@ test('episode-audio-callback rejects unsigned cloudflare callback', async () => 
 	expect(verifyCallKentAudioProcessorCallbackSignature).not.toHaveBeenCalled()
 })
 
-test('episode-audio-callback rejects mock-local callbacks', async () => {
-	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'mock-local'
-	const request = new Request(
-		'http://localhost/resources/calls/episode-audio-callback',
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				type: 'audio_generation_started',
-				draftId: 'draft-1',
-			}),
-		},
-	)
-	const response = await action({ request })
-	expect(response.status).toBe(404)
-	expect(verifyCallKentAudioProcessorCallbackSignature).not.toHaveBeenCalled()
-	expect(parseCallKentAudioProcessorEvent).not.toHaveBeenCalled()
-	expect(handleCallKentAudioProcessorEvent).not.toHaveBeenCalled()
-})
-
 test('episode-audio-callback validates, parses, and handles callback payload', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'cloudflare'
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
 	process.env.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET = 'callback-secret'
 	vi.mocked(verifyCallKentAudioProcessorCallbackSignature).mockReturnValue(true)
 	vi.mocked(parseCallKentAudioProcessorEvent).mockReturnValue({

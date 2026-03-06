@@ -3,7 +3,6 @@ import { requestCallKentEpisodeAudioGeneration } from '../call-kent-audio-proces
 
 test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'cloudflare'
 	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
@@ -42,7 +41,6 @@ test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', 
 
 test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue errors', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'cloudflare'
 	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
@@ -62,7 +60,6 @@ test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue errors', 
 
 test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue timeout', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'cloudflare'
 	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'

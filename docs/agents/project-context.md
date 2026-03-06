@@ -52,9 +52,8 @@ reference:
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
 - Call Kent FFmpeg offload caveat: episode audio generation can run through a
-  Cloudflare queue/container pipeline. In local dev and agent VMs, default to
-  `CALL_KENT_AUDIO_PROCESSOR_MODE=mock-local` (or `MOCKS=true`) so the flow
-  works without external Cloudflare infrastructure.
+  Cloudflare queue/container pipeline and requires Cloudflare queue/callback
+  environment variables.
 
 ## Cloud / headless manual testing
 
