@@ -182,6 +182,22 @@ We use Tailwind for our styles. Tailwind is configured directly in
 We've got SQLite and Prisma set up. Learn about the schema and learn more about
 what commands you can run in `./prisma/schema.prisma`.
 
+### Production schema changes (widen, then narrow)
+
+When changing the production schema, use an expand/contract rollout:
+
+1. **Widen** first: add nullable columns, add columns with safe defaults, or add
+   new tables/indexes in a backward-compatible way.
+2. Deploy the widen migration and app code that can operate in both states
+   (before and after backfill).
+3. Backfill data if needed.
+4. **Narrow** later: remove old columns/paths, add stricter constraints, or make
+   fields required only after widen has been safely running in production.
+
+Before merging the widen PR, create a follow-up issue for the narrow step and
+link it in the PR description. This prevents "temporary" compatibility code from
+becoming permanent and helps avoid schema/code rollout mismatches.
+
 One common command you might need to run is to re-seed the database:
 
 ```sh
