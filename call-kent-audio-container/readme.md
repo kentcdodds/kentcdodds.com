@@ -7,12 +7,12 @@ Endpoints:
 Behavior:
 
 1. Downloads caller and response audio from R2.
-2. Runs FFmpeg normalization + stitch (with intro/interstitial/outro bumpers when
-   available).
+2. Runs FFmpeg normalization + stitch with intro/interstitial/outro bumpers.
 3. Uploads episode + segment audio to R2.
 4. Calls app callback endpoint with HMAC-signed status events.
 
-Stitch assets are resolved from the first existing path:
+Stitch assets are required; startup requests fail if these files are missing.
+Assets are resolved from the first existing path:
 
 - `assets/call-kent/*.mp3`
 - `../app/assets/call-kent/*.mp3`
