@@ -1,5 +1,6 @@
 import { createHmac, randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -82,6 +83,23 @@ async function putAudio({
 	return { key, contentType, size: audio.byteLength }
 }
 
+function resolveStitchAssets() {
+	const roots = [
+		path.join(process.cwd(), 'assets/call-kent'),
+		path.join(process.cwd(), '../app/assets/call-kent'),
+		path.join(process.cwd(), 'app/assets/call-kent'),
+	]
+	for (const root of roots) {
+		const introPath = path.join(root, 'intro.mp3')
+		const interstitialPath = path.join(root, 'interstitial.mp3')
+		const outroPath = path.join(root, 'outro.mp3')
+		if ([introPath, interstitialPath, outroPath].every((p) => existsSync(p))) {
+			return { introPath, interstitialPath, outroPath }
+		}
+	}
+	return null
+}
+
 async function runFfmpeg({
 	callAudio,
 	responseAudio,
@@ -99,29 +117,67 @@ async function runFfmpeg({
 	const episodeOutPath = path.join(workDir, 'episode.mp3')
 	await fs.writeFile(callPath, callAudio)
 	await fs.writeFile(responsePath, responseAudio)
-	const args = [
-		'-i',
-		callPath,
-		'-i',
-		responsePath,
-		'-filter_complex',
-		`
-      [0]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[call0];
-      [1]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[response0];
-      [call0]asplit=2[callForEpisode][callForStandalone];
-      [response0]asplit=2[responseForEpisode][responseForStandalone];
-      [callForEpisode][responseForEpisode]acrossfade=d=1:c1=nofade:c2=nofade[out]
-    `,
-		'-map',
-		'[callForStandalone]',
-		callOutPath,
-		'-map',
-		'[responseForStandalone]',
-		responseOutPath,
-		'-map',
-		'[out]',
-		episodeOutPath,
-	]
+	const stitchAssets = resolveStitchAssets()
+	const args = stitchAssets
+		? [
+				'-i',
+				stitchAssets.introPath,
+				'-i',
+				callPath,
+				'-i',
+				stitchAssets.interstitialPath,
+				'-i',
+				responsePath,
+				'-i',
+				stitchAssets.outroPath,
+				'-filter_complex',
+				`
+          [1]silenceremove=1:0:-50dB[trimmedCall];
+          [3]silenceremove=1:0:-50dB[trimmedResponse];
+          [trimmedCall]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceCall];
+          [trimmedResponse]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceResponse];
+          [noSilenceCall]loudnorm=I=-16:LRA=11:TP=0.0[call0];
+          [noSilenceResponse]loudnorm=I=-16:LRA=11:TP=0.0[response0];
+          [call0]asplit=2[callForEpisode][callForStandalone];
+          [response0]asplit=2[responseForEpisode][responseForStandalone];
+          [0][callForEpisode]acrossfade=d=1:c2=nofade[a01];
+          [a01][2]acrossfade=d=1:c1=nofade[a02];
+          [a02][responseForEpisode]acrossfade=d=1:c2=nofade[a03];
+          [a03][4]acrossfade=d=1:c1=nofade[out]
+        `,
+				'-map',
+				'[callForStandalone]',
+				callOutPath,
+				'-map',
+				'[responseForStandalone]',
+				responseOutPath,
+				'-map',
+				'[out]',
+				episodeOutPath,
+			]
+		: [
+				'-i',
+				callPath,
+				'-i',
+				responsePath,
+				'-filter_complex',
+				`
+          [0]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[call0];
+          [1]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[response0];
+          [call0]asplit=2[callForEpisode][callForStandalone];
+          [response0]asplit=2[responseForEpisode][responseForStandalone];
+          [callForEpisode][responseForEpisode]acrossfade=d=1:c1=nofade:c2=nofade[out]
+        `,
+				'-map',
+				'[callForStandalone]',
+				callOutPath,
+				'-map',
+				'[responseForStandalone]',
+				responseOutPath,
+				'-map',
+				'[out]',
+				episodeOutPath,
+			]
 	await new Promise<void>((resolve, reject) => {
 		spawn('ffmpeg', args, { stdio: 'inherit' }).on('close', (code) => {
 			if (code === 0) resolve()
