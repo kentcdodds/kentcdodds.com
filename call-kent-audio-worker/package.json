@@ -1,0 +1,24 @@
+{
+  "name": "call-kent-audio-worker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "oxlint . --ignore-pattern worker-configuration.d.ts --ignore-pattern .wrangler",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --env local",
+    "start": "wrangler dev --env local",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@epic-web/config": "^1.24.1",
+    "oxlint": "^1.51.0",
+    "prettier": "^3.8.1",
+    "wrangler": "^4.67.0"
+  },
+  "prettier": "@epic-web/config/prettier"
+}

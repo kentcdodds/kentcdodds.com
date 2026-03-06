@@ -110,6 +110,15 @@ const schemaBase = z.object({
 	// Call Kent audio storage bucket (used by R2-backed call audio storage and
 	// the disk-backed mock when MOCKS=true).
 	CALL_KENT_R2_BUCKET: nonEmptyString,
+	// Call Kent episode audio generation processor routing.
+	CALL_KENT_AUDIO_PROCESSOR_MODE: z
+		.enum(['cloudflare', 'mock-local'] as const)
+		.optional(),
+	// Cloudflare Queue config for offloaded FFmpeg jobs.
+	CALL_KENT_AUDIO_CF_QUEUE_ID: z.string().trim().optional(),
+	CALL_KENT_AUDIO_CF_API_BASE_URL: z.string().trim().optional(),
+	// HMAC secret used by the FFmpeg processor callback route.
+	CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: z.string().trim().optional(),
 	SEMANTIC_SEARCH_IGNORE_LIST_KEY: z
 		.string()
 		.trim()
@@ -153,6 +162,29 @@ const schema = schemaBase.superRefine((values, ctx) => {
 			path: ['PORT'],
 		})
 	}
+
+	const processorMode =
+		values.CALL_KENT_AUDIO_PROCESSOR_MODE ??
+		(values.MOCKS === 'true' ? 'mock-local' : 'cloudflare')
+	if (processorMode === 'cloudflare' && !values.CALL_KENT_AUDIO_CF_QUEUE_ID) {
+		ctx.addIssue({
+			code: 'custom',
+			message:
+				'CALL_KENT_AUDIO_CF_QUEUE_ID is required when CALL_KENT_AUDIO_PROCESSOR_MODE=cloudflare',
+			path: ['CALL_KENT_AUDIO_CF_QUEUE_ID'],
+		})
+	}
+	if (
+		processorMode === 'cloudflare' &&
+		!values.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET
+	) {
+		ctx.addIssue({
+			code: 'custom',
+			message:
+				'CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET is required when CALL_KENT_AUDIO_PROCESSOR_MODE=cloudflare',
+			path: ['CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET'],
+		})
+	}
 })
 
 type BaseEnv = z.infer<typeof schemaBase>
@@ -165,6 +197,7 @@ export type Env = Omit<
 	| 'DATABASE_PATH'
 	| 'FLY_MACHINE_ID'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
+	| 'CALL_KENT_AUDIO_PROCESSOR_MODE'
 > & {
 	PORT: number
 	MOCKS: boolean
@@ -191,6 +224,8 @@ export type Env = Omit<
 	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: string
 	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */
 	R2_ENDPOINT: string
+	CALL_KENT_AUDIO_PROCESSOR_MODE: 'cloudflare' | 'mock-local'
+	CALL_KENT_AUDIO_CF_API_BASE_URL: string
 }
 
 declare global {
@@ -249,6 +284,14 @@ export function getEnv(): Env {
 		typeof values.R2_ENDPOINT === 'string' && values.R2_ENDPOINT.trim()
 			? values.R2_ENDPOINT.trim()
 			: `https://${values.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`
+	const callKentAudioProcessorMode =
+		values.CALL_KENT_AUDIO_PROCESSOR_MODE ??
+		(values.MOCKS === 'true' ? 'mock-local' : 'cloudflare')
+	const callKentAudioCfApiBaseUrl =
+		typeof values.CALL_KENT_AUDIO_CF_API_BASE_URL === 'string' &&
+		values.CALL_KENT_AUDIO_CF_API_BASE_URL.trim()
+			? values.CALL_KENT_AUDIO_CF_API_BASE_URL.trim()
+			: 'https://api.cloudflare.com/client/v4'
 	const env: Env = {
 		...values,
 		PORT: Number(values.PORT),
@@ -257,6 +300,8 @@ export function getEnv(): Env {
 		allowedActionOrigins: computeAllowedActionOrigins(values),
 		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
+		CALL_KENT_AUDIO_PROCESSOR_MODE: callKentAudioProcessorMode,
+		CALL_KENT_AUDIO_CF_API_BASE_URL: callKentAudioCfApiBaseUrl,
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:
 			values.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID ||
 			values.CLOUDFLARE_AI_GATEWAY_ID,
