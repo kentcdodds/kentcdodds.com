@@ -78,6 +78,9 @@ model Call {
   title       String
   notes       String?
   isAnonymous Boolean  @default(false)
+  callerTranscript             String?
+  callerTranscriptStatus       CallTranscriptStatus @default(NOT_STARTED)
+  callerTranscriptErrorMessage String?
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   // Caller audio is stored in R2; the DB stores metadata + key.
@@ -87,6 +90,13 @@ model Call {
   episodeDraft CallKentEpisodeDraft?
 
   @@index([createdAt])
+}
+
+enum CallTranscriptStatus {
+  NOT_STARTED
+  PROCESSING
+  READY
+  ERROR
 }
 
 enum CallKentEpisodeDraftStatus {

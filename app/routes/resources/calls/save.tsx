@@ -7,6 +7,7 @@ import {
 	getAudioBuffer,
 	putCallAudioFromDataUrl,
 } from '#app/utils/call-kent-audio-storage.server.ts'
+import { startCallKentCallerTranscriptProcessing } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
 import {
@@ -114,6 +115,8 @@ async function createCall({
 			await deleteAudioObject({ key: stored.key }).catch(() => {})
 			throw error
 		}
+
+		void startCallKentCallerTranscriptProcessing(createdCall.id)
 
 		try {
 			const env = getEnv()
@@ -456,6 +459,80 @@ async function createEpisodeDraft({
 	return redirect(`/calls/admin/${callId}`)
 }
 
+async function generateCallerTranscript({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	if (!callId) return redirectCallNotFound()
+
+	await requireAdminUser(request)
+
+	const call = await prisma.call.findFirst({
+		where: { id: callId },
+		select: { id: true },
+	})
+	if (!call) return redirectCallNotFound()
+
+	await prisma.call.update({
+		where: { id: callId },
+		data: {
+			callerTranscriptStatus: 'PROCESSING',
+			callerTranscriptErrorMessage: null,
+		},
+	})
+
+	void startCallKentCallerTranscriptProcessing(callId, { force: true })
+	return redirect(`/calls/admin/${callId}`)
+}
+
+async function updateCallerTranscript({
+	request,
+	formData,
+}: {
+	request: Request
+	formData: FormData
+}) {
+	const callId = getStringFormValue(formData, 'callId')
+	if (!callId) return redirectCallNotFound()
+
+	await requireAdminUser(request)
+
+	const call = await prisma.call.findFirst({
+		where: { id: callId },
+		select: { id: true },
+	})
+	if (!call) return redirectCallNotFound()
+
+	const transcriptText = getStringFormValue(formData, 'callerTranscript')
+	const nextTranscript = transcriptText?.trim() ?? ''
+
+	if (!nextTranscript) {
+		await prisma.call.update({
+			where: { id: callId },
+			data: {
+				callerTranscript: null,
+				callerTranscriptStatus: 'NOT_STARTED',
+				callerTranscriptErrorMessage: null,
+			},
+		})
+	} else {
+		await prisma.call.update({
+			where: { id: callId },
+			data: {
+				callerTranscript: nextTranscript,
+				callerTranscriptStatus: 'READY',
+				callerTranscriptErrorMessage: null,
+			},
+		})
+	}
+
+	return redirect(`/calls/admin/${callId}`)
+}
+
 async function undoEpisodeDraft({
 	request,
 	formData,
@@ -606,6 +683,10 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 	if (intent === 'create-episode-draft')
 		return createEpisodeDraft({ request, formData })
+	if (intent === 'generate-caller-transcript')
+		return generateCallerTranscript({ request, formData })
+	if (intent === 'update-caller-transcript')
+		return updateCallerTranscript({ request, formData })
 	if (intent === 'undo-episode-draft')
 		return undoEpisodeDraft({ request, formData })
 	if (intent === 'update-episode-draft')

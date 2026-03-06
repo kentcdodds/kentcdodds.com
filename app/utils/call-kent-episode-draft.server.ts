@@ -3,6 +3,7 @@ import {
 	parseBase64DataUrl,
 	putEpisodeDraftAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
+import { normalizeCallerTranscriptForEpisode } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-template.ts'
 import { generateCallKentEpisodeMetadataWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-metadata.server.ts'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
@@ -26,6 +27,7 @@ export async function startCallKentEpisodeDraftProcessing(
 						title: true,
 						notes: true,
 						isAnonymous: true,
+						callerTranscript: true,
 						audioKey: true,
 						user: { select: { firstName: true } },
 					},
@@ -100,6 +102,10 @@ export async function startCallKentEpisodeDraftProcessing(
 				: draft.call.user.firstName
 			const callTitle = draft.call.title
 			const callerNotes = draft.call.notes ?? undefined
+			const savedCallerTranscript = normalizeCallerTranscriptForEpisode({
+				callerTranscript: draft.call.callerTranscript,
+				callerName,
+			})
 
 			if (!segmentMp3s && responseBase64) {
 				// If the draft already has episode audio but we still have the raw response
@@ -114,13 +120,16 @@ export async function startCallKentEpisodeDraftProcessing(
 			}
 
 			if (segmentMp3s) {
+				const callerTranscriptPromise = savedCallerTranscript
+					? Promise.resolve(savedCallerTranscript)
+					: transcribeMp3WithWorkersAi({
+							mp3: segmentMp3s.callerMp3,
+							callerName,
+							callTitle,
+							callerNotes,
+						})
 				const [callerTranscript, kentTranscript] = await Promise.all([
-					transcribeMp3WithWorkersAi({
-						mp3: segmentMp3s.callerMp3,
-						callerName,
-						callTitle,
-						callerNotes,
-					}),
+					callerTranscriptPromise,
 					transcribeMp3WithWorkersAi({
 						mp3: segmentMp3s.responseMp3,
 						callerName,
