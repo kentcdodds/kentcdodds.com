@@ -25,7 +25,10 @@ import { getAudioBuffer } from '#app/utils/call-kent-audio-storage.server.ts'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
 import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcription.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
-import { startCallKentCallerTranscriptProcessing } from '../call-kent-caller-transcript.server.ts'
+import {
+	normalizeCallerTranscriptForEpisode,
+	startCallKentCallerTranscriptProcessing,
+} from '../call-kent-caller-transcript.server.ts'
 
 test('startCallKentCallerTranscriptProcessing saves ready transcript', async () => {
 	vi.clearAllMocks()
@@ -95,4 +98,28 @@ test('startCallKentCallerTranscriptProcessing records error state', async () => 
 			callerTranscriptErrorMessage: 'Caller audio is missing (audioKey is null).',
 		},
 	})
+})
+
+test('normalizeCallerTranscriptForEpisode strips caller label prefix', () => {
+	expect(
+		normalizeCallerTranscriptForEpisode({
+			callerTranscript: 'Riley: How should I test this flow?',
+			callerName: 'Riley',
+		}),
+	).toBe('How should I test this flow?')
+	expect(
+		normalizeCallerTranscriptForEpisode({
+			callerTranscript: 'Caller: Is this better now?',
+			callerName: 'Riley',
+		}),
+	).toBe('Is this better now?')
+})
+
+test('normalizeCallerTranscriptForEpisode preserves plain transcript text', () => {
+	expect(
+		normalizeCallerTranscriptForEpisode({
+			callerTranscript: 'How should I test this flow?',
+			callerName: 'Riley',
+		}),
+	).toBe('How should I test this flow?')
 })

@@ -210,11 +210,36 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 					</Paragraph>
 				) : null}
 
-				{callerTranscriptStatus === 'READY' && callerTranscript ? (
-					<Paragraph className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-700 dark:text-slate-200">
-						{callerTranscript}
-					</Paragraph>
-				) : null}
+				<Form
+					method="post"
+					action={recordingFormActionPath}
+					className="mt-3 flex flex-col gap-3"
+				>
+					<input type="hidden" name="intent" value="update-caller-transcript" />
+					<input type="hidden" name="callId" value={call.id} />
+					<textarea
+						name="callerTranscript"
+						defaultValue={callerTranscript}
+						placeholder="Caller transcript"
+						rows={6}
+						className="focus-ring w-full rounded-lg bg-white px-4 py-3 text-sm text-gray-800 dark:bg-gray-800 dark:text-white"
+						disabled={callerTranscriptStatus === 'PROCESSING'}
+					/>
+					<div className="flex items-center justify-between gap-3">
+						<Paragraph className="text-xs text-gray-500 dark:text-slate-400">
+							Edit this transcript before recording; this version is used for
+							the full episode transcript.
+						</Paragraph>
+						<Button
+							type="submit"
+							variant="secondary"
+							size="small"
+							disabled={callerTranscriptStatus === 'PROCESSING'}
+						>
+							Save caller transcript
+						</Button>
+					</div>
+				</Form>
 
 				{callerTranscriptStatus === 'NOT_STARTED' ? (
 					<Paragraph className="text-gray-500 dark:text-slate-400">

@@ -4,6 +4,33 @@ import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcripti
 import { getErrorMessage } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 
+function escapeRegExp(value: string) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+export function normalizeCallerTranscriptForEpisode({
+	callerTranscript,
+	callerName,
+}: {
+	callerTranscript?: string | null
+	callerName?: string
+}) {
+	const trimmed = callerTranscript?.trim()
+	if (!trimmed) return null
+
+	const labels = [callerName?.trim(), 'Caller'].filter(
+		(label): label is string => Boolean(label),
+	)
+	for (const label of labels) {
+		const labelRegex = new RegExp(`^${escapeRegExp(label)}:\\s*`, 'i')
+		if (labelRegex.test(trimmed)) {
+			return trimmed.replace(labelRegex, '').trim()
+		}
+	}
+
+	return trimmed
+}
+
 export async function startCallKentCallerTranscriptProcessing(
 	callId: string,
 	{ force = false }: { force?: boolean } = {},
