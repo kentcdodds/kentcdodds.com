@@ -27,5 +27,5 @@ Set these on the Cloudflare Worker:
   - Purpose: HMAC secret used to sign callbacks; app verifies this.
   - Generate: `openssl rand -hex 32`
   - Must match app `CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET`.
-  - Where to set: synced from GitHub Actions secret
-    `CALL_KENT_AUDIO_CALLBACK_SECRET` by deploy workflows.
+  - Where to set: Cloudflare Worker secret
+    (`wrangler secret put CALL_KENT_AUDIO_CALLBACK_SECRET`).

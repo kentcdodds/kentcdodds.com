@@ -252,24 +252,6 @@ jobs:
           # replace "Allow" with "Disallow" in public/robots.txt for staging
           sed -i 's/Allow/Disallow/g' public/robots.txt
 
-      - name: 🔐 Sync shared callback secret (staging app)
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        run: >-
-          flyctl secrets set CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET=${{
-          secrets.CALL_KENT_AUDIO_CALLBACK_SECRET }} --app ${{
-          steps.app_name.outputs.value }}-staging
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      - name: 🔐 Sync shared callback secret (production app)
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: >-
-          flyctl secrets set CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET=${{
-          secrets.CALL_KENT_AUDIO_CALLBACK_SECRET }} --app ${{
-          steps.app_name.outputs.value }}
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
       - name: 🚀 Deploy Staging
         if: ${{ github.ref == 'refs/heads/dev' }}
         run:
