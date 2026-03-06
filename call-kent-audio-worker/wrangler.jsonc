@@ -19,9 +19,7 @@
 	},
 	"vars": {
 		"CALL_KENT_AUDIO_CONTAINER_URL": "https://replace.example.com",
-		"CALL_KENT_AUDIO_CONTAINER_TOKEN": "replace-me",
 		"CALL_KENT_AUDIO_CALLBACK_URL": "https://kentcdodds.com/resources/calls/episode-audio-callback",
-		"CALL_KENT_AUDIO_CALLBACK_SECRET": "replace-me",
 	},
 	"env": {
 		"local": {
