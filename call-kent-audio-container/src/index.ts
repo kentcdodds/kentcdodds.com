@@ -97,7 +97,9 @@ function resolveStitchAssets() {
 			return { introPath, interstitialPath, outroPath }
 		}
 	}
-	return null
+	throw new Error(
+		'Missing stitch assets (intro/interstitial/outro). Expected assets/call-kent/*.mp3 to exist in container runtime.',
+	)
 }
 
 async function runFfmpeg({
@@ -118,20 +120,19 @@ async function runFfmpeg({
 	await fs.writeFile(callPath, callAudio)
 	await fs.writeFile(responsePath, responseAudio)
 	const stitchAssets = resolveStitchAssets()
-	const args = stitchAssets
-		? [
-				'-i',
-				stitchAssets.introPath,
-				'-i',
-				callPath,
-				'-i',
-				stitchAssets.interstitialPath,
-				'-i',
-				responsePath,
-				'-i',
-				stitchAssets.outroPath,
-				'-filter_complex',
-				`
+	const args = [
+		'-i',
+		stitchAssets.introPath,
+		'-i',
+		callPath,
+		'-i',
+		stitchAssets.interstitialPath,
+		'-i',
+		responsePath,
+		'-i',
+		stitchAssets.outroPath,
+		'-filter_complex',
+		`
           [1]silenceremove=1:0:-50dB[trimmedCall];
           [3]silenceremove=1:0:-50dB[trimmedResponse];
           [trimmedCall]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceCall];
@@ -145,39 +146,16 @@ async function runFfmpeg({
           [a02][responseForEpisode]acrossfade=d=1:c2=nofade[a03];
           [a03][4]acrossfade=d=1:c1=nofade[out]
         `,
-				'-map',
-				'[callForStandalone]',
-				callOutPath,
-				'-map',
-				'[responseForStandalone]',
-				responseOutPath,
-				'-map',
-				'[out]',
-				episodeOutPath,
-			]
-		: [
-				'-i',
-				callPath,
-				'-i',
-				responsePath,
-				'-filter_complex',
-				`
-          [0]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[call0];
-          [1]silenceremove=1:0:-50dB, silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB, loudnorm=I=-16:LRA=11:TP=0.0[response0];
-          [call0]asplit=2[callForEpisode][callForStandalone];
-          [response0]asplit=2[responseForEpisode][responseForStandalone];
-          [callForEpisode][responseForEpisode]acrossfade=d=1:c1=nofade:c2=nofade[out]
-        `,
-				'-map',
-				'[callForStandalone]',
-				callOutPath,
-				'-map',
-				'[responseForStandalone]',
-				responseOutPath,
-				'-map',
-				'[out]',
-				episodeOutPath,
-			]
+		'-map',
+		'[callForStandalone]',
+		callOutPath,
+		'-map',
+		'[responseForStandalone]',
+		responseOutPath,
+		'-map',
+		'[out]',
+		episodeOutPath,
+	]
 	try {
 		await new Promise<void>((resolve, reject) => {
 			const child = spawn('ffmpeg', args, { stdio: 'inherit' })

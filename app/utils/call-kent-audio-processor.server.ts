@@ -1,4 +1,3 @@
-import { Buffer } from 'node:buffer'
 import {
 	getAudioBuffer,
 	putEpisodeDraftAudioFromBuffer,
@@ -62,20 +61,6 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 	}
 }
 
-async function generateFallbackEpisodeAudio({
-	callAudio,
-	responseAudio,
-}: {
-	callAudio: Buffer
-	responseAudio: Buffer
-}) {
-	// Keep mock-local processing resilient if ffmpeg is unavailable.
-	const callerMp3 = Buffer.from(callAudio)
-	const responseMp3 = Buffer.from(responseAudio)
-	const episodeMp3 = Buffer.concat([callerMp3, responseMp3])
-	return { callerMp3, responseMp3, episodeMp3 }
-}
-
 async function runMockLocalEpisodeAudioJob({
 	draftId,
 	callAudioKey,
@@ -90,13 +75,7 @@ async function runMockLocalEpisodeAudioJob({
 			getAudioBuffer({ key: callAudioKey }),
 			getAudioBuffer({ key: responseAudioKey }),
 		])
-		const generated = await createEpisodeAudio(callAudio, responseAudio).catch(
-			async () =>
-				generateFallbackEpisodeAudio({
-					callAudio,
-					responseAudio,
-				}),
-		)
+		const generated = await createEpisodeAudio(callAudio, responseAudio)
 		const [episodeStored, callerStored, responseStored] = await Promise.all([
 			putEpisodeDraftAudioFromBuffer({
 				draftId,
