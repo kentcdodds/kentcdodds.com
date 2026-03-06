@@ -76,3 +76,61 @@ test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue timeout',
 		}),
 	).rejects.toThrow(/timed out/i)
 })
+
+test('requestCallKentEpisodeAudioGeneration throws on empty cloudflare queue response', async () => {
+	vi.clearAllMocks()
+	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
+		'https://api.cloudflare.com/client/v4'
+	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
+	process.env.CLOUDFLARE_API_TOKEN = 'token-123'
+	vi.spyOn(global, 'fetch').mockResolvedValue(new Response('', { status: 200 }))
+	await expect(
+		requestCallKentEpisodeAudioGeneration({
+			draftId: 'draft-1',
+			callAudioKey: 'call-kent/calls/call-1/call.webm',
+			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		}),
+	).rejects.toThrow(/empty response/i)
+})
+
+test('requestCallKentEpisodeAudioGeneration rejects cloudflare responses without success=true', async () => {
+	vi.clearAllMocks()
+	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
+		'https://api.cloudflare.com/client/v4'
+	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
+	process.env.CLOUDFLARE_API_TOKEN = 'token-123'
+	vi.spyOn(global, 'fetch').mockResolvedValue(
+		new Response(JSON.stringify({}), { status: 200 }),
+	)
+	await expect(
+		requestCallKentEpisodeAudioGeneration({
+			draftId: 'draft-1',
+			callAudioKey: 'call-kent/calls/call-1/call.webm',
+			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		}),
+	).rejects.toThrow(/success=true/i)
+})
+
+test('requestCallKentEpisodeAudioGeneration surfaces response body read failures', async () => {
+	vi.clearAllMocks()
+	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
+		'https://api.cloudflare.com/client/v4'
+	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
+	process.env.CLOUDFLARE_API_TOKEN = 'token-123'
+	vi.spyOn(global, 'fetch').mockResolvedValue({
+		ok: true,
+		status: 200,
+		statusText: 'OK',
+		text: vi.fn().mockRejectedValue(new Error('read failed')),
+	} as unknown as Response)
+	await expect(
+		requestCallKentEpisodeAudioGeneration({
+			draftId: 'draft-1',
+			callAudioKey: 'call-kent/calls/call-1/call.webm',
+			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		}),
+	).rejects.toThrow(/unable to read response body/i)
+})

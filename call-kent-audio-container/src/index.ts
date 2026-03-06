@@ -83,6 +83,23 @@ async function putAudio({
 	return { key, contentType, size: audio.byteLength }
 }
 
+const episodeDraftAudioFileNameByKind = {
+	episode: 'episode.mp3',
+	callerSegment: 'caller-segment.mp3',
+	responseSegment: 'response-segment.mp3',
+} as const
+
+function getEpisodeDraftAudioKey({
+	draftId,
+	kind,
+}: {
+	draftId: string
+	kind: keyof typeof episodeDraftAudioFileNameByKind
+}) {
+	// Keep these paths in sync with app/utils/call-kent-audio-storage.server.ts.
+	return `call-kent/drafts/${draftId}/${episodeDraftAudioFileNameByKind[kind]}`
+}
+
 function resolveStitchAssets() {
 	const roots = [
 		path.join(process.cwd(), 'assets/call-kent'),
@@ -255,17 +272,23 @@ app.post('/jobs/episode-audio', async (req, res) => {
 		const generated = await runFfmpeg({ callAudio, responseAudio })
 		const [episode, callerSegment, responseSegment] = await Promise.all([
 			putAudio({
-				key: `call-kent/drafts/${job.draftId}/episode.mp3`,
+				key: getEpisodeDraftAudioKey({ draftId: job.draftId, kind: 'episode' }),
 				audio: generated.episodeMp3,
 				contentType: 'audio/mpeg',
 			}),
 			putAudio({
-				key: `call-kent/drafts/${job.draftId}/caller-segment.mp3`,
+				key: getEpisodeDraftAudioKey({
+					draftId: job.draftId,
+					kind: 'callerSegment',
+				}),
 				audio: generated.callerMp3,
 				contentType: 'audio/mpeg',
 			}),
 			putAudio({
-				key: `call-kent/drafts/${job.draftId}/response-segment.mp3`,
+				key: getEpisodeDraftAudioKey({
+					draftId: job.draftId,
+					kind: 'responseSegment',
+				}),
 				audio: generated.responseMp3,
 				contentType: 'audio/mpeg',
 			}),
@@ -303,7 +326,17 @@ app.post('/jobs/episode-audio', async (req, res) => {
 					errorMessage: message,
 					attempt: typeof body.attempt === 'number' ? body.attempt : 1,
 				},
-			}).catch(() => {})
+			}).catch((callbackError: unknown) => {
+				console.error('Failed to send audio generation failed callback', {
+					callbackUrl: body.callbackUrl,
+					draftId: body.draftId,
+					eventType: 'audio_generation_failed',
+					error:
+						callbackError instanceof Error
+							? callbackError.message
+							: String(callbackError),
+				})
+			})
 		}
 		return res.status(500).send(message)
 	}
