@@ -16,18 +16,19 @@ export async function action({ request }: { request: Request }) {
 	const timestamp = request.headers.get(callbackTimestampHeader)
 	const signature = request.headers.get(callbackSignatureHeader)
 	const mode = getEnv().CALL_KENT_AUDIO_PROCESSOR_MODE
-	if (mode === 'cloudflare') {
-		if (!timestamp || !signature) {
-			return new Response('Missing callback signature', { status: 401 })
-		}
-		const isValid = verifyCallKentAudioProcessorCallbackSignature({
-			timestamp,
-			signature,
-			rawBody,
-		})
-		if (!isValid) {
-			return new Response('Invalid callback signature', { status: 401 })
-		}
+	if (mode !== 'cloudflare') {
+		return new Response('Callback not available', { status: 404 })
+	}
+	if (!timestamp || !signature) {
+		return new Response('Missing callback signature', { status: 401 })
+	}
+	const isValid = verifyCallKentAudioProcessorCallbackSignature({
+		timestamp,
+		signature,
+		rawBody,
+	})
+	if (!isValid) {
+		return new Response('Invalid callback signature', { status: 401 })
 	}
 
 	let payload: unknown
