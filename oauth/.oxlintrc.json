@@ -1,0 +1,3 @@
+{
+	"extends": ["@epic-web/config/oxlint"]
+}

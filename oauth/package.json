@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write .",
-    "lint": "eslint .",
+    "lint": "oxlint .",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --env local",
     "start": "wrangler dev --env local",
@@ -21,8 +21,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@epic-web/config": "^1.24.0",
-    "eslint": "^9.39.2",
+    "@epic-web/config": "^1.24.1",
+    "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
     "wrangler": "^4.67.0"
   },

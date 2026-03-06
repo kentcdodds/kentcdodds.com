@@ -158,7 +158,7 @@ npm run test:e2e:run
 
 ## Running static tests (Formatting/Linting/Typing)
 
-Everything's set up with TypeScript/Prettier/ESLint. These should all run on
+Everything's set up with TypeScript/Prettier/Oxlint. These should all run on
 commit (only relevant files are checked). You can run them individually though
 if you want:
 
