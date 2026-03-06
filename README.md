@@ -47,7 +47,7 @@ Then open `http://localhost:3000`.
 - `npm run dev` - start local development server
 - `npm run test` - run unit/component tests
 - `npm run test:e2e:dev` - run Playwright tests against dev server
-- `npm run lint` - run ESLint
+- `npm run lint` - run Oxlint
 - `npm run typecheck` - run TypeScript checks
 - `npm run build` - build the app
 
