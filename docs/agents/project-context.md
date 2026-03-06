@@ -35,6 +35,11 @@ reference:
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run
   the DB reset + seed command from the table above to apply migrations and seed
   data.
+- Production Prisma schema changes must follow widen-then-narrow rollouts:
+  deploy backward-compatible "widen" changes first, then ship narrowing
+  constraints/removals in a follow-up deploy.
+- When shipping a widen migration, create a linked follow-up issue for the
+  narrow step before merging so the cleanup pass does not get forgotten.
 - Cache database: a separate SQLite cache DB is created at `other/cache.db`.
   It's populated on first request or via `npm run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
