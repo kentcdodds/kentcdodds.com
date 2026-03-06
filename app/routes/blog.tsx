@@ -657,12 +657,7 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 				{showFeatured && data.recommended ? (
 					<div className="mb-10">
 						<FeaturedSection
-							subTitle={[
-								data.recommended.dateDisplay,
-								data.recommended.readTime?.text ?? 'quick read',
-							]
-								.filter(Boolean)
-								.join(' — ')}
+							subTitle={data.recommended.readTime?.text ?? 'quick read'}
 							title={data.recommended.frontmatter.title}
 							blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
 							imageBuilder={
