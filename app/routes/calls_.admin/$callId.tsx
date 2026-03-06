@@ -50,6 +50,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			title: true,
 			id: true,
 			isAnonymous: true,
+			callerTranscript: true,
+			callerTranscriptStatus: true,
+			callerTranscriptErrorMessage: true,
 			episodeDraft: {
 				select: {
 					id: true,
@@ -102,6 +105,9 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 	const [audioEl, setAudioEl] = React.useState<HTMLAudioElement | null>(null)
 	const [playbackRate, setPlaybackRate] = React.useState(2)
 	const dc = useDoubleCheck()
+	const callerTranscriptStatus = call.callerTranscriptStatus
+	const callerTranscript = call.callerTranscript?.trim() ?? ''
+	const callerTranscriptError = call.callerTranscriptErrorMessage
 	const mailtoHref = `mailto:${call.user.email}?${new URLSearchParams({
 		subject: `Re: Call Kent - ${call.title}`,
 		body: `I just wanted to talk about your call on the Call Kent podcast`,
@@ -167,6 +173,55 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 				<Paragraph className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-600 dark:text-slate-300">
 					{call.notes ?? 'No notes provided.'}
 				</Paragraph>
+			</div>
+
+			{/* Caller Transcript */}
+			<div className="mb-6 rounded-lg bg-gray-200 p-4 dark:bg-gray-700">
+				<div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+					<H6 as="h3">Caller transcript</H6>
+					<Form method="post" action={recordingFormActionPath}>
+						<input type="hidden" name="intent" value="generate-caller-transcript" />
+						<input type="hidden" name="callId" value={call.id} />
+						<Button
+							type="submit"
+							variant="secondary"
+							size="small"
+							disabled={callerTranscriptStatus === 'PROCESSING'}
+						>
+							{callerTranscriptStatus === 'READY'
+								? 'Regenerate transcript'
+								: callerTranscriptStatus === 'PROCESSING'
+									? 'Generating...'
+									: 'Generate transcript'}
+						</Button>
+					</Form>
+				</div>
+
+				{callerTranscriptStatus === 'PROCESSING' ? (
+					<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+						<Spinner showSpinner={true} size={16} />
+						<span>Generating caller transcript…</span>
+					</div>
+				) : null}
+
+				{callerTranscriptStatus === 'ERROR' ? (
+					<Paragraph className="whitespace-pre-wrap text-red-700 dark:text-red-300">
+						{callerTranscriptError || 'Unable to generate caller transcript.'}
+					</Paragraph>
+				) : null}
+
+				{callerTranscriptStatus === 'READY' && callerTranscript ? (
+					<Paragraph className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-700 dark:text-slate-200">
+						{callerTranscript}
+					</Paragraph>
+				) : null}
+
+				{callerTranscriptStatus === 'NOT_STARTED' ? (
+					<Paragraph className="text-gray-500 dark:text-slate-400">
+						Generate this now to review the caller's transcript before recording
+						your response.
+					</Paragraph>
+				) : null}
 			</div>
 
 			{/* Audio Player */}
@@ -599,6 +654,16 @@ function RecordingDetailScreen({
 		setPolledStatus(null)
 	}, [draft?.id])
 
+	// Caller transcript generation runs before episode-draft creation, so poll the
+	// full loader while that lightweight status is processing.
+	useInterval(
+		async () => {
+			if (revalidator.state !== 'idle') return
+			await revalidator.revalidate()
+		},
+		data.call.callerTranscriptStatus === 'PROCESSING' ? 1500 : 0,
+	)
+
 	// Use lightweight status-only endpoint when polling to avoid re-fetching
 	// transcript, title, description, keywords on every 1.5s poll.
 	useInterval(
@@ -640,7 +705,7 @@ function RecordingDetailScreen({
 					Episode draft
 				</H6>
 				<Paragraph className="mb-6 text-gray-500 dark:text-slate-400">
-					{`Record your response, then the app will generate the full episode audio, transcript, and AI metadata before you publish.`}
+					{`You can review the caller transcript first, then record your response. The app will generate full episode audio and metadata before publish.`}
 				</Paragraph>
 
 				{draft ? (
