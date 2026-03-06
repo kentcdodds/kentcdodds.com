@@ -86,7 +86,7 @@ function ArticleCard({
 					</div>
 				)}
 
-				<div className="mt-8 text-xl font-medium text-gray-500">
+				<div className="text-secondary mt-8 text-xl font-medium">
 					{[dateDisplay, readTime?.text ?? 'quick read']
 						.filter(Boolean)
 						.join(' — ')}
