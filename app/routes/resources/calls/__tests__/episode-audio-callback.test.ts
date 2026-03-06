@@ -34,6 +34,27 @@ test('episode-audio-callback rejects unsigned cloudflare callback', async () => 
 	expect(verifyCallKentAudioProcessorCallbackSignature).not.toHaveBeenCalled()
 })
 
+test('episode-audio-callback rejects mock-local callbacks', async () => {
+	vi.clearAllMocks()
+	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'mock-local'
+	const request = new Request(
+		'http://localhost/resources/calls/episode-audio-callback',
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				type: 'audio_generation_started',
+				draftId: 'draft-1',
+			}),
+		},
+	)
+	const response = await action({ request })
+	expect(response.status).toBe(404)
+	expect(verifyCallKentAudioProcessorCallbackSignature).not.toHaveBeenCalled()
+	expect(parseCallKentAudioProcessorEvent).not.toHaveBeenCalled()
+	expect(handleCallKentAudioProcessorEvent).not.toHaveBeenCalled()
+})
+
 test('episode-audio-callback validates, parses, and handles callback payload', async () => {
 	vi.clearAllMocks()
 	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'cloudflare'
