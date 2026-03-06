@@ -107,6 +107,8 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 	const dc = useDoubleCheck()
 	const callerTranscriptStatus = call.callerTranscriptStatus
 	const callerTranscript = call.callerTranscript?.trim() ?? ''
+	const [callerTranscriptValue, setCallerTranscriptValue] =
+		React.useState(callerTranscript)
 	const callerTranscriptError = call.callerTranscriptErrorMessage
 	const mailtoHref = `mailto:${call.user.email}?${new URLSearchParams({
 		subject: `Re: Call Kent - ${call.title}`,
@@ -117,6 +119,10 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 		if (!audioEl) return
 		audioEl.playbackRate = playbackRate
 	}, [audioEl, playbackRate])
+
+	React.useEffect(() => {
+		setCallerTranscriptValue(callerTranscript)
+	}, [callerTranscript])
 
 	return (
 		<section
@@ -219,7 +225,10 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 					<input type="hidden" name="callId" value={call.id} />
 					<textarea
 						name="callerTranscript"
-						defaultValue={callerTranscript}
+						value={callerTranscriptValue}
+						onChange={(event) => {
+							setCallerTranscriptValue(event.currentTarget.value)
+						}}
 						placeholder="Caller transcript"
 						rows={6}
 						className="focus-ring w-full rounded-lg bg-white px-4 py-3 text-sm text-gray-800 dark:bg-gray-800 dark:text-white"
