@@ -109,6 +109,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 	const callerTranscript = call.callerTranscript?.trim() ?? ''
 	const [callerTranscriptValue, setCallerTranscriptValue] =
 		React.useState(callerTranscript)
+	const callerTranscriptLocked = Boolean(call.episodeDraft)
 	const callerTranscriptError = call.callerTranscriptErrorMessage
 	const mailtoHref = `mailto:${call.user.email}?${new URLSearchParams({
 		subject: `Re: Call Kent - ${call.title}`,
@@ -194,7 +195,9 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 							type="submit"
 							variant="secondary"
 							size="small"
-							disabled={callerTranscriptStatus === 'PROCESSING'}
+							disabled={
+								callerTranscriptStatus === 'PROCESSING' || callerTranscriptLocked
+							}
 						>
 							{callerTranscriptStatus === 'READY'
 								? 'Regenerate transcript'
@@ -218,42 +221,58 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 					</Paragraph>
 				) : null}
 
-				<Form
-					method="post"
-					action={recordingFormActionPath}
-					className="mt-3 flex flex-col gap-3"
-				>
-					<input type="hidden" name="intent" value="update-caller-transcript" />
-					<input type="hidden" name="callId" value={call.id} />
-					<textarea
-						name="callerTranscript"
-						value={callerTranscriptValue}
-						onChange={(event) => {
-							setCallerTranscriptValue(event.currentTarget.value)
-						}}
-						placeholder="Caller transcript"
-						rows={6}
-						aria-labelledby="caller-transcript"
-						className="focus-ring w-full rounded-lg bg-white px-4 py-3 text-sm text-gray-800 dark:bg-gray-800 dark:text-white"
-						disabled={callerTranscriptStatus === 'PROCESSING'}
-					/>
-					<div className="flex items-center justify-between gap-3">
+				{callerTranscriptLocked ? (
+					<div className="mt-3 flex flex-col gap-3">
 						<Paragraph className="text-xs text-gray-500 dark:text-slate-400">
-							Edit this transcript before recording; this version is used for
-							the full episode transcript.
+							Caller transcript edits are disabled after an episode draft exists.
+							Update the{' '}
+							<a href="#draft-transcript" className="underline">
+								episode draft transcript
+							</a>{' '}
+							below instead.
 						</Paragraph>
-						<Button
-							type="submit"
-							variant="secondary"
-							size="small"
-							disabled={callerTranscriptStatus === 'PROCESSING'}
-						>
-							Save caller transcript
-						</Button>
+						<div className="rounded-lg bg-white px-4 py-3 text-sm whitespace-pre-wrap text-gray-800 dark:bg-gray-800 dark:text-white">
+							{callerTranscriptValue || 'No caller transcript available.'}
+						</div>
 					</div>
-				</Form>
+				) : (
+					<Form
+						method="post"
+						action={recordingFormActionPath}
+						className="mt-3 flex flex-col gap-3"
+					>
+						<input type="hidden" name="intent" value="update-caller-transcript" />
+						<input type="hidden" name="callId" value={call.id} />
+						<textarea
+							name="callerTranscript"
+							value={callerTranscriptValue}
+							onChange={(event) => {
+								setCallerTranscriptValue(event.currentTarget.value)
+							}}
+							placeholder="Caller transcript"
+							rows={6}
+							aria-labelledby="caller-transcript"
+							className="focus-ring w-full rounded-lg bg-white px-4 py-3 text-sm text-gray-800 dark:bg-gray-800 dark:text-white"
+							disabled={callerTranscriptStatus === 'PROCESSING'}
+						/>
+						<div className="flex items-center justify-between gap-3">
+							<Paragraph className="text-xs text-gray-500 dark:text-slate-400">
+								Edit this transcript before recording; this version is used for
+								the full episode transcript.
+							</Paragraph>
+							<Button
+								type="submit"
+								variant="secondary"
+								size="small"
+								disabled={callerTranscriptStatus === 'PROCESSING'}
+							>
+								Save caller transcript
+							</Button>
+						</div>
+					</Form>
+				)}
 
-				{callerTranscriptStatus === 'NOT_STARTED' ? (
+				{callerTranscriptStatus === 'NOT_STARTED' && !callerTranscriptLocked ? (
 					<Paragraph className="text-gray-500 dark:text-slate-400">
 						Generate this now to review the caller's transcript before recording
 						your response.
