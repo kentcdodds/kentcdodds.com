@@ -52,22 +52,38 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 			`Cloudflare queue enqueue failed: ${getErrorMessage(error)}`,
 		)
 	}
-	const text = await res.text().catch(() => '')
+	let text: string
+	try {
+		text = await res.text()
+	} catch (error: unknown) {
+		throw new Error(
+			`Cloudflare queue enqueue failed: unable to read response body: ${getErrorMessage(error)}`,
+		)
+	}
+	if (!text.trim()) {
+		throw new Error('Cloudflare queue enqueue failed: empty response')
+	}
+	let parsed: unknown
+	try {
+		parsed = JSON.parse(text)
+	} catch {
+		throw new Error('Cloudflare queue enqueue failed: invalid JSON response')
+	}
 	if (!res.ok) {
 		throw new Error(
 			`Cloudflare queue enqueue failed: ${res.status} ${res.statusText}${text ? `\n${text}` : ''}`,
 		)
 	}
-	if (text) {
-		let parsed: { success?: boolean } | null = null
-		try {
-			parsed = JSON.parse(text) as { success?: boolean }
-		} catch {
-			throw new Error('Cloudflare queue enqueue failed: invalid JSON response')
-		}
-		if (parsed?.success === false) {
-			throw new Error('Cloudflare queue enqueue failed: success=false')
-		}
+	if (typeof parsed !== 'object' || parsed === null) {
+		throw new Error(
+			'Cloudflare queue enqueue failed: response must include success=true',
+		)
+	}
+	const parsedRecord = parsed as { success?: unknown }
+	if (parsedRecord.success !== true) {
+		throw new Error(
+			'Cloudflare queue enqueue failed: response must include success=true',
+		)
 	}
 }
 
