@@ -568,6 +568,15 @@ function DraftEditor({
 	const submit = useSubmit()
 	const disabled = draft.status !== 'READY'
 
+	/**
+	 * This form has mixed intents:
+	 * - save (`update-episode-draft`) should keep scroll position on this route
+	 * - publish (`publish-episode-draft`) can navigate away and should keep default
+	 *   navigation/scroll behavior.
+	 *
+	 * We cannot use a single `preventScrollReset` prop on the whole form without
+	 * affecting publish submits, so we branch by submitter intent.
+	 */
 	function handleDraftFormSubmit(event: React.FormEvent<HTMLFormElement>) {
 		const submitter =
 			event.nativeEvent instanceof SubmitEvent
