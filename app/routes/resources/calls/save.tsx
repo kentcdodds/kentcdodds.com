@@ -477,6 +477,14 @@ async function generateCallerTranscript({
 	})
 	if (!call) return redirectCallNotFound()
 
+	await prisma.call.update({
+		where: { id: callId },
+		data: {
+			callerTranscriptStatus: 'PROCESSING',
+			callerTranscriptErrorMessage: null,
+		},
+	})
+
 	void startCallKentCallerTranscriptProcessing(callId, { force: true })
 	return redirect(`/calls/admin/${callId}`)
 }
