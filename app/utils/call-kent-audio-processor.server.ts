@@ -81,11 +81,11 @@ async function runMockLocalEpisodeAudioJob({
 	callAudioKey,
 	responseAudioKey,
 }: EpisodeAudioJob) {
-	await handleCallKentAudioProcessorEvent({
-		type: 'audio_generation_started',
-		draftId,
-	})
 	try {
+		await handleCallKentAudioProcessorEvent({
+			type: 'audio_generation_started',
+			draftId,
+		})
 		const [callAudio, responseAudio] = await Promise.all([
 			getAudioBuffer({ key: callAudioKey }),
 			getAudioBuffer({ key: responseAudioKey }),

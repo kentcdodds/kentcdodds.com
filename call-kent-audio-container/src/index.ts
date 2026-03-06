@@ -178,19 +178,24 @@ async function runFfmpeg({
 				'[out]',
 				episodeOutPath,
 			]
-	await new Promise<void>((resolve, reject) => {
-		spawn('ffmpeg', args, { stdio: 'inherit' }).on('close', (code) => {
-			if (code === 0) resolve()
-			else reject(new Error(`ffmpeg exited with code ${String(code)}`))
+	try {
+		await new Promise<void>((resolve, reject) => {
+			const child = spawn('ffmpeg', args, { stdio: 'inherit' })
+			child.once('error', reject)
+			child.once('close', (code) => {
+				if (code === 0) resolve()
+				else reject(new Error(`ffmpeg exited with code ${String(code)}`))
+			})
 		})
-	})
-	const [callerMp3, responseMp3, episodeMp3] = await Promise.all([
-		fs.readFile(callOutPath),
-		fs.readFile(responseOutPath),
-		fs.readFile(episodeOutPath),
-	])
-	await fs.rm(workDir, { recursive: true, force: true })
-	return { callerMp3, responseMp3, episodeMp3 }
+		const [callerMp3, responseMp3, episodeMp3] = await Promise.all([
+			fs.readFile(callOutPath),
+			fs.readFile(responseOutPath),
+			fs.readFile(episodeOutPath),
+		])
+		return { callerMp3, responseMp3, episodeMp3 }
+	} finally {
+		await fs.rm(workDir, { recursive: true, force: true })
+	}
 }
 
 function createSignature({
