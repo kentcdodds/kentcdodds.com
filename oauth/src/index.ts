@@ -7,7 +7,7 @@ export default new OAuthProvider({
 	apiHandler: {
 		// @ts-expect-error
 		async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-			const userId = ctx.props?.userId
+			const userId = (ctx.props as { userId?: string } | undefined)?.userId
 			if (!userId) return new Response('Unauthorized', { status: 401 })
 
 			const url = new URL(request.url)

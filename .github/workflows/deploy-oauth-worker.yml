@@ -34,6 +34,14 @@ jobs:
         run: npm ci
         working-directory: oauth
 
+      - name: 🔬 Lint oauth worker
+        run: npm run lint
+        working-directory: oauth
+
+      - name: ʦ Typecheck oauth worker
+        run: npx tsc --noEmit
+        working-directory: oauth
+
       - name: ☁️ Deploy via Wrangler
         uses: cloudflare/wrangler-action@v3
         with:
