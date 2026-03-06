@@ -15,6 +15,8 @@ type EpisodeAudioJob = {
 	responseAudioKey: string
 }
 
+const cloudflareQueueEnqueueTimeoutMs = 10_000
+
 async function enqueueCallKentEpisodeAudioJobToCloudflare({
 	draftId,
 	callAudioKey,
@@ -34,14 +36,30 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 			responseAudioKey,
 		},
 	}
-	const res = await fetch(url, {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(body),
-	})
+	let res: Response
+	try {
+		res = await fetch(url, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(body),
+			signal: AbortSignal.timeout(cloudflareQueueEnqueueTimeoutMs),
+		})
+	} catch (error: unknown) {
+		if (
+			error instanceof Error &&
+			(error.name === 'AbortError' || error.name === 'TimeoutError')
+		) {
+			throw new Error(
+				`Cloudflare queue enqueue timed out after ${cloudflareQueueEnqueueTimeoutMs}ms`,
+			)
+		}
+		throw new Error(
+			`Cloudflare queue enqueue failed: ${getErrorMessage(error)}`,
+		)
+	}
 	const text = await res.text().catch(() => '')
 	if (!res.ok) {
 		throw new Error(
@@ -114,17 +132,27 @@ export async function requestCallKentEpisodeAudioGeneration({
 	responseAudioKey,
 }: EpisodeAudioJob) {
 	const mode = getEnv().CALL_KENT_AUDIO_PROCESSOR_MODE
-	if (mode === 'mock-local') {
-		void runMockLocalEpisodeAudioJob({
-			draftId,
-			callAudioKey,
-			responseAudioKey,
-		})
-		return
+	switch (mode) {
+		case 'mock-local': {
+			// Keep mock-local async like cloudflare mode: the caller should return
+			// immediately while status changes are written via callback handlers.
+			void runMockLocalEpisodeAudioJob({
+				draftId,
+				callAudioKey,
+				responseAudioKey,
+			})
+			return
+		}
+		case 'cloudflare': {
+			await enqueueCallKentEpisodeAudioJobToCloudflare({
+				draftId,
+				callAudioKey,
+				responseAudioKey,
+			})
+			return
+		}
+		default: {
+			throw new Error(`Unsupported CALL_KENT_AUDIO_PROCESSOR_MODE: ${mode}`)
+		}
 	}
-	await enqueueCallKentEpisodeAudioJobToCloudflare({
-		draftId,
-		callAudioKey,
-		responseAudioKey,
-	})
 }

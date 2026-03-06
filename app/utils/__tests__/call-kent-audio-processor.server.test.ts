@@ -59,3 +59,23 @@ test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue errors', 
 		}),
 	).rejects.toThrow(/Cloudflare queue enqueue failed/i)
 })
+
+test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue timeout', async () => {
+	vi.clearAllMocks()
+	process.env.CALL_KENT_AUDIO_PROCESSOR_MODE = 'cloudflare'
+	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
+		'https://api.cloudflare.com/client/v4'
+	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
+	process.env.CLOUDFLARE_API_TOKEN = 'token-123'
+	const timeoutError = new Error('aborted')
+	timeoutError.name = 'AbortError'
+	vi.spyOn(global, 'fetch').mockRejectedValue(timeoutError)
+	await expect(
+		requestCallKentEpisodeAudioGeneration({
+			draftId: 'draft-1',
+			callAudioKey: 'call-kent/calls/call-1/call.webm',
+			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		}),
+	).rejects.toThrow(/timed out/i)
+})
