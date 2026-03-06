@@ -1,0 +1,36 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kcd-call-kent-audio-worker",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-03-10",
+	"observability": {
+		"enabled": true,
+	},
+	"queues": {
+		"consumers": [
+			{
+				"queue": "kcd-call-kent-audio",
+				"max_batch_size": 3,
+				"max_batch_timeout": 5,
+				"max_retries": 5,
+				"dead_letter_queue": "kcd-call-kent-audio-dlq",
+			},
+		],
+	},
+	"vars": {
+		"CALL_KENT_AUDIO_CONTAINER_URL": "https://replace.example.com",
+		"CALL_KENT_AUDIO_CONTAINER_TOKEN": "replace-me",
+		"CALL_KENT_AUDIO_CALLBACK_URL": "https://kentcdodds.com/resources/calls/episode-audio-callback",
+		"CALL_KENT_AUDIO_CALLBACK_SECRET": "replace-me",
+	},
+	"env": {
+		"local": {
+			"vars": {
+				"CALL_KENT_AUDIO_CONTAINER_URL": "http://127.0.0.1:8788",
+				"CALL_KENT_AUDIO_CONTAINER_TOKEN": "local-dev-token",
+				"CALL_KENT_AUDIO_CALLBACK_URL": "http://127.0.0.1:3000/resources/calls/episode-audio-callback",
+				"CALL_KENT_AUDIO_CALLBACK_SECRET": "local-dev-callback-secret",
+			},
+		},
+	},
+}

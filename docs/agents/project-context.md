@@ -44,13 +44,17 @@ reference:
   It's populated on first request or via `npm run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
-- Oxlint config caveat: prefer package-export extends (`"@epic-web/config/oxlint"`)
-  in `.oxlintrc.json`. In this repo, path-based extends into `node_modules` can
-  fail to inherit the shared env/rules.
+- Oxlint config caveat: prefer package-export extends
+  (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
+  extends into `node_modules` can fail to inherit the shared env/rules.
 - Semantic search caveat: YouTube auto-captions can include cue-only chunks like
   `[Music]`. The YouTube indexer filters these low-signal caption lines and
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
+- Call Kent FFmpeg offload caveat: episode audio generation can run through a
+  Cloudflare queue/container pipeline. In local dev and agent VMs, default to
+  `CALL_KENT_AUDIO_PROCESSOR_MODE=mock-local` (or `MOCKS=true`) so the flow
+  works without external Cloudflare infrastructure.
 
 ## Cloud / headless manual testing
 

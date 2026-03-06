@@ -5,6 +5,8 @@ vi.mock('#app/utils/call-kent-audio-storage.server.ts', () => ({
 	getAudioBuffer: vi.fn(),
 	parseBase64DataUrl: vi.fn(),
 	putEpisodeDraftAudioFromBuffer: vi.fn(),
+	putEpisodeDraftCallerSegmentAudioFromBuffer: vi.fn(),
+	putEpisodeDraftResponseSegmentAudioFromBuffer: vi.fn(),
 }))
 
 vi.mock('#app/utils/call-kent-transcript-template.ts', () => ({
@@ -15,9 +17,12 @@ vi.mock('#app/utils/cloudflare-ai-call-kent-metadata.server.ts', () => ({
 	generateCallKentEpisodeMetadataWithWorkersAi: vi.fn(),
 }))
 
-vi.mock('#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts', () => ({
-	formatCallKentTranscriptWithWorkersAi: vi.fn(),
-}))
+vi.mock(
+	'#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts',
+	() => ({
+		formatCallKentTranscriptWithWorkersAi: vi.fn(),
+	}),
+)
 
 vi.mock('#app/utils/cloudflare-ai-transcription.server.ts', () => ({
 	transcribeMp3WithWorkersAi: vi.fn(),
@@ -40,6 +45,8 @@ import {
 	getAudioBuffer,
 	parseBase64DataUrl,
 	putEpisodeDraftAudioFromBuffer,
+	putEpisodeDraftCallerSegmentAudioFromBuffer,
+	putEpisodeDraftResponseSegmentAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-template.ts'
 import { generateCallKentEpisodeMetadataWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-metadata.server.ts'
@@ -76,9 +83,13 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 			user: { firstName: 'Riley' },
 		},
 	} as any)
-	vi.mocked(prisma.callKentEpisodeDraft.updateMany).mockResolvedValue({ count: 1 })
+	vi.mocked(prisma.callKentEpisodeDraft.updateMany).mockResolvedValue({
+		count: 1,
+	})
 	vi.mocked(getAudioBuffer).mockResolvedValue(callAudio)
-	vi.mocked(parseBase64DataUrl).mockReturnValue({ buffer: responseAudio } as any)
+	vi.mocked(parseBase64DataUrl).mockReturnValue({
+		buffer: responseAudio,
+	} as any)
 	vi.mocked(createEpisodeAudio).mockResolvedValue({
 		episodeMp3: Buffer.from('episode-audio'),
 		callerMp3: callerSegmentAudio,
@@ -88,6 +99,16 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		key: 'drafts/draft-1.mp3',
 		contentType: 'audio/mpeg',
 		size: 123,
+	})
+	vi.mocked(putEpisodeDraftCallerSegmentAudioFromBuffer).mockResolvedValue({
+		key: 'drafts/draft-1-caller.mp3',
+		contentType: 'audio/mpeg',
+		size: 111,
+	})
+	vi.mocked(putEpisodeDraftResponseSegmentAudioFromBuffer).mockResolvedValue({
+		key: 'drafts/draft-1-response.mp3',
+		contentType: 'audio/mpeg',
+		size: 112,
 	})
 	vi.mocked(transcribeMp3WithWorkersAi).mockResolvedValue(
 		'This is Kent responding.',
