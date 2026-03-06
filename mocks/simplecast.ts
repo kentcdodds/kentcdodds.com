@@ -12,6 +12,16 @@ import {
 	type SimplecastEpisodeListItem,
 } from '#app/types.ts'
 
+function getFakerUsername() {
+	const internet = faker.internet as unknown as {
+		username?: () => string
+		userName?: () => string
+	}
+	if (typeof internet.username === 'function') return internet.username()
+	if (typeof internet.userName === 'function') return internet.userName()
+	throw new Error('No compatible faker internet username API found')
+}
+
 const seasonListItems: Array<SimpelcastSeasonListItem> = Array.from(
 	{ length: 5 },
 	(_, i) => ({
@@ -43,7 +53,7 @@ for (const seasonListItem of seasonListItems) {
 				{ length: faker.number.int({ min: 1, max: 3 }) },
 				() => {
 					const name = faker.person.fullName()
-					const username = faker.internet.username()
+					const username = getFakerUsername()
 					const website = faker.internet.url()
 					const links = [
 						faker.datatype.boolean()
