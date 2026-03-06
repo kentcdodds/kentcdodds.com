@@ -184,7 +184,9 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 			{/* Caller Transcript */}
 			<div className="mb-6 rounded-lg bg-gray-200 p-4 dark:bg-gray-700">
 				<div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-					<H6 as="h3">Caller transcript</H6>
+					<H6 as="h3" id="caller-transcript">
+						Caller transcript
+					</H6>
 					<Form method="post" action={recordingFormActionPath}>
 						<input type="hidden" name="intent" value="generate-caller-transcript" />
 						<input type="hidden" name="callId" value={call.id} />
@@ -231,6 +233,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						}}
 						placeholder="Caller transcript"
 						rows={6}
+						aria-labelledby="caller-transcript"
 						className="focus-ring w-full rounded-lg bg-white px-4 py-3 text-sm text-gray-800 dark:bg-gray-800 dark:text-white"
 						disabled={callerTranscriptStatus === 'PROCESSING'}
 					/>
