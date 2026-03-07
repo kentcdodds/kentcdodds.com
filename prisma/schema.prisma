@@ -127,6 +127,13 @@ model CallKentEpisodeDraft {
   episodeAudioKey         String?
   episodeAudioContentType String?
   episodeAudioSize        Int?
+  // Raw response input audio uploaded by admin before offloaded FFmpeg runs.
+  responseAudioKey         String?
+  responseAudioContentType String?
+  responseAudioSize        Int?
+  // Optional normalized segments produced by FFmpeg for better transcription.
+  callerSegmentAudioKey    String?
+  responseSegmentAudioKey  String?
 
   // Generated before publish so AI can write metadata; admin can edit.
   transcript    String?

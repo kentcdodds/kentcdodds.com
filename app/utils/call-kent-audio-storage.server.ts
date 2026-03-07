@@ -205,6 +205,22 @@ export function getEpisodeDraftAudioKey(draftId: string) {
 	return `call-kent/drafts/${draftId}/episode.mp3`
 }
 
+export function getEpisodeDraftResponseAudioKey(
+	draftId: string,
+	contentType: string,
+) {
+	const ext = extFromContentType(contentType)
+	return `call-kent/drafts/${draftId}/response${ext}`
+}
+
+export function getEpisodeDraftCallerSegmentAudioKey(draftId: string) {
+	return `call-kent/drafts/${draftId}/caller-segment.mp3`
+}
+
+export function getEpisodeDraftResponseSegmentAudioKey(draftId: string) {
+	return `call-kent/drafts/${draftId}/response-segment.mp3`
+}
+
 export async function putCallAudioFromDataUrl({
 	callId,
 	dataUrl,
@@ -241,6 +257,44 @@ export async function putEpisodeDraftAudioFromBuffer({
 }): Promise<PutAudioResult> {
 	const { store } = getStore()
 	const key = getEpisodeDraftAudioKey(draftId)
+	return await store.put({ key, body: mp3, contentType: 'audio/mpeg' })
+}
+
+export async function putEpisodeDraftResponseAudioFromBuffer({
+	draftId,
+	audio,
+	contentType,
+}: {
+	draftId: string
+	audio: Uint8Array
+	contentType: string
+}): Promise<PutAudioResult> {
+	const { store } = getStore()
+	const key = getEpisodeDraftResponseAudioKey(draftId, contentType)
+	return await store.put({ key, body: audio, contentType })
+}
+
+export async function putEpisodeDraftCallerSegmentAudioFromBuffer({
+	draftId,
+	mp3,
+}: {
+	draftId: string
+	mp3: Uint8Array
+}): Promise<PutAudioResult> {
+	const { store } = getStore()
+	const key = getEpisodeDraftCallerSegmentAudioKey(draftId)
+	return await store.put({ key, body: mp3, contentType: 'audio/mpeg' })
+}
+
+export async function putEpisodeDraftResponseSegmentAudioFromBuffer({
+	draftId,
+	mp3,
+}: {
+	draftId: string
+	mp3: Uint8Array
+}): Promise<PutAudioResult> {
+	const { store } = getStore()
+	const key = getEpisodeDraftResponseSegmentAudioKey(draftId)
 	return await store.put({ key, body: mp3, contentType: 'audio/mpeg' })
 }
 
