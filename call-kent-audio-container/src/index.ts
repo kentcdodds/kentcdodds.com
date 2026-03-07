@@ -1,6 +1,5 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -11,6 +10,7 @@ import {
 	S3Client,
 } from '@aws-sdk/client-s3'
 import { z } from 'zod'
+import { resolveStitchAssets } from './resolve-stitch-assets.ts'
 
 const envSchema = z.object({
 	PORT: z.string().trim().default('8788'),
@@ -98,25 +98,6 @@ function getEpisodeDraftAudioKey({
 }) {
 	// Keep these paths in sync with app/utils/call-kent-audio-storage.server.ts.
 	return `call-kent/drafts/${draftId}/${episodeDraftAudioFileNameByKind[kind]}`
-}
-
-function resolveStitchAssets() {
-	const roots = [
-		path.join(process.cwd(), 'assets/call-kent'),
-		path.join(process.cwd(), '../app/assets/call-kent'),
-		path.join(process.cwd(), 'app/assets/call-kent'),
-	]
-	for (const root of roots) {
-		const introPath = path.join(root, 'intro.mp3')
-		const interstitialPath = path.join(root, 'interstitial.mp3')
-		const outroPath = path.join(root, 'outro.mp3')
-		if ([introPath, interstitialPath, outroPath].every((p) => existsSync(p))) {
-			return { introPath, interstitialPath, outroPath }
-		}
-	}
-	throw new Error(
-		'Missing stitch assets (intro/interstitial/outro). Expected assets/call-kent/*.mp3 to exist in container runtime.',
-	)
 }
 
 async function runFfmpeg({

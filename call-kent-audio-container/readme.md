@@ -15,5 +15,5 @@ Stitch assets are required; startup requests fail if these files are missing.
 Assets are resolved from the first existing path:
 
 - `assets/call-kent/*.mp3`
-- `../app/assets/call-kent/*.mp3`
+- `../assets/call-kent/*.mp3`
 - `app/assets/call-kent/*.mp3`
