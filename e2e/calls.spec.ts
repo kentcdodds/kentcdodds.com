@@ -1,10 +1,10 @@
 import { invariant } from '@epic-web/invariant'
 import { faker } from '@faker-js/faker'
-import { expect, test } from './utils.ts'
+import { expect, readEmail, test } from './utils.ts'
 
 test('Call Kent recording flow', async ({ page, login }) => {
 	test.setTimeout(120_000)
-	await login()
+	const user = await login()
 	await page.goto('/calls')
 
 	const title = faker.lorem.words(2)
@@ -68,5 +68,32 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await page.getByRole('button', { name: /stop/i }).click()
 
 	await page.getByRole('button', { name: /accept/i }).click()
-	await expect(page.getByRole('button', { name: /generate episode draft/i })).toBeVisible()
+	await page.getByRole('button', { name: /generate episode draft/i }).click()
+
+	// Wait for draft processing to finish and editor to appear.
+	await expect(page.getByLabel(/episode title/i)).toBeVisible({
+		timeout: 60_000,
+	})
+
+	// Publish requires a double-confirmation click.
+	await page.getByRole('button', { name: /^publish episode$/i }).click()
+	await page.getByRole('button', { name: /publish \(sure\?\)/i }).click()
+	await expect(page).toHaveURL(/.*\/calls(\/|$)/)
+
+	// processing the audio takes a while, so let the timeout run
+	await expect(
+		page
+			.getByRole('banner')
+			.getByRole('heading', { level: 2, name: /calls with kent/i }),
+	).toBeVisible({ timeout: 10_000 })
+
+	// Email sending is async and may take time to be written to the mock fixture
+	const email = await readEmail((em) => em.to.includes(user.email), {
+		maxRetries: 10,
+		retryDelay: 500,
+	})
+	invariant(email, 'Notification email not found')
+	expect(email.subject).toMatch(/published/i)
+	// NOTE: domain is hard coded for image generation and stuff
+	expect(email.text).toContain('https://kentcdodds.com/calls')
 })
