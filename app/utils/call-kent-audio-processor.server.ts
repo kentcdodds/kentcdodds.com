@@ -16,9 +16,6 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 }: EpisodeAudioJob) {
 	const env = getEnv()
 	const queueId = env.CALL_KENT_AUDIO_CF_QUEUE_ID
-	if (!queueId) {
-		throw new Error('CALL_KENT_AUDIO_CF_QUEUE_ID is required.')
-	}
 	const url = `${env.CALL_KENT_AUDIO_CF_API_BASE_URL}/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/queues/${queueId}/messages`
 	const body = {
 		content_type: 'json',

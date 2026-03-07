@@ -77,7 +77,6 @@ export function verifyCallKentAudioProcessorCallbackSignature({
 	maxSkewSeconds?: number
 }) {
 	const secret = getEnv().CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET
-	if (!secret) return false
 	const timestampNumber = Number(timestamp)
 	if (!Number.isFinite(timestampNumber)) return false
 	if (Math.abs(now - timestampNumber * 1000) > maxSkewSeconds * 1000) {
