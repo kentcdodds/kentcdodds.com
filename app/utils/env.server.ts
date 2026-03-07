@@ -110,10 +110,10 @@ const schemaBase = z.object({
 	// Call Kent audio storage bucket.
 	CALL_KENT_R2_BUCKET: nonEmptyString,
 	// Cloudflare Queue config for offloaded FFmpeg jobs.
-	CALL_KENT_AUDIO_CF_QUEUE_ID: z.string().trim().optional(),
+	CALL_KENT_AUDIO_CF_QUEUE_ID: nonEmptyString,
 	CALL_KENT_AUDIO_CF_API_BASE_URL: z.string().trim().optional(),
 	// HMAC secret used by the FFmpeg processor callback route.
-	CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: z.string().trim().optional(),
+	CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: nonEmptyString,
 	SEMANTIC_SEARCH_IGNORE_LIST_KEY: z
 		.string()
 		.trim()
@@ -158,20 +158,6 @@ const schema = schemaBase.superRefine((values, ctx) => {
 		})
 	}
 
-	if (!values.CALL_KENT_AUDIO_CF_QUEUE_ID) {
-		ctx.addIssue({
-			code: 'custom',
-			message: 'CALL_KENT_AUDIO_CF_QUEUE_ID is required',
-			path: ['CALL_KENT_AUDIO_CF_QUEUE_ID'],
-		})
-	}
-	if (!values.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET) {
-		ctx.addIssue({
-			code: 'custom',
-			message: 'CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET is required',
-			path: ['CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET'],
-		})
-	}
 })
 
 type BaseEnv = z.infer<typeof schemaBase>
