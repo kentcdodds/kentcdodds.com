@@ -9,19 +9,44 @@ function createLogger() {
 	}
 }
 
-test('deploys the site when live diff includes a fly-deployable file', async () => {
-	const fetchJsonImpl = vi.fn(async (url) => {
-		if (url.endsWith('/build/info.json')) {
-			return { commit: { sha: 'live-site-sha' } }
+function createMockDeploymentFetch(shaByEnvironment = {}) {
+	const defaultSha = shaByEnvironment['*'] ?? 'deployed-sha'
+	return vi.fn(async (url) => {
+		if (!url.includes('api.github.com') || !url.includes('deployments')) {
+			throw new Error(`Unexpected fetch URL: ${url}`)
 		}
+		if (url.includes('/statuses')) {
+			return { ok: true, json: async () => [{ state: 'success' }] }
+		}
+		const envMatch = url.match(/environment=([^&]+)/)
+		const env = envMatch ? decodeURIComponent(envMatch[1]) : 'default'
+		const sha = shaByEnvironment[env] ?? defaultSha
+		return { ok: true, json: async () => [{ id: 1, sha }] }
+	})
+}
+
+const defaultDeployPlanOpts = {
+	repository: 'owner/repo',
+	token: 'test-token',
+	refName: 'main',
+}
+
+test('deploys the site when deployment diff includes a fly-deployable file', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
 		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha') {
 				return [{ changeType: 'modified', filename: 'app/routes/index.tsx' }]
 			}
 			if (compareCommitSha === 'refresh-sha') {
@@ -30,17 +55,22 @@ test('deploys the site when live diff includes a fly-deployable file', async () 
 			if (compareCommitSha === 'push-before-sha') {
 				return [{ changeType: 'modified', filename: 'content/blog/post.mdx' }]
 			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
+			}
 			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
 		},
 	)
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: 'push-before-sha',
 		eventName: 'push',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
@@ -57,11 +87,17 @@ test('deploys the site when the site workflow changes', async () => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha') {
 				return [
 					{
 						changeType: 'modified',
@@ -75,17 +111,22 @@ test('deploys the site when the site workflow changes', async () => {
 			if (compareCommitSha === 'push-before-sha') {
 				return []
 			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
+			}
 			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
 		},
 	)
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: 'push-before-sha',
 		eventName: 'push',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
@@ -93,16 +134,22 @@ test('deploys the site when the site workflow changes', async () => {
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
 
-test('skips site deploy when live diff only includes non-fly targets', async () => {
+test('skips site deploy when deployment diff only includes non-fly targets', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha') {
 				return [
 					{ changeType: 'modified', filename: 'content/blog/post.mdx' },
 					{
@@ -117,17 +164,22 @@ test('skips site deploy when live diff only includes non-fly targets', async () 
 			if (compareCommitSha === 'push-before-sha') {
 				return []
 			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
+			}
 			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
 		},
 	)
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: 'push-before-sha',
 		eventName: 'push',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
@@ -139,17 +191,26 @@ test('plans audio deploys for workflow file changes', async () => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+		'oauth-production': 'deployed-oauth-sha',
+		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
+		'call-kent-audio-container-production': 'deployed-audio-container-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha') {
 				return []
 			}
-			if (compareCommitSha === 'refresh-sha') {
-				return []
-			}
-			if (compareCommitSha === 'push-before-sha') {
+			if (
+				compareCommitSha === 'deployed-audio-worker-sha' ||
+				compareCommitSha === 'deployed-audio-container-sha'
+			) {
 				return [
 					{
 						changeType: 'modified',
@@ -161,17 +222,28 @@ test('plans audio deploys for workflow file changes', async () => {
 					},
 				]
 			}
+			if (compareCommitSha === 'deployed-oauth-sha') {
+				return []
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return []
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return []
+			}
 			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
 		},
 	)
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: 'push-before-sha',
 		eventName: 'push',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
@@ -185,12 +257,27 @@ test('plans oauth worker deploys for oauth changes', async () => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+		'oauth-production': 'deployed-oauth-sha',
+		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
+		'call-kent-audio-container-production': 'deployed-audio-container-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha') {
 				return [{ changeType: 'modified', filename: 'oauth/src/index.ts' }]
+			}
+			if (compareCommitSha === 'deployed-oauth-sha') {
+				return [{ changeType: 'modified', filename: 'oauth/src/index.ts' }]
+			}
+			if (compareCommitSha === 'deployed-audio-worker-sha' || compareCommitSha === 'deployed-audio-container-sha') {
+				return []
 			}
 			if (compareCommitSha === 'refresh-sha') {
 				return []
@@ -204,11 +291,13 @@ test('plans oauth worker deploys for oauth changes', async () => {
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: 'push-before-sha',
 		eventName: 'push',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
@@ -221,17 +310,23 @@ test('plans oauth worker deploys for workflow file changes', async () => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+		'oauth-production': 'deployed-oauth-sha',
+		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
+		'call-kent-audio-container-production': 'deployed-audio-container-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha') {
 				return []
 			}
-			if (compareCommitSha === 'refresh-sha') {
-				return []
-			}
-			if (compareCommitSha === 'push-before-sha') {
+			if (compareCommitSha === 'deployed-oauth-sha') {
 				return [
 					{
 						changeType: 'modified',
@@ -239,17 +334,28 @@ test('plans oauth worker deploys for workflow file changes', async () => {
 					},
 				]
 			}
+			if (compareCommitSha === 'deployed-audio-worker-sha' || compareCommitSha === 'deployed-audio-container-sha') {
+				return []
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return []
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return []
+			}
 			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
 		},
 	)
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: 'push-before-sha',
 		eventName: 'push',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
@@ -261,11 +367,15 @@ test('treats app changes as semantic-content updates', async () => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
 	})
+	const fetchImpl = createMockDeploymentFetch()
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha' || compareCommitSha === 'deployed-sha') {
 				return []
 			}
 			if (compareCommitSha === 'refresh-sha') {
@@ -280,23 +390,28 @@ test('treats app changes as semantic-content updates', async () => {
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: 'push-before-sha',
 		eventName: 'push',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
 	expect(deployPlan.indexSemanticContent).toBe(true)
 })
 
-test('plans push-diff targets conservatively when push diff is unavailable', async () => {
+test('plans deploy targets when no deployment state available', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
 	})
 	const getChangedFilesImpl = vi.fn(async () => [])
 	const log = createLogger()
@@ -305,6 +420,7 @@ test('plans push-diff targets conservatively when push diff is unavailable', asy
 		currentCommitSha: 'current-sha',
 		pushBeforeSha: null,
 		eventName: 'push',
+		repository: undefined,
 		fetchJsonImpl,
 		getChangedFilesImpl,
 		log,
@@ -312,6 +428,7 @@ test('plans push-diff targets conservatively when push diff is unavailable', asy
 
 	expect(deployPlan.refreshContent).toBe(false)
 	expect(deployPlan.indexSemanticContent).toBe(true)
+	expect(deployPlan.deploySite).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
 	expect(deployPlan.deployCallKentAudioContainer).toBe(true)
 	expect(deployPlan.deployOauthWorker).toBe(true)
@@ -322,15 +439,25 @@ test('leaves push-only execution to workflow gating during pull requests', async
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
 		}
-		return { commit: { sha: 'live-site-sha' } }
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+		'oauth-production': 'deployed-oauth-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'live-site-sha') {
+			if (compareCommitSha === 'deployed-site-sha') {
 				return [{ changeType: 'modified', filename: 'content/blog/post.mdx' }]
 			}
 			if (compareCommitSha === 'refresh-sha') {
 				return [{ changeType: 'modified', filename: 'content/blog/post.mdx' }]
+			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
 			}
 			return []
 		},
@@ -338,10 +465,13 @@ test('leaves push-only execution to workflow gating during pull requests', async
 	const log = createLogger()
 
 	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
 		currentCommitSha: 'current-sha',
 		eventName: 'pull_request',
+		refName: 'main',
 		fetchJsonImpl,
 		getChangedFilesImpl,
+		fetchImpl,
 		log,
 	})
 
@@ -351,4 +481,141 @@ test('leaves push-only execution to workflow gating during pull requests', async
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
 	expect(deployPlan.deployCallKentAudioContainer).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
+})
+
+test('failed deploy stays deployable across unrelated push', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
+		if (url.endsWith('/refresh-commit-sha.json')) {
+			return { sha: 'refresh-sha' }
+		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+		'oauth-production': 'last-successful-oauth-sha',
+		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
+		'call-kent-audio-container-production': 'deployed-audio-container-sha',
+	})
+	const getChangedFilesImpl = vi.fn(
+		async (ignoredCurrentCommitSha, compareCommitSha) => {
+			if (compareCommitSha === 'deployed-site-sha') {
+				return []
+			}
+			if (compareCommitSha === 'last-successful-oauth-sha') {
+				return [
+					{ changeType: 'modified', filename: 'oauth/src/index.ts' },
+					{ changeType: 'modified', filename: 'README.md' },
+				]
+			}
+			if (compareCommitSha === 'deployed-audio-worker-sha' || compareCommitSha === 'deployed-audio-container-sha') {
+				return []
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return []
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return [{ changeType: 'modified', filename: 'README.md' }]
+			}
+			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
+		},
+	)
+	const log = createLogger()
+
+	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
+		currentCommitSha: 'current-sha',
+		pushBeforeSha: 'push-before-sha',
+		eventName: 'push',
+		fetchJsonImpl,
+		getChangedFilesImpl,
+		fetchImpl,
+		log,
+	})
+
+	expect(deployPlan.deploySite).toBe(false)
+	expect(deployPlan.deployOauthWorker).toBe(true)
+})
+
+test('isolates site-staging from site-production', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
+		if (url.endsWith('/refresh-commit-sha.json')) {
+			return { sha: 'refresh-sha' }
+		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-staging': 'staging-deployed-sha',
+		'site-production': 'production-deployed-sha',
+	})
+	const getChangedFilesImpl = vi.fn(
+		async (ignoredCurrentCommitSha, compareCommitSha) => {
+			if (compareCommitSha === 'staging-deployed-sha') {
+				return [{ changeType: 'modified', filename: 'app/routes/index.tsx' }]
+			}
+			if (compareCommitSha === 'production-deployed-sha') {
+				return []
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return []
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return []
+			}
+			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
+		},
+	)
+	const log = createLogger()
+
+	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
+		currentCommitSha: 'current-sha',
+		pushBeforeSha: 'push-before-sha',
+		eventName: 'push',
+		refName: 'dev',
+		fetchJsonImpl,
+		getChangedFilesImpl,
+		fetchImpl,
+		log,
+	})
+
+	expect(deployPlan.deploySite).toBe(true)
+})
+
+test('GitHub API failure defaults to deploy', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
+		if (url.endsWith('/refresh-commit-sha.json')) {
+			return { sha: 'refresh-sha' }
+		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = vi.fn(async () => {
+		throw new Error('Network error')
+	})
+	const getChangedFilesImpl = vi.fn(async () => [])
+	const log = createLogger()
+
+	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
+		currentCommitSha: 'current-sha',
+		pushBeforeSha: 'push-before-sha',
+		eventName: 'push',
+		fetchJsonImpl,
+		getChangedFilesImpl,
+		fetchImpl,
+		log,
+	})
+
+	expect(deployPlan.deploySite).toBe(true)
+	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
+	expect(deployPlan.deployCallKentAudioContainer).toBe(true)
+	expect(deployPlan.deployOauthWorker).toBe(true)
 })

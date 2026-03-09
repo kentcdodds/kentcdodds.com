@@ -8,6 +8,7 @@ jobs:
   deploy:
     name: 🔐 Deploy OAuth Worker
     runs-on: ubuntu-latest
+    environment: oauth-production
     concurrency:
       group: deploy-oauth-worker-${{ github.ref }}
       cancel-in-progress: true

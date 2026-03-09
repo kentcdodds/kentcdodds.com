@@ -8,6 +8,7 @@ jobs:
   deploy:
     name: ⚙️ Deploy Call Kent Audio Worker
     runs-on: ubuntu-latest
+    environment: call-kent-audio-worker-production
     concurrency:
       group: deploy-call-kent-audio-worker-${{ github.ref }}
       cancel-in-progress: true

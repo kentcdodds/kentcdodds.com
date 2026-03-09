@@ -3,6 +3,8 @@ import fs from 'fs/promises'
 import { pathToFileURL } from 'url'
 import { fetchJson, getChangedFiles } from './get-changed-files.js'
 
+const GITHUB_API_BASE = 'https://api.github.com'
+
 const defaultBaseUrl =
 	process.env.GITHUB_REF_NAME === 'dev'
 		? 'https://kcd-staging.fly.dev'
@@ -44,12 +46,155 @@ const callKentAudioContainerFiles = new Set([
 const oauthWorkerPathPrefixes = ['oauth/']
 const oauthWorkerFiles = new Set(['.github/workflows/deploy-oauth-worker.yml'])
 
+/**
+ * GitHub deployment environment names per deploy target and ref.
+ * Used to resolve last successful deployment SHA from GitHub Deployments API.
+ */
+const DEPLOY_ENVIRONMENTS: Record<string, (refName: string) => string | null> =
+	{
+		deploySite: (refName) =>
+			refName === 'main'
+				? 'site-production'
+				: refName === 'dev'
+					? 'site-staging'
+					: null,
+		deployOauthWorker: (refName) =>
+			refName === 'main' ? 'oauth-production' : null,
+		deployCallKentAudioWorker: (refName) =>
+			refName === 'main' ? 'call-kent-audio-worker-production' : null,
+		deployCallKentAudioContainer: (refName) =>
+			refName === 'main' ? 'call-kent-audio-container-production' : null,
+	}
+
 type ChangedFile = {
 	changeType: string
 	filename: string
 }
 
 type LogLike = Pick<typeof console, 'log' | 'warn'>
+
+type GitHubDeployment = { id: number; sha: string }
+type GitHubDeploymentStatus = { state: string }
+
+async function fetchLastSuccessfulDeploymentSha({
+	owner,
+	repo,
+	ref,
+	environment,
+	token,
+	fetchImpl = fetch,
+	timeoutMs = defaultFetchTimeoutMs,
+	log = console,
+}: {
+	owner: string
+	repo: string
+	ref: string
+	environment: string
+	token: string | undefined
+	fetchImpl?: typeof fetch
+	timeoutMs?: number
+	log?: LogLike
+}): Promise<string | null> {
+	if (!token) return null
+
+	const controller = new AbortController()
+	const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+	try {
+		const deploymentsRes = await fetchImpl(
+			`${GITHUB_API_BASE}/repos/${owner}/${repo}/deployments?environment=${encodeURIComponent(environment)}&ref=${encodeURIComponent(ref)}&per_page=10`,
+			{
+				headers: {
+					Accept: 'application/vnd.github+json',
+					Authorization: `Bearer ${token}`,
+					'X-GitHub-Api-Version': '2022-11-28',
+				},
+				signal: controller.signal,
+			},
+		)
+		if (!deploymentsRes.ok) return null
+
+		const deployments: Array<GitHubDeployment> = await deploymentsRes.json()
+		for (const deployment of deployments) {
+			const statusesRes = await fetchImpl(
+				`${GITHUB_API_BASE}/repos/${owner}/${repo}/deployments/${deployment.id}/statuses?per_page=10`,
+				{
+					headers: {
+						Accept: 'application/vnd.github+json',
+						Authorization: `Bearer ${token}`,
+						'X-GitHub-Api-Version': '2022-11-28',
+					},
+					signal: controller.signal,
+				},
+			)
+			if (!statusesRes.ok) continue
+
+			const statuses: Array<GitHubDeploymentStatus> = await statusesRes.json()
+			const success = statuses.find((s) => s.state === 'success')
+			if (success) return deployment.sha
+		}
+		return null
+	} catch (error) {
+		log.warn('GitHub deployment lookup failed, planning deploy.', {
+			environment,
+			error,
+		})
+		return null
+	} finally {
+		clearTimeout(timeout)
+	}
+}
+
+async function getDeploymentChangedFiles({
+	currentCommitSha,
+	refName,
+	target,
+	owner,
+	repo,
+	token,
+	fetchLastSuccessfulDeploymentShaImpl = fetchLastSuccessfulDeploymentSha,
+	getChangedFilesImpl,
+	fetchImpl,
+	log,
+}: {
+	currentCommitSha: string
+	refName: string
+	target: keyof typeof DEPLOY_ENVIRONMENTS
+	owner: string
+	repo: string
+	token: string | undefined
+	fetchLastSuccessfulDeploymentShaImpl?: typeof fetchLastSuccessfulDeploymentSha
+	getChangedFilesImpl: typeof getChangedFiles
+	fetchImpl?: typeof fetch
+	log: LogLike
+}): Promise<{
+	compareCommitSha: string | null
+	changedFiles: null | Array<ChangedFile>
+}> {
+	const environment = DEPLOY_ENVIRONMENTS[target]?.(refName)
+	if (!environment) {
+		return { compareCommitSha: null, changedFiles: null }
+	}
+
+	const compareCommitSha = await fetchLastSuccessfulDeploymentShaImpl({
+		owner,
+		repo,
+		ref: refName,
+		environment,
+		token,
+		fetchImpl,
+		log,
+	})
+
+	if (!compareCommitSha) {
+		return { compareCommitSha: null, changedFiles: null }
+	}
+
+	const changedFiles = normalizeChangedFiles(
+		await getChangedFilesImpl(currentCommitSha, compareCommitSha),
+	)
+	return { compareCommitSha, changedFiles }
+}
 
 function normalizeChangedFiles(changedFiles: null | Array<ChangedFile>) {
 	if (!Array.isArray(changedFiles)) return changedFiles
@@ -94,11 +239,9 @@ function isFlyDeployablePath(filename: string) {
 }
 
 function shouldDeploySite(changedFiles: null | Array<ChangedFile>) {
-	return (
-		changedFiles === null ||
-		changedFiles.length === 0 ||
-		changedFiles.some((file) => isFlyDeployablePath(file.filename))
-	)
+	if (changedFiles === null) return true
+	if (changedFiles.length === 0) return false
+	return changedFiles.some((file) => isFlyDeployablePath(file.filename))
 }
 
 function shouldRunPathTarget({
@@ -122,44 +265,6 @@ function shouldRunPathTarget({
 
 function isAllZerosSha(sha: string | undefined | null) {
 	return typeof sha === 'string' && /^0+$/.test(sha)
-}
-
-async function getSiteChangedFiles({
-	currentCommitSha,
-	baseUrl,
-	fetchJsonImpl,
-	getChangedFilesImpl,
-	log,
-}: {
-	currentCommitSha: string
-	baseUrl: string
-	fetchJsonImpl: typeof fetchJson
-	getChangedFilesImpl: typeof getChangedFiles
-	log: LogLike
-}) {
-	try {
-		const buildInfo = await fetchJsonImpl(`${baseUrl}/build/info.json`, {
-			timeoutTime: defaultFetchTimeoutMs,
-		})
-		const compareCommitSha = buildInfo?.commit?.sha
-		if (typeof compareCommitSha !== 'string') {
-			log.warn(
-				'Unable to determine deployed build sha for site deploy planning.',
-			)
-			return { compareCommitSha: null, changedFiles: null }
-		}
-
-		const changedFiles = normalizeChangedFiles(
-			await getChangedFilesImpl(currentCommitSha, compareCommitSha),
-		)
-
-		return { compareCommitSha, changedFiles }
-	} catch (error) {
-		log.warn('Unable to determine site deploy plan, defaulting to deploy.', {
-			error,
-		})
-		return { compareCommitSha: null, changedFiles: null }
-	}
 }
 
 async function getRefreshChangedFiles({
@@ -238,21 +343,39 @@ async function getPushChangedFiles({
 	)
 }
 
+function parseRepo(
+	repository: string | undefined,
+): { owner: string; repo: string } | null {
+	if (!repository || !repository.includes('/')) return null
+	const [owner, repo] = repository.split('/', 2)
+	return owner && repo ? { owner, repo } : null
+}
+
 export async function computeDeployPlan({
 	currentCommitSha,
 	pushBeforeSha = process.env.GITHUB_EVENT_BEFORE,
 	baseUrl = defaultBaseUrl,
 	eventName = process.env.GITHUB_EVENT_NAME,
+	refName = process.env.GITHUB_BASE_REF ||
+		process.env.GITHUB_REF_NAME ||
+		'main',
+	repository = process.env.GITHUB_REPOSITORY,
+	token = process.env.GITHUB_TOKEN,
 	fetchJsonImpl = fetchJson,
 	getChangedFilesImpl = getChangedFiles,
+	fetchImpl,
 	log = console,
 }: {
 	currentCommitSha?: string
 	pushBeforeSha?: string
 	baseUrl?: string
 	eventName?: string
+	refName?: string
+	repository?: string
+	token?: string
 	fetchJsonImpl?: typeof fetchJson
 	getChangedFilesImpl?: typeof getChangedFiles
+	fetchImpl?: typeof fetch
 	log?: LogLike
 } = {}) {
 	if (!currentCommitSha) {
@@ -260,26 +383,21 @@ export async function computeDeployPlan({
 	}
 
 	const isPushEvent = eventName === 'push'
-	const pushChangedFiles = await getPushChangedFiles({
-		currentCommitSha,
-		pushBeforeSha,
-		getChangedFilesImpl,
-		isPushEvent,
-		log,
-	})
+	const repo = parseRepo(repository)
 
 	const [
-		{ compareCommitSha: siteCompareCommitSha, changedFiles: siteChangedFiles },
-		{
-			compareCommitSha: refreshCompareCommitSha,
-			changedFiles: refreshChangedFiles,
-		},
+		pushChangedFiles,
+		refreshResult,
+		siteDeployResult,
+		oauthDeployResult,
+		audioWorkerDeployResult,
+		audioContainerDeployResult,
 	] = await Promise.all([
-		getSiteChangedFiles({
+		getPushChangedFiles({
 			currentCommitSha,
-			baseUrl,
-			fetchJsonImpl,
+			pushBeforeSha,
 			getChangedFilesImpl,
+			isPushEvent,
 			log,
 		}),
 		getRefreshChangedFiles({
@@ -289,7 +407,65 @@ export async function computeDeployPlan({
 			getChangedFilesImpl,
 			log,
 		}),
+		repo
+			? getDeploymentChangedFiles({
+					currentCommitSha,
+					refName,
+					target: 'deploySite',
+					owner: repo.owner,
+					repo: repo.repo,
+					token,
+					getChangedFilesImpl,
+					fetchImpl,
+					log,
+				})
+			: Promise.resolve({ compareCommitSha: null, changedFiles: null }),
+		repo
+			? getDeploymentChangedFiles({
+					currentCommitSha,
+					refName,
+					target: 'deployOauthWorker',
+					owner: repo.owner,
+					repo: repo.repo,
+					token,
+					getChangedFilesImpl,
+					fetchImpl,
+					log,
+				})
+			: Promise.resolve({ compareCommitSha: null, changedFiles: null }),
+		repo
+			? getDeploymentChangedFiles({
+					currentCommitSha,
+					refName,
+					target: 'deployCallKentAudioWorker',
+					owner: repo.owner,
+					repo: repo.repo,
+					token,
+					getChangedFilesImpl,
+					fetchImpl,
+					log,
+				})
+			: Promise.resolve({ compareCommitSha: null, changedFiles: null }),
+		repo
+			? getDeploymentChangedFiles({
+					currentCommitSha,
+					refName,
+					target: 'deployCallKentAudioContainer',
+					owner: repo.owner,
+					repo: repo.repo,
+					token,
+					getChangedFilesImpl,
+					fetchImpl,
+					log,
+				})
+			: Promise.resolve({ compareCommitSha: null, changedFiles: null }),
 	])
+
+	const siteChangedFiles = siteDeployResult.changedFiles
+	const {
+		compareCommitSha: refreshCompareCommitSha,
+		changedFiles: refreshChangedFiles,
+	} = refreshResult
 
 	const deployPlan = {
 		deploySite: shouldDeploySite(siteChangedFiles),
@@ -304,19 +480,19 @@ export async function computeDeployPlan({
 			runWhenUnknown: isPushEvent,
 		}),
 		deployCallKentAudioWorker: shouldRunPathTarget({
-			changedFiles: pushChangedFiles,
+			changedFiles: audioWorkerDeployResult.changedFiles,
 			pathPrefixes: callKentAudioWorkerPathPrefixes,
 			files: callKentAudioWorkerFiles,
 			runWhenUnknown: isPushEvent,
 		}),
 		deployCallKentAudioContainer: shouldRunPathTarget({
-			changedFiles: pushChangedFiles,
+			changedFiles: audioContainerDeployResult.changedFiles,
 			pathPrefixes: callKentAudioContainerPathPrefixes,
 			files: callKentAudioContainerFiles,
 			runWhenUnknown: isPushEvent,
 		}),
 		deployOauthWorker: shouldRunPathTarget({
-			changedFiles: pushChangedFiles,
+			changedFiles: oauthDeployResult.changedFiles,
 			pathPrefixes: oauthWorkerPathPrefixes,
 			files: oauthWorkerFiles,
 			runWhenUnknown: isPushEvent,
@@ -326,7 +502,7 @@ export async function computeDeployPlan({
 	log.log('Computed deploy plan.', {
 		currentCommitSha,
 		pushBeforeSha,
-		siteCompareCommitSha,
+		siteCompareCommitSha: siteDeployResult.compareCommitSha,
 		refreshCompareCommitSha,
 		deployPlan,
 	})
@@ -334,7 +510,7 @@ export async function computeDeployPlan({
 	return {
 		...deployPlan,
 		pushBeforeSha: pushBeforeSha ?? null,
-		siteCompareCommitSha,
+		siteCompareCommitSha: siteDeployResult.compareCommitSha,
 		refreshCompareCommitSha,
 		pushChangedFiles,
 		siteChangedFiles,

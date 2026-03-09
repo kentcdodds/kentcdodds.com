@@ -16,6 +16,8 @@ jobs:
   plan:
     name: 🔎 Plan Deploys
     runs-on: ubuntu-latest
+    permissions:
+      deployments: read
     outputs:
       deploy_site: ${{ steps.plan.outputs.deploy_site }}
       refresh_content: ${{ steps.plan.outputs.refresh_content }}
@@ -43,6 +45,9 @@ jobs:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ❓ Deploy plan
         run: |

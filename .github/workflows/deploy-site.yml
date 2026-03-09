@@ -204,6 +204,7 @@ jobs:
     if:
       ${{ inputs.should_deploy && (github.ref == 'refs/heads/main' || github.ref
       == 'refs/heads/dev') }}
+    environment: site-${{ github.ref_name == 'main' && 'production' || 'staging' }}
     concurrency:
       group: deploy-site-${{ github.ref_name }}
       cancel-in-progress: true
