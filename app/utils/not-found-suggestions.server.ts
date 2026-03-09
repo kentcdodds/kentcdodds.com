@@ -336,7 +336,7 @@ function getQueryCandidates({
 			? notFoundQueryFromPathname(segments.slice(1).join('/'))
 			: ''
 	const rawPathQuery = normalizeText(
-		normalized.replace(/^\/+/, '').replace(/[-_.\/]+/g, ' '),
+		normalized.replace(/^\/+/, '').replace(/[-_./]+/g, ' '),
 	)
 
 	const candidates = [
@@ -363,7 +363,7 @@ const matchSorterOptions = {
 		{ key: 'title', threshold: matchSorterRankings.CONTAINS },
 		{
 			key: (i: NotFoundDeterministicIndexItem) =>
-				normalizeText(i.url.replace(/[-_.\/]+/g, ' ')),
+				normalizeText(i.url.replace(/[-_./]+/g, ' ')),
 			threshold: matchSorterRankings.CONTAINS,
 			maxRanking: matchSorterRankings.CONTAINS,
 		},

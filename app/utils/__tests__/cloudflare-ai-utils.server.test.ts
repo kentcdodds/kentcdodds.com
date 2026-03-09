@@ -3,7 +3,7 @@ import { setEnv } from '#tests/env-disposable.ts'
 import { getWorkersAiRunUrl } from '../cloudflare-ai-utils.server.ts'
 
 test('getWorkersAiRunUrl routes embeddinggemma requests through CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID', () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-gateway',
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'embedding-gateway',
@@ -15,7 +15,7 @@ test('getWorkersAiRunUrl routes embeddinggemma requests through CLOUDFLARE_AI_EM
 })
 
 test('getWorkersAiRunUrl keeps non-embedding models on CLOUDFLARE_AI_GATEWAY_ID', () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-gateway',
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'embedding-gateway',
@@ -27,7 +27,7 @@ test('getWorkersAiRunUrl keeps non-embedding models on CLOUDFLARE_AI_GATEWAY_ID'
 })
 
 test('getWorkersAiRunUrl prefers explicit gatewayId overrides', () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-gateway',
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'embedding-gateway',

@@ -1049,7 +1049,7 @@ async function mapWithConcurrency<Item, Result>(
 	concurrency: number,
 	mapper: (item: Item, index: number) => Promise<Result>,
 ) {
-	const results: Result[] = new Array(items.length)
+	const results = Array.from({ length: items.length }) as Result[]
 	let nextIndex = 0
 	const workers = Array.from({ length: Math.max(1, concurrency) }, async () => {
 		while (nextIndex < items.length) {

@@ -183,7 +183,7 @@ export async function mapWithConcurrency<Item, Result>(
 	mapper: (item: Item, index: number) => Promise<Result>,
 ) {
 	const safeConcurrency = Math.max(1, Math.min(concurrency, items.length || 1))
-	const results: Result[] = new Array(items.length)
+	const results = Array.from({ length: items.length }) as Result[]
 	let nextIndex = 0
 	let failed = false
 	let hasError = false

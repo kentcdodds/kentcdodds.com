@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
+import { setEnv } from '#tests/env-disposable.ts'
 
 test('formatCallKentTranscriptWithWorkersAi rejects empty transcripts', async () => {
 	await expect(
@@ -8,6 +9,14 @@ test('formatCallKentTranscriptWithWorkersAi rejects empty transcripts', async ()
 })
 
 test('formatCallKentTranscriptWithWorkersAi returns paragraphs and preserves separators', async () => {
+	using _env = setEnv({
+		CLOUDFLARE_API_TOKEN: 'MOCK_CLOUDFLARE_API_TOKEN',
+		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
+		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
+		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+	})
+
 	const transcript = `
 Announcer: You're listening to the Call Kent Podcast. Now let's hear the call.
 
@@ -39,6 +48,14 @@ Announcer: This has been the Call Kent Podcast. Thanks for listening.
 })
 
 test('formatCallKentTranscriptWithWorkersAi works without --- separators', async () => {
+	using _env = setEnv({
+		CLOUDFLARE_API_TOKEN: 'MOCK_CLOUDFLARE_API_TOKEN',
+		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
+		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
+		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+	})
+
 	const transcript = `Caller: Hi Kent. This is a single block transcript. It should still get paragraph breaks.`
 	const formatted = await formatCallKentTranscriptWithWorkersAi({ transcript })
 	expect(formatted).toContain('Caller:')
@@ -46,6 +63,14 @@ test('formatCallKentTranscriptWithWorkersAi works without --- separators', async
 })
 
 test('formatCallKentTranscriptWithWorkersAi does not truncate long transcripts', async () => {
+	using _env = setEnv({
+		CLOUDFLARE_API_TOKEN: 'MOCK_CLOUDFLARE_API_TOKEN',
+		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
+		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
+		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+	})
+
 	const longBody = Array.from(
 		{ length: 600 },
 		(_, i) => `Sentence ${i + 1}.`,

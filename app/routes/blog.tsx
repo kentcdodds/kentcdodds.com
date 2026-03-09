@@ -606,7 +606,7 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 										selected={selected}
 										onClick={() => toggleTag(tag)}
 										disabled={
-											Boolean(!visibleTags.has(tag)) ? !selected : false
+											!visibleTags.has(tag) ? !selected : false
 										}
 									/>
 								)

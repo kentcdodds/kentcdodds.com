@@ -16,8 +16,12 @@ export const meta: MetaFunction<
 		(matches.find((m) => m.id === 'routes/talks/_layout')?.data as
 			| SerializeFrom<typeof talkLoader>
 			| undefined) ?? {}
-	const { requestInfo } = matches.find((m) => m.id === 'root')
-		?.data as SerializeFrom<RootLoaderType>
+	const rootData = matches.find((m) => m.id === 'root')
+		?.data as SerializeFrom<RootLoaderType> | undefined
+	if (!rootData) {
+		return [{ title: '404: Talk not found' }]
+	}
+	const { requestInfo } = rootData
 
 	const talk = params.slug ? talks.find((t) => t.slug === params.slug) : null
 	const title = talk ? talk.title : '404: Talk not found'

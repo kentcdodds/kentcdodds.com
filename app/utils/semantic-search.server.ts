@@ -206,7 +206,7 @@ async function cloudflareFetch(
 		...init,
 		headers: {
 			Authorization: `Bearer ${apiToken}`,
-			...(init.headers ?? {}),
+			...init.headers,
 		},
 	})
 

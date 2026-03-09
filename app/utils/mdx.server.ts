@@ -163,7 +163,7 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 				return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
 			})
 
-			return pages.map(({ code, ...rest }) => rest)
+			return pages.map(({ code: _code, ...rest }) => rest)
 		},
 	})
 }

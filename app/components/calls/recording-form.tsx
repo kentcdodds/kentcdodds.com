@@ -136,7 +136,7 @@ export function RecordingForm({
 					? {
 							...prev,
 							errors: {
-								...(prev.errors ?? {}),
+								...prev.errors,
 								generalError: undefined,
 								[field]: null,
 							} as RecordingFormData['errors'],

@@ -56,7 +56,8 @@ const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
 		// NOTE: keyword metadata is not used because it was used and abused by
 		// spammers. We use them for sorting on our own site, but we don't list
 		// it in the meta tags because it's possible to be penalized for doing so.
-		const { keywords, ...extraMetaInfo } = data.page.frontmatter.meta ?? {}
+		const { keywords: _keywords, ...extraMetaInfo } =
+			data.page.frontmatter.meta ?? {}
 		const extraMeta: ExtraMeta = Object.entries(extraMetaInfo).reduce(
 			(acc: ExtraMeta, [key, val]) => [...acc, { [key]: String(val) }],
 			[],

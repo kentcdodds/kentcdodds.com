@@ -16,7 +16,7 @@ export function isLowSignalYoutubeCaptionCueLine(line: string) {
 	if (!normalized) return true
 
 	// Caption tracks often include non-semantic cues like `[Music]`.
-	const cueOnlyBracketedPattern = /^(?:\[[^\]]+\](?:[\s.,!?;:\/\\-]*)?)+$/u
+	const cueOnlyBracketedPattern = /^(?:\[[^\]]+\](?:[\s.,!?;:/\\-]*)?)+$/u
 	if (cueOnlyBracketedPattern.test(normalized)) return true
 
 	return BARE_CUE_WORDS.has(normalized.toLowerCase())

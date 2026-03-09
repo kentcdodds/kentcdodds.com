@@ -349,9 +349,9 @@ function createServer() {
 					},
 					{
 						type: 'text',
-						text:
-							`Transcript:\n\n${episode.transcriptHTML}` ||
-							`Transcript: No transcript found for ${episode.title} (Chats with Kent S${seasonNumber}E${episodeNumber})`,
+						text: episode.transcriptHTML
+							? `Transcript:\n\n${episode.transcriptHTML}`
+							: `Transcript: No transcript found for ${episode.title} (Chats with Kent S${seasonNumber}E${episodeNumber})`,
 					},
 				],
 			}

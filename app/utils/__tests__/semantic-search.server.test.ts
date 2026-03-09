@@ -22,7 +22,7 @@ vi.mock('#app/utils/semantic-search-presentation.server.ts', () => ({
 import { semanticSearchKCD } from '../semantic-search.server.ts'
 
 test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID', async () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
 		CLOUDFLARE_API_TOKEN: 'cf-token',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-search-gateway',
@@ -78,7 +78,7 @@ test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_EMBED
 })
 
 test('semanticSearchKCD canonicalizes YouTube results by video id from URL when slug is missing', async () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
 		CLOUDFLARE_API_TOKEN: 'mock-token',
 		CLOUDFLARE_AI_GATEWAY_ID: 'runtime-search-gateway',
