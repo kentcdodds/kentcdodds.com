@@ -23,19 +23,16 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: call-kent-audio-worker/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: 📥 Install audio worker deps
+      - name: 📥 Install workspace deps
         run: npm ci
-        working-directory: call-kent-audio-worker
 
       - name: 🔬 Lint audio worker
-        run: npm run lint
-        working-directory: call-kent-audio-worker
+        run: npm run lint --workspace call-kent-audio-worker
 
       - name: ʦ Typecheck audio worker
-        run: npx tsc --noEmit
-        working-directory: call-kent-audio-worker
+        run: npm run typecheck --workspace call-kent-audio-worker
 
       - name: ☁️ Deploy via Wrangler
         uses: cloudflare/wrangler-action@v3

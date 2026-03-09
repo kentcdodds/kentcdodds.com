@@ -18,7 +18,9 @@ reference:
 | --------------- | --------------------------------------------------------------------------------- |
 | Dev server      | `npm run dev` (starts on port 3000 with `MOCKS=true`)                             |
 | Lint            | `npm run lint`                                                                    |
+| Lint (all)      | `npm run lint:all`                                                                |
 | Typecheck       | `npm run typecheck`                                                               |
+| Typecheck (all) | `npm run typecheck:all`                                                           |
 | Unit tests      | `npm run test` (runs backend + browser-mode tests)                                |
 | Backend tests   | `npm run test:backend`                                                            |
 | Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
@@ -30,6 +32,8 @@ reference:
 - All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
   No real API keys are needed for local development; `.env.example` values are
   sufficient.
+- This repo uses npm workspaces. Install dependencies from the repository root,
+  and run worker/package scripts with `npm run <script> --workspace <name>`.
 - Playwright already launches Chromium with fake media permissions/device input
   plus `tests/sample.wav`. If an e2e needs recorded audio, drive the real
   recorder UI and keep the fake-audio setup in Playwright/helpers rather than

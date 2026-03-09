@@ -6,6 +6,7 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "oxlint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "node src/index.ts",
     "start": "node src/index.ts"
   },

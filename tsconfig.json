@@ -1,6 +1,6 @@
 {
 	"include": [".react-router/types/**/*", "**/*.mdx", "**/*.ts", "**/*.tsx"],
-	"extends": ["@epic-web/config/typescript"],
+	"extends": "./tsconfig.base.json",
 	"exclude": [
 		"node_modules",
 		"./oauth/**/*",

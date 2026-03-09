@@ -165,11 +165,17 @@ if you want:
 ```sh
 npm run format
 npm run lint
+npm run lint:all
 npm run typecheck
+npm run typecheck:all
 ```
 
 These are all configured in the project to hopefully work with whatever editor
 plugins you have so it should work as you working as well.
+
+This repo uses npm workspaces, so install dependencies from the repository root.
+To run a script for a specific workspace package, use `npm run <script>
+--workspace <package-name>`.
 
 ## Styles
 

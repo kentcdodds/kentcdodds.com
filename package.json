@@ -1,10 +1,16 @@
 {
   "name": "kentcdodds.com",
+  "private": true,
   "version": "1.0.0",
   "engines": {
     "node": "24",
     "npm": ">=10"
   },
+  "workspaces": [
+    "oauth",
+    "call-kent-audio-worker",
+    "call-kent-audio-container"
+  ],
   "imports": {
     "#*": "./*"
   },
@@ -22,8 +28,9 @@
   },
   "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "type": "module",
+  "nx": {},
   "scripts": {
-    "postinstall": "npx prisma@7 generate",
+    "postinstall": "prisma generate --schema ./prisma/schema.prisma",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build",
     "prebuild": "npm run clean && echo All clean ✨",
     "build": "run-s build:*",
@@ -48,9 +55,12 @@
     "test:browser:watch": "vitest --config vitest.browser.config.ts",
     "test:watch": "npm run test:backend:watch",
     "lint": "oxlint . --ignore-pattern oauth --ignore-pattern app/utils/prisma-generated.server",
+    "lint:all": "nx run-many -t lint",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "react-router typegen && tsc -b .",
+    "typecheck:all": "nx run-many -t typecheck",
     "validate": "./other/validate",
+    "nx:graph": "nx graph",
     "setup": "npm install && prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
   },
   "dependencies": {
@@ -204,6 +214,7 @@
     "jest-watch-typeahead": "^3.0.1",
     "msw": "^2.12.10",
     "npm-run-all": "^4.1.5",
+    "nx": "^22.5.4",
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
     "react-router-auto-routes": "^0.8.1",

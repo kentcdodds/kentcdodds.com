@@ -34,6 +34,9 @@ The setup script installs dependencies, resets the local database, validates the
 project, primes local cache data, installs Playwright browsers, and runs
 end-to-end tests.
 
+This repo now uses npm workspaces. Install dependencies from the repository root
+so the site and worker packages share one lockfile and one `node_modules` tree.
+
 ## Local development
 
 Start the development server:
@@ -48,8 +51,11 @@ Then open `http://localhost:3000`.
 - `npm run test` - run unit/component tests
 - `npm run test:e2e:dev` - run Playwright tests against dev server
 - `npm run lint` - run Oxlint
+- `npm run lint:all` - run lint across the site and workspace packages
 - `npm run typecheck` - run TypeScript checks
+- `npm run typecheck:all` - run TypeScript checks across all workspaces
 - `npm run build` - build the app
+- `npm run nx:graph` - inspect the Nx workspace graph
 
 ## Contributing
 

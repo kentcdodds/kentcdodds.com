@@ -7,6 +7,7 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "oxlint . --ignore-pattern worker-configuration.d.ts --ignore-pattern .wrangler",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --env local",
     "start": "wrangler dev --env local",
