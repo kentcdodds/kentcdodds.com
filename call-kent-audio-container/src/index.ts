@@ -1,14 +1,15 @@
-import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import { spawn } from 'node:child_process'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import express from 'express'
+import { serve } from '@hono/node-server'
 import {
 	GetObjectCommand,
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3'
+import { Hono } from 'hono'
 import { z } from 'zod'
 import { resolveStitchAssets } from './resolve-stitch-assets.ts'
 
@@ -25,14 +26,13 @@ const jobSchema = z.object({
 	draftId: z.string().trim().min(1),
 	callAudioKey: z.string().trim().min(1),
 	responseAudioKey: z.string().trim().min(1),
-	callbackUrl: z.string().url(),
+	callbackUrl: z.url(),
 	callbackSecret: z.string().trim().min(1),
 	attempt: z.number().int().positive().optional(),
 })
 
 const env = envSchema.parse(process.env)
-const app = express()
-app.use(express.json({ limit: '1mb' }))
+const app = new Hono()
 
 const s3 = new S3Client({
 	region: 'auto',
@@ -100,6 +100,16 @@ function getEpisodeDraftAudioKey({
 	return `call-kent/drafts/${draftId}/${episodeDraftAudioFileNameByKind[kind]}`
 }
 
+async function createTempDirForAudioWork(tempPrefixPath: string) {
+	const dirPath = await fs.mkdtemp(tempPrefixPath)
+	return {
+		path: dirPath,
+		async [Symbol.asyncDispose]() {
+			await fs.rm(dirPath, { recursive: true, force: true })
+		},
+	}
+}
+
 async function runFfmpeg({
 	callAudio,
 	responseAudio,
@@ -107,71 +117,56 @@ async function runFfmpeg({
 	callAudio: Buffer
 	responseAudio: Buffer
 }) {
-	const workId = randomUUID()
-	const workDir = path.join(os.tmpdir(), `call-kent-audio-${workId}`)
-	await fs.mkdir(workDir, { recursive: true })
-	const callPath = path.join(workDir, 'call.mp3')
-	const responsePath = path.join(workDir, 'response.mp3')
-	const callOutPath = path.join(workDir, 'call.normalized.mp3')
-	const responseOutPath = path.join(workDir, 'response.normalized.mp3')
-	const episodeOutPath = path.join(workDir, 'episode.mp3')
+	await using workDir = await createTempDirForAudioWork(
+		path.join(os.tmpdir(), 'call-kent-audio-'),
+	)
+	const callPath = path.join(workDir.path, 'call.mp3')
+	const responsePath = path.join(workDir.path, 'response.mp3')
+	const callOutPath = path.join(workDir.path, 'call.normalized.mp3')
+	const responseOutPath = path.join(workDir.path, 'response.normalized.mp3')
+	const episodeOutPath = path.join(workDir.path, 'episode.mp3')
 	await fs.writeFile(callPath, callAudio)
 	await fs.writeFile(responsePath, responseAudio)
 	const stitchAssets = resolveStitchAssets()
+	// prettier-ignore
 	const args = [
-		'-i',
-		stitchAssets.introPath,
-		'-i',
-		callPath,
-		'-i',
-		stitchAssets.interstitialPath,
-		'-i',
-		responsePath,
-		'-i',
-		stitchAssets.outroPath,
-		'-filter_complex',
-		`
-          [1]silenceremove=1:0:-50dB[trimmedCall];
-          [3]silenceremove=1:0:-50dB[trimmedResponse];
-          [trimmedCall]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceCall];
-          [trimmedResponse]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceResponse];
-          [noSilenceCall]loudnorm=I=-16:LRA=11:TP=0.0[call0];
-          [noSilenceResponse]loudnorm=I=-16:LRA=11:TP=0.0[response0];
-          [call0]asplit=2[callForEpisode][callForStandalone];
-          [response0]asplit=2[responseForEpisode][responseForStandalone];
-          [0][callForEpisode]acrossfade=d=1:c2=nofade[a01];
-          [a01][2]acrossfade=d=1:c1=nofade[a02];
-          [a02][responseForEpisode]acrossfade=d=1:c2=nofade[a03];
-          [a03][4]acrossfade=d=1:c1=nofade[out]
-        `,
-		'-map',
-		'[callForStandalone]',
-		callOutPath,
-		'-map',
-		'[responseForStandalone]',
-		responseOutPath,
-		'-map',
-		'[out]',
-		episodeOutPath,
+		'-i', stitchAssets.introPath,
+		'-i', callPath,
+		'-i', stitchAssets.interstitialPath,
+		'-i', responsePath,
+		'-i', stitchAssets.outroPath,
+		'-filter_complex', `
+			[1]silenceremove=1:0:-50dB[trimmedCall];
+			[3]silenceremove=1:0:-50dB[trimmedResponse];
+			[trimmedCall]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceCall];
+			[trimmedResponse]silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB[noSilenceResponse];
+			[noSilenceCall]loudnorm=I=-16:LRA=11:TP=0.0[call0];
+			[noSilenceResponse]loudnorm=I=-16:LRA=11:TP=0.0[response0];
+			[call0]asplit=2[callForEpisode][callForStandalone];
+			[response0]asplit=2[responseForEpisode][responseForStandalone];
+			[0][callForEpisode]acrossfade=d=1:c2=nofade[a01];
+			[a01][2]acrossfade=d=1:c1=nofade[a02];
+			[a02][responseForEpisode]acrossfade=d=1:c2=nofade[a03];
+			[a03][4]acrossfade=d=1:c1=nofade[out]
+		`,
+		'-map', '[callForStandalone]', callOutPath,
+		'-map', '[responseForStandalone]', responseOutPath,
+		'-map', '[out]', episodeOutPath,
 	]
-	try {
-		await new Promise<void>((resolve, reject) => {
-			const child = spawn('ffmpeg', args, { stdio: 'inherit' })
-			child.once('error', reject)
-			child.once('close', (code) => {
-				if (code === 0) resolve()
-				else reject(new Error(`ffmpeg exited with code ${String(code)}`))
-			})
+	await new Promise<void>((resolve, reject) => {
+		const child = spawn('ffmpeg', args, { stdio: 'inherit' })
+		child.once('error', reject)
+		child.once('close', (code) => {
+			if (code === 0) resolve()
+			else reject(new Error(`ffmpeg exited with code ${String(code)}`))
 		})
-		const [callerMp3, responseMp3, episodeMp3] = await Promise.all([
-			fs.readFile(callOutPath),
-			fs.readFile(responseOutPath),
-			fs.readFile(episodeOutPath),
-		])
-		return { callerMp3, responseMp3, episodeMp3 }
-	} finally {
-		await fs.rm(workDir, { recursive: true, force: true })
-	}
+	})
+	const [callerMp3, responseMp3, episodeMp3] = await Promise.all([
+		fs.readFile(callOutPath),
+		fs.readFile(responseOutPath),
+		fs.readFile(episodeOutPath),
+	])
+	return { callerMp3, responseMp3, episodeMp3 }
 }
 
 function createSignature({
@@ -230,13 +225,15 @@ async function sendCallback({
 	}
 }
 
-app.post('/jobs/episode-audio', async (req, res) => {
+app.post('/jobs/episode-audio', async (c) => {
+	let requestBody: unknown
 	try {
-		const token = req.headers.authorization?.slice('Bearer '.length) ?? ''
+		const token = c.req.header('authorization')?.slice('Bearer '.length) ?? ''
 		if (!timingSafeEqualString(token, env.CALL_KENT_AUDIO_CONTAINER_TOKEN)) {
-			return res.status(401).send('Unauthorized')
+			return c.text('Unauthorized', 401)
 		}
-		const job = jobSchema.parse(req.body)
+		requestBody = await c.req.json()
+		const job = jobSchema.parse(requestBody)
 		await sendCallback({
 			callbackUrl: job.callbackUrl,
 			callbackSecret: job.callbackSecret,
@@ -288,11 +285,14 @@ app.post('/jobs/episode-audio', async (req, res) => {
 				attempt: job.attempt ?? 1,
 			},
 		})
-		return res.status(200).json({ ok: true })
+		return c.json({ ok: true }, 200)
 	} catch (error) {
 		console.error(error)
 		const message = error instanceof Error ? error.message : String(error)
-		const body = req.body
+		const body =
+			typeof requestBody === 'object' && requestBody !== null
+				? (requestBody as Record<string, unknown>)
+				: null
 		if (
 			typeof body?.callbackUrl === 'string' &&
 			typeof body?.callbackSecret === 'string' &&
@@ -319,10 +319,10 @@ app.post('/jobs/episode-audio', async (req, res) => {
 				})
 			})
 		}
-		return res.status(500).send(message)
+		return c.text(message, 500)
 	}
 })
 
-app.listen(Number(env.PORT), () => {
+serve({ fetch: app.fetch, port: Number(env.PORT) }, () => {
 	console.info(`call-kent-audio-container listening on port ${env.PORT}`)
 })

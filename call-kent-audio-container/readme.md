@@ -12,8 +12,8 @@ Behavior:
 4. Calls app callback endpoint with HMAC-signed status events.
 
 Stitch assets are required; startup requests fail if these files are missing.
-Assets are resolved from the first existing path:
+The container expects these files in `assets/`:
 
-- `assets/call-kent/*.mp3`
-- `../assets/call-kent/*.mp3`
-- `app/assets/call-kent/*.mp3`
+- `assets/intro.mp3`
+- `assets/interstitial.mp3`
+- `assets/outro.mp3`

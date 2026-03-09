@@ -184,6 +184,7 @@ app.use((req, res, next) => {
 app.use(compression())
 
 const publicAbsolutePath = here('../build/client')
+const transistorUploadsAbsolutePath = here('../.cache/transistor-uploads')
 
 if (viteDevServer) {
 	app.use(viteDevServer.middlewares)
@@ -210,6 +211,11 @@ if (viteDevServer) {
 		}),
 	)
 }
+
+app.use(
+	'/mock/transistor/uploads',
+	express.static(transistorUploadsAbsolutePath, { fallthrough: false }),
+)
 
 app.get(
 	[

@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.995.0",
-    "express": "^5.2.1",
+    "@cloudflare/containers": "^0.1.1",
+    "@hono/node-server": "^1.19.11",
+    "hono": "^4.12.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -19,7 +21,8 @@
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.71.0"
   },
   "prettier": "@epic-web/config/prettier"
 }
