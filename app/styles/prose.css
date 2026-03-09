@@ -383,6 +383,11 @@ pre {
 	display: block;
 	max-width: 100%;
 	height: auto;
+	margin-inline: auto;
+}
+
+.prose .mermaid-svg svg p {
+	font-size: 0.9rem;
 }
 
 .prose .mermaid pre.mermaid-fallback {
