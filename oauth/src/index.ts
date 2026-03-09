@@ -5,7 +5,6 @@ import { type Env } from './env.d'
 export default new OAuthProvider({
 	apiRoute: ['/api/'],
 	apiHandler: {
-		// @ts-expect-error
 		async fetch(request: Request, env: Env, ctx: ExecutionContext) {
 			const userId = (ctx.props as { userId?: string } | undefined)?.userId
 			if (!userId) return new Response('Unauthorized', { status: 401 })
@@ -26,7 +25,6 @@ export default new OAuthProvider({
 		},
 	},
 	defaultHandler: {
-		// @ts-expect-error
 		async fetch(request: Request, env: Env) {
 			const url = new URL(request.url)
 
@@ -71,7 +69,7 @@ export default new OAuthProvider({
 								scope: z.string().array().optional().default([]),
 								state: z.string().optional().default(''),
 							})
-							.passthrough()
+							.loose()
 							.transform(
 								({
 									response_type: responseType,
