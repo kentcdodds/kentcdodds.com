@@ -297,6 +297,7 @@ app.use(
 app.use(
 	createRateLimitingMiddleware({
 		mode: MODE,
+		mocks: env.MOCKS,
 	}),
 )
 

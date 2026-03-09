@@ -3,6 +3,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 
 type CreateRateLimitingMiddlewareOptions = {
 	mode?: string | undefined
+	mocks?: boolean | undefined
 }
 
 /**
@@ -17,10 +18,11 @@ export function createRateLimitingMiddleware(
 ): RequestHandler {
 	const mode = options.mode ?? 'development'
 	const isProd = mode === 'production'
+	const isMocks = options.mocks ?? false
 
-	// When running in development, we want to effectively disable rate limiting so
-	// local iteration stays fast. Production keeps the real limits.
-	const maxMultiple = !isProd ? 10_000 : 1
+	// When running in development or mocks, we want to effectively disable rate
+	// limiting so iteration and tests stay fast. Production keeps the real limits.
+	const maxMultiple = !isProd || isMocks ? 10_000 : 1
 
 	const rateLimitDefault = {
 		windowMs: 60 * 1000,
