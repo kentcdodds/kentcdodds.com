@@ -6,7 +6,6 @@ const schemaBase = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
 	PORT: nonEmptyString,
 	MOCKS: z.enum(['true', 'false']).optional(),
-	PLAYWRIGHT_TEST_BASE_URL: z.string().trim().optional(),
 	STARTUP_SHORTCUTS: z.enum(['true', 'false']).optional(),
 	EXPIRED_SESSIONS_CLEANUP_DISABLED: z.enum(['true', 'false']).optional(),
 
@@ -157,7 +156,6 @@ const schema = schemaBase.superRefine((values, ctx) => {
 			path: ['PORT'],
 		})
 	}
-
 })
 
 type BaseEnv = z.infer<typeof schemaBase>

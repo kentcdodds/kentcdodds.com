@@ -37,20 +37,18 @@ async function importLocalServerModule<T>(specifier: string): Promise<T> {
 	return (await import(`${specifier}${localServerModuleExtension}`)) as T
 }
 
-const { scheduleExpiredDataCleanup } =
-	await importLocalServerModule<typeof import('./expired-sessions-cleanup.ts')>(
-		'./expired-sessions-cleanup',
-	)
+const { scheduleExpiredDataCleanup } = await importLocalServerModule<
+	typeof import('./expired-sessions-cleanup.ts')
+>('./expired-sessions-cleanup')
 const { createRateLimitingMiddleware } =
 	await importLocalServerModule<typeof import('./rate-limiting.ts')>(
 		'./rate-limiting',
 	)
 const { getRedirectsMiddleware, oldImgSocial, rickRollMiddleware } =
 	await importLocalServerModule<typeof import('./redirects.ts')>('./redirects')
-const { registerStartupShortcuts } =
-	await importLocalServerModule<typeof import('./startup-shortcuts.ts')>(
-		'./startup-shortcuts',
-	)
+const { registerStartupShortcuts } = await importLocalServerModule<
+	typeof import('./startup-shortcuts.ts')
+>('./startup-shortcuts')
 
 const env = getEnv()
 const MODE = env.NODE_ENV
@@ -91,10 +89,8 @@ const SHOULD_INIT_SENTRY =
 	!env.MOCKS
 
 if (SHOULD_INIT_SENTRY) {
-	void (
-		importLocalServerModule<typeof import('./utils/monitoring.ts')>(
-			'./utils/monitoring',
-		)
+	void importLocalServerModule<typeof import('./utils/monitoring.ts')>(
+		'./utils/monitoring',
 	).then(({ init }) => init())
 }
 
@@ -301,7 +297,7 @@ app.use(
 app.use(
 	createRateLimitingMiddleware({
 		mode: MODE,
-		playwrightTestBaseUrl: env.PLAYWRIGHT_TEST_BASE_URL,
+		mocks: env.MOCKS,
 	}),
 )
 

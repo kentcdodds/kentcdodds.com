@@ -19,6 +19,13 @@ magic.
 - Write tests so they could run offline if necessary: avoid relying on the
   public internet and third-party services; prefer local fakes/fixtures.
 - Prefer fast unit tests for server logic; keep e2e tests focused on journeys.
+- Default e2e coverage to happy-path user journeys. Only keep edge-case e2e
+  coverage when the behavior is hard to reproduce credibly at a lower level.
+- Keep test-only setup in the test harness (Playwright helpers, fixtures, fake
+  media inputs, seed helpers), not in production route/query-param/env branches.
+- Prefer behavior assertions over implementation details. Avoid pinning CSS
+  classes, exact request headers, or incidental markup unless they are the
+  contract under test.
 - Run server tests with `bun test server` to avoid Playwright spec discovery.
 - In backend Vitest tests, modules that transitively import `cache.server.ts`
   may require mocking `../cache.server.ts` first; otherwise `vite-env-only`

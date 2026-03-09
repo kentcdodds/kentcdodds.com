@@ -5,10 +5,6 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createRateLimitingMiddleware } from '../rate-limiting.js'
 
 async function startTestServer() {
-	const previousPlaywrightBaseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL
-	// Ensure production-mode limits are enforced for these tests.
-	process.env.PLAYWRIGHT_TEST_BASE_URL = ''
-
 	const app = express()
 	app.set('trust proxy', true)
 	app.use(createRateLimitingMiddleware({ mode: 'production' }))
@@ -28,8 +24,6 @@ async function startTestServer() {
 		close: () =>
 			new Promise<void>((resolve, reject) => {
 				server.close((err) => (err ? reject(err) : resolve()))
-			}).finally(() => {
-				process.env.PLAYWRIGHT_TEST_BASE_URL = previousPlaywrightBaseUrl
 			}),
 	}
 }

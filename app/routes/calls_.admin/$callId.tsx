@@ -19,7 +19,6 @@ import { MailIcon } from '#app/components/icons.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { getEnv } from '#app/utils/env.server.ts'
 import { formatDate, useDoubleCheck } from '#app/utils/misc-react.tsx'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
@@ -39,10 +38,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	const url = new URL(request.url)
 	const error = url.searchParams.get('error')
-	const env = getEnv()
-	const shouldUseSampleAudio =
-		url.searchParams.get('sampleAudio') === '1' &&
-		(env.NODE_ENV === 'development' || Boolean(env.PLAYWRIGHT_TEST_BASE_URL))
 
 	const call = await prisma.call.findFirst({
 		where: { id: params.callId },
@@ -99,7 +94,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				: null,
 		},
 		error,
-		shouldUseSampleAudio,
 	})
 }
 
@@ -181,10 +175,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 							<span>{call.formattedCreatedAt}</span>
 						</div>
 					</div>
-					<Form
-						method="post"
-						action={recordingFormActionPath}
-					>
+					<Form method="post" action={recordingFormActionPath}>
 						<input type="hidden" name="intent" value="delete-call" />
 						<input type="hidden" name="callId" value={call.id} />
 						<Button
@@ -204,7 +195,7 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 				<H6 as="h3" className="mb-2">
 					Notes
 				</H6>
-				<Paragraph className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-600 dark:text-slate-300">
+				<Paragraph className="[overflow-wrap:anywhere] break-words whitespace-pre-wrap text-gray-600 dark:text-slate-300">
 					{call.notes ?? 'No notes provided.'}
 				</Paragraph>
 			</div>
@@ -221,14 +212,19 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						preventScrollReset
 						onSubmit={handleSameRouteFormSubmit}
 					>
-						<input type="hidden" name="intent" value="generate-caller-transcript" />
+						<input
+							type="hidden"
+							name="intent"
+							value="generate-caller-transcript"
+						/>
 						<input type="hidden" name="callId" value={call.id} />
 						<Button
 							type="submit"
 							variant="secondary"
 							size="small"
 							disabled={
-								callerTranscriptStatus === 'PROCESSING' || callerTranscriptLocked
+								callerTranscriptStatus === 'PROCESSING' ||
+								callerTranscriptLocked
 							}
 						>
 							{callerTranscriptStatus === 'READY'
@@ -256,8 +252,8 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 				{callerTranscriptLocked ? (
 					<div className="mt-3 flex flex-col gap-3">
 						<Paragraph className="text-xs text-gray-500 dark:text-slate-400">
-							Caller transcript edits are disabled after an episode draft exists.
-							Update the{' '}
+							Caller transcript edits are disabled after an episode draft
+							exists. Update the{' '}
 							<a href="#draft-transcript" className="underline">
 								episode draft transcript
 							</a>{' '}
@@ -275,7 +271,11 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 						preventScrollReset
 						onSubmit={handleSameRouteFormSubmit}
 					>
-						<input type="hidden" name="intent" value="update-caller-transcript" />
+						<input
+							type="hidden"
+							name="intent"
+							value="update-caller-transcript"
+						/>
 						<input type="hidden" name="callId" value={call.id} />
 						<textarea
 							name="callerTranscript"
@@ -897,31 +897,6 @@ function RecordingDetailScreen({
 					/>
 				) : (
 					<div className="flex flex-col gap-6">
-						{data.shouldUseSampleAudio ? (
-							<div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
-								<Paragraph className="mb-4 text-sm text-gray-500 dark:text-slate-400">
-									{`Test/dev shortcut: use the caller's audio as a sample response (helpful in cloud VMs without microphones).`}
-								</Paragraph>
-								<Button
-									type="button"
-									variant="secondary"
-									onClick={() => {
-										void (async () => {
-											const res = await fetch(
-												`/resources/calls/call-audio?callId=${data.call.id}`,
-											)
-											if (!res.ok) return
-											const mime =
-												res.headers.get('Content-Type') ?? 'audio/mpeg'
-											const bytes = await res.arrayBuffer()
-											setResponseAudio(new Blob([bytes], { type: mime }))
-										})()
-									}}
-								>
-									Use sample response audio
-								</Button>
-							</div>
-						) : null}
 						<CallRecorder
 							onRecordingComplete={(recording) => setResponseAudio(recording)}
 							team={user.team}
