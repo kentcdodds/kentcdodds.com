@@ -1,19 +1,25 @@
 name: 🔎 Index Semantic Search (content)
 on:
+  workflow_call:
+    inputs:
+      before_sha:
+        required: false
+        type: string
+      current_commit_sha:
+        required: true
+        type: string
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'content/blog/**'
-      - 'content/pages/**'
-      - 'content/data/**'
-      - 'app/routes/**'
-      - 'app/components/**'
-      - 'app/root.tsx'
-      - 'app/other-routes.server.ts'
-      - 'app/utils/sitemap.server.ts'
-      - 'other/semantic-search/**'
+    inputs:
+      before_sha:
+        description: Commit to diff from (optional).
+        required: false
+        type: string
+        default: ''
+      current_commit_sha:
+        description: Commit to index (optional).
+        required: false
+        type: string
+        default: ''
 
 env:
   # Set `SITE_CACHE_VERSION` as a repository variable so all workflows share one
@@ -26,6 +32,9 @@ jobs:
     name: 🔎 Index Semantic Search (content)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    concurrency:
+      group: index-semantic-content-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
@@ -80,7 +89,7 @@ jobs:
       - name: 🔎 Index changed content
         run: |
           set -euo pipefail
-          node --env-file=.env other/semantic-search/index-repo-content.ts --before "${{ github.event.before }}" --after "${{ github.sha }}"
+          node --env-file=.env other/semantic-search/index-repo-content.ts --before "${{ inputs.before_sha || github.event.before }}" --after "${{ inputs.current_commit_sha || github.sha }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -19,8 +19,10 @@ async function getCommit() {
 			message: data.commit.message,
 			link: data.html_url,
 		}
-	} catch (error) {
-		return `Unable to get git commit info: ${error.message}`
+	} catch (error: unknown) {
+		return `Unable to get git commit info: ${
+			error instanceof Error ? error.message : String(error)
+		}`
 	}
 }
 

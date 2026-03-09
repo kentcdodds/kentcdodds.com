@@ -24,7 +24,9 @@ and shared utilities.
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_VECTORIZE_INDEX`
 - `CLOUDFLARE_AI_EMBEDDING_MODEL` (optional; defaults in code)
-- `CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID` (optional; used by semantic-search embeddings for runtime queries + indexers; defaults to `CLOUDFLARE_AI_GATEWAY_ID`)
+- `CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID` (optional; used by semantic-search
+  embeddings for runtime queries + indexers; defaults to
+  `CLOUDFLARE_AI_GATEWAY_ID`)
 
 - `R2_BUCKET`
 
@@ -47,7 +49,7 @@ secrets):
 For repo content indexing you can limit which docs get indexed:
 
 - CLI:
-  `npx tsx other/semantic-search/index-repo-content.ts --only "blog:react-hooks-pitfalls,page:uses"`
+  `node other/semantic-search/index-repo-content.ts --only "blog:react-hooks-pitfalls,page:uses"`
 - Env: `SEMANTIC_SEARCH_ONLY="blog:react-hooks-pitfalls,page:uses"`
 
 Indexed sources (via `index-repo-content.ts`):

@@ -12,7 +12,7 @@ const here = (...s: Array<string>) => globsafe(path.join(__dirname, ...s))
 
 const allFiles = globSync(here('../server/**/*.*'), {
 	ignore: [
-		'server/dev-server.js', // for development only
+		'server/dev-server.ts', // for development only
 		'server/content-watcher.ts', // for development only
 		'**/tsconfig.json',
 		'**/eslint*',

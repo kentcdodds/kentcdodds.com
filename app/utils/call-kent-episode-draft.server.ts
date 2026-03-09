@@ -1,23 +1,13 @@
-import {
-	getAudioBuffer,
-	parseBase64DataUrl,
-	putEpisodeDraftAudioFromBuffer,
-	putEpisodeDraftCallerSegmentAudioFromBuffer,
-	putEpisodeDraftResponseSegmentAudioFromBuffer,
-} from '#app/utils/call-kent-audio-storage.server.ts'
+import { getAudioBuffer } from '#app/utils/call-kent-audio-storage.server.ts'
 import { normalizeCallerTranscriptForEpisode } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-template.ts'
 import { generateCallKentEpisodeMetadataWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-metadata.server.ts'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
 import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcription.server.ts'
-import { createEpisodeAudio } from '#app/utils/ffmpeg.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 
-export async function startCallKentEpisodeDraftProcessing(
-	draftId: string,
-	{ responseBase64 }: { responseBase64?: string | null } = {},
-) {
+export async function startCallKentEpisodeDraftProcessing(draftId: string) {
 	// Fire-and-forget background work; errors are recorded on the draft row.
 	try {
 		const draft = await prisma.callKentEpisodeDraft.findUnique({
@@ -30,7 +20,6 @@ export async function startCallKentEpisodeDraftProcessing(
 						notes: true,
 						isAnonymous: true,
 						callerTranscript: true,
-						audioKey: true,
 						user: { select: { firstName: true } },
 					},
 				},
@@ -39,66 +28,15 @@ export async function startCallKentEpisodeDraftProcessing(
 		if (!draft) return
 		if (draft.status !== 'PROCESSING') return
 
-		// Caller audio (stored in R2/disk and referenced by `audioKey`).
-		const callAudioKey = draft.call.audioKey
-		if (!callAudioKey) {
-			throw new Error('Call audio is missing (audioKey is null).')
-		}
-		const callAudio = await getAudioBuffer({ key: callAudioKey })
-
 		// Step 1: episode audio (stitch + persist) if needed
 		let episodeMp3: Buffer
 		let segmentMp3s: { callerMp3: Buffer; responseMp3: Buffer } | null = null
 		if (draft.episodeAudioKey) {
 			episodeMp3 = await getAudioBuffer({ key: draft.episodeAudioKey })
 		} else {
-			if (!responseBase64) {
-				throw new Error(
-					'Response audio is required to generate episode audio (no episode audio on draft).',
-				)
-			}
-
-			const step1 = await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING' },
-				data: { step: 'GENERATING_AUDIO', errorMessage: null },
-			})
-			if (step1.count !== 1) return
-
-			const responseAudio = parseBase64DataUrl(responseBase64).buffer
-			const created = await createEpisodeAudio(callAudio, responseAudio)
-			episodeMp3 = created.episodeMp3
-			segmentMp3s = {
-				callerMp3: created.callerMp3,
-				responseMp3: created.responseMp3,
-			}
-			const [storedEpisode, storedCallerSegment, storedResponseSegment] =
-				await Promise.all([
-					putEpisodeDraftAudioFromBuffer({
-						draftId,
-						mp3: episodeMp3,
-					}),
-					putEpisodeDraftCallerSegmentAudioFromBuffer({
-						draftId,
-						mp3: created.callerMp3,
-					}),
-					putEpisodeDraftResponseSegmentAudioFromBuffer({
-						draftId,
-						mp3: created.responseMp3,
-					}),
-				])
-
-			const step2 = await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING' },
-				data: {
-					episodeAudioKey: storedEpisode.key,
-					episodeAudioContentType: storedEpisode.contentType,
-					episodeAudioSize: storedEpisode.size,
-					callerSegmentAudioKey: storedCallerSegment.key,
-					responseSegmentAudioKey: storedResponseSegment.key,
-					step: 'TRANSCRIBING',
-				},
-			})
-			if (step2.count !== 1) return
+			throw new Error(
+				'Episode audio is missing. Audio generation must complete before draft processing can continue.',
+			)
 		}
 
 		// Step 2: transcript (skip if already present)
@@ -132,18 +70,6 @@ export async function startCallKentEpisodeDraftProcessing(
 					getAudioBuffer({ key: draft.responseSegmentAudioKey }),
 				])
 				segmentMp3s = { callerMp3, responseMp3 }
-			}
-
-			if (!segmentMp3s && responseBase64) {
-				// If the draft already has episode audio but we still have the raw response
-				// audio (this run), generate normalized caller/response segments so we can
-				// transcribe those instead of the full stitched episode.
-				const responseAudio = parseBase64DataUrl(responseBase64).buffer
-				const created = await createEpisodeAudio(callAudio, responseAudio)
-				segmentMp3s = {
-					callerMp3: created.callerMp3,
-					responseMp3: created.responseMp3,
-				}
 			}
 
 			if (segmentMp3s) {

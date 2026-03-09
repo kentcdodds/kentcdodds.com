@@ -6,10 +6,6 @@ on:
       - dev
   pull_request:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 env:
   # Set `SITE_CACHE_VERSION` as a repository variable so all workflows share one
   # knob for invalidation.
@@ -17,36 +13,48 @@ env:
   NODE_VERSION: 24
 
 jobs:
-  changes:
-    name: 🔎 Determine deployable changes
+  plan:
+    name: 🔎 Plan Deploys
     runs-on: ubuntu-latest
     outputs:
-      DEPLOYABLE: ${{steps.changes.outputs.DEPLOYABLE}}
+      deploy_site: ${{ steps.plan.outputs.deploy_site }}
+      refresh_content: ${{ steps.plan.outputs.refresh_content }}
+      index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}
+      deploy_call_kent_audio_worker:
+        ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}
+      deploy_call_kent_audio_container:
+        ${{ steps.plan.outputs.deploy_call_kent_audio_container }}
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
         with:
-          fetch-depth: '50'
+          fetch-depth: 0
 
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: 🔎 Determine deployable changes
-        id: changes
-        run:
-          echo "DEPLOYABLE=$(node ./other/is-deployable.js ${{ github.sha }})"
-          >> "$GITHUB_OUTPUT"
+      - name: 🔎 Compute deploy plan
+        id: plan
+        run: node ./other/compute-deploy-plan.ts "${{ github.sha }}"
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
 
-      - name: ❓ Deployable
-        run: >-
-          echo "DEPLOYABLE: ${{steps.changes.outputs.DEPLOYABLE}}"
+      - name: ❓ Deploy plan
+        run: |
+          echo "deploy_site: ${{ steps.plan.outputs.deploy_site }}"
+          echo "refresh_content: ${{ steps.plan.outputs.refresh_content }}"
+          echo "index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}"
+          echo "deploy_call_kent_audio_worker: ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}"
+          echo "deploy_call_kent_audio_container: ${{ steps.plan.outputs.deploy_call_kent_audio_container }}"
 
   lint:
     name: ⬣ ESLint
-    needs: [changes]
-    if: needs.changes.outputs.DEPLOYABLE == 'true'
+    needs: [plan]
+    if: needs.plan.outputs.deploy_site == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -65,8 +73,8 @@ jobs:
 
   typecheck:
     name: ʦ TypeScript
-    needs: [changes]
-    if: needs.changes.outputs.DEPLOYABLE == 'true'
+    needs: [plan]
+    if: needs.plan.outputs.deploy_site == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -85,12 +93,12 @@ jobs:
 
   pre-deploy-health-check:
     name: 🏥 Pre-deploy health check
-    needs: [changes]
+    needs: [plan]
     timeout-minutes: 15
     # Only run when we would actually deploy (keeps PRs fast).
     if:
       ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
-      needs.changes.outputs.DEPLOYABLE == 'true' }}
+      needs.plan.outputs.deploy_site == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -147,8 +155,8 @@ jobs:
 
   playwright:
     name: 🎭 Playwright
-    needs: [changes]
-    if: needs.changes.outputs.DEPLOYABLE == 'true'
+    needs: [plan]
+    if: needs.plan.outputs.deploy_site == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     continue-on-error: true
@@ -220,15 +228,58 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-  deploy:
-    name: 🚀 Deploy
+  refresh-content:
+    name: 🥬 Refresh Content
+    needs: [plan]
+    if:
+      ${{ github.event_name == 'push' && needs.plan.outputs.refresh_content ==
+      'true' }}
+    uses: ./.github/workflows/refresh-content.yml
+    with:
+      current_commit_sha: ${{ github.sha }}
+    secrets: inherit
+
+  index-semantic-content:
+    name: 🔎 Index Semantic Search (content)
+    needs: [plan]
+    if:
+      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+      needs.plan.outputs.index_semantic_content == 'true' }}
+    uses: ./.github/workflows/index-semantic-content.yml
+    with:
+      before_sha: ${{ github.event.before }}
+      current_commit_sha: ${{ github.sha }}
+    secrets: inherit
+
+  deploy-call-kent-audio-worker:
+    name: ☁️ Deploy Call Kent Audio Worker
+    needs: [plan]
+    if:
+      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+      needs.plan.outputs.deploy_call_kent_audio_worker == 'true' }}
+    uses: ./.github/workflows/deploy-call-kent-audio-worker.yml
+    secrets: inherit
+
+  deploy-call-kent-audio-container:
+    name: ☁️ Deploy Call Kent Audio Container
+    needs: [plan]
+    if:
+      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+      needs.plan.outputs.deploy_call_kent_audio_container == 'true' }}
+    uses: ./.github/workflows/deploy-call-kent-audio-container.yml
+    secrets: inherit
+
+  deploy-site:
+    name: 🚀 Deploy Site
     runs-on: ubuntu-latest
-    needs: [changes, lint, typecheck, pre-deploy-health-check]
+    needs: [plan, lint, typecheck, pre-deploy-health-check]
     # only build/deploy main branch on pushes
     if:
       ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
-      github.event_name == 'push' && needs.changes.outputs.DEPLOYABLE == 'true'
-      }}
+      github.event_name == 'push' && needs.plan.outputs.deploy_site == 'true' }}
+    concurrency:
+      group: deploy-site-${{ github.ref_name }}
+      cancel-in-progress: true
 
     steps:
       - name: ⬇️ Checkout repo

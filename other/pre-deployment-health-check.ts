@@ -5,16 +5,20 @@ import path from 'node:path'
 import process from 'node:process'
 import getPort from 'get-port'
 
-function sleep(ms) {
+function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function run(command, args, { env } = {}) {
+async function run(
+	command: string,
+	args: Array<string>,
+	{ env }: { env?: NodeJS.ProcessEnv } = {},
+) {
 	const child = spawn(command, args, {
 		stdio: 'inherit',
 		env: env ?? process.env,
 	})
-	return await new Promise((resolve, reject) => {
+	return await new Promise<void>((resolve, reject) => {
 		child.once('error', reject)
 		child.once('exit', (code, signal) => {
 			if (code === 0) resolve()
@@ -29,9 +33,12 @@ async function run(command, args, { env } = {}) {
 	})
 }
 
-async function waitForOkResponse(url, { timeoutMs }) {
+async function waitForOkResponse(
+	url: string,
+	{ timeoutMs }: { timeoutMs: number },
+) {
 	const start = Date.now()
-	let lastError = null
+	let lastError: unknown = null
 	while (Date.now() - start < timeoutMs) {
 		const remaining = timeoutMs - (Date.now() - start)
 		if (remaining <= 0) break
@@ -91,13 +98,16 @@ async function main() {
 
 	// Spawn the server directly (not via `npm start`) so we can reliably
 	// terminate the whole process tree at the end of the smoke test.
-	const server = spawn(process.execPath, ['./index.js'], {
+	const server = spawn(process.execPath, ['./index.ts'], {
 		stdio: 'inherit',
 		env,
 		detached: true,
 	})
 
-	let serverExit = null
+	let serverExit: {
+		code: number | null
+		signal: NodeJS.Signals | null
+	} | null = null
 	server.once('exit', (code, signal) => {
 		serverExit = { code, signal }
 	})
@@ -106,7 +116,7 @@ async function main() {
 		await waitForOkResponse(url, { timeoutMs })
 		console.log(`✅ pre-deploy healthcheck OK: ${url}`)
 	} finally {
-		const killTree = (signal) => {
+		const killTree = (signal: NodeJS.Signals) => {
 			if (!server.pid) return
 			try {
 				// Negative PID sends the signal to the entire process group.

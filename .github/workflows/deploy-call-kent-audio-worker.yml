@@ -1,22 +1,16 @@
 name: ☁️ Deploy Call Kent Audio Worker
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - call-kent-audio-worker/**
-      - .github/workflows/deploy-call-kent-audio-worker.yml
+  workflow_call:
   workflow_dispatch:
-
-concurrency:
-  group: deploy-call-kent-audio-worker-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   deploy:
     name: 🚀 Deploy Call Kent Audio Worker
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-call-kent-audio-worker-${{ github.ref }}
+      cancel-in-progress: true
     permissions:
       contents: read
     steps:

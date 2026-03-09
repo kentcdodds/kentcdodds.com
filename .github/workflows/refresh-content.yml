@@ -1,14 +1,25 @@
 name: 🥬 Refresh Content
 on:
-  push:
-    branches:
-      - main
-      - dev
+  workflow_call:
+    inputs:
+      current_commit_sha:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      current_commit_sha:
+        description: Commit to refresh from (optional).
+        required: false
+        type: string
+        default: ''
 
 jobs:
   refresh:
     name: 🥬 Refresh Content
     runs-on: ubuntu-latest
+    concurrency:
+      group: refresh-content-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
@@ -21,6 +32,8 @@ jobs:
           node-version: 24
 
       - name: 🥬 Refresh Content
-        run: node ./other/refresh-changed-content.js ${{ github.sha }}
+        run:
+          node ./other/refresh-changed-content.ts ${{ inputs.current_commit_sha
+          || github.sha }}
         env:
           REFRESH_CACHE_SECRET: ${{ secrets.REFRESH_CACHE_SECRET }}

@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest'
 import {
 	getErrorMessage,
 	refreshChangedContent,
-} from '../refresh-changed-content.js'
+} from '../refresh-changed-content.ts'
 
 function createLogger() {
 	return {

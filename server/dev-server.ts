@@ -4,7 +4,11 @@ import { execa } from 'execa'
 
 process.env.NODE_ENV ??= 'development'
 
-const tryRunCommand = async (command, args, input) => {
+const tryRunCommand = async (
+	command: string,
+	args: Array<string>,
+	input?: string,
+) => {
 	try {
 		await execa(command, args, input ? { input } : undefined)
 		return true
@@ -13,7 +17,7 @@ const tryRunCommand = async (command, args, input) => {
 	}
 }
 
-const openInBrowser = async (url) => {
+const openInBrowser = async (url: string) => {
 	if (process.platform === 'darwin') {
 		return tryRunCommand('open', [url])
 	}
@@ -25,7 +29,7 @@ const openInBrowser = async (url) => {
 	return tryRunCommand('xdg-open', [url])
 }
 
-const copyToClipboard = async (value) => {
+const copyToClipboard = async (value: string) => {
 	if (process.platform === 'darwin') {
 		return tryRunCommand('pbcopy', [], value)
 	}
@@ -42,20 +46,20 @@ const copyToClipboard = async (value) => {
 }
 
 const canStyle = Boolean(process.stdout.isTTY && process.stdout.hasColors?.())
-const color = (style, text) => (canStyle ? styleText(style, text) : text)
+const color = (style: string | Array<string>, text: string) =>
+	canStyle ? styleText(style, text) : text
 
 if (process.env.NODE_ENV === 'production') {
 	// the file may not be there yet
 
 	await import('../server-build/index.js')
 } else {
-	const command =
-		'tsx watch --clear-screen=false --ignore ".cache/**" --ignore "app/**" --ignore "vite.config.ts.timestamp-*" --ignore "build/**" --ignore "node_modules/**" --inspect ./index.js'
-	let childProcess = null
+	const command = 'node --watch --watch-preserve-output --inspect ./index.ts'
+	let childProcess: ReturnType<typeof execa> | null = null
 	let restarting = false
 	let lastLocalUrl = `http://localhost:${process.env.PORT || 3000}`
 
-	const extractLocalUrl = (text) => {
+	const extractLocalUrl = (text: string) => {
 		const cleaned = stripVTControlCharacters(text)
 		const localMatch = cleaned.match(/Local:\s+(\S+)/)
 		if (localMatch?.[1]) {

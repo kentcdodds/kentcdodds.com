@@ -41,8 +41,6 @@ WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
 
-ADD other/runfile.js /app/other/runfile.js
-
 # schema doesn't change much so these will stay cached
 ADD prisma /app/prisma
 ADD prisma.config.ts /app/prisma.config.ts

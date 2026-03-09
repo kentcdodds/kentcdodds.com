@@ -15,7 +15,7 @@ const defaultRefreshRetryOptions = {
 	baseDelayMs: 2_000,
 }
 
-export function getErrorMessage(error) {
+export function getErrorMessage(error: unknown) {
 	if (error instanceof Error) {
 		return error.message
 	}
@@ -33,7 +33,7 @@ export function getErrorMessage(error) {
 	}
 }
 
-const sleep = (durationMs) =>
+const sleep = (durationMs: number) =>
 	new Promise((resolve) => {
 		const timer = setTimeout(resolve, durationMs)
 		if (typeof timer?.unref === 'function') {
@@ -47,8 +47,14 @@ async function postRefreshCacheWithRetry({
 	log,
 	maxAttempts = defaultRefreshRetryOptions.maxAttempts,
 	baseDelayMs = defaultRefreshRetryOptions.baseDelayMs,
+}: {
+	postRefreshCacheImpl: typeof postRefreshCache
+	postData: { contentPaths: Array<string>; commitSha?: string }
+	log: Pick<typeof console, 'warn'>
+	maxAttempts?: number
+	baseDelayMs?: number
 }) {
-	let lastError = null
+	let lastError: unknown = null
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
 			const response = await postRefreshCacheImpl({ postData })
@@ -83,6 +89,15 @@ export async function refreshChangedContent({
 	log = console,
 	maxRefreshAttempts = defaultRefreshRetryOptions.maxAttempts,
 	retryDelayMs = defaultRefreshRetryOptions.baseDelayMs,
+}: {
+	currentCommitSha?: string
+	baseUrl?: string
+	fetchJsonImpl?: typeof fetchJson
+	getChangedFilesImpl?: typeof getChangedFiles
+	postRefreshCacheImpl?: typeof postRefreshCache
+	log?: Pick<typeof console, 'log' | 'warn' | 'error'>
+	maxRefreshAttempts?: number
+	retryDelayMs?: number
 } = {}) {
 	if (!currentCommitSha) {
 		throw new Error('currentCommitSha is required')
@@ -101,7 +116,7 @@ export async function refreshChangedContent({
 	}
 	if (typeof compareSha !== 'string') {
 		log.log('🤷‍♂️ No sha to compare to. Unsure what to refresh.')
-		return { status: 'no-compare-sha' }
+		return { status: 'no-compare-sha' as const }
 	}
 
 	const changedFiles =
@@ -111,7 +126,7 @@ export async function refreshChangedContent({
 		.map((f) => f.filename.replace(/^content\//, ''))
 	if (!contentPaths.length) {
 		log.log('🆗 Not refreshing changed content because no content changed.')
-		return { status: 'no-content-changes' }
+		return { status: 'no-content-changes' as const }
 	}
 
 	log.log(`⚡️ Content changed. Requesting the cache be refreshed.`, {
@@ -136,7 +151,7 @@ export async function refreshChangedContent({
 			attempts: refreshResult.attempts,
 		})
 		return {
-			status: 'refreshed',
+			status: 'refreshed' as const,
 			attempts: refreshResult.attempts,
 		}
 	}
@@ -152,7 +167,7 @@ export async function refreshChangedContent({
 		},
 	)
 	return {
-		status: 'refresh-failed',
+		status: 'refresh-failed' as const,
 		attempts: refreshResult.attempts,
 	}
 }

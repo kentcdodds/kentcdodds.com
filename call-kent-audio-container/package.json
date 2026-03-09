@@ -6,8 +6,8 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "oxlint .",
-    "dev": "tsx src/index.ts",
-    "start": "tsx src/index.ts"
+    "dev": "node src/index.ts",
+    "start": "node src/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.995.0",
@@ -21,7 +21,6 @@
     "@types/node": "^25.4.0",
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "wrangler": "^4.71.0"
   },
