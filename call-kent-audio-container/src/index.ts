@@ -20,6 +20,8 @@ const envSchema = z.object({
 	R2_SECRET_ACCESS_KEY: z.string().trim().min(1),
 	CALL_KENT_R2_BUCKET: z.string().trim().min(1),
 	CALL_KENT_AUDIO_CONTAINER_TOKEN: z.string().trim().min(1),
+	CALL_KENT_AUDIO_CONTAINER_HEARTBEAT_URL: z.url(),
+	CALL_KENT_AUDIO_CONTAINER_SHUTDOWN_URL: z.url(),
 })
 
 const jobSchema = z.object({
@@ -34,6 +36,7 @@ const jobSchema = z.object({
 const env = envSchema.parse(process.env)
 const app = new Hono()
 const activeDraftJobs = new Set<string>()
+const jobHeartbeatIntervalMs = 30_000
 
 const s3 = new S3Client({
 	region: 'auto',
@@ -185,6 +188,7 @@ async function runFfmpeg({
 async function processEpisodeAudioJob(job: z.infer<typeof jobSchema>) {
 	const startedAt = Date.now()
 	const jobContext = getJobLogContext(job)
+	const stopJobHeartbeat = startJobHeartbeat(jobContext)
 
 	console.info('Call Kent audio job accepted', jobContext)
 	try {
@@ -310,11 +314,24 @@ async function processEpisodeAudioJob(job: z.infer<typeof jobSchema>) {
 			})
 		})
 	} finally {
+		stopJobHeartbeat()
 		activeDraftJobs.delete(job.draftId)
+		const activeJobs = activeDraftJobs.size
 		console.info('Call Kent audio job released', {
 			...jobContext,
-			activeJobs: activeDraftJobs.size,
+			activeJobs,
 		})
+		if (activeJobs === 0) {
+			await requestShutdownIfIdle().catch((shutdownError: unknown) => {
+				console.error('Failed to request audio container shutdown', {
+					...jobContext,
+					error:
+						shutdownError instanceof Error
+							? shutdownError.message
+							: String(shutdownError),
+				})
+			})
+		}
 	}
 }
 
@@ -339,6 +356,32 @@ function timingSafeEqualString(left: string, right: string) {
 		return false
 	}
 	return timingSafeEqual(leftBuffer, rightBuffer)
+}
+
+function getBearerToken(authorizationHeader: string | undefined) {
+	return authorizationHeader?.slice('Bearer '.length) ?? ''
+}
+
+function isAuthorized(authorizationHeader: string | undefined) {
+	return timingSafeEqualString(
+		getBearerToken(authorizationHeader),
+		env.CALL_KENT_AUDIO_CONTAINER_TOKEN,
+	)
+}
+
+async function postToControlUrl(url: string) {
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${env.CALL_KENT_AUDIO_CONTAINER_TOKEN}`,
+		},
+	})
+	if (!response.ok) {
+		const text = await response.text().catch(() => '')
+		throw new Error(
+			`Control request failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`,
+		)
+	}
 }
 
 async function sendCallback({
@@ -374,10 +417,42 @@ async function sendCallback({
 	}
 }
 
+async function requestHeartbeat() {
+	await postToControlUrl(env.CALL_KENT_AUDIO_CONTAINER_HEARTBEAT_URL)
+}
+
+async function requestShutdownIfIdle() {
+	await postToControlUrl(env.CALL_KENT_AUDIO_CONTAINER_SHUTDOWN_URL)
+}
+
+function startJobHeartbeat(jobContext: ReturnType<typeof getJobLogContext>) {
+	const interval = setInterval(() => {
+		void requestHeartbeat().catch((heartbeatError: unknown) => {
+			console.error('Failed to renew audio container activity', {
+				...jobContext,
+				error:
+					heartbeatError instanceof Error
+						? heartbeatError.message
+						: String(heartbeatError),
+			})
+		})
+	}, jobHeartbeatIntervalMs)
+	interval.unref?.()
+	return function stopJobHeartbeat() {
+		clearInterval(interval)
+	}
+}
+
+app.get('/internal/status', (c) => {
+	if (!isAuthorized(c.req.header('authorization'))) {
+		return c.text('Unauthorized', 401)
+	}
+	return c.json({ activeJobs: activeDraftJobs.size })
+})
+
 app.post('/jobs/episode-audio', async (c) => {
 	try {
-		const token = c.req.header('authorization')?.slice('Bearer '.length) ?? ''
-		if (!timingSafeEqualString(token, env.CALL_KENT_AUDIO_CONTAINER_TOKEN)) {
+		if (!isAuthorized(c.req.header('authorization'))) {
 			return c.text('Unauthorized', 401)
 		}
 		const requestBody = await c.req.json()
