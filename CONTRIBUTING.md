@@ -351,8 +351,8 @@ fly scale count 2
 ```
 
 For this app, avoid bringing up many regions simultaneously. Prefer cloning one
-machine at a time from the current primary and waiting for checks to pass
-before adding the next region:
+machine at a time from the current primary and waiting for checks to pass before
+adding the next region:
 
 ```sh
 fly machine clone <PRIMARY_MACHINE_ID> -a kcd --region <REGION>
@@ -397,8 +397,8 @@ for id in $(fly m list -a kcd --json | jq -r '.[] | select(.state != "started") 
 done
 ```
 
-After removing regions, also clean up unattached volumes in those regions so
-you are not paying for orphaned storage:
+After removing regions, also clean up unattached volumes in those regions so you
+are not paying for orphaned storage:
 
 ```sh
 for id in $(fly vol list -a kcd --json | jq -r '.[] | select(.attached_machine_id == null and (.region=="jnb" or .region=="ams" or .region=="sin" or .region=="bom" or .region=="syd" or .region=="cdg")) | .id'); do

@@ -8,9 +8,12 @@ vi.mock('#app/utils/cloudflare-ai-transcription.server.ts', () => ({
 	transcribeMp3WithWorkersAi: vi.fn(),
 }))
 
-vi.mock('#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts', () => ({
-	formatCallKentTranscriptWithWorkersAi: vi.fn(),
-}))
+vi.mock(
+	'#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts',
+	() => ({
+		formatCallKentTranscriptWithWorkersAi: vi.fn(),
+	}),
+)
 
 vi.mock('#app/utils/prisma.server.ts', () => ({
 	prisma: {
@@ -95,7 +98,8 @@ test('startCallKentCallerTranscriptProcessing records error state', async () => 
 		where: { id: 'call-456', callerTranscriptStatus: 'PROCESSING' },
 		data: {
 			callerTranscriptStatus: 'ERROR',
-			callerTranscriptErrorMessage: 'Caller audio is missing (audioKey is null).',
+			callerTranscriptErrorMessage:
+				'Caller audio is missing (audioKey is null).',
 		},
 	})
 })

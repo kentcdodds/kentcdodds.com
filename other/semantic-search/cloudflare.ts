@@ -83,7 +83,7 @@ async function cfFetch(
 				...(path.startsWith(workersAiPrefix)
 					? { 'cf-aig-authorization': `Bearer ${gatewayAuthToken}` }
 					: null),
-					...init.headers,
+				...init.headers,
 			},
 		}).catch((e) => {
 			// network/timeout

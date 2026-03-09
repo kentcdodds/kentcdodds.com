@@ -94,7 +94,9 @@ export async function startCallKentCallerTranscriptProcessing(
 			})
 		).trim()
 		if (!transcript) {
-			throw new Error('Caller transcript formatting returned an empty transcript.')
+			throw new Error(
+				'Caller transcript formatting returned an empty transcript.',
+			)
 		}
 
 		await prisma.call.updateMany({

@@ -54,7 +54,11 @@ import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
 import { getTheme } from './utils/theme.server.ts'
 import { useTheme } from './utils/theme.tsx'
-import { getServerTimeHeader, time, withTimeout } from './utils/timing.server.ts'
+import {
+	getServerTimeHeader,
+	time,
+	withTimeout,
+} from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
@@ -145,11 +149,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 					signal: podcastLinksAbortController.signal,
 				}),
 				{
-				timeoutMs: 2000,
-				fallback: PODCAST_LINKS_FALLBACK,
-				label: 'root:podcast-season-links',
-				onTimeout: () => podcastLinksAbortController.abort(),
-			},
+					timeoutMs: 2000,
+					fallback: PODCAST_LINKS_FALLBACK,
+					label: 'root:podcast-season-links',
+					onTimeout: () => podcastLinksAbortController.abort(),
+				},
 			),
 			{
 				timings,

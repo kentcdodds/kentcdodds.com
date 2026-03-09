@@ -61,7 +61,9 @@ test('getPeople checkValue rejects missing ids and revalidates via getFreshValue
 					background: boolean
 				}) => Promise<unknown>
 			}
-			expect(options.checkValue?.(staleCachedPeople, () => undefined)).toBe(false)
+			expect(options.checkValue?.(staleCachedPeople, () => undefined)).toBe(
+				false,
+			)
 			return options.getFreshValue({
 				metadata: { createdTime: Date.now() },
 				background: false,

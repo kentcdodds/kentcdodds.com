@@ -45,11 +45,14 @@ export default {
 				return new Response('Unauthorized', { status: 401 })
 			}
 
-			const statusResponse = await container.containerFetch('/internal/status', {
-				headers: {
-					Authorization: `Bearer ${env.CALL_KENT_AUDIO_CONTAINER_TOKEN}`,
+			const statusResponse = await container.containerFetch(
+				'/internal/status',
+				{
+					headers: {
+						Authorization: `Bearer ${env.CALL_KENT_AUDIO_CONTAINER_TOKEN}`,
+					},
 				},
-			})
+			)
 			if (!statusResponse.ok) {
 				const text = await statusResponse.text().catch(() => '')
 				return new Response(
@@ -58,7 +61,9 @@ export default {
 				)
 			}
 
-			const { activeJobs } = (await statusResponse.json()) as { activeJobs: number }
+			const { activeJobs } = (await statusResponse.json()) as {
+				activeJobs: number
+			}
 			return Response.json({ ok: true, status: 'renewed', activeJobs })
 		}
 
@@ -75,11 +80,14 @@ export default {
 				return Response.json({ ok: true, status: 'already-stopped' })
 			}
 
-			const statusResponse = await container.containerFetch('/internal/status', {
-				headers: {
-					Authorization: `Bearer ${env.CALL_KENT_AUDIO_CONTAINER_TOKEN}`,
+			const statusResponse = await container.containerFetch(
+				'/internal/status',
+				{
+					headers: {
+						Authorization: `Bearer ${env.CALL_KENT_AUDIO_CONTAINER_TOKEN}`,
+					},
 				},
-			})
+			)
 			if (!statusResponse.ok) {
 				const text = await statusResponse.text().catch(() => '')
 				return new Response(
@@ -88,7 +96,9 @@ export default {
 				)
 			}
 
-			const { activeJobs } = (await statusResponse.json()) as { activeJobs: number }
+			const { activeJobs } = (await statusResponse.json()) as {
+				activeJobs: number
+			}
 			if (activeJobs > 0) {
 				return Response.json({
 					ok: true,

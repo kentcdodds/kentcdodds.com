@@ -3,8 +3,11 @@ import { expect, test, vi } from 'vitest'
 vi.mock('../cache.server.ts', () => {
 	return {
 		cache: {},
-		cachified: async ({ getFreshValue }: { getFreshValue: (context: {}) => unknown }) =>
-			await getFreshValue({}),
+		cachified: async ({
+			getFreshValue,
+		}: {
+			getFreshValue: (context: {}) => unknown
+		}) => await getFreshValue({}),
 		shouldForceFresh: async () => true,
 	}
 })
@@ -16,7 +19,10 @@ test('getEpisodes does not forward signal to fetch', async () => {
 		.spyOn(globalThis, 'fetch')
 		.mockImplementation(async (input) => {
 			if (String(input).startsWith('https://api.transistor.fm/')) {
-				return Response.json({ data: [], meta: { totalPages: 1 } }, { status: 200 })
+				return Response.json(
+					{ data: [], meta: { totalPages: 1 } },
+					{ status: 200 },
+				)
 			}
 			return new Response(null, { status: 200 })
 		})

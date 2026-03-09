@@ -14,7 +14,8 @@ test('formatCallKentTranscriptWithWorkersAi returns paragraphs and preserves sep
 		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
 		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
 		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
-		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL:
+			'@cf/meta/llama-3.1-8b-instruct',
 	})
 
 	const transcript = `
@@ -53,7 +54,8 @@ test('formatCallKentTranscriptWithWorkersAi works without --- separators', async
 		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
 		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
 		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
-		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL:
+			'@cf/meta/llama-3.1-8b-instruct',
 	})
 
 	const transcript = `Caller: Hi Kent. This is a single block transcript. It should still get paragraph breaks.`
@@ -68,7 +70,8 @@ test('formatCallKentTranscriptWithWorkersAi does not truncate long transcripts',
 		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
 		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
 		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
-		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL:
+			'@cf/meta/llama-3.1-8b-instruct',
 	})
 
 	const longBody = Array.from(
@@ -89,24 +92,25 @@ test('formatCallKentTranscriptWithWorkersAi prompts for paragraph breaks in long
 		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
 		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
 		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
-		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL:
+			'@cf/meta/llama-3.1-8b-instruct',
 	})
 
 	const transcript = `Kent: First sentence. Second sentence. Third sentence. Fourth sentence.`
 
-	const fetchSpy = vi
-		.spyOn(globalThis, 'fetch')
-		.mockResolvedValue({
-			ok: true,
-			json: async () => ({
-				result: {
-					response: transcript,
-				},
-			}),
-		} as Response)
+	const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+		ok: true,
+		json: async () => ({
+			result: {
+				response: transcript,
+			},
+		}),
+	} as Response)
 
 	try {
-		const formatted = await formatCallKentTranscriptWithWorkersAi({ transcript })
+		const formatted = await formatCallKentTranscriptWithWorkersAi({
+			transcript,
+		})
 		expect(formatted).toBe(transcript)
 
 		const request = fetchSpy.mock.calls[0]?.[1]

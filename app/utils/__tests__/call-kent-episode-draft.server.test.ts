@@ -95,7 +95,9 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		.mockResolvedValueOnce(responseSegmentAudio)
 	transcribeMp3WithWorkersAi.mockResolvedValue('This is Kent responding.')
 	assembleCallKentTranscript.mockReturnValue('raw assembled transcript')
-	formatCallKentTranscriptWithWorkersAi.mockResolvedValue('formatted transcript')
+	formatCallKentTranscriptWithWorkersAi.mockResolvedValue(
+		'formatted transcript',
+	)
 	generateCallKentEpisodeMetadataWithWorkersAi.mockResolvedValue({
 		title: 'Episode title',
 		description: 'Episode description',

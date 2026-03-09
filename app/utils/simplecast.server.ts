@@ -117,8 +117,7 @@ const getCachedSeasons = async ({
 			ttl: 1000 * 60 * 5,
 			// ttl: 1000 * 60 * 60 * 24 * 7,
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-			getFreshValue: () =>
-				getSeasons({ request, forceFresh, timings, signal }),
+			getFreshValue: () => getSeasons({ request, forceFresh, timings, signal }),
 			forceFresh,
 			checkValue: cwkCachedSeasonsSchema,
 		})
@@ -599,7 +598,12 @@ async function getSeasonListItems({
 	timings?: Timings
 	signal?: AbortSignal
 }) {
-	const seasons = await getCachedSeasons({ request, forceFresh, timings, signal })
+	const seasons = await getCachedSeasons({
+		request,
+		forceFresh,
+		timings,
+		signal,
+	})
 	const listItemSeasons: Array<CWKSeason> = []
 	for (const season of seasons) {
 		listItemSeasons.push({

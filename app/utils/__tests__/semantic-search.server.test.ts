@@ -31,33 +31,38 @@ test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_EMBED
 		CLOUDFLARE_VECTORIZE_INDEX: 'vector-index',
 	})
 
-	const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-		const url = input instanceof Request ? input.url : String(input)
+	const fetchSpy = vi
+		.spyOn(globalThis, 'fetch')
+		.mockImplementation(async (input) => {
+			const url = input instanceof Request ? input.url : String(input)
 
-		if (url.includes('/workers-ai/')) {
-			return new Response(
-				JSON.stringify({
-					result: {
-						shape: [1, 3],
-						data: [[0.1, 0.2, 0.3]],
+			if (url.includes('/workers-ai/')) {
+				return new Response(
+					JSON.stringify({
+						result: {
+							shape: [1, 3],
+							data: [[0.1, 0.2, 0.3]],
+						},
+					}),
+					{
+						status: 200,
+						headers: { 'Content-Type': 'application/json' },
 					},
-				}),
-				{
-					status: 200,
-					headers: { 'Content-Type': 'application/json' },
-				},
-			)
-		}
+				)
+			}
 
-		if (url.includes('/vectorize/')) {
-			return new Response(JSON.stringify({ result: { count: 0, matches: [] } }), {
-				status: 200,
-				headers: { 'Content-Type': 'application/json' },
-			})
-		}
+			if (url.includes('/vectorize/')) {
+				return new Response(
+					JSON.stringify({ result: { count: 0, matches: [] } }),
+					{
+						status: 200,
+						headers: { 'Content-Type': 'application/json' },
+					},
+				)
+			}
 
-		throw new Error(`Unexpected fetch URL in semantic search test: ${url}`)
-	})
+			throw new Error(`Unexpected fetch URL in semantic search test: ${url}`)
+		})
 
 	try {
 		await semanticSearchKCD({
@@ -86,64 +91,66 @@ test('semanticSearchKCD canonicalizes YouTube results by video id from URL when 
 		CLOUDFLARE_VECTORIZE_INDEX: 'mock-index',
 	})
 
-	const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-		const url = input instanceof Request ? input.url : String(input)
+	const fetchSpy = vi
+		.spyOn(globalThis, 'fetch')
+		.mockImplementation(async (input) => {
+			const url = input instanceof Request ? input.url : String(input)
 
-		if (url.includes('/workers-ai/')) {
-			return new Response(
-				JSON.stringify({
-					result: {
-						shape: [1, 3],
-						data: [[0.1, 0.2, 0.3]],
+			if (url.includes('/workers-ai/')) {
+				return new Response(
+					JSON.stringify({
+						result: {
+							shape: [1, 3],
+							data: [[0.1, 0.2, 0.3]],
+						},
+					}),
+					{
+						status: 200,
+						headers: { 'Content-Type': 'application/json' },
 					},
-				}),
-				{
-					status: 200,
-					headers: { 'Content-Type': 'application/json' },
-				},
-			)
-		}
+				)
+			}
 
-		if (url.includes('/vectorize/')) {
-			return new Response(
-				JSON.stringify({
-					result: {
-						count: 2,
-						matches: [
-							{
-								id: 'legacy-vector-a',
-								score: 0.9,
-								metadata: {
-									type: 'youtube',
-									title: 'Legacy video A',
-									url: '/youtube?video=AAA111BBB22',
-									snippet: 'First transcript chunk',
-									chunkKind: 'transcript',
+			if (url.includes('/vectorize/')) {
+				return new Response(
+					JSON.stringify({
+						result: {
+							count: 2,
+							matches: [
+								{
+									id: 'legacy-vector-a',
+									score: 0.9,
+									metadata: {
+										type: 'youtube',
+										title: 'Legacy video A',
+										url: '/youtube?video=AAA111BBB22',
+										snippet: 'First transcript chunk',
+										chunkKind: 'transcript',
+									},
 								},
-							},
-							{
-								id: 'legacy-vector-b',
-								score: 0.8,
-								metadata: {
-									type: 'youtube',
-									title: 'Legacy video B',
-									url: '/youtube?video=CCC333DDD44',
-									snippet: 'Second transcript chunk',
-									chunkKind: 'transcript',
+								{
+									id: 'legacy-vector-b',
+									score: 0.8,
+									metadata: {
+										type: 'youtube',
+										title: 'Legacy video B',
+										url: '/youtube?video=CCC333DDD44',
+										snippet: 'Second transcript chunk',
+										chunkKind: 'transcript',
+									},
 								},
-							},
-						],
+							],
+						},
+					}),
+					{
+						status: 200,
+						headers: { 'Content-Type': 'application/json' },
 					},
-				}),
-				{
-					status: 200,
-					headers: { 'Content-Type': 'application/json' },
-				},
-			)
-		}
+				)
+			}
 
-		throw new Error(`Unexpected fetch URL in semantic search test: ${url}`)
-	})
+			throw new Error(`Unexpected fetch URL in semantic search test: ${url}`)
+		})
 
 	try {
 		const results = await semanticSearchKCD({

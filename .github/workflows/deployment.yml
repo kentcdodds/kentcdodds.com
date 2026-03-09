@@ -59,8 +59,11 @@ jobs:
     if: needs.plan.outputs.deploy_site == 'true'
     uses: ./.github/workflows/deploy-site.yml
     with:
-      should_deploy: ${{ github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'dev') }}
-      run_pre_deploy_health_check: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      should_deploy:
+        ${{ github.event_name == 'push' && (github.ref_name == 'main' ||
+        github.ref_name == 'dev') }}
+      run_pre_deploy_health_check:
+        ${{ github.event_name == 'push' && github.ref_name == 'main' }}
     secrets: inherit
 
   refresh-content:

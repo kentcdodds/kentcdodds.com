@@ -63,7 +63,9 @@ export default {
 			} catch (error) {
 				console.error('Call Kent audio queue message failed', {
 					draftId:
-						typeof message.body?.draftId === 'string' ? message.body.draftId : null,
+						typeof message.body?.draftId === 'string'
+							? message.body.draftId
+							: null,
 					attempt:
 						typeof message.attempts === 'number' &&
 						Number.isFinite(message.attempts)

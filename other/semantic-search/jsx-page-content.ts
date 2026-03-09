@@ -43,7 +43,13 @@ const SKIPPED_STATIC_ROUTES = new Set([
 	'/sitemap.xml',
 	'/testimonials',
 ])
-const SKIPPED_PREFIX_ROUTES = ['/blog/', '/calls/', '/chats/', '/me/', '/talks/']
+const SKIPPED_PREFIX_ROUTES = [
+	'/blog/',
+	'/calls/',
+	'/chats/',
+	'/me/',
+	'/talks/',
+]
 const NON_HTML_EXTENSION_PATTERN = /\.[a-z0-9]+$/i
 const BLOCK_LEVEL_TAG_NAMES = new Set([
 	'address',

@@ -49,8 +49,9 @@ export const meta: MetaFunction<
 	typeof loader,
 	{ root: RootLoaderType; 'routes/calls/_layout': typeof callsLoader }
 > = ({ matches, params }) => {
-	const rootData = matches.find((m) => m.id === 'root')
-		?.data as SerializeFrom<typeof rootLoader> | undefined
+	const rootData = matches.find((m) => m.id === 'root')?.data as
+		| SerializeFrom<typeof rootLoader>
+		| undefined
 	if (!rootData) {
 		return [{ title: 'Call not found' }]
 	}

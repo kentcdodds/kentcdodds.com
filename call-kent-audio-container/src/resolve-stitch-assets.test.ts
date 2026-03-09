@@ -6,7 +6,9 @@ import test from 'node:test'
 import { resolveStitchAssets } from './resolve-stitch-assets.ts'
 
 test('resolveStitchAssets returns asset paths from assets', async () => {
-	const cwd = await fs.mkdtemp(path.join(os.tmpdir(), 'call-kent-audio-assets-'))
+	const cwd = await fs.mkdtemp(
+		path.join(os.tmpdir(), 'call-kent-audio-assets-'),
+	)
 	const root = path.join(cwd, 'assets')
 	await fs.mkdir(root, { recursive: true })
 	await Promise.all([
@@ -28,7 +30,9 @@ test('resolveStitchAssets returns asset paths from assets', async () => {
 })
 
 test('resolveStitchAssets throws when any stitch asset is missing', async () => {
-	const cwd = await fs.mkdtemp(path.join(os.tmpdir(), 'call-kent-audio-assets-'))
+	const cwd = await fs.mkdtemp(
+		path.join(os.tmpdir(), 'call-kent-audio-assets-'),
+	)
 	const root = path.join(cwd, 'assets')
 	await fs.mkdir(root, { recursive: true })
 	await Promise.all([
@@ -43,4 +47,4 @@ test('resolveStitchAssets throws when any stitch asset is missing', async () => 
 	} finally {
 		await fs.rm(cwd, { recursive: true, force: true })
 	}
-	})
+})

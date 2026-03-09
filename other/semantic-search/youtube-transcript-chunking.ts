@@ -49,7 +49,11 @@ export function chunkTranscriptEvents(
 		targetChars = 3500,
 		maxChunkChars = 5500,
 		minChunkChars = 200,
-	}: { targetChars?: number; maxChunkChars?: number; minChunkChars?: number } = {},
+	}: {
+		targetChars?: number
+		maxChunkChars?: number
+		minChunkChars?: number
+	} = {},
 ) {
 	const safeTargetChars = Math.max(
 		1,
@@ -61,7 +65,10 @@ export function chunkTranscriptEvents(
 	)
 	const safeMinChunkChars = Math.min(
 		safeMaxChunkChars,
-		Math.max(0, Number.isFinite(minChunkChars) ? Math.floor(minChunkChars) : 200),
+		Math.max(
+			0,
+			Number.isFinite(minChunkChars) ? Math.floor(minChunkChars) : 200,
+		),
 	)
 
 	const sorted = [...events].sort((a, b) => a.startMs - b.startMs)

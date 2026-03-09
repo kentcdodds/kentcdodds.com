@@ -192,9 +192,7 @@ function useOnRead({
 			if (!visibilityEl) return
 			const currentVisibilityEl = visibilityEl
 			const isVisible = entries.some((entry) => {
-				return (
-					entry.target === currentVisibilityEl && entry.isIntersecting
-				)
+				return entry.target === currentVisibilityEl && entry.isIntersecting
 			})
 			if (isVisible) {
 				scrolledTheMain = true

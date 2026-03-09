@@ -83,8 +83,8 @@ fly checks list -a kcd
 
 Only continue to the next region after the new machine is healthy (`3/3`).
 
-If a machine fails to start or is left in a non-started state, destroy it
-before continuing:
+If a machine fails to start or is left in a non-started state, destroy it before
+continuing:
 
 ```bash
 fly machine destroy <MACHINE_ID> -a kcd
@@ -100,8 +100,8 @@ done
 
 ## Step 5: Prune Unattached Volumes (removed regions)
 
-After intentionally removing regions, delete unattached volumes in those
-regions to avoid ongoing storage costs.
+After intentionally removing regions, delete unattached volumes in those regions
+to avoid ongoing storage costs.
 
 ```bash
 for id in $(fly vol list -a kcd --json | jq -r '.[] | select(.attached_machine_id == null and (.region=="jnb" or .region=="ams" or .region=="sin" or .region=="bom" or .region=="syd" or .region=="cdg")) | .id'); do
