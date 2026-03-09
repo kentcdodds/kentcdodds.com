@@ -13,6 +13,10 @@ async function processMessage({ message, env }: { message: any; env: Env }) {
 		typeof message.attempts === 'number' && Number.isFinite(message.attempts)
 			? message.attempts
 			: 1
+	console.info('Call Kent audio queue message dequeued', {
+		draftId: parsed.draftId,
+		attempt,
+	})
 	const response = await fetch(
 		`${env.CALL_KENT_AUDIO_CONTAINER_URL}/jobs/episode-audio`,
 		{
@@ -35,16 +39,36 @@ async function processMessage({ message, env }: { message: any; env: Env }) {
 			`Container request failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`,
 		)
 	}
+	console.info('Call Kent audio container request succeeded', {
+		draftId: parsed.draftId,
+		attempt,
+		status: response.status,
+	})
+	return { draftId: parsed.draftId, attempt }
 }
 
 export default {
 	async queue(batch: any, env: Env) {
+		console.info('Call Kent audio queue batch received', {
+			batchSize: batch.messages.length,
+		})
 		for (const message of batch.messages) {
 			try {
-				await processMessage({ message, env })
+				const { draftId, attempt } = await processMessage({ message, env })
 				message.ack()
+				console.info('Call Kent audio queue message acked', {
+					draftId,
+					attempt,
+				})
 			} catch (error) {
 				console.error('Call Kent audio queue message failed', {
+					draftId:
+						typeof message.body?.draftId === 'string' ? message.body.draftId : null,
+					attempt:
+						typeof message.attempts === 'number' &&
+						Number.isFinite(message.attempts)
+							? message.attempts
+							: 1,
 					error: error instanceof Error ? error.message : String(error),
 				})
 				message.retry()
