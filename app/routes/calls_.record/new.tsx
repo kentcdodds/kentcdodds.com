@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { data as json, Link } from 'react-router'
+import { Link } from 'react-router'
 import { Button, LinkButton } from '#app/components/button.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import {
@@ -13,7 +13,6 @@ import { type RootLoaderType } from '#app/root.tsx'
 import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { formatCallKentTextToSpeechNotes } from '#app/utils/call-kent-text-to-speech.ts'
-import { getEnv } from '#app/utils/env.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/new'
 
@@ -21,19 +20,7 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-	const url = new URL(request.url)
-	const env = getEnv()
-	const shouldUseSampleAudio =
-		url.searchParams.get('sampleAudio') === '1' &&
-		(env.NODE_ENV === 'development' || Boolean(env.PLAYWRIGHT_TEST_BASE_URL))
-	return json({ shouldUseSampleAudio } as const)
-}
-
-export default function RecordScreen({
-	loaderData,
-	matches,
-}: Route.ComponentProps) {
+export default function RecordScreen({ matches }: Route.ComponentProps) {
 	const routeTopRef = React.useRef<HTMLDivElement | null>(null)
 	const [audio, setAudio] = React.useState<Blob | null>(null)
 	const [prefill, setPrefill] = React.useState<RecordingFormData | undefined>(
@@ -46,16 +33,6 @@ export default function RecordScreen({
 	const { user, userInfo } = rootData ?? {}
 	// should be impossible...
 	if (!user || !userInfo) throw new Error('user and userInfo required')
-
-	const { shouldUseSampleAudio } = loaderData
-
-	React.useEffect(() => {
-		if (!shouldUseSampleAudio) return
-		if (audio) return
-		// Dev-only escape hatch for environments without a microphone
-		// (for example: cloud agents / CI / headless VMs).
-		setAudio(new Blob(['audio'], { type: 'audio/wav' }))
-	}, [shouldUseSampleAudio, audio])
 
 	function scrollToRouteTop() {
 		requestAnimationFrame(() => {
@@ -70,11 +47,6 @@ export default function RecordScreen({
 		<div ref={routeTopRef}>
 			{audio ? (
 				<div className="flex flex-col gap-6">
-					{shouldUseSampleAudio ? (
-						<Paragraph className="mb-2">
-							{`Using a sample recording for this test/dev flow...`}
-						</Paragraph>
-					) : null}
 					<div className="flex flex-wrap gap-3">
 						<Button
 							type="button"
@@ -93,11 +65,6 @@ export default function RecordScreen({
 				</div>
 			) : (
 				<div className="flex flex-col gap-8">
-					{shouldUseSampleAudio ? (
-						<Paragraph className="mb-4">
-							{`Using a sample recording for this test/dev flow...`}
-						</Paragraph>
-					) : null}
 					{userInfo.avatar.hasGravatar ? null : (
 						<Paragraph>
 							{`
@@ -124,12 +91,10 @@ export default function RecordScreen({
                 Try to keep it 2 minutes or less. Thanks!
               `}
 							</Paragraph>
-							{shouldUseSampleAudio ? null : (
-								<CallRecorder
-									onRecordingComplete={(recording) => setAudio(recording)}
-									team={user.team}
-								/>
-							)}
+							<CallRecorder
+								onRecordingComplete={(recording) => setAudio(recording)}
+								team={user.team}
+							/>
 							<Paragraph className="mt-6 text-sm text-gray-500 dark:text-slate-400">
 								{`Prefer not to record? `}
 								<LinkButton

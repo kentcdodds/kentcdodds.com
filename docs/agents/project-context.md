@@ -30,6 +30,10 @@ reference:
 - All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
   No real API keys are needed for local development; `.env.example` values are
   sufficient.
+- Playwright already launches Chromium with fake media permissions/device input
+  plus `tests/sample.wav`. If an e2e needs recorded audio, drive the real
+  recorder UI and keep the fake-audio setup in Playwright/helpers rather than
+  adding app runtime shortcuts.
 - SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
   external database server is required.
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run

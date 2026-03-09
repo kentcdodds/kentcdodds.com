@@ -3,15 +3,12 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 
 type CreateRateLimitingMiddlewareOptions = {
 	mode?: string | undefined
-	playwrightTestBaseUrl?: string | undefined
 }
 
 /**
  * Rate limiting middleware modeled after Epic Stack's `server/index.ts`.
  *
  * - In development we effectively disable limits to avoid slowing iteration.
- * - In Playwright we also effectively disable limits because tests can be fast
- *   enough to hit strict limits (especially on auth endpoints).
  * - In production the limits are enforced and keyed by `Fly-Client-Ip` when
  *   available (users cannot spoof this header on Fly.io).
  */
@@ -21,12 +18,9 @@ export function createRateLimitingMiddleware(
 	const mode = options.mode ?? 'development'
 	const isProd = mode === 'production'
 
-	const isPlaywright = Boolean(options.playwrightTestBaseUrl)
-
-	// When running tests or running in development, we want to effectively disable
-	// rate limiting because Playwright tests are very fast and we don't want to
-	// have to wait for the rate limit to reset between tests.
-	const maxMultiple = !isProd || isPlaywright ? 10_000 : 1
+	// When running in development, we want to effectively disable rate limiting so
+	// local iteration stays fast. Production keeps the real limits.
+	const maxMultiple = !isProd ? 10_000 : 1
 
 	const rateLimitDefault = {
 		windowMs: 60 * 1000,
