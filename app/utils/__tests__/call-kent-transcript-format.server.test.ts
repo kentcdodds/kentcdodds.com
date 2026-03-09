@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
 import { setEnv } from '#tests/env-disposable.ts'
 
@@ -81,4 +81,47 @@ test('formatCallKentTranscriptWithWorkersAi does not truncate long transcripts',
 	expect(formatted).toContain('Kent:')
 	expect(formatted).toContain('Sentence 600.')
 	expect(formatted).toMatch(/[.!?]\n\n/)
+})
+
+test('formatCallKentTranscriptWithWorkersAi repairs a long Kent wall of text when the model is a no-op', async () => {
+	using _env = setEnv({
+		CLOUDFLARE_API_TOKEN: 'MOCK_CLOUDFLARE_API_TOKEN',
+		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
+		CLOUDFLARE_AI_GATEWAY_ID: 'mock-gateway',
+		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN',
+		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
+	})
+
+	const transcript = `
+Announcer: Intro line.
+
+---
+
+Kent: First sentence. Second sentence. Third sentence. Fourth sentence. Fifth sentence. Sixth sentence.
+
+---
+
+Announcer: Outro line.
+`.trim()
+
+	const fetchSpy = vi
+		.spyOn(globalThis, 'fetch')
+		.mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				result: {
+					response: transcript,
+				},
+			}),
+		} as Response)
+
+	try {
+		const formatted = await formatCallKentTranscriptWithWorkersAi({ transcript })
+		expect(formatted).toContain('---')
+		expect(formatted).toContain(
+			'Kent: First sentence. Second sentence. Third sentence.\n\nFourth sentence. Fifth sentence. Sixth sentence.',
+		)
+	} finally {
+		fetchSpy.mockRestore()
+	}
 })
