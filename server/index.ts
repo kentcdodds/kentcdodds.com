@@ -114,6 +114,7 @@ app.use(serverTiming())
 type ServerTimingResponse = {
 	startTime?: (name: string, description: string) => void
 	endTime?: (name: string) => void
+	headersSent?: boolean
 }
 
 const startServerMetric = (
@@ -125,6 +126,9 @@ const startServerMetric = (
 }
 
 const endServerMetric = (res: ServerTimingResponse, name: string) => {
+	// `server-timing` auto-ends open metrics when response headers are written.
+	// If we try to end the same metric after that, it logs `No such name ...`.
+	if (res.headersSent) return
 	res.endTime?.(name)
 }
 
