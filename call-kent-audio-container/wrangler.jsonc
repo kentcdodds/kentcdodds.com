@@ -14,6 +14,7 @@
 		{
 			"class_name": "CallKentAudioContainer",
 			"image": "./container.dockerfile",
+			"instance_type": "standard-1",
 			"max_instances": 3
 		}
 	],
