@@ -26,16 +26,31 @@ import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
-import { scheduleExpiredDataCleanup } from './expired-sessions-cleanup.js'
-import { createRateLimitingMiddleware } from './rate-limiting.js'
-import {
-	getRedirectsMiddleware,
-	oldImgSocial,
-	rickRollMiddleware,
-} from './redirects.js'
-import { registerStartupShortcuts } from './startup-shortcuts.js'
 
 sourceMapSupport.install()
+
+const localServerModuleExtension = import.meta.url.includes('/server-build/')
+	? '.js'
+	: '.ts'
+
+async function importLocalServerModule<T>(specifier: string): Promise<T> {
+	return (await import(`${specifier}${localServerModuleExtension}`)) as T
+}
+
+const { scheduleExpiredDataCleanup } =
+	await importLocalServerModule<typeof import('./expired-sessions-cleanup.ts')>(
+		'./expired-sessions-cleanup',
+	)
+const { createRateLimitingMiddleware } =
+	await importLocalServerModule<typeof import('./rate-limiting.ts')>(
+		'./rate-limiting',
+	)
+const { getRedirectsMiddleware, oldImgSocial, rickRollMiddleware } =
+	await importLocalServerModule<typeof import('./redirects.ts')>('./redirects')
+const { registerStartupShortcuts } =
+	await importLocalServerModule<typeof import('./startup-shortcuts.ts')>(
+		'./startup-shortcuts',
+	)
 
 const env = getEnv()
 const MODE = env.NODE_ENV
@@ -76,7 +91,11 @@ const SHOULD_INIT_SENTRY =
 	!env.MOCKS
 
 if (SHOULD_INIT_SENTRY) {
-	void import('./utils/monitoring.js').then(({ init }) => init())
+	void (
+		importLocalServerModule<typeof import('./utils/monitoring.ts')>(
+			'./utils/monitoring',
+		)
+	).then(({ init }) => init())
 }
 
 if (SHOULD_INIT_SENTRY) {
@@ -501,7 +520,10 @@ const server = app.listen(portToUse, () => {
 let wss: WebSocketServer | undefined
 if (MODE === 'development') {
 	try {
-		const { contentWatcher } = await import('./content-watcher.js')
+		const { contentWatcher } =
+			await importLocalServerModule<typeof import('./content-watcher.ts')>(
+				'./content-watcher',
+			)
 		wss = contentWatcher(server)
 	} catch (error: unknown) {
 		console.error('unable to start content watcher', error)

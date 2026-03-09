@@ -39,9 +39,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	const url = new URL(request.url)
 	const error = url.searchParams.get('error')
+	const env = getEnv()
 	const shouldUseSampleAudio =
-		getEnv().NODE_ENV === 'development' &&
-		url.searchParams.get('sampleAudio') === '1'
+		url.searchParams.get('sampleAudio') === '1' &&
+		(env.NODE_ENV === 'development' || Boolean(env.PLAYWRIGHT_TEST_BASE_URL))
 
 	const call = await prisma.call.findFirst({
 		where: { id: params.callId },
@@ -899,7 +900,7 @@ function RecordingDetailScreen({
 						{data.shouldUseSampleAudio ? (
 							<div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
 								<Paragraph className="mb-4 text-sm text-gray-500 dark:text-slate-400">
-									{`Dev-only: use the caller's audio as a sample response (helpful in cloud VMs without microphones).`}
+									{`Test/dev shortcut: use the caller's audio as a sample response (helpful in cloud VMs without microphones).`}
 								</Paragraph>
 								<Button
 									type="button"

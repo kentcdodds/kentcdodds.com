@@ -57,7 +57,10 @@ async function postRefreshCacheWithRetry({
 	let lastError: unknown = null
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
-			const response = await postRefreshCacheImpl({ postData })
+			const response = await postRefreshCacheImpl({
+				http: undefined,
+				postData,
+			})
 			return { ok: true, attempts: attempt, response }
 		} catch (error) {
 			lastError = error
