@@ -16,6 +16,9 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 }: EpisodeAudioJob) {
 	const env = getEnv()
 	const queueId = env.CALL_KENT_AUDIO_CF_QUEUE_ID
+	if (!queueId) {
+		throw new Error('CALL_KENT_AUDIO_CF_QUEUE_ID is required.')
+	}
 	const url = `${env.CALL_KENT_AUDIO_CF_API_BASE_URL}/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/queues/${queueId}/messages`
 	const body = {
 		content_type: 'json',
@@ -57,6 +60,11 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 			`Cloudflare queue enqueue failed: unable to read response body: ${getErrorMessage(error)}`,
 		)
 	}
+	if (!res.ok) {
+		throw new Error(
+			`Cloudflare queue enqueue failed: ${res.status} ${res.statusText}${text ? `\n${text}` : ''}`,
+		)
+	}
 	if (!text.trim()) {
 		throw new Error('Cloudflare queue enqueue failed: empty response')
 	}
@@ -65,11 +73,6 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 		parsed = JSON.parse(text)
 	} catch {
 		throw new Error('Cloudflare queue enqueue failed: invalid JSON response')
-	}
-	if (!res.ok) {
-		throw new Error(
-			`Cloudflare queue enqueue failed: ${res.status} ${res.statusText}${text ? `\n${text}` : ''}`,
-		)
 	}
 	if (typeof parsed !== 'object' || parsed === null) {
 		throw new Error(

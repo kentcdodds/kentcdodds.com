@@ -53,6 +53,7 @@ function createCallKentAudioProcessorSignature({
 }
 
 function safeEqualHex(a: string, b: string) {
+	if (a.length % 2 !== 0 || b.length % 2 !== 0) return false
 	const aBuffer = Buffer.from(a, 'hex')
 	const bBuffer = Buffer.from(b, 'hex')
 	if (aBuffer.length !== bBuffer.length) return false
@@ -88,7 +89,7 @@ export function verifyCallKentAudioProcessorCallbackSignature({
 		timestamp,
 		rawBody,
 	})
-	if (!/^[\da-f]+$/i.test(signature)) return false
+	if (!/^[\da-f]+$/i.test(signature) || signature.length % 2 !== 0) return false
 	return safeEqualHex(expected, signature)
 }
 
@@ -105,7 +106,11 @@ export async function handleCallKentAudioProcessorEvent(
 		}
 		case 'audio_generation_completed': {
 			const updated = await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: event.draftId, status: 'PROCESSING' },
+				where: {
+					id: event.draftId,
+					status: 'PROCESSING',
+					step: { in: ['STARTED', 'GENERATING_AUDIO'] },
+				},
 				data: {
 					episodeAudioKey: event.episodeAudioKey,
 					episodeAudioContentType: event.episodeAudioContentType,

@@ -47,6 +47,14 @@ test('verifyCallKentAudioProcessorCallbackSignature validates signed payload', (
 			now: Number(timestamp) * 1000,
 		}),
 	).toBe(false)
+	expect(
+		verifyCallKentAudioProcessorCallbackSignature({
+			timestamp,
+			signature: `${signature}0`,
+			rawBody,
+			now: Number(timestamp) * 1000,
+		}),
+	).toBe(false)
 })
 
 test('handleCallKentAudioProcessorEvent stores generated audio metadata and continues processing', async () => {
@@ -64,7 +72,11 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 		responseSegmentAudioKey: 'call-kent/drafts/draft-1/response-segment.mp3',
 	})
 	expect(prisma.callKentEpisodeDraft.updateMany).toHaveBeenCalledWith({
-		where: { id: 'draft-1', status: 'PROCESSING' },
+		where: {
+			id: 'draft-1',
+			status: 'PROCESSING',
+			step: { in: ['STARTED', 'GENERATING_AUDIO'] },
+		},
 		data: {
 			episodeAudioKey: 'call-kent/drafts/draft-1/episode.mp3',
 			episodeAudioContentType: 'audio/mpeg',
