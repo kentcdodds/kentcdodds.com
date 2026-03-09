@@ -13,6 +13,11 @@ swap_size_mb = 512
   auto_rollback = true
   enable_consul = true
 
+[vm]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024
+
 [[mounts]]
   source = "data_machines"
   destination = "/data"
