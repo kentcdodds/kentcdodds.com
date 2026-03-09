@@ -1,7 +1,7 @@
 import { createDraftAudioResponse } from '#app/utils/draft-audio-response.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
-import { type Route } from './+types/draft-episode-audio'
+import { type Route } from './+types/draft-response-audio'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
@@ -12,20 +12,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const draft = await prisma.callKentEpisodeDraft.findUnique({
 		where: { callId },
 		select: {
-			episodeAudioKey: true,
-			episodeAudioContentType: true,
-			episodeAudioSize: true,
+			responseAudioKey: true,
+			responseAudioContentType: true,
+			responseAudioSize: true,
 		},
 	})
 	if (!draft) throw new Response('Not found', { status: 404 })
-
-	if (!draft.episodeAudioKey) throw new Response('Not found', { status: 404 })
+	if (!draft.responseAudioKey) throw new Response('Not found', { status: 404 })
 
 	return await createDraftAudioResponse({
 		request,
-		key: draft.episodeAudioKey,
-		contentType: draft.episodeAudioContentType,
-		size: draft.episodeAudioSize,
-		defaultContentType: 'audio/mpeg',
+		key: draft.responseAudioKey,
+		contentType: draft.responseAudioContentType,
+		size: draft.responseAudioSize,
+		defaultContentType: 'audio/webm',
 	})
 }

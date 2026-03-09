@@ -57,6 +57,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					step: true,
 					errorMessage: true,
 					episodeAudioKey: true,
+					responseAudioKey: true,
 					transcript: true,
 					title: true,
 					description: true,
@@ -76,6 +77,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	}
 	const episodeDraft = call.episodeDraft
 	const hasEpisodeAudio = Boolean(episodeDraft?.episodeAudioKey)
+	const hasResponseAudio = Boolean(episodeDraft?.responseAudioKey)
 	const episodeAudioUrl = hasEpisodeAudio
 		? `/resources/calls/draft-episode-audio?callId=${call.id}`
 		: null
@@ -88,7 +90,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 						...episodeDraft,
 						// Don’t send the storage key to the client.
 						episodeAudioKey: null,
+						responseAudioKey: null,
 						hasEpisodeAudio,
+						hasResponseAudio,
 						episodeAudioUrl,
 					}
 				: null,
@@ -773,6 +777,7 @@ function DraftEditor({
 }
 
 const draftStatusResourcePath = '/resources/calls/draft-status'
+const draftResponseAudioResourcePath = '/resources/calls/draft-response-audio'
 
 function RecordingDetailScreen({
 	data,
@@ -780,6 +785,12 @@ function RecordingDetailScreen({
 	data: Route.ComponentProps['loaderData']
 }) {
 	const [responseAudio, setResponseAudio] = React.useState<Blob | null>(null)
+	const [restoredResponseAudio, setRestoredResponseAudio] =
+		React.useState<Blob | null>(null)
+	const [isRestoringResponseAudio, setIsRestoringResponseAudio] =
+		React.useState(false)
+	const [restoreResponseAudioError, setRestoreResponseAudioError] =
+		React.useState<string | null>(null)
 	const [polledStatus, setPolledStatus] = React.useState<{
 		status: string
 		step: string
@@ -790,7 +801,36 @@ function RecordingDetailScreen({
 	const revalidator = useRevalidator()
 	React.useEffect(() => {
 		setPolledStatus(null)
+		setRestoredResponseAudio(null)
+		setRestoreResponseAudioError(null)
+		setIsRestoringResponseAudio(false)
 	}, [draft?.id])
+
+	async function restoreSavedResponseAudio() {
+		if (isRestoringResponseAudio) return
+		setRestoreResponseAudioError(null)
+		setIsRestoringResponseAudio(true)
+		try {
+			const res = await fetch(
+				`${draftResponseAudioResourcePath}?callId=${data.call.id}`,
+			)
+			if (!res.ok) {
+				const text = await res.text().catch(() => '')
+				throw new Error(text.trim() || 'Unable to restore the saved recording.')
+			}
+			const mime = res.headers.get('Content-Type') ?? 'audio/webm'
+			const bytes = await res.arrayBuffer()
+			setRestoredResponseAudio(new Blob([bytes], { type: mime }))
+		} catch (error: unknown) {
+			setRestoreResponseAudioError(
+				error instanceof Error
+					? error.message
+					: 'Unable to restore the saved recording.',
+			)
+		} finally {
+			setIsRestoringResponseAudio(false)
+		}
+	}
 
 	// Caller transcript generation runs before episode-draft creation, so poll the
 	// full loader while that lightweight status is processing.
@@ -847,8 +887,32 @@ function RecordingDetailScreen({
 				</Paragraph>
 
 				{draft ? (
-					(draft.status === 'PROCESSING' && polledStatus?.status !== 'ERROR') ||
-					(polledStatus?.status === 'READY' && draft.status !== 'READY') ? (
+					restoredResponseAudio ? (
+						<div className="flex flex-col gap-4">
+							<Paragraph className="text-gray-500 dark:text-slate-400">
+								{`Saved recording restored. Review it and try generating the draft again, or record a new response instead.`}
+							</Paragraph>
+							<ResponseAudioDraftForm
+								audio={restoredResponseAudio}
+								callId={data.call.id}
+								callNotes={data.call.notes}
+								callTitle={data.call.title}
+							/>
+							<Form
+								method="post"
+								action={recordingFormActionPath}
+								preventScrollReset
+							>
+								<input type="hidden" name="intent" value="undo-episode-draft" />
+								<input type="hidden" name="callId" value={data.call.id} />
+								<Button type="submit" variant="secondary">
+									Record new response
+								</Button>
+							</Form>
+						</div>
+					) : (draft.status === 'PROCESSING' &&
+							polledStatus?.status !== 'ERROR') ||
+					  (polledStatus?.status === 'READY' && draft.status !== 'READY') ? (
 						<DraftPending
 							callId={data.call.id}
 							step={
@@ -867,18 +931,41 @@ function RecordingDetailScreen({
 									draft.errorMessage ??
 									'Unknown error'}
 							</Paragraph>
-							<Form
-								method="post"
-								action={recordingFormActionPath}
-								className="mt-6"
-								preventScrollReset
-							>
-								<input type="hidden" name="intent" value="undo-episode-draft" />
-								<input type="hidden" name="callId" value={data.call.id} />
-								<Button type="submit" variant="secondary">
-									Undo and re-record
-								</Button>
-							</Form>
+							{restoreResponseAudioError ? (
+								<Paragraph className="mt-4 whitespace-pre-wrap text-red-700 dark:text-red-300">
+									{restoreResponseAudioError}
+								</Paragraph>
+							) : null}
+							<div className="mt-6 flex flex-wrap gap-3">
+								{draft.hasResponseAudio ? (
+									<Button
+										type="button"
+										onClick={() => {
+											void restoreSavedResponseAudio()
+										}}
+										disabled={isRestoringResponseAudio}
+									>
+										{isRestoringResponseAudio
+											? 'Restoring saved recording...'
+											: 'Try again with saved recording'}
+									</Button>
+								) : null}
+								<Form
+									method="post"
+									action={recordingFormActionPath}
+									preventScrollReset
+								>
+									<input
+										type="hidden"
+										name="intent"
+										value="undo-episode-draft"
+									/>
+									<input type="hidden" name="callId" value={data.call.id} />
+									<Button type="submit" variant="secondary">
+										Undo and re-record
+									</Button>
+								</Form>
+							</div>
 						</div>
 					) : (
 						<DraftEditor
