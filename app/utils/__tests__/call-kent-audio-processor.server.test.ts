@@ -30,7 +30,6 @@ test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', 
 	)
 	const [, options] = fetchSpy.mock.calls[0]!
 	expect(JSON.parse(String(options?.body))).toEqual({
-		content_type: 'json',
 		body: {
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
