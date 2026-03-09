@@ -1,28 +1,33 @@
 import { createHmac } from 'node:crypto'
 import { expect, test, vi } from 'vitest'
 
-vi.mock('#app/utils/call-kent-episode-draft.server.ts', () => ({
-	startCallKentEpisodeDraftProcessing: vi.fn(),
-}))
-
-vi.mock('#app/utils/prisma.server.ts', () => ({
-	prisma: {
-		callKentEpisodeDraft: {
-			updateMany: vi.fn(),
+async function loadCallbackModule() {
+	vi.resetModules()
+	const updateMany = vi.fn()
+	const startCallKentEpisodeDraftProcessing = vi.fn()
+	vi.doMock('#app/utils/prisma.server.ts', () => ({
+		prisma: {
+			callKentEpisodeDraft: {
+				updateMany,
+			},
 		},
-	},
-}))
+	}))
+	vi.doMock('#app/utils/call-kent-episode-draft.server.ts', () => ({
+		startCallKentEpisodeDraftProcessing,
+	}))
+	const mod = await import('../call-kent-audio-processor-callback.server.ts')
+	return {
+		updateMany,
+		startCallKentEpisodeDraftProcessing,
+		...mod,
+	}
+}
 
-import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
-import {
-	handleCallKentAudioProcessorEvent,
-	verifyCallKentAudioProcessorCallbackSignature,
-} from '../call-kent-audio-processor-callback.server.ts'
-
-test('verifyCallKentAudioProcessorCallbackSignature validates signed payload', () => {
+test('verifyCallKentAudioProcessorCallbackSignature validates signed payload', async () => {
 	vi.clearAllMocks()
 	process.env.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET = 'test-secret'
+	const { verifyCallKentAudioProcessorCallbackSignature } =
+		await loadCallbackModule()
 	const rawBody = JSON.stringify({ hello: 'world' })
 	const timestamp = '1710000000'
 	const signature = createHmac(
@@ -59,7 +64,12 @@ test('verifyCallKentAudioProcessorCallbackSignature validates signed payload', (
 
 test('handleCallKentAudioProcessorEvent stores generated audio metadata and continues processing', async () => {
 	vi.clearAllMocks()
-	vi.mocked(prisma.callKentEpisodeDraft.updateMany).mockResolvedValue({
+	const {
+		updateMany,
+		startCallKentEpisodeDraftProcessing,
+		handleCallKentAudioProcessorEvent,
+	} = await loadCallbackModule()
+	updateMany.mockResolvedValue({
 		count: 1,
 	})
 	await handleCallKentAudioProcessorEvent({
@@ -71,7 +81,7 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 		callerSegmentAudioKey: 'call-kent/drafts/draft-1/caller-segment.mp3',
 		responseSegmentAudioKey: 'call-kent/drafts/draft-1/response-segment.mp3',
 	})
-	expect(prisma.callKentEpisodeDraft.updateMany).toHaveBeenCalledWith({
+	expect(updateMany).toHaveBeenCalledWith({
 		where: {
 			id: 'draft-1',
 			status: 'PROCESSING',

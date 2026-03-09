@@ -1,5 +1,4 @@
 import { afterAll, afterEach, beforeAll } from 'vitest'
-import { resetCloudflareMockState } from '#mocks/cloudflare.ts'
 import './setup-env.ts'
 import { mswServer } from './msw-server.ts'
 
@@ -7,8 +6,9 @@ beforeAll(() => {
 	mswServer.listen({ onUnhandledRequest: 'error' })
 })
 
-afterEach(() => {
+afterEach(async () => {
 	mswServer.resetHandlers()
+	const { resetCloudflareMockState } = await import('#mocks/cloudflare.ts')
 	resetCloudflareMockState()
 })
 

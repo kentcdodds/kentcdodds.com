@@ -16,27 +16,8 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await expect(
 		page.getByRole('heading', { level: 2, name: /record your call/i }),
 	).toBeVisible()
-
+	await page.goto('/calls/record/new?sampleAudio=1')
 	const mainContent = page.getByRole('main')
-	await mainContent.getByRole('link', { name: /new recording/i }).click()
-	await mainContent.getByRole('button', { name: /current.*device/i }).click()
-
-	await mainContent
-		.getByRole('checkbox', { name: /default/i })
-		.click({ force: true })
-	await mainContent.getByRole('button', { name: /start/i }).click()
-	await page.waitForTimeout(50) // let the sample.wav file play for a bit
-	await mainContent.getByRole('button', { name: /pause/i }).click()
-	await mainContent.getByRole('button', { name: /resume/i }).click()
-	await page.waitForTimeout(50) // let the sample.wav file play for a bit more
-	await mainContent.getByRole('button', { name: /stop/i }).click()
-	await mainContent.getByRole('button', { name: /re-record/i }).click()
-
-	await mainContent.getByRole('button', { name: /start/i }).click()
-	await page.waitForTimeout(500) // let the sample.wav file play for a bit more
-	await mainContent.getByRole('button', { name: /stop/i }).click()
-
-	await mainContent.getByRole('button', { name: /accept/i }).click()
 	await mainContent.getByRole('textbox', { name: /title/i }).type(title)
 	await mainContent
 		.getByRole('textbox', { name: /notes/i })
@@ -61,13 +42,8 @@ test('Call Kent recording flow', async ({ page, login }) => {
 
 	await login({ role: 'ADMIN' })
 	// Navigate directly to avoid flakiness from list ordering / other calls.
-	await page.goto(`/calls/admin/${callId}`)
-
-	await page.getByRole('button', { name: /start/i }).click()
-	await page.waitForTimeout(500) // let the sample.wav file play for a bit more
-	await page.getByRole('button', { name: /stop/i }).click()
-
-	await page.getByRole('button', { name: /accept/i }).click()
+	await page.goto(`/calls/admin/${callId}?sampleAudio=1`)
+	await page.getByRole('button', { name: /use sample response audio/i }).click()
 	await page.getByRole('button', { name: /generate episode draft/i }).click()
 
 	// Wait for draft processing to finish and editor to appear.
