@@ -51,6 +51,11 @@ reference:
 - `npm run dev` should not wrap `index.ts` in an outer `node --watch`. React
   Router dev rewrites `.react-router/types` on startup, which can trigger an
   infinite restart loop in headless/CI environments.
+- Playwright/Prisma caveat: `playwright.config.ts` sets
+  `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` so e2e runs can reset the local
+  SQLite DB without tripping Cursor's destructive-action guard. This is only for
+  Playwright's dev/test DB reset path, not a general exemption for Prisma
+  commands.
 - Oxlint config caveat: prefer package-export extends
   (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
   extends into `node_modules` can fail to inherit the shared env/rules.

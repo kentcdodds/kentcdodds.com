@@ -1,4 +1,4 @@
-name: ☁️ Deploy Call Kent Audio Container
+name: 📦 Deploy Call Kent Audio Container
 
 on:
   workflow_call:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    name: 🚀 Deploy Call Kent Audio Container
+    name: 📦 Deploy Call Kent Audio Container
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-call-kent-audio-container-${{ github.ref }}

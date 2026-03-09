@@ -1,4 +1,4 @@
-name: 🚀 Deploy
+name: 🚀 Deploy Planner
 on:
   push:
     branches:
@@ -24,6 +24,7 @@ jobs:
         ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}
       deploy_call_kent_audio_container:
         ${{ steps.plan.outputs.deploy_call_kent_audio_container }}
+      deploy_oauth_worker: ${{ steps.plan.outputs.deploy_oauth_worker }}
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
@@ -50,183 +51,17 @@ jobs:
           echo "index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}"
           echo "deploy_call_kent_audio_worker: ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}"
           echo "deploy_call_kent_audio_container: ${{ steps.plan.outputs.deploy_call_kent_audio_container }}"
+          echo "deploy_oauth_worker: ${{ steps.plan.outputs.deploy_oauth_worker }}"
 
-  lint:
-    name: ⬣ ESLint
+  deploy-site:
+    name: 🚀 Site Pipeline
     needs: [plan]
     if: needs.plan.outputs.deploy_site == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v6
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
-
-      - name: 🔬 Lint
-        run: npm run lint
-
-  typecheck:
-    name: ʦ TypeScript
-    needs: [plan]
-    if: needs.plan.outputs.deploy_site == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v6
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
-
-      - name: 🔎 Type check
-        run: npm run typecheck
-
-  pre-deploy-health-check:
-    name: 🏥 Pre-deploy health check
-    needs: [plan]
-    timeout-minutes: 15
-    # Only run when we would actually deploy (keeps PRs fast).
-    if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
-      needs.plan.outputs.deploy_site == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v6
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
-
-      - name: 🏗 Build (production)
-        run: npm run build
-
-      - name: 🏦 Prime Site Cache
-        id: site-cache
-        uses: actions/cache@v5
-        with:
-          path: other/cache.db
-          # `other/cache.db` is a derived artifact. Key it off the inputs that can
-          # make it stale (content + cache/MDX code + deps), not `github.sha`.
-          key: >-
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
-            }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
-              'package-lock.json',
-              'app/utils/cache.server.ts',
-              'app/utils/compile-mdx.server.ts',
-              'app/utils/github.server.ts',
-              'app/utils/markdown.server.ts',
-              'app/utils/mdx.server.ts',
-              'content/**',
-              'mocks/**'
-            ) }}
-          restore-keys: |
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
-
-      - name: 🛠 Setup Database (migrations)
-        if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npx prisma migrate deploy
-
-      - name: 😅 Generate Site Cache
-        if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npm run prime-cache:mocks
-
-      - name: 🩺 Smoke test /healthcheck (production build)
-        run: npm run predeploy:healthcheck
-        env:
-          MOCKS: 'true'
-
-  playwright:
-    name: 🎭 Playwright
-    needs: [plan]
-    if: needs.plan.outputs.deploy_site == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    continue-on-error: true
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v6
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 🎬 Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
-        with:
-          useLockFile: false
-
-      - name: 🌐 Install Playwright Browsers
-        run: npm run test:e2e:install
-
-      - name: 🛠 Setup Database
-        run: npx prisma migrate reset --force
-
-      - name: 🏗 Build
-        run: npm run build
-
-      - name: 🏦 Prime Site Cache
-        id: site-cache
-        uses: actions/cache@v5
-        with:
-          path: other/cache.db
-          # `other/cache.db` is a derived artifact. Key it off the inputs that can
-          # make it stale (content + cache/MDX code + deps), not `github.sha`.
-          key: >-
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
-            }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
-              'package-lock.json',
-              'app/utils/cache.server.ts',
-              'app/utils/compile-mdx.server.ts',
-              'app/utils/github.server.ts',
-              'app/utils/markdown.server.ts',
-              'app/utils/mdx.server.ts',
-              'content/**',
-              'mocks/**'
-            ) }}
-          restore-keys: |
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
-
-      - name: 😅 Generate Site Cache
-        if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npm run prime-cache:mocks
-
-      - name: 🎭 Playwright tests
-        run: npx playwright test
-        env:
-          PORT: 8811
-
-      - name: 📊 Upload report
-        uses: actions/upload-artifact@v6
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+    uses: ./.github/workflows/deploy-site.yml
+    with:
+      should_deploy: ${{ github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'dev') }}
+      run_pre_deploy_health_check: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+    secrets: inherit
 
   refresh-content:
     name: 🥬 Refresh Content
@@ -252,7 +87,7 @@ jobs:
     secrets: inherit
 
   deploy-call-kent-audio-worker:
-    name: ☁️ Deploy Call Kent Audio Worker
+    name: ⚙️ Deploy Call Kent Audio Worker
     needs: [plan]
     if:
       ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
@@ -261,7 +96,7 @@ jobs:
     secrets: inherit
 
   deploy-call-kent-audio-container:
-    name: ☁️ Deploy Call Kent Audio Container
+    name: 📦 Deploy Call Kent Audio Container
     needs: [plan]
     if:
       ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
@@ -269,53 +104,11 @@ jobs:
     uses: ./.github/workflows/deploy-call-kent-audio-container.yml
     secrets: inherit
 
-  deploy-site:
-    name: 🚀 Deploy Site
-    runs-on: ubuntu-latest
-    needs: [plan, lint, typecheck, pre-deploy-health-check]
-    # only build/deploy main branch on pushes
+  deploy-oauth-worker:
+    name: 🔐 Deploy OAuth Worker
+    needs: [plan]
     if:
-      ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
-      github.event_name == 'push' && needs.plan.outputs.deploy_site == 'true' }}
-    concurrency:
-      group: deploy-site-${{ github.ref_name }}
-      cancel-in-progress: true
-
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: '50'
-
-      - name: 👀 Read app name
-        uses: SebRollen/toml-action@v1.2.0
-        id: app_name
-        with:
-          file: 'fly.toml'
-          field: 'app'
-
-      - name: 🎈 Setup Fly
-        uses: superfly/flyctl-actions/setup-flyctl@1.5
-
-      - name: 🤖 update robots
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        run:
-          # replace "Allow" with "Disallow" in public/robots.txt for staging
-          sed -i 's/Allow/Disallow/g' public/robots.txt
-
-      - name: 🚀 Deploy Staging
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        run:
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
-          github.sha }} --app ${{ steps.app_name.outputs.value }}-staging
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      - name: 🚀 Deploy Production
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run:
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
-          github.sha }} --build-secret SENTRY_AUTH_TOKEN=${{
-          secrets.SENTRY_AUTH_TOKEN }}
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+      needs.plan.outputs.deploy_oauth_worker == 'true' }}
+    uses: ./.github/workflows/deploy-oauth-worker.yml
+    secrets: inherit

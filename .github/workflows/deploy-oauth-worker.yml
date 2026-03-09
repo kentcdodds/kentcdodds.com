@@ -1,4 +1,4 @@
-name: ⚙️ Deploy Call Kent Audio Worker
+name: 🔐 Deploy OAuth Worker
 
 on:
   workflow_call:
@@ -6,10 +6,10 @@ on:
 
 jobs:
   deploy:
-    name: ⚙️ Deploy Call Kent Audio Worker
+    name: 🔐 Deploy OAuth Worker
     runs-on: ubuntu-latest
     concurrency:
-      group: deploy-call-kent-audio-worker-${{ github.ref }}
+      group: deploy-oauth-worker-${{ github.ref }}
       cancel-in-progress: true
     permissions:
       contents: read
@@ -22,24 +22,20 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: call-kent-audio-worker/package-lock.json
+          cache-dependency-path: oauth/package-lock.json
 
-      - name: 📥 Install audio worker deps
+      - name: 📥 Install OAuth worker deps
         run: npm ci
-        working-directory: call-kent-audio-worker
+        working-directory: oauth
 
-      - name: 🔬 Lint audio worker
+      - name: 🔬 Lint OAuth worker
         run: npm run lint
-        working-directory: call-kent-audio-worker
-
-      - name: ʦ Typecheck audio worker
-        run: npx tsc --noEmit
-        working-directory: call-kent-audio-worker
+        working-directory: oauth
 
       - name: ☁️ Deploy via Wrangler
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: call-kent-audio-worker
+          workingDirectory: oauth
           command: deploy

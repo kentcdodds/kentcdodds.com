@@ -14,11 +14,13 @@ const nonFlyDeployablePathPrefixes = [
 	'content/',
 	'call-kent-audio-worker/',
 	'call-kent-audio-container/',
+	'oauth/',
 ]
 
 const nonFlyDeployableFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 	'.github/workflows/deploy-call-kent-audio-container.yml',
+	'.github/workflows/deploy-oauth-worker.yml',
 ])
 
 const semanticContentPathPrefixes = [
@@ -38,6 +40,9 @@ const callKentAudioContainerPathPrefixes = ['call-kent-audio-container/']
 const callKentAudioContainerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-container.yml',
 ])
+
+const oauthWorkerPathPrefixes = ['oauth/']
+const oauthWorkerFiles = new Set(['.github/workflows/deploy-oauth-worker.yml'])
 
 type ChangedFile = {
 	changeType: string
@@ -310,6 +315,12 @@ export async function computeDeployPlan({
 			files: callKentAudioContainerFiles,
 			runWhenUnknown: isPushEvent,
 		}),
+		deployOauthWorker: shouldRunPathTarget({
+			changedFiles: pushChangedFiles,
+			pathPrefixes: oauthWorkerPathPrefixes,
+			files: oauthWorkerFiles,
+			runWhenUnknown: isPushEvent,
+		}),
 	}
 
 	log.log('Computed deploy plan.', {
@@ -350,6 +361,7 @@ export async function writeDeployPlanOutputs({
 		`deploy_call_kent_audio_container=${String(
 			deployPlan.deployCallKentAudioContainer,
 		)}`,
+		`deploy_oauth_worker=${String(deployPlan.deployOauthWorker)}`,
 	]
 
 	await fs.appendFile(outputFile, `${outputLines.join('\n')}\n`)
