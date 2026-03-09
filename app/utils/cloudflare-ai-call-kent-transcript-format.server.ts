@@ -93,6 +93,8 @@ You format transcripts for the "Call Kent Podcast", hosted by Kent C. Dodds.
 
 Your job is to improve readability by inserting paragraph breaks (blank lines) and normalizing whitespace.
 Do NOT add, remove, or reorder any words. Do NOT change speaker labels.
+Keep speaker turns in the same order and never merge one speaker's turn into another.
+For long single-speaker sections, insert paragraph breaks every few sentences or at clear topic shifts.
 
 If the transcript includes separator lines containing only "---", keep those lines exactly as-is and on their own line.
 
