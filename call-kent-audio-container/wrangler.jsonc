@@ -1,0 +1,34 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "kcd-call-kent-audio-container",
+	"main": "src/container-worker.ts",
+	"compatibility_date": "2026-03-09",
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"R2_ENDPOINT": "https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com",
+		"CALL_KENT_R2_BUCKET": "kcd-call-kent-audio"
+	},
+	"containers": [
+		{
+			"class_name": "CallKentAudioContainer",
+			"image": "./container.dockerfile",
+			"max_instances": 3
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "AUDIO_CONTAINER",
+				"class_name": "CallKentAudioContainer"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["CallKentAudioContainer"]
+		}
+	]
+}

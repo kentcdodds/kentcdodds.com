@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { promises as fs, type Dirent } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -12,6 +12,13 @@ import {
 	type DefaultRequestMultipartBody,
 	type HttpHandler,
 } from 'msw'
+import {
+	getAudioBuffer,
+	putEpisodeDraftAudioFromBuffer,
+	putEpisodeDraftCallerSegmentAudioFromBuffer,
+	putEpisodeDraftResponseSegmentAudioFromBuffer,
+} from '#app/utils/call-kent-audio-storage.server.ts'
+import { handleCallKentAudioProcessorEvent } from '#app/utils/call-kent-audio-processor-callback.server.ts'
 import { mockTransistorEpisodes } from './transistor.ts'
 import { requiredHeader } from './utils.ts'
 
@@ -30,6 +37,85 @@ function shouldMockCloudflare(request: Request) {
 	// credentials by setting a non-MOCK token.
 	const token = getBearerToken(request)
 	return Boolean(token && token.startsWith('MOCK'))
+}
+
+type CallKentQueueEnvelope = {
+	content_type?: string
+	body?: {
+		draftId?: string
+		callAudioKey?: string
+		responseAudioKey?: string
+	}
+}
+
+function isCallKentQueueMessage(value: unknown): value is {
+	draftId: string
+	callAudioKey: string
+	responseAudioKey: string
+} {
+	if (!value || typeof value !== 'object') return false
+	const candidate = value as {
+		draftId?: unknown
+		callAudioKey?: unknown
+		responseAudioKey?: unknown
+	}
+	return (
+		typeof candidate.draftId === 'string' &&
+		candidate.draftId.length > 0 &&
+		typeof candidate.callAudioKey === 'string' &&
+		candidate.callAudioKey.length > 0 &&
+		typeof candidate.responseAudioKey === 'string' &&
+		candidate.responseAudioKey.length > 0
+	)
+}
+
+async function processCallKentAudioQueueMessage({
+	draftId,
+	callAudioKey,
+	responseAudioKey,
+}: {
+	draftId: string
+	callAudioKey: string
+	responseAudioKey: string
+}) {
+	try {
+		await handleCallKentAudioProcessorEvent({
+			type: 'audio_generation_started',
+			draftId,
+			attempt: 1,
+		})
+		const [callAudio, responseAudio] = await Promise.all([
+			getAudioBuffer({ key: callAudioKey }),
+			getAudioBuffer({ key: responseAudioKey }),
+		])
+		const episodeAudio = Buffer.concat([callAudio, responseAudio])
+		const [episodeStored, callerStored, responseStored] = await Promise.all([
+			putEpisodeDraftAudioFromBuffer({ draftId, mp3: episodeAudio }),
+			putEpisodeDraftCallerSegmentAudioFromBuffer({ draftId, mp3: callAudio }),
+			putEpisodeDraftResponseSegmentAudioFromBuffer({
+				draftId,
+				mp3: responseAudio,
+			}),
+		])
+		await handleCallKentAudioProcessorEvent({
+			type: 'audio_generation_completed',
+			draftId,
+			episodeAudioKey: episodeStored.key,
+			episodeAudioContentType: episodeStored.contentType,
+			episodeAudioSize: episodeStored.size,
+			callerSegmentAudioKey: callerStored.key,
+			responseSegmentAudioKey: responseStored.key,
+			attempt: 1,
+		})
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : String(error)
+		await handleCallKentAudioProcessorEvent({
+			type: 'audio_generation_failed',
+			draftId,
+			errorMessage: message,
+			attempt: 1,
+		})
+	}
 }
 
 // Keep vectors small to avoid wasting CPU/memory in local mocks.
@@ -888,6 +974,33 @@ const handleVectorizeDeleteByIds = async ({
 }
 
 export const cloudflareHandlers: Array<HttpHandler> = [
+	http.post<any, DefaultBodyType>(
+		`${CLOUDFLARE_API_BASE}/accounts/:accountId/queues/:queueId/messages`,
+		async ({ request }) => {
+			if (!shouldMockCloudflare(request)) return passthrough()
+			requiredHeader(request.headers, 'authorization')
+			let payload: CallKentQueueEnvelope | null = null
+			try {
+				payload = (await request.json()) as CallKentQueueEnvelope
+			} catch {
+				return jsonError(400, 'Invalid JSON body for Queue messages endpoint.')
+			}
+			const message = payload?.body
+			if (
+				payload?.content_type !== 'json' ||
+				!message ||
+				!isCallKentQueueMessage(message)
+			) {
+				return jsonError(
+					400,
+					'Expected queue message body with draftId, callAudioKey, and responseAudioKey.',
+				)
+			}
+			void processCallKentAudioQueueMessage(message)
+			return jsonOk({ message_id: randomUUID() }, { status: 200 })
+		},
+	),
+
 	// Workers AI via AI Gateway: https://gateway.ai.cloudflare.com/v1/:accountId/:gatewayId/workers-ai/<model>
 	// Model names commonly contain `/`, so use a regex instead of path params.
 	http.post<any, DefaultBodyType>(

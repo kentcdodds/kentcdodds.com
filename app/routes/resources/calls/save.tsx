@@ -5,10 +5,12 @@ import { type RecordingFormData } from '#app/components/calls/recording-form.tsx
 import {
 	deleteAudioObject,
 	getAudioBuffer,
+	parseBase64DataUrl,
 	putCallAudioFromDataUrl,
+	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { startCallKentCallerTranscriptProcessing } from '#app/utils/call-kent-caller-transcript.server.ts'
-import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
+import { requestCallKentEpisodeAudioGeneration } from '#app/utils/call-kent-audio-processor.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
 import {
 	getErrorForAudio,
@@ -355,9 +357,13 @@ async function publishCall({
 		}
 
 		// Best-effort cleanup of stored audio blobs after publish.
-		const keysToDelete = [call.audioKey, draft.episodeAudioKey].filter(
-			(k): k is string => typeof k === 'string' && k.length > 0,
-		)
+		const keysToDelete = [
+			call.audioKey,
+			draft.episodeAudioKey,
+			draft.responseAudioKey,
+			draft.callerSegmentAudioKey,
+			draft.responseSegmentAudioKey,
+		].filter((k): k is string => typeof k === 'string' && k.length > 0)
 		await Promise.all(
 			keysToDelete.map(async (key) =>
 				deleteAudioObject({ key }).catch(() => {}),
@@ -434,11 +440,24 @@ async function createEpisodeDraft({
 	// If we're replacing a draft, clean up the old stored audio blob.
 	const existingDraft = await prisma.callKentEpisodeDraft.findFirst({
 		where: { callId },
-		select: { episodeAudioKey: true },
+		select: {
+			episodeAudioKey: true,
+			responseAudioKey: true,
+			callerSegmentAudioKey: true,
+			responseSegmentAudioKey: true,
+		},
 	})
-	if (existingDraft?.episodeAudioKey) {
-		await deleteAudioObject({ key: existingDraft.episodeAudioKey }).catch(
-			() => {},
+	const existingKeysToDelete = [
+		existingDraft?.episodeAudioKey,
+		existingDraft?.responseAudioKey,
+		existingDraft?.callerSegmentAudioKey,
+		existingDraft?.responseSegmentAudioKey,
+	].filter((key): key is string => typeof key === 'string' && key.length > 0)
+	if (existingKeysToDelete.length) {
+		await Promise.all(
+			existingKeysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
 		)
 	}
 
@@ -452,9 +471,47 @@ async function createEpisodeDraft({
 		}),
 	])
 
-	void startCallKentEpisodeDraftProcessing(draft.id, {
-		responseBase64: responseAudio!,
-	})
+	try {
+		if (!call.audioKey) {
+			throw new Error('Call audio is missing (audioKey is null).')
+		}
+		const parsedResponseAudio = parseBase64DataUrl(responseAudio!)
+		const storedResponseAudio = await putEpisodeDraftResponseAudioFromBuffer({
+			draftId: draft.id,
+			audio: parsedResponseAudio.buffer,
+			contentType: parsedResponseAudio.contentType,
+		})
+		await prisma.callKentEpisodeDraft.updateMany({
+			where: { id: draft.id, status: 'PROCESSING' },
+			data: {
+				responseAudioKey: storedResponseAudio.key,
+				responseAudioContentType: storedResponseAudio.contentType,
+				responseAudioSize: storedResponseAudio.size,
+				step: 'GENERATING_AUDIO',
+				errorMessage: null,
+			},
+		})
+		await requestCallKentEpisodeAudioGeneration({
+			draftId: draft.id,
+			callAudioKey: call.audioKey,
+			responseAudioKey: storedResponseAudio.key,
+		})
+	} catch (error: unknown) {
+		await prisma.callKentEpisodeDraft.updateMany({
+			where: { id: draft.id, status: 'PROCESSING' },
+			data: {
+				status: 'ERROR',
+				errorMessage: getErrorMessage(error),
+				step: 'DONE',
+			},
+		})
+		const searchParams = new URLSearchParams()
+		searchParams.set(
+			'error',
+			`Unable to start draft audio generation: ${getErrorMessage(error)}`,
+		)
+		return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
+	}
 
 	return redirect(`/calls/admin/${callId}`)
 }
@@ -547,14 +604,26 @@ async function undoEpisodeDraft({
 
 	const drafts = await prisma.callKentEpisodeDraft.findMany({
 		where: { callId },
-		select: { episodeAudioKey: true },
+		select: {
+			episodeAudioKey: true,
+			responseAudioKey: true,
+			callerSegmentAudioKey: true,
+			responseSegmentAudioKey: true,
+		},
 	})
-	if (drafts.some((d) => d.episodeAudioKey)) {
+	const keysToDelete = drafts
+		.flatMap((draft) => [
+			draft.episodeAudioKey,
+			draft.responseAudioKey,
+			draft.callerSegmentAudioKey,
+			draft.responseSegmentAudioKey,
+		])
+		.filter((k): k is string => typeof k === 'string' && k.length > 0)
+	if (keysToDelete.length) {
 		await Promise.all(
-			drafts
-				.map((d) => d.episodeAudioKey)
-				.filter((k): k is string => typeof k === 'string' && k.length > 0)
-				.map(async (key) => deleteAudioObject({ key }).catch(() => {})),
+			keysToDelete.map(async (key) =>
+				deleteAudioObject({ key }).catch(() => {}),
+			),
 		)
 	}
 	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
@@ -652,7 +721,14 @@ async function deleteCall({
 		select: {
 			id: true,
 			audioKey: true,
-			episodeDraft: { select: { episodeAudioKey: true } },
+			episodeDraft: {
+				select: {
+					episodeAudioKey: true,
+					responseAudioKey: true,
+					callerSegmentAudioKey: true,
+					responseSegmentAudioKey: true,
+				},
+			},
 		},
 	})
 	if (!call) {
@@ -663,6 +739,9 @@ async function deleteCall({
 	const keysToDelete = [
 		call.audioKey,
 		call.episodeDraft?.episodeAudioKey,
+		call.episodeDraft?.responseAudioKey,
+		call.episodeDraft?.callerSegmentAudioKey,
+		call.episodeDraft?.responseSegmentAudioKey,
 	].filter((k): k is string => typeof k === 'string' && k.length > 0)
 	if (keysToDelete.length) {
 		await Promise.all(

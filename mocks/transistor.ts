@@ -1,4 +1,6 @@
 import { faker } from '@faker-js/faker'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import {
 	http,
 	type DefaultRequestMultipartBody,
@@ -14,6 +16,45 @@ import {
 	type TransistorPublishedJson,
 } from '#app/types.ts'
 import { requiredHeader, requiredParam, requiredProperty } from './utils.ts'
+
+const transistorUploadsDirectory = path.join(
+	process.cwd(),
+	'.cache',
+	'transistor-uploads',
+)
+const transistorUploadsRoutePrefix = '/mock/transistor/uploads'
+
+function sanitizePathPart(value: string) {
+	return value.replace(/[^a-zA-Z0-9._-]/g, '_')
+}
+
+function buildUploadedAudioPath({
+	bucketId,
+	fileId,
+}: {
+	bucketId: string
+	fileId: string
+}) {
+	return path.join(
+		transistorUploadsDirectory,
+		sanitizePathPart(bucketId),
+		sanitizePathPart(fileId),
+	)
+}
+
+async function writeUploadedAudio({
+	bucketId,
+	fileId,
+	body,
+}: {
+	bucketId: string
+	fileId: string
+	body: Blob
+}) {
+	const filePath = buildUploadedAudioPath({ bucketId, fileId })
+	await fs.mkdir(path.dirname(filePath), { recursive: true })
+	await fs.writeFile(filePath, Buffer.from(await body.arrayBuffer()))
+}
 
 function makeEpisode(
 	overrides: {
@@ -77,14 +118,19 @@ const transistorHandlers: Array<HttpHandler> = [
 
 			requiredParam(url.searchParams, 'filename')
 			requiredHeader(request.headers, 'x-api-key')
+			const filename = url.searchParams.get('filename')
+			if (!filename) {
+				throw new Error('filename is required')
+			}
+			const bucketId = faker.string.uuid()
+			const fileId = sanitizePathPart(filename)
+			const uploadUrlBase = `https://transistorupload.s3.amazonaws.com/uploads/api/${bucketId}/${fileId}`
 			const data: TransistorAuthorizedJson = {
 				data: {
 					attributes: {
-						upload_url:
-							'https://transistorupload.s3.amazonaws.com/uploads/api/37009fba-7aae-4514-8ebb-d3c8be45734f/Episode1.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJNPH...%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210517T191158Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=f7b749...',
+						upload_url: `${uploadUrlBase}?mock-signature=1`,
 						content_type: 'audio/mpeg',
-						audio_url:
-							'https://transistorupload.s3.amazonaws.com/uploads/api/37009fba-7aae-4514-8ebb-d3c8be45734f/Episode1.mp3',
+						audio_url: `${transistorUploadsRoutePrefix}/${bucketId}/${fileId}`,
 					},
 				},
 			}
@@ -94,12 +140,18 @@ const transistorHandlers: Array<HttpHandler> = [
 
 	http.put<any, DefaultRequestMultipartBody>(
 		'https://transistorupload.s3.amazonaws.com/uploads/api/:bucketId/:fileId',
-		async ({ request }) => {
+		async ({ request, params }) => {
 			const body = await request.blob()
 
 			if (!body.size) {
 				throw new Error('body is required')
 			}
+			const bucketId = params.bucketId
+			const fileId = params.fileId
+			if (!bucketId || !fileId) {
+				throw new Error('bucketId and fileId are required')
+			}
+			await writeUploadedAudio({ bucketId, fileId, body })
 
 			return HttpResponse.json({
 				// we don't use the response so no need to put something real here.
@@ -123,11 +175,16 @@ const transistorHandlers: Array<HttpHandler> = [
 			requiredProperty(body.episode, 'title')
 			requiredProperty(body.episode, 'summary')
 			requiredProperty(body.episode, 'description')
+			const mediaUrl =
+				typeof body.episode.audio_url === 'string'
+					? body.episode.audio_url
+					: undefined
 			const episode: TransistorEpisodeData = makeEpisode({
 				attributes: {
 					number:
 						Math.max(...episodes.map((e) => e.attributes.number ?? 0)) + 1,
 					...body.episode,
+					...(mediaUrl ? { media_url: mediaUrl } : {}),
 				},
 			})
 			const data: TransistorCreatedJson = { data: episode }

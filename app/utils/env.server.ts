@@ -107,9 +107,13 @@ const schemaBase = z.object({
 	R2_ENDPOINT: z.string().trim().optional(),
 	R2_ACCESS_KEY_ID: nonEmptyString,
 	R2_SECRET_ACCESS_KEY: nonEmptyString,
-	// Call Kent audio storage bucket (used by R2-backed call audio storage and
-	// the disk-backed mock when MOCKS=true).
+	// Call Kent audio storage bucket.
 	CALL_KENT_R2_BUCKET: nonEmptyString,
+	// Cloudflare Queue config for offloaded FFmpeg jobs.
+	CALL_KENT_AUDIO_CF_QUEUE_ID: nonEmptyString,
+	CALL_KENT_AUDIO_CF_API_BASE_URL: z.string().trim().optional(),
+	// HMAC secret used by the FFmpeg processor callback route.
+	CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: nonEmptyString,
 	SEMANTIC_SEARCH_IGNORE_LIST_KEY: z
 		.string()
 		.trim()
@@ -153,6 +157,7 @@ const schema = schemaBase.superRefine((values, ctx) => {
 			path: ['PORT'],
 		})
 	}
+
 })
 
 type BaseEnv = z.infer<typeof schemaBase>
@@ -191,6 +196,7 @@ export type Env = Omit<
 	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: string
 	/** Derived from CLOUDFLARE_ACCOUNT_ID when not explicitly set. */
 	R2_ENDPOINT: string
+	CALL_KENT_AUDIO_CF_API_BASE_URL: string
 }
 
 declare global {
@@ -249,6 +255,11 @@ export function getEnv(): Env {
 		typeof values.R2_ENDPOINT === 'string' && values.R2_ENDPOINT.trim()
 			? values.R2_ENDPOINT.trim()
 			: `https://${values.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`
+	const callKentAudioCfApiBaseUrl =
+		typeof values.CALL_KENT_AUDIO_CF_API_BASE_URL === 'string' &&
+		values.CALL_KENT_AUDIO_CF_API_BASE_URL.trim()
+			? values.CALL_KENT_AUDIO_CF_API_BASE_URL.trim()
+			: 'https://api.cloudflare.com/client/v4'
 	const env: Env = {
 		...values,
 		PORT: Number(values.PORT),
@@ -257,6 +268,7 @@ export function getEnv(): Env {
 		allowedActionOrigins: computeAllowedActionOrigins(values),
 		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
+		CALL_KENT_AUDIO_CF_API_BASE_URL: callKentAudioCfApiBaseUrl,
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:
 			values.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID ||
 			values.CLOUDFLARE_AI_GATEWAY_ID,

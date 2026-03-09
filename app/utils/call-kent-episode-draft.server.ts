@@ -2,6 +2,8 @@ import {
 	getAudioBuffer,
 	parseBase64DataUrl,
 	putEpisodeDraftAudioFromBuffer,
+	putEpisodeDraftCallerSegmentAudioFromBuffer,
+	putEpisodeDraftResponseSegmentAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { normalizeCallerTranscriptForEpisode } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-template.ts'
@@ -69,17 +71,30 @@ export async function startCallKentEpisodeDraftProcessing(
 				callerMp3: created.callerMp3,
 				responseMp3: created.responseMp3,
 			}
-			const stored = await putEpisodeDraftAudioFromBuffer({
-				draftId,
-				mp3: episodeMp3,
-			})
+			const [storedEpisode, storedCallerSegment, storedResponseSegment] =
+				await Promise.all([
+					putEpisodeDraftAudioFromBuffer({
+						draftId,
+						mp3: episodeMp3,
+					}),
+					putEpisodeDraftCallerSegmentAudioFromBuffer({
+						draftId,
+						mp3: created.callerMp3,
+					}),
+					putEpisodeDraftResponseSegmentAudioFromBuffer({
+						draftId,
+						mp3: created.responseMp3,
+					}),
+				])
 
 			const step2 = await prisma.callKentEpisodeDraft.updateMany({
 				where: { id: draftId, status: 'PROCESSING' },
 				data: {
-					episodeAudioKey: stored.key,
-					episodeAudioContentType: stored.contentType,
-					episodeAudioSize: stored.size,
+					episodeAudioKey: storedEpisode.key,
+					episodeAudioContentType: storedEpisode.contentType,
+					episodeAudioSize: storedEpisode.size,
+					callerSegmentAudioKey: storedCallerSegment.key,
+					responseSegmentAudioKey: storedResponseSegment.key,
 					step: 'TRANSCRIBING',
 				},
 			})
@@ -106,6 +121,18 @@ export async function startCallKentEpisodeDraftProcessing(
 				callerTranscript: draft.call.callerTranscript,
 				callerName,
 			})
+
+			if (
+				!segmentMp3s &&
+				draft.callerSegmentAudioKey &&
+				draft.responseSegmentAudioKey
+			) {
+				const [callerMp3, responseMp3] = await Promise.all([
+					getAudioBuffer({ key: draft.callerSegmentAudioKey }),
+					getAudioBuffer({ key: draft.responseSegmentAudioKey }),
+				])
+				segmentMp3s = { callerMp3, responseMp3 }
+			}
 
 			if (!segmentMp3s && responseBase64) {
 				// If the draft already has episode audio but we still have the raw response
