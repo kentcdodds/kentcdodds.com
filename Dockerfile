@@ -2,11 +2,10 @@
 FROM node:24-bookworm-slim as base
 
 # install open ssl and sqlite3 for prisma
-# ffmpeg for the call kent functionality
 # ca-certificates and fuse for litefs
 # procps for "tops" command to see which processes are hogging memory (it's node)
 # python & make for node-gyp
-RUN apt-get update && apt-get install -y fuse3 openssl ffmpeg sqlite3 ca-certificates procps python3 make g++
+RUN apt-get update && apt-get install -y fuse3 openssl sqlite3 ca-certificates procps python3 make g++
 
 # install all node_modules, including dev
 FROM base as deps
