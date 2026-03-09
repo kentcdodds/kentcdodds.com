@@ -99,7 +99,11 @@ export async function handleCallKentAudioProcessorEvent(
 	switch (event.type) {
 		case 'audio_generation_started': {
 			await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: event.draftId, status: 'PROCESSING' },
+				where: {
+					id: event.draftId,
+					status: 'PROCESSING',
+					step: { in: ['STARTED', 'GENERATING_AUDIO'] },
+				},
 				data: { step: 'GENERATING_AUDIO', errorMessage: null },
 			})
 			return
