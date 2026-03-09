@@ -44,6 +44,9 @@ reference:
   It's populated on first request or via `npm run prime-cache:mocks`.
 - Content is filesystem-based: blog posts are MDX files in `content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
+- `npm run dev` should not wrap `index.ts` in an outer `node --watch`. React
+  Router dev rewrites `.react-router/types` on startup, which can trigger an
+  infinite restart loop in headless/CI environments.
 - Oxlint config caveat: prefer package-export extends
   (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
   extends into `node_modules` can fail to inherit the shared env/rules.

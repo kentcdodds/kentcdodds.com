@@ -23,9 +23,10 @@ export const handle: KCDHandle = {
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
+	const env = getEnv()
 	const shouldUseSampleAudio =
-		getEnv().NODE_ENV === 'development' &&
-		url.searchParams.get('sampleAudio') === '1'
+		url.searchParams.get('sampleAudio') === '1' &&
+		(env.NODE_ENV === 'development' || Boolean(env.PLAYWRIGHT_TEST_BASE_URL))
 	return json({ shouldUseSampleAudio } as const)
 }
 
@@ -71,7 +72,7 @@ export default function RecordScreen({
 				<div className="flex flex-col gap-6">
 					{shouldUseSampleAudio ? (
 						<Paragraph className="mb-2">
-							{`Using a sample recording (dev only)...`}
+							{`Using a sample recording for this test/dev flow...`}
 						</Paragraph>
 					) : null}
 					<div className="flex flex-wrap gap-3">
@@ -94,7 +95,7 @@ export default function RecordScreen({
 				<div className="flex flex-col gap-8">
 					{shouldUseSampleAudio ? (
 						<Paragraph className="mb-4">
-							{`Using a sample recording (dev only)...`}
+							{`Using a sample recording for this test/dev flow...`}
 						</Paragraph>
 					) : null}
 					{userInfo.avatar.hasGravatar ? null : (

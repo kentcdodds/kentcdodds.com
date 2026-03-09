@@ -1,7 +1,14 @@
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import * as Sentry from '@sentry/react-router'
 import { getEnv } from '../../app/utils/env.server.ts'
-import { isModernBrowserByUA } from './browser-support.js'
+
+const localServerUtilsExtension = import.meta.url.includes('/server-build/')
+	? '.js'
+	: '.ts'
+
+const { isModernBrowserByUA } = (await import(
+	`./browser-support${localServerUtilsExtension}`
+)) as typeof import('./browser-support.ts')
 
 export function init() {
 	const env = getEnv()

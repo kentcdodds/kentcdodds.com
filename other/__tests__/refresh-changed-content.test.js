@@ -109,6 +109,7 @@ describe('refreshChangedContent', () => {
 		expect(result).toEqual({ status: 'refreshed', attempts: 2 })
 		expect(postRefreshCacheImpl).toHaveBeenCalledTimes(2)
 		expect(postRefreshCacheImpl).toHaveBeenLastCalledWith({
+			http: undefined,
 			postData: {
 				contentPaths: ['blog/some-post.mdx'],
 				commitSha: 'current-sha',

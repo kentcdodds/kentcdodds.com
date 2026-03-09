@@ -74,7 +74,7 @@ async function main() {
 
 	// LiteFS is Fly-specific (FUSE + consul lease). For CI we smoke-test the
 	// production build directly with a local SQLite DB + migrations applied.
-	const env = {
+	const env: NodeJS.ProcessEnv = {
 		...process.env,
 		NODE_ENV: 'production',
 		PORT: String(port),
