@@ -28,6 +28,16 @@
 				},
 			],
 		},
+		"production": {
+			"vars": { "ENVIRONMENT": "production" },
+			// not inherited from root:
+			"kv_namespaces": [
+				{
+					"binding": "OAUTH_KV",
+					"id": "8008746588ab4b6e8d3396cdb588700f",
+				},
+			],
+		},
 	},
 	/**
 	 * Smart Placement
