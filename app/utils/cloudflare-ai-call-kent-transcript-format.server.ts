@@ -52,124 +52,6 @@ function countSeparatorLines(text: string) {
 	return (text.match(/^---$/gm) ?? []).length
 }
 
-function normalizeLineEndings(text: string) {
-	return text.replace(/\r\n?/g, '\n')
-}
-
-function normalizeWhitespace(text: string) {
-	return text.trim().replace(/\s+/g, ' ')
-}
-
-function splitIntoSentenceLikeChunks(text: string) {
-	const matches = text.match(/.+?(?:[.!?]+(?=\s+|$)|$)/g) ?? []
-	return matches.map((chunk) => normalizeWhitespace(chunk)).filter(Boolean)
-}
-
-function splitIntoWordParagraphs(text: string, wordsPerParagraph = 55) {
-	const words = normalizeWhitespace(text).split(' ').filter(Boolean)
-	if (words.length <= wordsPerParagraph) return [words.join(' ')]
-
-	const paragraphs: Array<string> = []
-	for (let index = 0; index < words.length; index += wordsPerParagraph) {
-		paragraphs.push(words.slice(index, index + wordsPerParagraph).join(' '))
-	}
-	return paragraphs
-}
-
-function groupSentenceChunksIntoParagraphs(
-	chunks: Array<string>,
-	{
-		maxSentencesPerParagraph = 3,
-		maxParagraphLength = 260,
-	}: {
-		maxSentencesPerParagraph?: number
-		maxParagraphLength?: number
-	} = {},
-) {
-	const paragraphs: Array<string> = []
-	let currentChunks: Array<string> = []
-
-	function flushCurrentParagraph() {
-		if (!currentChunks.length) return
-		paragraphs.push(currentChunks.join(' ').trim())
-		currentChunks = []
-	}
-
-	for (const chunk of chunks) {
-		const candidate = [...currentChunks, chunk].join(' ').trim()
-		const shouldFlush =
-			currentChunks.length > 0 &&
-			(currentChunks.length >= maxSentencesPerParagraph ||
-				candidate.length > maxParagraphLength)
-		if (shouldFlush) flushCurrentParagraph()
-		currentChunks.push(chunk)
-	}
-
-	flushCurrentParagraph()
-	return paragraphs.filter(Boolean)
-}
-
-function formatTranscriptBlock(block: string) {
-	const trimmed = block.trim()
-	if (!trimmed) return ''
-
-	const speakerMatch = /^(?<label>[^:\n]{1,60}:)\s*(?<body>[\s\S]*)$/u.exec(trimmed)
-	const label = speakerMatch?.groups?.label?.trim() ?? null
-	const rawBody = speakerMatch?.groups?.body ?? trimmed
-	const existingParagraphs = normalizeLineEndings(rawBody)
-		.split(/\n{2,}/)
-		.map((paragraph) => normalizeWhitespace(paragraph))
-		.filter(Boolean)
-
-	let paragraphs: Array<string>
-	if (existingParagraphs.length >= 2) {
-		paragraphs = existingParagraphs
-	} else {
-		const normalizedBody = normalizeWhitespace(rawBody)
-		const sentenceChunks = splitIntoSentenceLikeChunks(normalizedBody)
-		paragraphs =
-			sentenceChunks.length >= 2
-				? groupSentenceChunksIntoParagraphs(sentenceChunks)
-				: splitIntoWordParagraphs(normalizedBody)
-	}
-
-	if (!paragraphs.length) return label ? label : ''
-	if (!label) return paragraphs.join('\n\n')
-	return `${label} ${paragraphs[0]}${paragraphs
-		.slice(1)
-		.map((paragraph) => `\n\n${paragraph}`)
-		.join('')}`.trim()
-}
-
-function applyDeterministicTranscriptFormatting(text: string) {
-	const normalized = normalizeLineEndings(text).trim()
-	if (!normalized) return normalized
-
-	const lines = normalized.split('\n')
-	const blocks: Array<string> = []
-	let currentLines: Array<string> = []
-
-	function flushCurrentBlock() {
-		if (!currentLines.length) return
-		const block = currentLines.join('\n').trim()
-		if (block) blocks.push(formatTranscriptBlock(block))
-		currentLines = []
-	}
-
-	for (const line of lines) {
-		if (line.trim() === '---') {
-			flushCurrentBlock()
-			blocks.push('---')
-			continue
-		}
-		currentLines.push(line)
-	}
-
-	flushCurrentBlock()
-
-	return blocks.filter(Boolean).join('\n\n').trim()
-}
-
 export async function formatCallKentTranscriptWithWorkersAi({
 	transcript,
 	callTitle,
@@ -212,7 +94,7 @@ You format transcripts for the "Call Kent Podcast", hosted by Kent C. Dodds.
 Your job is to improve readability by inserting paragraph breaks (blank lines) and normalizing whitespace.
 Do NOT add, remove, or reorder any words. Do NOT change speaker labels.
 Keep speaker turns in the same order and never merge one speaker's turn into another.
-For long single-speaker sections (especially Kent's response), insert paragraph breaks every few sentences or at clear topic shifts.
+For long single-speaker sections, insert paragraph breaks every few sentences or at clear topic shifts.
 
 If the transcript includes separator lines containing only "---", keep those lines exactly as-is and on their own line.
 
@@ -288,8 +170,6 @@ ${endMarker}
 	if (!formatted) {
 		throw new Error('Transcript formatter returned an empty transcript.')
 	}
-
-	formatted = applyDeterministicTranscriptFormatting(formatted)
 
 	const originalSepCount = countSeparatorLines(input)
 	if (originalSepCount > 0) {

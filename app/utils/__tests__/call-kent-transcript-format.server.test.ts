@@ -83,7 +83,7 @@ test('formatCallKentTranscriptWithWorkersAi does not truncate long transcripts',
 	expect(formatted).toMatch(/[.!?]\n\n/)
 })
 
-test('formatCallKentTranscriptWithWorkersAi repairs a long Kent wall of text when the model is a no-op', async () => {
+test('formatCallKentTranscriptWithWorkersAi prompts for paragraph breaks in long single-speaker sections', async () => {
 	using _env = setEnv({
 		CLOUDFLARE_API_TOKEN: 'MOCK_CLOUDFLARE_API_TOKEN',
 		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
@@ -92,17 +92,7 @@ test('formatCallKentTranscriptWithWorkersAi repairs a long Kent wall of text whe
 		CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL: '@cf/meta/llama-3.1-8b-instruct',
 	})
 
-	const transcript = `
-Announcer: Intro line.
-
----
-
-Kent: First sentence. Second sentence. Third sentence. Fourth sentence. Fifth sentence. Sixth sentence.
-
----
-
-Announcer: Outro line.
-`.trim()
+	const transcript = `Kent: First sentence. Second sentence. Third sentence. Fourth sentence.`
 
 	const fetchSpy = vi
 		.spyOn(globalThis, 'fetch')
@@ -117,9 +107,20 @@ Announcer: Outro line.
 
 	try {
 		const formatted = await formatCallKentTranscriptWithWorkersAi({ transcript })
-		expect(formatted).toContain('---')
-		expect(formatted).toContain(
-			'Kent: First sentence. Second sentence. Third sentence.\n\nFourth sentence. Fifth sentence. Sixth sentence.',
+		expect(formatted).toBe(transcript)
+
+		const request = fetchSpy.mock.calls[0]?.[1]
+		expect(request).toBeDefined()
+		expect(request?.body).toBeTypeOf('string')
+
+		const body = JSON.parse(String(request?.body)) as {
+			messages: Array<{ role: string; content: string }>
+		}
+		expect(body.messages[0]?.content).toContain(
+			'For long single-speaker sections, insert paragraph breaks every few sentences or at clear topic shifts.',
+		)
+		expect(body.messages[0]?.content).not.toContain(
+			"(especially Kent's response)",
 		)
 	} finally {
 		fetchSpy.mockRestore()
