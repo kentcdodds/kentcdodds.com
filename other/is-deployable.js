@@ -2,6 +2,24 @@
 import { getChangedFiles, fetchJson } from './get-changed-files.js'
 const [currentCommitSha] = process.argv.slice(2)
 
+const nonFlyDeployablePathPrefixes = [
+	'content/',
+	'call-kent-audio-worker/',
+	'call-kent-audio-container/',
+]
+
+const nonFlyDeployableFiles = new Set([
+	'.github/workflows/deploy-call-kent-audio-worker.yml',
+	'.github/workflows/deploy-call-kent-audio-container.yml',
+])
+
+function isFlyDeployablePath(filename) {
+	return (
+		!nonFlyDeployablePathPrefixes.some((prefix) => filename.startsWith(prefix)) &&
+		!nonFlyDeployableFiles.has(filename)
+	)
+}
+
 const baseUrl =
 	process.env.GITHUB_REF_NAME === 'dev'
 		? 'https://kcd-staging.fly.dev'
@@ -18,14 +36,14 @@ async function go() {
 		compareCommitSha,
 		changedFiles,
 	})
-	// deploy if:
+	// Fly deploy if:
 	// - there was an error getting the changed files (null)
 	// - there are no changed files
-	// - there are changed files, but at least one of them is non-content
+	// - there are changed files, and at least one of them affects the Fly app
 	const isDeployable =
 		changedFiles === null ||
 		changedFiles.length === 0 ||
-		changedFiles.some(({ filename }) => !filename.startsWith('content'))
+		changedFiles.some(({ filename }) => isFlyDeployablePath(filename))
 
 	console.error(
 		isDeployable
