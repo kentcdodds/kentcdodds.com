@@ -70,7 +70,7 @@ reference:
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
 - Call Kent FFmpeg offload caveat: episode audio generation can run through a
-  Cloudflare queue/container pipeline and requires Cloudflare queue/callback
+  Cloudflare queue/sandbox pipeline and requires Cloudflare queue/callback
   environment variables.
 
 ## Cloud / headless manual testing

@@ -1,5 +1,5 @@
 This Worker consumes Cloudflare Queue messages for Call Kent FFmpeg jobs and
-dispatches them to the container service.
+dispatches them to the sandbox-backed audio service.
 
 Key files:
 

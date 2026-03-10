@@ -1,4 +1,5 @@
-This service runs FFmpeg for Call Kent episode audio generation.
+This service runs FFmpeg for Call Kent episode audio generation on Cloudflare
+Sandboxes.
 
 Endpoints:
 
@@ -10,7 +11,7 @@ Behavior:
 2. Runs FFmpeg normalization + stitch with intro/interstitial/outro bumpers.
 3. Uploads episode + segment audio to R2.
 4. Calls app callback endpoint with HMAC-signed status events.
-5. Sends heartbeat pings to the container controller while a job is running and
+5. Sends heartbeat pings to the sandbox controller while a job is running and
    requests shutdown once the last active job completes.
 
 Stitch assets are required; startup requests fail if these files are missing.
