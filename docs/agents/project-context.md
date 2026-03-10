@@ -57,7 +57,7 @@ reference:
 - `npm run dev` should not wrap `services/site/index.ts` in an outer `node --watch`. React
   Router dev rewrites `.react-router/types` on startup, which can trigger an
   infinite restart loop in headless/CI environments.
-- Playwright/Prisma caveat: `playwright.config.ts` sets
+- Playwright/Prisma caveat: `services/site/playwright.config.ts` sets
   `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` so e2e runs can reset the local
   SQLite DB without tripping Cursor's destructive-action guard. This is only for
   Playwright's dev/test DB reset path, not a general exemption for Prisma
