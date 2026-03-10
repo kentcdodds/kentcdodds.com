@@ -50,6 +50,19 @@ jobs:
       - name: 🏄 Copy test env vars
         run: cp services/site/.env.example services/site/.env
 
+      - name: 🧰 Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-node${{ env.NODE_VERSION }}-
+
+      - name: 🌐 Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npm run test:e2e:install --workspace kentcdodds.com
+
       - name: 🔬 Verify site
         run: npm run ci:verify --workspace=kentcdodds.com
 
@@ -128,10 +141,20 @@ jobs:
       - name: 📥 Install site deps
         run: npm ci --workspace=kentcdodds.com
 
+      - name: 🧰 Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-node${{ env.NODE_VERSION }}-
+
       - name: 🎬 Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
 
       - name: 🌐 Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npm run test:e2e:install --workspace kentcdodds.com
 
       - name: 📦 Download site build artifacts
