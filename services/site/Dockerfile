@@ -13,14 +13,13 @@ FROM base as deps
 RUN mkdir /app/
 WORKDIR /app/
 
-RUN mkdir -p /app/services/site /app/services/oauth /app/services/call-kent-audio-worker /app/services/call-kent-audio-container
+RUN mkdir -p /app/services/site /app/services/oauth /app/services/call-kent-audio-worker
 ADD package.json .npmrc package-lock.json nx.json tsconfig.base.json ./
 ADD services/site/package.json /app/services/site/package.json
 ADD services/site/prisma /app/services/site/prisma
 ADD services/site/prisma.config.ts /app/services/site/prisma.config.ts
 ADD services/oauth/package.json /app/services/oauth/package.json
 ADD services/call-kent-audio-worker/package.json /app/services/call-kent-audio-worker/package.json
-ADD services/call-kent-audio-container/package.json /app/services/call-kent-audio-container/package.json
 RUN npm install
 
 # setup production node_modules
@@ -30,14 +29,13 @@ RUN mkdir /app/
 WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
-RUN mkdir -p /app/services/site /app/services/oauth /app/services/call-kent-audio-worker /app/services/call-kent-audio-container
+RUN mkdir -p /app/services/site /app/services/oauth /app/services/call-kent-audio-worker
 ADD package.json .npmrc package-lock.json /app/
 ADD services/site/package.json /app/services/site/package.json
 ADD services/site/prisma /app/services/site/prisma
 ADD services/site/prisma.config.ts /app/services/site/prisma.config.ts
 ADD services/oauth/package.json /app/services/oauth/package.json
 ADD services/call-kent-audio-worker/package.json /app/services/call-kent-audio-worker/package.json
-ADD services/call-kent-audio-container/package.json /app/services/call-kent-audio-container/package.json
 RUN npm prune --omit=dev
 RUN npm rebuild better-sqlite3
 
