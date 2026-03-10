@@ -5,6 +5,7 @@ import {
 } from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
+import { H4, Paragraph } from '#app/components/typography.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import {
 	HeroSection,
@@ -20,6 +21,7 @@ import {
 	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
+import { externalLinks } from '#app/external-links.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
@@ -97,17 +99,43 @@ export default function Testimonials({
 				}
 			/>
 
-			<div
-				className="mx-10vw mb-14 grid grid-cols-4 gap-6 lg:grid-cols-8 xl:grid-cols-12"
-				id="list"
-			>
-				{data.testimonials.map((testimonial) => (
-					<TestimonialCard
-						key={testimonial.testimonial}
-						testimonial={testimonial}
-					/>
-				))}
-			</div>
+			{data.testimonials.length === 0 ? (
+				<div className="mx-10vw mb-14">
+					<div className="rounded-lg border border-gray-200 p-8 dark:border-gray-600">
+						<H4 as="h2" className="mb-3">
+							No testimonials are available right now.
+						</H4>
+						<Paragraph className="mb-4">
+							We are likely having trouble with our GitHub integration.
+							Please try again soon, or browse the content directly on{' '}
+							<a
+								href={externalLinks.githubRepo}
+								target="_blank"
+								rel="noreferrer noopener"
+								className="text-primary underline"
+							>
+								GitHub
+							</a>
+							.
+						</Paragraph>
+						<ButtonLink variant="primary" to={externalLinks.githubRepo}>
+							Open GitHub repo
+						</ButtonLink>
+					</div>
+				</div>
+			) : (
+				<div
+					className="mx-10vw mb-14 grid grid-cols-4 gap-6 lg:grid-cols-8 xl:grid-cols-12"
+					id="list"
+				>
+					{data.testimonials.map((testimonial) => (
+						<TestimonialCard
+							key={testimonial.testimonial}
+							testimonial={testimonial}
+						/>
+					))}
+				</div>
+			)}
 
 			<Spacer size="base" />
 

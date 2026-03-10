@@ -48,7 +48,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	const page = await getMdxPage(
 		{ contentDir: 'pages', slug: params.slug },
 		{ request, timings },
-	).catch(() => null)
+	)
 
 	if (!page) {
 		const [recommendations, suggestions] = await Promise.all([

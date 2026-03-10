@@ -16,13 +16,14 @@ import {
 	TwitchIcon,
 	XIcon,
 } from '#app/components/icons.tsx'
+import { ButtonLink } from '#app/components/button.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import {
 	HeroSection,
 	getHeroImageProps,
 } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
-import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
+import { H2, H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
@@ -32,6 +33,7 @@ import {
 import { type RootLoaderType } from '#app/root.tsx'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
+import { externalLinks } from '#app/external-links.tsx'
 import {
 	getDisplayUrl,
 	getOrigin,
@@ -230,13 +232,39 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 				subTitle="In no particular order."
 			/>
 
-			<Grid className="gap-y-20 lg:gap-y-32">
-				{data.people.map((person) => (
-					<div key={person.id} className="col-span-4">
-						<ProfileCard person={person} />
+			{data.people.length === 0 ? (
+				<Grid className="mb-24">
+					<div className="col-span-full rounded-lg border border-gray-200 p-8 dark:border-gray-600">
+						<H4 as="h2" className="mb-3">
+							No credits are available right now.
+						</H4>
+						<Paragraph className="mb-4">
+							We are likely having trouble with our GitHub integration.
+							Please try again soon, or browse the content directly on{' '}
+							<a
+								href={externalLinks.githubRepo}
+								target="_blank"
+								rel="noreferrer noopener"
+								className="text-primary underline"
+							>
+								GitHub
+							</a>
+							.
+						</Paragraph>
+						<ButtonLink variant="primary" to={externalLinks.githubRepo}>
+							Open GitHub repo
+						</ButtonLink>
 					</div>
-				))}
-			</Grid>
+				</Grid>
+			) : (
+				<Grid className="gap-y-20 lg:gap-y-32">
+					{data.people.map((person) => (
+						<div key={person.id} className="col-span-4">
+							<ProfileCard person={person} />
+						</div>
+					))}
+				</Grid>
+			)}
 
 			<Spacer size="base" />
 

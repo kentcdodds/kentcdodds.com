@@ -203,31 +203,38 @@ async function getAllTestimonials({
 	timings?: Timings
 }) {
 	const key = 'content:data:testimonials.yml'
-	const allTestimonials = await cachified({
-		cache,
-		request,
-		timings,
-		key,
-		forceFresh,
-		ttl: 1000 * 60 * 60 * 24,
-		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-		getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
-			const talksString = await downloadFile(
-				getGitHubContentPath('data/testimonials.yml'),
-			)
-			const rawTestimonials = YAML.parse(talksString)
-			if (!Array.isArray(rawTestimonials)) {
-				console.error('Testimonials is not an array', rawTestimonials)
-				throw new Error('Testimonials is not an array.')
-			}
+	try {
+		return await cachified({
+			cache,
+			request,
+			timings,
+			key,
+			forceFresh,
+			ttl: 1000 * 60 * 60 * 24,
+			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+			getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
+				const talksString = await downloadFile(
+					getGitHubContentPath('data/testimonials.yml'),
+				)
+				const rawTestimonials = YAML.parse(talksString)
+				if (!Array.isArray(rawTestimonials)) {
+					console.error('Testimonials is not an array', rawTestimonials)
+					throw new Error('Testimonials is not an array.')
+				}
 
-			return (await Promise.all(rawTestimonials.map(mapTestimonial))).filter(
-				typedBoolean,
-			)
-		},
-		checkValue: (value: unknown) => Array.isArray(value),
-	})
-	return allTestimonials
+				return (await Promise.all(rawTestimonials.map(mapTestimonial))).filter(
+					typedBoolean,
+				)
+			},
+			checkValue: (value: unknown) => Array.isArray(value),
+		})
+	} catch (error: unknown) {
+		console.error(
+			`testimonials: failed to load testimonials, returning empty fallback`,
+			error,
+		)
+		return []
+	}
 }
 
 function sortByWithPriorityWeight(

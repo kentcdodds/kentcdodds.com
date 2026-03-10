@@ -65,30 +65,36 @@ async function getResumeData({
 	timings?: Timings
 }) {
 	const key = 'content:data:resume.yml'
-	const resumeData = await cachified({
-		cache,
-		request,
-		timings,
-		key,
-		ttl: 1000 * 60 * 60 * 24 * 14,
-		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-		forceFresh,
-		getFreshValue: async () => {
-			const resumeString = await downloadFile(
-				getGitHubContentPath('data/resume.yml'),
-			)
-			const parsed = YAML.parse(resumeString)
-			const result = resumeDataSchema.safeParse(parsed)
-			if (!result.success) {
-				console.error('Resume data is invalid', result.error.flatten())
-				throw new Error('Resume data is invalid.')
-			}
-			return result.data
-		},
-		checkValue: (value: unknown) => resumeDataSchema.safeParse(value).success,
-	})
-
-	return resumeData
+	try {
+		return await cachified({
+			cache,
+			request,
+			timings,
+			key,
+			ttl: 1000 * 60 * 60 * 24 * 14,
+			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+			forceFresh,
+			getFreshValue: async () => {
+				const resumeString = await downloadFile(
+					getGitHubContentPath('data/resume.yml'),
+				)
+				const parsed = YAML.parse(resumeString)
+				const result = resumeDataSchema.safeParse(parsed)
+				if (!result.success) {
+					console.error('Resume data is invalid', result.error.flatten())
+					throw new Error('Resume data is invalid.')
+				}
+				return result.data
+			},
+			checkValue: (value: unknown) => resumeDataSchema.safeParse(value).success,
+		})
+	} catch (error: unknown) {
+		console.error(
+			`resume: failed to load resume data, returning null`,
+			error,
+		)
+		return null
+	}
 }
 
 export { getResumeData }

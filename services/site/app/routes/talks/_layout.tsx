@@ -9,12 +9,13 @@ import {
 	type HeadersFunction,
 	type MetaFunction,
 } from 'react-router'
+import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { YoutubeIcon } from '#app/components/icons.tsx'
 import { CourseSection } from '#app/components/sections/course-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Tag } from '#app/components/tag.tsx'
-import { H3, H6, Paragraph } from '#app/components/typography.tsx'
+import { H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import {
@@ -30,6 +31,7 @@ import {
 	reuseUsefulLoaderHeaders,
 	useUpdateQueryStringValueWithoutNavigation,
 } from '#app/utils/misc-react.tsx'
+import { externalLinks } from '#app/external-links.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
@@ -323,29 +325,58 @@ export default function TalksScreen({
 			</Grid>
 
 			<Grid className="mb-64">
-				<H6 as="h2" className="col-span-full mb-6">
-					{queryValue
-						? talks.length === 1
-							? `1 talk found`
-							: `${talks.length} talks found`
-						: 'Showing all talks'}
-				</H6>
+				{data.talks.length === 0 ? (
+					<div className="col-span-full rounded-lg border border-gray-200 p-8 dark:border-gray-600">
+						<H4 as="h2" className="mb-3">
+							No talks are available right now.
+						</H4>
+						<Paragraph className="mb-4">
+							We are likely having trouble with our GitHub integration.
+							Please try again soon, or browse the content directly on{' '}
+							<a
+								href={externalLinks.githubRepo}
+								target="_blank"
+								rel="noreferrer noopener"
+								className="text-primary underline"
+							>
+								GitHub
+							</a>
+							.
+						</Paragraph>
+						<ButtonLink variant="primary" to={externalLinks.githubRepo}>
+							Open GitHub repo
+						</ButtonLink>
+					</div>
+				) : (
+					<>
+						<H6 as="h2" className="col-span-full mb-6">
+							{queryValue
+								? talks.length === 1
+									? `1 talk found`
+									: `${talks.length} talks found`
+								: 'Showing all talks'}
+						</H6>
 
-				<div className="col-span-full">
-					<Grid nested rowGap>
-						{talks.map((talk) => {
-							return (
-								<div key={talk.slug} className="col-span-full lg:col-span-6">
-									<Card
-										active={activeSlug === talk.slug}
-										isFavorite={favoriteTalkIds.has(talk.slug)}
-										{...talk}
-									/>
-								</div>
-							)
-						})}
-					</Grid>
-				</div>
+						<div className="col-span-full">
+							<Grid nested rowGap>
+								{talks.map((talk) => {
+									return (
+										<div
+											key={talk.slug}
+											className="col-span-full lg:col-span-6"
+										>
+											<Card
+												active={activeSlug === talk.slug}
+												isFavorite={favoriteTalkIds.has(talk.slug)}
+												{...talk}
+											/>
+										</div>
+									)
+								})}
+							</Grid>
+						</div>
+					</>
+				)}
 			</Grid>
 
 			<CourseSection />

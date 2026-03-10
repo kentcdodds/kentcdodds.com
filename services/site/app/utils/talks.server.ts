@@ -128,41 +128,47 @@ async function getTalksAndTags({
 	slugify.reset()
 
 	const key = 'content:data:talks.yml'
-	const talks = await cachified({
-		cache,
-		request,
-		timings,
-		key,
-		ttl: 1000 * 60 * 60 * 24 * 14,
-		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
-		forceFresh,
-		getFreshValue: async () => {
-			const talksString = await downloadFile(
-				getGitHubContentPath('data/talks.yml'),
-			)
-			const rawTalks = YAML.parse(talksString) as Array<RawTalk>
-			if (!Array.isArray(rawTalks)) {
-				console.error('Talks is not an array', rawTalks)
-				throw new Error('Talks is not an array.')
-			}
+	try {
+		return await cachified({
+			cache,
+			request,
+			timings,
+			key,
+			ttl: 1000 * 60 * 60 * 24 * 14,
+			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
+			forceFresh,
+			getFreshValue: async () => {
+				const talksString = await downloadFile(
+					getGitHubContentPath('data/talks.yml'),
+				)
+				const rawTalks = YAML.parse(talksString) as Array<RawTalk>
+				if (!Array.isArray(rawTalks)) {
+					console.error('Talks is not an array', rawTalks)
+					throw new Error('Talks is not an array.')
+				}
 
-			const allTags = getTags(rawTalks)
+				const allTags = getTags(rawTalks)
 
-			const allTalks = await Promise.all(
-				rawTalks.map((rawTalk) => getTalk(rawTalk, allTags)),
-			)
-			allTalks.sort(sortByPresentationDate)
+				const allTalks = await Promise.all(
+					rawTalks.map((rawTalk) => getTalk(rawTalk, allTags)),
+				)
+				allTalks.sort(sortByPresentationDate)
 
-			return { talks: allTalks, tags: allTags }
-		},
-		checkValue: (value: unknown) =>
-			Boolean(value) &&
-			typeof value === 'object' &&
-			Array.isArray((value as { talks: [] }).talks) &&
-			Array.isArray((value as { tags: [] }).tags),
-	})
-
-	return talks
+				return { talks: allTalks, tags: allTags }
+			},
+			checkValue: (value: unknown) =>
+				Boolean(value) &&
+				typeof value === 'object' &&
+				Array.isArray((value as { talks: [] }).talks) &&
+				Array.isArray((value as { tags: [] }).tags),
+		})
+	} catch (error: unknown) {
+		console.error(
+			`talks: failed to load talks, returning empty fallback`,
+			error,
+		)
+		return { talks: [], tags: [] }
+	}
 }
 
 export { getTalksAndTags }

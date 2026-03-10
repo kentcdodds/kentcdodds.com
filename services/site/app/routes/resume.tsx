@@ -5,7 +5,11 @@ import {
 	Link,
 	useSearchParams,
 } from 'react-router'
+import { ButtonLink } from '#app/components/button.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { H4, Paragraph } from '#app/components/typography.tsx'
 import resumeStyles from '#app/styles/resume.css?url'
+import { externalLinks } from '#app/external-links.tsx'
 import { getResumeData, type ResumeData } from '#app/utils/resume.server.ts'
 import { type Route } from './+types/resume'
 
@@ -103,13 +107,45 @@ export default function ResumePage({
 	const view = searchParams.get('view')
 	const isShort = view === 'short'
 	const viewKey = getViewKey(isShort)
-	const printLinks = resumeData.header.links.filter(
+
+	if (!resumeData) {
+		return (
+			<div className="resume-page">
+				<Grid className="mx-10vw my-24">
+					<div className="col-span-full rounded-lg border border-gray-200 p-8 dark:border-gray-600">
+						<H4 as="h2" className="mb-3">
+							Resume is not available right now.
+						</H4>
+						<Paragraph className="mb-4">
+							We are likely having trouble with our GitHub integration.
+							Please try again soon, or browse the content directly on{' '}
+							<a
+								href={externalLinks.githubRepo}
+								target="_blank"
+								rel="noreferrer noopener"
+								className="text-primary underline"
+							>
+								GitHub
+							</a>
+							.
+						</Paragraph>
+						<ButtonLink variant="primary" to={externalLinks.githubRepo}>
+							Open GitHub repo
+						</ButtonLink>
+					</div>
+				</Grid>
+			</div>
+		)
+	}
+
+	const data = resumeData
+	const printLinks = data.header.links.filter(
 		(link) => link.includeInPrint,
 	)
-	const recognitionView = getRecognitionView(resumeData)
+	const recognitionView = getRecognitionView(data)
 
 	function handleCopyMarkdown() {
-		const markdown = formatMarkdown(resumeData, isShort)
+		const markdown = formatMarkdown(data, isShort)
 		void navigator.clipboard.writeText(markdown)
 	}
 
@@ -167,18 +203,18 @@ export default function ResumePage({
 							alt="Photo of Kent C. Dodds"
 						/>
 						<div>
-							<h1 className="resume-name">{resumeData.header.name}</h1>
-							<p className="resume-title">{resumeData.header.title}</p>
-							<p className="resume-location">{resumeData.header.location}</p>
+							<h1 className="resume-name">{data.header.name}</h1>
+							<p className="resume-title">{data.header.title}</p>
+							<p className="resume-location">{data.header.location}</p>
 						</div>
 					</div>
 					<div className="resume-links resume-links--screen">
-						{resumeData.header.links.map((link, index) => (
+						{data.header.links.map((link, index) => (
 							<span key={link.href}>
 								<a href={link.href} target="_blank" rel="noreferrer noopener">
 									{link.label}
 								</a>
-								{index < resumeData.header.links.length - 1 ? ' | ' : null}
+								{index < data.header.links.length - 1 ? ' | ' : null}
 							</span>
 						))}
 					</div>
@@ -195,7 +231,7 @@ export default function ResumePage({
 				<section className="resume-section">
 					<h2 className="resume-heading">Summary</h2>
 					<ul className="resume-bullets">
-						{resumeData.summary[viewKey].map((item) => (
+						{data.summary[viewKey].map((item) => (
 							<li key={item}>{item}</li>
 						))}
 					</ul>
@@ -204,7 +240,7 @@ export default function ResumePage({
 				<section className="resume-section">
 					<h2 className="resume-heading">Public Work</h2>
 					<ul className="resume-bullets">
-						{resumeData.publicWork[viewKey].map((item) => (
+						{data.publicWork[viewKey].map((item) => (
 							<li key={item}>{item}</li>
 						))}
 					</ul>
@@ -214,8 +250,8 @@ export default function ResumePage({
 					<h2 className="resume-heading">Experience</h2>
 					<div className="resume-experience">
 						{(isShort
-							? resumeData.experienceShort
-							: resumeData.experienceLong
+							? data.experienceShort
+							: data.experienceLong
 						).map((job) => (
 							<article
 								key={`${job.company}-${job.role}`}
@@ -238,11 +274,11 @@ export default function ResumePage({
 					</div>
 				</section>
 
-				{resumeData.projects.length ? (
+				{data.projects.length ? (
 					<section className="resume-section">
 						<h2 className="resume-heading">Selected Projects</h2>
 						<ul className="resume-bullets">
-							{resumeData.projects.map((project) => (
+							{data.projects.map((project) => (
 								<li key={project.name}>
 									<strong>{project.name}</strong> — {project.description}
 								</li>
@@ -254,10 +290,10 @@ export default function ResumePage({
 				<section className="resume-section">
 					<h2 className="resume-heading">Skills</h2>
 					{isShort ? (
-						<p className="resume-inline">{resumeData.skills.join(' · ')}</p>
+						<p className="resume-inline">{data.skills.join(' · ')}</p>
 					) : (
 						<ul className="resume-bullets">
-							{resumeData.skills.map((skill) => (
+							{data.skills.map((skill) => (
 								<li key={skill}>{skill}</li>
 							))}
 						</ul>
@@ -280,7 +316,7 @@ export default function ResumePage({
 				<section className="resume-section">
 					<h2 className="resume-heading">Education</h2>
 					<p className="resume-inline">
-						{resumeData.education
+						{data.education
 							.map((item) => `${item.degree}, ${item.school} (${item.year})`)
 							.join(' · ')}
 					</p>

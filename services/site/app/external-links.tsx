@@ -13,6 +13,7 @@ const externalLinks = {
 	translationContributions:
 		'https://github.com/kentcdodds/kentcdodds.com/blob/main/CONTRIBUTING.md#translation-contributions',
 	github: 'https://github.com/kentcdodds',
+	githubRepo: 'https://github.com/kentcdodds/kentcdodds.com',
 	youtube: 'https://youtube.com/c/KentCDodds-vids/videos',
 	twitter: 'https://x.com/kentcdodds',
 	x: 'https://x.com/kentcdodds',

@@ -11,7 +11,7 @@ import {
 } from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ArticleCard } from '#app/components/article-card.tsx'
-import { Button } from '#app/components/button.tsx'
+import { Button, ButtonLink } from '#app/components/button.tsx'
 import { ServerError } from '#app/components/errors.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import {
@@ -25,13 +25,14 @@ import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Tag } from '#app/components/tag.tsx'
 import { TeamStats } from '#app/components/team-stats.tsx'
-import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
+import { H2, H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
 	getSocialImageWithPreTitle,
 	images,
 } from '#app/images.tsx'
+import { externalLinks } from '#app/external-links.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type KCDHandle, type Team } from '#app/types.ts'
 import {
@@ -677,18 +678,42 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 
 				<Grid className="mb-64">
 					{posts.length === 0 ? (
-						<div className="col-span-full flex flex-col items-center">
-							<img
-								{...getImgProps(images.bustedOnewheel, {
-									className: 'mt-24 h-auto w-full max-w-lg',
-									widths: [350, 512, 1024, 1536],
-									sizes: ['(max-width: 639px) 80vw', '512px'],
-								})}
-							/>
-							<H3 as="p" variant="secondary" className="mt-24 max-w-lg">
-								{`Couldn't find anything to match your criteria. Sorry.`}
-							</H3>
-						</div>
+						data.posts.length === 0 ? (
+							<div className="col-span-full rounded-lg border border-gray-200 p-8 dark:border-gray-600">
+								<H4 as="h2" className="mb-3">
+									No articles are available right now.
+								</H4>
+								<Paragraph className="mb-4">
+									We are likely having trouble with our GitHub integration.
+									Please try again soon, or browse the content directly on{' '}
+									<a
+										href={externalLinks.githubRepo}
+										target="_blank"
+										rel="noreferrer noopener"
+										className="text-primary underline"
+									>
+										GitHub
+									</a>
+									.
+								</Paragraph>
+								<ButtonLink variant="primary" to={externalLinks.githubRepo}>
+									Open GitHub repo
+								</ButtonLink>
+							</div>
+						) : (
+							<div className="col-span-full flex flex-col items-center">
+								<img
+									{...getImgProps(images.bustedOnewheel, {
+										className: 'mt-24 h-auto w-full max-w-lg',
+										widths: [350, 512, 1024, 1536],
+										sizes: ['(max-width: 639px) 80vw', '512px'],
+									})}
+								/>
+								<H3 as="p" variant="secondary" className="mt-24 max-w-lg">
+									{`Couldn't find anything to match your criteria. Sorry.`}
+								</H3>
+							</div>
+						)
 					) : (
 						posts.map((article) => (
 							<div key={article.slug} className="col-span-4 mb-10">

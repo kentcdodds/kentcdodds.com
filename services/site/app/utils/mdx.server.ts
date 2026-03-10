@@ -50,36 +50,44 @@ export async function getMdxPage(
 ): Promise<MdxPage | null> {
 	const { forceFresh, ttl = defaultTTL, request, timings } = options
 	const key = `mdx-page:${contentDir}:${slug}:compiled`
-	const page = await cachified({
-		key,
-		cache,
-		request,
-		timings,
-		ttl,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		forceFresh,
-		checkValue: checkCompiledValue,
-		getFreshValue: async (context) => {
-			const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
-			const compiledPage = await compileMdxCached({
-				contentDir,
-				slug,
-				...pageFiles,
-				options,
-			}).catch((err) => {
-				console.error(`Failed to get a fresh value for mdx:`, {
+	try {
+		const page = await cachified({
+			key,
+			cache,
+			request,
+			timings,
+			ttl,
+			staleWhileRevalidate: defaultStaleWhileRevalidate,
+			forceFresh,
+			checkValue: checkCompiledValue,
+			getFreshValue: async (context) => {
+				const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
+				const compiledPage = await compileMdxCached({
 					contentDir,
 					slug,
+					...pageFiles,
+					options,
+				}).catch((err) => {
+					console.error(`Failed to get a fresh value for mdx:`, {
+						contentDir,
+						slug,
+					})
+					return Promise.reject(err)
 				})
-				return Promise.reject(err)
-			})
-			if (!compiledPage) {
-				applyNotFoundCacheMetadata(context.metadata, ttl)
-			}
-			return compiledPage
-		},
-	})
-	return page
+				if (!compiledPage) {
+					applyNotFoundCacheMetadata(context.metadata, ttl)
+				}
+				return compiledPage
+			},
+		})
+		return page
+	} catch (error: unknown) {
+		console.error(
+			`mdx: failed to load page ${contentDir}/${slug}, returning null`,
+			error,
+		)
+		return null
+	}
 }
 
 export async function getMdxPagesInDirectory(
@@ -124,17 +132,25 @@ export async function getMdxDirList(
 		key,
 		checkValue: (value: unknown) => Array.isArray(value),
 		getFreshValue: async () => {
-			const fullContentDirPath = getGitHubContentPath(contentDir)
-			const dirList = (await downloadDirList(fullContentDirPath))
-				.map(({ name, path }) => ({
-					name,
-					slug: path
-						.replace(/\\/g, '/')
-						.replace(`${fullContentDirPath}/`, '')
-						.replace(/\.mdx$/, ''),
-				}))
-				.filter(({ name }) => name !== 'README.md')
-			return dirList
+			try {
+				const fullContentDirPath = getGitHubContentPath(contentDir)
+				const dirList = (await downloadDirList(fullContentDirPath))
+					.map(({ name, path }) => ({
+						name,
+						slug: path
+							.replace(/\\/g, '/')
+							.replace(`${fullContentDirPath}/`, '')
+							.replace(/\.mdx$/, ''),
+					}))
+					.filter(({ name }) => name !== 'README.md')
+				return dirList
+			} catch (error: unknown) {
+				console.error(
+					`mdx: failed to fetch GitHub dir list for ${contentDir}, returning empty`,
+					error,
+				)
+				return []
+			}
 		},
 	})
 }
@@ -142,31 +158,39 @@ export async function getMdxDirList(
 export async function getBlogMdxListItems(options: CachifiedOptions) {
 	const { request, forceFresh, ttl = defaultTTL, timings } = options
 	const key = 'blog:mdx-list-items'
-	return cachified({
-		cache,
-		request,
-		timings,
-		ttl,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		forceFresh,
-		key,
-		getFreshValue: async () => {
-			let pages = await getMdxPagesInDirectory('blog', options).then(
-				(allPosts) =>
-					allPosts.filter(
-						(p) => !p.frontmatter.draft && !p.frontmatter.unlisted,
-					),
-			)
+	try {
+		return await cachified({
+			cache,
+			request,
+			timings,
+			ttl,
+			staleWhileRevalidate: defaultStaleWhileRevalidate,
+			forceFresh,
+			key,
+			getFreshValue: async () => {
+				let pages = await getMdxPagesInDirectory('blog', options).then(
+					(allPosts) =>
+						allPosts.filter(
+							(p) => !p.frontmatter.draft && !p.frontmatter.unlisted,
+						),
+				)
 
-			pages = pages.sort((a, z) => {
-				const aTime = new Date(a.frontmatter.date ?? '').getTime()
-				const zTime = new Date(z.frontmatter.date ?? '').getTime()
-				return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
-			})
+				pages = pages.sort((a, z) => {
+					const aTime = new Date(a.frontmatter.date ?? '').getTime()
+					const zTime = new Date(z.frontmatter.date ?? '').getTime()
+					return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
+				})
 
-			return pages.map(({ code: _code, ...rest }) => rest)
-		},
-	})
+				return pages.map(({ code: _code, ...rest }) => rest)
+			},
+		})
+	} catch (error: unknown) {
+		console.error(
+			`mdx: failed to load blog list items, returning empty fallback`,
+			error,
+		)
+		return []
+	}
 }
 
 export async function downloadMdxFilesCached(

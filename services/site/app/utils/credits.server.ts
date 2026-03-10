@@ -140,34 +140,42 @@ async function getPeople({
 	forceFresh?: boolean
 }) {
 	const key = 'content:data:credits.yml'
-	const allPeople = await cachified(
-		{
-			key,
-			cache,
-			forceFresh: await shouldForceFresh({ forceFresh, request, key }),
-			ttl: 1000 * 60 * 60 * 24 * 30,
-			staleWhileRevalidate: 1000 * 60 * 60 * 24,
-			getFreshValue: async () => {
-				const creditsString = await downloadFile(
-					getGitHubContentPath('data/credits.yml'),
-				)
-				const rawCredits = YAML.parse(creditsString)
-				if (!Array.isArray(rawCredits)) {
-					console.error('Credits is not an array', rawCredits)
-					throw new Error('Credits is not an array.')
-				}
+	try {
+		const allPeople = await cachified(
+			{
+				key,
+				cache,
+				forceFresh: await shouldForceFresh({ forceFresh, request, key }),
+				ttl: 1000 * 60 * 60 * 24 * 30,
+				staleWhileRevalidate: 1000 * 60 * 60 * 24,
+				getFreshValue: async () => {
+					const creditsString = await downloadFile(
+						getGitHubContentPath('data/credits.yml'),
+					)
+					const rawCredits = YAML.parse(creditsString)
+					if (!Array.isArray(rawCredits)) {
+						console.error('Credits is not an array', rawCredits)
+						throw new Error('Credits is not an array.')
+					}
 
-				return normalizePeople(rawCredits)
+					return normalizePeople(rawCredits)
+				},
+				checkValue: (value: unknown) =>
+					Array.isArray(value) && value.every(hasStringId),
 			},
-			checkValue: (value: unknown) =>
-				Array.isArray(value) && value.every(hasStringId),
-		},
-		verboseReporter(),
-	)
-	// We normalize after `cachified` too because `checkValue` can reject stale data,
-	// `getFreshValue` can fail (for example if GitHub is unavailable), and
-	// `cachified` may still return fallbackToCache data under forceFresh semantics.
-	return normalizePeople(allPeople)
+			verboseReporter(),
+		)
+		// We normalize after `cachified` too because `checkValue` can reject stale data,
+		// `getFreshValue` can fail (for example if GitHub is unavailable), and
+		// `cachified` may still return fallbackToCache data under forceFresh semantics.
+		return normalizePeople(allPeople)
+	} catch (error: unknown) {
+		console.error(
+			`credits: failed to load credits, returning empty fallback`,
+			error,
+		)
+		return []
+	}
 }
 
 export { getPeople }
