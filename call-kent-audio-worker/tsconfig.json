@@ -1,7 +1,0 @@
-{
-	"extends": "@epic-web/config/typescript",
-	"compilerOptions": {
-		"noEmit": true
-	},
-	"include": ["src/**/*.ts"]
-}

@@ -67,7 +67,7 @@ instructions:
 ### Setup steps
 
 1.  Fork and clone the repo
-2.  Copy `.env.example` into `.env`
+2.  Copy `services/site/.env.example` into `services/site/.env`
 3.  Run `npm run setup -s` to install dependencies and run validation
 4.  Create a branch for your PR with `git checkout -b pr/your-branch-name`
 
@@ -92,16 +92,16 @@ If the setup script doesn't work, you can try to run the commands manually:
 git clone <your-fork>
 cd ./kentcdodds.com
 
-# copy the .env.example to .env
+# copy the site env example to services/site/.env
 #   everything's mocked out during development so you shouldn't need to
 #   change any of these values unless you want to hit real environments.
-cp .env.example .env
+cp services/site/.env.example services/site/.env
 
 # Install deps
 npm install
 
 # setup database
-prisma migrate reset --force
+npm exec --workspace kentcdodds.com prisma migrate reset --force
 
 # run build, typecheck, linting
 npm run validate
@@ -165,22 +165,30 @@ if you want:
 ```sh
 npm run format
 npm run lint
+npm run lint:all
 npm run typecheck
+npm run typecheck:all
 ```
 
 These are all configured in the project to hopefully work with whatever editor
 plugins you have so it should work as you working as well.
 
+This repo uses npm workspaces, so install dependencies from the repository root.
+To run a script for a specific workspace package, use `npm run <script>
+--workspace <package-name>`.
+The main site now lives in `services/site`, and the root `npm run dev`,
+`npm run build`, `npm run test`, and related commands forward there.
+
 ## Styles
 
 We use Tailwind for our styles. Tailwind is configured directly in
-`app/styles/tailwind.css` (CSS-first config) and via the Tailwind Vite plugin in
-`vite.config.ts`.
+`services/site/app/styles/tailwind.css` (CSS-first config) and via the Tailwind
+Vite plugin in `services/site/vite.config.ts`.
 
 ## Database
 
 We've got SQLite and Prisma set up. Learn about the schema and learn more about
-what commands you can run in `./prisma/schema.prisma`.
+what commands you can run in `./services/site/prisma/schema.prisma`.
 
 ### Production schema changes (widen, then narrow)
 
@@ -201,7 +209,7 @@ becoming permanent and helps avoid schema/code rollout mismatches.
 One common command you might need to run is to re-seed the database:
 
 ```sh
-npx prisma@7 migrate reset --force
+npm exec --workspace kentcdodds.com prisma migrate reset --force
 ```
 
 In addition to resetting your database to the latest schema, it'll also run the
@@ -291,7 +299,7 @@ cp /data/litefs/dbs/sqlite.db/database /data/litefs-disabled/sqlite.db
 cp /data/litefs/dbs/cache.db/database /data/litefs-disabled/cache.db
 ```
 
-Update the Dockerfile:
+Update `services/site/Dockerfile`:
 
 ```Dockerfile
 # TODO: enable litefs

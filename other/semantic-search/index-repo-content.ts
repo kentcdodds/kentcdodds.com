@@ -17,6 +17,9 @@ import {
 } from './jsx-page-content.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
+const siteRoot = path.join('services', 'site')
+const siteContentDir = path.join(siteRoot, 'content')
+
 type DocType =
 	| 'blog'
 	| 'page'
@@ -130,18 +133,18 @@ async function readMdxDoc(type: DocType, slug: string) {
 		// Blog posts can be either:
 		// - content/blog/<slug>/index.mdx
 		// - content/blog/<slug>.mdx
-		const dirFilename = path.join('content', 'blog', slug, 'index.mdx')
+		const dirFilename = path.join(siteContentDir, 'blog', slug, 'index.mdx')
 		try {
 			const source = await fs.readFile(dirFilename, 'utf8')
 			return { filename: dirFilename, source }
 		} catch (e: any) {
 			if (e?.code !== 'ENOENT' && e?.code !== 'ENOTDIR') throw e
 		}
-		const fileFilename = path.join('content', 'blog', `${slug}.mdx`)
+		const fileFilename = path.join(siteContentDir, 'blog', `${slug}.mdx`)
 		const source = await fs.readFile(fileFilename, 'utf8')
 		return { filename: fileFilename, source }
 	}
-	const filename = path.join('content', 'pages', `${slug}.mdx`)
+	const filename = path.join(siteContentDir, 'pages', `${slug}.mdx`)
 	const source = await fs.readFile(filename, 'utf8')
 	return { filename, source }
 }
@@ -149,7 +152,10 @@ async function readMdxDoc(type: DocType, slug: string) {
 function getSlugFromContentPath(
 	filePath: string,
 ): { type: DocType; slug: string } | null {
-	const parts = filePath.replace(/\\/g, '/').split('/')
+	const normalizedPath = filePath
+		.replace(/\\/g, '/')
+		.replace(/^services\/site\//, '')
+	const parts = normalizedPath.split('/')
 	const [contentDir, typeDir] = parts
 	if (contentDir !== 'content') return null
 	if (typeDir === 'blog') {
@@ -172,7 +178,7 @@ function getSlugFromContentPath(
 
 function getChangedFiles(before: string, after: string) {
 	const output = execSync(
-		`git diff --name-status ${before} ${after} -- content/blog content/pages content/data app other/semantic-search`,
+		`git diff --name-status ${before} ${after} -- services/site/content/blog services/site/content/pages services/site/content/data services/site/app other/semantic-search`,
 	).toString()
 	const lines = output.split('\n').filter(Boolean)
 	const addedOrModified = new Set<string>()
@@ -212,7 +218,7 @@ let _talksIndex: {
 } | null = null
 async function loadTalksIndex() {
 	if (_talksIndex) return _talksIndex
-	const talksFilename = path.join('content', 'data', 'talks.yml')
+	const talksFilename = path.join(siteContentDir, 'data', 'talks.yml')
 	const raw = await fs.readFile(talksFilename, 'utf8')
 	const parsed = YAML.parse(raw)
 	if (!Array.isArray(parsed)) {
@@ -272,7 +278,7 @@ let _creditsIndex: {
 } | null = null
 async function loadCreditsIndex() {
 	if (_creditsIndex) return _creditsIndex
-	const filename = path.join('content', 'data', 'credits.yml')
+	const filename = path.join(siteContentDir, 'data', 'credits.yml')
 	const raw = await fs.readFile(filename, 'utf8')
 	const parsed = YAML.parse(raw)
 	if (!Array.isArray(parsed)) {
@@ -324,7 +330,7 @@ let _testimonialsIndex: {
 } | null = null
 async function loadTestimonialsIndex() {
 	if (_testimonialsIndex) return _testimonialsIndex
-	const filename = path.join('content', 'data', 'testimonials.yml')
+	const filename = path.join(siteContentDir, 'data', 'testimonials.yml')
 	const raw = await fs.readFile(filename, 'utf8')
 	const parsed = YAML.parse(raw)
 	if (!Array.isArray(parsed)) {
@@ -367,7 +373,7 @@ async function loadTestimonialsIndex() {
 let _resumeIndex: SyntheticIndexItem | null = null
 async function loadResumeIndex() {
 	if (_resumeIndex) return _resumeIndex
-	const filename = path.join('content', 'data', 'resume.yml')
+	const filename = path.join(siteContentDir, 'data', 'resume.yml')
 	const raw = await fs.readFile(filename, 'utf8')
 	const parsed = YAML.parse(raw) as any
 
@@ -521,18 +527,20 @@ async function getDocsFromChangedPaths({
 
 	const dataChanged = new Set(
 		[...addedOrModified, ...deleted].filter((p) =>
-			p.replace(/\\/g, '/')?.startsWith('content/data/'),
+			p.replace(/\\/g, '/')?.startsWith('services/site/content/data/'),
 		),
 	)
 	const allChanged = [...addedOrModified, ...deleted].map((p) =>
 		p.replace(/\\/g, '/'),
 	)
-	const jsxPagesChanged = allChanged.some((p) => p.startsWith('app/'))
+	const jsxPagesChanged = allChanged.some((p) =>
+		p.startsWith('services/site/app/'),
+	)
 
-	const talksFile = 'content/data/talks.yml'
-	const resumeFile = 'content/data/resume.yml'
-	const creditsFile = 'content/data/credits.yml'
-	const testimonialsFile = 'content/data/testimonials.yml'
+	const talksFile = 'services/site/content/data/talks.yml'
+	const resumeFile = 'services/site/content/data/resume.yml'
+	const creditsFile = 'services/site/content/data/credits.yml'
+	const testimonialsFile = 'services/site/content/data/testimonials.yml'
 
 	// Talks: treat each talk as its own doc; if the YAML changes, reindex them all
 	// and delete any old talk docs that no longer exist.
@@ -757,7 +765,7 @@ async function main() {
 		console.log(`Only indexing explicitly requested docs: ${only}`)
 	} else if (!before || !after || isAllZerosSha(before)) {
 		// Full index.
-		const blogEntries = await fs.readdir(path.join('content', 'blog'), {
+		const blogEntries = await fs.readdir(path.join(siteContentDir, 'blog'), {
 			withFileTypes: true,
 		})
 		docsToIndex = blogEntries
@@ -774,7 +782,7 @@ async function main() {
 				return null
 			})
 			.filter(Boolean) as Array<{ type: DocType; slug: string }>
-		const pageFiles = await fs.readdir(path.join('content', 'pages'))
+		const pageFiles = await fs.readdir(path.join(siteContentDir, 'pages'))
 		docsToIndex.push(
 			...pageFiles
 				.filter((f) => f.endsWith('.mdx'))

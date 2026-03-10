@@ -1,0 +1,9 @@
+{
+	"extends": "@epic-web/config/typescript",
+	"compilerOptions": {
+		"allowJs": true,
+		"noEmit": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true
+	}
+}

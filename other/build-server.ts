@@ -1,19 +1,17 @@
 import path from 'path'
-import { fileURLToPath } from 'url'
 import esbuild from 'esbuild'
 import fsExtra from 'fs-extra'
 import { globSync } from 'glob'
 
-const pkg = fsExtra.readJsonSync(path.join(process.cwd(), 'package.json'))
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const siteRoot = process.cwd()
+const pkg = fsExtra.readJsonSync(path.join(siteRoot, 'package.json'))
 
 const globsafe = (s: string) => s.replace(/\\/g, '/')
-const here = (...s: Array<string>) => globsafe(path.join(__dirname, ...s))
 
-const allFiles = globSync(here('../server/**/*.*'), {
+const allFiles = globSync(globsafe(path.join(siteRoot, 'server/**/*.*')), {
 	ignore: [
-		'server/dev-server.ts', // for development only
-		'server/content-watcher.ts', // for development only
+		globsafe(path.join(siteRoot, 'server/dev-server.ts')), // for development only
+		globsafe(path.join(siteRoot, 'server/content-watcher.ts')), // for development only
 		'**/tsconfig.json',
 		'**/eslint*',
 		'**/__tests__/**',
@@ -21,7 +19,7 @@ const allFiles = globSync(here('../server/**/*.*'), {
 })
 
 const entries = []
-const outdir = here('../server-build')
+const outdir = path.join(siteRoot, 'server-build')
 for (const file of allFiles) {
 	if (/\.(ts|js|tsx|jsx)$/.test(file)) {
 		entries.push(file)

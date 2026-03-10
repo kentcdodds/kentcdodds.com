@@ -47,13 +47,13 @@ test('deploys the site when deployment diff includes a fly-deployable file', asy
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'deployed-site-sha') {
-				return [{ changeType: 'modified', filename: 'app/routes/index.tsx' }]
+				return [{ changeType: 'modified', filename: 'services/site/app/routes/index.tsx' }]
 			}
 			if (compareCommitSha === 'refresh-sha') {
-				return [{ changeType: 'modified', filename: 'content/blog/post.mdx' }]
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
 			}
 			if (compareCommitSha === 'push-before-sha') {
-				return [{ changeType: 'modified', filename: 'content/blog/post.mdx' }]
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
 			}
 			if (compareCommitSha === 'deployed-sha') {
 				return []
@@ -151,10 +151,10 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'deployed-site-sha') {
 				return [
-					{ changeType: 'modified', filename: 'content/blog/post.mdx' },
+					{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' },
 					{
 						changeType: 'modified',
-						filename: 'call-kent-audio-worker/src/index.ts',
+						filename: 'services/call-kent-audio-worker/src/index.ts',
 					},
 				]
 			}
@@ -271,10 +271,10 @@ test('plans oauth worker deploys for oauth changes', async () => {
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'deployed-site-sha') {
-				return [{ changeType: 'modified', filename: 'oauth/src/index.ts' }]
+				return [{ changeType: 'modified', filename: 'services/oauth/src/index.ts' }]
 			}
 			if (compareCommitSha === 'deployed-oauth-sha') {
-				return [{ changeType: 'modified', filename: 'oauth/src/index.ts' }]
+				return [{ changeType: 'modified', filename: 'services/oauth/src/index.ts' }]
 			}
 			if (compareCommitSha === 'deployed-audio-worker-sha' || compareCommitSha === 'deployed-audio-container-sha') {
 				return []
@@ -283,7 +283,7 @@ test('plans oauth worker deploys for oauth changes', async () => {
 				return []
 			}
 			if (compareCommitSha === 'push-before-sha') {
-				return [{ changeType: 'modified', filename: 'oauth/src/index.ts' }]
+				return [{ changeType: 'modified', filename: 'services/oauth/src/index.ts' }]
 			}
 			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
 		},
@@ -382,7 +382,7 @@ test('treats app changes as semantic-content updates', async () => {
 				return []
 			}
 			if (compareCommitSha === 'push-before-sha') {
-				return [{ changeType: 'modified', filename: 'app/utils/misc.ts' }]
+				return [{ changeType: 'modified', filename: 'services/site/app/utils/misc.ts' }]
 			}
 			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
 		},
@@ -451,10 +451,10 @@ test('leaves push-only execution to workflow gating during pull requests', async
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'deployed-site-sha') {
-				return [{ changeType: 'modified', filename: 'content/blog/post.mdx' }]
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
 			}
 			if (compareCommitSha === 'refresh-sha') {
-				return [{ changeType: 'modified', filename: 'content/blog/post.mdx' }]
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
 			}
 			if (compareCommitSha === 'deployed-sha') {
 				return []
@@ -506,7 +506,7 @@ test('failed deploy stays deployable across unrelated push', async () => {
 			}
 			if (compareCommitSha === 'last-successful-oauth-sha') {
 				return [
-					{ changeType: 'modified', filename: 'oauth/src/index.ts' },
+					{ changeType: 'modified', filename: 'services/oauth/src/index.ts' },
 					{ changeType: 'modified', filename: 'README.md' },
 				]
 			}
@@ -556,7 +556,7 @@ test('isolates site-staging from site-production', async () => {
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'staging-deployed-sha') {
-				return [{ changeType: 'modified', filename: 'app/routes/index.tsx' }]
+				return [{ changeType: 'modified', filename: 'services/site/app/routes/index.tsx' }]
 			}
 			if (compareCommitSha === 'production-deployed-sha') {
 				return []

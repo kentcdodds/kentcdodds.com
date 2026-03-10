@@ -24,23 +24,23 @@ swap_size_mb = 512
   processes = ["app"]
 
 [[statics]]
-  guest_path = "/app/build/client/.vite"
+  guest_path = "/app/services/site/build/client/.vite"
   url_prefix = "/.vite"
 
 [[statics]]
-  guest_path = "/app/build/client/assets"
+  guest_path = "/app/services/site/build/client/assets"
   url_prefix = "/assets"
 
 [[statics]]
-  guest_path = "/app/build/client/fonts"
+  guest_path = "/app/services/site/build/client/fonts"
   url_prefix = "/fonts"
 
 [[statics]]
-  guest_path = "/app/build/client/images"
+  guest_path = "/app/services/site/build/client/images"
   url_prefix = "/images"
 
 [[statics]]
-  guest_path = "/app/build/client/favicons"
+  guest_path = "/app/services/site/build/client/favicons"
   url_prefix = "/favicons"
 
 [[services]]

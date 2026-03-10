@@ -125,8 +125,8 @@ export async function refreshChangedContent({
 	const changedFiles =
 		(await getChangedFilesImpl(currentCommitSha, compareSha)) ?? []
 	const contentPaths = changedFiles
-		.filter((f) => f.filename.startsWith('content'))
-		.map((f) => f.filename.replace(/^content\//, ''))
+		.filter((f) => f.filename.startsWith('services/site/content/'))
+		.map((f) => f.filename.replace(/^services\/site\/content\//, ''))
 	if (!contentPaths.length) {
 		log.log('🆗 Not refreshing changed content because no content changed.')
 		return { status: 'no-content-changes' as const }

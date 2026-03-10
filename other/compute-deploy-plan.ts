@@ -13,10 +13,10 @@ const defaultBaseUrl =
 const defaultFetchTimeoutMs = 10_000
 
 const nonFlyDeployablePathPrefixes = [
-	'content/',
-	'call-kent-audio-worker/',
-	'call-kent-audio-container/',
-	'oauth/',
+	'services/site/content/',
+	'services/call-kent-audio-worker/',
+	'services/call-kent-audio-container/',
+	'services/oauth/',
 ]
 
 const nonFlyDeployableFiles = new Set([
@@ -26,24 +26,24 @@ const nonFlyDeployableFiles = new Set([
 ])
 
 const semanticContentPathPrefixes = [
-	'content/blog/',
-	'content/pages/',
-	'content/data/',
-	'app/',
+	'services/site/content/blog/',
+	'services/site/content/pages/',
+	'services/site/content/data/',
+	'services/site/app/',
 	'other/semantic-search/',
 ]
 
-const callKentAudioWorkerPathPrefixes = ['call-kent-audio-worker/']
+const callKentAudioWorkerPathPrefixes = ['services/call-kent-audio-worker/']
 const callKentAudioWorkerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 ])
 
-const callKentAudioContainerPathPrefixes = ['call-kent-audio-container/']
+const callKentAudioContainerPathPrefixes = ['services/call-kent-audio-container/']
 const callKentAudioContainerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-container.yml',
 ])
 
-const oauthWorkerPathPrefixes = ['oauth/']
+const oauthWorkerPathPrefixes = ['services/oauth/']
 const oauthWorkerFiles = new Set(['.github/workflows/deploy-oauth-worker.yml'])
 
 /**
@@ -471,7 +471,7 @@ export async function computeDeployPlan({
 		deploySite: shouldDeploySite(siteChangedFiles),
 		refreshContent: shouldRunPathTarget({
 			changedFiles: refreshChangedFiles,
-			pathPrefixes: ['content/'],
+			pathPrefixes: ['services/site/content/'],
 			runWhenUnknown: isPushEvent,
 		}),
 		indexSemanticContent: shouldRunPathTarget({

@@ -34,13 +34,13 @@ The build now supports missing Sentry upload inputs. If `SENTRY_AUTH_TOKEN` or
 Basic deploy (no sourcemap upload):
 
 ```bash
-fly deploy -a kcd
+fly deploy -a kcd --dockerfile services/site/Dockerfile
 ```
 
 Deploy with sourcemap upload enabled:
 
 ```bash
-fly deploy -a kcd \
+fly deploy -a kcd --dockerfile services/site/Dockerfile \
   --build-arg COMMIT_SHA=$(git rev-parse HEAD) \
   --build-secret SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 ```

@@ -26,13 +26,18 @@ Vite, and an Express server.
 
 1. Clone the repository.
 2. Copy environment variables:
-   - `cp .env.example .env`
+   - `cp services/site/.env.example services/site/.env`
 3. Run the full setup script:
    - `npm run setup -s`
 
 The setup script installs dependencies, resets the local database, validates the
 project, primes local cache data, installs Playwright browsers, and runs
 end-to-end tests.
+
+This repo now uses npm workspaces. Install dependencies from the repository root
+so the site and worker packages share one lockfile and one `node_modules` tree.
+The site itself lives in `services/site`, while root `npm run ...` commands
+forward to that workspace for convenience.
 
 ## Local development
 
@@ -48,8 +53,11 @@ Then open `http://localhost:3000`.
 - `npm run test` - run unit/component tests
 - `npm run test:e2e:dev` - run Playwright tests against dev server
 - `npm run lint` - run Oxlint
+- `npm run lint:all` - run lint across the site and workspace packages
 - `npm run typecheck` - run TypeScript checks
+- `npm run typecheck:all` - run TypeScript checks across all workspaces
 - `npm run build` - build the app
+- `npm run nx:graph` - inspect the Nx workspace graph
 
 ## Contributing
 

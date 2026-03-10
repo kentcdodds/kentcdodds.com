@@ -54,14 +54,14 @@ For repo content indexing you can limit which docs get indexed:
 
 Indexed sources (via `index-repo-content.ts`):
 
-- `content/blog/**` (blog posts)
-- `content/pages/**` (MDX pages)
+- `services/site/content/blog/**` (blog posts)
+- `services/site/content/pages/**` (MDX pages)
 - Rendered JSX pages discovered from `/sitemap.xml` (excluding MDX-backed pages
   and docs handled by podcast/YAML indexers)
-- `content/data/talks.yml` (each talk is indexed as its own doc)
-- `content/data/resume.yml` (resume page)
-- `content/data/credits.yml` (each person is indexed as its own doc)
-- `content/data/testimonials.yml` (each testimonial author is indexed as its own
+- `services/site/content/data/talks.yml` (each talk is indexed as its own doc)
+- `services/site/content/data/resume.yml` (resume page)
+- `services/site/content/data/credits.yml` (each person is indexed as its own doc)
+- `services/site/content/data/testimonials.yml` (each testimonial author is indexed as its own
   doc)
 
 ## Ignore list (prevent re-indexing)
@@ -87,7 +87,7 @@ Script:
 - `node other/semantic-search/index-youtube-playlist.ts`
 - The script indexes:
   - videos from the configured YouTube playlist
-  - additional YouTube video links found in `content/pages/appearances.mdx`
+  - additional YouTube video links found in `services/site/content/pages/appearances.mdx`
 
 Optional flags:
 

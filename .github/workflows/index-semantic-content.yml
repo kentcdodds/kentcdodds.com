@@ -45,31 +45,33 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
+      - name: 📥 Install site deps
+        run: npm ci --workspace=kentcdodds.com
 
       - name: 🏄 Copy test env vars
-        run: cp .env.example .env
+        run: cp services/site/.env.example services/site/.env
 
       - name: 🏦 Prime Site Cache
         id: site-cache
         uses: actions/cache@v5
         with:
-          path: other/cache.db
+          path: services/site/other/cache.db
           # `other/cache.db` is a derived artifact. Key it off the inputs that can
           # make it stale (content + cache/MDX code + deps), not `github.sha`.
           key: >-
             site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
             }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
               'package-lock.json',
-              'app/utils/cache.server.ts',
-              'app/utils/compile-mdx.server.ts',
-              'app/utils/github.server.ts',
-              'app/utils/markdown.server.ts',
-              'app/utils/mdx.server.ts',
-              'content/**',
-              'mocks/**'
+              'services/site/app/utils/cache.server.ts',
+              'services/site/app/utils/compile-mdx.server.ts',
+              'services/site/app/utils/github.server.ts',
+              'services/site/app/utils/markdown.server.ts',
+              'services/site/app/utils/mdx.server.ts',
+              'services/site/content/**',
+              'services/site/mocks/**'
             ) }}
           restore-keys: |
             site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
@@ -77,6 +79,7 @@ jobs:
       - name: 🛠 Setup Database (migrations)
         if: steps.site-cache.outputs.cache-hit != 'true'
         run: npx prisma migrate deploy
+        working-directory: services/site
 
       - name: 🏗 Build (production)
         if: steps.site-cache.outputs.cache-hit != 'true'
@@ -89,7 +92,7 @@ jobs:
       - name: 🔎 Index changed content
         run: |
           set -euo pipefail
-          node --env-file=.env other/semantic-search/index-repo-content.ts --before "${{ inputs.before_sha || github.event.before }}" --after "${{ inputs.current_commit_sha || github.sha }}"
+          node --env-file=services/site/.env other/semantic-search/index-repo-content.ts --before "${{ inputs.before_sha || github.event.before }}" --after "${{ inputs.current_commit_sha || github.sha }}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
