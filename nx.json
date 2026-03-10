@@ -2,8 +2,13 @@
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
 	"defaultBase": "main",
 	"namedInputs": {
-		"default": ["{projectRoot}/**/*", "sharedGlobals"],
-		"production": ["default"],
+		"default": [
+			"{projectRoot}/**/*",
+			"sharedGlobals"
+		],
+		"production": [
+			"default"
+		],
 		"sharedGlobals": [
 			"{workspaceRoot}/package-lock.json",
 			"{workspaceRoot}/tsconfig.base.json",
@@ -13,19 +18,32 @@
 	"targetDefaults": {
 		"build": {
 			"cache": true,
-			"inputs": ["production", "^production"]
+			"inputs": [
+				"production",
+				"^production"
+			]
 		},
 		"lint": {
 			"cache": true,
-			"inputs": ["default", "^default"]
+			"inputs": [
+				"default",
+				"^default"
+			]
 		},
 		"typecheck": {
 			"cache": true,
-			"inputs": ["default", "^default"]
+			"inputs": [
+				"default",
+				"^default"
+			]
 		},
 		"test": {
 			"cache": true,
-			"inputs": ["default", "^default"]
+			"inputs": [
+				"default",
+				"^default"
+			]
 		}
-	}
+	},
+	"nxCloudId": "69b081e3b027df55d8e3bbce"
 }
