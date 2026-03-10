@@ -18,14 +18,14 @@
 		],
 	},
 	"vars": {
-		"CALL_KENT_AUDIO_CONTAINER_URL": "https://kcd-call-kent-audio-container.kentcdodds.workers.dev",
+		"CALL_KENT_AUDIO_SANDBOX_URL": "https://kcd-call-kent-audio-sandbox.kentcdodds.workers.dev",
 		"CALL_KENT_AUDIO_CALLBACK_URL": "https://kentcdodds.com/resources/calls/episode-audio-callback",
 	},
 	"env": {
 		"local": {
 			"vars": {
-				"CALL_KENT_AUDIO_CONTAINER_URL": "http://127.0.0.1:8788",
-				"CALL_KENT_AUDIO_CONTAINER_TOKEN": "local-dev-token",
+				"CALL_KENT_AUDIO_SANDBOX_URL": "http://127.0.0.1:8788",
+				"CALL_KENT_AUDIO_SANDBOX_TOKEN": "local-dev-token",
 				"CALL_KENT_AUDIO_CALLBACK_URL": "http://127.0.0.1:3000/resources/calls/episode-audio-callback",
 				"CALL_KENT_AUDIO_CALLBACK_SECRET": "local-dev-callback-secret",
 			},

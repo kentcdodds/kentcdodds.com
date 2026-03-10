@@ -12,14 +12,14 @@ The app enqueues messages via Cloudflare's Queue REST API.
 
 Set these on the Cloudflare Worker:
 
-- `CALL_KENT_AUDIO_CONTAINER_URL` (plain var)
-  - Purpose: base URL for the container service (`POST /jobs/episode-audio`).
+- `CALL_KENT_AUDIO_SANDBOX_URL` (plain var)
+  - Purpose: base URL for the sandbox service (`POST /jobs/episode-audio`).
   - Where to set: `wrangler.jsonc` `vars` (or Cloudflare Worker dashboard vars).
-- `CALL_KENT_AUDIO_CONTAINER_TOKEN` (secret)
-  - Purpose: bearer token for worker -> container auth.
+- `CALL_KENT_AUDIO_SANDBOX_TOKEN` (secret)
+  - Purpose: bearer token for worker -> sandbox auth.
   - Generate: `openssl rand -hex 32`
   - Where to set: Cloudflare Worker secret
-    (`wrangler secret put CALL_KENT_AUDIO_CONTAINER_TOKEN`).
+    (`wrangler secret put CALL_KENT_AUDIO_SANDBOX_TOKEN`).
 - `CALL_KENT_AUDIO_CALLBACK_URL` (plain var)
   - Purpose: callback endpoint on the app (for started/completed/failed events).
   - Where to set: `wrangler.jsonc` `vars` (or Cloudflare Worker dashboard vars).

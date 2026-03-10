@@ -19,9 +19,9 @@ const envSchema = z.object({
 	R2_ACCESS_KEY_ID: z.string().trim().min(1),
 	R2_SECRET_ACCESS_KEY: z.string().trim().min(1),
 	CALL_KENT_R2_BUCKET: z.string().trim().min(1),
-	CALL_KENT_AUDIO_CONTAINER_TOKEN: z.string().trim().min(1),
-	CALL_KENT_AUDIO_CONTAINER_HEARTBEAT_URL: z.url(),
-	CALL_KENT_AUDIO_CONTAINER_SHUTDOWN_URL: z.url(),
+	CALL_KENT_AUDIO_SANDBOX_TOKEN: z.string().trim().min(1),
+	CALL_KENT_AUDIO_SANDBOX_HEARTBEAT_URL: z.url(),
+	CALL_KENT_AUDIO_SANDBOX_SHUTDOWN_URL: z.url(),
 })
 
 const jobSchema = z.object({
@@ -323,7 +323,7 @@ async function processEpisodeAudioJob(job: z.infer<typeof jobSchema>) {
 		})
 		if (activeJobs === 0) {
 			await requestShutdownIfIdle().catch((shutdownError: unknown) => {
-				console.error('Failed to request audio container shutdown', {
+				console.error('Failed to request audio sandbox shutdown', {
 					...jobContext,
 					error:
 						shutdownError instanceof Error
@@ -365,7 +365,7 @@ function getBearerToken(authorizationHeader: string | undefined) {
 function isAuthorized(authorizationHeader: string | undefined) {
 	return timingSafeEqualString(
 		getBearerToken(authorizationHeader),
-		env.CALL_KENT_AUDIO_CONTAINER_TOKEN,
+		env.CALL_KENT_AUDIO_SANDBOX_TOKEN,
 	)
 }
 
@@ -373,7 +373,7 @@ async function postToControlUrl(url: string) {
 	const response = await fetch(url, {
 		method: 'POST',
 		headers: {
-			Authorization: `Bearer ${env.CALL_KENT_AUDIO_CONTAINER_TOKEN}`,
+			Authorization: `Bearer ${env.CALL_KENT_AUDIO_SANDBOX_TOKEN}`,
 		},
 	})
 	if (!response.ok) {
@@ -418,17 +418,17 @@ async function sendCallback({
 }
 
 async function requestHeartbeat() {
-	await postToControlUrl(env.CALL_KENT_AUDIO_CONTAINER_HEARTBEAT_URL)
+	await postToControlUrl(env.CALL_KENT_AUDIO_SANDBOX_HEARTBEAT_URL)
 }
 
 async function requestShutdownIfIdle() {
-	await postToControlUrl(env.CALL_KENT_AUDIO_CONTAINER_SHUTDOWN_URL)
+	await postToControlUrl(env.CALL_KENT_AUDIO_SANDBOX_SHUTDOWN_URL)
 }
 
 function startJobHeartbeat(jobContext: ReturnType<typeof getJobLogContext>) {
 	const interval = setInterval(() => {
 		void requestHeartbeat().catch((heartbeatError: unknown) => {
-			console.error('Failed to renew audio container activity', {
+			console.error('Failed to renew audio sandbox activity', {
 				...jobContext,
 				error:
 					heartbeatError instanceof Error
@@ -476,5 +476,5 @@ app.post('/jobs/episode-audio', async (c) => {
 })
 
 serve({ fetch: app.fetch, port: Number(env.PORT) }, () => {
-	console.info(`call-kent-audio-container listening on port ${env.PORT}`)
+	console.info(`call-kent-audio-sandbox listening on port ${env.PORT}`)
 })

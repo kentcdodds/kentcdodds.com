@@ -21,7 +21,7 @@ const nonFlyDeployablePathPrefixes = [
 
 const nonFlyDeployableFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
-	'.github/workflows/deploy-call-kent-audio-container.yml',
+	'.github/workflows/deploy-call-kent-audio-sandbox.yml',
 	'.github/workflows/deploy-oauth-worker.yml',
 ])
 
@@ -38,9 +38,9 @@ const callKentAudioWorkerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 ])
 
-const callKentAudioContainerPathPrefixes = ['services/call-kent-audio-container/']
-const callKentAudioContainerFiles = new Set([
-	'.github/workflows/deploy-call-kent-audio-container.yml',
+const callKentAudioSandboxPathPrefixes = ['services/call-kent-audio-container/']
+const callKentAudioSandboxFiles = new Set([
+	'.github/workflows/deploy-call-kent-audio-sandbox.yml',
 ])
 
 const oauthWorkerPathPrefixes = ['services/oauth/']
@@ -62,8 +62,8 @@ const DEPLOY_ENVIRONMENTS: Record<string, (refName: string) => string | null> =
 			refName === 'main' ? 'oauth-production' : null,
 		deployCallKentAudioWorker: (refName) =>
 			refName === 'main' ? 'call-kent-audio-worker-production' : null,
-		deployCallKentAudioContainer: (refName) =>
-			refName === 'main' ? 'call-kent-audio-container-production' : null,
+		deployCallKentAudioSandbox: (refName) =>
+			refName === 'main' ? 'call-kent-audio-sandbox-production' : null,
 	}
 
 type ChangedFile = {
@@ -450,7 +450,7 @@ export async function computeDeployPlan({
 			? getDeploymentChangedFiles({
 					currentCommitSha,
 					refName,
-					target: 'deployCallKentAudioContainer',
+					target: 'deployCallKentAudioSandbox',
 					owner: repo.owner,
 					repo: repo.repo,
 					token,
@@ -485,10 +485,10 @@ export async function computeDeployPlan({
 			files: callKentAudioWorkerFiles,
 			runWhenUnknown: isPushEvent,
 		}),
-		deployCallKentAudioContainer: shouldRunPathTarget({
+		deployCallKentAudioSandbox: shouldRunPathTarget({
 			changedFiles: audioContainerDeployResult.changedFiles,
-			pathPrefixes: callKentAudioContainerPathPrefixes,
-			files: callKentAudioContainerFiles,
+			pathPrefixes: callKentAudioSandboxPathPrefixes,
+			files: callKentAudioSandboxFiles,
 			runWhenUnknown: isPushEvent,
 		}),
 		deployOauthWorker: shouldRunPathTarget({
@@ -534,8 +534,8 @@ export async function writeDeployPlanOutputs({
 		`deploy_call_kent_audio_worker=${String(
 			deployPlan.deployCallKentAudioWorker,
 		)}`,
-		`deploy_call_kent_audio_container=${String(
-			deployPlan.deployCallKentAudioContainer,
+		`deploy_call_kent_audio_sandbox=${String(
+			deployPlan.deployCallKentAudioSandbox,
 		)}`,
 		`deploy_oauth_worker=${String(deployPlan.deployOauthWorker)}`,
 	]

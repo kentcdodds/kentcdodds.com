@@ -1,18 +1,18 @@
 import { timingSafeEqual } from 'node:crypto'
 import { getSandbox } from '@cloudflare/sandbox'
 
-export { Sandbox as CallKentAudioContainer } from '@cloudflare/sandbox'
+export { Sandbox as CallKentAudioSandbox } from '@cloudflare/sandbox'
 
-const containerServiceCommand = 'node src/index.ts'
-const containerServicePort = 8788
+const sandboxServiceCommand = 'node src/index.ts'
+const sandboxServicePort = 8788
 
 type Env = {
-	AUDIO_CONTAINER: any
+	AUDIO_SANDBOX: any
 	R2_ENDPOINT: string
 	R2_ACCESS_KEY_ID: string
 	R2_SECRET_ACCESS_KEY: string
 	CALL_KENT_R2_BUCKET: string
-	CALL_KENT_AUDIO_CONTAINER_TOKEN: string
+	CALL_KENT_AUDIO_SANDBOX_TOKEN: string
 }
 
 function getBearerToken(authorizationHeader: string | null) {
@@ -31,15 +31,15 @@ function timingSafeEqualString(left: string, right: string) {
 function isAuthorized(request: Request, env: Env) {
 	return timingSafeEqualString(
 		getBearerToken(request.headers.get('authorization')),
-		env.CALL_KENT_AUDIO_CONTAINER_TOKEN,
+		env.CALL_KENT_AUDIO_SANDBOX_TOKEN,
 	)
 }
 
 function getAudioSandbox(env: Env) {
-	return getSandbox(env.AUDIO_CONTAINER, 'call-kent-audio')
+	return getSandbox(env.AUDIO_SANDBOX, 'call-kent-audio')
 }
 
-function getAudioContainerEnvVars({
+function getAudioSandboxEnvVars({
 	env,
 	origin,
 }: {
@@ -47,18 +47,18 @@ function getAudioContainerEnvVars({
 	origin: string
 }) {
 	return {
-		PORT: String(containerServicePort),
+		PORT: String(sandboxServicePort),
 		R2_ENDPOINT: env.R2_ENDPOINT,
 		R2_ACCESS_KEY_ID: env.R2_ACCESS_KEY_ID,
 		R2_SECRET_ACCESS_KEY: env.R2_SECRET_ACCESS_KEY,
 		CALL_KENT_R2_BUCKET: env.CALL_KENT_R2_BUCKET,
-		CALL_KENT_AUDIO_CONTAINER_TOKEN: env.CALL_KENT_AUDIO_CONTAINER_TOKEN,
-		CALL_KENT_AUDIO_CONTAINER_HEARTBEAT_URL: `${origin}/internal/heartbeat`,
-		CALL_KENT_AUDIO_CONTAINER_SHUTDOWN_URL: `${origin}/internal/shutdown-if-idle`,
+		CALL_KENT_AUDIO_SANDBOX_TOKEN: env.CALL_KENT_AUDIO_SANDBOX_TOKEN,
+		CALL_KENT_AUDIO_SANDBOX_HEARTBEAT_URL: `${origin}/internal/heartbeat`,
+		CALL_KENT_AUDIO_SANDBOX_SHUTDOWN_URL: `${origin}/internal/shutdown-if-idle`,
 	}
 }
 
-async function ensureAudioContainerServiceRunning({
+async function ensureAudioSandboxServiceRunning({
 	env,
 	origin,
 }: {
@@ -69,17 +69,17 @@ async function ensureAudioContainerServiceRunning({
 	await sandbox.setKeepAlive(true)
 	const runningProcesses = await sandbox.listProcesses()
 	const existingService = runningProcesses.find(
-		(process) => process.command === containerServiceCommand,
+		(process) => process.command === sandboxServiceCommand,
 	)
 	if (existingService) return sandbox
 
-	const service = await sandbox.startProcess(containerServiceCommand, {
+	const service = await sandbox.startProcess(sandboxServiceCommand, {
 		cwd: '/app',
-		env: getAudioContainerEnvVars({ env, origin }),
+		env: getAudioSandboxEnvVars({ env, origin }),
 	})
 
 	try {
-		await service.waitForPort(containerServicePort, {
+		await service.waitForPort(sandboxServicePort, {
 			mode: 'tcp',
 			timeout: 60_000,
 		})
@@ -87,7 +87,7 @@ async function ensureAudioContainerServiceRunning({
 		const existingAfterFailure = await sandbox
 			.listProcesses()
 			.then((processes) =>
-				processes.some((process) => process.command === containerServiceCommand),
+				processes.some((process) => process.command === sandboxServiceCommand),
 			)
 			.catch(() => false)
 		if (existingAfterFailure) {
@@ -96,16 +96,16 @@ async function ensureAudioContainerServiceRunning({
 		const logs = await sandbox.getProcessLogs(service.id).catch(() => null)
 		const message = error instanceof Error ? error.message : String(error)
 		throw new Error(
-			`Failed to start audio container service: ${message}${logs ? `\n${logs}` : ''}`,
+			`Failed to start audio sandbox service: ${message}${logs ? `\n${logs}` : ''}`,
 		)
 	}
 
 	return sandbox
 }
 
-const proxyJobCommand = String.raw`node -e "const body=process.env.CALL_KENT_AUDIO_JOB_REQUEST_BODY||''; fetch('http://127.0.0.1:8788/jobs/episode-audio',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+process.env.CALL_KENT_AUDIO_CONTAINER_TOKEN},body}).then(async (response)=>{const text=await response.text(); process.stdout.write(JSON.stringify({ok:response.ok,status:response.status,statusText:response.statusText,body:text})); if(!response.ok) process.exit(2);}).catch((error)=>{process.stderr.write(error instanceof Error ? error.message : String(error)); process.exit(1);});"`
+const proxyJobCommand = String.raw`node -e "const body=process.env.CALL_KENT_AUDIO_JOB_REQUEST_BODY||''; fetch('http://127.0.0.1:8788/jobs/episode-audio',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+process.env.CALL_KENT_AUDIO_SANDBOX_TOKEN},body}).then(async (response)=>{const text=await response.text(); process.stdout.write(JSON.stringify({ok:response.ok,status:response.status,statusText:response.statusText,body:text})); if(!response.ok) process.exit(2);}).catch((error)=>{process.stderr.write(error instanceof Error ? error.message : String(error)); process.exit(1);});"`
 
-async function proxyJobToAudioContainer({
+async function proxyJobToAudioSandbox({
 	env,
 	origin,
 	jobRequestBody,
@@ -114,17 +114,17 @@ async function proxyJobToAudioContainer({
 	origin: string
 	jobRequestBody: string
 }) {
-	const sandbox = await ensureAudioContainerServiceRunning({ env, origin })
+	const sandbox = await ensureAudioSandboxServiceRunning({ env, origin })
 	const result = await sandbox.exec(proxyJobCommand, {
 		env: {
-			CALL_KENT_AUDIO_CONTAINER_TOKEN: env.CALL_KENT_AUDIO_CONTAINER_TOKEN,
+			CALL_KENT_AUDIO_SANDBOX_TOKEN: env.CALL_KENT_AUDIO_SANDBOX_TOKEN,
 			CALL_KENT_AUDIO_JOB_REQUEST_BODY: jobRequestBody,
 		},
 		timeout: 60_000,
 	})
 	if (!result.success) {
 		throw new Error(
-			`Container request command failed: ${result.stderr || result.stdout || 'unknown error'}`,
+			`Sandbox request command failed: ${result.stderr || result.stdout || 'unknown error'}`,
 		)
 	}
 	const parsed = JSON.parse(result.stdout) as {
@@ -168,7 +168,7 @@ export default {
 
 		try {
 			const body = await request.text()
-			const proxied = await proxyJobToAudioContainer({
+			const proxied = await proxyJobToAudioSandbox({
 				env,
 				origin: url.origin,
 				jobRequestBody: body,
@@ -179,7 +179,7 @@ export default {
 			})
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error)
-			return new Response(`Container proxy failed: ${message}`, { status: 502 })
+			return new Response(`Sandbox proxy failed: ${message}`, { status: 502 })
 		}
 	},
 }

@@ -1,7 +1,7 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
-	"name": "kcd-call-kent-audio-container",
-	"main": "src/container-worker.ts",
+	"name": "kcd-call-kent-audio-sandbox",
+	"main": "src/sandbox-worker.ts",
 	"compatibility_date": "2026-03-09",
 	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
@@ -13,7 +13,7 @@
 	},
 	"containers": [
 		{
-			"class_name": "CallKentAudioContainer",
+			"class_name": "CallKentAudioSandbox",
 			"image": "./container.dockerfile",
 			"instance_type": "standard-1",
 			"max_instances": 3
@@ -22,8 +22,8 @@
 	"durable_objects": {
 		"bindings": [
 			{
-				"name": "AUDIO_CONTAINER",
-				"class_name": "CallKentAudioContainer"
+				"name": "AUDIO_SANDBOX",
+				"class_name": "CallKentAudioSandbox"
 			}
 		]
 	},
@@ -31,6 +31,15 @@
 		{
 			"tag": "v1",
 			"new_sqlite_classes": ["CallKentAudioContainer"]
+		},
+		{
+			"tag": "v2",
+			"renamed_classes": [
+				{
+					"from": "CallKentAudioContainer",
+					"to": "CallKentAudioSandbox"
+				}
+			]
 		}
 	]
 }

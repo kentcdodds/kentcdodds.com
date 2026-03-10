@@ -18,12 +18,12 @@ async function processMessage({ message, env }: { message: any; env: Env }) {
 		attempt,
 	})
 	const response = await fetch(
-		`${env.CALL_KENT_AUDIO_CONTAINER_URL}/jobs/episode-audio`,
+		`${env.CALL_KENT_AUDIO_SANDBOX_URL}/jobs/episode-audio`,
 		{
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer ${env.CALL_KENT_AUDIO_CONTAINER_TOKEN}`,
+				Authorization: `Bearer ${env.CALL_KENT_AUDIO_SANDBOX_TOKEN}`,
 			},
 			body: JSON.stringify({
 				...parsed,
@@ -36,10 +36,10 @@ async function processMessage({ message, env }: { message: any; env: Env }) {
 	if (!response.ok) {
 		const text = await response.text().catch(() => '')
 		throw new Error(
-			`Container request failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`,
+			`Sandbox request failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`,
 		)
 	}
-	console.info('Call Kent audio container request succeeded', {
+	console.info('Call Kent audio sandbox request succeeded', {
 		draftId: parsed.draftId,
 		attempt,
 		status: response.status,

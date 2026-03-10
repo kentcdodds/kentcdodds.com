@@ -1,4 +1,4 @@
-name: 📦 Deploy Call Kent Audio Container
+name: 📦 Deploy Call Kent Audio Sandbox
 
 on:
   workflow_call:
@@ -6,11 +6,11 @@ on:
 
 jobs:
   deploy:
-    name: 📦 Deploy Call Kent Audio Container
+    name: 📦 Deploy Call Kent Audio Sandbox
     runs-on: ubuntu-latest
-    environment: call-kent-audio-container-production
+    environment: call-kent-audio-sandbox-production
     concurrency:
-      group: deploy-call-kent-audio-container-${{ github.ref }}
+      group: deploy-call-kent-audio-sandbox-${{ github.ref }}
       cancel-in-progress: true
     permissions:
       contents: read
@@ -25,14 +25,14 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: 📥 Install audio container deps
-        run: npm ci --workspace=call-kent-audio-container
+      - name: 📥 Install audio sandbox deps
+        run: npm ci --workspace=call-kent-audio-sandbox
 
-      - name: 🔬 Lint audio container
-        run: npm run lint --workspace call-kent-audio-container
+      - name: 🔬 Lint audio sandbox
+        run: npm run lint --workspace call-kent-audio-sandbox
 
-      - name: ʦ Typecheck audio container
-        run: npm run typecheck --workspace call-kent-audio-container
+      - name: ʦ Typecheck audio sandbox
+        run: npm run typecheck --workspace call-kent-audio-sandbox
 
       - name: ☁️ Deploy via Wrangler
         uses: cloudflare/wrangler-action@v3

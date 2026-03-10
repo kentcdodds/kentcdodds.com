@@ -15,7 +15,7 @@ Behavior:
    requests shutdown once the last active job completes.
 
 Stitch assets are required; startup requests fail if these files are missing.
-The container expects these files in `assets/`:
+The sandbox service expects these files in `assets/`:
 
 - `assets/intro.mp3`
 - `assets/interstitial.mp3`
