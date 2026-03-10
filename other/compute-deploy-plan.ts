@@ -391,7 +391,7 @@ export async function computeDeployPlan({
 		siteDeployResult,
 		oauthDeployResult,
 		audioWorkerDeployResult,
-		audioContainerDeployResult,
+		audioSandboxDeployResult,
 	] = await Promise.all([
 		getPushChangedFiles({
 			currentCommitSha,
@@ -486,7 +486,7 @@ export async function computeDeployPlan({
 			runWhenUnknown: isPushEvent,
 		}),
 		deployCallKentAudioSandbox: shouldRunPathTarget({
-			changedFiles: audioContainerDeployResult.changedFiles,
+			changedFiles: audioSandboxDeployResult.changedFiles,
 			pathPrefixes: callKentAudioSandboxPathPrefixes,
 			files: callKentAudioSandboxFiles,
 			runWhenUnknown: isPushEvent,

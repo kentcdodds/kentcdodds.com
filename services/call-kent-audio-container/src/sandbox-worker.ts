@@ -190,8 +190,6 @@ export default {
 			try {
 				status = await fetchAudioSandboxStatus({ env, sandbox })
 			} catch (error) {
-				await sandbox.setKeepAlive(false).catch(() => undefined)
-				await sandbox.destroy().catch(() => undefined)
 				const message = error instanceof Error ? error.message : String(error)
 				return new Response(`Sandbox status failed: ${message}`, { status: 502 })
 			}
