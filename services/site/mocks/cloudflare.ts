@@ -18,6 +18,7 @@ import {
 	putEpisodeDraftCallerSegmentAudioFromBuffer,
 	putEpisodeDraftResponseSegmentAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
+import { normalizeCallerTranscriptForEpisode } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { handleCallKentAudioProcessorEvent } from '#app/utils/call-kent-audio-processor-callback.server.ts'
 import { mockTransistorEpisodes } from './transistor.ts'
 import { requiredHeader } from './utils.ts'
@@ -37,6 +38,149 @@ function shouldMockCloudflare(request: Request) {
 	// credentials by setting a non-MOCK token.
 	const token = getBearerToken(request)
 	return Boolean(token && token.startsWith('MOCK'))
+}
+
+type CallKentWorkflowParams = {
+	draftId?: string
+	callAudioKey?: string
+	responseAudioKey?: string
+	cloudflareAccountId?: string
+	callTitle?: string
+	callerNotes?: string | null
+	callerName?: string | null
+	savedCallerTranscript?: string | null
+}
+
+type CallKentWorkflowEnvelope = {
+	instance_id?: string
+	params?: CallKentWorkflowParams
+}
+
+function isCallKentWorkflowParams(value: unknown): value is {
+	draftId: string
+	callAudioKey: string
+	responseAudioKey: string
+	cloudflareAccountId: string
+	callTitle: string
+	callerNotes: string | null
+	callerName: string | null
+	savedCallerTranscript: string | null
+} {
+	if (!value || typeof value !== 'object') return false
+	const candidate = value as CallKentWorkflowParams
+	return (
+		typeof candidate.draftId === 'string' &&
+		candidate.draftId.length > 0 &&
+		typeof candidate.callAudioKey === 'string' &&
+		candidate.callAudioKey.length > 0 &&
+		typeof candidate.responseAudioKey === 'string' &&
+		candidate.responseAudioKey.length > 0 &&
+		typeof candidate.cloudflareAccountId === 'string' &&
+		candidate.cloudflareAccountId.length > 0 &&
+		typeof candidate.callTitle === 'string' &&
+		candidate.callTitle.trim().length > 0 &&
+		(typeof candidate.callerNotes === 'string' ||
+			candidate.callerNotes === null) &&
+		(typeof candidate.callerName === 'string' ||
+			candidate.callerName === null) &&
+		(typeof candidate.savedCallerTranscript === 'string' ||
+			candidate.savedCallerTranscript === null)
+	)
+}
+
+async function processCallKentWorkflowInstance({
+	draftId,
+	callAudioKey,
+	responseAudioKey,
+	callTitle,
+	callerNotes,
+	callerName,
+	savedCallerTranscript,
+}: {
+	draftId: string
+	callAudioKey: string
+	responseAudioKey: string
+	callTitle: string
+	callerNotes: string | null
+	callerName: string | null
+	savedCallerTranscript: string | null
+}) {
+	try {
+		await handleCallKentAudioProcessorEvent({
+			type: 'audio_generation_started',
+			draftId,
+			attempt: 1,
+		})
+		const [callAudio, responseAudio] = await Promise.all([
+			getAudioBuffer({ key: callAudioKey }),
+			getAudioBuffer({ key: responseAudioKey }),
+		])
+		const episodeAudio = Buffer.concat([callAudio, responseAudio])
+		const [episodeStored, callerStored, responseStored] = await Promise.all([
+			putEpisodeDraftAudioFromBuffer({ draftId, mp3: episodeAudio }),
+			putEpisodeDraftCallerSegmentAudioFromBuffer({ draftId, mp3: callAudio }),
+			putEpisodeDraftResponseSegmentAudioFromBuffer({
+				draftId,
+				mp3: responseAudio,
+			}),
+		])
+		await handleCallKentAudioProcessorEvent({
+			type: 'audio_generation_completed',
+			draftId,
+			episodeAudioKey: episodeStored.key,
+			episodeAudioContentType: episodeStored.contentType,
+			episodeAudioSize: episodeStored.size,
+			callerSegmentAudioKey: callerStored.key,
+			responseSegmentAudioKey: responseStored.key,
+			attempt: 1,
+		})
+		const normalizedSavedCallerTranscript = normalizeCallerTranscriptForEpisode(
+			{
+				callerTranscript: savedCallerTranscript,
+				callerName: callerName ?? undefined,
+			},
+		)
+		const transcript = `
+Announcer: You're listening to the Call Kent Podcast.
+
+---
+
+${callerName ?? 'Caller'}: ${normalizedSavedCallerTranscript ?? 'Mock caller transcript for local workflow tests.'}
+
+---
+
+Kent: Mock response transcript for local workflow tests.
+`.trim()
+		await handleCallKentAudioProcessorEvent({
+			type: 'transcript_generation_completed',
+			draftId,
+			transcript,
+			attempt: 1,
+		})
+		const metadataTitle = callTitle.trim() || 'Mock Call Kent workflow episode'
+		const metadataDescription = [
+			`Mock metadata generated in local workflow mode for "${metadataTitle}".`,
+			callerNotes?.trim() ? `Caller notes: ${callerNotes.trim()}` : null,
+		]
+			.filter(Boolean)
+			.join(' ')
+		await handleCallKentAudioProcessorEvent({
+			type: 'metadata_generation_completed',
+			draftId,
+			title: metadataTitle,
+			description: metadataDescription || 'Mock Call Kent description.',
+			keywords: 'call kent, workflow, mock',
+			attempt: 1,
+		})
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : String(error)
+		await handleCallKentAudioProcessorEvent({
+			type: 'draft_processing_failed',
+			draftId,
+			errorMessage: message,
+			attempt: 1,
+		})
+	}
 }
 
 type CallKentQueueEnvelope = {
@@ -974,6 +1118,39 @@ const handleVectorizeDeleteByIds = async ({
 }
 
 export const cloudflareHandlers: Array<HttpHandler> = [
+	http.post<any, DefaultBodyType>(
+		`${CLOUDFLARE_API_BASE}/accounts/:accountId/workflows/:workflowName/instances`,
+		async ({ request, params }) => {
+			if (!shouldMockCloudflare(request)) return passthrough()
+			requiredHeader(request.headers, 'authorization')
+			let payload: CallKentWorkflowEnvelope | null = null
+			try {
+				payload = (await request.json()) as CallKentWorkflowEnvelope
+			} catch {
+				return jsonError(
+					400,
+					'Invalid JSON body for Workflows create instance endpoint.',
+				)
+			}
+			if (!payload?.params || !isCallKentWorkflowParams(payload.params)) {
+				return jsonError(
+					400,
+					'Expected workflow params with draft/audio keys and call context.',
+				)
+			}
+			void processCallKentWorkflowInstance(payload.params)
+			return jsonOk(
+				{
+					id: payload.instance_id ?? randomUUID(),
+					workflow_id: String(params.workflowName ?? 'mock-workflow-id'),
+					version_id: randomUUID(),
+					status: 'queued',
+				},
+				{ status: 200 },
+			)
+		},
+	),
+
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/queues/:queueId/messages`,
 		async ({ request }) => {

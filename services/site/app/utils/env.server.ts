@@ -108,8 +108,8 @@ const schemaBase = z.object({
 	R2_SECRET_ACCESS_KEY: nonEmptyString,
 	// Call Kent audio storage bucket.
 	CALL_KENT_R2_BUCKET: nonEmptyString,
-	// Cloudflare Queue config for offloaded FFmpeg jobs.
-	CALL_KENT_AUDIO_CF_QUEUE_ID: nonEmptyString,
+	// Cloudflare Workflow config for offloaded Call Kent draft pipeline jobs.
+	CALL_KENT_AUDIO_CF_WORKFLOW_NAME: nonEmptyString,
 	CALL_KENT_AUDIO_CF_API_BASE_URL: z.string().trim().optional(),
 	// HMAC secret used by the FFmpeg processor callback route.
 	CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: nonEmptyString,

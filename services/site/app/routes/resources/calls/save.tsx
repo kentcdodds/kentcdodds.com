@@ -9,7 +9,10 @@ import {
 	putCallAudioFromDataUrl,
 	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
-import { startCallKentCallerTranscriptProcessing } from '#app/utils/call-kent-caller-transcript.server.ts'
+import {
+	normalizeCallerTranscriptForEpisode,
+	startCallKentCallerTranscriptProcessing,
+} from '#app/utils/call-kent-caller-transcript.server.ts'
 import { requestCallKentEpisodeAudioGeneration } from '#app/utils/call-kent-audio-processor.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
 import {
@@ -411,9 +414,21 @@ async function createEpisodeDraft({
 
 	await requireAdminUser(request)
 
-	const call = await prisma.call.findFirst({ where: { id: callId } })
+	const call = await prisma.call.findFirst({
+		where: { id: callId },
+		select: {
+			id: true,
+			audioKey: true,
+			title: true,
+			notes: true,
+			isAnonymous: true,
+			callerTranscript: true,
+			user: { select: { firstName: true } },
+		},
+	})
 	if (!call) return redirectCallNotFound()
 
+	let callTitle = call.title
 	// Allow overriding call title from the admin UI submit.
 	if (formCallTitle !== null) {
 		const nextTitle = formCallTitle.trim()
@@ -426,8 +441,10 @@ async function createEpisodeDraft({
 			where: { id: callId },
 			data: { title: nextTitle },
 		})
+		callTitle = nextTitle
 	}
 
+	let callNotes = call.notes
 	// Allow overriding call notes from the admin UI submit.
 	if (formNotes !== null) {
 		const nextNotes = formNotes.trim()
@@ -435,6 +452,7 @@ async function createEpisodeDraft({
 			where: { id: callId },
 			data: { notes: nextNotes ? nextNotes : null },
 		})
+		callNotes = nextNotes ? nextNotes : null
 	}
 
 	// If we're replacing a draft, clean up the old stored audio blob.
@@ -495,6 +513,13 @@ async function createEpisodeDraft({
 			draftId: draft.id,
 			callAudioKey: call.audioKey,
 			responseAudioKey: storedResponseAudio.key,
+			callTitle,
+			callerNotes: callNotes,
+			callerName: call.isAnonymous ? null : call.user.firstName,
+			savedCallerTranscript: normalizeCallerTranscriptForEpisode({
+				callerTranscript: call.callerTranscript,
+				callerName: call.isAnonymous ? undefined : call.user.firstName,
+			}),
 		})
 	} catch (error: unknown) {
 		await prisma.callKentEpisodeDraft.updateMany({

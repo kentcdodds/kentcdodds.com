@@ -111,7 +111,10 @@ export default {
 			return Response.json({ ok: true, status: 'stopped' })
 		}
 
-		if (url.pathname !== '/jobs/episode-audio') {
+		if (
+			url.pathname !== '/jobs/episode-audio' &&
+			url.pathname !== '/jobs/episode-audio-sync'
+		) {
 			return new Response('Not found', { status: 404 })
 		}
 

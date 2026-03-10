@@ -2,7 +2,10 @@ This service runs FFmpeg for Call Kent episode audio generation.
 
 Endpoints:
 
-- `POST /jobs/episode-audio`: authenticated by bearer token
+- `POST /jobs/episode-audio`: authenticated by bearer token, async job +
+  callbacks
+- `POST /jobs/episode-audio-sync`: authenticated by bearer token, waits for
+  ffmpeg/upload completion and returns generated audio keys
 
 Behavior:
 
