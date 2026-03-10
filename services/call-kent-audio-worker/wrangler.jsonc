@@ -2,7 +2,8 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "kcd-call-kent-audio-worker",
 	"main": "src/index.ts",
-	"compatibility_date": "2025-03-10",
+	"compatibility_date": "2026-03-10",
+	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
 		"enabled": true,
 	},
@@ -17,17 +18,42 @@
 			},
 		],
 	},
+	"containers": [
+		{
+			"class_name": "Sandbox",
+			"image": "./sandbox.dockerfile",
+			"instance_type": "standard-1",
+			"max_instances": 3,
+		},
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "Sandbox",
+				"class_name": "Sandbox",
+			},
+		],
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["Sandbox"],
+		},
+	],
 	"vars": {
-		"CALL_KENT_AUDIO_CONTAINER_URL": "https://kcd-call-kent-audio-container.kentcdodds.workers.dev",
 		"CALL_KENT_AUDIO_CALLBACK_URL": "https://kentcdodds.com/resources/calls/episode-audio-callback",
+		"R2_ENDPOINT": "https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com",
+		"CALL_KENT_R2_BUCKET": "kcd-call-kent-audio",
 	},
 	"env": {
 		"local": {
 			"vars": {
-				"CALL_KENT_AUDIO_CONTAINER_URL": "http://127.0.0.1:8788",
-				"CALL_KENT_AUDIO_CONTAINER_TOKEN": "local-dev-token",
 				"CALL_KENT_AUDIO_CALLBACK_URL": "http://127.0.0.1:3000/resources/calls/episode-audio-callback",
 				"CALL_KENT_AUDIO_CALLBACK_SECRET": "local-dev-callback-secret",
+				"R2_ENDPOINT": "https://mock.r2.cloudflarestorage.com",
+				"R2_ACCESS_KEY_ID": "MOCKR2ACCESSKEYID",
+				"R2_SECRET_ACCESS_KEY": "MOCKR2SECRETACCESSKEY",
+				"CALL_KENT_R2_BUCKET": "MOCK_CALL_KENT_R2_BUCKET",
 			},
 		},
 	},

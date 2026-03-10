@@ -1,10 +1,14 @@
-This Worker consumes Cloudflare Queue messages for Call Kent FFmpeg jobs and
-dispatches them to the container service.
+This Worker consumes Cloudflare Queue messages for Call Kent FFmpeg jobs,
+executes the stitch command inside a Cloudflare Sandbox, and reports the result
+back to the app via signed callbacks.
 
 Key files:
 
-- `src/index.ts`: queue consumer entrypoint
-- `wrangler.jsonc`: queue binding + retry settings (3 concurrent batch size)
+- `src/index.ts`: queue consumer entrypoint + Sandbox export
+- `src/call-kent-audio-r2.ts`: creates signed R2 download/upload URLs
+- `src/call-kent-audio-sandbox.ts`: runs the sandbox CLI via `exec()`
+- `sandbox/call-kent-audio-cli.sh`: minimal FFmpeg stitch/upload CLI
+- `sandbox.dockerfile`: Sandbox image definition
 
 The app enqueues messages via Cloudflare's Queue REST API.
 
@@ -12,14 +16,6 @@ The app enqueues messages via Cloudflare's Queue REST API.
 
 Set these on the Cloudflare Worker:
 
-- `CALL_KENT_AUDIO_CONTAINER_URL` (plain var)
-  - Purpose: base URL for the container service (`POST /jobs/episode-audio`).
-  - Where to set: `wrangler.jsonc` `vars` (or Cloudflare Worker dashboard vars).
-- `CALL_KENT_AUDIO_CONTAINER_TOKEN` (secret)
-  - Purpose: bearer token for worker -> container auth.
-  - Generate: `openssl rand -hex 32`
-  - Where to set: Cloudflare Worker secret
-    (`wrangler secret put CALL_KENT_AUDIO_CONTAINER_TOKEN`).
 - `CALL_KENT_AUDIO_CALLBACK_URL` (plain var)
   - Purpose: callback endpoint on the app (for started/completed/failed events).
   - Where to set: `wrangler.jsonc` `vars` (or Cloudflare Worker dashboard vars).
@@ -29,3 +25,24 @@ Set these on the Cloudflare Worker:
   - Must match app `CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET`.
   - Where to set: Cloudflare Worker secret
     (`wrangler secret put CALL_KENT_AUDIO_CALLBACK_SECRET`).
+- `R2_ENDPOINT` (plain var)
+  - Purpose: S3-compatible R2 endpoint used for presigned URLs.
+  - Where to set: `wrangler.jsonc` `vars` (or Cloudflare Worker dashboard vars).
+- `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` (secrets)
+  - Purpose: credentials used to presign sandbox download/upload URLs.
+  - Where to set: Cloudflare Worker secrets.
+- `CALL_KENT_R2_BUCKET` (plain var)
+  - Purpose: bucket holding raw call audio and stitched draft episode outputs.
+  - Where to set: `wrangler.jsonc` `vars` (or Cloudflare Worker dashboard vars).
+
+## Assets
+
+The sandbox image expects these files in `assets/`:
+
+- `assets/intro.mp3`
+- `assets/interstitial.mp3`
+- `assets/outro.mp3`
+
+Site development/tests still use the MSW Cloudflare mock instead of the real
+worker+sandbox path, and the sandbox CLI tests generate temporary fixture
+assets at runtime.

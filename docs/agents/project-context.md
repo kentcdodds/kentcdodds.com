@@ -69,9 +69,12 @@ reference:
   `[Music]`. The YouTube indexer filters these low-signal caption lines and
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
-- Call Kent FFmpeg offload caveat: episode audio generation can run through a
-  Cloudflare queue/container pipeline and requires Cloudflare queue/callback
-  environment variables.
+- Call Kent FFmpeg offload caveat: episode audio generation runs through a
+  Cloudflare queue/worker/sandbox pipeline. Local site development still uses
+  the MSW Cloudflare mock end-to-end, but running the real worker sandbox
+  locally requires Docker plus real R2-accessible inputs because the site's MSW
+  R2 mock does not extend into sandbox containers. The sandbox image expects
+  `services/call-kent-audio-worker/assets/{intro,interstitial,outro}.mp3`.
 
 ## Seed data
 

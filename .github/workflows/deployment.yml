@@ -24,8 +24,6 @@ jobs:
       index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}
       deploy_call_kent_audio_worker:
         ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}
-      deploy_call_kent_audio_container:
-        ${{ steps.plan.outputs.deploy_call_kent_audio_container }}
       deploy_oauth_worker: ${{ steps.plan.outputs.deploy_oauth_worker }}
     steps:
       - name: ⬇️ Checkout repo
@@ -55,7 +53,6 @@ jobs:
           echo "refresh_content: ${{ steps.plan.outputs.refresh_content }}"
           echo "index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}"
           echo "deploy_call_kent_audio_worker: ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}"
-          echo "deploy_call_kent_audio_container: ${{ steps.plan.outputs.deploy_call_kent_audio_container }}"
           echo "deploy_oauth_worker: ${{ steps.plan.outputs.deploy_oauth_worker }}"
 
   deploy-site:
@@ -101,15 +98,6 @@ jobs:
       ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
       needs.plan.outputs.deploy_call_kent_audio_worker == 'true' }}
     uses: ./.github/workflows/deploy-call-kent-audio-worker.yml
-    secrets: inherit
-
-  deploy-call-kent-audio-container:
-    name: 📦 Deploy Call Kent Audio Container
-    needs: [plan]
-    if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
-      needs.plan.outputs.deploy_call_kent_audio_container == 'true' }}
-    uses: ./.github/workflows/deploy-call-kent-audio-container.yml
     secrets: inherit
 
   deploy-oauth-worker:
