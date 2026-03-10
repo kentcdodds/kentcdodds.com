@@ -117,8 +117,8 @@ export default function ResumePage({
 							Resume is not available right now.
 						</H4>
 						<Paragraph className="mb-4">
-							We are likely having trouble with our GitHub integration.
-							Please try again soon, or browse the content directly on{' '}
+							We are likely having trouble with our GitHub integration. Please
+							try again soon, or browse the content directly on{' '}
 							<a
 								href={externalLinks.githubRepo}
 								target="_blank"
@@ -139,9 +139,7 @@ export default function ResumePage({
 	}
 
 	const data = resumeData
-	const printLinks = data.header.links.filter(
-		(link) => link.includeInPrint,
-	)
+	const printLinks = data.header.links.filter((link) => link.includeInPrint)
 	const recognitionView = getRecognitionView(data)
 
 	function handleCopyMarkdown() {
@@ -249,28 +247,27 @@ export default function ResumePage({
 				<section className="resume-section">
 					<h2 className="resume-heading">Experience</h2>
 					<div className="resume-experience">
-						{(isShort
-							? data.experienceShort
-							: data.experienceLong
-						).map((job) => (
-							<article
-								key={`${job.company}-${job.role}`}
-								className="resume-job"
-							>
-								<div className="resume-job__row">
-									<div className="resume-job__title">
-										<strong>{job.company}</strong> — {job.role}
+						{(isShort ? data.experienceShort : data.experienceLong).map(
+							(job) => (
+								<article
+									key={`${job.company}-${job.role}`}
+									className="resume-job"
+								>
+									<div className="resume-job__row">
+										<div className="resume-job__title">
+											<strong>{job.company}</strong> — {job.role}
+										</div>
+										<div className="resume-job__dates">{job.dates}</div>
 									</div>
-									<div className="resume-job__dates">{job.dates}</div>
-								</div>
-								<div className="resume-job__context">{job.context}</div>
-								<ul className="resume-bullets">
-									{job.bullets[viewKey].map((bullet) => (
-										<li key={bullet}>{bullet}</li>
-									))}
-								</ul>
-							</article>
-						))}
+									<div className="resume-job__context">{job.context}</div>
+									<ul className="resume-bullets">
+										{job.bullets[viewKey].map((bullet) => (
+											<li key={bullet}>{bullet}</li>
+										))}
+									</ul>
+								</article>
+							),
+						)}
 					</div>
 				</section>
 

@@ -239,8 +239,8 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 							No credits are available right now.
 						</H4>
 						<Paragraph className="mb-4">
-							We are likely having trouble with our GitHub integration.
-							Please try again soon, or browse the content directly on{' '}
+							We are likely having trouble with our GitHub integration. Please
+							try again soon, or browse the content directly on{' '}
 							<a
 								href={externalLinks.githubRepo}
 								target="_blank"

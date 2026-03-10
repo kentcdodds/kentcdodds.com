@@ -191,7 +191,10 @@ app.use((req, res, next) => {
 		return
 	}
 	if (host === 'blog.kentcdodds.com') {
-		res.redirect(301, `https://kentcdodds.com/blog${req.path === '/' ? '' : req.path}${req.url.slice(req.path.length)}`)
+		res.redirect(
+			301,
+			`https://kentcdodds.com/blog${req.path === '/' ? '' : req.path}${req.url.slice(req.path.length)}`,
+		)
 		return
 	}
 	next()

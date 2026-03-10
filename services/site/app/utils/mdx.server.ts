@@ -61,7 +61,11 @@ export async function getMdxPage(
 			forceFresh,
 			checkValue: checkCompiledValue,
 			getFreshValue: async (context) => {
-				const pageFiles = await downloadMdxFilesCached(contentDir, slug, options)
+				const pageFiles = await downloadMdxFilesCached(
+					contentDir,
+					slug,
+					options,
+				)
 				const compiledPage = await compileMdxCached({
 					contentDir,
 					slug,

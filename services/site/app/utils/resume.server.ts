@@ -89,10 +89,7 @@ async function getResumeData({
 			checkValue: (value: unknown) => resumeDataSchema.safeParse(value).success,
 		})
 	} catch (error: unknown) {
-		console.error(
-			`resume: failed to load resume data, returning null`,
-			error,
-		)
+		console.error(`resume: failed to load resume data, returning null`, error)
 		return null
 	}
 }
