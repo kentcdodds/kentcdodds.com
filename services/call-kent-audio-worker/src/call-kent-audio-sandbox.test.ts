@@ -64,7 +64,7 @@ test('runCallKentAudioSandboxJob executes the sandbox CLI and destroys the sandb
 			CALL_KENT_AUDIO_DRAFT_ID: 'draft-123',
 			CALL_AUDIO_URL: 'https://example.com/call',
 		}),
-		timeout: 600000,
+		timeout: 1800000,
 	})
 	expect(destroy).toHaveBeenCalledTimes(1)
 	expect(result).toEqual({

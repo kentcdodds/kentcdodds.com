@@ -1,7 +1,7 @@
 import { getSandbox, type Sandbox as SandboxBinding } from '@cloudflare/sandbox'
 import { z } from 'zod'
 
-const sandboxExecTimeoutMs = 10 * 60_000
+const sandboxExecTimeoutMs = 30 * 60_000
 
 const sandboxExecResponseSchema = z.object({
 	episodeAudioSize: z.number().int().positive(),
