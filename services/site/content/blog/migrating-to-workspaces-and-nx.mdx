@@ -1,0 +1,276 @@
+---
+title: Migrating to Workspaces and Nx
+date: 2026-03-10
+description:
+  'The interesting part of moving kentcdodds.com to npm workspaces was not the
+  file moves. It was everything the file moves broke.'
+categories:
+  - dev
+meta:
+  keywords:
+    - npm workspaces
+    - monorepo
+    - Nx
+    - TypeScript
+    - Docker
+    - CI
+    - GitHub Actions
+    - refactoring
+bannerCloudinaryId: unsplash/photo-1688318375271-b25e13f196ca
+bannerAlt: A rack filled with lots of different colored skateboards
+bannerCredit: Photo by [Tasha
+  Kostyuk](https://unsplash.com/photos/a-rack-filled-with-lots-of-different-colored-skateboards-dyLyxjZHMFw)
+---
+
+For a while, kentcdodds.com had two separate deployable things living in the
+same git repo:
+
+- The main **site** (React Router, Remix before that, SQLite, deployed to Fly)
+- An **OAuth worker** (Cloudflare Worker)
+
+Then [yesterday](/blog/offloading-ffmpeg-with-cloudflare), I added two more deployable things:
+
+- A **Call Kent audio worker** (Cloudflare Worker)
+- A **Call Kent audio container** (separate Docker container)
+
+Each of them had their own `package.json`, their own lockfile, their own
+`tsconfig.json`, and their own idea of how things should be wired together. The
+root `package.json` belonged to the site and treated everything else as optional
+siblings. The monorepo structure existed in the folder tree but not in the
+package manager.
+
+That wasn't catastrophic. But it was annoying and I knew I really should just
+embrace the monorepo. The repo _already was_ a monorepo. The layout just hadn't
+caught up.
+
+## What we changed
+
+The migration had a single structural rule: everything runnable lives under
+`services/*`.
+
+```
+services/
+  site/                       ← the main app
+  oauth/                      ← Cloudflare OAuth worker
+  call-kent-audio-worker/     ← Cloudflare audio worker
+  call-kent-audio-container/  ← Docker audio container
+```
+
+The root `package.json` became a thin orchestration layer. It owns the
+workspace declaration, Nx, and convenience scripts that forward into the site
+workspace:
+
+```json
+{
+	"name": "kcd-workspace",
+	"private": true,
+	"workspaces": ["services/*"],
+	"scripts": {
+		"dev": "npm run dev --workspace kentcdodds.com",
+		"build": "npm run build --workspace kentcdodds.com",
+		"typecheck": "npm run typecheck --workspace kentcdodds.com",
+		"typecheck:all": "nx run-many -t typecheck"
+	},
+	"devDependencies": {
+		"nx": "^22.5.4"
+	}
+}
+```
+
+The real app scripts stayed in `services/site/package.json`, where they belong.
+`ci:verify`, `test:browser`, `build`, `postinstall` - all of it lives there,
+scoped to the thing that actually needs it.
+
+Three old nested lockfiles (`call-kent-audio-container/package-lock.json`,
+`call-kent-audio-worker/package-lock.json`, `oauth/package-lock.json`) were
+deleted and replaced by one root lockfile. That made the raw diff stat look
+alarming (726 files, 21,000 deletions) but the bulk of it was three lockfiles
+evaporating. The actual logic changes were modest.
+
+## How Nx fits in
+
+We kept Nx intentionally minimal. There's one `nx.json` at the root with
+caching defaults and package-script inference:
+
+```json
+{
+	"namedInputs": {
+		"sharedGlobals": [
+			"{workspaceRoot}/package-lock.json",
+			"{workspaceRoot}/tsconfig.base.json",
+			"{workspaceRoot}/nx.json"
+		]
+	},
+	"targetDefaults": {
+		"build": { "cache": true, "inputs": ["production", "^production"] },
+		"lint": { "cache": true, "inputs": ["default", "^default"] },
+		"typecheck": { "cache": true, "inputs": ["default", "^default"] },
+		"test": { "cache": true, "inputs": ["default", "^default"] }
+	}
+}
+```
+
+No hand-authored `project.json` files. No plugin configuration beyond what Nx
+infers. The payoff came from the structure itself, not from the tool.
+
+## What the `services/*` constraint exposed
+
+This is the part worth actually talking about.
+
+When you enforce that every runnable thing has its own package under
+`services/*`, you immediately learn which assumptions your code was making about
+where it was running from. We found three categories of breakage.
+
+### 1. Package import aliases stopped working
+
+The site had a `#other/*` import alias defined in the root `package.json`. Once
+the site became `services/site` and got its own package boundary, Node rejected
+any import that pointed outside that boundary:
+
+```
+ERR_INVALID_PACKAGE_TARGET: Package subpath '#other/semantic-search/...'
+is not defined in "services/site/package.json"
+```
+
+The alias `#other/*` resolved to `./other/*` relative to the package root, but
+from `services/site`, `other/` is two levels up and outside the package. Node
+refuses that. The fix was mechanical but educational: replace the aliases with
+explicit relative paths:
+
+```diff
+- } from '#other/semantic-search/ignore-list-patterns.ts'
++ } from '../../../../other/semantic-search/ignore-list-patterns.ts'
+```
+
+Not pretty, but I only have two of these so I don't really care much (I'm barely
+looking at the code anymore anyway).
+
+### 2. Production went down because content moved
+
+This one stung.
+
+The site fetches blog posts, talks, testimonials, and other content from GitHub
+via the API at runtime. That code had a hardcoded path prefix:
+
+```ts
+const mdxFileOrDirectory = `content/${relativeMdxFileOrDirectory}`
+```
+
+After the migration, the content was at `services/site/content/` in the repo,
+not `content/`. The GitHub API was dutifully returning 404s for everything.
+Production was down.
+
+The fix was to centralize all content path logic in a new utility:
+
+```ts
+// services/site/app/utils/github-content-paths.server.ts
+export const GITHUB_CONTENT_PATH = 'services/site/content'
+
+export function getGitHubContentPath(relativePath: string): string {
+	return `${GITHUB_CONTENT_PATH}/${relativePath}`
+}
+```
+
+And then use it at every callsite:
+
+```diff
+- const mdxFileOrDirectory = `content/${relativeMdxFileOrDirectory}`
++ const mdxFileOrDirectory = getGitHubContentPath(relativeMdxFileOrDirectory)
+```
+
+The lesson here is don't merge a 726-file structural refactor from your phone
+while you're away from home without pulling it down and running it locally 😆.
+Honestly, I'm not sure even that would have been enough. The Cursor Cloud Agent
+had a working demo. The problem was the GitHub API mock I had for local
+development and testing handled the path change fine, but not the actual
+implementation 🙈
+
+Once the path was fixed, I also made the site more resilient to future GitHub
+API failures. Rather than crashing or returning empty pages when content can't
+be fetched, each relevant route now returns a graceful fallback with a message
+and a direct link to the GitHub repo. So at least users have somewhere to go if
+the integration is broken. Better late than never.
+
+### 3. Docker stages have their own dependency graph
+
+After moving the site to `services/site`, the Dockerfile was updated to build
+from the new path. The `production-deps` stage copied `services/site/package.json`
+but not `services/site/prisma/`. Two other stages actually need the Prisma schema:
+
+- The `deps` stage runs `npm install`, which triggers `postinstall: prisma generate`
+- The `build` stage runs `npx prisma generate` explicitly before building the app
+
+The `production-deps` stage doesn't run either of those, so it's not entirely
+clear which stage the failure manifested in. But the schema was missing where it
+was needed, and the fix was two lines:
+
+```diff
+  ADD services/site/package.json /app/services/site/package.json
++ ADD services/site/prisma /app/services/site/prisma
++ ADD services/site/prisma.config.ts /app/services/site/prisma.config.ts
+  ADD services/oauth/package.json /app/services/oauth/package.json
+```
+
+The reason this one wasn't caught is because Cursor Cloud Agent's don't have
+support for building Docker images (which is surprising to me, maybe I'm doing
+something wrong?). So when I asked it to build the Docker image to make sure
+things would work, it just said it couldn't but it was "confident" 😆 And my
+hubris was my demise 💀
+
+## CI got restructured around the actual workload
+
+Before the migration, CI ran a workspace-wide install and then ran everything.
+That was fine when there was effectively one package. With real service
+boundaries, it made more sense to optimize around the actual usage pattern.
+
+The site changes roughly much more often than the workers do. So site CI now
+does a site-only install:
+
+```yaml
+- name: 📥 Install site deps
+  run: npm ci --workspace=kentcdodds.com
+```
+
+Rather than pulling the full dependency graph. The worker pipelines mirror this:
+each one installs only its own workspace when they need to run.
+
+The other meaningful CI change: browser tests were always part of `ci:verify`,
+but the Playwright browser binaries were never installed in the gate job. It
+worked before because the old CI didn't include browser tests in the gate. After
+the migration restructured the gate job, that assumption surfaced immediately as
+a CI failure:
+
+```
+browserType.launch: Executable doesn't exist
+```
+
+Fixed by adding a cached Playwright browser install step before `ci:verify`:
+
+```yaml
+- name: 🧰 Cache Playwright browsers
+  id: playwright-cache
+  uses: actions/cache@v5
+  with:
+    path: ~/.cache/ms-playwright
+    key: playwright-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+
+- name: 🌐 Install Playwright browsers
+  if: steps.playwright-cache.outputs.cache-hit != 'true'
+  run: npm run test:e2e:install --workspace kentcdodds.com
+```
+
+## What I'd take away from this
+
+Don't ask an agent how confident it is that something won't break. Make it prove
+it to you. If it's not able to, then give it the tools it needs to do that or
+pull it down and verify things locally yourself.
+
+For my website, it's not a huge deal if the site goes down for half an hour or
+something, so I'm generally pretty lax on things with my website. In a
+production application with millions of users, I would definitely be more
+careful about this, and we'd have staging environments or at least preview
+deploys and stuff to avoid production downtime.
+
+Nx was useful mostly for caching. The services are technically inter-dependant,
+but they don't really share code or have hard dev dependencies on each other.
+The structure was the actual win.
