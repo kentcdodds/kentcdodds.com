@@ -183,6 +183,20 @@ app.use((req, res, next) => {
 	next()
 })
 
+// Redirect www and blog subdomains to canonical URLs (replaces Netlify forwarding)
+app.use((req, res, next) => {
+	const host = getHost(req)
+	if (host === 'www.kentcdodds.com') {
+		res.redirect(301, `https://kentcdodds.com${req.originalUrl}`)
+		return
+	}
+	if (host === 'blog.kentcdodds.com') {
+		res.redirect(301, `https://kentcdodds.com/blog${req.path === '/' ? '' : req.path}${req.url.slice(req.path.length)}`)
+		return
+	}
+	next()
+})
+
 app.all(
 	'{*splat}',
 	getRedirectsMiddleware({
