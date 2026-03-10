@@ -24,7 +24,5 @@ project-specific guidance over generic advice.
 
 ## Cursor Cloud specific instructions
 
-- The VM snapshot has Node 24 via nvm, the browser logged in as the seed admin
-  user, and Chrome configured to open `localhost:3000`.
-- See `docs/agents/project-context.md` for setup, commands, seed data, and
-  caveats.
+- See `docs/agents/project-context.md` for setup, commands, seed data, VM
+  snapshot details, and caveats.
