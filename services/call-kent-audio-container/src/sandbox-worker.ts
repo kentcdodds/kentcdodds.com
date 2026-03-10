@@ -104,6 +104,7 @@ async function ensureAudioSandboxServiceRunning({
 }
 
 const proxyJobCommand = String.raw`node -e "const body=process.env.CALL_KENT_AUDIO_JOB_REQUEST_BODY||''; fetch('http://127.0.0.1:8788/jobs/episode-audio',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+process.env.CALL_KENT_AUDIO_SANDBOX_TOKEN},body}).then(async (response)=>{const text=await response.text(); process.stdout.write(JSON.stringify({ok:response.ok,status:response.status,statusText:response.statusText,body:text})); if(!response.ok) process.exit(2);}).catch((error)=>{process.stderr.write(error instanceof Error ? error.message : String(error)); process.exit(1);});"`
+const statusCheckCommand = String.raw`node -e "fetch('http://127.0.0.1:8788/internal/status',{headers:{authorization:'Bearer '+process.env.CALL_KENT_AUDIO_SANDBOX_TOKEN}}).then(async (response)=>{const text=await response.text(); process.stdout.write(JSON.stringify({ok:response.ok,status:response.status,statusText:response.statusText,body:text})); if(!response.ok) process.exit(2);}).catch((error)=>{process.stderr.write(error instanceof Error ? error.message : String(error)); process.exit(1);});"`
 
 async function proxyJobToAudioSandbox({
 	env,
@@ -136,6 +137,38 @@ async function proxyJobToAudioSandbox({
 	return parsed
 }
 
+async function fetchAudioSandboxStatus({
+	env,
+	sandbox,
+}: {
+	env: Env
+	sandbox: ReturnType<typeof getAudioSandbox>
+}) {
+	const result = await sandbox.exec(statusCheckCommand, {
+		env: {
+			CALL_KENT_AUDIO_SANDBOX_TOKEN: env.CALL_KENT_AUDIO_SANDBOX_TOKEN,
+		},
+		timeout: 10_000,
+	})
+	if (!result.success) {
+		throw new Error(
+			`Sandbox status command failed: ${result.stderr || result.stdout || 'unknown error'}`,
+		)
+	}
+	const parsed = JSON.parse(result.stdout) as {
+		ok: boolean
+		status: number
+		statusText: string
+		body: string
+	}
+	if (!parsed.ok) {
+		throw new Error(
+			`Sandbox status request failed: ${parsed.status} ${parsed.statusText}`,
+		)
+	}
+	return JSON.parse(parsed.body) as { activeJobs: number }
+}
+
 export default {
 	async fetch(request: Request, env: Env) {
 		const url = new URL(request.url)
@@ -153,6 +186,10 @@ export default {
 				return new Response('Unauthorized', { status: 401 })
 			}
 			const sandbox = getAudioSandbox(env)
+			const status = await fetchAudioSandboxStatus({ env, sandbox })
+			if (status.activeJobs > 0) {
+				return Response.json({ ok: true, status: 'busy' })
+			}
 			await sandbox.setKeepAlive(false)
 			await sandbox.destroy()
 			return Response.json({ ok: true, status: 'stopped' })
