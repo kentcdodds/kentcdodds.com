@@ -366,6 +366,8 @@ function extractMarkdownLinks(source: string) {
 async function fetchAppearancesYouTubeVideos() {
 	const appearancesPath = path.join(
 		process.cwd(),
+		'services',
+		'site',
 		'content',
 		'pages',
 		'appearances.mdx',
@@ -403,7 +405,14 @@ async function fetchAppearancesYouTubeVideos() {
 }
 
 async function fetchTalksYouTubeVideos() {
-	const talksPath = path.join(process.cwd(), 'content', 'data', 'talks.yml')
+	const talksPath = path.join(
+		process.cwd(),
+		'services',
+		'site',
+		'content',
+		'data',
+		'talks.yml',
+	)
 	let raw = ''
 	try {
 		raw = await fs.readFile(talksPath, 'utf8')

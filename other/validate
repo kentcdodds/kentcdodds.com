@@ -1,11 +1,14 @@
 #!/bin/sh
 
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+repo_root=$(dirname "$script_dir")
+
 npx concurrently \
   --kill-others-on-fail \
   --prefix "[{name}]" \
   --names "test,lint,typecheck,build" \
   --prefix-colors "bgRed.bold.white,bgGreen.bold.white,bgBlue.bold.white,bgMagenta.bold.white" \
     "npm run test --silent -- --watch=false" \
-    "npm run lint:all --silent" \
-    "npm run typecheck:all --silent" \
+    "npm --prefix \"$repo_root\" run lint:all --silent" \
+    "npm --prefix \"$repo_root\" run typecheck:all --silent" \
     "npm run build --silent"

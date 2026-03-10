@@ -1,18 +1,14 @@
 {
 	"include": [".react-router/types/**/*", "**/*.mdx", "**/*.ts", "**/*.tsx"],
-	"extends": "./tsconfig.base.json",
-	"exclude": [
-		"node_modules",
-		"./oauth/**/*",
-		"./call-kent-audio-worker/**/*",
-		"./call-kent-audio-container/**/*"
-	],
+	"extends": "../../tsconfig.base.json",
+	"exclude": ["node_modules"],
 	"compilerOptions": {
 		"rootDirs": [".", "./.react-router/types"],
-		"typeRoots": ["./types", "./node_modules/@types"],
+		"typeRoots": ["./types", "../../node_modules/@types"],
 		"allowJs": true,
 		"paths": {
 			"#app/*": ["./app/*"],
+			"#other/*": ["../../other/*"],
 			"#tests/*": ["./tests/*"]
 		}
 	},

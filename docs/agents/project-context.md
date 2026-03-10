@@ -25,20 +25,22 @@ reference:
 | Backend tests   | `npm run test:backend`                                                            |
 | Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
 | E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
-| DB reset + seed | `npx prisma@7 migrate reset --force` then `node prisma/seed.ts`                   |
+| DB reset + seed | `npm exec --workspace kentcdodds.com prisma migrate reset --force`                |
 
 ## Non-obvious caveats
 
 - All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
-  No real API keys are needed for local development; `.env.example` values are
-  sufficient.
+  No real API keys are needed for local development; `services/site/.env.example`
+  values are sufficient.
 - This repo uses npm workspaces. Install dependencies from the repository root,
   and run worker/package scripts with `npm run <script> --workspace <name>`.
+- The main site lives in `services/site`. Root `npm run dev`, `npm run build`,
+  `npm run test`, and similar commands forward to that workspace.
 - Playwright already launches Chromium with fake media permissions/device input
   plus `tests/sample.wav`. If an e2e needs recorded audio, drive the real
   recorder UI and keep the fake-audio setup in Playwright/helpers rather than
   adding app runtime shortcuts.
-- SQLite is file-based: the database file lives at `prisma/sqlite.db`. No
+- SQLite is file-based: the database file lives at `services/site/prisma/sqlite.db`. No
   external database server is required.
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run
   the DB reset + seed command from the table above to apply migrations and seed
@@ -48,11 +50,11 @@ reference:
   constraints/removals in a follow-up deploy.
 - When shipping a widen migration, create a linked follow-up issue for the
   narrow step before merging so the cleanup pass does not get forgotten.
-- Cache database: a separate SQLite cache DB is created at `other/cache.db`.
+- Cache database: a separate SQLite cache DB is created at `services/site/other/cache.db`.
   It's populated on first request or via `npm run prime-cache:mocks`.
-- Content is filesystem-based: blog posts are MDX files in `content/blog/`.
+- Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
-- `npm run dev` should not wrap `index.ts` in an outer `node --watch`. React
+- `npm run dev` should not wrap `services/site/index.ts` in an outer `node --watch`. React
   Router dev rewrites `.react-router/types` on startup, which can trigger an
   infinite restart loop in headless/CI environments.
 - Playwright/Prisma caveat: `playwright.config.ts` sets

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import 'dotenv/config'
 import { spawn } from 'node:child_process'
-import path from 'node:path'
 import process from 'node:process'
 import getPort from 'get-port'
 
@@ -87,13 +86,7 @@ async function main() {
 	}
 
 	if (process.env.SKIP_MIGRATIONS !== 'true') {
-		const prismaBin = path.join(
-			process.cwd(),
-			'node_modules',
-			'.bin',
-			process.platform === 'win32' ? 'prisma.cmd' : 'prisma',
-		)
-		await run(prismaBin, ['migrate', 'deploy'], { env })
+		await run('npx', ['prisma', 'migrate', 'deploy'], { env })
 	}
 
 	// Spawn the server directly (not via `npm start`) so we can reliably

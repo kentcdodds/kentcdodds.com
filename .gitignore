@@ -7,12 +7,18 @@ node_modules/
 /build
 /server-build
 /public/build
+/services/site/build
+/services/site/server-build
+/services/site/public/build
 /coverage
 tsconfig.tsbuildinfo
 *.tsbuildinfo
 /prisma/sqlite.db
 /prisma/sqlite.db-journal
 /app/utils/prisma-generated.server
+/services/site/prisma/sqlite.db
+/services/site/prisma/sqlite.db-journal
+/services/site/app/utils/prisma-generated.server
 
 other/postcss.ignored
 
@@ -25,6 +31,10 @@ other/postcss.ignored
 /playwright-report/
 /playwright/.cache/
 /other/cache.db
+/services/site/test-results/
+/services/site/playwright-report/
+/services/site/playwright/.cache/
+/services/site/other/cache.db
 
 *.bkp.*
 
@@ -34,3 +44,4 @@ other/postcss.ignored
 .wrangler
 other/wrangler-logs/
 .react-router/
+/services/site/.react-router/

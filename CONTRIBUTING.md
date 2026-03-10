@@ -176,17 +176,19 @@ plugins you have so it should work as you working as well.
 This repo uses npm workspaces, so install dependencies from the repository root.
 To run a script for a specific workspace package, use `npm run <script>
 --workspace <package-name>`.
+The main site now lives in `services/site`, and the root `npm run dev`,
+`npm run build`, `npm run test`, and related commands forward there.
 
 ## Styles
 
 We use Tailwind for our styles. Tailwind is configured directly in
-`app/styles/tailwind.css` (CSS-first config) and via the Tailwind Vite plugin in
-`vite.config.ts`.
+`services/site/app/styles/tailwind.css` (CSS-first config) and via the Tailwind
+Vite plugin in `services/site/vite.config.ts`.
 
 ## Database
 
 We've got SQLite and Prisma set up. Learn about the schema and learn more about
-what commands you can run in `./prisma/schema.prisma`.
+what commands you can run in `./services/site/prisma/schema.prisma`.
 
 ### Production schema changes (widen, then narrow)
 
@@ -207,7 +209,7 @@ becoming permanent and helps avoid schema/code rollout mismatches.
 One common command you might need to run is to re-seed the database:
 
 ```sh
-npx prisma@7 migrate reset --force
+npm exec --workspace kentcdodds.com prisma migrate reset --force
 ```
 
 In addition to resetting your database to the latest schema, it'll also run the

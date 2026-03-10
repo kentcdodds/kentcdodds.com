@@ -221,7 +221,9 @@ export function parseSitemapPathnames(sitemapXml: string) {
 	return pathnames
 }
 
-export async function getMdxPageRoutes(repoRoot = process.cwd()) {
+export async function getMdxPageRoutes(
+	repoRoot = path.join(process.cwd(), 'services', 'site'),
+) {
 	const pagesDir = path.join(repoRoot, 'content', 'pages')
 	const routes = new Set<string>()
 
@@ -388,7 +390,7 @@ export async function startLocalDevServerForSitemap({
 	const origin = `http://127.0.0.1:${port}`
 	const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 	const child = spawn(npmExecutable, ['run', 'dev'], {
-		cwd: process.cwd(),
+		cwd: path.join(process.cwd(), 'services', 'site'),
 		env: {
 			...process.env,
 			PORT: String(port),

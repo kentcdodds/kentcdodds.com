@@ -26,7 +26,7 @@ Vite, and an Express server.
 
 1. Clone the repository.
 2. Copy environment variables:
-   - `cp .env.example .env`
+   - `cp services/site/.env.example services/site/.env`
 3. Run the full setup script:
    - `npm run setup -s`
 
@@ -36,6 +36,8 @@ end-to-end tests.
 
 This repo now uses npm workspaces. Install dependencies from the repository root
 so the site and worker packages share one lockfile and one `node_modules` tree.
+The site itself lives in `services/site`, while root `npm run ...` commands
+forward to that workspace for convenience.
 
 ## Local development
 

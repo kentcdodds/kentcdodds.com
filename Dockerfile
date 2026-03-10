@@ -13,9 +13,14 @@ FROM base as deps
 RUN mkdir /app/
 WORKDIR /app/
 
-ADD package.json .npmrc package-lock.json ./
-ADD prisma /app/prisma
-ADD prisma.config.ts /app/prisma.config.ts
+RUN mkdir -p /app/services/site /app/services/oauth /app/services/call-kent-audio-worker /app/services/call-kent-audio-container
+ADD package.json .npmrc package-lock.json nx.json tsconfig.base.json ./
+ADD services/site/package.json /app/services/site/package.json
+ADD services/site/prisma /app/services/site/prisma
+ADD services/site/prisma.config.ts /app/services/site/prisma.config.ts
+ADD services/oauth/package.json /app/services/oauth/package.json
+ADD services/call-kent-audio-worker/package.json /app/services/call-kent-audio-worker/package.json
+ADD services/call-kent-audio-container/package.json /app/services/call-kent-audio-container/package.json
 RUN npm install
 
 # setup production node_modules
@@ -25,7 +30,12 @@ RUN mkdir /app/
 WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
+RUN mkdir -p /app/services/site /app/services/oauth /app/services/call-kent-audio-worker /app/services/call-kent-audio-container
 ADD package.json .npmrc package-lock.json /app/
+ADD services/site/package.json /app/services/site/package.json
+ADD services/oauth/package.json /app/services/oauth/package.json
+ADD services/call-kent-audio-worker/package.json /app/services/call-kent-audio-worker/package.json
+ADD services/call-kent-audio-container/package.json /app/services/call-kent-audio-container/package.json
 RUN npm prune --omit=dev
 RUN npm rebuild better-sqlite3
 
@@ -41,14 +51,10 @@ WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
 
-# schema doesn't change much so these will stay cached
-ADD prisma /app/prisma
-ADD prisma.config.ts /app/prisma.config.ts
-
-RUN npx prisma@7 generate
-
 # app code changes all the time
 ADD . .
+
+WORKDIR /app/services/site
 
 ENV SENTRY_ORG="kent-c-dodds-tech-llc"
 ENV SENTRY_PROJECT="kcd-node"
@@ -63,6 +69,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN,required=false \
       export SENTRY_UPLOAD="false"; \
       echo "Sentry sourcemap upload disabled (missing SENTRY_AUTH_TOKEN or COMMIT_SHA)"; \
     fi && \
+    npx prisma@7 generate && \
     npm run build
 
 # build smaller image for running
@@ -91,14 +98,16 @@ WORKDIR /app/
 ADD . .
 
 COPY --from=production-deps /app/node_modules /app/node_modules
-COPY --from=build /app/app/utils/prisma-generated.server /app/app/utils/prisma-generated.server
-COPY --from=build /app/build /app/build
-COPY --from=build /app/public /app/public
-COPY --from=build /app/server-build /app/server-build
+COPY --from=build /app/services/site/app/utils/prisma-generated.server /app/services/site/app/utils/prisma-generated.server
+COPY --from=build /app/services/site/build /app/services/site/build
+COPY --from=build /app/services/site/public /app/services/site/public
+COPY --from=build /app/services/site/server-build /app/services/site/server-build
 
 # prepare for litefs
 COPY --from=flyio/litefs:0.5.11 /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${LITEFS_DIR}
+
+WORKDIR /app/services/site
 
 CMD ["litefs", "mount"]

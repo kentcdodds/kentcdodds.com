@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
 const commit = process.env.COMMIT_SHA
 
@@ -31,8 +30,7 @@ const buildInfo = {
 	commit: await getCommit(),
 }
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const destDir = path.join(__dirname, '../build/client/build')
+const destDir = path.join(process.cwd(), 'build/client/build')
 if (!fs.existsSync(destDir)) {
 	fs.mkdirSync(destDir, { recursive: true })
 }
