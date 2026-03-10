@@ -3,7 +3,7 @@ title: Offloading FFmpeg with Cloudflare
 date: 2026-03-09
 description:
   'How I moved Call Kent podcast episode processing off my primary Fly.io app
-  server and onto Cloudflare Queues and Sandboxes: what broke, what I missed,
+  server and onto Cloudflare Queues and Containers: what broke, what I missed,
   and whether it was worth the complexity.'
 categories:
   - cloudflare
@@ -12,7 +12,7 @@ meta:
     - cloudflare
     - ffmpeg
     - queues
-    - sandboxes
+    - containers
     - fly.io
     - podcast
     - devops
@@ -76,8 +76,8 @@ on that capacity. The problem only surfaced when the audio was long enough and
 the shared CPU quota tight enough to cause a collision.
 
 Another nice benefit of me waiting is that now we have Cloudflare Queues and
-Sandboxes to use (had I solved this earlier, I would have had to build my own
-queue/worker runtime or found another solution that I don't like as much).
+Containers to use (had I solved this earlier, I would have had to build my own
+queues and containers or found another solution that I don't like as much).
 
 ## Why the primary machine was the worst place for this
 
@@ -107,19 +107,18 @@ sequenceDiagram
   participant R2 as R2
   participant Queue as Cloudflare Queue
   participant Worker as Queue worker
-  participant Sandbox as FFmpeg sandbox
+  participant Container as FFmpeg container
   App->>R2: Upload raw audio
   App->>Queue: Enqueue job (R2 keys)
   Queue->>Worker: Deliver message
-  Worker->>App: POST signed "started" callback
-  Worker->>Sandbox: exec stitch CLI
-  Sandbox->>R2: Fetch raw audio
-  R2-->>Sandbox: audio buffers
-  Sandbox->>Sandbox: Run FFmpeg
-  Sandbox->>R2: Upload processed audio
-  Sandbox-->>Worker: stdout with uploaded result metadata
-  Worker->>App: POST signed "completed"/"failed" callback
-  App-->>Worker: 200 OK
+  Worker->>Container: POST job
+  Container-->>Worker: 202 Accepted
+  Container->>R2: Fetch raw audio
+  R2-->>Container: audio buffers
+  Container->>Container: Run FFmpeg
+  Container->>R2: Upload processed audio
+  Container->>App: POST signed callback
+  App-->>Container: 200 OK
   App->>App: Update draft state
 ```
 
@@ -127,14 +126,12 @@ When a Call Kent episode is submitted, the app enqueues a job to a Cloudflare
 Queue with the draft ID and the R2 object keys for the caller audio and my
 response audio. The app then returns immediately. No more blocking on FFmpeg.
 
-A Cloudflare Worker consumes the queue message, POSTs a signed `started`
-callback to the app, then creates signed R2 download/upload URLs and runs a
-small stitch CLI inside a Cloudflare Sandbox with `exec()`. The sandbox pulls
-the audio files from R2, runs the FFmpeg stitching pipeline, uploads the
-outputs back to R2, and returns the result metadata to the worker. The worker
-then POSTs the signed `completed` or `failed` callback to the app. The app
-verifies the signature and advances the draft through its processing steps:
-`GENERATING_AUDIO` → `TRANSCRIBING` → `GENERATING_METADATA` → `DONE`.
+A Cloudflare Worker consumes the queue message and forwards the job to a
+Cloudflare Container. The container pulls the audio files from R2, runs the
+FFmpeg stitching pipeline, uploads the outputs back to R2, and POSTs a
+signed callback to the app. The app verifies the signature and advances the
+draft through its processing steps: `GENERATING_AUDIO` → `TRANSCRIBING` →
+`GENERATING_METADATA` → `DONE`.
 
 The admin UI now shows incremental progress labels like "Generating episode
 audio…" and "Transcribing audio…" instead of hanging on a single blocking
@@ -226,20 +223,20 @@ jobs are pending, the cost drops significantly, but now I am managing machine
 lifecycle myself, and cold start time becomes a concern for a job that blocks a
 publish flow.
 
-With Cloudflare, the cost shape is different. You mostly pay when the sandbox
+With Cloudflare, the cost shape is different. You mostly pay when the container
 is actually running:
 
 - [Cloudflare Queues](https://developers.cloudflare.com/queues/platform/pricing/)
   charges per operation. Three operations per message (write, read, delete). At
   the scale of a personal podcast, queue costs are essentially zero. The
   included 1 million ops/month covers thousands of episodes. Basically free.
-- [Cloudflare Sandboxes](https://developers.cloudflare.com/sandbox/)
-  still run in containers under the hood, but the programming model is much
-  nicer for this case: the worker can `exec()` a single CLI command and wait
-  for the result instead of fronting a long-lived HTTP service.
+- [Cloudflare Containers](https://developers.cloudflare.com/containers/pricing)
+  bills CPU time, memory, and disk while active. The current configuration uses
+  a `standard-1` instance (½ vCPU, 4 GiB memory). There is also a fronting
+  Worker and a Durable Object per container that each add some cost.
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/platform/pricing/)
   and [Durable Objects](https://developers.cloudflare.com/durable-objects/platform/pricing/)
-  are still worth understanding because Sandboxes build on top of those pieces.
+  are worth understanding before assuming the container is the only meter.
 
 For a podcast publishing a few episodes a month with lots of idle time between
 runs, Cloudflare scales to zero cleanly. The container does not cost anything
@@ -257,7 +254,7 @@ The architecture direction was right. The first implementation had a few things
 that needed to be cleaned up after the PR shipped.
 
 **The local fallback.** The original PR included a fallback path that would run
-FFmpeg locally on the primary machine if the Cloudflare offload path failed.
+FFmpeg locally on the primary machine if the Cloudflare container path failed.
 This was a classic GPT 5.3-generated "safety net" that was actually
 counterproductive. If the container fails and the fallback runs FFmpeg on the
 primary machine, you have not reduced your outage risk. You've just hidden it
@@ -265,29 +262,50 @@ behind a code path that runs less often. I ripped it out. The app now throws on
 enqueue failure and the episode stays in its current state for retry. That is
 the correct behavior.
 
-**The container lifecycle.** The container+heartbeat version worked, but it
-still felt like too much scaffolding for "run one CLI, wait for stdout." I had a
-controller Worker, a long-lived HTTP service inside the container, a heartbeat
-lease, and explicit stop-if-idle logic. It was all there for good reasons, but
-it was still a lot.
+**The container lifecycle.** The first version relied on Cloudflare's built-in
+`sleepAfter` timeout to shut the container down after jobs finished. This had
+two problems:
 
-The Sandbox-based design is much cleaner:
+1. If an FFmpeg job runs longer than `sleepAfter`, the container gets reaped
+   mid-job.
+2. If the job finishes in 30 seconds but `sleepAfter` is 5 minutes, the
+   container sits idle for the rest of that window, racking up billing on
+   provisioned memory and disk.
 
-- The queue worker signs and sends the `started` callback itself.
-- It calls `sandbox.exec()` with presigned R2 URLs and waits for the stitch CLI
-  to finish.
-- The sandbox uploads the outputs directly to R2 and prints JSON to stdout.
-- The worker signs and sends the `completed` or `failed` callback itself.
+The cleaner design, which I am currently implementing, is:
 
-No heartbeat. No container HTTP service. No "return 202 now and do the rest in
-the background" dance. The sandbox image only needs FFmpeg, the stitch assets,
-and the CLI.
+- Keep `sleepAfter` short as a last-resort backstop (around 1 minute).
+- Have the container process send periodic heartbeat pings to the container
+  controller endpoint while FFmpeg is running, renewing the activity lease
+  and preventing premature shutdown.
+- On job completion (in a `finally` block), send a "finished" signal to a
+  controller endpoint that checks whether any other jobs are active. If none
+  are, it calls `container.stop()` immediately instead of waiting out the
+  sleep timeout.
+
+The key insight here is that the container process itself cannot directly tell
+Cloudflare "stay alive" or "shut down now." That control lives in the Cloudflare
+Worker and Durable Object wrapper (the container supervisor layer). Heartbeats
+and stop-if-idle signals need to go through that boundary. I just wanted to
+avoid wasting resources if the container doesn't have anything more useful to
+do.
+
+**The worker held open too long.** The first container version still had the
+queue worker wait for the entire FFmpeg transcode before returning to the queue.
+That meant the queue worker was blocked for the full processing duration, which
+defeats part of the purpose of using a queue. The fix was to have the container
+endpoint return `202 Accepted` immediately and run the job in the background.
+The worker then acks the message and moves on; the container handles the rest
+asynchronously and sends the callback when done.
 
 ## Was it worth it?
 
 For me, yes. Partly because the operational improvement is real, and partly
-because Cloudflare Queues and Sandboxes turned out to be a really nice fit for
-"one queue message should run one command in an isolated environment."
+because Cloudflare Queues and Containers were genuinely interesting to build
+with.
+
+I really wish I didn't have to do the heartbeat dance. That would be a nice
+feature to just have built-in Cloudflare friends!
 
 The broader lesson I keep coming back to is that simple first was still the
 right call. 226 episodes with minimal incidents is a strong record. The original
