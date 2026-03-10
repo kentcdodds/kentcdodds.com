@@ -15,7 +15,7 @@ const defaultFetchTimeoutMs = 10_000
 const nonFlyDeployablePathPrefixes = [
 	'services/site/content/',
 	'services/call-kent-audio-worker/',
-	'services/call-kent-audio-container/',
+	'services/call-kent-audio-sandbox/',
 	'services/oauth/',
 ]
 
@@ -38,7 +38,7 @@ const callKentAudioWorkerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 ])
 
-const callKentAudioSandboxPathPrefixes = ['services/call-kent-audio-container/']
+const callKentAudioSandboxPathPrefixes = ['services/call-kent-audio-sandbox/']
 const callKentAudioSandboxFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-sandbox.yml',
 ])
