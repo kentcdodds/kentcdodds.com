@@ -34,6 +34,9 @@ jobs:
       - name: ʦ Typecheck audio worker
         run: npm run typecheck --workspace call-kent-audio-worker
 
+      - name: 🧪 Test audio worker
+        run: npm run test --workspace call-kent-audio-worker
+
       - name: ☁️ Deploy via Wrangler
         uses: cloudflare/wrangler-action@v3
         with:

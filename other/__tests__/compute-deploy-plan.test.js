@@ -78,7 +78,6 @@ test('deploys the site when deployment diff includes a fly-deployable file', asy
 	expect(deployPlan.refreshContent).toBe(true)
 	expect(deployPlan.indexSemanticContent).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
-	expect(deployPlan.deployCallKentAudioContainer).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
 
@@ -200,25 +199,17 @@ test('plans audio deploys for workflow file changes', async () => {
 		'site-production': 'deployed-site-sha',
 		'oauth-production': 'deployed-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
-		'call-kent-audio-container-production': 'deployed-audio-container-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'deployed-site-sha') {
 				return []
 			}
-			if (
-				compareCommitSha === 'deployed-audio-worker-sha' ||
-				compareCommitSha === 'deployed-audio-container-sha'
-			) {
+			if (compareCommitSha === 'deployed-audio-worker-sha') {
 				return [
 					{
 						changeType: 'modified',
 						filename: '.github/workflows/deploy-call-kent-audio-worker.yml',
-					},
-					{
-						changeType: 'modified',
-						filename: '.github/workflows/deploy-call-kent-audio-container.yml',
 					},
 				]
 			}
@@ -248,7 +239,6 @@ test('plans audio deploys for workflow file changes', async () => {
 	})
 
 	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
-	expect(deployPlan.deployCallKentAudioContainer).toBe(true)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
 
@@ -266,7 +256,6 @@ test('plans oauth worker deploys for oauth changes', async () => {
 		'site-production': 'deployed-site-sha',
 		'oauth-production': 'deployed-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
-		'call-kent-audio-container-production': 'deployed-audio-container-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
@@ -276,7 +265,7 @@ test('plans oauth worker deploys for oauth changes', async () => {
 			if (compareCommitSha === 'deployed-oauth-sha') {
 				return [{ changeType: 'modified', filename: 'services/oauth/src/index.ts' }]
 			}
-			if (compareCommitSha === 'deployed-audio-worker-sha' || compareCommitSha === 'deployed-audio-container-sha') {
+			if (compareCommitSha === 'deployed-audio-worker-sha') {
 				return []
 			}
 			if (compareCommitSha === 'refresh-sha') {
@@ -319,7 +308,6 @@ test('plans oauth worker deploys for workflow file changes', async () => {
 		'site-production': 'deployed-site-sha',
 		'oauth-production': 'deployed-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
-		'call-kent-audio-container-production': 'deployed-audio-container-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
@@ -334,7 +322,7 @@ test('plans oauth worker deploys for workflow file changes', async () => {
 					},
 				]
 			}
-			if (compareCommitSha === 'deployed-audio-worker-sha' || compareCommitSha === 'deployed-audio-container-sha') {
+			if (compareCommitSha === 'deployed-audio-worker-sha') {
 				return []
 			}
 			if (compareCommitSha === 'refresh-sha') {
@@ -430,7 +418,6 @@ test('plans deploy targets when no deployment state available', async () => {
 	expect(deployPlan.indexSemanticContent).toBe(true)
 	expect(deployPlan.deploySite).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
-	expect(deployPlan.deployCallKentAudioContainer).toBe(true)
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })
 
@@ -479,7 +466,6 @@ test('leaves push-only execution to workflow gating during pull requests', async
 	expect(deployPlan.refreshContent).toBe(true)
 	expect(deployPlan.indexSemanticContent).toBe(false)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
-	expect(deployPlan.deployCallKentAudioContainer).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
 
@@ -497,7 +483,6 @@ test('failed deploy stays deployable across unrelated push', async () => {
 		'site-production': 'deployed-site-sha',
 		'oauth-production': 'last-successful-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
-		'call-kent-audio-container-production': 'deployed-audio-container-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
@@ -510,7 +495,7 @@ test('failed deploy stays deployable across unrelated push', async () => {
 					{ changeType: 'modified', filename: 'README.md' },
 				]
 			}
-			if (compareCommitSha === 'deployed-audio-worker-sha' || compareCommitSha === 'deployed-audio-container-sha') {
+			if (compareCommitSha === 'deployed-audio-worker-sha') {
 				return []
 			}
 			if (compareCommitSha === 'refresh-sha') {
@@ -616,6 +601,5 @@ test('GitHub API failure defaults to deploy', async () => {
 
 	expect(deployPlan.deploySite).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
-	expect(deployPlan.deployCallKentAudioContainer).toBe(true)
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })

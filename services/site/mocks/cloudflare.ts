@@ -79,6 +79,8 @@ async function processCallKentAudioQueueMessage({
 	responseAudioKey: string
 }) {
 	try {
+		// Local site dev/tests mock the queue -> worker -> sandbox path in-process so
+		// no real Cloudflare Sandbox or R2 presigned URL flow is required.
 		await handleCallKentAudioProcessorEvent({
 			type: 'audio_generation_started',
 			draftId,
