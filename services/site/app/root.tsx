@@ -362,7 +362,7 @@ function App({
 					nonce={nonce}
 					suppressHydrationWarning
 					dangerouslySetInnerHTML={{
-						__html: `window.ENV = ${JSON.stringify(data.ENV)}; window.CONFIG = window.CONFIG || window.ENV;`,
+						__html: `window.ENV = ${JSON.stringify(data.ENV)};`,
 					}}
 				/>
 				<ClientHintCheck nonce={nonce} />
@@ -447,7 +447,7 @@ function ErrorDoc({ children }: { children: React.ReactNode }) {
 					nonce={nonce}
 					suppressHydrationWarning
 					dangerouslySetInnerHTML={{
-						__html: `window.ENV = {}; window.CONFIG = window.CONFIG || window.ENV;`,
+						__html: `window.ENV = {}`,
 					}}
 				/>
 				<Links />

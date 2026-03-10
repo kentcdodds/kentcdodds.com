@@ -13,6 +13,7 @@ export function init() {
 		ignoreErrors: [
 			// Add any other errors you want to ignore
 			'Request to /lookout failed',
+			"Can't find variable: CONFIG",
 		],
 		beforeSend(event, hint) {
 			if (isBrowserExtensionError(hint.originalException)) {
