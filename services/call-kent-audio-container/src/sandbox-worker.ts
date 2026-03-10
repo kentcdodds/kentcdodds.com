@@ -186,7 +186,15 @@ export default {
 				return new Response('Unauthorized', { status: 401 })
 			}
 			const sandbox = getAudioSandbox(env)
-			const status = await fetchAudioSandboxStatus({ env, sandbox })
+			let status: { activeJobs: number }
+			try {
+				status = await fetchAudioSandboxStatus({ env, sandbox })
+			} catch (error) {
+				await sandbox.setKeepAlive(false).catch(() => undefined)
+				await sandbox.destroy().catch(() => undefined)
+				const message = error instanceof Error ? error.message : String(error)
+				return new Response(`Sandbox status failed: ${message}`, { status: 502 })
+			}
 			if (status.activeJobs > 0) {
 				return Response.json({ ok: true, status: 'busy' })
 			}
