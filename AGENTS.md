@@ -21,3 +21,8 @@ If you discover a new sharp edge, workflow, or non-obvious project behavior,
 update the relevant doc(s) in `docs/agents/` so future agent runs are faster and
 more correct. Keep callouts organized under clear headings and prefer concise,
 project-specific guidance over generic advice.
+
+## Cursor Cloud specific instructions
+
+- See `docs/agents/project-context.md` for setup, commands, seed data, VM
+  snapshot details, and caveats.
