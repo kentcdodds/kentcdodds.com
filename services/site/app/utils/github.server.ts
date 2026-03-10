@@ -3,6 +3,7 @@ import { throttling } from '@octokit/plugin-throttling'
 import { Octokit as createOctokit } from '@octokit/rest'
 import { type GitHubFile } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
+import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
 
 const ref = getEnv().GITHUB_REF
 
@@ -52,7 +53,7 @@ async function downloadFirstMdxFile(
 async function downloadMdxFileOrDirectory(
 	relativeMdxFileOrDirectory: string,
 ): Promise<{ entry: string; files: Array<GitHubFile> }> {
-	const mdxFileOrDirectory = `content/${relativeMdxFileOrDirectory}`
+	const mdxFileOrDirectory = getGitHubContentPath(relativeMdxFileOrDirectory)
 
 	const parentDir = nodePath.dirname(mdxFileOrDirectory)
 	const dirList = await downloadDirList(parentDir)

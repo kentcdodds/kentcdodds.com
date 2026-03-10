@@ -1,6 +1,7 @@
 import { buildImageUrl } from 'cloudinary-build-url'
 import { type GitHubFile, type MdxPage } from '#app/types.ts'
 import { compileMdx } from '#app/utils/compile-mdx.server.ts'
+import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
 import {
 	downloadDirList,
 	downloadMdxFileOrDirectory,
@@ -123,7 +124,7 @@ export async function getMdxDirList(
 		key,
 		checkValue: (value: unknown) => Array.isArray(value),
 		getFreshValue: async () => {
-			const fullContentDirPath = `content/${contentDir}`
+			const fullContentDirPath = getGitHubContentPath(contentDir)
 			const dirList = (await downloadDirList(fullContentDirPath))
 				.map(({ name, path }) => ({
 					name,

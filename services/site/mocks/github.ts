@@ -7,6 +7,10 @@ import {
 	type HttpHandler,
 	HttpResponse,
 } from 'msw'
+import {
+	GITHUB_CONTENT_PATH,
+	toLocalContentPath,
+} from '#app/utils/github-content-paths.server.ts'
 
 const __dirname = nodePath.dirname(fileURLToPath(import.meta.url))
 
@@ -64,7 +68,7 @@ const githubHandlers: Array<HttpHandler> = [
 			const isMockable =
 				owner === 'kentcdodds' &&
 				repo === 'kentcdodds.com' &&
-				path.startsWith('content')
+				path.startsWith(GITHUB_CONTENT_PATH)
 
 			if (!isMockable) {
 				const message = `Attempting to get content description for unmockable resource: ${owner}/${repo}/${path}`
@@ -72,7 +76,7 @@ const githubHandlers: Array<HttpHandler> = [
 				throw new Error(message)
 			}
 
-			const localPath = nodePath.join(__dirname, '..', path)
+			const localPath = nodePath.join(__dirname, '..', toLocalContentPath(path))
 			const isLocalDir = await isDirectory(localPath)
 			const isLocalFile = await isFile(localPath)
 
@@ -151,7 +155,11 @@ const githubHandlers: Array<HttpHandler> = [
 
 			// NOTE: we cheat a bit and in the contents/:path handler, we set the sha to the relativePath
 			const relativePath = sha
-			const fullPath = nodePath.join(__dirname, '..', relativePath)
+			const fullPath = nodePath.join(
+				__dirname,
+				'..',
+				toLocalContentPath(relativePath),
+			)
 			const encoding = 'base64' as const
 			const size = (await fs.stat(fullPath)).size
 			const content = await fs.readFile(fullPath, { encoding: 'utf-8' })
@@ -177,7 +185,11 @@ const githubHandlers: Array<HttpHandler> = [
 			if (typeof relativePath !== 'string') {
 				throw new Error('req.params.path must be a string')
 			}
-			const fullPath = nodePath.join(__dirname, '..', relativePath)
+			const fullPath = nodePath.join(
+				__dirname,
+				'..',
+				toLocalContentPath(relativePath),
+			)
 			const encoding = 'base64' as const
 			const size = (await fs.stat(fullPath)).size
 			const content = await fs.readFile(fullPath, { encoding: 'utf-8' })

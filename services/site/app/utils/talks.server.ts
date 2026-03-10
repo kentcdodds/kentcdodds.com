@@ -5,6 +5,7 @@ import {
 import * as YAML from 'yaml'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { downloadFile } from '#app/utils/github.server.ts'
+import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
 import {
 	markdownToHtml,
 	markdownToHtmlUnwrapped,
@@ -136,7 +137,9 @@ async function getTalksAndTags({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 		forceFresh,
 		getFreshValue: async () => {
-			const talksString = await downloadFile('content/data/talks.yml')
+			const talksString = await downloadFile(
+				getGitHubContentPath('data/talks.yml'),
+			)
 			const rawTalks = YAML.parse(talksString) as Array<RawTalk>
 			if (!Array.isArray(rawTalks)) {
 				console.error('Talks is not an array', rawTalks)

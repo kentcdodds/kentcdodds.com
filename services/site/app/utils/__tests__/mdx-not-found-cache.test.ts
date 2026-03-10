@@ -41,15 +41,13 @@ describe('mdx not-found caching', () => {
 			vi.doMock('#app/utils/compile-mdx.server.ts', () => {
 				return { compileMdx: async () => null }
 			})
-			vi.doMock('#app/utils/github.server.ts', () => {
-				return {
-					downloadDirList: async () => [],
-					downloadMdxFileOrDirectory: async () => ({
-						entry: `content/blog/definitely-does-not-exist`,
-						files: [],
-					}),
-				}
-			})
+			vi.doMock('#app/utils/github.server.ts', () => ({
+				downloadDirList: async () => [],
+				downloadMdxFileOrDirectory: async () => ({
+					entry: 'services/site/content/blog/definitely-does-not-exist',
+					files: [],
+				}),
+			}))
 
 			const { getMdxPage } = await import('../mdx.server.ts')
 			const { cache } = await import('../cache.server.ts')

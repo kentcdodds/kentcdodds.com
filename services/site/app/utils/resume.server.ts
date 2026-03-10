@@ -2,6 +2,7 @@ import * as YAML from 'yaml'
 import { z } from 'zod'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { downloadFile } from '#app/utils/github.server.ts'
+import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
 import { type Timings } from '#app/utils/timing.server.ts'
 
 const resumeLinkSchema = z.object({
@@ -73,7 +74,9 @@ async function getResumeData({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 		forceFresh,
 		getFreshValue: async () => {
-			const resumeString = await downloadFile('content/data/resume.yml')
+			const resumeString = await downloadFile(
+				getGitHubContentPath('data/resume.yml'),
+			)
 			const parsed = YAML.parse(resumeString)
 			const result = resumeDataSchema.safeParse(parsed)
 			if (!result.success) {

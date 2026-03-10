@@ -27,6 +27,7 @@ vi.mock('../github.server.ts', () => ({
 	downloadFile: vi.fn(async () => ''),
 }))
 
+import { getGitHubContentPath } from '../github-content-paths.server.ts'
 import { getPeople } from '../credits.server.ts'
 import { downloadFile } from '../github.server.ts'
 
@@ -76,7 +77,9 @@ test('getPeople checkValue rejects missing ids and revalidates via getFreshValue
 			id: 'fresh-person',
 			name: 'Fresh Person',
 		})
-		expect(downloadFile).toHaveBeenCalledWith('content/data/credits.yml')
+		expect(downloadFile).toHaveBeenCalledWith(
+			getGitHubContentPath('data/credits.yml'),
+		)
 	} finally {
 		warnSpy.mockRestore()
 	}
