@@ -11,7 +11,7 @@ import {
 	isDocIdIgnored,
 	matchesIgnorePattern,
 	type SemanticSearchIgnoreList,
-} from '#other/semantic-search/ignore-list-patterns.ts'
+} from '../../../../other/semantic-search/ignore-list-patterns.ts'
 export { isDocIdIgnored, matchesIgnorePattern }
 export type { SemanticSearchIgnoreList }
 

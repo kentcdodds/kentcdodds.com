@@ -2,7 +2,7 @@ import type http from 'http'
 import path from 'path'
 import chokidar from 'chokidar'
 import { WebSocket, WebSocketServer } from 'ws'
-import { postRefreshCache } from '#other/utils.js'
+import { postRefreshCache } from '../../../other/utils.js'
 
 const safePath = (s: string) => s.replace(/\\/g, '/')
 
