@@ -65,6 +65,7 @@ wait for health checks to pass, then move to the next region.
 
 Current standard regions:
 
+- `dfw` (primary region; two instances for redundancy)
 - `gru`
 - `jnb`
 - `ams`
