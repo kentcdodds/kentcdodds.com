@@ -207,15 +207,28 @@ async function sendCallback({
 		timestamp,
 		body,
 	})
-	const response = await fetch(callbackUrl, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'x-call-kent-audio-timestamp': timestamp,
-			'x-call-kent-audio-signature': signature,
-		},
-		body,
-	})
+	const callbackTimeoutMs = 10_000
+	let response: Response
+	try {
+		response = await fetch(callbackUrl, {
+			method: 'POST',
+			signal: AbortSignal.timeout(callbackTimeoutMs),
+			headers: {
+				'Content-Type': 'application/json',
+				'x-call-kent-audio-timestamp': timestamp,
+				'x-call-kent-audio-signature': signature,
+			},
+			body,
+		})
+	} catch (error) {
+		if (
+			error instanceof Error &&
+			(error.name === 'AbortError' || error.name === 'TimeoutError')
+		) {
+			throw new Error(`Callback timed out after ${callbackTimeoutMs}ms`)
+		}
+		throw error
+	}
 	if (!response.ok) {
 		const text = await response.text().catch(() => '')
 		throw new Error(
