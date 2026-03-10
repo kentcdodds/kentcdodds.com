@@ -129,7 +129,7 @@ test(
 		if (request.method === 'PUT' && url.pathname.startsWith('/uploads/')) {
 			const outputPath = path.join(
 				uploadsDir,
-				path.basename(url.pathname.replace('/uploads/', '')),
+				path.basename(url.pathname),
 			)
 			const chunks: Array<Buffer> = []
 			for await (const chunk of request) {
@@ -201,3 +201,86 @@ test(
 	},
 	30_000,
 )
+
+test('call-kent-audio-cli fails fast when a required env var is missing', async () => {
+	const scriptPath = path.join(
+		process.cwd(),
+		'sandbox',
+		'call-kent-audio-cli.sh',
+	)
+
+	await expect(
+		runCommand('bash', [scriptPath], {
+			CALL_KENT_AUDIO_ATTEMPT: '1',
+			CALL_KENT_AUDIO_ASSETS_DIR: '/tmp/does-not-matter',
+			CALL_AUDIO_URL: 'http://127.0.0.1/call.mp3',
+			RESPONSE_AUDIO_URL: 'http://127.0.0.1/response.mp3',
+			EPISODE_UPLOAD_URL: 'http://127.0.0.1/uploads/episode.mp3',
+			CALLER_SEGMENT_UPLOAD_URL: 'http://127.0.0.1/uploads/caller.mp3',
+			RESPONSE_SEGMENT_UPLOAD_URL: 'http://127.0.0.1/uploads/response.mp3',
+		}),
+	).rejects.toThrow(/Missing required env var: CALL_KENT_AUDIO_DRAFT_ID/)
+})
+
+test('call-kent-audio-cli fails when an input download returns 404', async () => {
+	const tempRoot = await fs.mkdtemp(
+		path.join(os.tmpdir(), 'call-kent-audio-cli-missing-download-'),
+	)
+	tempPaths.push(tempRoot)
+
+	const assetsDir = path.join(tempRoot, 'assets')
+	await fs.mkdir(assetsDir, { recursive: true })
+	await createFixtureMp3({
+		filePath: path.join(assetsDir, 'intro.mp3'),
+		durationSeconds: 1.2,
+		frequencyHz: 220,
+	})
+	await createFixtureMp3({
+		filePath: path.join(assetsDir, 'interstitial.mp3'),
+		durationSeconds: 1.1,
+		frequencyHz: 330,
+	})
+	await createFixtureMp3({
+		filePath: path.join(assetsDir, 'outro.mp3'),
+		durationSeconds: 1.2,
+		frequencyHz: 440,
+	})
+
+	const server = createServer((_request, response) => {
+		response.statusCode = 404
+		response.end('missing')
+	})
+
+	server.listen(0, '127.0.0.1')
+	await once(server, 'listening')
+
+	try {
+		const address = server.address()
+		if (!address || typeof address === 'string') {
+			throw new Error('Failed to resolve local test server address')
+		}
+		const baseUrl = `http://127.0.0.1:${String(address.port)}`
+		const scriptPath = path.join(
+			process.cwd(),
+			'sandbox',
+			'call-kent-audio-cli.sh',
+		)
+
+		await expect(
+			runCommand('bash', [scriptPath], {
+				CALL_KENT_AUDIO_DRAFT_ID: 'draft-404',
+				CALL_KENT_AUDIO_ATTEMPT: '1',
+				CALL_KENT_AUDIO_ASSETS_DIR: assetsDir,
+				CALL_AUDIO_URL: `${baseUrl}/call.mp3`,
+				RESPONSE_AUDIO_URL: `${baseUrl}/response.mp3`,
+				EPISODE_UPLOAD_URL: `${baseUrl}/uploads/episode.mp3`,
+				CALLER_SEGMENT_UPLOAD_URL: `${baseUrl}/uploads/caller-segment.mp3`,
+				RESPONSE_SEGMENT_UPLOAD_URL: `${baseUrl}/uploads/response-segment.mp3`,
+			}),
+		).rejects.toThrow(/404/)
+	} finally {
+		server.closeAllConnections?.()
+		server.close()
+		await once(server, 'close')
+	}
+})

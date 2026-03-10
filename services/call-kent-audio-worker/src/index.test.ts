@@ -170,3 +170,40 @@ test('handleQueueBatch retries invalid messages without attempting callbacks', a
 	expect(retry).toHaveBeenCalledTimes(1)
 	expect(sendCallback).not.toHaveBeenCalled()
 })
+
+test('handleQueueBatch sends a failed callback for invalid payloads that still include draftId', async () => {
+	const ack = vi.fn()
+	const retry = vi.fn()
+	const sendCallback = vi.fn().mockResolvedValue(undefined)
+
+	await handleQueueBatch({
+		batch: {
+			messages: [
+				{
+					body: {
+						draftId: 'draft-1',
+						callAudioKey: 'call-kent/calls/call-1/call.webm',
+					},
+					attempts: 3,
+					ack,
+					retry,
+				},
+			],
+		},
+		env: createEnv(),
+		sendCallback,
+	})
+
+	expect(ack).not.toHaveBeenCalled()
+	expect(retry).toHaveBeenCalledTimes(1)
+	expect(sendCallback).toHaveBeenCalledTimes(1)
+	expect(sendCallback).toHaveBeenCalledWith(
+		expect.objectContaining({
+			event: expect.objectContaining({
+				type: 'audio_generation_failed',
+				draftId: 'draft-1',
+				attempt: 3,
+			}),
+		}),
+	)
+})

@@ -6,6 +6,11 @@ log() {
 	printf '%s\n' "$*" >&2
 }
 
+curl_connect_timeout_seconds=10
+curl_max_time_seconds=300
+curl_retry_count=3
+curl_retry_delay_seconds=5
+
 require_env() {
 	local name="$1"
 	if [[ -z "${!name:-}" ]]; then
@@ -20,6 +25,43 @@ require_file() {
 		log "Missing required file: ${file_path}"
 		exit 1
 	fi
+}
+
+download_to_file() {
+	local output_path="$1"
+	local url="$2"
+	curl \
+		--fail \
+		--silent \
+		--show-error \
+		--location \
+		--connect-timeout "$curl_connect_timeout_seconds" \
+		--max-time "$curl_max_time_seconds" \
+		--retry "$curl_retry_count" \
+		--retry-delay "$curl_retry_delay_seconds" \
+		--retry-connrefused \
+		--output "$output_path" \
+		"$url"
+}
+
+upload_file() {
+	local input_path="$1"
+	local url="$2"
+	curl \
+		--fail \
+		--silent \
+		--show-error \
+		--request PUT \
+		--connect-timeout "$curl_connect_timeout_seconds" \
+		--max-time "$curl_max_time_seconds" \
+		--retry "$curl_retry_count" \
+		--retry-delay "$curl_retry_delay_seconds" \
+		--retry-connrefused \
+		--header "Content-Type: audio/mpeg" \
+		--header "Expect:" \
+		--output /dev/null \
+		--upload-file "$input_path" \
+		"$url"
 }
 
 require_env "CALL_KENT_AUDIO_DRAFT_ID"
@@ -52,8 +94,8 @@ response_out_path="${work_dir}/response.normalized.mp3"
 episode_out_path="${work_dir}/episode.mp3"
 
 log "Downloading Call Kent audio inputs for draft ${CALL_KENT_AUDIO_DRAFT_ID} (attempt ${CALL_KENT_AUDIO_ATTEMPT})"
-curl --fail --silent --show-error --location --output "$call_path" "$CALL_AUDIO_URL"
-curl --fail --silent --show-error --location --output "$response_path" "$RESPONSE_AUDIO_URL"
+download_to_file "$call_path" "$CALL_AUDIO_URL"
+download_to_file "$response_path" "$RESPONSE_AUDIO_URL"
 
 log "Running FFmpeg stitching pipeline"
 ffmpeg \
@@ -84,36 +126,9 @@ ffmpeg \
 	-map "[out]" "$episode_out_path"
 
 log "Uploading stitched audio outputs"
-curl \
-	--fail \
-	--silent \
-	--show-error \
-	--request PUT \
-	--header "Content-Type: audio/mpeg" \
-	--header "Expect:" \
-	--output /dev/null \
-	--data-binary @"$episode_out_path" \
-	"$EPISODE_UPLOAD_URL"
-curl \
-	--fail \
-	--silent \
-	--show-error \
-	--request PUT \
-	--header "Content-Type: audio/mpeg" \
-	--header "Expect:" \
-	--output /dev/null \
-	--data-binary @"$call_out_path" \
-	"$CALLER_SEGMENT_UPLOAD_URL"
-curl \
-	--fail \
-	--silent \
-	--show-error \
-	--request PUT \
-	--header "Content-Type: audio/mpeg" \
-	--header "Expect:" \
-	--output /dev/null \
-	--data-binary @"$response_out_path" \
-	"$RESPONSE_SEGMENT_UPLOAD_URL"
+upload_file "$episode_out_path" "$EPISODE_UPLOAD_URL"
+upload_file "$call_out_path" "$CALLER_SEGMENT_UPLOAD_URL"
+upload_file "$response_out_path" "$RESPONSE_SEGMENT_UPLOAD_URL"
 
 episode_size="$(wc -c < "$episode_out_path" | tr -d '[:space:]')"
 caller_segment_size="$(wc -c < "$call_out_path" | tr -d '[:space:]')"

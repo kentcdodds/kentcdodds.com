@@ -25,6 +25,12 @@ type QueueBatch = {
 	messages: Array<QueueMessage>
 }
 
+function getDraftIdFromMessageBody(body: unknown) {
+	return typeof (body as { draftId?: unknown })?.draftId === 'string'
+		? (body as { draftId: string }).draftId
+		: null
+}
+
 function getAttempt(message: QueueMessage) {
 	return typeof message.attempts === 'number' && Number.isFinite(message.attempts)
 		? message.attempts
@@ -44,14 +50,16 @@ export async function processMessage({
 	createSignedUrls?: typeof createSignedEpisodeAudioUrls
 	runSandboxJob?: typeof runCallKentAudioSandboxJob
 }) {
-	const parsed = queueMessageSchema.parse(message.body)
 	const attempt = getAttempt(message)
-	console.info('Call Kent audio queue message dequeued', {
-		draftId: parsed.draftId,
-		attempt,
-	})
+	let draftId = getDraftIdFromMessageBody(message.body)
 
 	try {
+		const parsed = queueMessageSchema.parse(message.body)
+		draftId = parsed.draftId
+		console.info('Call Kent audio queue message dequeued', {
+			draftId: parsed.draftId,
+			attempt,
+		})
 		await sendCallback({
 			callbackUrl: env.CALL_KENT_AUDIO_CALLBACK_URL,
 			callbackSecret: env.CALL_KENT_AUDIO_CALLBACK_SECRET,
@@ -102,25 +110,27 @@ export async function processMessage({
 		return { draftId: parsed.draftId, attempt }
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)
-		await sendCallback({
-			callbackUrl: env.CALL_KENT_AUDIO_CALLBACK_URL,
-			callbackSecret: env.CALL_KENT_AUDIO_CALLBACK_SECRET,
-			event: {
-				type: 'audio_generation_failed',
-				draftId: parsed.draftId,
-				errorMessage,
-				attempt,
-			},
-		}).catch((callbackError: unknown) => {
-			console.error('Failed to send audio generation failed callback', {
-				draftId: parsed.draftId,
-				attempt,
-				error:
-					callbackError instanceof Error
-						? callbackError.message
-						: String(callbackError),
+		if (draftId) {
+			await sendCallback({
+				callbackUrl: env.CALL_KENT_AUDIO_CALLBACK_URL,
+				callbackSecret: env.CALL_KENT_AUDIO_CALLBACK_SECRET,
+				event: {
+					type: 'audio_generation_failed',
+					draftId,
+					errorMessage,
+					attempt,
+				},
+			}).catch((callbackError: unknown) => {
+				console.error('Failed to send audio generation failed callback', {
+					draftId,
+					attempt,
+					error:
+						callbackError instanceof Error
+							? callbackError.message
+							: String(callbackError),
+				})
 			})
-		})
+		}
 		throw error
 	}
 }
@@ -157,10 +167,7 @@ export async function handleQueueBatch({
 			})
 		} catch (error) {
 			console.error('Call Kent audio queue message failed', {
-				draftId:
-					typeof (message.body as { draftId?: unknown })?.draftId === 'string'
-						? (message.body as { draftId: string }).draftId
-						: null,
+				draftId: getDraftIdFromMessageBody(message.body),
 				attempt: getAttempt(message),
 				error: error instanceof Error ? error.message : String(error),
 			})
