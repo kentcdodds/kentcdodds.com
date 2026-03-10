@@ -21,9 +21,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1.11.2
+      - name: 📥 Install site deps
+        run: npm ci --workspace=kentcdodds.com
 
       - name: 🔎 Index podcast content
         run: node other/semantic-search/index-podcasts.ts

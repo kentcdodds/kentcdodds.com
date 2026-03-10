@@ -299,7 +299,7 @@ cp /data/litefs/dbs/sqlite.db/database /data/litefs-disabled/sqlite.db
 cp /data/litefs/dbs/cache.db/database /data/litefs-disabled/cache.db
 ```
 
-Update the Dockerfile:
+Update `services/site/Dockerfile`:
 
 ```Dockerfile
 # TODO: enable litefs

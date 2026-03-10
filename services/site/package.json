@@ -49,6 +49,7 @@
     "test:browser:watch": "vitest --config vitest.browser.config.ts",
     "test:watch": "npm run test:backend:watch",
     "lint": "oxlint . --ignore-pattern app/utils/prisma-generated.server",
+    "ci:verify": "run-s lint typecheck test build",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "react-router typegen && tsc -b .",
     "validate": "../../other/validate",
