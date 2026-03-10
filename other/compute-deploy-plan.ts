@@ -15,13 +15,11 @@ const defaultFetchTimeoutMs = 10_000
 const nonFlyDeployablePathPrefixes = [
 	'services/site/content/',
 	'services/call-kent-audio-worker/',
-	'services/call-kent-audio-container/',
 	'services/oauth/',
 ]
 
 const nonFlyDeployableFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
-	'.github/workflows/deploy-call-kent-audio-container.yml',
 	'.github/workflows/deploy-oauth-worker.yml',
 ])
 
@@ -36,11 +34,6 @@ const semanticContentPathPrefixes = [
 const callKentAudioWorkerPathPrefixes = ['services/call-kent-audio-worker/']
 const callKentAudioWorkerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
-])
-
-const callKentAudioContainerPathPrefixes = ['services/call-kent-audio-container/']
-const callKentAudioContainerFiles = new Set([
-	'.github/workflows/deploy-call-kent-audio-container.yml',
 ])
 
 const oauthWorkerPathPrefixes = ['services/oauth/']
@@ -62,8 +55,6 @@ const DEPLOY_ENVIRONMENTS: Record<string, (refName: string) => string | null> =
 			refName === 'main' ? 'oauth-production' : null,
 		deployCallKentAudioWorker: (refName) =>
 			refName === 'main' ? 'call-kent-audio-worker-production' : null,
-		deployCallKentAudioContainer: (refName) =>
-			refName === 'main' ? 'call-kent-audio-container-production' : null,
 	}
 
 type ChangedFile = {
@@ -391,7 +382,6 @@ export async function computeDeployPlan({
 		siteDeployResult,
 		oauthDeployResult,
 		audioWorkerDeployResult,
-		audioContainerDeployResult,
 	] = await Promise.all([
 		getPushChangedFiles({
 			currentCommitSha,
@@ -446,19 +436,6 @@ export async function computeDeployPlan({
 					log,
 				})
 			: Promise.resolve({ compareCommitSha: null, changedFiles: null }),
-		repo
-			? getDeploymentChangedFiles({
-					currentCommitSha,
-					refName,
-					target: 'deployCallKentAudioContainer',
-					owner: repo.owner,
-					repo: repo.repo,
-					token,
-					getChangedFilesImpl,
-					fetchImpl,
-					log,
-				})
-			: Promise.resolve({ compareCommitSha: null, changedFiles: null }),
 	])
 
 	const siteChangedFiles = siteDeployResult.changedFiles
@@ -483,12 +460,6 @@ export async function computeDeployPlan({
 			changedFiles: audioWorkerDeployResult.changedFiles,
 			pathPrefixes: callKentAudioWorkerPathPrefixes,
 			files: callKentAudioWorkerFiles,
-			runWhenUnknown: isPushEvent,
-		}),
-		deployCallKentAudioContainer: shouldRunPathTarget({
-			changedFiles: audioContainerDeployResult.changedFiles,
-			pathPrefixes: callKentAudioContainerPathPrefixes,
-			files: callKentAudioContainerFiles,
 			runWhenUnknown: isPushEvent,
 		}),
 		deployOauthWorker: shouldRunPathTarget({
@@ -533,9 +504,6 @@ export async function writeDeployPlanOutputs({
 		`index_semantic_content=${String(deployPlan.indexSemanticContent)}`,
 		`deploy_call_kent_audio_worker=${String(
 			deployPlan.deployCallKentAudioWorker,
-		)}`,
-		`deploy_call_kent_audio_container=${String(
-			deployPlan.deployCallKentAudioContainer,
 		)}`,
 		`deploy_oauth_worker=${String(deployPlan.deployOauthWorker)}`,
 	]

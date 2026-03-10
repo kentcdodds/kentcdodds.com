@@ -6,6 +6,7 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "oxlint . --ignore-pattern worker-configuration.d.ts --ignore-pattern .wrangler",
+    "test": "vitest --run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --env local",
@@ -13,14 +14,19 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1005.0",
+    "@aws-sdk/s3-request-presigner": "^3.1005.0",
+    "@cloudflare/sandbox": "^0.7.16",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260306.1",
     "@epic-web/config": "^1.24.1",
+    "@types/node": "^24.10.13",
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
+    "vitest": "^4.0.18",
     "wrangler": "^4.67.0"
   },
   "prettier": "@epic-web/config/prettier"
