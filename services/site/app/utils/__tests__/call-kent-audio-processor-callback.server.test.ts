@@ -4,7 +4,6 @@ import { expect, test, vi } from 'vitest'
 async function loadCallbackModule() {
 	vi.resetModules()
 	const updateMany = vi.fn()
-	const startCallKentEpisodeDraftProcessing = vi.fn()
 	vi.doMock('#app/utils/prisma.server.ts', () => ({
 		prisma: {
 			callKentEpisodeDraft: {
@@ -12,13 +11,9 @@ async function loadCallbackModule() {
 			},
 		},
 	}))
-	vi.doMock('#app/utils/call-kent-episode-draft.server.ts', () => ({
-		startCallKentEpisodeDraftProcessing,
-	}))
 	const mod = await import('../call-kent-audio-processor-callback.server.ts')
 	return {
 		updateMany,
-		startCallKentEpisodeDraftProcessing,
 		...mod,
 	}
 }
@@ -62,13 +57,10 @@ test('verifyCallKentAudioProcessorCallbackSignature validates signed payload', a
 	).toBe(false)
 })
 
-test('handleCallKentAudioProcessorEvent stores generated audio metadata and continues processing', async () => {
+test('handleCallKentAudioProcessorEvent stores generated audio metadata', async () => {
 	vi.clearAllMocks()
-	const {
-		updateMany,
-		startCallKentEpisodeDraftProcessing,
-		handleCallKentAudioProcessorEvent,
-	} = await loadCallbackModule()
+	const { updateMany, handleCallKentAudioProcessorEvent } =
+		await loadCallbackModule()
 	updateMany.mockResolvedValue({
 		count: 1,
 	})
@@ -97,5 +89,73 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 			errorMessage: null,
 		},
 	})
-	expect(startCallKentEpisodeDraftProcessing).toHaveBeenCalledWith('draft-1')
+})
+
+test('handleCallKentAudioProcessorEvent stores transcript and advances to metadata step', async () => {
+	vi.clearAllMocks()
+	const { updateMany, handleCallKentAudioProcessorEvent } =
+		await loadCallbackModule()
+	updateMany.mockResolvedValue({ count: 1 })
+	await handleCallKentAudioProcessorEvent({
+		type: 'transcript_generation_completed',
+		draftId: 'draft-1',
+		transcript: 'Caller: Hi\n\nKent: Hello',
+	})
+	expect(updateMany).toHaveBeenCalledWith({
+		where: {
+			id: 'draft-1',
+			status: 'PROCESSING',
+			step: { in: ['TRANSCRIBING', 'GENERATING_METADATA'] },
+		},
+		data: {
+			transcript: 'Caller: Hi\n\nKent: Hello',
+			step: 'GENERATING_METADATA',
+			errorMessage: null,
+		},
+	})
+})
+
+test('handleCallKentAudioProcessorEvent marks draft ready when metadata completes', async () => {
+	vi.clearAllMocks()
+	const { updateMany, handleCallKentAudioProcessorEvent } =
+		await loadCallbackModule()
+	updateMany.mockResolvedValue({ count: 1 })
+	await handleCallKentAudioProcessorEvent({
+		type: 'metadata_generation_completed',
+		draftId: 'draft-1',
+		title: 'Working with workflows',
+		description: 'A practical walkthrough.',
+		keywords: 'cloudflare, workflows, podcast',
+	})
+	expect(updateMany).toHaveBeenCalledWith({
+		where: { id: 'draft-1', status: 'PROCESSING' },
+		data: {
+			title: 'Working with workflows',
+			description: 'A practical walkthrough.',
+			keywords: 'cloudflare, workflows, podcast',
+			status: 'READY',
+			step: 'DONE',
+			errorMessage: null,
+		},
+	})
+})
+
+test('handleCallKentAudioProcessorEvent marks draft error on workflow failure', async () => {
+	vi.clearAllMocks()
+	const { updateMany, handleCallKentAudioProcessorEvent } =
+		await loadCallbackModule()
+	updateMany.mockResolvedValue({ count: 1 })
+	await handleCallKentAudioProcessorEvent({
+		type: 'draft_processing_failed',
+		draftId: 'draft-1',
+		errorMessage: 'workflow step failed',
+	})
+	expect(updateMany).toHaveBeenCalledWith({
+		where: { id: 'draft-1', status: 'PROCESSING' },
+		data: {
+			status: 'ERROR',
+			step: 'DONE',
+			errorMessage: 'workflow step failed',
+		},
+	})
 })

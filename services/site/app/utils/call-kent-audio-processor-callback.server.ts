@@ -1,6 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { z } from 'zod'
-import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
 
@@ -21,8 +20,24 @@ const audioGenerationCompletedEventSchema = z.object({
 	attempt: z.number().int().positive().optional(),
 })
 
-const audioGenerationFailedEventSchema = z.object({
-	type: z.literal('audio_generation_failed'),
+const transcriptGenerationCompletedEventSchema = z.object({
+	type: z.literal('transcript_generation_completed'),
+	draftId: z.string().trim().min(1),
+	transcript: z.string().trim().min(1),
+	attempt: z.number().int().positive().optional(),
+})
+
+const metadataGenerationCompletedEventSchema = z.object({
+	type: z.literal('metadata_generation_completed'),
+	draftId: z.string().trim().min(1),
+	title: z.string().trim().min(1),
+	description: z.string().trim().min(1),
+	keywords: z.string().trim().min(1),
+	attempt: z.number().int().positive().optional(),
+})
+
+const draftProcessingFailedEventSchema = z.object({
+	type: z.literal('draft_processing_failed'),
 	draftId: z.string().trim().min(1),
 	errorMessage: z.string().trim().min(1),
 	attempt: z.number().int().positive().optional(),
@@ -31,7 +46,9 @@ const audioGenerationFailedEventSchema = z.object({
 const callKentAudioProcessorEventSchema = z.discriminatedUnion('type', [
 	audioGenerationStartedEventSchema,
 	audioGenerationCompletedEventSchema,
-	audioGenerationFailedEventSchema,
+	transcriptGenerationCompletedEventSchema,
+	metadataGenerationCompletedEventSchema,
+	draftProcessingFailedEventSchema,
 ])
 
 export type CallKentAudioProcessorEvent = z.infer<
@@ -112,7 +129,7 @@ export async function handleCallKentAudioProcessorEvent(
 			return
 		}
 		case 'audio_generation_completed': {
-			const updated = await prisma.callKentEpisodeDraft.updateMany({
+			await prisma.callKentEpisodeDraft.updateMany({
 				where: {
 					id: event.draftId,
 					status: 'PROCESSING',
@@ -128,11 +145,38 @@ export async function handleCallKentAudioProcessorEvent(
 					errorMessage: null,
 				},
 			})
-			if (updated.count !== 1) return
-			void startCallKentEpisodeDraftProcessing(event.draftId)
 			return
 		}
-		case 'audio_generation_failed': {
+		case 'transcript_generation_completed': {
+			await prisma.callKentEpisodeDraft.updateMany({
+				where: {
+					id: event.draftId,
+					status: 'PROCESSING',
+					step: { in: ['TRANSCRIBING', 'GENERATING_METADATA'] },
+				},
+				data: {
+					transcript: event.transcript,
+					step: 'GENERATING_METADATA',
+					errorMessage: null,
+				},
+			})
+			return
+		}
+		case 'metadata_generation_completed': {
+			await prisma.callKentEpisodeDraft.updateMany({
+				where: { id: event.draftId, status: 'PROCESSING' },
+				data: {
+					title: event.title,
+					description: event.description,
+					keywords: event.keywords,
+					status: 'READY',
+					step: 'DONE',
+					errorMessage: null,
+				},
+			})
+			return
+		}
+		case 'draft_processing_failed': {
 			await prisma.callKentEpisodeDraft.updateMany({
 				where: { id: event.draftId, status: 'PROCESSING' },
 				data: {

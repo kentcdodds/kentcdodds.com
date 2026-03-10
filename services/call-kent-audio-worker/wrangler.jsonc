@@ -6,20 +6,26 @@
 	"observability": {
 		"enabled": true,
 	},
-	"queues": {
-		"consumers": [
-			{
-				"queue": "kcd-call-kent-audio",
-				"max_batch_size": 3,
-				"max_batch_timeout": 5,
-				"max_retries": 5,
-				"dead_letter_queue": "kcd-call-kent-audio-dlq",
-			},
-		],
-	},
+	"workflows": [
+		{
+			"name": "kcd-call-kent-audio-pipeline",
+			"binding": "CALL_KENT_AUDIO_WORKFLOW",
+			"class_name": "CallKentAudioPipelineWorkflow",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "CALL_KENT_AUDIO_BUCKET",
+			"bucket_name": "kcd-call-kent-audio",
+		},
+	],
 	"vars": {
 		"CALL_KENT_AUDIO_CONTAINER_URL": "https://kcd-call-kent-audio-container.kentcdodds.workers.dev",
 		"CALL_KENT_AUDIO_CALLBACK_URL": "https://kentcdodds.com/resources/calls/episode-audio-callback",
+		"CLOUDFLARE_AI_GATEWAY_ID": "replace-with-cloudflare-ai-gateway-id",
+		"CLOUDFLARE_AI_TRANSCRIPTION_MODEL": "@cf/openai/whisper-large-v3-turbo",
+		"CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+		"CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
 	},
 	"env": {
 		"local": {
@@ -28,6 +34,12 @@
 				"CALL_KENT_AUDIO_CONTAINER_TOKEN": "local-dev-token",
 				"CALL_KENT_AUDIO_CALLBACK_URL": "http://127.0.0.1:3000/resources/calls/episode-audio-callback",
 				"CALL_KENT_AUDIO_CALLBACK_SECRET": "local-dev-callback-secret",
+				"CLOUDFLARE_API_TOKEN": "MOCK_CLOUDFLARE_API_TOKEN",
+				"CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN": "MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN",
+				"CLOUDFLARE_AI_GATEWAY_ID": "MOCK_CLOUDFLARE_AI_GATEWAY_ID",
+				"CLOUDFLARE_AI_TRANSCRIPTION_MODEL": "@cf/openai/whisper-large-v3-turbo",
+				"CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+				"CLOUDFLARE_AI_CALL_KENT_TRANSCRIPT_FORMAT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
 			},
 		},
 	},

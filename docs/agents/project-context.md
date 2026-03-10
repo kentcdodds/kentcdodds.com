@@ -69,9 +69,9 @@ reference:
   `[Music]`. The YouTube indexer filters these low-signal caption lines and
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
-- Call Kent FFmpeg offload caveat: episode audio generation can run through a
-  Cloudflare queue/container pipeline and requires Cloudflare queue/callback
-  environment variables.
+- Call Kent draft processing caveat: episode draft generation runs through a
+  Cloudflare workflow/container pipeline and requires Cloudflare
+  workflow/callback environment variables.
 
 ## Cloud / headless manual testing
 

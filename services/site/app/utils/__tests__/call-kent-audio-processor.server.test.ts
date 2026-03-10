@@ -1,9 +1,9 @@
 import { expect, test, vi } from 'vitest'
 import { requestCallKentEpisodeAudioGeneration } from '../call-kent-audio-processor.server.ts'
 
-test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', async () => {
+test('requestCallKentEpisodeAudioGeneration starts cloudflare workflow instance', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_WORKFLOW_NAME = 'call-kent-audio-pipeline'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
 	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
@@ -17,9 +17,13 @@ test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', 
 		draftId: 'draft-1',
 		callAudioKey: 'call-kent/calls/call-1/call.webm',
 		responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callTitle: 'Should I learn workflows?',
+		callerNotes: 'I am migrating this pipeline.',
+		callerName: 'Sam',
+		savedCallerTranscript: 'How should I migrate this pipeline?',
 	})
 	expect(fetchSpy).toHaveBeenCalledWith(
-		'https://api.cloudflare.com/client/v4/accounts/acct-123/queues/queue-123/messages',
+		'https://api.cloudflare.com/client/v4/accounts/acct-123/workflows/call-kent-audio-pipeline/instances',
 		expect.objectContaining({
 			method: 'POST',
 			headers: expect.objectContaining({
@@ -30,18 +34,23 @@ test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', 
 	)
 	const [, options] = fetchSpy.mock.calls[0]!
 	expect(JSON.parse(String(options?.body))).toEqual({
-		content_type: 'json',
-		body: {
+		instance_id: 'draft-1',
+		params: {
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+			callTitle: 'Should I learn workflows?',
+			callerNotes: 'I am migrating this pipeline.',
+			callerName: 'Sam',
+			savedCallerTranscript: 'How should I migrate this pipeline?',
+			cloudflareAccountId: 'acct-123',
 		},
 	})
 })
 
-test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue errors', async () => {
+test('requestCallKentEpisodeAudioGeneration throws on cloudflare workflow errors', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_WORKFLOW_NAME = 'call-kent-audio-pipeline'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
 	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
@@ -54,13 +63,17 @@ test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue errors', 
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+			callTitle: 'Title',
+			callerNotes: null,
+			callerName: 'Sam',
+			savedCallerTranscript: null,
 		}),
-	).rejects.toThrow(/Cloudflare queue enqueue failed/i)
+	).rejects.toThrow(/Cloudflare workflow start failed/i)
 })
 
-test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue timeout', async () => {
+test('requestCallKentEpisodeAudioGeneration throws on cloudflare workflow timeout', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_WORKFLOW_NAME = 'call-kent-audio-pipeline'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
 	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
@@ -73,13 +86,17 @@ test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue timeout',
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+			callTitle: 'Title',
+			callerNotes: null,
+			callerName: 'Sam',
+			savedCallerTranscript: null,
 		}),
 	).rejects.toThrow(/timed out/i)
 })
 
-test('requestCallKentEpisodeAudioGeneration throws on empty cloudflare queue response', async () => {
+test('requestCallKentEpisodeAudioGeneration throws on empty cloudflare workflow response', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_WORKFLOW_NAME = 'call-kent-audio-pipeline'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
 	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
@@ -90,13 +107,17 @@ test('requestCallKentEpisodeAudioGeneration throws on empty cloudflare queue res
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+			callTitle: 'Title',
+			callerNotes: null,
+			callerName: 'Sam',
+			savedCallerTranscript: null,
 		}),
 	).rejects.toThrow(/empty response/i)
 })
 
-test('requestCallKentEpisodeAudioGeneration rejects cloudflare responses without success=true', async () => {
+test('requestCallKentEpisodeAudioGeneration rejects cloudflare workflow responses without success=true', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_WORKFLOW_NAME = 'call-kent-audio-pipeline'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
 	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
@@ -109,13 +130,17 @@ test('requestCallKentEpisodeAudioGeneration rejects cloudflare responses without
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+			callTitle: 'Title',
+			callerNotes: null,
+			callerName: 'Sam',
+			savedCallerTranscript: null,
 		}),
 	).rejects.toThrow(/success=true/i)
 })
 
-test('requestCallKentEpisodeAudioGeneration surfaces response body read failures', async () => {
+test('requestCallKentEpisodeAudioGeneration surfaces workflow response body read failures', async () => {
 	vi.clearAllMocks()
-	process.env.CALL_KENT_AUDIO_CF_QUEUE_ID = 'queue-123'
+	process.env.CALL_KENT_AUDIO_CF_WORKFLOW_NAME = 'call-kent-audio-pipeline'
 	process.env.CALL_KENT_AUDIO_CF_API_BASE_URL =
 		'https://api.cloudflare.com/client/v4'
 	process.env.CLOUDFLARE_ACCOUNT_ID = 'acct-123'
@@ -131,6 +156,10 @@ test('requestCallKentEpisodeAudioGeneration surfaces response body read failures
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+			callTitle: 'Title',
+			callerNotes: null,
+			callerName: 'Sam',
+			savedCallerTranscript: null,
 		}),
 	).rejects.toThrow(/unable to read response body/i)
 })
