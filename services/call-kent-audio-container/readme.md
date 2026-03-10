@@ -1,21 +1,26 @@
 This service runs FFmpeg for Call Kent episode audio generation on Cloudflare
 Sandboxes.
 
-Endpoints:
+Architecture:
 
-- `POST /jobs/episode-audio`: authenticated by bearer token
+- `src/sandbox-worker.ts` is the public Worker endpoint (`POST /jobs/episode-audio`).
+- For each draft job, it starts a one-shot sandbox process (`node src/index.ts`)
+  in an isolated sandbox id (`call-kent-audio-<draftId>`).
+- `src/index.ts` processes a single job from
+  `CALL_KENT_AUDIO_JOB_REQUEST_BODY` and exits.
 
-Behavior:
+This design intentionally avoids custom heartbeat/shutdown control flows and
+lets sandbox lifecycle be process-driven.
+
+Behavior per job:
 
 1. Downloads caller and response audio from R2.
 2. Runs FFmpeg normalization + stitch with intro/interstitial/outro bumpers.
 3. Uploads episode + segment audio to R2.
 4. Calls app callback endpoint with HMAC-signed status events.
-5. Sends heartbeat pings to the sandbox controller while a job is running and
-   requests shutdown once the last active job completes.
 
-Stitch assets are required; startup requests fail if these files are missing.
-The sandbox service expects these files in `assets/`:
+Stitch assets are required; job startup fails if these files are missing.
+The sandbox job expects these files in `assets/`:
 
 - `assets/intro.mp3`
 - `assets/interstitial.mp3`

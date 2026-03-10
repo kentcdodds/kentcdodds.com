@@ -1,27 +1,22 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHmac } from 'node:crypto'
 import { spawn } from 'node:child_process'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { serve } from '@hono/node-server'
 import {
 	GetObjectCommand,
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3'
-import { Hono } from 'hono'
 import { z } from 'zod'
 import { resolveStitchAssets } from './resolve-stitch-assets.ts'
 
 const envSchema = z.object({
-	PORT: z.string().trim().default('8788'),
 	R2_ENDPOINT: z.string().trim().min(1),
 	R2_ACCESS_KEY_ID: z.string().trim().min(1),
 	R2_SECRET_ACCESS_KEY: z.string().trim().min(1),
 	CALL_KENT_R2_BUCKET: z.string().trim().min(1),
-	CALL_KENT_AUDIO_SANDBOX_TOKEN: z.string().trim().min(1),
-	CALL_KENT_AUDIO_SANDBOX_HEARTBEAT_URL: z.url(),
-	CALL_KENT_AUDIO_SANDBOX_SHUTDOWN_URL: z.url(),
+	CALL_KENT_AUDIO_JOB_REQUEST_BODY: z.string().trim().min(1),
 })
 
 const jobSchema = z.object({
@@ -34,9 +29,6 @@ const jobSchema = z.object({
 })
 
 const env = envSchema.parse(process.env)
-const app = new Hono()
-const activeDraftJobs = new Set<string>()
-const jobHeartbeatIntervalMs = 30_000
 
 const s3 = new S3Client({
 	region: 'auto',
@@ -185,156 +177,6 @@ async function runFfmpeg({
 	return { callerMp3, responseMp3, episodeMp3 }
 }
 
-async function processEpisodeAudioJob(job: z.infer<typeof jobSchema>) {
-	const startedAt = Date.now()
-	const jobContext = getJobLogContext(job)
-	const stopJobHeartbeat = startJobHeartbeat(jobContext)
-
-	console.info('Call Kent audio job accepted', jobContext)
-	try {
-		console.info('Call Kent audio job callback starting', {
-			...jobContext,
-			eventType: 'audio_generation_started',
-		})
-		await sendCallback({
-			callbackUrl: job.callbackUrl,
-			callbackSecret: job.callbackSecret,
-			event: {
-				type: 'audio_generation_started',
-				draftId: job.draftId,
-				attempt: job.attempt ?? 1,
-			},
-		})
-		console.info('Call Kent audio job callback completed', {
-			...jobContext,
-			eventType: 'audio_generation_started',
-		})
-
-		console.info('Call Kent audio job input fetch starting', jobContext)
-		const [callAudio, responseAudio] = await Promise.all([
-			getAudio(job.callAudioKey),
-			getAudio(job.responseAudioKey),
-		])
-		console.info('Call Kent audio job input fetch completed', {
-			...jobContext,
-			callAudioBytes: callAudio.byteLength,
-			responseAudioBytes: responseAudio.byteLength,
-		})
-
-		console.info('Call Kent audio job ffmpeg starting', jobContext)
-		const ffmpegStartedAt = Date.now()
-		const generated = await runFfmpeg({ callAudio, responseAudio })
-		console.info('Call Kent audio job ffmpeg completed', {
-			...jobContext,
-			elapsedMs: Date.now() - ffmpegStartedAt,
-			episodeAudioBytes: generated.episodeMp3.byteLength,
-			callerSegmentBytes: generated.callerMp3.byteLength,
-			responseSegmentBytes: generated.responseMp3.byteLength,
-		})
-
-		console.info('Call Kent audio job upload starting', jobContext)
-		const [episode, callerSegment, responseSegment] = await Promise.all([
-			putAudio({
-				key: getEpisodeDraftAudioKey({ draftId: job.draftId, kind: 'episode' }),
-				audio: generated.episodeMp3,
-				contentType: 'audio/mpeg',
-			}),
-			putAudio({
-				key: getEpisodeDraftAudioKey({
-					draftId: job.draftId,
-					kind: 'callerSegment',
-				}),
-				audio: generated.callerMp3,
-				contentType: 'audio/mpeg',
-			}),
-			putAudio({
-				key: getEpisodeDraftAudioKey({
-					draftId: job.draftId,
-					kind: 'responseSegment',
-				}),
-				audio: generated.responseMp3,
-				contentType: 'audio/mpeg',
-			}),
-		])
-		console.info('Call Kent audio job upload completed', {
-			...jobContext,
-			episodeAudioKey: episode.key,
-			callerSegmentAudioKey: callerSegment.key,
-			responseSegmentAudioKey: responseSegment.key,
-		})
-
-		console.info('Call Kent audio job callback starting', {
-			...jobContext,
-			eventType: 'audio_generation_completed',
-		})
-		await sendCallback({
-			callbackUrl: job.callbackUrl,
-			callbackSecret: job.callbackSecret,
-			event: {
-				type: 'audio_generation_completed',
-				draftId: job.draftId,
-				episodeAudioKey: episode.key,
-				episodeAudioContentType: episode.contentType,
-				episodeAudioSize: episode.size,
-				callerSegmentAudioKey: callerSegment.key,
-				responseSegmentAudioKey: responseSegment.key,
-				attempt: job.attempt ?? 1,
-			},
-		})
-		console.info('Call Kent audio job callback completed', {
-			...jobContext,
-			eventType: 'audio_generation_completed',
-			elapsedMs: Date.now() - startedAt,
-		})
-	} catch (error) {
-		console.error('Call Kent audio job failed', {
-			...jobContext,
-			error: error instanceof Error ? error.message : String(error),
-			elapsedMs: Date.now() - startedAt,
-		})
-		const message = error instanceof Error ? error.message : String(error)
-		await sendCallback({
-			callbackUrl: job.callbackUrl,
-			callbackSecret: job.callbackSecret,
-			event: {
-				type: 'audio_generation_failed',
-				draftId: job.draftId,
-				errorMessage: message,
-				attempt: job.attempt ?? 1,
-			},
-		}).catch((callbackError: unknown) => {
-			console.error('Failed to send audio generation failed callback', {
-				...jobContext,
-				callbackUrl: job.callbackUrl,
-				eventType: 'audio_generation_failed',
-				error:
-					callbackError instanceof Error
-						? callbackError.message
-						: String(callbackError),
-			})
-		})
-	} finally {
-		stopJobHeartbeat()
-		activeDraftJobs.delete(job.draftId)
-		const activeJobs = activeDraftJobs.size
-		console.info('Call Kent audio job released', {
-			...jobContext,
-			activeJobs,
-		})
-		if (activeJobs === 0) {
-			await requestShutdownIfIdle().catch((shutdownError: unknown) => {
-				console.error('Failed to request audio sandbox shutdown', {
-					...jobContext,
-					error:
-						shutdownError instanceof Error
-							? shutdownError.message
-							: String(shutdownError),
-				})
-			})
-		}
-	}
-}
-
 function createSignature({
 	secret,
 	timestamp,
@@ -347,41 +189,6 @@ function createSignature({
 	return createHmac('sha256', secret)
 		.update(`${timestamp}.${body}`, 'utf8')
 		.digest('hex')
-}
-
-function timingSafeEqualString(left: string, right: string) {
-	const leftBuffer = Buffer.from(left)
-	const rightBuffer = Buffer.from(right)
-	if (leftBuffer.length !== rightBuffer.length) {
-		return false
-	}
-	return timingSafeEqual(leftBuffer, rightBuffer)
-}
-
-function getBearerToken(authorizationHeader: string | undefined) {
-	return authorizationHeader?.slice('Bearer '.length) ?? ''
-}
-
-function isAuthorized(authorizationHeader: string | undefined) {
-	return timingSafeEqualString(
-		getBearerToken(authorizationHeader),
-		env.CALL_KENT_AUDIO_SANDBOX_TOKEN,
-	)
-}
-
-async function postToControlUrl(url: string) {
-	const response = await fetch(url, {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${env.CALL_KENT_AUDIO_SANDBOX_TOKEN}`,
-		},
-	})
-	if (!response.ok) {
-		const text = await response.text().catch(() => '')
-		throw new Error(
-			`Control request failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`,
-		)
-	}
 }
 
 async function sendCallback({
@@ -417,64 +224,114 @@ async function sendCallback({
 	}
 }
 
-async function requestHeartbeat() {
-	await postToControlUrl(env.CALL_KENT_AUDIO_SANDBOX_HEARTBEAT_URL)
-}
-
-async function requestShutdownIfIdle() {
-	await postToControlUrl(env.CALL_KENT_AUDIO_SANDBOX_SHUTDOWN_URL)
-}
-
-function startJobHeartbeat(jobContext: ReturnType<typeof getJobLogContext>) {
-	const interval = setInterval(() => {
-		void requestHeartbeat().catch((heartbeatError: unknown) => {
-			console.error('Failed to renew audio sandbox activity', {
-				...jobContext,
-				error:
-					heartbeatError instanceof Error
-						? heartbeatError.message
-						: String(heartbeatError),
-			})
-		})
-	}, jobHeartbeatIntervalMs)
-	interval.unref?.()
-	return function stopJobHeartbeat() {
-		clearInterval(interval)
-	}
-}
-
-app.get('/internal/status', (c) => {
-	if (!isAuthorized(c.req.header('authorization'))) {
-		return c.text('Unauthorized', 401)
-	}
-	return c.json({ activeJobs: activeDraftJobs.size })
-})
-
-app.post('/jobs/episode-audio', async (c) => {
+async function processEpisodeAudioJob(job: z.infer<typeof jobSchema>) {
+	const startedAt = Date.now()
+	const jobContext = getJobLogContext(job)
+	console.info('Call Kent audio sandbox job accepted', jobContext)
 	try {
-		if (!isAuthorized(c.req.header('authorization'))) {
-			return c.text('Unauthorized', 401)
-		}
-		const requestBody = await c.req.json()
-		const job = jobSchema.parse(requestBody)
-		if (activeDraftJobs.has(job.draftId)) {
-			console.info('Call Kent audio job already running', {
-				...getJobLogContext(job),
-				activeJobs: activeDraftJobs.size,
-			})
-			return c.json({ ok: true, status: 'already-running' }, 202)
-		}
-
-		activeDraftJobs.add(job.draftId)
-		void processEpisodeAudioJob(job)
-		return c.json({ ok: true, status: 'accepted' }, 202)
+		await sendCallback({
+			callbackUrl: job.callbackUrl,
+			callbackSecret: job.callbackSecret,
+			event: {
+				type: 'audio_generation_started',
+				draftId: job.draftId,
+				attempt: job.attempt ?? 1,
+			},
+		})
+		const [callAudio, responseAudio] = await Promise.all([
+			getAudio(job.callAudioKey),
+			getAudio(job.responseAudioKey),
+		])
+		const generated = await runFfmpeg({ callAudio, responseAudio })
+		const [episode, callerSegment, responseSegment] = await Promise.all([
+			putAudio({
+				key: getEpisodeDraftAudioKey({ draftId: job.draftId, kind: 'episode' }),
+				audio: generated.episodeMp3,
+				contentType: 'audio/mpeg',
+			}),
+			putAudio({
+				key: getEpisodeDraftAudioKey({
+					draftId: job.draftId,
+					kind: 'callerSegment',
+				}),
+				audio: generated.callerMp3,
+				contentType: 'audio/mpeg',
+			}),
+			putAudio({
+				key: getEpisodeDraftAudioKey({
+					draftId: job.draftId,
+					kind: 'responseSegment',
+				}),
+				audio: generated.responseMp3,
+				contentType: 'audio/mpeg',
+			}),
+		])
+		await sendCallback({
+			callbackUrl: job.callbackUrl,
+			callbackSecret: job.callbackSecret,
+			event: {
+				type: 'audio_generation_completed',
+				draftId: job.draftId,
+				episodeAudioKey: episode.key,
+				episodeAudioContentType: episode.contentType,
+				episodeAudioSize: episode.size,
+				callerSegmentAudioKey: callerSegment.key,
+				responseSegmentAudioKey: responseSegment.key,
+				attempt: job.attempt ?? 1,
+			},
+		})
+		console.info('Call Kent audio sandbox job completed', {
+			...jobContext,
+			elapsedMs: Date.now() - startedAt,
+		})
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error)
-		console.error('Call Kent audio job request rejected', { error: message })
-		return c.text(message, 500)
+		console.error('Call Kent audio sandbox job failed', {
+			...jobContext,
+			elapsedMs: Date.now() - startedAt,
+			error: message,
+		})
+		await sendCallback({
+			callbackUrl: job.callbackUrl,
+			callbackSecret: job.callbackSecret,
+			event: {
+				type: 'audio_generation_failed',
+				draftId: job.draftId,
+				errorMessage: message,
+				attempt: job.attempt ?? 1,
+			},
+		}).catch((callbackError: unknown) => {
+			console.error('Failed to send audio generation failed callback', {
+				...jobContext,
+				callbackUrl: job.callbackUrl,
+				eventType: 'audio_generation_failed',
+				error:
+					callbackError instanceof Error
+						? callbackError.message
+						: String(callbackError),
+			})
+		})
+		throw error
 	}
-})
+}
 
-serve({ fetch: app.fetch, port: Number(env.PORT) }, () => {
-	console.info(`call-kent-audio-sandbox listening on port ${env.PORT}`)
+function parseJobRequest(rawJobRequest: string) {
+	let parsedJson: unknown
+	try {
+		parsedJson = JSON.parse(rawJobRequest)
+	} catch {
+		throw new Error('CALL_KENT_AUDIO_JOB_REQUEST_BODY must contain valid JSON')
+	}
+	return jobSchema.parse(parsedJson)
+}
+
+async function main() {
+	const job = parseJobRequest(env.CALL_KENT_AUDIO_JOB_REQUEST_BODY)
+	await processEpisodeAudioJob(job)
+}
+
+void main().catch((error) => {
+	const message = error instanceof Error ? error.message : String(error)
+	console.error('Call Kent audio sandbox process crashed', { error: message })
+	process.exitCode = 1
 })
