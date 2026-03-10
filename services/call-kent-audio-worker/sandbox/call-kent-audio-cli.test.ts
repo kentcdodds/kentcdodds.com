@@ -48,24 +48,85 @@ async function createFixtureMp3({
 	filePath,
 	durationSeconds,
 	frequencyHz,
+	env,
 }: {
 	filePath: string
 	durationSeconds: number
 	frequencyHz: number
+	env?: NodeJS.ProcessEnv
 }) {
-	await runCommand('ffmpeg', [
-		'-hide_banner',
-		'-loglevel',
-		'error',
-		'-f',
-		'lavfi',
-		'-i',
-		`sine=frequency=${String(frequencyHz)}:duration=${String(durationSeconds)}`,
-		'-q:a',
-		'4',
-		'-y',
-		filePath,
-	])
+	await runCommand(
+		'ffmpeg',
+		[
+			'-hide_banner',
+			'-loglevel',
+			'error',
+			'-f',
+			'lavfi',
+			'-i',
+			`sine=frequency=${String(frequencyHz)}:duration=${String(durationSeconds)}`,
+			'-q:a',
+			'4',
+			'-y',
+			filePath,
+		],
+		env,
+	)
+}
+
+async function createMockMediaTools(tempRoot: string) {
+	const binDir = path.join(tempRoot, 'bin')
+	await fs.mkdir(binDir, { recursive: true })
+	const ffmpegPath = path.join(binDir, 'ffmpeg')
+	const ffprobePath = path.join(binDir, 'ffprobe')
+
+	await fs.writeFile(
+		ffmpegPath,
+		`#!/usr/bin/env bash
+set -euo pipefail
+
+args=("$@")
+outputs=()
+
+for ((i=0; i<\${#args[@]}; i++)); do
+	if [[ "\${args[$i]}" == "-map" ]]; then
+		output_index=$((i + 2))
+		if (( output_index < \${#args[@]} )); then
+			outputs+=("\${args[$output_index]}")
+		fi
+	fi
+done
+
+if (( \${#outputs[@]} == 0 )) && (( \${#args[@]} > 0 )); then
+	last_index=$((\${#args[@]} - 1))
+	outputs+=("\${args[$last_index]}")
+fi
+
+for output in "\${outputs[@]}"; do
+	mkdir -p "$(dirname "$output")"
+	printf 'fake mp3 for %s\n' "$output" > "$output"
+done
+`,
+	)
+
+	await fs.writeFile(
+		ffprobePath,
+		`#!/usr/bin/env bash
+set -euo pipefail
+
+target_path="\${@: -1}"
+if [[ ! -f "$target_path" ]]; then
+	printf 'missing file: %s\n' "$target_path" >&2
+	exit 1
+fi
+`,
+	)
+
+	await Promise.all([fs.chmod(ffmpegPath, 0o755), fs.chmod(ffprobePath, 0o755)])
+
+	return {
+		PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ''}`,
+	}
 }
 
 test(
@@ -78,6 +139,7 @@ test(
 
 	const assetsDir = path.join(tempRoot, 'assets')
 	const uploadsDir = path.join(tempRoot, 'uploads')
+	const mediaToolEnv = await createMockMediaTools(tempRoot)
 	await fs.mkdir(assetsDir, { recursive: true })
 	await fs.mkdir(uploadsDir, { recursive: true })
 
@@ -85,26 +147,31 @@ test(
 		filePath: path.join(assetsDir, 'intro.mp3'),
 		durationSeconds: 1.2,
 		frequencyHz: 220,
+		env: mediaToolEnv,
 	})
 	await createFixtureMp3({
 		filePath: path.join(assetsDir, 'interstitial.mp3'),
 		durationSeconds: 1.1,
 		frequencyHz: 330,
+		env: mediaToolEnv,
 	})
 	await createFixtureMp3({
 		filePath: path.join(assetsDir, 'outro.mp3'),
 		durationSeconds: 1.2,
 		frequencyHz: 440,
+		env: mediaToolEnv,
 	})
 	await createFixtureMp3({
 		filePath: path.join(tempRoot, 'call.mp3'),
 		durationSeconds: 2.2,
 		frequencyHz: 550,
+		env: mediaToolEnv,
 	})
 	await createFixtureMp3({
 		filePath: path.join(tempRoot, 'response.mp3'),
 		durationSeconds: 2.3,
 		frequencyHz: 660,
+		env: mediaToolEnv,
 	})
 
 	const uploadedFiles = new Map<string, string>()
@@ -170,6 +237,7 @@ test(
 			EPISODE_UPLOAD_URL: `${baseUrl}/uploads/episode.mp3`,
 			CALLER_SEGMENT_UPLOAD_URL: `${baseUrl}/uploads/caller-segment.mp3`,
 			RESPONSE_SEGMENT_UPLOAD_URL: `${baseUrl}/uploads/response-segment.mp3`,
+			...mediaToolEnv,
 		})
 
 		expect(stderr).toContain('Running FFmpeg stitching pipeline')
@@ -187,12 +255,16 @@ test(
 			'response-segment.mp3',
 		])
 
-		await runCommand('ffprobe', [
-			'-hide_banner',
-			'-loglevel',
-			'error',
-			uploadedFiles.get('episode.mp3')!,
-		])
+		await runCommand(
+			'ffprobe',
+			[
+				'-hide_banner',
+				'-loglevel',
+				'error',
+				uploadedFiles.get('episode.mp3')!,
+			],
+			mediaToolEnv,
+		)
 	} finally {
 		server.closeAllConnections?.()
 		server.close()
@@ -229,21 +301,25 @@ test('call-kent-audio-cli fails when an input download returns 404', async () =>
 	tempPaths.push(tempRoot)
 
 	const assetsDir = path.join(tempRoot, 'assets')
+	const mediaToolEnv = await createMockMediaTools(tempRoot)
 	await fs.mkdir(assetsDir, { recursive: true })
 	await createFixtureMp3({
 		filePath: path.join(assetsDir, 'intro.mp3'),
 		durationSeconds: 1.2,
 		frequencyHz: 220,
+		env: mediaToolEnv,
 	})
 	await createFixtureMp3({
 		filePath: path.join(assetsDir, 'interstitial.mp3'),
 		durationSeconds: 1.1,
 		frequencyHz: 330,
+		env: mediaToolEnv,
 	})
 	await createFixtureMp3({
 		filePath: path.join(assetsDir, 'outro.mp3'),
 		durationSeconds: 1.2,
 		frequencyHz: 440,
+		env: mediaToolEnv,
 	})
 
 	const server = createServer((_request, response) => {
@@ -276,6 +352,7 @@ test('call-kent-audio-cli fails when an input download returns 404', async () =>
 				EPISODE_UPLOAD_URL: `${baseUrl}/uploads/episode.mp3`,
 				CALLER_SEGMENT_UPLOAD_URL: `${baseUrl}/uploads/caller-segment.mp3`,
 				RESPONSE_SEGMENT_UPLOAD_URL: `${baseUrl}/uploads/response-segment.mp3`,
+				...mediaToolEnv,
 			}),
 		).rejects.toThrow(/404/)
 	} finally {
