@@ -1033,9 +1033,15 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 			} catch {
 				// ignore
 			}
+			const acceptsAudio = (request.headers.get('accept') ?? '')
+				.toLowerCase()
+				.includes('audio/')
+			const hasTextToSpeechPayload =
+				typeof body?.text === 'string' || typeof body?.prompt === 'string'
 
 			// Text-to-speech (e.g. @cf/deepgram/aura-2-en, @cf/myshell-ai/melotts).
 			if (
+				(acceptsAudio && hasTextToSpeechPayload) ||
 				lowerModel.includes('deepgram/aura') ||
 				lowerModel.includes('aura-') ||
 				lowerModel.includes('melotts')

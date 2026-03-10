@@ -68,6 +68,29 @@ describe('cloudflare MSW mocks', () => {
 		expect(buf.byteLength).toBeGreaterThan(1024)
 	})
 
+	test('Workers AI TTS mock supports custom model with audio accept header', async () => {
+		const apiToken = 'MOCK_test-token'
+		const res = await fetch(
+			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/MOCK_CLOUDFLARE_AI_TEXT_TO_SPEECH_MODEL',
+			{
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${apiToken}`,
+					'Content-Type': 'application/json',
+					Accept: 'audio/mpeg,application/json;q=0.9,*/*;q=0.8',
+				},
+				body: JSON.stringify({
+					text: 'This should still be treated as text-to-speech.',
+				}),
+			},
+		)
+
+		expect(res.ok).toBe(true)
+		expect(res.headers.get('content-type')).toMatch(/^audio\//i)
+		const buf = await res.arrayBuffer()
+		expect(buf.byteLength).toBeGreaterThan(1024)
+	})
+
 	test('Workers AI (AI Gateway) chat endpoint returns { result: { response } }', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
