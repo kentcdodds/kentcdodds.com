@@ -663,7 +663,7 @@ async function generateTranscript({
 		callerNotes: params.callerNotes,
 		callerName: params.callerName,
 		cloudflareAccountId: params.cloudflareAccountId,
-	}).catch(() => rawTranscript)
+	})
 	return {
 		formattedTranscript,
 		callerTranscript,
