@@ -73,9 +73,19 @@ reference:
   Cloudflare queue/container pipeline and requires Cloudflare queue/callback
   environment variables.
 
+## Seed data
+
+The seed script (`services/site/prisma/seed.ts`) creates an admin user:
+`me@kentcdodds.com` / `iliketwix` (role ADMIN, Blue Team).
+
+After `prisma migrate reset --force`, verify the seed ran (look for `created`
+output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
+
 ## Cloud / headless manual testing
 
 - In cloud VMs, Chrome may block camera/microphone access by default. Visiting
   `/calls/record/new` can hit the route ErrorBoundary unless `localhost` is
   allowed mic/camera access in site settings (even if you intend to use the
   typed question → text-to-speech path).
+- The first request after starting the dev server compiles all MDX blog posts
+  and can take ~30 s; subsequent loads are fast.

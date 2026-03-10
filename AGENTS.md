@@ -24,17 +24,7 @@ project-specific guidance over generic advice.
 
 ## Cursor Cloud specific instructions
 
-- **Node 24 required.** The VM snapshot uses nvm; `nvm use 24` is automatic.
-- **Quick-start:** `npm install` from repo root handles everything (including
-  `prisma generate` via postinstall). Copy `services/site/.env.example` →
-  `services/site/.env` if `.env` doesn't exist yet, then reset the DB with
-  `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=yes npm exec --workspace kentcdodds.com prisma migrate reset -- --force`.
-  After migrate reset, verify the seed ran (look for `created` output). If not,
-  run `node prisma/seed.ts` from `services/site/`.
-- **Seed admin user:** `me@kentcdodds.com` / `iliketwix` (ADMIN, Blue Team).
-  The browser is pre-logged-in as this user in the VM snapshot.
-- **Dev server:** `npm run dev` (port 3000). First request compiles all MDX
-  blog posts and can take ~30 s; subsequent loads are instant.
-- **Browser:** Chrome opens `localhost:3000` on startup/new tabs.
-- See `docs/agents/project-context.md` for the full command table, caveats, and
-  testing notes.
+- The VM snapshot has Node 24 via nvm, the browser logged in as the seed admin
+  user, and Chrome configured to open `localhost:3000`.
+- See `docs/agents/project-context.md` for setup, commands, seed data, and
+  caveats.
