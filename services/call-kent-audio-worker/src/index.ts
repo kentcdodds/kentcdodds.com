@@ -37,6 +37,12 @@ function getAttempt(message: QueueMessage) {
 		: 1
 }
 
+function createSandboxId(draftId: string) {
+	const compactDraftId = draftId.replaceAll('-', '').slice(0, 12)
+	const randomSuffix = crypto.randomUUID().replaceAll('-', '').slice(0, 12)
+	return `call-kent-${compactDraftId}-${randomSuffix}`
+}
+
 export async function processMessage({
 	message,
 	env,
@@ -77,7 +83,7 @@ export async function processMessage({
 		})
 		const completed = await runSandboxJob({
 			binding: env.Sandbox,
-			sandboxId: `call-kent-audio-${parsed.draftId}-${crypto.randomUUID()}`,
+			sandboxId: createSandboxId(parsed.draftId),
 			request: {
 				draftId: parsed.draftId,
 				attempt,

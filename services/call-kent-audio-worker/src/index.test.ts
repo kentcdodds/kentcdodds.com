@@ -68,6 +68,7 @@ test('processMessage sends started and completed callbacks around sandbox exec',
 	)
 	expect(runSandboxJob).toHaveBeenCalledWith(
 		expect.objectContaining({
+			sandboxId: expect.stringMatching(/^call-kent-[a-f0-9]+-[a-f0-9]+$/),
 			request: expect.objectContaining({
 				draftId: 'draft-1',
 				attempt: 2,
@@ -76,6 +77,7 @@ test('processMessage sends started and completed callbacks around sandbox exec',
 			}),
 		}),
 	)
+	expect(runSandboxJob.mock.calls[0]?.[0].sandboxId.length).toBeLessThanOrEqual(63)
 	expect(sendCallback).toHaveBeenNthCalledWith(
 		2,
 		expect.objectContaining({
