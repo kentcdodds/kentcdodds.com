@@ -5,6 +5,10 @@ vi.mock('@cloudflare/sandbox', () => ({
 	getSandbox: vi.fn(),
 }))
 
+vi.mock('./call-kent-audio-r2', () => ({
+	createSignedEpisodeAudioUrls: vi.fn(),
+}))
+
 import { handleQueueBatch, processMessage } from './index.ts'
 import { type Env } from './env'
 
@@ -68,7 +72,7 @@ test('processMessage sends started and completed callbacks around sandbox exec',
 	)
 	expect(runSandboxJob).toHaveBeenCalledWith(
 		expect.objectContaining({
-			sandboxId: expect.stringMatching(/^call-kent-[a-f0-9]+-[a-f0-9]+$/),
+			sandboxId: expect.stringMatching(/^call-kent-[a-z0-9]+-[a-f0-9]+$/),
 			request: expect.objectContaining({
 				draftId: 'draft-1',
 				attempt: 2,
