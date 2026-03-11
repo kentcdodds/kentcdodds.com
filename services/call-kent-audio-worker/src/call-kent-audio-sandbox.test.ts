@@ -150,3 +150,46 @@ test('runCallKentAudioSandboxJob retries transient sandbox startup errors', asyn
 		responseSegmentAudioSize: 61,
 	})
 })
+
+test('runCallKentAudioSandboxJob retries transient 501 session creation errors', async () => {
+	const exec = vi
+		.fn()
+		.mockRejectedValueOnce(
+			new Error('Failed to create session: 501 Not Implemented'),
+		)
+		.mockResolvedValue({
+			success: true,
+			stdout:
+				'{"episodeAudioSize":101,"callerSegmentAudioSize":51,"responseSegmentAudioSize":61}',
+			stderr: '',
+			exitCode: 0,
+		})
+	const destroy = vi.fn().mockResolvedValue(undefined)
+	const sleepImpl = vi.fn().mockResolvedValue(undefined)
+	const getSandboxImpl = vi.fn().mockReturnValue({ exec, destroy })
+
+	const result = await runCallKentAudioSandboxJob({
+		binding: {} as never,
+		sandboxId: 'sandbox-1',
+		request: {
+			draftId: 'draft-123',
+			attempt: 2,
+			callAudioUrl: 'https://example.com/call',
+			responseAudioUrl: 'https://example.com/response',
+			episodeUploadUrl: 'https://example.com/episode',
+			callerSegmentUploadUrl: 'https://example.com/caller',
+			responseSegmentUploadUrl: 'https://example.com/response-segment',
+		},
+		getSandboxImpl: getSandboxImpl as never,
+		sleepImpl,
+	})
+
+	expect(exec).toHaveBeenCalledTimes(2)
+	expect(sleepImpl).toHaveBeenCalledTimes(1)
+	expect(destroy).toHaveBeenCalledTimes(1)
+	expect(result).toEqual({
+		episodeAudioSize: 101,
+		callerSegmentAudioSize: 51,
+		responseSegmentAudioSize: 61,
+	})
+})

@@ -152,6 +152,61 @@ test('handleQueueBatch retries failed sandbox jobs after sending a failed callba
 	)
 })
 
+test('handleQueueBatch retries transient sandbox startup errors without sending a failed callback', async () => {
+	const ack = vi.fn()
+	const retry = vi.fn()
+	const sendCallback = vi.fn().mockResolvedValue(undefined)
+	const createSignedUrls = vi.fn().mockResolvedValue({
+		callAudioUrl: 'https://example.com/call',
+		responseAudioUrl: 'https://example.com/response',
+		episodeAudioKey: 'call-kent/drafts/draft-1/episode.mp3',
+		episodeUploadUrl: 'https://example.com/episode',
+		callerSegmentAudioKey: 'call-kent/drafts/draft-1/caller-segment.mp3',
+		callerSegmentUploadUrl: 'https://example.com/caller',
+		responseSegmentAudioKey: 'call-kent/drafts/draft-1/response-segment.mp3',
+		responseSegmentUploadUrl: 'https://example.com/response-segment',
+	})
+	const runSandboxJob = vi
+		.fn()
+		.mockRejectedValue(
+			new Error('Failed to create session: 501 Not Implemented'),
+		)
+
+	await handleQueueBatch({
+		batch: {
+			messages: [
+				{
+					body: {
+						draftId: 'draft-1',
+						callAudioKey: 'call-kent/calls/call-1/call.webm',
+						responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+					},
+					attempts: 1,
+					ack,
+					retry,
+				},
+			],
+		},
+		env: createEnv(),
+		sendCallback,
+		createSignedUrls,
+		runSandboxJob,
+	})
+
+	expect(ack).not.toHaveBeenCalled()
+	expect(retry).toHaveBeenCalledTimes(1)
+	expect(sendCallback).toHaveBeenCalledTimes(1)
+	expect(sendCallback).toHaveBeenCalledWith(
+		expect.objectContaining({
+			event: {
+				type: 'audio_generation_started',
+				draftId: 'draft-1',
+				attempt: 1,
+			},
+		}),
+	)
+})
+
 test('handleQueueBatch retries invalid messages without attempting callbacks', async () => {
 	const ack = vi.fn()
 	const retry = vi.fn()

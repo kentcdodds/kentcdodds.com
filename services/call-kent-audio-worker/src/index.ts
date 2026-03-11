@@ -3,7 +3,10 @@ import {
 	sendCallKentAudioProcessorCallback,
 } from './call-kent-audio-callback'
 import { createSignedEpisodeAudioUrls } from './call-kent-audio-r2'
-import { runCallKentAudioSandboxJob } from './call-kent-audio-sandbox'
+import {
+	isRetryableSandboxStartupError,
+	runCallKentAudioSandboxJob,
+} from './call-kent-audio-sandbox'
 import { type Env } from './env'
 
 export { Sandbox } from '@cloudflare/sandbox'
@@ -116,7 +119,7 @@ export async function processMessage({
 		return { draftId: parsed.draftId, attempt }
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)
-		if (draftId) {
+		if (draftId && !isRetryableSandboxStartupError(error)) {
 			await sendCallback({
 				callbackUrl: env.CALL_KENT_AUDIO_CALLBACK_URL,
 				callbackSecret: env.CALL_KENT_AUDIO_CALLBACK_SECRET,

@@ -2,8 +2,19 @@ import { getSandbox, type Sandbox as SandboxBinding } from '@cloudflare/sandbox'
 import { z } from 'zod'
 
 const sandboxExecTimeoutMs = 30 * 60_000
-const sandboxStartupRetryCount = 5
+const sandboxStartupRetryCount = 10
 const sandboxStartupRetryDelayMs = 2_000
+
+const retryableSandboxStartupSubstrings = [
+	'container is starting',
+	'container not ready',
+	'operation was aborted',
+	'not listening in the tcp address',
+	'please retry in a moment',
+	'failed to create session',
+	'connection refused: container port not found',
+	'port ready timeout',
+]
 
 const sandboxExecResponseSchema = z.object({
 	episodeAudioSize: z.number().int().positive(),
@@ -40,16 +51,31 @@ function sleep(ms: number) {
 	return new Promise<void>((resolve) => setTimeout(resolve, ms))
 }
 
-function isRetryableSandboxStartupError(error: unknown) {
+export function isRetryableSandboxStartupError(error: unknown) {
 	if (!(error instanceof Error)) return false
 	const message = error.message.toLowerCase()
-	return (
-		message.includes('container is starting') ||
-		message.includes('container not ready') ||
-		message.includes('operation was aborted') ||
-		message.includes('not listening in the tcp address') ||
-		message.includes('please retry in a moment')
-	)
+	if (
+		retryableSandboxStartupSubstrings.some((substring) =>
+			message.includes(substring),
+		)
+	) {
+		return true
+	}
+	const mentionsTransientStatusCode =
+		message.includes('500') ||
+		message.includes('501') ||
+		message.includes('502') ||
+		message.includes('503') ||
+		message.includes('504')
+	const mentionsSandboxStartup =
+		(message.includes('sandbox') ||
+			message.includes('container') ||
+			message.includes('session')) &&
+		(message.includes('start') ||
+			message.includes('ready') ||
+			message.includes('create') ||
+			message.includes('port'))
+	return mentionsTransientStatusCode && mentionsSandboxStartup
 }
 
 function getErrorMessage(error: unknown) {
