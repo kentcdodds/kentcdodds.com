@@ -37,7 +37,7 @@ type SandboxLike = {
 }
 
 function sleep(ms: number) {
-	return new Promise((resolve) => setTimeout(resolve, ms))
+	return new Promise<void>((resolve) => setTimeout(resolve, ms))
 }
 
 function isRetryableSandboxStartupError(error: unknown) {
@@ -50,6 +50,10 @@ function isRetryableSandboxStartupError(error: unknown) {
 		message.includes('not listening in the tcp address') ||
 		message.includes('please retry in a moment')
 	)
+}
+
+function getErrorMessage(error: unknown) {
+	return error instanceof Error ? error.message : String(error)
 }
 
 function getSandboxOutput(stdout: string) {
@@ -109,7 +113,7 @@ export async function runCallKentAudioSandboxJob({
 					sandboxId,
 					attempt: request.attempt,
 					retryAttempt: attempt,
-					error: error.message,
+					error: getErrorMessage(error),
 				})
 				await sleepImpl(sandboxStartupRetryDelayMs)
 			}
