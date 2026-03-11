@@ -2,6 +2,8 @@ import { getSandbox, type Sandbox as SandboxBinding } from '@cloudflare/sandbox'
 import { z } from 'zod'
 
 const sandboxExecTimeoutMs = 30 * 60_000
+const sandboxStartupRetryCount = 5
+const sandboxStartupRetryDelayMs = 2_000
 
 const sandboxExecResponseSchema = z.object({
 	episodeAudioSize: z.number().int().positive(),
@@ -34,6 +36,22 @@ type SandboxLike = {
 	destroy: () => Promise<void>
 }
 
+function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isRetryableSandboxStartupError(error: unknown) {
+	if (!(error instanceof Error)) return false
+	const message = error.message.toLowerCase()
+	return (
+		message.includes('container is starting') ||
+		message.includes('container not ready') ||
+		message.includes('operation was aborted') ||
+		message.includes('not listening in the tcp address') ||
+		message.includes('please retry in a moment')
+	)
+}
+
 function getSandboxOutput(stdout: string) {
 	const trimmed = stdout.trim()
 	if (!trimmed) {
@@ -61,18 +79,44 @@ export async function runCallKentAudioSandboxJob({
 	sandboxId,
 	request,
 	getSandboxImpl = getSandbox,
+	sleepImpl = sleep,
 }: {
 	binding: DurableObjectNamespace<SandboxBinding>
 	sandboxId: string
 	request: CallKentAudioSandboxRequest
 	getSandboxImpl?: typeof getSandbox
+	sleepImpl?: (ms: number) => Promise<void>
 }) {
 	const sandbox = getSandboxImpl(binding, sandboxId) as unknown as SandboxLike
 	try {
-		const result = await sandbox.exec('/usr/local/bin/call-kent-audio-cli', {
-			env: createSandboxCommandEnvironment(request),
-			timeout: sandboxExecTimeoutMs,
-		})
+		let result: SandboxExecResult | null = null
+		for (let attempt = 1; attempt <= sandboxStartupRetryCount; attempt++) {
+			try {
+				result = await sandbox.exec('/usr/local/bin/call-kent-audio-cli', {
+					env: createSandboxCommandEnvironment(request),
+					timeout: sandboxExecTimeoutMs,
+				})
+				break
+			} catch (error) {
+				if (
+					!isRetryableSandboxStartupError(error) ||
+					attempt === sandboxStartupRetryCount
+				) {
+					throw error
+				}
+				console.warn('Sandbox not ready yet, retrying exec', {
+					draftId: request.draftId,
+					sandboxId,
+					attempt: request.attempt,
+					retryAttempt: attempt,
+					error: error.message,
+				})
+				await sleepImpl(sandboxStartupRetryDelayMs)
+			}
+		}
+		if (!result) {
+			throw new Error('Sandbox exec did not produce a result')
+		}
 		if (!result.success) {
 			throw new Error(
 				`Sandbox exec failed with exit code ${String(result.exitCode ?? 'unknown')}: ${result.stderr || result.stdout || 'no output'}`,

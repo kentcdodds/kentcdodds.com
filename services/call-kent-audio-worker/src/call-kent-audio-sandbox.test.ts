@@ -104,3 +104,49 @@ test('runCallKentAudioSandboxJob surfaces sandbox stderr on failure', async () =
 	).rejects.toThrow(/ffmpeg exploded/i)
 	expect(destroy).toHaveBeenCalledTimes(1)
 })
+
+test('runCallKentAudioSandboxJob retries transient sandbox startup errors', async () => {
+	const exec = vi
+		.fn()
+		.mockRejectedValueOnce(
+			new Error('SandboxError: Container is starting. Please retry in a moment.'),
+		)
+		.mockRejectedValueOnce(
+			new Error('Error checking if container is ready: The operation was aborted'),
+		)
+		.mockResolvedValue({
+			success: true,
+			stdout:
+				'{"episodeAudioSize":101,"callerSegmentAudioSize":51,"responseSegmentAudioSize":61}',
+			stderr: '',
+			exitCode: 0,
+		})
+	const destroy = vi.fn().mockResolvedValue(undefined)
+	const sleepImpl = vi.fn().mockResolvedValue(undefined)
+	const getSandboxImpl = vi.fn().mockReturnValue({ exec, destroy })
+
+	const result = await runCallKentAudioSandboxJob({
+		binding: {} as never,
+		sandboxId: 'sandbox-1',
+		request: {
+			draftId: 'draft-123',
+			attempt: 2,
+			callAudioUrl: 'https://example.com/call',
+			responseAudioUrl: 'https://example.com/response',
+			episodeUploadUrl: 'https://example.com/episode',
+			callerSegmentUploadUrl: 'https://example.com/caller',
+			responseSegmentUploadUrl: 'https://example.com/response-segment',
+		},
+		getSandboxImpl: getSandboxImpl as never,
+		sleepImpl,
+	})
+
+	expect(exec).toHaveBeenCalledTimes(3)
+	expect(sleepImpl).toHaveBeenCalledTimes(2)
+	expect(destroy).toHaveBeenCalledTimes(1)
+	expect(result).toEqual({
+		episodeAudioSize: 101,
+		callerSegmentAudioSize: 51,
+		responseSegmentAudioSize: 61,
+	})
+})
