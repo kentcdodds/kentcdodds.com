@@ -43,6 +43,16 @@ The sandbox image expects these files in `assets/`:
 - `assets/interstitial.mp3`
 - `assets/outro.mp3`
 
+## Sandbox image requirements
+
+- The Docker image must extend `docker.io/cloudflare/sandbox:<version>` (or copy
+  the `/sandbox` binary from that image) so the SDK can create exec sessions.
+- Keep the Docker image version in sync with the installed
+  `@cloudflare/sandbox` package version.
+- Do not replace the base image `ENTRYPOINT` with a custom HTTP server. If you
+  need startup behavior, add a `CMD` instead and let the base image keep serving
+  the sandbox control API.
+
 Site development/tests still use the MSW Cloudflare mock instead of the real
 worker+sandbox path, and the sandbox CLI tests generate temporary fixture
 assets at runtime.
