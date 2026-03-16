@@ -60,7 +60,8 @@ jobs:
             playwright-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
       - name: 🌐 Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        # Always validate/install Chromium even on cache hit so stale or partial
+        # caches do not break browser-mode tests in `ci:verify`.
         run: npm run test:e2e:install --workspace kentcdodds.com
 
       - name: 🔬 Verify site
@@ -154,7 +155,8 @@ jobs:
         uses: FedericoCarboni/setup-ffmpeg@v3
 
       - name: 🌐 Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        # Always validate/install Chromium even on cache hit so stale or partial
+        # caches do not break the Playwright job.
         run: npm run test:e2e:install --workspace kentcdodds.com
 
       - name: 📦 Download site build artifacts
