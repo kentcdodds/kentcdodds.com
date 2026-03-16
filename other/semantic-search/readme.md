@@ -88,6 +88,9 @@ Script:
 - The script indexes:
   - videos from the configured YouTube playlist
   - additional YouTube video links found in `services/site/content/pages/appearances.mdx`
+  - additional YouTube video links found in `services/site/content/data/talks.yml`
+  - uploads from `https://www.youtube.com/c/kentcdodds-vids` whose titles include
+    `Office Hours` (case-insensitive)
 
 Optional flags:
 

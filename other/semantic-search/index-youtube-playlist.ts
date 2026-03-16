@@ -17,6 +17,12 @@ import {
 } from './youtube-transcript-chunking.ts'
 import { isLowSignalYoutubeCaptionCueLine } from './youtube-transcript-cue-filter.ts'
 import {
+	filterOfficeHoursVideos,
+	extractYoutubeChannelIdFromHtml,
+	getUploadsPlaylistIdFromChannelId,
+	KCD_OFFICE_HOURS_CHANNEL_URL,
+} from './youtube-channel-helpers.ts'
+import {
 	LEXICAL_SEARCH_YOUTUBE_ARTIFACT_KEY,
 	type LexicalSearchArtifact,
 	type LexicalSearchArtifactChunk,
@@ -24,7 +30,11 @@ import {
 
 type DocType = 'youtube'
 type TranscriptSource = 'manual' | 'auto' | 'none'
-type VideoSource = 'playlist' | 'appearances' | 'talks'
+type VideoSource =
+	| 'playlist'
+	| 'appearances'
+	| 'talks'
+	| 'office-hours-channel'
 
 type ManifestChunk = {
 	id: string
@@ -126,7 +136,8 @@ function parseArgs() {
 		explicitVideos,
 		// If true, ONLY index the explicitly provided videos (ignores discovered list).
 		onlyExplicitVideos: parseBoolean(get('--only-videos'), false),
-		// When true, remove docs that are no longer discovered in playlist/appearances.
+		// When true, remove docs that are no longer discovered from the configured
+		// YouTube sources for this run.
 		// Default false to avoid accidental deletions (especially when using --max-videos).
 		prune: parseBoolean(get('--prune'), false),
 		dryRun: parseBoolean(get('--dry-run'), false),
@@ -464,15 +475,48 @@ async function fetchTalksYouTubeVideos() {
 	return [...byVideoId.values()]
 }
 
+async function fetchChannelOfficeHoursVideos() {
+	const html = await fetchTextWithRetries(KCD_OFFICE_HOURS_CHANNEL_URL, {
+		label: 'youtube office hours channel html',
+		init: {
+			headers: getYouTubeRequestHeaders(),
+		},
+	})
+	const channelId = extractYoutubeChannelIdFromHtml(html)
+	if (!channelId) {
+		throw new Error(
+			`Could not parse YouTube channel ID from ${KCD_OFFICE_HOURS_CHANNEL_URL}`,
+		)
+	}
+	const uploadsPlaylistId = getUploadsPlaylistIdFromChannelId(channelId)
+	if (!uploadsPlaylistId) {
+		throw new Error(
+			`Could not derive uploads playlist ID from channel ID "${channelId}"`,
+		)
+	}
+	const config = await getYouTubeBrowseConfig(uploadsPlaylistId)
+	const { videos } = await fetchPlaylistVideos({
+		playlistId: uploadsPlaylistId,
+		config,
+	})
+
+	return filterOfficeHoursVideos(videos).map((video) => ({
+		...video,
+		sources: ['office-hours-channel'] as VideoSource[],
+	}))
+}
+
 function mergeVideos({
 	playlistVideos,
 	appearancesVideos,
 	talksVideos,
+	channelOfficeHoursVideos,
 	maxVideos,
 }: {
 	playlistVideos: PlaylistVideo[]
 	appearancesVideos: PlaylistVideo[]
 	talksVideos: PlaylistVideo[]
+	channelOfficeHoursVideos: PlaylistVideo[]
 	maxVideos?: number
 }) {
 	const byVideoId = new Map<string, PlaylistVideo>()
@@ -506,6 +550,7 @@ function mergeVideos({
 	for (const video of playlistVideos) upsert(video)
 	for (const video of appearancesVideos) upsert(video)
 	for (const video of talksVideos) upsert(video)
+	for (const video of channelOfficeHoursVideos) upsert(video)
 
 	const sorted = [...byVideoId.values()].sort((a, b) => {
 		const left = a.position ?? Number.MAX_SAFE_INTEGER
@@ -1192,10 +1237,16 @@ async function main() {
 	console.log('Loading YouTube links from talks data...')
 	const talksVideos = await fetchTalksYouTubeVideos()
 	console.log(`Talks data YouTube videos discovered: ${talksVideos.length}`)
+	console.log('Loading Office Hours uploads from kentcdodds-vids...')
+	const channelOfficeHoursVideos = await fetchChannelOfficeHoursVideos()
+	console.log(
+		`kentcdodds-vids Office Hours uploads discovered: ${channelOfficeHoursVideos.length}`,
+	)
 	let videos = mergeVideos({
 		playlistVideos,
 		appearancesVideos,
 		talksVideos,
+		channelOfficeHoursVideos,
 		maxVideos,
 	})
 
@@ -1241,8 +1292,11 @@ async function main() {
 	const talksSourceCount = videos.filter((video) =>
 		video.sources.includes('talks'),
 	).length
+	const officeHoursChannelSourceCount = videos.filter((video) =>
+		video.sources.includes('office-hours-channel'),
+	).length
 	console.log(
-		`Total unique videos to process: ${videos.length} (playlist: ${playlistSourceCount}, appearances: ${appearancesSourceCount}, talks: ${talksSourceCount})${maxVideos ? `, capped by --max-videos=${maxVideos}` : ''}`,
+		`Total unique videos to process: ${videos.length} (playlist: ${playlistSourceCount}, appearances: ${appearancesSourceCount}, talks: ${talksSourceCount}, office-hours-channel: ${officeHoursChannelSourceCount})${maxVideos ? `, capped by --max-videos=${maxVideos}` : ''}`,
 	)
 	if (explicitVideoIds.size) {
 		console.log(
@@ -1627,7 +1681,7 @@ async function main() {
 
 		for (const [docId, oldDoc] of Object.entries(manifest.docs)) {
 			if (nextDocs[docId]) continue
-			// Delete docs we did NOT discover this run (playlist/appearances).
+			// Delete docs we did NOT discover from the configured YouTube sources.
 			// Note: discovery is affected by --max-videos, which is why we refuse
 			// pruning when --max-videos is set.
 			if (discoveredDocIds.has(docId)) continue
