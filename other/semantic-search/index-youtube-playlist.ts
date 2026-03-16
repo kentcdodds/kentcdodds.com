@@ -966,9 +966,22 @@ async function fetchVideoEnrichedData({
 		if (!chosen) {
 			// This is the most common "why no transcript?" failure mode.
 			if (playabilityCode && playabilityCode !== 'OK') {
-				console.warn(
-					`YouTube transcript unavailable for ${videoId}: ${playabilityCode}${playabilityReason ? ` (${playabilityReason})` : ''}`,
-				)
+				const message = formatYouTubeTranscriptUnavailableMessage({
+					videoId,
+					playabilityCode,
+					playabilityReason,
+				})
+				if (
+					isYouTubeAntiBotPlayabilityStatus({
+						playabilityCode,
+						playabilityReason,
+					})
+				) {
+					const error = new Error(message)
+					error.name = 'YouTubeAntiBotError'
+					throw error
+				}
+				console.warn(message)
 			}
 			return {
 				title,
@@ -995,6 +1008,9 @@ async function fetchVideoEnrichedData({
 			transcriptSource: transcript.transcript ? chosen.source : 'none',
 		}
 	} catch (error) {
+		if (isYouTubeAntiBotError(error)) {
+			throw error
+		}
 		console.warn(`Failed to fetch transcript/metadata for ${videoId}`, error)
 		return {
 			title: undefined,
@@ -1093,6 +1109,35 @@ async function writeVideoEnrichedDataCache({
 	const tmpPath = `${cachePath}.tmp-${process.pid}-${Date.now()}`
 	await fs.writeFile(tmpPath, JSON.stringify(entry, null, 2), 'utf8')
 	await fs.rename(tmpPath, cachePath)
+}
+
+function formatYouTubeTranscriptUnavailableMessage({
+	videoId,
+	playabilityCode,
+	playabilityReason,
+}: {
+	videoId: string
+	playabilityCode: string
+	playabilityReason?: string
+}) {
+	return `YouTube transcript unavailable for ${videoId}: ${playabilityCode}${playabilityReason ? ` (${playabilityReason})` : ''}`
+}
+
+function isYouTubeAntiBotPlayabilityStatus({
+	playabilityCode,
+	playabilityReason,
+}: {
+	playabilityCode?: string
+	playabilityReason?: string
+}) {
+	return (
+		playabilityCode === 'LOGIN_REQUIRED' &&
+		/confirm you.?re not a bot/i.test(playabilityReason ?? '')
+	)
+}
+
+function isYouTubeAntiBotError(error: unknown) {
+	return error instanceof Error && error.name === 'YouTubeAntiBotError'
 }
 
 function batch<T>(items: T[], size: number) {
