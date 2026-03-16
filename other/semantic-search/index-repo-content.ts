@@ -15,6 +15,11 @@ import {
 	getJsxPagePathFromSlug,
 	loadJsxPageItemsFromLocalApp,
 } from './jsx-page-content.ts'
+import {
+	LEXICAL_SEARCH_REPO_ARTIFACT_KEY,
+	type LexicalSearchArtifact,
+	type LexicalSearchArtifactChunk,
+} from './lexical-search-artifact.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 const siteRoot = path.join('services', 'site')
@@ -732,6 +737,14 @@ async function main() {
 		version: 1,
 		docs: {},
 	}
+	const previousLexicalArtifact =
+		(await getJsonObject<LexicalSearchArtifact>({
+			bucket: r2Bucket,
+			key: LEXICAL_SEARCH_REPO_ARTIFACT_KEY,
+		})) ?? null
+	const lexicalChunksById = new Map(
+		(previousLexicalArtifact?.chunks ?? []).map((chunk) => [chunk.id, chunk]),
+	)
 
 	const ignoreList = await getSemanticSearchIgnoreList({ bucket: r2Bucket })
 	const isIgnoredDocId = (docId: string) =>
@@ -853,7 +866,10 @@ async function main() {
 		const docId = getDocId(type, slug)
 		const old = manifest.docs[docId]
 		if (!old) continue
-		for (const chunk of old.chunks) idsToDelete.push(chunk.id)
+		for (const chunk of old.chunks) {
+			idsToDelete.push(chunk.id)
+			lexicalChunksById.delete(chunk.id)
+		}
 		delete manifest.docs[docId]
 	}
 
@@ -892,6 +908,7 @@ async function main() {
 		const oldChunksById = new Map(
 			(manifest.docs[docId]?.chunks ?? []).map((c) => [c.id, c]),
 		)
+		for (const old of oldChunksById.values()) lexicalChunksById.delete(old.id)
 
 		for (let i = 0; i < chunkBodies.length; i++) {
 			const chunkBody = chunkBodies[i] ?? ''
@@ -909,6 +926,17 @@ async function main() {
 				chunkIndex: i,
 				chunkCount,
 			})
+			lexicalChunksById.set(vectorId, {
+				id: vectorId,
+				type: metadataType,
+				slug,
+				url,
+				title,
+				snippet,
+				text: chunkBody,
+				chunkIndex: i,
+				chunkCount,
+			} satisfies LexicalSearchArtifactChunk)
 
 			const existing = oldChunksById.get(vectorId)
 			if (existing?.hash === contentHash) continue
@@ -1000,6 +1028,20 @@ async function main() {
 
 	await putJsonObject({ bucket: r2Bucket, key: manifestKey, value: manifest })
 	console.log(`Updated manifest written to r2://${r2Bucket}/${manifestKey}`)
+	await putJsonObject({
+		bucket: r2Bucket,
+		key: LEXICAL_SEARCH_REPO_ARTIFACT_KEY,
+		value: {
+			version: 1,
+			generatedAt: new Date().toISOString(),
+			chunks: [...lexicalChunksById.values()].sort((a, b) =>
+				a.id.localeCompare(b.id),
+			),
+		} satisfies LexicalSearchArtifact,
+	})
+	console.log(
+		`Updated lexical artifact written to r2://${r2Bucket}/${LEXICAL_SEARCH_REPO_ARTIFACT_KEY}`,
+	)
 }
 
 main().catch((e) => {

@@ -16,6 +16,11 @@ import {
 	vectorizeUpsert,
 } from './cloudflare.ts'
 import { getSemanticSearchIgnoreList, isDocIdIgnored } from './ignore-list.ts'
+import {
+	LEXICAL_SEARCH_PODCASTS_ARTIFACT_KEY,
+	type LexicalSearchArtifact,
+	type LexicalSearchArtifactChunk,
+} from './lexical-search-artifact.ts'
 import { getJsonObject, putJsonObject } from './r2-manifest.ts'
 
 type DocType = 'ck' | 'cwk'
@@ -374,6 +379,7 @@ async function main() {
 		text: string
 		metadata: Record<string, unknown>
 	}> = []
+	const lexicalChunks: LexicalSearchArtifactChunk[] = []
 
 	const nextDocs: Record<string, ManifestDoc> = {}
 
@@ -424,12 +430,25 @@ async function main() {
 			const hash = sha256(body)
 			const snippet = makeSnippet(body)
 			chunks.push({ id: vectorId, hash, snippet, chunkIndex: i, chunkCount })
+			lexicalChunks.push({
+				id: vectorId,
+				type: 'ck',
+				slug: key,
+				url,
+				title,
+				snippet,
+				text: body,
+				chunkIndex: i,
+				chunkCount,
+				sourceUpdatedAt: e.updatedAt,
+			})
 			if (oldChunksById.get(vectorId)?.hash === hash) continue
 			toUpsert.push({
 				vectorId,
 				text: body,
 				metadata: {
 					type: 'ck',
+					slug: key,
 					url,
 					title,
 					snippet,
@@ -496,12 +515,25 @@ async function main() {
 			const hash = sha256(body)
 			const snippet = makeSnippet(body)
 			chunks.push({ id: vectorId, hash, snippet, chunkIndex: i, chunkCount })
+			lexicalChunks.push({
+				id: vectorId,
+				type: 'cwk',
+				slug: key,
+				url,
+				title,
+				snippet,
+				text: body,
+				chunkIndex: i,
+				chunkCount,
+				sourceUpdatedAt: e.updated_at,
+			})
 			if (oldChunksById.get(vectorId)?.hash === hash) continue
 			toUpsert.push({
 				vectorId,
 				text: body,
 				metadata: {
 					type: 'cwk',
+					slug: key,
 					url,
 					title,
 					snippet,
@@ -625,6 +657,18 @@ async function main() {
 		value: nextManifest,
 	})
 	console.log(`Updated manifest written to r2://${r2Bucket}/${manifestKey}`)
+	await putJsonObject({
+		bucket: r2Bucket,
+		key: LEXICAL_SEARCH_PODCASTS_ARTIFACT_KEY,
+		value: {
+			version: 1,
+			generatedAt: new Date().toISOString(),
+			chunks: lexicalChunks.sort((a, b) => a.id.localeCompare(b.id)),
+		} satisfies LexicalSearchArtifact,
+	})
+	console.log(
+		`Updated lexical artifact written to r2://${r2Bucket}/${LEXICAL_SEARCH_PODCASTS_ARTIFACT_KEY}`,
+	)
 }
 
 main().catch((e) => {

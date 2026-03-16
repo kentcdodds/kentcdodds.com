@@ -16,6 +16,11 @@ import {
 	type TranscriptEvent,
 } from './youtube-transcript-chunking.ts'
 import { isLowSignalYoutubeCaptionCueLine } from './youtube-transcript-cue-filter.ts'
+import {
+	LEXICAL_SEARCH_YOUTUBE_ARTIFACT_KEY,
+	type LexicalSearchArtifact,
+	type LexicalSearchArtifactChunk,
+} from './lexical-search-artifact.ts'
 
 type DocType = 'youtube'
 type TranscriptSource = 'manual' | 'auto' | 'none'
@@ -1264,6 +1269,14 @@ async function main() {
 		version: 1,
 		docs: {},
 	}
+	const previousLexicalArtifact =
+		(await getJsonObject<LexicalSearchArtifact>({
+			bucket: r2Bucket,
+			key: LEXICAL_SEARCH_YOUTUBE_ARTIFACT_KEY,
+		})) ?? null
+	const lexicalChunksById = new Map(
+		(previousLexicalArtifact?.chunks ?? []).map((chunk) => [chunk.id, chunk]),
+	)
 
 	const ignoreList = await getSemanticSearchIgnoreList({ bucket: r2Bucket })
 	const isIgnoredVideoId = (videoId: string) =>
@@ -1426,7 +1439,11 @@ async function main() {
 			if (isDocIdIgnored({ docId, ignoreList })) {
 				ignoredFromManifest++
 				for (const chunk of oldDoc.chunks ?? []) {
-					if (chunk?.id) idsToDelete.push(String(chunk.id))
+					if (chunk?.id) {
+						const chunkId = String(chunk.id)
+						idsToDelete.push(chunkId)
+						lexicalChunksById.delete(chunkId)
+					}
 				}
 				continue
 			}
@@ -1505,6 +1522,9 @@ async function main() {
 			(manifest.docs[docId]?.chunks ?? []).map((chunk) => [chunk.id, chunk]),
 		)
 		const chunks: ManifestChunk[] = []
+		for (const oldChunk of oldChunksById.values()) {
+			lexicalChunksById.delete(oldChunk.id)
+		}
 
 		for (let index = 0; index < chunkItems.length; index++) {
 			const item = chunkItems[index]
@@ -1524,6 +1544,26 @@ async function main() {
 					item.kind === 'transcript' ? item.startSeconds : undefined,
 				endSeconds: item.kind === 'transcript' ? item.endSeconds : undefined,
 			})
+			lexicalChunksById.set(vectorId, {
+				id: vectorId,
+				type: 'youtube',
+				slug: videoId,
+				url,
+				title,
+				snippet,
+				text: body,
+				chunkIndex: index,
+				chunkCount,
+				startSeconds:
+					item.kind === 'transcript' ? item.startSeconds : undefined,
+				endSeconds: item.kind === 'transcript' ? item.endSeconds : undefined,
+				imageUrl:
+					video.thumbnailUrl ??
+					`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+				imageAlt: title,
+				sourceUpdatedAt: details.publishedAt,
+				transcriptSource: details.transcriptSource,
+			} satisfies LexicalSearchArtifactChunk)
 			if (oldChunksById.get(vectorId)?.hash === hash) continue
 
 			const startSeconds =
@@ -1591,7 +1631,10 @@ async function main() {
 			// Note: discovery is affected by --max-videos, which is why we refuse
 			// pruning when --max-videos is set.
 			if (discoveredDocIds.has(docId)) continue
-			for (const chunk of oldDoc.chunks) idsToDelete.push(chunk.id)
+			for (const chunk of oldDoc.chunks) {
+				idsToDelete.push(chunk.id)
+				lexicalChunksById.delete(chunk.id)
+			}
 		}
 	}
 
@@ -1659,6 +1702,20 @@ async function main() {
 		value: nextManifest,
 	})
 	console.log(`Updated manifest written to r2://${r2Bucket}/${manifestKey}`)
+	await putJsonObject({
+		bucket: r2Bucket,
+		key: LEXICAL_SEARCH_YOUTUBE_ARTIFACT_KEY,
+		value: {
+			version: 1,
+			generatedAt: new Date().toISOString(),
+			chunks: [...lexicalChunksById.values()].sort((a, b) =>
+				a.id.localeCompare(b.id),
+			),
+		} satisfies LexicalSearchArtifact,
+	})
+	console.log(
+		`Updated lexical artifact written to r2://${r2Bucket}/${LEXICAL_SEARCH_YOUTUBE_ARTIFACT_KEY}`,
+	)
 }
 
 main().catch((error) => {

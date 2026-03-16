@@ -3,6 +3,10 @@ import { z } from 'zod'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { getWorkersAiRunUrl } from '#app/utils/cloudflare-ai-utils.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
+import {
+	ensureLexicalSearchReady,
+	queryLexicalSearch,
+} from '#app/utils/lexical-search.server.ts'
 import { getSemanticSearchPresentation } from '#app/utils/semantic-search-presentation.server.ts'
 import { type Timings } from '#app/utils/timing.server.ts'
 
@@ -64,7 +68,7 @@ function makeSemanticSearchCacheKey({
 	// - avoid massive cache keys for long queries
 	// - avoid storing potentially sensitive user queries in plaintext keys
 	const payload = JSON.stringify({
-		v: 1,
+		v: 2,
 		accountId,
 		indexName,
 		embeddingModel,
@@ -72,7 +76,7 @@ function makeSemanticSearchCacheKey({
 		query,
 	})
 	const hash = createHash('sha256').update(payload).digest('hex')
-	return `semantic-search:kcd:v1:${hash}`
+	return `semantic-search:kcd:v2:${hash}`
 }
 
 function asFiniteNumber(value: unknown): number | undefined {
@@ -414,6 +418,187 @@ const semanticSearchResultsSchema = z.array(
 		.passthrough(),
 )
 
+type RetrievedMatch = {
+	rawId: string
+	rank: number
+	source: 'semantic' | 'lexical'
+	score?: number
+	type?: string
+	slug?: string
+	title?: string
+	url?: string
+	snippet?: string
+	timestampSeconds?: number
+	imageUrl?: string
+	imageAlt?: string
+}
+
+type RankedDocResult = {
+	rank: number
+	result: SemanticSearchResult
+}
+
+function compareRetrievedMatchQuality(
+	next: RetrievedMatch,
+	prev: RetrievedMatch,
+): number {
+	const nextScore =
+		typeof next.score === 'number' && Number.isFinite(next.score)
+			? next.score
+			: -Infinity
+	const prevScore =
+		typeof prev.score === 'number' && Number.isFinite(prev.score)
+			? prev.score
+			: -Infinity
+	if (nextScore !== prevScore) return nextScore - prevScore
+	return prev.rank - next.rank
+}
+
+function collapseRetrievedMatches(matches: Array<RetrievedMatch>) {
+	const byCanonicalId = new Map<string, { rank: number; match: RetrievedMatch }>()
+
+	for (const match of matches) {
+		const canonicalId = getCanonicalResultId({
+			vectorId: match.rawId,
+			type: match.type,
+			slug: match.slug,
+			url: match.url,
+			title: match.title,
+		})
+
+		const existing = byCanonicalId.get(canonicalId)
+		if (!existing) {
+			byCanonicalId.set(canonicalId, { rank: match.rank, match })
+			continue
+		}
+
+		const nextIsBetter = compareRetrievedMatchQuality(match, existing.match) > 0
+		const prev = existing.match
+		const next = match
+		existing.rank = Math.min(existing.rank, match.rank)
+		existing.match = {
+			rawId: nextIsBetter ? next.rawId : prev.rawId,
+			source: prev.source,
+			rank: Math.min(prev.rank, next.rank),
+			score:
+				typeof prev.score === 'number' || typeof next.score === 'number'
+					? Math.max(prev.score ?? -Infinity, next.score ?? -Infinity)
+					: undefined,
+			type: prev.type ?? next.type,
+			slug: prev.slug ?? next.slug,
+			title: prev.title ?? next.title,
+			url: prev.url ?? next.url,
+			snippet: nextIsBetter
+				? (next.snippet ?? prev.snippet)
+				: (prev.snippet ?? next.snippet),
+			timestampSeconds: nextIsBetter
+				? (next.timestampSeconds ?? prev.timestampSeconds)
+				: (prev.timestampSeconds ?? next.timestampSeconds),
+			imageUrl: prev.imageUrl ?? next.imageUrl,
+			imageAlt: prev.imageAlt ?? next.imageAlt,
+		}
+	}
+
+	return [...byCanonicalId.entries()]
+		.map(([id, value]) => ({
+			rank: value.rank,
+			result: {
+				id,
+				score: value.match.score ?? 0,
+				type: value.match.type,
+				slug: value.match.slug,
+				title: value.match.title,
+				url: value.match.url,
+				snippet: value.match.snippet,
+				timestampSeconds: value.match.timestampSeconds,
+				imageUrl: value.match.imageUrl,
+				imageAlt: value.match.imageAlt,
+			} satisfies SemanticSearchResult,
+		}))
+		.sort((a, b) => {
+			const scoreDiff = (b.result.score ?? 0) - (a.result.score ?? 0)
+			if (scoreDiff) return scoreDiff
+			return a.rank - b.rank
+		})
+}
+
+function fuseRankedResults({
+	semanticResults,
+	lexicalResults,
+	topK,
+}: {
+	semanticResults: Array<RankedDocResult>
+	lexicalResults: Array<RankedDocResult>
+	topK: number
+}) {
+	const rankConstant = 60
+	const weights = {
+		semantic: 1,
+		lexical: 1.15,
+	} as const
+
+	const fused = new Map<
+		string,
+		{
+			score: number
+			result: SemanticSearchResult
+		}
+	>()
+
+	const apply = (
+		source: keyof typeof weights,
+		items: Array<RankedDocResult>,
+	) => {
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i]
+			if (!item) continue
+			const contribution = weights[source] / (rankConstant + i + 1)
+			const existing = fused.get(item.result.id)
+			if (!existing) {
+				fused.set(item.result.id, {
+					score: contribution,
+					result: {
+						...item.result,
+						score: contribution,
+					},
+				})
+				continue
+			}
+
+			existing.score += contribution
+			const shouldReplaceRepresentative =
+				contribution > (existing.result.score ?? 0)
+			existing.result = {
+				id: item.result.id,
+				score: existing.score,
+				type: existing.result.type ?? item.result.type,
+				slug: existing.result.slug ?? item.result.slug,
+				title: existing.result.title ?? item.result.title,
+				url: existing.result.url ?? item.result.url,
+				snippet: shouldReplaceRepresentative
+					? (item.result.snippet ?? existing.result.snippet)
+					: (existing.result.snippet ?? item.result.snippet),
+				timestampSeconds: shouldReplaceRepresentative
+					? (item.result.timestampSeconds ?? existing.result.timestampSeconds)
+					: (existing.result.timestampSeconds ?? item.result.timestampSeconds),
+				imageUrl: existing.result.imageUrl ?? item.result.imageUrl,
+				imageAlt: existing.result.imageAlt ?? item.result.imageAlt,
+			}
+		}
+	}
+
+	apply('semantic', semanticResults)
+	apply('lexical', lexicalResults)
+
+	return [...fused.values()]
+		.sort((a, b) => b.score - a.score)
+		.slice(0, topK)
+		.map((entry) => ({
+			...entry.result,
+			score: entry.score,
+		}))
+}
+
 function parseYoutubeVideoIdFromUrl(url: string | undefined) {
 	if (!url) return null
 	try {
@@ -456,7 +641,7 @@ function addYoutubeTimestampToUrl({
 		typeof timestampSeconds === 'number' && Number.isFinite(timestampSeconds)
 			? Math.max(0, Math.floor(timestampSeconds))
 			: null
-	if (!t) return url
+	if (t === null) return url
 
 	const vid = videoId ?? parseYoutubeVideoIdFromUrl(url)
 	if (!vid) return url
@@ -555,93 +740,61 @@ export async function semanticSearchKCD({
 			const result = (responseJson as any).result ?? responseJson
 			const matches = (result?.matches ??
 				[]) as VectorizeQueryResponse['matches']
+			const semanticResults = collapseRetrievedMatches(
+				matches.map((m, i) => {
+					const md = (m.metadata ?? {}) as Record<string, unknown>
+					return {
+						rawId: m.id,
+						rank: i,
+						source: 'semantic' as const,
+						score: m.score,
+						type: asNonEmptyString(md.type),
+						slug: asNonEmptyString(md.slug),
+						title: asNonEmptyString(md.title),
+						url: asNonEmptyString(md.url),
+						snippet: asNonEmptyString(md.snippet),
+						timestampSeconds: normalizeYoutubeTimestampSeconds({
+							startSeconds: asFiniteNumber(md.startSeconds),
+						}),
+						imageUrl: asNonEmptyString(md.imageUrl),
+						imageAlt: asNonEmptyString(md.imageAlt),
+					} satisfies RetrievedMatch
+				}),
+			).slice(0, safeTopK * 3)
 
-			type RankedResult = { rank: number; result: SemanticSearchResult }
-			const byCanonicalId = new Map<string, RankedResult>()
-
-			for (let i = 0; i < matches.length; i++) {
-				const m = matches[i]
-				if (!m) continue
-				const md = (m.metadata ?? {}) as Record<string, unknown>
-				const type = asNonEmptyString(md.type)
-				const slug = asNonEmptyString(md.slug)
-				const title = asNonEmptyString(md.title)
-				const url = asNonEmptyString(md.url)
-				const snippet = asNonEmptyString(md.snippet)
-				// For media (YouTube), chunk metadata can include a start time.
-				const timestampSeconds = normalizeYoutubeTimestampSeconds({
-					startSeconds: asFiniteNumber(md.startSeconds),
+			let lexicalResults: Array<RankedDocResult> = []
+			try {
+				await ensureLexicalSearchReady()
+				const lexicalMatches = queryLexicalSearch({
+					query: cleanedQuery,
+					topK: Math.min(100, safeTopK * 8),
 				})
-				const imageUrl = asNonEmptyString(md.imageUrl)
-				const imageAlt = asNonEmptyString(md.imageAlt)
-
-				const canonicalId = getCanonicalResultId({
-					vectorId: m.id,
-					type,
-					slug,
-					url,
-					title,
-				})
-
-				const next: SemanticSearchResult = {
-					id: canonicalId,
-					score: m.score,
-					type,
-					slug,
-					title,
-					url,
-					snippet,
-					timestampSeconds,
-					imageUrl,
-					imageAlt,
-				}
-
-				const existing = byCanonicalId.get(canonicalId)
-				if (!existing) {
-					byCanonicalId.set(canonicalId, { rank: i, result: next })
-					continue
-				}
-
-				const prev = existing.result
-				const prevScore =
-					typeof prev.score === 'number' && Number.isFinite(prev.score)
-						? prev.score
-						: -Infinity
-				const nextScore =
-					typeof next.score === 'number' && Number.isFinite(next.score)
-						? next.score
-						: -Infinity
-				const bestScore = Math.max(prevScore, nextScore)
-				const nextIsBetter = nextScore > prevScore
-
-				existing.result = {
-					id: canonicalId,
-					score: bestScore,
-					type: prev.type ?? next.type,
-					slug: prev.slug ?? next.slug,
-					title: prev.title ?? next.title,
-					url: prev.url ?? next.url,
-					// Prefer the snippet from the highest-scoring chunk, but fall back to any snippet.
-					snippet: nextIsBetter
-						? (next.snippet ?? prev.snippet)
-						: (prev.snippet ?? next.snippet),
-					// Keep the timestamp from the highest-scoring chunk when present.
-					timestampSeconds: nextIsBetter
-						? (next.timestampSeconds ?? prev.timestampSeconds)
-						: (prev.timestampSeconds ?? next.timestampSeconds),
-					imageUrl: prev.imageUrl ?? next.imageUrl,
-					imageAlt: prev.imageAlt ?? next.imageAlt,
-				}
+				lexicalResults = collapseRetrievedMatches(
+					lexicalMatches.map((match, i) => ({
+						rawId: match.id,
+						rank: i,
+						source: 'lexical' as const,
+						type: match.type,
+						slug: match.slug,
+						title: match.title,
+						url: match.url,
+						snippet: match.snippet,
+						timestampSeconds: normalizeYoutubeTimestampSeconds({
+							startSeconds: match.startSeconds,
+						}),
+						imageUrl: match.imageUrl,
+						imageAlt: match.imageAlt,
+					} satisfies RetrievedMatch)),
+				).slice(0, safeTopK * 3)
+			} catch (error) {
+				console.error('Lexical search unavailable, continuing with semantic only', error)
 			}
 
-			const baseResults = [...byCanonicalId.values()]
-				.sort((a, b) => {
-					const scoreDiff = (b.result.score ?? 0) - (a.result.score ?? 0)
-					if (scoreDiff) return scoreDiff
-					return a.rank - b.rank
-				})
-				.slice(0, safeTopK)
-				.map((x) => x.result)
+			const baseResults = fuseRankedResults({
+				semanticResults,
+				lexicalResults,
+				topK: safeTopK,
+			})
 
 			// If a YouTube chunk match includes a timestamp, deep-link the result URL.
 			for (const r of baseResults) {

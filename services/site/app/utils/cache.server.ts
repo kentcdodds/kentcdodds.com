@@ -20,6 +20,10 @@ import { time, type Timings } from './timing.server.ts'
 
 const cacheDb = remember('cacheDb', createDatabase)
 
+export function getCacheDb() {
+	return cacheDb
+}
+
 function createDatabase(tryAgain = true): DatabaseSync {
 	const cacheDatabasePath = getEnv().CACHE_DATABASE_PATH
 	const parentDir = path.dirname(cacheDatabasePath)
