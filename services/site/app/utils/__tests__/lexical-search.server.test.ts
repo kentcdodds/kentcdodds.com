@@ -98,11 +98,9 @@ describe('lexical search sqlite index', () => {
 			}
 
 			await Promise.all(
-				[
-					cacheDbPath,
-					`${cacheDbPath}-wal`,
-					`${cacheDbPath}-shm`,
-				].map((filePath) => fs.rm(filePath, { force: true }).catch(() => {})),
+				[cacheDbPath, `${cacheDbPath}-wal`, `${cacheDbPath}-shm`].map(
+					(filePath) => fs.rm(filePath, { force: true }).catch(() => {}),
+				),
 			)
 		}
 	})

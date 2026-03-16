@@ -1,8 +1,5 @@
 import { Readable } from 'node:stream'
-import {
-	GetObjectCommand,
-	S3Client,
-} from '@aws-sdk/client-s3'
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import {
 	LEXICAL_SEARCH_ARTIFACT_KEYS,
 	type LexicalSearchArtifact,
@@ -401,8 +398,10 @@ export function queryLexicalSearch({
 
 	const db = getCacheDb()
 	const runQuery = (candidateQuery: string) =>
-		(db
-			.prepare(`
+		(
+			db
+				.prepare(
+					`
 				SELECT
 					c.id,
 					c.type,
@@ -423,8 +422,10 @@ export function queryLexicalSearch({
 				WHERE lexical_search_fts MATCH ?
 				ORDER BY bm25(lexical_search_fts, 10.0, 1.0), c.chunkIndex
 				LIMIT ?
-			`)
-			.all(candidateQuery, topK) as Array<Record<string, unknown>>).map((row) => ({
+			`,
+				)
+				.all(candidateQuery, topK) as Array<Record<string, unknown>>
+		).map((row) => ({
 			id: String(row.id),
 			type: asOptionalString(row.type),
 			slug: asOptionalString(row.slug),

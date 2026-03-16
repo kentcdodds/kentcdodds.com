@@ -455,7 +455,10 @@ function compareRetrievedMatchQuality(
 }
 
 function collapseRetrievedMatches(matches: Array<RetrievedMatch>) {
-	const byCanonicalId = new Map<string, { rank: number; match: RetrievedMatch }>()
+	const byCanonicalId = new Map<
+		string,
+		{ rank: number; match: RetrievedMatch }
+	>()
 
 	for (const match of matches) {
 		const canonicalId = getCanonicalResultId({
@@ -770,24 +773,30 @@ export async function semanticSearchKCD({
 					topK: Math.min(100, safeTopK * 8),
 				})
 				lexicalResults = collapseRetrievedMatches(
-					lexicalMatches.map((match, i) => ({
-						rawId: match.id,
-						rank: i,
-						source: 'lexical' as const,
-						type: match.type,
-						slug: match.slug,
-						title: match.title,
-						url: match.url,
-						snippet: match.snippet,
-						timestampSeconds: normalizeYoutubeTimestampSeconds({
-							startSeconds: match.startSeconds,
-						}),
-						imageUrl: match.imageUrl,
-						imageAlt: match.imageAlt,
-					} satisfies RetrievedMatch)),
+					lexicalMatches.map(
+						(match, i) =>
+							({
+								rawId: match.id,
+								rank: i,
+								source: 'lexical' as const,
+								type: match.type,
+								slug: match.slug,
+								title: match.title,
+								url: match.url,
+								snippet: match.snippet,
+								timestampSeconds: normalizeYoutubeTimestampSeconds({
+									startSeconds: match.startSeconds,
+								}),
+								imageUrl: match.imageUrl,
+								imageAlt: match.imageAlt,
+							}) satisfies RetrievedMatch,
+					),
 				).slice(0, safeTopK * 3)
 			} catch (error) {
-				console.error('Lexical search unavailable, continuing with semantic only', error)
+				console.error(
+					'Lexical search unavailable, continuing with semantic only',
+					error,
+				)
 			}
 
 			const baseResults = fuseRankedResults({
