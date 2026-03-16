@@ -213,9 +213,8 @@ async function runStatementsInTransaction({
 	db: D1Database
 	statements: Array<D1PreparedStatement>
 }) {
-	for (let i = 0; i < statements.length; i += 100) {
-		await db.batch(statements.slice(i, i + 100))
-	}
+	if (statements.length === 0) return
+	await db.batch(statements)
 }
 
 async function setMetadataValue({
