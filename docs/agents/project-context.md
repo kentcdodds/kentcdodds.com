@@ -52,6 +52,13 @@ reference:
   narrow step before merging so the cleanup pass does not get forgotten.
 - Cache database: a separate SQLite cache DB is created at `services/site/other/cache.db`.
   It's populated on first request or via `npm run prime-cache:mocks`.
+- Lexical search now runs through a dedicated Cloudflare Worker workspace at
+  `services/lexical-search-worker`. Production/staging site envs must set
+  `LEXICAL_SEARCH_WORKER_URL` and `LEXICAL_SEARCH_WORKER_TOKEN`.
+- Local dev/tests can keep `services/site/.env.example`'s
+  `LEXICAL_SEARCH_WORKER_URL=MOCK_LEXICAL_SEARCH_WORKER_URL`, which makes the
+  site use the local SQLite-backed lexical mock instead of calling the deployed
+  Worker.
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - `npm run dev` should not wrap `services/site/index.ts` in an outer `node --watch`. React
