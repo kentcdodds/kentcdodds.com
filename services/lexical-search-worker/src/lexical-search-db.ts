@@ -213,15 +213,8 @@ async function runStatementsInTransaction({
 	db: D1Database
 	statements: Array<D1PreparedStatement>
 }) {
-	await db.exec('BEGIN TRANSACTION')
-	try {
-		for (let i = 0; i < statements.length; i += 100) {
-			await db.batch(statements.slice(i, i + 100))
-		}
-		await db.exec('COMMIT')
-	} catch (error) {
-		await db.exec('ROLLBACK')
-		throw error
+	for (let i = 0; i < statements.length; i += 100) {
+		await db.batch(statements.slice(i, i + 100))
 	}
 }
 
