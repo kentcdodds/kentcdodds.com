@@ -40,9 +40,9 @@ function createService() {
 		getSourceDetail: vi.fn(async () => ({ source: null, docs: [] })),
 		getDocDetail: vi.fn(async () => ({ doc: null, chunks: [] })),
 		getChunkDetail: vi.fn(async () => null),
-		deleteSource: vi.fn(async () => ({ ok: true })),
-		deleteDoc: vi.fn(async () => ({ ok: true })),
-		deleteChunk: vi.fn(async () => ({ ok: true })),
+		deleteSource: vi.fn(async () => ({ ok: true as const })),
+		deleteDoc: vi.fn(async () => ({ ok: true as const })),
+		deleteChunk: vi.fn(async () => ({ ok: true as const })),
 		sync: vi.fn(async () => ({ syncedAt: '2026-03-16T00:00:00.000Z' })),
 	}
 }

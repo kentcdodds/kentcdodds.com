@@ -5,7 +5,7 @@ import type {
 	LexicalSearchMatch,
 	LexicalSearchSourceDetail,
 	LexicalSearchStats,
-} from '#other/semantic-search/lexical-search-service.ts'
+} from '../../../../other/semantic-search/lexical-search-service.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 
 type WorkerJsonResponse<T> =

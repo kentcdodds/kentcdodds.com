@@ -1,4 +1,4 @@
-import type { LexicalSearchArtifact } from '#other/semantic-search/lexical-search-artifact.ts'
+import type { LexicalSearchArtifact } from '../../../other/semantic-search/lexical-search-artifact.ts'
 import {
 	getLexicalDocId,
 	type LexicalSearchAdminOverview,
@@ -9,7 +9,7 @@ import {
 	type LexicalSearchSourceDetail,
 	type LexicalSearchSourceRecord,
 	type LexicalSearchStats,
-} from '#other/semantic-search/lexical-search-service.ts'
+} from '../../../other/semantic-search/lexical-search-service.ts'
 
 const schemaSql = `
 	CREATE TABLE IF NOT EXISTS lexical_sources (

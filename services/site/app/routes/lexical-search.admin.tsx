@@ -202,7 +202,7 @@ export default function LexicalSearchAdminRoute({
 			<Spacer size="2xs" />
 			<div className="flex flex-col gap-4">
 				<H3>Sources</H3>
-				{data.sources.map((source) => (
+				{data.sources.map((source: (typeof data.sources)[number]) => (
 					<LexicalSourceRow
 						key={source.sourceKey}
 						sourceKey={source.sourceKey}
@@ -214,7 +214,7 @@ export default function LexicalSearchAdminRoute({
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
 				<H3>Docs</H3>
-				{data.docs.map((doc) => (
+				{data.docs.map((doc: (typeof data.docs)[number]) => (
 					<LexicalDocRow key={doc.docId} docId={doc.docId} title={doc.title} />
 				))}
 				{data.docs.length === 0 ? <Paragraph>No matching docs.</Paragraph> : null}
@@ -222,7 +222,7 @@ export default function LexicalSearchAdminRoute({
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
 				<H3>Chunks</H3>
-				{data.chunks.map((chunk) => (
+				{data.chunks.map((chunk: (typeof data.chunks)[number]) => (
 					<LexicalChunkRow key={chunk.id} chunkId={chunk.id} />
 				))}
 				{data.chunks.length === 0 ? <Paragraph>No matching chunks.</Paragraph> : null}

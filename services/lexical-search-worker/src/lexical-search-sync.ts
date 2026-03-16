@@ -3,7 +3,7 @@ import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import {
 	LEXICAL_SEARCH_ARTIFACT_KEYS,
 	type LexicalSearchArtifact,
-} from '#other/semantic-search/lexical-search-artifact.ts'
+} from '../../../other/semantic-search/lexical-search-artifact.ts'
 import {
 	clearLexicalSearchSource,
 	ensureLexicalSearchSchema,
@@ -116,7 +116,7 @@ export async function syncLexicalSearchArtifacts({
 		if (
 			!force &&
 			sourceState?.generatedAt === artifact.generatedAt &&
-			sourceState.chunkCount === artifact.chunks.length
+			sourceState?.chunkCount === artifact.chunks.length
 		) {
 			continue
 		}
