@@ -4,7 +4,6 @@ import type {
 	LexicalSearchDocDetail,
 	LexicalSearchMatch,
 	LexicalSearchSourceDetail,
-	LexicalSearchStats,
 } from '../../../../other/semantic-search/lexical-search-service.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 
@@ -70,19 +69,6 @@ export async function queryLexicalSearchMatches({
 		body: { query, topK },
 	})
 	return json.results
-}
-
-export async function getLexicalSearchStats() {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		return await mockService.getLexicalSearchAdminStats()
-	}
-
-	const json = await requestWorkerJson<{ stats: LexicalSearchStats }>({
-		path: '/admin/stats',
-	})
-	return json.stats
 }
 
 export async function getLexicalSearchAdminOverview({
