@@ -61,6 +61,10 @@ const schemaBase = z.object({
 	VERIFIER_API_KEY: nonEmptyString,
 	CF_INTERNAL_SECRET: nonEmptyString,
 
+	// Lexical search service via Cloudflare Worker.
+	LEXICAL_SEARCH_WORKER_URL: nonEmptyString,
+	LEXICAL_SEARCH_WORKER_TOKEN: nonEmptyString,
+
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
 	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,
 	CLOUDFLARE_API_TOKEN: nonEmptyString,

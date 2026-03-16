@@ -5,6 +5,16 @@ import {
 	type LexicalSearchArtifact,
 	type LexicalSearchArtifactChunk,
 } from '../../../../other/semantic-search/lexical-search-artifact.ts'
+import {
+	getLexicalDocId,
+	type LexicalSearchAdminOverview,
+	type LexicalSearchChunkRecord,
+	type LexicalSearchDocDetail,
+	type LexicalSearchDocRecord,
+	type LexicalSearchSourceDetail,
+	type LexicalSearchSourceRecord,
+	type LexicalSearchStats,
+} from '../../../../other/semantic-search/lexical-search-service.ts'
 import { getCacheDb } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import {
@@ -471,4 +481,360 @@ export function getLexicalSearchChunkCount() {
 	} catch {
 		return 0
 	}
+}
+
+function chunkRowToRecord(row: LexicalSearchChunkRow): LexicalSearchChunkRecord {
+	return {
+		id: row.id,
+		docId: getLexicalDocId({
+			chunkId: row.id,
+			type: row.type,
+			slug: row.slug,
+			url: row.url,
+			title: row.title,
+		}),
+		sourceKey: row.sourceKey,
+		type: row.type,
+		slug: row.slug,
+		url: row.url,
+		title: row.title,
+		snippet: row.snippet,
+		text: row.text,
+		chunkIndex: row.chunkIndex,
+		chunkCount: row.chunkCount,
+		startSeconds: row.startSeconds,
+		endSeconds: row.endSeconds,
+		imageUrl: row.imageUrl,
+		imageAlt: row.imageAlt,
+		sourceUpdatedAt: row.sourceUpdatedAt,
+		transcriptSource: row.transcriptSource,
+	}
+}
+
+function buildDocRecordsFromChunkRows(rows: Array<LexicalSearchChunkRow>) {
+	const docs = new Map<string, LexicalSearchDocRecord>()
+	const sortedRows = [...rows].sort((a, b) => {
+		const sourceDiff = a.sourceKey.localeCompare(b.sourceKey)
+		if (sourceDiff) return sourceDiff
+		const chunkDiff = a.chunkIndex - b.chunkIndex
+		if (chunkDiff) return chunkDiff
+		return a.id.localeCompare(b.id)
+	})
+
+	for (const row of sortedRows) {
+		const docId = getLexicalDocId({
+			chunkId: row.id,
+			type: row.type,
+			slug: row.slug,
+			url: row.url,
+			title: row.title,
+		})
+		const existing = docs.get(docId)
+		if (existing) {
+			existing.chunkCount += 1
+			continue
+		}
+		docs.set(docId, {
+			docId,
+			sourceKey: row.sourceKey,
+			type: row.type,
+			slug: row.slug,
+			url: row.url,
+			title: row.title,
+			snippet: row.snippet,
+			chunkCount: 1,
+			imageUrl: row.imageUrl,
+			imageAlt: row.imageAlt,
+			sourceUpdatedAt: row.sourceUpdatedAt,
+			transcriptSource: row.transcriptSource,
+		})
+	}
+
+	return [...docs.values()]
+}
+
+function getMatchingChunkRows({
+	query,
+	sourceKey,
+	type,
+	limit,
+}: {
+	query: string
+	sourceKey: string
+	type: string
+	limit: number
+}) {
+	ensureLexicalSearchSchema()
+	const db = getCacheDb()
+	const safeLimit = Math.min(500, Math.max(1, Math.floor(limit)))
+	const likeQuery = `%${query.trim()}%`
+	return db
+		.prepare(
+			`
+				SELECT
+					id,
+					sourceKey,
+					type,
+					slug,
+					url,
+					title,
+					snippet,
+					text,
+					chunkIndex,
+					chunkCount,
+					startSeconds,
+					endSeconds,
+					imageUrl,
+					imageAlt,
+					sourceUpdatedAt,
+					transcriptSource
+				FROM lexical_search_chunks
+				WHERE (?1 = '' OR sourceKey = ?1)
+					AND (?2 = '' OR type = ?2)
+					AND (
+						?3 = ''
+						OR id LIKE ?4
+						OR title LIKE ?4
+						OR snippet LIKE ?4
+						OR url LIKE ?4
+					)
+				ORDER BY sourceKey, title, chunkIndex
+				LIMIT ?5
+			`,
+		)
+		.all(sourceKey, type, query.trim(), likeQuery, safeLimit) as Array<LexicalSearchChunkRow>
+}
+
+function getLexicalSourceRows({
+	sourceKey,
+	limit,
+}: {
+	sourceKey: string
+	limit: number
+}) {
+	ensureLexicalSearchSchema()
+	const db = getCacheDb()
+	const safeLimit = Math.min(500, Math.max(1, Math.floor(limit)))
+	return db
+		.prepare(
+			`
+				SELECT sourceKey, generatedAt, chunkCount
+				FROM lexical_search_sources
+				WHERE (?1 = '' OR sourceKey = ?1)
+				ORDER BY sourceKey
+				LIMIT ?2
+			`,
+		)
+		.all(sourceKey, safeLimit) as Array<{
+		sourceKey: string
+		generatedAt: string
+		chunkCount: number
+	}>
+}
+
+function refreshLocalSourceCount(sourceKey: string) {
+	ensureLexicalSearchSchema()
+	const db = getCacheDb()
+	const countResult = db
+		.prepare('SELECT COUNT(*) as count FROM lexical_search_chunks WHERE sourceKey = ?')
+		.get(sourceKey) as { count: number }
+	if (countResult.count <= 0) {
+		db.prepare('DELETE FROM lexical_search_sources WHERE sourceKey = ?').run(sourceKey)
+		return
+	}
+	db.prepare(
+		'UPDATE lexical_search_sources SET chunkCount = ? WHERE sourceKey = ?',
+	).run(countResult.count, sourceKey)
+}
+
+export async function getLexicalSearchAdminStats() {
+	return {
+		sourceCount: getLexicalSourceRows({ sourceKey: '', limit: 500 }).length,
+		docCount: buildDocRecordsFromChunkRows(
+			getMatchingChunkRows({ query: '', sourceKey: '', type: '', limit: 2000 }),
+		).length,
+		chunkCount: getLexicalSearchChunkCount(),
+		lastSyncedAt: null,
+	} satisfies LexicalSearchStats
+}
+
+export async function getLexicalSearchAdminOverview({
+	query,
+	sourceKey,
+	type,
+	limit,
+}: {
+	query: string
+	sourceKey: string
+	type: string
+	limit: number
+}) {
+	await ensureLexicalSearchReady()
+	const chunkRows = getMatchingChunkRows({ query, sourceKey, type, limit })
+	const sourceRows = getLexicalSourceRows({ sourceKey, limit })
+	return {
+		stats: await getLexicalSearchAdminStats(),
+		sources: sourceRows.map(
+			(row) =>
+				({
+					sourceKey: row.sourceKey,
+					generatedAt: row.generatedAt,
+					chunkCount: row.chunkCount,
+					syncedAt: null,
+				}) satisfies LexicalSearchSourceRecord,
+		),
+		docs: buildDocRecordsFromChunkRows(chunkRows),
+		chunks: chunkRows.map(chunkRowToRecord),
+		query,
+		sourceKey,
+		type,
+		limit: Math.min(500, Math.max(1, Math.floor(limit))),
+	} satisfies LexicalSearchAdminOverview
+}
+
+export async function getLexicalSearchSourceDetail(sourceKey: string) {
+	await ensureLexicalSearchReady()
+	const sourceRow = getLexicalSourceRows({ sourceKey, limit: 1 })[0]
+	const chunkRows = getMatchingChunkRows({
+		query: '',
+		sourceKey,
+		type: '',
+		limit: 5000,
+	})
+	return {
+		source: sourceRow
+			? ({
+					sourceKey: sourceRow.sourceKey,
+					generatedAt: sourceRow.generatedAt,
+					chunkCount: sourceRow.chunkCount,
+					syncedAt: null,
+				} satisfies LexicalSearchSourceRecord)
+			: null,
+		docs: buildDocRecordsFromChunkRows(chunkRows),
+	} satisfies LexicalSearchSourceDetail
+}
+
+export async function getLexicalSearchDocDetail(docId: string) {
+	await ensureLexicalSearchReady()
+	const chunkRows = getMatchingChunkRows({
+		query: '',
+		sourceKey: '',
+		type: '',
+		limit: 5000,
+	}).filter(
+		(row) =>
+			getLexicalDocId({
+				chunkId: row.id,
+				type: row.type,
+				slug: row.slug,
+				url: row.url,
+				title: row.title,
+			}) === docId,
+	)
+	const doc = buildDocRecordsFromChunkRows(chunkRows)[0] ?? null
+	return {
+		doc,
+		chunks: chunkRows.map(chunkRowToRecord),
+	} satisfies LexicalSearchDocDetail
+}
+
+export async function getLexicalSearchChunkDetail(chunkId: string) {
+	await ensureLexicalSearchReady()
+	const db = getCacheDb()
+	const row = db
+		.prepare(
+			`
+				SELECT
+					id,
+					sourceKey,
+					type,
+					slug,
+					url,
+					title,
+					snippet,
+					text,
+					chunkIndex,
+					chunkCount,
+					startSeconds,
+					endSeconds,
+					imageUrl,
+					imageAlt,
+					sourceUpdatedAt,
+					transcriptSource
+				FROM lexical_search_chunks
+				WHERE id = ?
+			`,
+		)
+		.get(chunkId) as LexicalSearchChunkRow | undefined
+	return row ? chunkRowToRecord(row) : null
+}
+
+export async function deleteLexicalSearchSource(sourceKey: string) {
+	await ensureLexicalSearchReady()
+	clearLexicalSearchSource(sourceKey)
+}
+
+export async function deleteLexicalSearchDoc(docId: string) {
+	await ensureLexicalSearchReady()
+	const db = getCacheDb()
+	const chunkRows = db
+		.prepare(
+			`
+				SELECT id, sourceKey, type, slug, url, title
+				FROM lexical_search_chunks
+			`,
+		)
+		.all() as Array<{
+		id: string
+		sourceKey: string
+		type: string
+		slug?: string
+		url: string
+		title: string
+	}>
+	const matchingRows = chunkRows.filter(
+		(row) =>
+			getLexicalDocId({
+				chunkId: row.id,
+				type: row.type,
+				slug: row.slug,
+				url: row.url,
+				title: row.title,
+			}) === docId,
+	)
+	const deleteFts = db.prepare('DELETE FROM lexical_search_fts WHERE id = ?')
+	const deleteChunk = db.prepare('DELETE FROM lexical_search_chunks WHERE id = ?')
+	db.exec('BEGIN')
+	try {
+		for (const row of matchingRows) {
+			deleteFts.run(row.id)
+			deleteChunk.run(row.id)
+		}
+		db.exec('COMMIT')
+	} catch (error) {
+		db.exec('ROLLBACK')
+		throw error
+	}
+	for (const source of new Set(matchingRows.map((row) => row.sourceKey))) {
+		refreshLocalSourceCount(source)
+	}
+}
+
+export async function deleteLexicalSearchChunk(chunkId: string) {
+	await ensureLexicalSearchReady()
+	const db = getCacheDb()
+	const row = db
+		.prepare('SELECT sourceKey FROM lexical_search_chunks WHERE id = ?')
+		.get(chunkId) as { sourceKey: string } | undefined
+	if (!row) return
+	db.exec('BEGIN')
+	try {
+		db.prepare('DELETE FROM lexical_search_fts WHERE id = ?').run(chunkId)
+		db.prepare('DELETE FROM lexical_search_chunks WHERE id = ?').run(chunkId)
+		db.exec('COMMIT')
+	} catch (error) {
+		db.exec('ROLLBACK')
+		throw error
+	}
+	refreshLocalSourceCount(row.sourceKey)
 }

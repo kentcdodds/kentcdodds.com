@@ -46,3 +46,8 @@ jobs:
           CALL_KENT_PODCAST_ID: ${{ secrets.CALL_KENT_PODCAST_ID }}
           SIMPLECAST_KEY: ${{ secrets.SIMPLECAST_KEY }}
           CHATS_WITH_KENT_PODCAST_ID: ${{ secrets.CHATS_WITH_KENT_PODCAST_ID }}
+
+  sync-lexical-search:
+    needs: index
+    uses: ./.github/workflows/sync-lexical-search-worker.yml
+    secrets: inherit

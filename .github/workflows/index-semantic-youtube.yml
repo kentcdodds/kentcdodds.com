@@ -64,3 +64,8 @@ jobs:
           YOUTUBE_VIDEO_IDS:
             ${{ github.event_name == 'workflow_dispatch' &&
             inputs.youtube_video_ids || vars.YOUTUBE_VIDEO_IDS }}
+
+  sync-lexical-search:
+    needs: index
+    uses: ./.github/workflows/sync-lexical-search-worker.yml
+    secrets: inherit

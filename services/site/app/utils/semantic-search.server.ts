@@ -4,9 +4,8 @@ import { cache, cachified } from '#app/utils/cache.server.ts'
 import { getWorkersAiRunUrl } from '#app/utils/cloudflare-ai-utils.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import {
-	ensureLexicalSearchReady,
-	queryLexicalSearch,
-} from '#app/utils/lexical-search.server.ts'
+	queryLexicalSearchMatches,
+} from '#app/utils/lexical-search-client.server.ts'
 import { getSemanticSearchPresentation } from '#app/utils/semantic-search-presentation.server.ts'
 import { type Timings } from '#app/utils/timing.server.ts'
 
@@ -767,8 +766,7 @@ export async function semanticSearchKCD({
 
 			let lexicalResults: Array<RankedDocResult> = []
 			try {
-				await ensureLexicalSearchReady()
-				const lexicalMatches = queryLexicalSearch({
+				const lexicalMatches = await queryLexicalSearchMatches({
 					query: cleanedQuery,
 					topK: Math.min(100, safeTopK * 8),
 				})

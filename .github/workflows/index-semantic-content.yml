@@ -105,3 +105,8 @@ jobs:
           CLOUDFLARE_AI_EMBEDDING_MODEL:
             ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
+
+  sync-lexical-search:
+    needs: index
+    uses: ./.github/workflows/sync-lexical-search-worker.yml
+    secrets: inherit

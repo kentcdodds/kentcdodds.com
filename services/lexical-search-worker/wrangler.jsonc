@@ -1,0 +1,33 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kcd-lexical-search-worker",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-03-16",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "LEXICAL_SEARCH_DB",
+			"database_name": "kcd-lexical-search",
+			"database_id": "251128f7-d343-439e-8720-a39ac01a55d2"
+		}
+	],
+	"vars": {
+		"LEXICAL_SEARCH_WORKER_TOKEN": "replace-in-cloudflare",
+		"R2_ENDPOINT": "https://a41d50ecaf0ae0f86dd1824ef6729cb2.r2.cloudflarestorage.com",
+		"R2_BUCKET": "replace-in-cloudflare"
+	},
+	"env": {
+		"local": {
+			"vars": {
+				"LEXICAL_SEARCH_WORKER_TOKEN": "local-dev-lexical-search-token",
+				"R2_ENDPOINT": "https://mock.r2.cloudflarestorage.com",
+				"R2_BUCKET": "mock-r2-bucket",
+				"R2_ACCESS_KEY_ID": "MOCKR2ACCESSKEYID",
+				"R2_SECRET_ACCESS_KEY": "MOCKR2SECRETACCESSKEY"
+			}
+		}
+	}
+}

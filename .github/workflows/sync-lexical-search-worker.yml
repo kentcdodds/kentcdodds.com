@@ -1,0 +1,35 @@
+name: 🔄 Sync Lexical Search Worker
+
+on:
+  workflow_call:
+    inputs:
+      force:
+        required: false
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Force a full lexical sync
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  sync:
+    name: 🔄 Sync Lexical Search Worker
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Trigger lexical sync
+        env:
+          LEXICAL_SEARCH_WORKER_URL: ${{ secrets.LEXICAL_SEARCH_WORKER_URL }}
+          LEXICAL_SEARCH_WORKER_TOKEN: ${{ secrets.LEXICAL_SEARCH_WORKER_TOKEN }}
+          FORCE_SYNC: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent \
+            -X POST \
+            -H "Authorization: Bearer ${LEXICAL_SEARCH_WORKER_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"force\": ${FORCE_SYNC}}" \
+            "${LEXICAL_SEARCH_WORKER_URL}/admin/sync"
