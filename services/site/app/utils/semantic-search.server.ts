@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import fs from 'node:fs'
 import { z } from 'zod'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { getWorkersAiRunUrl } from '#app/utils/cloudflare-ai-utils.server.ts'
@@ -27,6 +28,22 @@ type VectorizeQueryResponse = {
 const SEMANTIC_SEARCH_CACHE_TTL_MS = 1000 * 60 * 60 * 12 // 12 hours
 const SEMANTIC_SEARCH_CACHE_SWR_MS = 1000 * 60 * 60 * 24 * 3 // 3 days
 export const SEMANTIC_SEARCH_MAX_QUERY_CHARS = 1000
+
+function writeDebugLog(payload: {
+	hypothesisId: string
+	location: string
+	message: string
+	data: Record<string, unknown>
+}) {
+	try {
+		fs.appendFileSync(
+			'/opt/cursor/logs/debug.log',
+			`${JSON.stringify({ ...payload, timestamp: Date.now() })}\n`,
+		)
+	} catch {
+		// Debug logging must never break production behavior.
+	}
+}
 
 export class SemanticSearchQueryTooLongError extends Error {
 	length: number
@@ -724,6 +741,19 @@ export async function semanticSearchKCD({
 		staleWhileRevalidate: SEMANTIC_SEARCH_CACHE_SWR_MS,
 		checkValue: semanticSearchResultsSchema,
 		getFreshValue: async () => {
+			// #region agent log
+			writeDebugLog({
+				hypothesisId: 'A',
+				location: 'semantic-search.server.ts:742',
+				message: 'semantic search cache miss started',
+				data: {
+					queryLength: cleanedQuery.length,
+					safeTopK,
+					rawTopK,
+					cacheKey,
+				},
+			})
+			// #endregion
 			const vector = await getEmbedding({
 				accountId,
 				apiToken,
@@ -767,7 +797,19 @@ export async function semanticSearchKCD({
 
 			let lexicalResults: Array<RankedDocResult> = []
 			try {
+				const lexicalReadyStartedAt = Date.now()
 				await ensureLexicalSearchReady()
+				// #region agent log
+				writeDebugLog({
+					hypothesisId: 'B',
+					location: 'semantic-search.server.ts:790',
+					message: 'lexical readiness wait completed',
+					data: {
+						queryLength: cleanedQuery.length,
+						durationMs: Date.now() - lexicalReadyStartedAt,
+					},
+				})
+				// #endregion
 				const lexicalMatches = queryLexicalSearch({
 					query: cleanedQuery,
 					topK: Math.min(100, safeTopK * 8),

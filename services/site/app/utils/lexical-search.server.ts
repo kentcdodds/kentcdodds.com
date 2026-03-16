@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { Readable } from 'node:stream'
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import {
@@ -50,6 +51,22 @@ let lastLexicalSearchSyncAt = 0
 let lexicalSearchSyncPromise: Promise<void> | null = null
 let _r2Client: S3Client | null = null
 let _r2ClientFingerprint: string | null = null
+
+function writeDebugLog(payload: {
+	hypothesisId: string
+	location: string
+	message: string
+	data: Record<string, unknown>
+}) {
+	try {
+		fs.appendFileSync(
+			'/opt/cursor/logs/debug.log',
+			`${JSON.stringify({ ...payload, timestamp: Date.now() })}\n`,
+		)
+	} catch {
+		// Debug logging must never break production behavior.
+	}
+}
 
 function getR2Client() {
 	const env = getEnv()
@@ -213,6 +230,19 @@ function replaceLexicalSearchSource({
 		INSERT OR REPLACE INTO lexical_search_sources (sourceKey, generatedAt, chunkCount)
 		VALUES (?, ?, ?)
 	`)
+	const startedAt = Date.now()
+	// #region agent log
+	writeDebugLog({
+		hypothesisId: 'D',
+		location: 'lexical-search.server.ts:217',
+		message: 'lexical source replace starting',
+		data: {
+			sourceKey,
+			existingRowCount: rows.length,
+			incomingChunkCount: chunks.length,
+		},
+	})
+	// #endregion
 
 	db.exec('BEGIN')
 	try {
@@ -243,6 +273,18 @@ function replaceLexicalSearchSource({
 
 		upsertSource.run(sourceKey, generatedAt, chunks.length)
 		db.exec('COMMIT')
+		// #region agent log
+		writeDebugLog({
+			hypothesisId: 'D',
+			location: 'lexical-search.server.ts:256',
+			message: 'lexical source replace committed',
+			data: {
+				sourceKey,
+				incomingChunkCount: chunks.length,
+				durationMs: Date.now() - startedAt,
+			},
+		})
+		// #endregion
 	} catch (error) {
 		db.exec('ROLLBACK')
 		throw error
@@ -296,12 +338,28 @@ export async function syncLexicalSearchArtifactsFromR2({
 
 	for (const sourceKey of LEXICAL_SEARCH_ARTIFACT_KEYS) {
 		const artifact = await getLexicalSearchArtifact(sourceKey)
+		const sourceState = artifact ? getLexicalSearchSourceState(sourceKey) : null
+		// #region agent log
+		writeDebugLog({
+			hypothesisId: 'A',
+			location: 'lexical-search.server.ts:315',
+			message: 'lexical artifact state evaluated',
+			data: {
+				sourceKey,
+				force,
+				hasArtifact: Boolean(artifact),
+				artifactChunkCount: artifact?.chunks.length,
+				artifactGeneratedAt: artifact?.generatedAt,
+				existingChunkCount: sourceState?.chunkCount,
+				existingGeneratedAt: sourceState?.generatedAt,
+			},
+		})
+		// #endregion
 		if (!artifact) {
 			clearLexicalSearchSource(sourceKey)
 			continue
 		}
 
-		const sourceState = getLexicalSearchSourceState(sourceKey)
 		if (
 			!force &&
 			sourceState?.generatedAt === artifact.generatedAt &&
@@ -323,9 +381,33 @@ export async function requestPrimaryLexicalSearchSync({
 }: {
 	force?: boolean
 } = {}) {
+	const startedAt = Date.now()
 	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
+	// #region agent log
+	writeDebugLog({
+		hypothesisId: 'C',
+		location: 'lexical-search.server.ts:344',
+		message: 'primary lexical sync requested',
+		data: {
+			force,
+			currentIsPrimary,
+			primaryInstance,
+		},
+	})
+	// #endregion
 	if (currentIsPrimary) {
 		await syncLexicalSearchArtifactsFromR2({ force })
+		// #region agent log
+		writeDebugLog({
+			hypothesisId: 'C',
+			location: 'lexical-search.server.ts:356',
+			message: 'primary lexical sync finished locally',
+			data: {
+				force,
+				durationMs: Date.now() - startedAt,
+			},
+		})
+		// #endregion
 		return
 	}
 
@@ -342,6 +424,19 @@ export async function requestPrimaryLexicalSearchSync({
 			force,
 		}),
 	})
+	// #region agent log
+	writeDebugLog({
+		hypothesisId: 'C',
+		location: 'lexical-search.server.ts:373',
+		message: 'primary lexical sync response received',
+		data: {
+			force,
+			ok: response.ok,
+			status: response.status,
+			durationMs: Date.now() - startedAt,
+		},
+	})
+	// #endregion
 	if (!response.ok) {
 		throw new Error(
 			`Unable to sync lexical search on primary (${primaryInstance}): ${response.status} ${response.statusText}`,
@@ -351,6 +446,17 @@ export async function requestPrimaryLexicalSearchSync({
 
 export async function ensureLexicalSearchReady() {
 	ensureLexicalSearchSchema()
+	// #region agent log
+	writeDebugLog({
+		hypothesisId: 'B',
+		location: 'lexical-search.server.ts:386',
+		message: 'ensure lexical search ready entered',
+		data: {
+			msSinceLastSync: Date.now() - lastLexicalSearchSyncAt,
+			hasInFlightSync: Boolean(lexicalSearchSyncPromise),
+		},
+	})
+	// #endregion
 	if (Date.now() - lastLexicalSearchSyncAt < LEXICAL_SEARCH_SYNC_INTERVAL_MS) {
 		return
 	}
