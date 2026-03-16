@@ -14,9 +14,9 @@ export function filterOfficeHoursVideos<T extends { title: string }>(videos: T[]
 
 export function extractYoutubeChannelIdFromHtml(html: string) {
 	const patterns = [
-		/"externalId"\s*:\s*"(?<channelId>UC[A-Za-z0-9_-]{22})"/,
-		/"channelId"\s*:\s*"(?<channelId>UC[A-Za-z0-9_-]{22})"/,
-		/"browseId"\s*:\s*"(?<channelId>UC[A-Za-z0-9_-]{22})"/,
+		/"?externalId"?\s*:\s*"(?<channelId>UC[A-Za-z0-9_-]{22})"/,
+		/"?channelId"?\s*:\s*"(?<channelId>UC[A-Za-z0-9_-]{22})"/,
+		/"?browseId"?\s*:\s*"(?<channelId>UC[A-Za-z0-9_-]{22})"/,
 	]
 
 	for (const pattern of patterns) {
