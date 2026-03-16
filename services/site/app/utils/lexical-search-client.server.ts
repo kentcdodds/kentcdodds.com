@@ -14,14 +14,6 @@ type WorkerJsonResponse<T> =
 			error: string
 	  }
 
-function isMockLexicalWorkerUrl(url: string) {
-	return url.startsWith('MOCK_')
-}
-
-async function getMockService() {
-	return await import('./lexical-search.server.ts')
-}
-
 async function requestWorkerJson<T>({
 	path,
 	method = 'GET',
@@ -56,13 +48,6 @@ export async function queryLexicalSearchMatches({
 	query: string
 	topK: number
 }) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		await mockService.ensureLexicalSearchReady()
-		return mockService.queryLexicalSearch({ query, topK }) as Array<LexicalSearchMatch>
-	}
-
 	const json = await requestWorkerJson<{ results: Array<LexicalSearchMatch> }>({
 		path: '/query',
 		method: 'POST',
@@ -82,17 +67,6 @@ export async function getLexicalSearchAdminOverview({
 	type: string
 	limit: number
 }) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		return await mockService.getLexicalSearchAdminOverview({
-			query,
-			sourceKey,
-			type,
-			limit,
-		})
-	}
-
 	const searchParams = new URLSearchParams({
 		query,
 		sourceKey,
@@ -106,12 +80,6 @@ export async function getLexicalSearchAdminOverview({
 }
 
 export async function getLexicalSearchSourceDetail(sourceKey: string) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		return await mockService.getLexicalSearchSourceDetail(sourceKey)
-	}
-
 	const json = await requestWorkerJson<{ detail: LexicalSearchSourceDetail }>({
 		path: `/admin/source/${encodeURIComponent(sourceKey)}`,
 	})
@@ -119,12 +87,6 @@ export async function getLexicalSearchSourceDetail(sourceKey: string) {
 }
 
 export async function getLexicalSearchDocDetail(docId: string) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		return await mockService.getLexicalSearchDocDetail(docId)
-	}
-
 	const json = await requestWorkerJson<{ detail: LexicalSearchDocDetail }>({
 		path: `/admin/doc/${encodeURIComponent(docId)}`,
 	})
@@ -132,12 +94,6 @@ export async function getLexicalSearchDocDetail(docId: string) {
 }
 
 export async function getLexicalSearchChunkDetail(chunkId: string) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		return await mockService.getLexicalSearchChunkDetail(chunkId)
-	}
-
 	const json = await requestWorkerJson<{ detail: LexicalSearchChunkRecord | null }>({
 		path: `/admin/chunk/${encodeURIComponent(chunkId)}`,
 	})
@@ -145,13 +101,6 @@ export async function getLexicalSearchChunkDetail(chunkId: string) {
 }
 
 export async function deleteLexicalSearchSource(sourceKey: string) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		await mockService.deleteLexicalSearchSource(sourceKey)
-		return
-	}
-
 	await requestWorkerJson({
 		path: '/admin/delete',
 		method: 'POST',
@@ -160,13 +109,6 @@ export async function deleteLexicalSearchSource(sourceKey: string) {
 }
 
 export async function deleteLexicalSearchDoc(docId: string) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		await mockService.deleteLexicalSearchDoc(docId)
-		return
-	}
-
 	await requestWorkerJson({
 		path: '/admin/delete',
 		method: 'POST',
@@ -175,13 +117,6 @@ export async function deleteLexicalSearchDoc(docId: string) {
 }
 
 export async function deleteLexicalSearchChunk(chunkId: string) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		await mockService.deleteLexicalSearchChunk(chunkId)
-		return
-	}
-
 	await requestWorkerJson({
 		path: '/admin/delete',
 		method: 'POST',
@@ -190,12 +125,6 @@ export async function deleteLexicalSearchChunk(chunkId: string) {
 }
 
 export async function syncLexicalSearchService({ force = false }: { force?: boolean } = {}) {
-	const env = getEnv()
-	if (isMockLexicalWorkerUrl(env.LEXICAL_SEARCH_WORKER_URL)) {
-		const mockService = await getMockService()
-		return await mockService.syncLexicalSearchArtifactsFromR2({ force })
-	}
-
 	return await requestWorkerJson<{ syncedAt: string }>({
 		path: '/admin/sync',
 		method: 'POST',

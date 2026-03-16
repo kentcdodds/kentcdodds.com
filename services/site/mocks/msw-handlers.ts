@@ -4,6 +4,7 @@ import { cloudflareHandlers } from './cloudflare.ts'
 import { discordHandlers } from './discord.ts'
 import { githubHandlers } from './github.ts'
 import { kitHandlers } from './kit.ts'
+import { lexicalSearchWorkerHandlers } from './lexical-search-worker.ts'
 import { mermaidToSvgHandlers } from './mermaid-to-svg.ts'
 import { oauthHandlers } from './oauth.ts'
 import { oembedHandlers } from './oembed.ts'
@@ -97,6 +98,7 @@ export const mswHandlers: Array<HttpHandler> = [
 	...transistorHandlers,
 	...discordHandlers,
 	...kitHandlers,
+	...lexicalSearchWorkerHandlers,
 	...simplecastHandlers,
 	...cloudflareHandlers,
 	...cloudflareR2Handlers,

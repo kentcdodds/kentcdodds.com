@@ -55,10 +55,9 @@ reference:
 - Lexical search now runs through a dedicated Cloudflare Worker workspace at
   `services/lexical-search-worker`. Production/staging site envs must set
   `LEXICAL_SEARCH_WORKER_URL` and `LEXICAL_SEARCH_WORKER_TOKEN`.
-- Local dev/tests can keep `services/site/.env.example`'s
-  `LEXICAL_SEARCH_WORKER_URL=MOCK_LEXICAL_SEARCH_WORKER_URL`, which makes the
-  site use the local SQLite-backed lexical mock instead of calling the deployed
-  Worker.
+- Local dev/tests can keep `services/site/.env.example`'s mock Worker URL; MSW
+  intercepts that HTTP boundary so the site still talks to a lexical Worker API
+  shape, not an in-process SQLite fallback.
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - `npm run dev` should not wrap `services/site/index.ts` in an outer `node --watch`. React

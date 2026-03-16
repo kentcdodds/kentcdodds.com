@@ -2,7 +2,6 @@ import { data as json, redirect } from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { cache } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { syncLexicalSearchArtifactsFromR2 } from '#app/utils/lexical-search.server.ts'
 import {
 	getInstanceInfo,
 	getInternalInstanceDomain,
@@ -27,11 +26,6 @@ export async function action({ request }: Route.ActionArgs) {
 		return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
 	}
 	const body = (await request.json()) as any
-	if (body?.operation === 'sync-lexical-search') {
-		const force = body?.force === true
-		await syncLexicalSearchArtifactsFromR2({ force })
-		return json({ success: true })
-	}
 	const { key, cacheValue } = body
 	if (cacheValue === undefined) {
 		console.log(`Deleting ${key} from the cache from remote`)
