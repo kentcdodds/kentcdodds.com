@@ -22,6 +22,8 @@ jobs:
       deploy_site: ${{ steps.plan.outputs.deploy_site }}
       refresh_content: ${{ steps.plan.outputs.refresh_content }}
       index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}
+      deploy_lexical_search_worker:
+        ${{ steps.plan.outputs.deploy_lexical_search_worker }}
       deploy_call_kent_audio_worker:
         ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}
       deploy_oauth_worker: ${{ steps.plan.outputs.deploy_oauth_worker }}
@@ -52,6 +54,7 @@ jobs:
           echo "deploy_site: ${{ steps.plan.outputs.deploy_site }}"
           echo "refresh_content: ${{ steps.plan.outputs.refresh_content }}"
           echo "index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}"
+          echo "deploy_lexical_search_worker: ${{ steps.plan.outputs.deploy_lexical_search_worker }}"
           echo "deploy_call_kent_audio_worker: ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}"
           echo "deploy_oauth_worker: ${{ steps.plan.outputs.deploy_oauth_worker }}"
 
@@ -89,6 +92,15 @@ jobs:
     with:
       before_sha: ${{ github.event.before }}
       current_commit_sha: ${{ github.sha }}
+    secrets: inherit
+
+  deploy-lexical-search-worker:
+    name: ⚙️ Deploy Lexical Search Worker
+    needs: [plan]
+    if:
+      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+      needs.plan.outputs.deploy_lexical_search_worker == 'true' }}
+    uses: ./.github/workflows/deploy-lexical-search-worker.yml
     secrets: inherit
 
   deploy-call-kent-audio-worker:

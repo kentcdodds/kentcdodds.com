@@ -15,11 +15,13 @@ const defaultFetchTimeoutMs = 10_000
 const nonFlyDeployablePathPrefixes = [
 	'services/site/content/',
 	'services/call-kent-audio-worker/',
+	'services/lexical-search-worker/',
 	'services/oauth/',
 ]
 
 const nonFlyDeployableFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
+	'.github/workflows/deploy-lexical-search-worker.yml',
 	'.github/workflows/deploy-oauth-worker.yml',
 ])
 
@@ -34,6 +36,11 @@ const semanticContentPathPrefixes = [
 const callKentAudioWorkerPathPrefixes = ['services/call-kent-audio-worker/']
 const callKentAudioWorkerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
+])
+
+const lexicalSearchWorkerPathPrefixes = ['services/lexical-search-worker/']
+const lexicalSearchWorkerFiles = new Set([
+	'.github/workflows/deploy-lexical-search-worker.yml',
 ])
 
 const oauthWorkerPathPrefixes = ['services/oauth/']
@@ -55,6 +62,8 @@ const DEPLOY_ENVIRONMENTS: Record<string, (refName: string) => string | null> =
 			refName === 'main' ? 'oauth-production' : null,
 		deployCallKentAudioWorker: (refName) =>
 			refName === 'main' ? 'call-kent-audio-worker-production' : null,
+		deployLexicalSearchWorker: (refName) =>
+			refName === 'main' ? 'lexical-search-worker-production' : null,
 	}
 
 type ChangedFile = {
@@ -380,6 +389,7 @@ export async function computeDeployPlan({
 		pushChangedFiles,
 		refreshResult,
 		siteDeployResult,
+		lexicalWorkerDeployResult,
 		oauthDeployResult,
 		audioWorkerDeployResult,
 	] = await Promise.all([
@@ -402,6 +412,19 @@ export async function computeDeployPlan({
 					currentCommitSha,
 					refName,
 					target: 'deploySite',
+					owner: repo.owner,
+					repo: repo.repo,
+					token,
+					getChangedFilesImpl,
+					fetchImpl,
+					log,
+				})
+			: Promise.resolve({ compareCommitSha: null, changedFiles: null }),
+		repo
+			? getDeploymentChangedFiles({
+					currentCommitSha,
+					refName,
+					target: 'deployLexicalSearchWorker',
 					owner: repo.owner,
 					repo: repo.repo,
 					token,
@@ -456,6 +479,12 @@ export async function computeDeployPlan({
 			pathPrefixes: semanticContentPathPrefixes,
 			runWhenUnknown: isPushEvent,
 		}),
+		deployLexicalSearchWorker: shouldRunPathTarget({
+			changedFiles: lexicalWorkerDeployResult.changedFiles,
+			pathPrefixes: lexicalSearchWorkerPathPrefixes,
+			files: lexicalSearchWorkerFiles,
+			runWhenUnknown: isPushEvent,
+		}),
 		deployCallKentAudioWorker: shouldRunPathTarget({
 			changedFiles: audioWorkerDeployResult.changedFiles,
 			pathPrefixes: callKentAudioWorkerPathPrefixes,
@@ -502,6 +531,9 @@ export async function writeDeployPlanOutputs({
 		`deploy_site=${String(deployPlan.deploySite)}`,
 		`refresh_content=${String(deployPlan.refreshContent)}`,
 		`index_semantic_content=${String(deployPlan.indexSemanticContent)}`,
+		`deploy_lexical_search_worker=${String(
+			deployPlan.deployLexicalSearchWorker,
+		)}`,
 		`deploy_call_kent_audio_worker=${String(
 			deployPlan.deployCallKentAudioWorker,
 		)}`,
