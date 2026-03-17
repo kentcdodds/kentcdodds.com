@@ -1,0 +1,46 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kcd-search-worker",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-03-17",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "SEARCH_DB",
+			"database_name": "kcd-search",
+			"database_id": "04650c25-d5bf-4e31-9ab8-d60369dde757"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "SEARCH_ARTIFACTS_BUCKET",
+			"bucket_name": "kcd-semantic-search"
+		}
+	],
+	"vectorize": [
+		{
+			"binding": "SEARCH_INDEX",
+			"index_name": "kcd-semantic-v1"
+		}
+	],
+	"vars": {
+		"CLOUDFLARE_ACCOUNT_ID": "a41d50ecaf0ae0f86dd1824ef6729cb2",
+		"CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID": "replace-in-cloudflare",
+		"CLOUDFLARE_AI_EMBEDDING_MODEL": "@cf/google/embeddinggemma-300m"
+	},
+	"env": {
+		"local": {
+			"vars": {
+				"SEARCH_WORKER_TOKEN": "local-dev-search-token",
+				"CLOUDFLARE_ACCOUNT_ID": "a41d50ecaf0ae0f86dd1824ef6729cb2",
+				"CLOUDFLARE_API_TOKEN": "MOCK_CLOUDFLARE_API_TOKEN",
+				"CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID": "MOCK_CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID",
+				"CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN": "MOCK_CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN",
+				"CLOUDFLARE_AI_EMBEDDING_MODEL": "@cf/google/embeddinggemma-300m"
+			}
+		}
+	}
+}

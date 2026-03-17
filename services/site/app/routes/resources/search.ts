@@ -1,9 +1,7 @@
 import { data as json } from 'react-router'
+import { SearchQueryTooLongError } from '#other/search/search-service.ts'
 import { getDomainUrl } from '#app/utils/misc.ts'
-import {
-	semanticSearchKCD,
-	SemanticSearchQueryTooLongError,
-} from '#app/utils/semantic-search.server.ts'
+import { searchKCD } from '#app/utils/search.server.ts'
 import { type Route } from './+types/search'
 
 function normalizeSummary(value: unknown) {
@@ -25,9 +23,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	let results
 	try {
-		results = await semanticSearchKCD({ query, topK: 15, request })
+		results = await searchKCD({ query, topK: 15, request })
 	} catch (error) {
-		if (error instanceof SemanticSearchQueryTooLongError) {
+		if (error instanceof SearchQueryTooLongError) {
 			return json({ error: error.message }, { status: 400, headers })
 		}
 		throw error

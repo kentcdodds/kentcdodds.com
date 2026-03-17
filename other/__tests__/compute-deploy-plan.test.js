@@ -77,7 +77,7 @@ test('deploys the site when deployment diff includes a fly-deployable file', asy
 	expect(deployPlan.deploySite).toBe(true)
 	expect(deployPlan.refreshContent).toBe(true)
 	expect(deployPlan.indexSemanticContent).toBe(true)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(false)
+	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
@@ -131,7 +131,7 @@ test('deploys the site when the site workflow changes', async () => {
 	})
 
 	expect(deployPlan.deploySite).toBe(true)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(false)
+	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
 
@@ -187,7 +187,7 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 	expect(deployPlan.deploySite).toBe(false)
 })
 
-test('plans lexical worker deploys for lexical worker changes', async () => {
+test('plans search worker deploys for search worker changes', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -199,17 +199,17 @@ test('plans lexical worker deploys for lexical worker changes', async () => {
 	})
 	const fetchImpl = createMockDeploymentFetch({
 		'site-production': 'deployed-site-sha',
-		'lexical-search-worker-production': 'deployed-lexical-worker-sha',
+		'search-worker-production': 'deployed-search-worker-sha',
 		'oauth-production': 'deployed-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'deployed-site-sha') {
-				return [{ changeType: 'modified', filename: 'services/lexical-search-worker/src/index.ts' }]
+				return [{ changeType: 'modified', filename: 'services/search-worker/src/index.ts' }]
 			}
-			if (compareCommitSha === 'deployed-lexical-worker-sha') {
-				return [{ changeType: 'modified', filename: 'services/lexical-search-worker/src/index.ts' }]
+			if (compareCommitSha === 'deployed-search-worker-sha') {
+				return [{ changeType: 'modified', filename: 'services/search-worker/src/index.ts' }]
 			}
 			if (compareCommitSha === 'deployed-oauth-sha') {
 				return []
@@ -240,7 +240,7 @@ test('plans lexical worker deploys for lexical worker changes', async () => {
 	})
 
 	expect(deployPlan.deploySite).toBe(false)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(true)
+	expect(deployPlan.deploySearchWorker).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
@@ -257,7 +257,7 @@ test('plans audio deploys for workflow file changes', async () => {
 	})
 	const fetchImpl = createMockDeploymentFetch({
 		'site-production': 'deployed-site-sha',
-		'lexical-search-worker-production': 'deployed-lexical-worker-sha',
+		'search-worker-production': 'deployed-search-worker-sha',
 		'oauth-production': 'deployed-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
 	})
@@ -274,7 +274,7 @@ test('plans audio deploys for workflow file changes', async () => {
 					},
 				]
 			}
-			if (compareCommitSha === 'deployed-lexical-worker-sha') {
+			if (compareCommitSha === 'deployed-search-worker-sha') {
 				return []
 			}
 			if (compareCommitSha === 'deployed-oauth-sha') {
@@ -302,7 +302,7 @@ test('plans audio deploys for workflow file changes', async () => {
 		log,
 	})
 
-	expect(deployPlan.deployLexicalSearchWorker).toBe(false)
+	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
@@ -319,7 +319,7 @@ test('plans oauth worker deploys for oauth changes', async () => {
 	})
 	const fetchImpl = createMockDeploymentFetch({
 		'site-production': 'deployed-site-sha',
-		'lexical-search-worker-production': 'deployed-lexical-worker-sha',
+		'search-worker-production': 'deployed-search-worker-sha',
 		'oauth-production': 'deployed-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
 	})
@@ -331,7 +331,7 @@ test('plans oauth worker deploys for oauth changes', async () => {
 			if (compareCommitSha === 'deployed-oauth-sha') {
 				return [{ changeType: 'modified', filename: 'services/oauth/src/index.ts' }]
 			}
-			if (compareCommitSha === 'deployed-lexical-worker-sha') {
+			if (compareCommitSha === 'deployed-search-worker-sha') {
 				return []
 			}
 			if (compareCommitSha === 'deployed-audio-worker-sha') {
@@ -360,7 +360,7 @@ test('plans oauth worker deploys for oauth changes', async () => {
 	})
 
 	expect(deployPlan.deploySite).toBe(false)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(false)
+	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })
 
@@ -376,7 +376,7 @@ test('plans oauth worker deploys for workflow file changes', async () => {
 	})
 	const fetchImpl = createMockDeploymentFetch({
 		'site-production': 'deployed-site-sha',
-		'lexical-search-worker-production': 'deployed-lexical-worker-sha',
+		'search-worker-production': 'deployed-search-worker-sha',
 		'oauth-production': 'deployed-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
 	})
@@ -393,7 +393,7 @@ test('plans oauth worker deploys for workflow file changes', async () => {
 					},
 				]
 			}
-			if (compareCommitSha === 'deployed-lexical-worker-sha') {
+			if (compareCommitSha === 'deployed-search-worker-sha') {
 				return []
 			}
 			if (compareCommitSha === 'deployed-audio-worker-sha') {
@@ -421,7 +421,7 @@ test('plans oauth worker deploys for workflow file changes', async () => {
 		log,
 	})
 
-	expect(deployPlan.deployLexicalSearchWorker).toBe(false)
+	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })
 
@@ -492,7 +492,7 @@ test('plans deploy targets when no deployment state available', async () => {
 	expect(deployPlan.refreshContent).toBe(false)
 	expect(deployPlan.indexSemanticContent).toBe(true)
 	expect(deployPlan.deploySite).toBe(true)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(true)
+	expect(deployPlan.deploySearchWorker).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })
@@ -541,7 +541,7 @@ test('leaves push-only execution to workflow gating during pull requests', async
 	expect(deployPlan.deploySite).toBe(false)
 	expect(deployPlan.refreshContent).toBe(true)
 	expect(deployPlan.indexSemanticContent).toBe(false)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(false)
+	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
@@ -558,7 +558,7 @@ test('failed deploy stays deployable across unrelated push', async () => {
 	})
 	const fetchImpl = createMockDeploymentFetch({
 		'site-production': 'deployed-site-sha',
-		'lexical-search-worker-production': 'deployed-lexical-worker-sha',
+		'search-worker-production': 'deployed-search-worker-sha',
 		'oauth-production': 'last-successful-oauth-sha',
 		'call-kent-audio-worker-production': 'deployed-audio-worker-sha',
 	})
@@ -573,7 +573,7 @@ test('failed deploy stays deployable across unrelated push', async () => {
 					{ changeType: 'modified', filename: 'README.md' },
 				]
 			}
-			if (compareCommitSha === 'deployed-lexical-worker-sha') {
+			if (compareCommitSha === 'deployed-search-worker-sha') {
 				return []
 			}
 			if (compareCommitSha === 'deployed-audio-worker-sha') {
@@ -602,7 +602,7 @@ test('failed deploy stays deployable across unrelated push', async () => {
 	})
 
 	expect(deployPlan.deploySite).toBe(false)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(false)
+	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })
 
@@ -682,7 +682,7 @@ test('GitHub API failure defaults to deploy', async () => {
 	})
 
 	expect(deployPlan.deploySite).toBe(true)
-	expect(deployPlan.deployLexicalSearchWorker).toBe(true)
+	expect(deployPlan.deploySearchWorker).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(true)
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })

@@ -1,4 +1,4 @@
-name: ⚙️ Deploy Lexical Search Worker
+name: ⚙️ Deploy Search Worker
 
 on:
   workflow_call:
@@ -6,11 +6,11 @@ on:
 
 jobs:
   deploy:
-    name: ⚙️ Deploy Lexical Search Worker
+    name: ⚙️ Deploy Search Worker
     runs-on: ubuntu-latest
-    environment: lexical-search-worker-production
+    environment: search-worker-production
     concurrency:
-      group: deploy-lexical-search-worker-${{ github.ref }}
+      group: deploy-search-worker-${{ github.ref }}
       cancel-in-progress: true
     permissions:
       contents: read
@@ -25,22 +25,22 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: 📥 Install lexical worker deps
-        run: npm ci --workspace=lexical-search-worker
+      - name: 📥 Install search worker deps
+        run: npm ci --workspace=search-worker
 
-      - name: 🔬 Lint lexical worker
-        run: npm run lint --workspace lexical-search-worker
+      - name: 🔬 Lint search worker
+        run: npm run lint --workspace search-worker
 
-      - name: ʦ Typecheck lexical worker
-        run: npm run typecheck --workspace lexical-search-worker
+      - name: ʦ Typecheck search worker
+        run: npm run typecheck --workspace search-worker
 
-      - name: 🧪 Test lexical worker
-        run: npm run test --workspace lexical-search-worker
+      - name: 🧪 Test search worker
+        run: npm run test --workspace search-worker
 
       - name: ☁️ Deploy via Wrangler
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: services/lexical-search-worker
+          workingDirectory: services/search-worker
           command: deploy

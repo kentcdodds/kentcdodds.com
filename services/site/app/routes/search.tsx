@@ -22,10 +22,10 @@ import {
 	useUpdateQueryStringValueWithoutNavigation,
 } from '#app/utils/misc-react.tsx'
 import {
-	SEMANTIC_SEARCH_MAX_QUERY_CHARS,
-	semanticSearchKCD,
-	type SemanticSearchResult,
-} from '#app/utils/semantic-search.server.ts'
+	SEARCH_MAX_QUERY_CHARS,
+	type SearchResult,
+} from '#other/search/search-service.ts'
+import { searchKCD } from '#app/utils/search.server.ts'
 import { type Route } from './+types/search'
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -38,26 +38,26 @@ export async function loader({ request }: Route.LoaderArgs) {
 			{
 				q: '',
 				configured: true,
-				results: [] as Array<SemanticSearchResult>,
+				results: [] as Array<SearchResult>,
 				error: undefined as string | undefined,
 			},
 			{ headers },
 		)
 	}
 	const normalizedQ = q.trim().replace(/\s+/g, ' ')
-	if (normalizedQ.length > SEMANTIC_SEARCH_MAX_QUERY_CHARS) {
+	if (normalizedQ.length > SEARCH_MAX_QUERY_CHARS) {
 		return defer(
 			{
 				q,
 				configured: true,
-				results: [] as Array<SemanticSearchResult>,
-				error: `Query too long (${normalizedQ.length} chars). Max is ${SEMANTIC_SEARCH_MAX_QUERY_CHARS}.`,
+				results: [] as Array<SearchResult>,
+				error: `Query too long (${normalizedQ.length} chars). Max is ${SEARCH_MAX_QUERY_CHARS}.`,
 			},
 			{ headers },
 		)
 	}
 
-	const resultsPromise = semanticSearchKCD({
+	const resultsPromise = searchKCD({
 		query: q,
 		topK: 20,
 		request,
@@ -89,7 +89,7 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 
 	const [requestedQuery, setRequestedQuery] = React.useState(trimmedQuery)
 
-	type Resolved = { q: string; results: Array<SemanticSearchResult> }
+	type Resolved = { q: string; results: Array<SearchResult> }
 	const [resolved, setResolved] = React.useState<Resolved | null>(null)
 
 	React.useEffect(() => {
@@ -147,7 +147,7 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 		<div>
 			<HeroSection
 				title="Search"
-				subtitle="Semantic search across posts, pages, podcasts, talks, YouTube videos, resume, credits, and testimonials."
+				subtitle="Search across posts, pages, podcasts, talks, YouTube videos, resume, credits, and testimonials."
 				imageBuilder={images.kodyProfileGray}
 				action={
 					<fetcher.Form
@@ -170,7 +170,7 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 								type="search"
 								name="q"
 								value={query}
-								placeholder="Semantic search..."
+								placeholder="Search..."
 								className={inputClassName}
 								onChange={(event) => setQuery(event.currentTarget.value)}
 							/>
@@ -249,11 +249,11 @@ function ResolveResults({
 	resultsContainerClassName,
 }: {
 	q: string
-	results: Array<SemanticSearchResult>
+	results: Array<SearchResult>
 	setResolved: React.Dispatch<
 		React.SetStateAction<{
 			q: string
-			results: Array<SemanticSearchResult>
+			results: Array<SearchResult>
 		} | null>
 	>
 	renderResults: boolean
@@ -293,7 +293,7 @@ function SearchResults({
 	results,
 }: {
 	q: string
-	results: Array<SemanticSearchResult>
+	results: Array<SearchResult>
 }) {
 	return (
 		<div className="space-y-4">

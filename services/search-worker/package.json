@@ -1,5 +1,5 @@
 {
-  "name": "lexical-search-worker",
+  "name": "search-worker",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -17,7 +17,6 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1005.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -7,6 +7,7 @@
     "npm": ">=10"
   },
   "imports": {
+    "#other/*": "../../other/*",
     "#*": "./*"
   },
   "description": "A React Router v7 version of kentcdodds.com",

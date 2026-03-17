@@ -5,12 +5,13 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
+import { type SearchResult } from '#other/search/search-service.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.js'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
 import { prisma } from '#app/utils/prisma.server.js'
-import { semanticSearchKCD } from '#app/utils/semantic-search.server.js'
+import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
 
@@ -172,7 +173,7 @@ function createServer() {
 				query: z
 					.string()
 					.describe(
-						`The query to search for. This uses semantic search across indexed content (blog posts, pages, podcasts, talks, resume, credits, and testimonials). Simpler and shorter queries are better.`,
+						`The query to search for. This searches across indexed content (blog posts, pages, podcasts, talks, resume, credits, testimonials, and YouTube videos). Simpler and shorter queries are better.`,
 					),
 				category: z
 					.union([
@@ -180,6 +181,7 @@ function createServer() {
 						z.literal('Chats with Kent Podcast'),
 						z.literal('Call Kent Podcast'),
 						z.literal('Talks'),
+						z.literal('YouTube'),
 						z.literal('Resume'),
 						z.literal('Credits'),
 						z.literal('Testimonials'),
@@ -205,6 +207,7 @@ function createServer() {
 				'Chats with Kent Podcast': ['cwk'],
 				'Call Kent Podcast': ['ck'],
 				Talks: ['talk'],
+				YouTube: ['youtube'],
 				Resume: ['resume'],
 				Credits: ['credit'],
 				Testimonials: ['testimonial'],
@@ -221,10 +224,10 @@ function createServer() {
 				}
 			}
 
-			const results = await semanticSearchKCD({ query, topK: 15, request })
+			const results = await searchKCD({ query, topK: 15, request })
 			const filteredResults =
 				category && allowedTypesByCategory[category].length
-					? results.filter((r) =>
+					? results.filter((r: SearchResult) =>
 							r.type
 								? allowedTypesByCategory[category].includes(r.type)
 								: false,

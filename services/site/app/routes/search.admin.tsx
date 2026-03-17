@@ -30,7 +30,7 @@ import {
 	type SemanticSearchIgnoreList,
 	type SemanticSearchManifest,
 } from '#app/utils/semantic-search-admin.server.ts'
-import { vectorizeDeleteByIds } from '#app/utils/semantic-search.server.ts'
+import { vectorizeDeleteByIds } from '#app/utils/vectorize.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/search.admin'
 
