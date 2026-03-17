@@ -6,4 +6,6 @@ export type Env = {
 	SEARCH_WORKER_TOKEN: string
 	CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: string
 	CLOUDFLARE_AI_EMBEDDING_MODEL: string
+	/** When `"true"` / `"1"`, skip embeddings + Vectorize (D1 lexical only). */
+	SEARCH_LEXICAL_ONLY?: string
 }

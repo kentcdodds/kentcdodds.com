@@ -61,6 +61,28 @@ function clampTopK(topK: number | undefined) {
 	return 15
 }
 
+function isLexicalOnlySearch(env: Env) {
+	const v = env.SEARCH_LEXICAL_ONLY?.trim().toLowerCase()
+	return v === 'true' || v === '1'
+}
+
+function addYoutubeTimestampsToResults(results: Array<SearchResult>) {
+	for (const result of results) {
+		if (result.type !== 'youtube') continue
+		const videoId =
+			typeof result.slug === 'string' &&
+			/^[A-Za-z0-9_-]{11}$/u.test(result.slug)
+				? result.slug
+				: null
+		result.url = addYoutubeTimestampToUrl({
+			url: result.url,
+			videoId,
+			timestampSeconds: result.timestampSeconds,
+		})
+	}
+	return results
+}
+
 export async function getEmbedding({
 	env,
 	text,
@@ -160,6 +182,34 @@ export function createSearchService(
 				query: cleanedQuery,
 				topK: rawLexicalTopK,
 			})
+
+			if (isLexicalOnlySearch(env)) {
+				const lexicalMatches = await lexicalMatchesPromise
+				const lexicalResults = collapseRetrievedMatches(
+					lexicalMatches.map((match, index) => ({
+						rawId: match.id,
+						rank: index,
+						source: 'lexical' as const,
+						type: match.type,
+						slug: match.slug,
+						title: match.title,
+						url: match.url,
+						snippet: match.snippet,
+						timestampSeconds: normalizeYoutubeTimestampSeconds({
+							startSeconds: match.startSeconds,
+						}),
+						imageUrl: match.imageUrl,
+						imageAlt: match.imageAlt,
+					})),
+				).slice(0, safeTopK * 3)
+				const fusedResults = fuseRankedResults({
+					semanticResults: [],
+					lexicalResults: lexicalResults as Array<RankedDocResult>,
+					topK: safeTopK,
+				})
+				return addYoutubeTimestampsToResults(fusedResults)
+			}
+
 			const vector = await dependencies.getEmbedding({
 				text: cleanedQuery,
 				model: env.CLOUDFLARE_AI_EMBEDDING_MODEL,
@@ -218,21 +268,7 @@ export function createSearchService(
 				topK: safeTopK,
 			})
 
-			for (const result of fusedResults) {
-				if (result.type !== 'youtube') continue
-				const videoId =
-					typeof result.slug === 'string' &&
-					/^[A-Za-z0-9_-]{11}$/u.test(result.slug)
-						? result.slug
-						: null
-				result.url = addYoutubeTimestampToUrl({
-					url: result.url,
-					videoId,
-					timestampSeconds: result.timestampSeconds,
-				})
-			}
-
-			return fusedResults
+			return addYoutubeTimestampsToResults(fusedResults)
 		},
 		async sync({ force = false }: { force?: boolean } = {}) {
 			return await dependencies.syncArtifacts({ force })

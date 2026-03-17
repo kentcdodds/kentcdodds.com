@@ -125,6 +125,38 @@ test('search preserves YouTube timestamps from lexical matches', async () => {
 	expect(results[0]?.url).toBe('/youtube?video=abc123def45&t=123')
 })
 
+test('search with SEARCH_LEXICAL_ONLY skips embedding and Vectorize', async () => {
+	const env = { ...createEnv(), SEARCH_LEXICAL_ONLY: 'true' }
+	const getEmbedding = vi.fn(async () => [0.1, 0.2, 0.3])
+	const queryVectorize = vi.fn(async () => [])
+	const dependencies = {
+		ensureSchema: vi.fn(async () => undefined),
+		queryLexicalMatches: vi.fn(async () => [
+			{
+				id: 'blog:only-lexical:chunk:0',
+				type: 'blog',
+				slug: 'only-lexical',
+				title: 'Lexical Only',
+				url: '/blog/only-lexical',
+				snippet: 'snippet',
+			},
+		]),
+		getEmbedding,
+		queryVectorize,
+		syncArtifacts: vi.fn(async () => ({
+			syncedAt: '2026-03-17T00:00:00.000Z',
+		})),
+	}
+	const service = createSearchService(env, dependencies)
+
+	const results = await service.search({ query: 'test', topK: 5 })
+
+	expect(getEmbedding).not.toHaveBeenCalled()
+	expect(queryVectorize).not.toHaveBeenCalled()
+	expect(results).toHaveLength(1)
+	expect(results[0]?.id).toBe('blog:only-lexical')
+})
+
 test('search rejects overly long queries', async () => {
 	const dependencies = {
 		ensureSchema: vi.fn(async () => undefined),
