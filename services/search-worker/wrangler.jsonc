@@ -30,7 +30,7 @@
 		"binding": "AI"
 	},
 	"vars": {
-		"CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID": "replace-in-cloudflare",
+		"CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID": "kcd-unprotected",
 		"CLOUDFLARE_AI_EMBEDDING_MODEL": "@cf/google/embeddinggemma-300m"
 	},
 	"env": {
