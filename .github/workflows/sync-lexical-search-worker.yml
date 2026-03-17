@@ -32,7 +32,7 @@ jobs:
           FORCE_SYNC: ${{ inputs.force }}
         run: |
           set -euo pipefail
-          response=$(curl -s -w "\n%{http_code}" --max-time 300 \
+          response=$(curl -sS -w "\n%{http_code}" --max-time 300 \
             -X POST \
             -H "Authorization: Bearer ${LEXICAL_SEARCH_WORKER_TOKEN}" \
             -H "Content-Type: application/json" \
