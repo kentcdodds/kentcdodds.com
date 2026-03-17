@@ -69,7 +69,7 @@ test('searchKCD normalizes queries before calling the worker', async () => {
 		},
 	])
 	getSemanticSearchPresentationMock.mockResolvedValue({})
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		SEARCH_WORKER_URL: 'https://search-worker.example',
 	})
 
