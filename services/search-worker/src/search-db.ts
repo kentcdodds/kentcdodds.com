@@ -2,8 +2,23 @@ import {
 	getLexicalDocId,
 	type LexicalSearchArtifact,
 } from '@kcd-internal/search-shared'
-import type { LexicalSearchMatch } from '../../../other/semantic-search/lexical-search-service.ts'
 import { sql } from './d1-sql.ts'
+
+/** Lexical FTS row shape returned by {@link queryLexicalSearch}. */
+type LexicalSearchMatch = {
+	id: string
+	type?: string
+	slug?: string
+	title?: string
+	url?: string
+	snippet?: string
+	chunkIndex?: number
+	chunkCount?: number
+	startSeconds?: number
+	endSeconds?: number
+	imageUrl?: string
+	imageAlt?: string
+}
 
 const searchSchemaDdl: string[] = [
 	sql`
@@ -192,6 +207,7 @@ async function runStatementsInTransaction({
 	statements: Array<D1PreparedStatement>
 }) {
 	if (statements.length === 0) return
+	// D1 batch() runs all statements atomically (implicit transaction), not BEGIN/COMMIT.
 	await db.batch(statements)
 }
 

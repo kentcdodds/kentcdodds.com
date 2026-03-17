@@ -137,3 +137,43 @@ test('sync endpoint dispatches internal sync', async () => {
 		syncedAt: '2026-03-17T00:00:00.000Z',
 	})
 })
+
+test('sync endpoint accepts empty body as default options', async () => {
+	const service = createService()
+	const response = await handleRequest({
+		request: new Request('https://worker.example/internal/sync', {
+			method: 'POST',
+			headers: {
+				Authorization: 'Bearer worker-secret',
+			},
+		}),
+		env: createEnv(),
+		service,
+	})
+
+	expect(response.status).toBe(200)
+	expect(service.sync).toHaveBeenCalledWith({ force: undefined })
+})
+
+test('sync endpoint returns 400 for malformed JSON', async () => {
+	const service = createService()
+	const response = await handleRequest({
+		request: new Request('https://worker.example/internal/sync', {
+			method: 'POST',
+			body: '{"force":',
+			headers: {
+				Authorization: 'Bearer worker-secret',
+				'Content-Type': 'application/json',
+			},
+		}),
+		env: createEnv(),
+		service,
+	})
+
+	expect(response.status).toBe(400)
+	expect(service.sync).not.toHaveBeenCalled()
+	expect(await response.json()).toEqual({
+		ok: false,
+		error: 'Invalid JSON body',
+	})
+})

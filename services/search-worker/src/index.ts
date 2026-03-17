@@ -53,6 +53,19 @@ async function parseJsonBody(request: Request) {
 	}
 }
 
+async function parseOptionalJsonBody(request: Request) {
+	const text = await request.text()
+	if (!text.trim()) return {}
+	try {
+		return JSON.parse(text) as unknown
+	} catch {
+		throw new Response(JSON.stringify({ ok: false, error: 'Invalid JSON body' }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' },
+		})
+	}
+}
+
 export async function handleRequest({
 	request,
 	env,
@@ -87,7 +100,7 @@ export async function handleRequest({
 
 		if (url.pathname === '/internal/sync') {
 			if (request.method !== 'POST') return methodNotAllowed()
-			const body = await request.json().catch(() => ({}))
+			const body = await parseOptionalJsonBody(request)
 			const parsed = syncRequestSchema.parse(body)
 			const result = await service.sync(parsed)
 			return json({ ok: true, ...result })

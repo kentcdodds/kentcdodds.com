@@ -39,9 +39,11 @@ function normalizeUrlForKey(url: string): string {
 	try {
 		if (/^https?:\/\//i.test(url)) {
 			const parsed = new URL(url)
-			return parsed.pathname !== '/'
-				? parsed.pathname.replace(/\/+$/u, '')
-				: parsed.pathname
+			const path =
+				parsed.pathname !== '/'
+					? parsed.pathname.replace(/\/+$/u, '')
+					: parsed.pathname
+			return path.toLowerCase()
 		}
 	} catch {
 		// Ignore invalid absolute URLs and fall back to path normalization.
@@ -49,7 +51,8 @@ function normalizeUrlForKey(url: string): string {
 
 	const cleaned = (url.split(/[?#]/u)[0] ?? '').trim()
 	if (!cleaned) return '/'
-	return cleaned !== '/' ? cleaned.replace(/\/+$/u, '') : cleaned
+	const path = cleaned !== '/' ? cleaned.replace(/\/+$/u, '') : cleaned
+	return path.toLowerCase()
 }
 
 function normalizeTitleForKey(title: string) {

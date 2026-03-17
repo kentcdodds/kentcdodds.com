@@ -132,10 +132,20 @@ async function queryVectorize({
 	return (result.matches ?? []) as Array<VectorizeMatch>
 }
 
+const schemaInitByDb = new WeakMap<D1Database, Promise<void>>()
+
 function createDefaultDependencies(env: Env): SearchDependencies {
 	return {
 		ensureSchema: async () => {
-			await ensureSearchSchema(env.SEARCH_DB)
+			let ready = schemaInitByDb.get(env.SEARCH_DB)
+			if (!ready) {
+				ready = ensureSearchSchema(env.SEARCH_DB).catch((error) => {
+					schemaInitByDb.delete(env.SEARCH_DB)
+					throw error
+				})
+				schemaInitByDb.set(env.SEARCH_DB, ready)
+			}
+			await ready
 		},
 		queryLexicalMatches: async ({ query, topK }) => {
 			return await queryLexicalSearch({
@@ -218,17 +228,17 @@ export function createSearchService(
 				return addYoutubeTimestampsToResults(fusedResults)
 			}
 
-			const vector = await dependencies.getEmbedding({
-				text: cleanedQuery,
-				model: env.CLOUDFLARE_AI_EMBEDDING_MODEL,
-			})
-			const [semanticMatches, lexicalMatches] = await Promise.all([
-				dependencies.queryVectorize({
-					vector,
-					topK: rawSemanticTopK,
+			const [vector, lexicalMatches] = await Promise.all([
+				dependencies.getEmbedding({
+					text: cleanedQuery,
+					model: env.CLOUDFLARE_AI_EMBEDDING_MODEL,
 				}),
 				lexicalMatchesPromise,
 			])
+			const semanticMatches = await dependencies.queryVectorize({
+				vector,
+				topK: rawSemanticTopK,
+			})
 
 			const semanticResults = collapseRetrievedMatches(
 				semanticMatches.map((match, index) => {

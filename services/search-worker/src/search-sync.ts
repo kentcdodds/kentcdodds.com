@@ -20,7 +20,15 @@ async function getLexicalSearchArtifact({
 }): Promise<LexicalSearchArtifact | null> {
 	const object = await env.SEARCH_ARTIFACTS_BUCKET.get(key)
 	if (!object) return null
-	return await object.json<LexicalSearchArtifact>()
+	try {
+		return await object.json<LexicalSearchArtifact>()
+	} catch (error) {
+		console.error(
+			`Malformed JSON in search artifact ${key}:`,
+			error instanceof Error ? error.message : error,
+		)
+		return null
+	}
 }
 
 export async function syncSearchArtifacts({
