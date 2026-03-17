@@ -9,7 +9,11 @@ beforeAll(() => {
 afterEach(async () => {
 	mswServer.resetHandlers()
 	const { resetCloudflareMockState } = await import('#mocks/cloudflare.ts')
+	const { resetLexicalSearchWorkerMockState } = await import(
+		'#mocks/lexical-search-worker.ts'
+	)
 	resetCloudflareMockState()
+	resetLexicalSearchWorkerMockState()
 })
 
 afterAll(() => {

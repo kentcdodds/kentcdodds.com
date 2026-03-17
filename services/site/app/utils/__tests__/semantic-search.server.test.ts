@@ -1,18 +1,17 @@
 import { expect, test, vi } from 'vitest'
+import type { LexicalSearchMatch } from '../../../../../other/semantic-search/lexical-search-service.ts'
 import { setEnv } from '#tests/env-disposable.ts'
 
 const {
-	ensureLexicalSearchReadyMock,
-	queryLexicalSearchMock,
+	queryLexicalSearchMatchesMock,
 	getLatestCachifiedKey,
 	setLatestCachifiedKey,
 } = vi.hoisted(() => {
 	let latestCachifiedKey: string | null = null
 	return {
-		ensureLexicalSearchReadyMock: vi.fn(async () => {}),
-		queryLexicalSearchMock: vi.fn<
-			(args: { query: string; topK: number }) => Array<Record<string, unknown>>
-		>(() => []),
+		queryLexicalSearchMatchesMock: vi.fn<
+			(args: { query: string; topK: number }) => Promise<Array<LexicalSearchMatch>>
+		>(async () => []),
 		getLatestCachifiedKey: () => latestCachifiedKey,
 		setLatestCachifiedKey: (key: string | null) => {
 			latestCachifiedKey = key
@@ -43,16 +42,14 @@ vi.mock('#app/utils/semantic-search-presentation.server.ts', () => ({
 	getSemanticSearchPresentation: async () => ({}),
 }))
 
-vi.mock('#app/utils/lexical-search.server.ts', () => ({
-	ensureLexicalSearchReady: ensureLexicalSearchReadyMock,
-	queryLexicalSearch: queryLexicalSearchMock,
+vi.mock('#app/utils/lexical-search-client.server.ts', () => ({
+	queryLexicalSearchMatches: queryLexicalSearchMatchesMock,
 }))
 
 import { semanticSearchKCD } from '../semantic-search.server.ts'
 
 test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID', async () => {
-	queryLexicalSearchMock.mockReset()
-	ensureLexicalSearchReadyMock.mockClear()
+	queryLexicalSearchMatchesMock.mockReset()
 	setLatestCachifiedKey(null)
 	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
@@ -116,8 +113,7 @@ test('semanticSearchKCD routes user query embeddings through CLOUDFLARE_AI_EMBED
 })
 
 test('semanticSearchKCD canonicalizes YouTube results by video id from URL when slug is missing', async () => {
-	queryLexicalSearchMock.mockReset()
-	ensureLexicalSearchReadyMock.mockClear()
+	queryLexicalSearchMatchesMock.mockReset()
 	setLatestCachifiedKey(null)
 	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'mock-account',
@@ -205,10 +201,9 @@ test('semanticSearchKCD canonicalizes YouTube results by video id from URL when 
 })
 
 test('semanticSearchKCD fuses lexical matches with semantic matches', async () => {
-	queryLexicalSearchMock.mockReset()
-	ensureLexicalSearchReadyMock.mockClear()
+	queryLexicalSearchMatchesMock.mockReset()
 	setLatestCachifiedKey(null)
-	queryLexicalSearchMock.mockReturnValue([
+	queryLexicalSearchMatchesMock.mockResolvedValue([
 		{
 			id: 'blog:react-hooks-pitfalls:chunk:0',
 			type: 'blog',
@@ -285,7 +280,6 @@ test('semanticSearchKCD fuses lexical matches with semantic matches', async () =
 			topK: 5,
 		})
 
-		expect(ensureLexicalSearchReadyMock).toHaveBeenCalled()
 		expect(results).toHaveLength(2)
 		expect(results[0]?.id).toBe('blog:react-hooks-pitfalls')
 		expect(results[1]?.id).toBe('blog:some-other-post')
@@ -295,10 +289,9 @@ test('semanticSearchKCD fuses lexical matches with semantic matches', async () =
 })
 
 test('semanticSearchKCD preserves YouTube timestamps from lexical matches', async () => {
-	queryLexicalSearchMock.mockReset()
-	ensureLexicalSearchReadyMock.mockClear()
+	queryLexicalSearchMatchesMock.mockReset()
 	setLatestCachifiedKey(null)
-	queryLexicalSearchMock.mockReturnValue([
+	queryLexicalSearchMatchesMock.mockResolvedValue([
 		{
 			id: 'youtube:abc123def45:chunk:0',
 			type: 'youtube',
@@ -366,10 +359,9 @@ test('semanticSearchKCD preserves YouTube timestamps from lexical matches', asyn
 })
 
 test('semanticSearchKCD preserves zero-second YouTube timestamps from lexical matches', async () => {
-	queryLexicalSearchMock.mockReset()
-	ensureLexicalSearchReadyMock.mockClear()
+	queryLexicalSearchMatchesMock.mockReset()
 	setLatestCachifiedKey(null)
-	queryLexicalSearchMock.mockReturnValue([
+	queryLexicalSearchMatchesMock.mockResolvedValue([
 		{
 			id: 'youtube:abc123def45:chunk:0',
 			type: 'youtube',

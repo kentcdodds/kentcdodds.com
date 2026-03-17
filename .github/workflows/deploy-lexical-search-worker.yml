@@ -1,0 +1,46 @@
+name: ⚙️ Deploy Lexical Search Worker
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: ⚙️ Deploy Lexical Search Worker
+    runs-on: ubuntu-latest
+    environment: lexical-search-worker-production
+    concurrency:
+      group: deploy-lexical-search-worker-${{ github.ref }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: 📥 Install lexical worker deps
+        run: npm ci --workspace=lexical-search-worker
+
+      - name: 🔬 Lint lexical worker
+        run: npm run lint --workspace lexical-search-worker
+
+      - name: ʦ Typecheck lexical worker
+        run: npm run typecheck --workspace lexical-search-worker
+
+      - name: 🧪 Test lexical worker
+        run: npm run test --workspace lexical-search-worker
+
+      - name: ☁️ Deploy via Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: services/lexical-search-worker
+          command: deploy
