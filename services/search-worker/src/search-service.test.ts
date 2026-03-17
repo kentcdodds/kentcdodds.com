@@ -81,6 +81,7 @@ test('search fuses lexical matches with semantic matches', async () => {
 		syncArtifacts: vi.fn(async () => ({
 			syncedAt: '2026-03-17T00:00:00.000Z',
 		})),
+		getSyncedAt: vi.fn(async () => '2026-03-17T00:00:00.000Z'),
 	}
 	const service = createSearchService(createEnv(), dependencies)
 
@@ -114,6 +115,7 @@ test('search preserves YouTube timestamps from lexical matches', async () => {
 		syncArtifacts: vi.fn(async () => ({
 			syncedAt: '2026-03-17T00:00:00.000Z',
 		})),
+		getSyncedAt: vi.fn(async () => '2026-03-17T00:00:00.000Z'),
 	}
 	const service = createSearchService(createEnv(), dependencies)
 
@@ -146,6 +148,7 @@ test('search with SEARCH_LEXICAL_ONLY skips embedding and Vectorize', async () =
 		syncArtifacts: vi.fn(async () => ({
 			syncedAt: '2026-03-17T00:00:00.000Z',
 		})),
+		getSyncedAt: vi.fn(async () => '2026-03-17T00:00:00.000Z'),
 	}
 	const service = createSearchService(env, dependencies)
 
@@ -166,6 +169,7 @@ test('search rejects overly long queries', async () => {
 		syncArtifacts: vi.fn(async () => ({
 			syncedAt: '2026-03-17T00:00:00.000Z',
 		})),
+		getSyncedAt: vi.fn(async () => '2026-03-17T00:00:00.000Z'),
 	}
 	const service = createSearchService(createEnv(), dependencies)
 

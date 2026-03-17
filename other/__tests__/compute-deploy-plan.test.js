@@ -187,7 +187,7 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 	expect(deployPlan.deploySite).toBe(false)
 })
 
-test('plans search worker deploys for search worker and shared contract changes', async () => {
+test('plans search worker deploys for shared contract changes', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -239,7 +239,7 @@ test('plans search worker deploys for search worker and shared contract changes'
 		log,
 	})
 
-	expect(deployPlan.deploySite).toBe(false)
+	expect(deployPlan.deploySite).toBe(true)
 	expect(deployPlan.deploySearchWorker).toBe(true)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)

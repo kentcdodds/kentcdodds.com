@@ -41,7 +41,9 @@ async function requestSearchWorkerJson<T extends { ok: boolean }>({
 
 		if (!response.ok || json?.ok === false || json === null) {
 			throw new Error(
-				json?.ok === false
+				json?.ok === false &&
+				'error' in json &&
+				typeof json.error === 'string'
 					? json.error
 					: `Search worker request failed (${response.status})${fallbackText ? `: ${fallbackText}` : ''}`,
 			)
@@ -72,7 +74,7 @@ export async function querySearchWorkerResults({
 		method: 'POST',
 		body: { query, topK },
 	})
-	if (!Array.isArray(json.results)) {
+	if (!('results' in json) || !Array.isArray(json.results)) {
 		throw new Error('Search worker returned an invalid results payload')
 	}
 	return json.results
