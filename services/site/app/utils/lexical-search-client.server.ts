@@ -14,6 +14,8 @@ type WorkerJsonResponse<T> =
 			error: string
 	  }
 
+const lexicalSearchWorkerTimeoutMs = 10_000
+
 async function requestWorkerJson<T>({
 	path,
 	method = 'GET',
@@ -24,33 +26,50 @@ async function requestWorkerJson<T>({
 	body?: unknown
 }) {
 	const env = getEnv()
-	const response = await fetch(new URL(path, env.LEXICAL_SEARCH_WORKER_URL), {
-		method,
-		headers: {
-			Authorization: `Bearer ${env.LEXICAL_SEARCH_WORKER_TOKEN}`,
-			...(body ? { 'Content-Type': 'application/json' } : {}),
-		},
-		body: body ? JSON.stringify(body) : undefined,
-	})
-	let json: WorkerJsonResponse<T> | null = null
-	let fallbackText = ''
+	const controller = new AbortController()
+	const timeoutId = setTimeout(() => controller.abort(), lexicalSearchWorkerTimeoutMs)
 	try {
-		json = (await response.json()) as WorkerJsonResponse<T>
-	} catch {
 		try {
-			fallbackText = await response.text()
-		} catch {
-			// Ignore body-read failures; keep the status-based fallback below.
+			const response = await fetch(new URL(path, env.LEXICAL_SEARCH_WORKER_URL), {
+				method,
+				headers: {
+					Authorization: `Bearer ${env.LEXICAL_SEARCH_WORKER_TOKEN}`,
+					...(body ? { 'Content-Type': 'application/json' } : {}),
+				},
+				body: body ? JSON.stringify(body) : undefined,
+				signal: controller.signal,
+			})
+			let json: WorkerJsonResponse<T> | null = null
+			let fallbackText = ''
+			try {
+				json = (await response.clone().json()) as WorkerJsonResponse<T>
+			} catch {
+				try {
+					fallbackText = await response.text()
+				} catch {
+					// Ignore body-read failures; keep the status-based fallback below.
+				}
+			}
+			if (!response.ok || json?.ok === false || json === null) {
+				throw new Error(
+					json?.ok === false
+						? json.error
+						: `Lexical worker request failed (${response.status})${fallbackText ? `: ${fallbackText}` : ''}`,
+				)
+			}
+			return json
+		} finally {
+			clearTimeout(timeoutId)
 		}
+	} catch (error) {
+		clearTimeout(timeoutId)
+		if (error instanceof Error && error.name === 'AbortError') {
+			throw new Error(
+				`Lexical worker request timed out after ${lexicalSearchWorkerTimeoutMs}ms`,
+			)
+		}
+		throw error
 	}
-	if (!response.ok || json?.ok === false || json === null) {
-		throw new Error(
-			json?.ok === false
-				? json.error
-				: `Lexical worker request failed (${response.status})${fallbackText ? `: ${fallbackText}` : ''}`,
-		)
-	}
-	return json
 }
 
 export async function queryLexicalSearchMatches({

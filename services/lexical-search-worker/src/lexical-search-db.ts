@@ -202,8 +202,9 @@ function buildDocRecords({
 	return docs
 }
 
-function buildLikeQuery(query: string) {
-	return `%${query.trim()}%`
+function isFtsQuerySyntaxError(error: unknown) {
+	if (!(error instanceof Error)) return false
+	return /fts5|syntax error|malformed match|unterminated/i.test(error.message)
 }
 
 async function runStatementsInTransaction({
@@ -507,18 +508,15 @@ export async function queryLexicalSearch({
 
 	try {
 		return await runQuery(matchQuery)
-	} catch {
+	} catch (error) {
+		if (!isFtsQuerySyntaxError(error)) throw error
 		const fallbackQuery = query
 			.split(/\s+/u)
 			.map((token) => token.replace(/[^\p{L}\p{N}_-]+/gu, '').trim())
 			.filter(Boolean)
 			.join(' OR ')
 		if (!fallbackQuery) return []
-		try {
-			return await runQuery(fallbackQuery)
-		} catch {
-			return []
-		}
+		return await runQuery(fallbackQuery)
 	}
 }
 
@@ -553,7 +551,6 @@ export async function searchLexicalAdminOverview({
 }) {
 	const safeLimit = Math.min(500, Math.max(1, Math.floor(limit)))
 	const normalizedQuery = query.trim()
-	const likeQuery = buildLikeQuery(normalizedQuery)
 	const [stats, sourceRows, docRows, chunkRows] = await Promise.all([
 		getLexicalSearchStats(db),
 		db
@@ -589,15 +586,18 @@ export async function searchLexicalAdminOverview({
 						AND (?2 = '' OR type = ?2)
 						AND (
 							?3 = ''
-							OR docId LIKE ?4
-							OR title LIKE ?4
-							OR url LIKE ?4
-							OR sourceKey LIKE ?4
+							OR instr(docId, ?4) > 0
+							OR instr(title, ?4) > 0
+							OR instr(url, ?4) > 0
+							OR instr(sourceKey, ?4) > 0
 							OR EXISTS (
 								SELECT 1
 								FROM lexical_chunks
 								WHERE lexical_chunks.docId = lexical_docs.docId
-									AND (lexical_chunks.snippet LIKE ?4 OR lexical_chunks.id LIKE ?4)
+									AND (
+										instr(lexical_chunks.snippet, ?4) > 0
+										OR instr(lexical_chunks.id, ?4) > 0
+									)
 								LIMIT 1
 							)
 						)
@@ -605,7 +605,7 @@ export async function searchLexicalAdminOverview({
 					LIMIT ?5
 				`,
 			)
-			.bind(sourceKey, type, normalizedQuery, likeQuery, safeLimit)
+			.bind(sourceKey, type, normalizedQuery, normalizedQuery, safeLimit)
 			.all<SqlRow>(),
 		db
 			.prepare(
@@ -633,16 +633,16 @@ export async function searchLexicalAdminOverview({
 						AND (?2 = '' OR type = ?2)
 						AND (
 							?3 = ''
-							OR id LIKE ?4
-							OR docId LIKE ?4
-							OR title LIKE ?4
-							OR snippet LIKE ?4
+							OR instr(id, ?4) > 0
+							OR instr(docId, ?4) > 0
+							OR instr(title, ?4) > 0
+							OR instr(snippet, ?4) > 0
 						)
 					ORDER BY sourceKey, docId, chunkIndex
 					LIMIT ?5
 				`,
 			)
-			.bind(sourceKey, type, normalizedQuery, likeQuery, safeLimit)
+			.bind(sourceKey, type, normalizedQuery, normalizedQuery, safeLimit)
 			.all<SqlRow>(),
 	])
 

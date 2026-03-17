@@ -180,7 +180,7 @@ function queryMatches({
 	const tokens = normalizedQuery.split(/\s+/u).filter(Boolean)
 	return lexicalSearchMockState.chunks
 		.filter((chunk) => {
-			const haystack = [chunk.title, chunk.snippet, chunk.text, chunk.url]
+			const haystack = [chunk.title, chunk.text]
 				.filter(Boolean)
 				.join(' ')
 				.toLowerCase()
@@ -269,6 +269,24 @@ function getDocDetail(docId: string) {
 }
 
 function recalculateStats() {
+	const chunkCountsByDocId = new Map<string, number>()
+	const chunkCountsBySourceKey = new Map<string, number>()
+	for (const chunk of lexicalSearchMockState.chunks) {
+		chunkCountsByDocId.set(
+			chunk.docId,
+			(chunkCountsByDocId.get(chunk.docId) ?? 0) + 1,
+		)
+		chunkCountsBySourceKey.set(
+			chunk.sourceKey,
+			(chunkCountsBySourceKey.get(chunk.sourceKey) ?? 0) + 1,
+		)
+	}
+	for (const doc of lexicalSearchMockState.docs) {
+		doc.chunkCount = chunkCountsByDocId.get(doc.docId) ?? 0
+	}
+	for (const source of lexicalSearchMockState.sources) {
+		source.chunkCount = chunkCountsBySourceKey.get(source.sourceKey) ?? 0
+	}
 	lexicalSearchMockState.stats = {
 		sourceCount: lexicalSearchMockState.sources.length,
 		docCount: lexicalSearchMockState.docs.length,
