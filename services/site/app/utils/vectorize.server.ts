@@ -1,5 +1,12 @@
 import { getEnv } from '#app/utils/env.server.ts'
 
+export type CloudflareVectorizeDeleteResponse = {
+	success?: boolean
+	errors?: unknown[]
+	messages?: unknown[]
+	result?: { deleted?: number }
+}
+
 function getCloudflareApiBaseUrl() {
 	return 'https://api.cloudflare.com/client/v4'
 }
@@ -19,13 +26,17 @@ export async function vectorizeDeleteByIds({
 	ids,
 }: {
 	ids: string[]
-}): Promise<unknown> {
-	const { accountId, apiToken, indexName } = getRequiredVectorizeEnv()
+}): Promise<CloudflareVectorizeDeleteResponse> {
 	if (!Array.isArray(ids) || ids.length === 0) {
 		return { result: { deleted: 0 } }
 	}
+	if (ids.some((id) => typeof id !== 'string' || id.trim().length === 0)) {
+		throw new TypeError('ids must be a non-empty array of non-empty strings')
+	}
 
+	const { accountId, apiToken, indexName } = getRequiredVectorizeEnv()
 	const body = JSON.stringify({ ids })
+
 	const doFetch = async (path: string) => {
 		const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}${path}`
 		const controller = new AbortController()
@@ -43,10 +54,18 @@ export async function vectorizeDeleteByIds({
 				body,
 				signal: controller.signal,
 			})
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : String(error)
+			throw new Error(
+				`Cloudflare API transport error (${path}): ${message}`,
+				{ cause: error },
+			)
 		} finally {
 			clearTimeout(timeout)
 		}
 	}
+
 	const throwIfNotOk = async (response: Response, path: string) => {
 		if (response.ok) return
 		const text = await response.text().catch(() => '')
@@ -61,9 +80,9 @@ export async function vectorizeDeleteByIds({
 		const legacyPath = `/vectorize/indexes/${indexName}/delete_by_ids`
 		const legacyResponse = await doFetch(legacyPath)
 		await throwIfNotOk(legacyResponse, legacyPath)
-		return (await legacyResponse.json()) as unknown
+		return (await legacyResponse.json()) as CloudflareVectorizeDeleteResponse
 	}
 
 	await throwIfNotOk(v2Response, v2Path)
-	return (await v2Response.json()) as unknown
+	return (await v2Response.json()) as CloudflareVectorizeDeleteResponse
 }
