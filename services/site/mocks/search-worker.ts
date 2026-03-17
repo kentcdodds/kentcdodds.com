@@ -1,13 +1,38 @@
-import { http, HttpResponse, type HttpHandler } from 'msw'
+import { http, HttpResponse, passthrough, type HttpHandler } from 'msw'
 import {
+	getLexicalDocId,
 	normalizeSearchQuery,
+	type LexicalSearchArtifact,
 	type SearchResult,
 } from '@kcd-internal/search-shared'
-import type { LexicalSearchArtifact } from '../../../other/semantic-search/lexical-search-artifact.ts'
-import { getLexicalDocId } from '../../../other/semantic-search/lexical-search-service.ts'
 
-const MOCK_SEARCH_WORKER_ORIGIN = 'https://mock.search-worker.local'
-const MOCK_SEARCH_WORKER_TOKEN = 'local-dev-search-token'
+const searchWorkerUrlEnv = process.env.SEARCH_WORKER_URL
+if (searchWorkerUrlEnv.trim() === '') {
+	throw new Error(
+		'SEARCH_WORKER_URL must be set when MSW mocks are enabled (see .env.example).',
+	)
+}
+const searchWorkerBaseUrl = searchWorkerUrlEnv.trim()
+
+/** MSW fixture mode when URL contains `mock`; otherwise handlers call `passthrough()` first. */
+const useSearchWorkerMswMock = searchWorkerBaseUrl
+	.toLowerCase()
+	.includes('mock')
+
+let searchWorkerMockToken = ''
+if (useSearchWorkerMswMock) {
+	const tokenEnv = process.env.SEARCH_WORKER_TOKEN
+	if (tokenEnv.trim() === '') {
+		throw new Error(
+			'SEARCH_WORKER_TOKEN must be set when SEARCH_WORKER_URL is a mock worker URL (see .env.example).',
+		)
+	}
+	searchWorkerMockToken = tokenEnv.trim()
+}
+
+function searchWorkerUrl(path: string) {
+	return new URL(path, searchWorkerBaseUrl).href
+}
 
 const seedArtifacts: Record<string, LexicalSearchArtifact> = {
 	'lexical-search/repo-content.json': {
@@ -116,30 +141,26 @@ function createMockState(): MockState {
 }
 
 export function resetSearchWorkerMockState() {
+	if (!useSearchWorkerMswMock) return
 	searchWorkerMockState = createMockState()
 }
 
 function isAuthorized(request: Request) {
 	return (
-		request.headers.get('Authorization') === `Bearer ${MOCK_SEARCH_WORKER_TOKEN}`
+		request.headers.get('Authorization') === `Bearer ${searchWorkerMockToken}`
 	)
 }
 
 function addYoutubeTimestamp(url: string, startSeconds: number | undefined) {
-	if (typeof startSeconds !== 'number' || !Number.isFinite(startSeconds)) return url
+	if (typeof startSeconds !== 'number' || !Number.isFinite(startSeconds))
+		return url
 
 	const parsed = new URL(url, 'https://kentcdodds.com')
 	parsed.searchParams.set('t', String(Math.max(0, Math.floor(startSeconds))))
 	return `${parsed.pathname}?${parsed.searchParams.toString()}`
 }
 
-function buildSearchResults({
-	query,
-	topK,
-}: {
-	query: string
-	topK: number
-}) {
+function buildSearchResults({ query, topK }: { query: string; topK: number }) {
 	const normalizedQuery = normalizeSearchQuery(query).toLowerCase()
 	if (!normalizedQuery) return [] as Array<SearchResult>
 
@@ -175,12 +196,17 @@ function buildSearchResults({
 }
 
 export const searchWorkerHandlers: Array<HttpHandler> = [
-	http.get(`${MOCK_SEARCH_WORKER_ORIGIN}/health`, () =>
-		HttpResponse.json({ ok: true }),
-	),
-	http.post(`${MOCK_SEARCH_WORKER_ORIGIN}/search`, async ({ request }) => {
+	http.get(searchWorkerUrl('/health'), () => {
+		if (!useSearchWorkerMswMock) return passthrough()
+		return HttpResponse.json({ ok: true })
+	}),
+	http.post(searchWorkerUrl('/search'), async ({ request }) => {
+		if (!useSearchWorkerMswMock) return passthrough()
 		if (!isAuthorized(request)) {
-			return HttpResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
+			return HttpResponse.json(
+				{ ok: false, error: 'Unauthorized' },
+				{ status: 401 },
+			)
 		}
 
 		const body = (await request.json()) as { query?: string; topK?: number }
@@ -192,9 +218,13 @@ export const searchWorkerHandlers: Array<HttpHandler> = [
 			}),
 		})
 	}),
-	http.post(`${MOCK_SEARCH_WORKER_ORIGIN}/internal/sync`, async ({ request }) => {
+	http.post(searchWorkerUrl('/internal/sync'), async ({ request }) => {
+		if (!useSearchWorkerMswMock) return passthrough()
 		if (!isAuthorized(request)) {
-			return HttpResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
+			return HttpResponse.json(
+				{ ok: false, error: 'Unauthorized' },
+				{ status: 401 },
+			)
 		}
 
 		resetSearchWorkerMockState()

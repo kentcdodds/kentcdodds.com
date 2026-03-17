@@ -55,9 +55,9 @@ reference:
 - Search now runs through a dedicated Cloudflare Worker workspace at
   `services/search-worker`. Production/staging site envs must set
   `SEARCH_WORKER_URL` and `SEARCH_WORKER_TOKEN`.
-- Local dev/tests keep the site on a mock Worker URL; MSW intercepts that HTTP
-  boundary so the site still talks to a unified search Worker API shape, not an
-  in-process fallback.
+- Search Worker URL: if `SEARCH_WORKER_URL` contains `mock`, MSW returns fixtures;
+  otherwise MSW passthrough sends traffic to that URL (e.g. local `wrangler dev`
+  on `http://127.0.0.1:8787`). Tests expect a mock URL (see `.env.example`).
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
   Changes to content files are auto-detected by the dev server's file watcher.
 - `npm run dev` should not wrap `services/site/index.ts` in an outer `node --watch`. React
