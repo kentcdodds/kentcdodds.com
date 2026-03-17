@@ -21,6 +21,7 @@ import {
 	SpinnerIcon,
 	SunIcon,
 } from './icons.tsx'
+import { Signature } from './signature.tsx'
 import { TeamCircle } from './team-circle.tsx'
 
 type NavbarLinkItem = {
@@ -887,9 +888,11 @@ function Navbar() {
 					<Link
 						prefetch="intent"
 						to="/"
-						className="text-primary underlined block shrink-0 text-2xl font-medium whitespace-nowrap transition focus:outline-none"
+						aria-label="Home"
+						className="text-primary hover:text-team-current focus:text-team-current inline-flex h-14 shrink-0 items-center transition focus:outline-none"
 					>
-						<h1>Kent C. Dodds</h1>
+						<Signature className="block h-7 w-auto" />
+						<span className="sr-only">Home</span>
 					</Link>
 					<div className="shrink-0 max-lg:hidden">
 						{isSearchOpen ? (
