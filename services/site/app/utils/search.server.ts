@@ -9,7 +9,10 @@ import {
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { getSemanticSearchPresentation } from '#app/utils/semantic-search-presentation.server.ts'
-import { querySearchWorkerResults } from '#app/utils/search-worker-client.server.ts'
+import {
+	getSearchWorkerHealth,
+	querySearchWorkerResults,
+} from '#app/utils/search-worker-client.server.ts'
 import { type Timings } from '#app/utils/timing.server.ts'
 
 const SEARCH_CACHE_TTL_MS = 1000 * 60 * 60 * 12 // 12 hours
@@ -37,14 +40,17 @@ function makeSearchCacheKey({
 	query,
 	topK,
 	workerUrl,
+	searchVersion,
 }: {
 	query: string
 	topK: number
 	workerUrl: string
+	searchVersion: string
 }) {
 	const payload = JSON.stringify({
 		v: 1,
 		workerUrl,
+		searchVersion,
 		topK,
 		query,
 	})
@@ -81,10 +87,27 @@ export async function searchKCD({
 
 	const safeTopK = clampTopK(topK)
 	const workerUrl = getEnv().SEARCH_WORKER_URL
+	const fetchResults = async () =>
+		await querySearchWorkerResults({
+			query: cleanedQuery,
+			topK: safeTopK,
+		})
+	const health = await getSearchWorkerHealth().catch(() => null)
+	if (!health || health.ok !== true) {
+		const uncachedResults = await fetchResults()
+		return await Promise.all(
+			uncachedResults.map(async (result) => {
+				const presentation = await getSemanticSearchPresentation(result)
+				return { ...result, ...presentation }
+			}),
+		)
+	}
+
 	const cacheKey = makeSearchCacheKey({
 		query: cleanedQuery,
 		topK: safeTopK,
 		workerUrl,
+		searchVersion: health.syncedAt ?? 'never-synced',
 	})
 
 	const baseResults = await cachified({
@@ -95,12 +118,7 @@ export async function searchKCD({
 		ttl: SEARCH_CACHE_TTL_MS,
 		staleWhileRevalidate: SEARCH_CACHE_SWR_MS,
 		checkValue: searchResultsSchema,
-		getFreshValue: async () => {
-			return await querySearchWorkerResults({
-				query: cleanedQuery,
-				topK: safeTopK,
-			})
-		},
+		getFreshValue: fetchResults,
 	})
 
 	return await Promise.all(

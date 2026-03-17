@@ -212,6 +212,20 @@ async function setMetadataValue({
 		.run()
 }
 
+async function getMetadataValue({
+	db,
+	key,
+}: {
+	db: D1Database
+	key: string
+}) {
+	const row = await db
+		.prepare('SELECT value FROM service_metadata WHERE key = ?')
+		.bind(key)
+		.first<{ value: string }>()
+	return row?.value ?? null
+}
+
 export async function ensureSearchSchema(db: D1Database) {
 	for (const statement of searchSchemaDdl) {
 		await db.exec(statement)
@@ -438,4 +452,8 @@ export async function markSearchSynced({
 	syncedAt: string
 }) {
 	await setMetadataValue({ db, key: 'lastSyncedAt', value: syncedAt })
+}
+
+export async function getSearchSyncedAt(db: D1Database) {
+	return await getMetadataValue({ db, key: 'lastSyncedAt' })
 }

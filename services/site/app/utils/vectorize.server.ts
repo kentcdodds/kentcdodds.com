@@ -4,6 +4,8 @@ function getCloudflareApiBaseUrl() {
 	return 'https://api.cloudflare.com/client/v4'
 }
 
+const vectorizeRequestTimeoutMs = 10_000
+
 function getRequiredVectorizeEnv() {
 	const env = getEnv()
 	return {
@@ -24,16 +26,26 @@ export async function vectorizeDeleteByIds({
 	}
 
 	const body = JSON.stringify({ ids })
-	const doFetch = (path: string) => {
+	const doFetch = async (path: string) => {
 		const url = `${getCloudflareApiBaseUrl()}/accounts/${accountId}${path}`
-		return fetch(url, {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${apiToken}`,
-				'Content-Type': 'application/json',
-			},
-			body,
-		})
+		const controller = new AbortController()
+		const timeout = setTimeout(
+			() => controller.abort(),
+			vectorizeRequestTimeoutMs,
+		)
+		try {
+			return await fetch(url, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${apiToken}`,
+					'Content-Type': 'application/json',
+				},
+				body,
+				signal: controller.signal,
+			})
+		} finally {
+			clearTimeout(timeout)
+		}
 	}
 	const throwIfNotOk = async (response: Response, path: string) => {
 		if (response.ok) return

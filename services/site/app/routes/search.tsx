@@ -58,7 +58,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 
 	const resultsPromise = searchKCD({
-		query: q,
+		query: normalizedQ,
 		topK: 20,
 		request,
 	}).catch((e) => {

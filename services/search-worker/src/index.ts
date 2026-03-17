@@ -1,5 +1,6 @@
 import { z, ZodError } from 'zod'
 import {
+	type SearchWorkerHealthResponse,
 	SearchQueryTooLongError,
 	type SearchWorkerSearchResponse,
 	type SearchWorkerSyncResponse,
@@ -17,7 +18,11 @@ const syncRequestSchema = z.object({
 })
 
 function json(
-	data: SearchWorkerSearchResponse | SearchWorkerSyncResponse | { ok: true },
+	data:
+		| SearchWorkerSearchResponse
+		| SearchWorkerSyncResponse
+		| SearchWorkerHealthResponse
+		| { ok: true },
 	init?: ResponseInit,
 ) {
 	return Response.json(data, init)
@@ -60,7 +65,8 @@ export async function handleRequest({
 	const url = new URL(request.url)
 
 	if (url.pathname === '/health') {
-		return json({ ok: true })
+		const health = await service.health()
+		return json({ ok: true, ...health })
 	}
 
 	if (!isAuthorized(request, env)) {

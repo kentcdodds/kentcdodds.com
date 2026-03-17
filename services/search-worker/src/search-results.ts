@@ -53,7 +53,7 @@ function normalizeUrlForKey(url: string): string {
 }
 
 function normalizeTitleForKey(title: string) {
-	return title.toLowerCase()
+	return title.trim().toLowerCase()
 }
 
 function normalizeSlugForKey(slug: string) {

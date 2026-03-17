@@ -187,7 +187,7 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 	expect(deployPlan.deploySite).toBe(false)
 })
 
-test('plans search worker deploys for search worker changes', async () => {
+test('plans search worker deploys for search worker and shared contract changes', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -206,7 +206,7 @@ test('plans search worker deploys for search worker changes', async () => {
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
 			if (compareCommitSha === 'deployed-site-sha') {
-				return [{ changeType: 'modified', filename: 'services/search-worker/src/index.ts' }]
+				return [{ changeType: 'modified', filename: 'services/search-shared/src/search-shared.ts' }]
 			}
 			if (compareCommitSha === 'deployed-search-worker-sha') {
 				return [{ changeType: 'modified', filename: 'services/search-worker/src/index.ts' }]

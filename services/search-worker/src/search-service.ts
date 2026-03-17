@@ -4,7 +4,11 @@ import {
 	SEARCH_MAX_QUERY_CHARS,
 	type SearchResult,
 } from '@kcd-internal/search-shared'
-import { ensureSearchSchema, queryLexicalSearch } from './search-db'
+import {
+	ensureSearchSchema,
+	getSearchSyncedAt,
+	queryLexicalSearch,
+} from './search-db'
 import {
 	addYoutubeTimestampToUrl,
 	asFiniteNumber,
@@ -51,6 +55,7 @@ type SearchDependencies = {
 		vector: number[]
 		topK: number
 	}) => Promise<Array<VectorizeMatch>>
+	getSyncedAt: () => Promise<string | null>
 	syncArtifacts: (args: { force?: boolean }) => Promise<{ syncedAt: string }>
 }
 
@@ -144,6 +149,9 @@ function createDefaultDependencies(env: Env): SearchDependencies {
 		},
 		queryVectorize: async ({ vector, topK }) => {
 			return await queryVectorize({ env, vector, topK })
+		},
+		getSyncedAt: async () => {
+			return await getSearchSyncedAt(env.SEARCH_DB)
 		},
 		syncArtifacts: async ({ force }) => {
 			return await syncSearchArtifacts({ env, force })
@@ -269,6 +277,12 @@ export function createSearchService(
 			})
 
 			return addYoutubeTimestampsToResults(fusedResults)
+		},
+		async health() {
+			await dependencies.ensureSchema()
+			return {
+				syncedAt: await dependencies.getSyncedAt(),
+			}
 		},
 		async sync({ force = false }: { force?: boolean } = {}) {
 			return await dependencies.syncArtifacts({ force })

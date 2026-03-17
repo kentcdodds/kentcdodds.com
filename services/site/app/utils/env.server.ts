@@ -1,6 +1,14 @@
 import { z } from 'zod'
 
 const nonEmptyString = z.string().trim().min(1)
+const absoluteHttpUrlString = z.string().trim().refine((value) => {
+	try {
+		const url = new URL(value)
+		return url.protocol === 'http:' || url.protocol === 'https:'
+	} catch {
+		return false
+	}
+}, 'must be an absolute URL')
 
 const schemaBase = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
@@ -62,7 +70,7 @@ const schemaBase = z.object({
 	CF_INTERNAL_SECRET: nonEmptyString,
 
 	// Unified search service via Cloudflare Worker.
-	SEARCH_WORKER_URL: nonEmptyString,
+	SEARCH_WORKER_URL: absoluteHttpUrlString,
 	SEARCH_WORKER_TOKEN: nonEmptyString,
 
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).

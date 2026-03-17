@@ -38,7 +38,10 @@ const callKentAudioWorkerFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 ])
 
-const searchWorkerPathPrefixes = ['services/search-worker/']
+const searchWorkerPathPrefixes = [
+	'services/search-worker/',
+	'services/search-shared/',
+]
 const searchWorkerFiles = new Set(['.github/workflows/deploy-search-worker.yml'])
 
 const oauthWorkerPathPrefixes = ['services/oauth/']

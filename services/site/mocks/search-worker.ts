@@ -6,13 +6,13 @@ import {
 	type SearchResult,
 } from '@kcd-internal/search-shared'
 
-const searchWorkerUrlEnv = process.env.SEARCH_WORKER_URL
-if (searchWorkerUrlEnv.trim() === '') {
+const searchWorkerUrlEnv = process.env.SEARCH_WORKER_URL?.trim()
+if (!searchWorkerUrlEnv) {
 	throw new Error(
 		'SEARCH_WORKER_URL must be set when MSW mocks are enabled (see .env.example).',
 	)
 }
-const searchWorkerBaseUrl = searchWorkerUrlEnv.trim()
+const searchWorkerBaseUrl = searchWorkerUrlEnv
 
 /** MSW fixture mode when URL contains `mock`; otherwise handlers call `passthrough()` first. */
 const useSearchWorkerMswMock = searchWorkerBaseUrl
@@ -21,13 +21,13 @@ const useSearchWorkerMswMock = searchWorkerBaseUrl
 
 let searchWorkerMockToken = ''
 if (useSearchWorkerMswMock) {
-	const tokenEnv = process.env.SEARCH_WORKER_TOKEN
-	if (tokenEnv.trim() === '') {
+	const tokenEnv = process.env.SEARCH_WORKER_TOKEN?.trim()
+	if (!tokenEnv) {
 		throw new Error(
 			'SEARCH_WORKER_TOKEN must be set when SEARCH_WORKER_URL is a mock worker URL (see .env.example).',
 		)
 	}
-	searchWorkerMockToken = tokenEnv.trim()
+	searchWorkerMockToken = tokenEnv
 }
 
 function searchWorkerUrl(path: string) {
@@ -198,7 +198,10 @@ function buildSearchResults({ query, topK }: { query: string; topK: number }) {
 export const searchWorkerHandlers: Array<HttpHandler> = [
 	http.get(searchWorkerUrl('/health'), () => {
 		if (!useSearchWorkerMswMock) return passthrough()
-		return HttpResponse.json({ ok: true })
+		return HttpResponse.json({
+			ok: true,
+			syncedAt: searchWorkerMockState.lastSyncedAt,
+		})
 	}),
 	http.post(searchWorkerUrl('/search'), async ({ request }) => {
 		if (!useSearchWorkerMswMock) return passthrough()

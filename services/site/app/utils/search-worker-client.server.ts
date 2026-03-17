@@ -1,4 +1,5 @@
 import type {
+	SearchWorkerHealthResponse,
 	SearchResult,
 	SearchWorkerSearchResponse,
 } from '@kcd-internal/search-shared'
@@ -6,9 +7,9 @@ import { getEnv } from '#app/utils/env.server.ts'
 
 const searchWorkerTimeoutMs = 10_000
 
-async function requestSearchWorkerJson({
+async function requestSearchWorkerJson<T extends { ok: boolean }>({
 	path,
-	method = 'POST',
+	method = 'GET',
 	body,
 }: {
 	path: string
@@ -30,10 +31,10 @@ async function requestSearchWorkerJson({
 			signal: controller.signal,
 		})
 
-		let json: SearchWorkerSearchResponse | null = null
+		let json: T | null = null
 		let fallbackText = ''
 		try {
-			json = (await response.clone().json()) as SearchWorkerSearchResponse
+			json = (await response.clone().json()) as T
 		} catch {
 			fallbackText = await response.text().catch(() => '')
 		}
@@ -66,9 +67,19 @@ export async function querySearchWorkerResults({
 	query: string
 	topK: number
 }): Promise<Array<SearchResult>> {
-	const json = await requestSearchWorkerJson({
+	const json = await requestSearchWorkerJson<SearchWorkerSearchResponse>({
 		path: '/search',
+		method: 'POST',
 		body: { query, topK },
 	})
+	if (!Array.isArray(json.results)) {
+		throw new Error('Search worker returned an invalid results payload')
+	}
 	return json.results
+}
+
+export async function getSearchWorkerHealth() {
+	return await requestSearchWorkerJson<SearchWorkerHealthResponse>({
+		path: '/health',
+	})
 }

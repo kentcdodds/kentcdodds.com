@@ -7,6 +7,7 @@ import {
 import { setEnv } from '#tests/env-disposable.ts'
 
 const {
+	getSearchWorkerHealthMock,
 	querySearchWorkerResultsMock,
 	getSemanticSearchPresentationMock,
 	getLatestCachifiedKey,
@@ -14,6 +15,10 @@ const {
 } = vi.hoisted(() => {
 	let latestCachifiedKey: string | null = null
 	return {
+		getSearchWorkerHealthMock: vi.fn(async () => ({
+			ok: true as const,
+			syncedAt: '2026-03-17T00:00:00.000Z',
+		})),
 		querySearchWorkerResultsMock: vi.fn<
 			(args: { query: string; topK: number }) => Promise<Array<SearchResult>>
 		>(async () => []),
@@ -45,6 +50,7 @@ vi.mock('#app/utils/cache.server.ts', () => ({
 }))
 
 vi.mock('#app/utils/search-worker-client.server.ts', () => ({
+	getSearchWorkerHealth: getSearchWorkerHealthMock,
 	querySearchWorkerResults: querySearchWorkerResultsMock,
 }))
 
@@ -56,8 +62,13 @@ import { searchKCD } from '../search.server.ts'
 
 test('searchKCD normalizes queries before calling the worker', async () => {
 	querySearchWorkerResultsMock.mockReset()
+	getSearchWorkerHealthMock.mockReset()
 	getSemanticSearchPresentationMock.mockReset()
 	setLatestCachifiedKey(null)
+	getSearchWorkerHealthMock.mockResolvedValue({
+		ok: true,
+		syncedAt: '2026-03-17T00:00:00.000Z',
+	})
 	querySearchWorkerResultsMock.mockResolvedValue([
 		{
 			id: 'blog:react-router',
@@ -87,7 +98,12 @@ test('searchKCD normalizes queries before calling the worker', async () => {
 
 test('searchKCD enriches worker results with presentation data', async () => {
 	querySearchWorkerResultsMock.mockReset()
+	getSearchWorkerHealthMock.mockReset()
 	getSemanticSearchPresentationMock.mockReset()
+	getSearchWorkerHealthMock.mockResolvedValue({
+		ok: true,
+		syncedAt: '2026-03-17T00:00:00.000Z',
+	})
 	querySearchWorkerResultsMock.mockResolvedValue([
 		{
 			id: 'blog:react-router',
@@ -126,6 +142,7 @@ test('searchKCD enriches worker results with presentation data', async () => {
 
 test('searchKCD rejects overly long queries before calling the worker', async () => {
 	querySearchWorkerResultsMock.mockReset()
+	getSearchWorkerHealthMock.mockReset()
 
 	await expect(
 		searchKCD({
@@ -134,4 +151,31 @@ test('searchKCD rejects overly long queries before calling the worker', async ()
 		}),
 	).rejects.toBeInstanceOf(SearchQueryTooLongError)
 	expect(querySearchWorkerResultsMock).not.toHaveBeenCalled()
+})
+
+test('searchKCD bypasses cache keying when worker health is unavailable', async () => {
+	querySearchWorkerResultsMock.mockReset()
+	getSearchWorkerHealthMock.mockReset()
+	getSemanticSearchPresentationMock.mockReset()
+	setLatestCachifiedKey(null)
+	getSearchWorkerHealthMock.mockRejectedValue(new Error('boom'))
+	querySearchWorkerResultsMock.mockResolvedValue([
+		{
+			id: 'blog:react-router',
+			score: 0.9,
+			type: 'blog',
+			title: 'React Router',
+			url: '/blog/react-router',
+			snippet: 'Routing content',
+		},
+	])
+	getSemanticSearchPresentationMock.mockResolvedValue({})
+
+	await searchKCD({
+		query: 'react router',
+		topK: 5,
+	})
+
+	expect(getLatestCachifiedKey()).toBeNull()
+	expect(querySearchWorkerResultsMock).toHaveBeenCalled()
 })

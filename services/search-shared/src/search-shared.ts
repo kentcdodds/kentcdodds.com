@@ -49,6 +49,16 @@ export type SearchWorkerSyncResponse =
 			error: string
 	  }
 
+export type SearchWorkerHealthResponse =
+	| {
+			ok: true
+			syncedAt: string | null
+	  }
+	| {
+			ok: false
+			error: string
+	  }
+
 export function normalizeSearchQuery(query: string) {
 	return query.trim().replace(/\s+/g, ' ')
 }

@@ -20,6 +20,7 @@ function createEnv(): Env {
 
 function createService() {
 	return {
+		health: vi.fn(async () => ({ syncedAt: '2026-03-17T00:00:00.000Z' })),
 		search: vi.fn(async () => [{ id: 'blog:hello-world', score: 0.9 }]),
 		sync: vi.fn(async () => ({ syncedAt: '2026-03-17T00:00:00.000Z' })),
 	}
@@ -33,7 +34,10 @@ test('health endpoint is public', async () => {
 	})
 
 	expect(response.status).toBe(200)
-	expect(await response.json()).toEqual({ ok: true })
+	expect(await response.json()).toEqual({
+		ok: true,
+		syncedAt: '2026-03-17T00:00:00.000Z',
+	})
 })
 
 test('search endpoint requires authorization', async () => {
