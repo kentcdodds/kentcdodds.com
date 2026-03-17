@@ -7,11 +7,13 @@ function createEnv(): Env {
 		SEARCH_DB: {} as D1Database,
 		SEARCH_INDEX: { query: vi.fn() } as unknown as VectorizeIndex,
 		SEARCH_ARTIFACTS_BUCKET: {} as R2Bucket,
+		AI: {
+			run: vi.fn(),
+			gateway: vi.fn(),
+			aiGatewayLogId: null,
+		} as unknown as Ai,
 		SEARCH_WORKER_TOKEN: 'worker-secret',
-		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
-		CLOUDFLARE_API_TOKEN: 'cf-token',
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'embedding-gateway',
-		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'gateway-auth-token',
 		CLOUDFLARE_AI_EMBEDDING_MODEL: '@cf/google/embeddinggemma-300m',
 	}
 }

@@ -3,10 +3,13 @@ import {
 	SEARCH_MAX_QUERY_CHARS,
 	SearchQueryTooLongError,
 } from './search-shared'
-import { createSearchService, getWorkersAiRunUrl } from './search-service'
+import { createSearchService, getEmbedding } from './search-service'
 import { type Env } from './env'
 
 function createEnv(): Env {
+	const run = vi.fn(async () => ({
+		data: [[0.1, 0.2, 0.3]],
+	}))
 	return {
 		SEARCH_DB: {
 			exec: vi.fn(async () => undefined),
@@ -15,25 +18,36 @@ function createEnv(): Env {
 			query: vi.fn(),
 		} as unknown as VectorizeIndex,
 		SEARCH_ARTIFACTS_BUCKET: {} as R2Bucket,
+		AI: {
+			run,
+			gateway: vi.fn(),
+			aiGatewayLogId: null,
+		} as unknown as Ai,
 		SEARCH_WORKER_TOKEN: 'worker-secret',
-		CLOUDFLARE_ACCOUNT_ID: 'cf-account',
-		CLOUDFLARE_API_TOKEN: 'cf-token',
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: 'indexing-only-gateway',
-		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'gateway-auth-token',
 		CLOUDFLARE_AI_EMBEDDING_MODEL: '@cf/google/embeddinggemma-300m',
 	}
 }
 
-test('getWorkersAiRunUrl uses CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID', () => {
+test('getEmbedding routes through the AI binding with gateway id', async () => {
 	const env = createEnv()
+	const run = vi.mocked(env.AI.run)
 
-	expect(
-		getWorkersAiRunUrl({
-			env,
-			model: '@cf/google/embeddinggemma-300m',
-		}),
-	).toBe(
-		'https://gateway.ai.cloudflare.com/v1/cf-account/indexing-only-gateway/workers-ai/@cf/google/embeddinggemma-300m',
+	const vector = await getEmbedding({
+		env,
+		text: 'hello world',
+		model: '@cf/google/embeddinggemma-300m',
+	})
+
+	expect(vector).toEqual([0.1, 0.2, 0.3])
+	expect(run).toHaveBeenCalledWith(
+		'@cf/google/embeddinggemma-300m',
+		{ text: ['hello world'] },
+		{
+			gateway: {
+				id: 'indexing-only-gateway',
+			},
+		},
 	)
 })
 

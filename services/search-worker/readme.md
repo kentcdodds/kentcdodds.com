@@ -24,14 +24,12 @@ Cloudflare bindings:
 - `SEARCH_DB`: D1 database backing lexical search
 - `SEARCH_INDEX`: Vectorize index for semantic search
 - `SEARCH_ARTIFACTS_BUCKET`: R2 bucket containing lexical artifacts
+- `AI`: Workers AI binding used for embeddings
 
 Worker vars / secrets:
 
 - `SEARCH_WORKER_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID`
-- `CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN`
 - `CLOUDFLARE_AI_EMBEDDING_MODEL`
 
 ## Local development

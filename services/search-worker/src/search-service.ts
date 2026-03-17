@@ -61,17 +61,7 @@ function clampTopK(topK: number | undefined) {
 	return 15
 }
 
-export function getWorkersAiRunUrl({
-	env,
-	model,
-}: {
-	env: Env
-	model: string
-}) {
-	return `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID}/workers-ai/${model}`
-}
-
-async function getEmbedding({
+export async function getEmbedding({
 	env,
 	text,
 	model,
@@ -80,27 +70,15 @@ async function getEmbedding({
 	text: string
 	model: string
 }) {
-	const response = await fetch(getWorkersAiRunUrl({ env, model }), {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-			'cf-aig-authorization': `Bearer ${env.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN}`,
-			'Content-Type': 'application/json',
+	const result = (await env.AI.run(
+		model as keyof AiModels,
+		{ text: [text] } as any,
+		{
+			gateway: {
+				id: env.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID,
+			},
 		},
-		body: JSON.stringify({ text: [text] }),
-	})
-	if (!response.ok) {
-		const bodyText = await response.text().catch(() => '')
-		throw new Error(
-			`Workers AI embedding request failed: ${response.status} ${response.statusText}${bodyText ? `\n${bodyText}` : ''}`,
-		)
-	}
-
-	const json = (await response.json()) as { result?: EmbeddingResponse } & Record<
-		string,
-		unknown
-	>
-	const result = (json.result ?? json) as EmbeddingResponse
+	) as EmbeddingResponse)
 	const vector = result.data?.[0]
 	if (!Array.isArray(vector) || vector.length === 0) {
 		throw new Error(
