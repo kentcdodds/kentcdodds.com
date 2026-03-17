@@ -3,6 +3,7 @@ import { invariant } from '@epic-web/invariant'
 import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
+import { type SearchResult } from '@kcd-internal/search-shared'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
 import { getBlogRecommendations } from '#app/utils/blog.server.js'
@@ -13,7 +14,6 @@ import { prisma } from '#app/utils/prisma.server.js'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
-import { type SearchResult } from 'search-shared'
 
 export const requestStorage = new AsyncLocalStorage<Request>()
 

@@ -158,7 +158,7 @@
     "remark-rehype": "^11.1.2",
     "remark-slug": "^7.0.1",
     "request-ip": "^3.3.0",
-    "search-shared": "file:../search-shared",
+    "@kcd-internal/search-shared": "file:../search-shared",
     "server-timing": "^3.3.3",
     "source-map-support": "^0.5.21",
     "spin-delay": "^2.0.1",

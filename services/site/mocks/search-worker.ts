@@ -1,10 +1,10 @@
 import { http, HttpResponse, type HttpHandler } from 'msw'
-import type { LexicalSearchArtifact } from '../../../other/semantic-search/lexical-search-artifact.ts'
-import { getLexicalDocId } from '../../../other/semantic-search/lexical-search-service.ts'
 import {
 	normalizeSearchQuery,
 	type SearchResult,
-} from 'search-shared'
+} from '@kcd-internal/search-shared'
+import type { LexicalSearchArtifact } from '../../../other/semantic-search/lexical-search-artifact.ts'
+import { getLexicalDocId } from '../../../other/semantic-search/lexical-search-service.ts'
 
 const MOCK_SEARCH_WORKER_ORIGIN = 'https://mock.search-worker.local'
 const MOCK_SEARCH_WORKER_TOKEN = 'local-dev-search-token'

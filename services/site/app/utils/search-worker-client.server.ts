@@ -1,7 +1,7 @@
 import type {
 	SearchResult,
 	SearchWorkerSearchResponse,
-} from 'search-shared'
+} from '@kcd-internal/search-shared'
 import { getEnv } from '#app/utils/env.server.ts'
 
 const searchWorkerTimeoutMs = 10_000

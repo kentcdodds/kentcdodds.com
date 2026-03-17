@@ -1,4 +1,4 @@
-import { type SearchResult } from 'search-shared'
+import { type SearchResult } from '@kcd-internal/search-shared'
 
 type RetrievedMatch = {
 	rawId: string

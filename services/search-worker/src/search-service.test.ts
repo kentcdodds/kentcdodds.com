@@ -2,7 +2,7 @@ import { expect, test, vi } from 'vitest'
 import {
 	SEARCH_MAX_QUERY_CHARS,
 	SearchQueryTooLongError,
-} from 'search-shared'
+} from '@kcd-internal/search-shared'
 import { createSearchService, getEmbedding } from './search-service'
 import { type Env } from './env'
 

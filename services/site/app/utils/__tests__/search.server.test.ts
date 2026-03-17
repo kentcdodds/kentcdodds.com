@@ -3,7 +3,7 @@ import {
 	SEARCH_MAX_QUERY_CHARS,
 	SearchQueryTooLongError,
 	type SearchResult,
-} from 'search-shared'
+} from '@kcd-internal/search-shared'
 import { setEnv } from '#tests/env-disposable.ts'
 
 const {

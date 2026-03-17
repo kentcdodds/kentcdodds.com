@@ -14,7 +14,7 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
-    "search-shared": "file:../search-shared",
+    "@kcd-internal/search-shared": "file:../search-shared",
     "zod": "^4.3.6"
   },
   "devDependencies": {

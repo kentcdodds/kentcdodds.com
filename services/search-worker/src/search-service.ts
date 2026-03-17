@@ -3,7 +3,7 @@ import {
 	SearchQueryTooLongError,
 	SEARCH_MAX_QUERY_CHARS,
 	type SearchResult,
-} from 'search-shared'
+} from '@kcd-internal/search-shared'
 import { ensureSearchSchema, queryLexicalSearch } from './search-db'
 import {
 	addYoutubeTimestampToUrl,

@@ -3,7 +3,7 @@ import {
 	SearchQueryTooLongError,
 	type SearchWorkerSearchResponse,
 	type SearchWorkerSyncResponse,
-} from 'search-shared'
+} from '@kcd-internal/search-shared'
 import { createSearchService, type SearchService } from './search-service'
 import { type Env } from './env'
 
