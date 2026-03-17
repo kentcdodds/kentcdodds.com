@@ -10,12 +10,13 @@ function parseDocRefFromChunkId(
 }
 
 function normalizeUrlForKey(url: string) {
+	const trimmed = url.trim()
 	try {
-		const parsed = new URL(url, 'https://kentcdodds.com')
+		const parsed = new URL(trimmed, 'https://kentcdodds.com')
 		const pathname = parsed.pathname.replace(/\/+$/u, '') || '/'
 		return pathname.toLowerCase()
 	} catch {
-		return url.trim().toLowerCase()
+		return trimmed.toLowerCase()
 	}
 }
 
