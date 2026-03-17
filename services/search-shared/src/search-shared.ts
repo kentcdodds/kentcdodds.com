@@ -52,7 +52,7 @@ export type SearchWorkerSyncResponse =
 export type SearchWorkerHealthResponse =
 	| {
 			ok: true
-			syncedAt: string | null
+			syncedAt?: string | null
 	  }
 	| {
 			ok: false

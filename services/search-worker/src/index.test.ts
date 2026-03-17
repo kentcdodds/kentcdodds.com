@@ -34,6 +34,23 @@ test('health endpoint is public', async () => {
 	})
 
 	expect(response.status).toBe(200)
+	expect(await response.json()).toEqual({ ok: true })
+})
+
+test('health endpoint returns syncedAt when authorized', async () => {
+	const service = createService()
+	const response = await handleRequest({
+		request: new Request('https://worker.example/health', {
+			headers: {
+				Authorization: 'Bearer worker-secret',
+			},
+		}),
+		env: createEnv(),
+		service,
+	})
+
+	expect(response.status).toBe(200)
+	expect(service.health).toHaveBeenCalled()
 	expect(await response.json()).toEqual({
 		ok: true,
 		syncedAt: '2026-03-17T00:00:00.000Z',
