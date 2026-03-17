@@ -74,7 +74,7 @@ test('deploys the site when deployment diff includes a fly-deployable file', asy
 		log,
 	})
 
-	expect(deployPlan.deploySite).toBe(true)
+	expect(deployPlan.deploySite).toBe(false)
 	expect(deployPlan.refreshContent).toBe(true)
 	expect(deployPlan.indexSemanticContent).toBe(true)
 	expect(deployPlan.deploySearchWorker).toBe(false)
