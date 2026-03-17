@@ -65,6 +65,9 @@ export async function handleRequest({
 	const url = new URL(request.url)
 
 	if (url.pathname === '/health') {
+		if (!isAuthorized(request, env)) {
+			return json({ ok: true })
+		}
 		const health = await service.health()
 		return json({ ok: true, ...health })
 	}

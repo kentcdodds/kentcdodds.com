@@ -57,7 +57,7 @@ function normalizeTitleForKey(title: string) {
 }
 
 function normalizeSlugForKey(slug: string) {
-	return slug.toLowerCase()
+	return slug.trim().toLowerCase()
 }
 
 function parseDocRefFromVectorId(
