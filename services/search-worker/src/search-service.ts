@@ -3,7 +3,7 @@ import {
 	SearchQueryTooLongError,
 	SEARCH_MAX_QUERY_CHARS,
 	type SearchResult,
-} from '#other/search/search-service.ts'
+} from './search-shared'
 import { ensureSearchSchema, queryLexicalSearch } from './search-db'
 import {
 	addYoutubeTimestampToUrl,

@@ -5,7 +5,7 @@ import {
 	SearchQueryTooLongError,
 	SEARCH_MAX_QUERY_CHARS,
 	type SearchResult,
-} from '#other/search/search-service.ts'
+} from '#app/utils/search-shared.ts'
 import { cache, cachified } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { getSemanticSearchPresentation } from '#app/utils/semantic-search-presentation.server.ts'

@@ -1,7 +1,7 @@
 import type {
 	SearchResult,
 	SearchWorkerSearchResponse,
-} from '#other/search/search-service.ts'
+} from '#app/utils/search-shared.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 
 const searchWorkerTimeoutMs = 10_000

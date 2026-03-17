@@ -3,7 +3,7 @@ import {
 	SEARCH_MAX_QUERY_CHARS,
 	SearchQueryTooLongError,
 	type SearchResult,
-} from '#other/search/search-service.ts'
+} from '#app/utils/search-shared.ts'
 import { setEnv } from '#tests/env-disposable.ts'
 
 const {

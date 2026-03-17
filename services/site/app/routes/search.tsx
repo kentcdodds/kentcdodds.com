@@ -24,7 +24,7 @@ import {
 import {
 	SEARCH_MAX_QUERY_CHARS,
 	type SearchResult,
-} from '#other/search/search-service.ts'
+} from '#app/utils/search-shared.ts'
 import { searchKCD } from '#app/utils/search.server.ts'
 import { type Route } from './+types/search'
 

@@ -3,7 +3,7 @@ import {
 	SearchQueryTooLongError,
 	type SearchWorkerSearchResponse,
 	type SearchWorkerSyncResponse,
-} from '#other/search/search-service.ts'
+} from './search-shared'
 import { createSearchService, type SearchService } from './search-service'
 import { type Env } from './env'
 
@@ -88,7 +88,13 @@ export async function handleRequest({
 	} catch (error) {
 		if (error instanceof Response) return error
 		if (error instanceof SearchQueryTooLongError) {
-			return json({ ok: false, error: error.message }, { status: 400 })
+			return json(
+				{
+					ok: false,
+					error: error instanceof Error ? error.message : String(error),
+				},
+				{ status: 400 },
+			)
 		}
 		if (error instanceof ZodError) {
 			const message = error.issues[0]?.message ?? 'Invalid request body'

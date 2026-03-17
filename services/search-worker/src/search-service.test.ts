@@ -2,7 +2,7 @@ import { expect, test, vi } from 'vitest'
 import {
 	SEARCH_MAX_QUERY_CHARS,
 	SearchQueryTooLongError,
-} from '#other/search/search-service.ts'
+} from './search-shared'
 import { createSearchService, getWorkersAiRunUrl } from './search-service'
 import { type Env } from './env'
 

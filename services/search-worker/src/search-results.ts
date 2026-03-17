@@ -1,4 +1,4 @@
-import { type SearchResult } from '#other/search/search-service.ts'
+import { type SearchResult } from './search-shared'
 
 type RetrievedMatch = {
 	rawId: string

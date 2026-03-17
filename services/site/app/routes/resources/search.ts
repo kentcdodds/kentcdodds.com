@@ -1,6 +1,6 @@
 import { data as json } from 'react-router'
-import { SearchQueryTooLongError } from '#other/search/search-service.ts'
 import { getDomainUrl } from '#app/utils/misc.ts'
+import { SearchQueryTooLongError } from '#app/utils/search-shared.ts'
 import { searchKCD } from '#app/utils/search.server.ts'
 import { type Route } from './+types/search'
 
