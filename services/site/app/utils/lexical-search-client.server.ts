@@ -32,10 +32,22 @@ async function requestWorkerJson<T>({
 		},
 		body: body ? JSON.stringify(body) : undefined,
 	})
-	const json = (await response.json()) as WorkerJsonResponse<T>
-	if (!response.ok || json.ok === false) {
+	let json: WorkerJsonResponse<T> | null = null
+	let fallbackText = ''
+	try {
+		json = (await response.json()) as WorkerJsonResponse<T>
+	} catch {
+		try {
+			fallbackText = await response.text()
+		} catch {
+			// Ignore body-read failures; keep the status-based fallback below.
+		}
+	}
+	if (!response.ok || json?.ok === false || json === null) {
 		throw new Error(
-			json.ok === false ? json.error : `Lexical worker request failed (${response.status})`,
+			json?.ok === false
+				? json.error
+				: `Lexical worker request failed (${response.status})${fallbackText ? `: ${fallbackText}` : ''}`,
 		)
 	}
 	return json

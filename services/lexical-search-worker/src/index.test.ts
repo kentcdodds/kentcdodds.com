@@ -95,6 +95,27 @@ test('query endpoint returns lexical results', async () => {
 	})
 })
 
+test('query endpoint returns 400 for malformed JSON', async () => {
+	const response = await handleRequest({
+		request: new Request('https://worker.example/query', {
+			method: 'POST',
+			body: '{"query":',
+			headers: {
+				Authorization: 'Bearer worker-secret',
+				'Content-Type': 'application/json',
+			},
+		}),
+		env: createEnv(),
+		service: createService(),
+	})
+
+	expect(response.status).toBe(400)
+	expect(await response.json()).toEqual({
+		ok: false,
+		error: 'Invalid JSON body',
+	})
+})
+
 test('admin overview endpoint passes query filters through', async () => {
 	const service = createService()
 	const response = await handleRequest({
@@ -114,6 +135,27 @@ test('admin overview endpoint passes query filters through', async () => {
 		sourceKey: 'lexical-search/repo-content.json',
 		type: 'blog',
 		limit: 25,
+	})
+})
+
+test('admin overview sanitizes invalid limit values', async () => {
+	const service = createService()
+	await handleRequest({
+		request: new Request(
+			'https://worker.example/admin/overview?query=hooks&limit=abc',
+			{
+				headers: { Authorization: 'Bearer worker-secret' },
+			},
+		),
+		env: createEnv(),
+		service,
+	})
+
+	expect(service.getAdminOverview).toHaveBeenCalledWith({
+		query: 'hooks',
+		sourceKey: '',
+		type: '',
+		limit: 100,
 	})
 })
 

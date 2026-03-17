@@ -8,8 +8,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 	const { sourceKey } = params
 	invariantResponse(sourceKey, 'sourceKey is required')
+	const value = await getLexicalSearchSourceDetail(sourceKey)
+	invariantResponse(value.source, 'Source not found', { status: 404 })
 	return json({
 		sourceKey,
-		value: await getLexicalSearchSourceDetail(sourceKey),
+		value,
 	})
 }

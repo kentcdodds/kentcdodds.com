@@ -39,6 +39,12 @@ function methodNotAllowed() {
 	return json({ ok: false, error: 'Method not allowed' }, { status: 405 })
 }
 
+function parseLimitParam(value: string | null) {
+	const parsed = Number(value ?? 100)
+	if (!Number.isFinite(parsed)) return 100
+	return Math.max(1, Math.min(500, Math.floor(parsed)))
+}
+
 export async function handleRequest({
 	request,
 	env,
@@ -62,7 +68,10 @@ export async function handleRequest({
 	try {
 		if (url.pathname === '/query') {
 			if (request.method !== 'POST') return methodNotAllowed()
-			const body = await request.json()
+			const body = await request.json().catch(() => null)
+			if (body === null) {
+				return json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
+			}
 			const parsed = queryRequestSchema.parse(body)
 			const results = await service.query(parsed)
 			return json({ ok: true, results })
@@ -80,7 +89,7 @@ export async function handleRequest({
 				query: url.searchParams.get('query') ?? '',
 				sourceKey: url.searchParams.get('sourceKey') ?? '',
 				type: url.searchParams.get('type') ?? '',
-				limit: Number(url.searchParams.get('limit') ?? 100),
+				limit: parseLimitParam(url.searchParams.get('limit')),
 			})
 			return json({ ok: true, overview })
 		}

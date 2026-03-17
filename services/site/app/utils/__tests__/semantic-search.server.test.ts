@@ -1,4 +1,5 @@
 import { expect, test, vi } from 'vitest'
+import type { LexicalSearchMatch } from '../../../../../other/semantic-search/lexical-search-service.ts'
 import { setEnv } from '#tests/env-disposable.ts'
 
 const {
@@ -9,7 +10,7 @@ const {
 	let latestCachifiedKey: string | null = null
 	return {
 		queryLexicalSearchMatchesMock: vi.fn<
-			(args: { query: string; topK: number }) => Promise<Array<Record<string, unknown>>>
+			(args: { query: string; topK: number }) => Promise<Array<LexicalSearchMatch>>
 		>(async () => []),
 		getLatestCachifiedKey: () => latestCachifiedKey,
 		setLatestCachifiedKey: (key: string | null) => {
