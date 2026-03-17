@@ -7,6 +7,11 @@ on:
         required: false
         type: boolean
         default: true
+    secrets:
+      LEXICAL_SEARCH_WORKER_URL:
+        required: true
+      LEXICAL_SEARCH_WORKER_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       force:
@@ -27,9 +32,17 @@ jobs:
           FORCE_SYNC: ${{ inputs.force }}
         run: |
           set -euo pipefail
-          curl --fail --show-error --silent \
+          response=$(curl -s -w "\n%{http_code}" --max-time 300 \
             -X POST \
             -H "Authorization: Bearer ${LEXICAL_SEARCH_WORKER_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{\"force\": ${FORCE_SYNC}}" \
-            "${LEXICAL_SEARCH_WORKER_URL}/admin/sync"
+            "${LEXICAL_SEARCH_WORKER_URL}/admin/sync")
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "Lexical sync failed (HTTP $http_code):"
+            echo "$body"
+            exit 1
+          fi
+          echo "Sync succeeded: $body"
