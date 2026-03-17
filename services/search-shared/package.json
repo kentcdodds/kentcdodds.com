@@ -1,0 +1,19 @@
+{
+  "name": "@kcd-internal/search-shared",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/search-shared.ts"
+  },
+  "scripts": {
+    "lint": "oxlint src",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@epic-web/config": "^1.24.1",
+    "oxlint": "^1.51.0",
+    "typescript": "^5.9.3"
+  },
+  "prettier": "@epic-web/config/prettier"
+}

@@ -1,11 +1,8 @@
 {
-  "name": "lexical-search-worker",
+  "name": "search-worker",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "imports": {
-    "#other/*": "../../other/*"
-  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "oxlint . --ignore-pattern worker-configuration.d.ts --ignore-pattern .wrangler",
@@ -17,7 +14,7 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1005.0",
+    "@kcd-internal/search-shared": "file:../search-shared",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -28,7 +25,7 @@
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18",
-    "wrangler": "^4.71.0"
+    "wrangler": "^4.75.0"
   },
   "prettier": "@epic-web/config/prettier"
 }

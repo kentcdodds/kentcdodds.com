@@ -1,0 +1,74 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kcd-search-worker",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-03-17",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "SEARCH_DB",
+			"database_name": "kcd-search",
+			"database_id": "04650c25-d5bf-4e31-9ab8-d60369dde757",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "SEARCH_ARTIFACTS_BUCKET",
+			"bucket_name": "kcd-semantic-search"
+		}
+	],
+	"vectorize": [
+		{
+			"binding": "SEARCH_INDEX",
+			"index_name": "kcd-semantic-v1"
+		}
+	],
+	"ai": {
+		"binding": "AI"
+	},
+	"vars": {
+		"CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID": "kcd-unprotected",
+		"CLOUDFLARE_AI_EMBEDDING_MODEL": "@cf/google/embeddinggemma-300m"
+	},
+	"env": {
+		// Wrangler does not inherit top-level bindings into named envs — duplicate here so
+		// `wrangler dev --env local` exposes the same bindings as production.
+		"local": {
+			"d1_databases": [
+				{
+					"binding": "SEARCH_DB",
+					"database_name": "kcd-search",
+					"database_id": "04650c25-d5bf-4e31-9ab8-d60369dde757",
+					"migrations_dir": "migrations"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "SEARCH_ARTIFACTS_BUCKET",
+					"bucket_name": "kcd-semantic-search"
+				}
+			],
+			// Local dev: Vectorize has no local emulator; AI is always remote — explicit remote avoids wrangler warnings.
+			"vectorize": [
+				{
+					"binding": "SEARCH_INDEX",
+					"index_name": "kcd-semantic-v1",
+					"remote": true
+				}
+			],
+			"ai": {
+				"binding": "AI",
+				"remote": true
+			},
+			"vars": {
+				"SEARCH_WORKER_TOKEN": "local-dev-search-token",
+				"CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID": "kcd-unprotected",
+				"CLOUDFLARE_AI_EMBEDDING_MODEL": "@cf/google/embeddinggemma-300m"
+			}
+		}
+	}
+}

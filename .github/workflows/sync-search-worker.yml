@@ -1,4 +1,4 @@
-name: 🔄 Sync Lexical Search Worker
+name: 🔄 Sync Search Worker
 
 on:
   workflow_call:
@@ -8,40 +8,40 @@ on:
         type: boolean
         default: true
     secrets:
-      LEXICAL_SEARCH_WORKER_URL:
+      SEARCH_WORKER_URL:
         required: true
-      LEXICAL_SEARCH_WORKER_TOKEN:
+      SEARCH_WORKER_TOKEN:
         required: true
   workflow_dispatch:
     inputs:
       force:
-        description: Force a full lexical sync
+        description: Force a full search sync
         required: false
         type: boolean
         default: true
 
 jobs:
   sync:
-    name: 🔄 Sync Lexical Search Worker
+    name: 🔄 Sync Search Worker
     runs-on: ubuntu-latest
     steps:
-      - name: 🔄 Trigger lexical sync
+      - name: 🔄 Trigger search sync
         env:
-          LEXICAL_SEARCH_WORKER_URL: ${{ secrets.LEXICAL_SEARCH_WORKER_URL }}
-          LEXICAL_SEARCH_WORKER_TOKEN: ${{ secrets.LEXICAL_SEARCH_WORKER_TOKEN }}
+          SEARCH_WORKER_URL: ${{ secrets.SEARCH_WORKER_URL }}
+          SEARCH_WORKER_TOKEN: ${{ secrets.SEARCH_WORKER_TOKEN }}
           FORCE_SYNC: ${{ inputs.force }}
         run: |
           set -euo pipefail
           response=$(curl -s -w "\n%{http_code}" --max-time 300 \
             -X POST \
-            -H "Authorization: Bearer ${LEXICAL_SEARCH_WORKER_TOKEN}" \
+            -H "Authorization: Bearer ${SEARCH_WORKER_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{\"force\": ${FORCE_SYNC}}" \
-            "${LEXICAL_SEARCH_WORKER_URL}/admin/sync")
+            "${SEARCH_WORKER_URL}/internal/sync")
           http_code=$(echo "$response" | tail -1)
           body=$(echo "$response" | sed '$d')
           if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
-            echo "Lexical sync failed (HTTP $http_code):"
+            echo "Search sync failed (HTTP $http_code):"
             echo "$body"
             exit 1
           fi

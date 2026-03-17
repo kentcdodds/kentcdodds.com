@@ -4,10 +4,10 @@ import { cloudflareHandlers } from './cloudflare.ts'
 import { discordHandlers } from './discord.ts'
 import { githubHandlers } from './github.ts'
 import { kitHandlers } from './kit.ts'
-import { lexicalSearchWorkerHandlers } from './lexical-search-worker.ts'
 import { mermaidToSvgHandlers } from './mermaid-to-svg.ts'
 import { oauthHandlers } from './oauth.ts'
 import { oembedHandlers } from './oembed.ts'
+import { searchWorkerHandlers } from './search-worker.ts'
 import { simplecastHandlers } from './simplecast.ts'
 import { transistorHandlers } from './transistor.ts'
 import { twitterHandlers } from './twitter.ts'
@@ -98,7 +98,7 @@ export const mswHandlers: Array<HttpHandler> = [
 	...transistorHandlers,
 	...discordHandlers,
 	...kitHandlers,
-	...lexicalSearchWorkerHandlers,
+	...searchWorkerHandlers,
 	...simplecastHandlers,
 	...cloudflareHandlers,
 	...cloudflareR2Handlers,
