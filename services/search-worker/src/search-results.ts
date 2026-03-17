@@ -1,4 +1,4 @@
-import { type SearchResult } from '@kcd-internal/search-shared'
+import { getLexicalDocId, type SearchResult } from '@kcd-internal/search-shared'
 
 type RetrievedMatch = {
 	rawId: string
@@ -35,45 +35,6 @@ export function asNonEmptyString(value: unknown): string | undefined {
 	return trimmed ? trimmed : undefined
 }
 
-function normalizeUrlForKey(url: string): string {
-	try {
-		if (/^https?:\/\//i.test(url)) {
-			const parsed = new URL(url)
-			const path =
-				parsed.pathname !== '/'
-					? parsed.pathname.replace(/\/+$/u, '')
-					: parsed.pathname
-			return path.toLowerCase()
-		}
-	} catch {
-		// Ignore invalid absolute URLs and fall back to path normalization.
-	}
-
-	const cleaned = (url.split(/[?#]/u)[0] ?? '').trim()
-	if (!cleaned) return '/'
-	const path = cleaned !== '/' ? cleaned.replace(/\/+$/u, '') : cleaned
-	return path.toLowerCase()
-}
-
-function normalizeTitleForKey(title: string) {
-	return title.trim().toLowerCase()
-}
-
-function normalizeSlugForKey(slug: string) {
-	return slug.trim().toLowerCase()
-}
-
-function parseDocRefFromVectorId(
-	vectorId: string,
-): { type: string; slug: string } | null {
-	const match =
-		/^(?<type>[^:]+):(?<slug>[^:]+):chunk:(?<chunkIndex>\d+)$/u.exec(vectorId)
-	const type = match?.groups?.type
-	const slug = match?.groups?.slug
-	if (!type || !slug) return null
-	return { type, slug }
-}
-
 function parseYoutubeVideoIdFromUrl(url: string | undefined) {
 	if (!url) return null
 
@@ -100,24 +61,13 @@ function getCanonicalResultId({
 	url: string | undefined
 	title: string | undefined
 }) {
-	if (type === 'youtube') {
-		if (slug) return `${type}:${normalizeSlugForKey(slug)}`
-		const videoId = parseYoutubeVideoIdFromUrl(url)
-		if (videoId) return `${type}:${normalizeSlugForKey(videoId)}`
-	}
-
-	if (type && slug) return `${type}:${normalizeSlugForKey(slug)}`
-
-	const parsedRef = parseDocRefFromVectorId(vectorId)
-	if (parsedRef) {
-		return `${parsedRef.type}:${normalizeSlugForKey(parsedRef.slug)}`
-	}
-
-	const normalizedUrl = url ? normalizeUrlForKey(url) : undefined
-	if (type && normalizedUrl) return `${type}:${normalizedUrl}`
-	if (normalizedUrl) return normalizedUrl
-	if (type && title) return `${type}:${normalizeTitleForKey(title)}`
-	return vectorId
+	return getLexicalDocId({
+		chunkId: vectorId,
+		type,
+		slug,
+		url,
+		title,
+	})
 }
 
 function compareRetrievedMatchQuality(
