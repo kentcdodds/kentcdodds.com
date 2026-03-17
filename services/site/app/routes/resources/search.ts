@@ -1,7 +1,7 @@
 import { data as json } from 'react-router'
 import { getDomainUrl } from '#app/utils/misc.ts'
-import { SearchQueryTooLongError } from '#app/utils/search-shared.ts'
 import { searchKCD } from '#app/utils/search.server.ts'
+import { SearchQueryTooLongError } from 'search-shared'
 import { type Route } from './+types/search'
 
 function normalizeSummary(value: unknown) {

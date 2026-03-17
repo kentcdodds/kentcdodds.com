@@ -4,7 +4,7 @@ import { getLexicalDocId } from '../../../other/semantic-search/lexical-search-s
 import {
 	normalizeSearchQuery,
 	type SearchResult,
-} from '../../../other/search/search-service.ts'
+} from 'search-shared'
 
 const MOCK_SEARCH_WORKER_ORIGIN = 'https://mock.search-worker.local'
 const MOCK_SEARCH_WORKER_TOKEN = 'local-dev-search-token'

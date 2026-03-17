@@ -10,10 +10,10 @@ import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
 import { prisma } from '#app/utils/prisma.server.js'
-import { type SearchResult } from '#app/utils/search-shared.ts'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
+import { type SearchResult } from 'search-shared'
 
 export const requestStorage = new AsyncLocalStorage<Request>()
 

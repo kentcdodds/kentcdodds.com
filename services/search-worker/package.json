@@ -3,9 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "imports": {
-    "#other/*": "../../other/*"
-  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "oxlint . --ignore-pattern worker-configuration.d.ts --ignore-pattern .wrangler",
@@ -17,6 +14,7 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "search-shared": "file:../search-shared",
     "zod": "^4.3.6"
   },
   "devDependencies": {
