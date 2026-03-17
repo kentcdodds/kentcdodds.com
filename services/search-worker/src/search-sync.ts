@@ -1,7 +1,7 @@
 import {
 	LEXICAL_SEARCH_ARTIFACT_KEYS,
 	type LexicalSearchArtifact,
-} from '../../../other/semantic-search/lexical-search-artifact.ts'
+} from '@kcd-internal/search-shared'
 import {
 	clearSearchSource,
 	ensureSearchSchema,

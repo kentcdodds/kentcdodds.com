@@ -1,3 +1,6 @@
+export * from './lexical-artifact.ts'
+export { getLexicalDocId } from './lexical-doc-id.ts'
+
 export const SEARCH_MAX_QUERY_CHARS = 1000
 
 export class SearchQueryTooLongError extends Error {
