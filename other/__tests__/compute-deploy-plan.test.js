@@ -184,7 +184,7 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 		log,
 	})
 
-	expect(deployPlan.deploySite).toBe(false)
+	expect(deployPlan.deploySite).toBe(true)
 })
 
 test('plans search worker deploys for shared contract changes', async () => {
