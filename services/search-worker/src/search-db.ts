@@ -3,7 +3,6 @@ import {
 	type LexicalSearchArtifact,
 } from '@kcd-internal/search-shared'
 import { sql } from './d1-sql.ts'
-import { writeDebugLog } from './debug-log'
 
 /** Lexical FTS row shape returned by {@link queryLexicalSearch}. */
 type LexicalSearchMatch = {
@@ -158,20 +157,6 @@ export function buildLexicalSearchMatchQuery(query: string) {
 		const normalizedToken = token ? normalizeLexicalSearchToken(token) : null
 		if (normalizedToken) terms.push(normalizedToken)
 	}
-
-	// #region agent log
-	writeDebugLog({
-		hypothesisId: 'B',
-		location: 'services/search-worker/src/search-db.ts:buildLexicalSearchMatchQuery',
-		message: 'Built lexical search match query',
-		data: {
-			query,
-			terms,
-			matchQuery: terms.length ? terms.join(' OR ') : null,
-			termCount: terms.length,
-		},
-	})
-	// #endregion
 	if (!terms.length) return null
 	return terms.join(' OR ')
 }
@@ -433,17 +418,6 @@ export async function queryLexicalSearch({
 	if (!matchQuery) return [] as Array<LexicalSearchMatch>
 
 	const runQuery = async (candidateQuery: string) => {
-		// #region agent log
-		writeDebugLog({
-			hypothesisId: 'C',
-			location: 'services/search-worker/src/search-db.ts:runQuery',
-			message: 'Executing lexical search query',
-			data: {
-				candidateQuery,
-				topK,
-			},
-		})
-		// #endregion
 		try {
 			const result = await db
 				.prepare(
@@ -486,17 +460,6 @@ export async function queryLexicalSearch({
 				imageAlt: asString(row.imageAlt),
 			}))
 		} catch (error) {
-			// #region agent log
-			writeDebugLog({
-				hypothesisId: 'C',
-				location: 'services/search-worker/src/search-db.ts:runQuery:catch',
-				message: 'Lexical search query failed',
-				data: {
-					candidateQuery,
-					errorMessage: error instanceof Error ? error.message : String(error),
-				},
-			})
-			// #endregion
 			throw error
 		}
 	}
@@ -512,20 +475,6 @@ export async function queryLexicalSearch({
 			.filter(Boolean)
 			.join(' ')
 		const fallbackQuery = buildLexicalSearchMatchQuery(fallbackSeed)
-		// #region agent log
-		writeDebugLog({
-			hypothesisId: 'D',
-			location: 'services/search-worker/src/search-db.ts:queryLexicalSearch:catch',
-			message: 'Retrying lexical search with fallback query',
-			data: {
-				query,
-				matchQuery,
-				fallbackSeed: fallbackSeed || null,
-				fallbackQuery: fallbackQuery || null,
-				errorMessage: error instanceof Error ? error.message : String(error),
-			},
-		})
-		// #endregion
 		if (!fallbackQuery) return []
 
 		return await runQuery(fallbackQuery)
