@@ -188,8 +188,8 @@ I overfetch chunk-level matches (`safeTopK * 5`, capped at 20), because several 
 
 ```ts
 // `K` means "how many nearest neighbors/results to return".
-const safeTopK = Math.max(1, Math.min(20, Math.floor(topK)))
-const rawTopK = Math.min(20, safeTopK * 5)
+const safeTopK = Math.max(1, Math.min(15, Math.floor(topK)))
+const rawTopK = Math.min(15, safeTopK * 5)
 
 const [queryVector] = await getEmbeddings({ texts: [query] })
 

@@ -76,9 +76,9 @@ function makeSearchCacheKey({
 
 function clampTopK(topK: number | undefined) {
 	if (typeof topK === 'number' && Number.isFinite(topK)) {
-		return Math.max(1, Math.min(20, Math.floor(topK)))
+		return Math.max(1, Math.min(15, Math.floor(topK)))
 	}
-	return 15
+	return 8
 }
 
 function normalizeCachedSearchPayload(
@@ -109,7 +109,7 @@ async function enrichResults(results: Array<SearchResult>) {
 
 export async function searchKCD({
 	query,
-	topK = 15,
+	topK = 8,
 	request,
 	timings,
 }: {

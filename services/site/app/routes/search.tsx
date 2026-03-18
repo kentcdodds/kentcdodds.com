@@ -66,7 +66,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	const searchPayload = searchKCD({
 		query: normalizedQ,
-		topK: 20,
+		topK: 8,
 		request,
 	}).catch((e) => {
 		console.error(e)

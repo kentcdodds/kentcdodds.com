@@ -10,7 +10,7 @@ import { type Env } from './env'
 
 const searchRequestSchema = z.object({
 	query: z.string(),
-	topK: z.number().int().min(1).max(20).optional(),
+	topK: z.number().int().min(1).max(15).optional(),
 })
 
 const syncRequestSchema = z.object({

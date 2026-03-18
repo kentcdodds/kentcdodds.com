@@ -211,7 +211,7 @@ test('search drops weak tail below relative confidence of top hit', async () => 
 
 	const { results, lowRankingResults, noCloseMatches } = await service.search({
 		query: 'test',
-		topK: 20,
+		topK: 15,
 	})
 
 	expect(noCloseMatches).toBe(false)

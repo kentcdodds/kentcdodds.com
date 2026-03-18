@@ -60,11 +60,14 @@ type SearchDependencies = {
 	syncArtifacts: (args: { force?: boolean }) => Promise<{ syncedAt: string }>
 }
 
+const SEARCH_TOP_K_MAX = 15
+const SEARCH_TOP_K_DEFAULT = 8
+
 function clampTopK(topK: number | undefined) {
 	if (typeof topK === 'number' && Number.isFinite(topK)) {
-		return Math.max(1, Math.min(20, Math.floor(topK)))
+		return Math.max(1, Math.min(SEARCH_TOP_K_MAX, Math.floor(topK)))
 	}
-	return 15
+	return SEARCH_TOP_K_DEFAULT
 }
 
 function isLexicalOnlySearch(env: Env) {
