@@ -224,7 +224,11 @@ function createServer() {
 				}
 			}
 
-			const results = await searchKCD({ query, topK: 15, request })
+			const { results, noCloseMatches } = await searchKCD({
+				query,
+				topK: 15,
+				request,
+			})
 			const filteredResults =
 				category && allowedTypesByCategory[category].length
 					? results.filter((r: SearchResult) =>
@@ -264,11 +268,15 @@ function createServer() {
 					],
 				}
 			} else {
+				const weak =
+					noCloseMatches && !category
+						? ' (Related pages were indexed but none met the relevance threshold—try rephrasing.)'
+						: ''
 				return {
 					content: [
 						{
 							type: 'text',
-							text: `No content found for ${category ? `${category}: ` : ''}${query}`,
+							text: `No content found for ${category ? `${category}: ` : ''}${query}${weak}`,
 						},
 					],
 				}

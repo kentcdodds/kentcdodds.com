@@ -85,12 +85,13 @@ test('search fuses lexical matches with semantic matches', async () => {
 	}
 	const service = createSearchService(createEnv(), dependencies)
 
-	const results = await service.search({
+	const { results, noCloseMatches } = await service.search({
 		query: 'How do I use useFetcher in React?',
 		topK: 5,
 	})
 
 	expect(dependencies.ensureSchema).toHaveBeenCalled()
+	expect(noCloseMatches).toBe(false)
 	expect(results).toHaveLength(2)
 	expect(results[0]?.id).toBe('blog:react-hooks-pitfalls')
 	expect(results[1]?.id).toBe('blog:some-other-post')
@@ -119,7 +120,7 @@ test('search preserves YouTube timestamps from lexical matches', async () => {
 	}
 	const service = createSearchService(createEnv(), dependencies)
 
-	const results = await service.search({
+	const { results } = await service.search({
 		query: 'shallow rendering',
 		topK: 5,
 	})
@@ -152,12 +153,76 @@ test('search with SEARCH_LEXICAL_ONLY skips embedding and Vectorize', async () =
 	}
 	const service = createSearchService(env, dependencies)
 
-	const results = await service.search({ query: 'test', topK: 5 })
+	const { results } = await service.search({ query: 'test', topK: 5 })
 
 	expect(getEmbedding).not.toHaveBeenCalled()
 	expect(queryVectorize).not.toHaveBeenCalled()
 	expect(results).toHaveLength(1)
 	expect(results[0]?.id).toBe('blog:only-lexical')
+})
+
+test('search drops weak tail below relative confidence of top hit', async () => {
+	const dependencies = {
+		ensureSchema: vi.fn(async () => undefined),
+		queryLexicalMatches: vi.fn(async () => [
+			{
+				id: 'blog:strong:chunk:0',
+				type: 'blog',
+				slug: 'strong',
+				title: 'Strong',
+				url: '/blog/strong',
+				snippet: 's',
+			},
+		]),
+		getEmbedding: vi.fn(async () => [0.1, 0.2, 0.3]),
+		queryVectorize: vi.fn(async () => {
+			const deep = Array.from({ length: 55 }, (_, i) => ({
+				id: `blog:deep-${i}:chunk:0`,
+				score: 0.9 - i * 0.01,
+				metadata: {
+					type: 'blog',
+					slug: `deep-${i}`,
+					title: `Deep ${i}`,
+					url: `/blog/deep-${i}`,
+					snippet: 'd',
+				},
+			}))
+			return [
+				{
+					id: 'blog:strong:chunk:0',
+					score: 0.99,
+					metadata: {
+						type: 'blog',
+						slug: 'strong',
+						title: 'Strong',
+						url: '/blog/strong',
+						snippet: 's',
+					},
+				},
+				...deep,
+			]
+		}),
+		syncArtifacts: vi.fn(async () => ({
+			syncedAt: '2026-03-17T00:00:00.000Z',
+		})),
+		getSyncedAt: vi.fn(async () => '2026-03-17T00:00:00.000Z'),
+	}
+	const service = createSearchService(createEnv(), dependencies)
+
+	const { results, lowRankingResults, noCloseMatches } = await service.search({
+		query: 'test',
+		topK: 20,
+	})
+
+	expect(noCloseMatches).toBe(false)
+	expect(results.some((r) => r.id === 'blog:strong')).toBe(true)
+	expect(
+		results.filter((r) => r.id.startsWith('blog:deep-')).length,
+	).toBeLessThanOrEqual(2)
+	expect(results[0]?.id).toBe('blog:strong')
+	expect(
+		lowRankingResults.some((r) => r.id.startsWith('blog:deep-')),
+	).toBe(true)
 })
 
 test('search rejects overly long queries', async () => {

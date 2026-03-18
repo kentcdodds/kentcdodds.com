@@ -213,12 +213,15 @@ export const searchWorkerHandlers: Array<HttpHandler> = [
 		}
 
 		const body = (await request.json()) as { query?: string; topK?: number }
+		const results = buildSearchResults({
+			query: body.query ?? '',
+			topK: typeof body.topK === 'number' ? body.topK : 10,
+		})
 		return HttpResponse.json({
 			ok: true,
-			results: buildSearchResults({
-				query: body.query ?? '',
-				topK: typeof body.topK === 'number' ? body.topK : 10,
-			}),
+			results,
+			lowRankingResults: [],
+			noCloseMatches: false,
 		})
 	}),
 	http.post(searchWorkerUrl('/internal/sync'), async ({ request }) => {

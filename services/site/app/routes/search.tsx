@@ -6,6 +6,7 @@ import {
 	useAsyncError,
 	useFetcher,
 } from 'react-router'
+import { Button } from '#app/components/button.tsx'
 import {
 	ErrorPanel,
 	Input,
@@ -33,12 +34,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const q = (url.searchParams.get('q') ?? '').trim()
 	const headers = { 'Cache-Control': 'no-store' }
 
+	const emptyPayload = Promise.resolve({
+		results: [] as Array<SearchResult>,
+		lowRankingResults: [] as Array<SearchResult>,
+		noCloseMatches: false,
+	})
+
 	if (!q) {
 		return defer(
 			{
 				q: '',
 				configured: true,
-				results: [] as Array<SearchResult>,
+				searchPayload: emptyPayload,
 				error: undefined as string | undefined,
 			},
 			{ headers },
@@ -50,14 +57,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 			{
 				q,
 				configured: true,
-				results: [] as Array<SearchResult>,
+				searchPayload: emptyPayload,
 				error: `Query too long (${normalizedQ.length} chars). Max is ${SEARCH_MAX_QUERY_CHARS}.`,
 			},
 			{ headers },
 		)
 	}
 
-	const resultsPromise = searchKCD({
+	const searchPayload = searchKCD({
 		query: normalizedQ,
 		topK: 20,
 		request,
@@ -69,7 +76,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		{
 			q,
 			configured: true,
-			results: resultsPromise,
+			searchPayload,
 			error: undefined as string | undefined,
 		},
 		{ headers },
@@ -89,7 +96,12 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 
 	const [requestedQuery, setRequestedQuery] = React.useState(trimmedQuery)
 
-	type Resolved = { q: string; results: Array<SearchResult> }
+	type Resolved = {
+		q: string
+		results: Array<SearchResult>
+		lowRankingResults: Array<SearchResult>
+		noCloseMatches: boolean
+	}
 	const [resolved, setResolved] = React.useState<Resolved | null>(null)
 
 	React.useEffect(() => {
@@ -142,6 +154,11 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 		Boolean(showResultsSection) &&
 		Boolean(activeData) &&
 		resolved?.q !== requestedQuery
+
+	const searchPayloadPromise =
+		activeData && 'searchPayload' in activeData
+			? activeData.searchPayload
+			: null
 
 	return (
 		<div>
@@ -208,21 +225,28 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 						<>
 							{resolved ? (
 								<div className={resultsContainerClassName}>
-									<SearchResults q={resolved.q} results={resolved.results} />
+									<SearchResults
+										q={resolved.q}
+										results={resolved.results}
+										lowRankingResults={resolved.lowRankingResults}
+										noCloseMatches={resolved.noCloseMatches}
+									/>
 								</div>
 							) : null}
-							{activeData && shouldAwaitResults ? (
+							{activeData && shouldAwaitResults && searchPayloadPromise ? (
 								<Suspense
 									fallback={resolved ? null : <SearchResultsFallback />}
 								>
 									<Await
-										resolve={activeData.results}
+										resolve={searchPayloadPromise}
 										errorElement={<SearchResultsError />}
 									>
-										{(results) => (
+										{(payload) => (
 											<ResolveResults
 												q={requestedQuery}
-												results={results}
+												results={payload.results}
+												lowRankingResults={payload.lowRankingResults}
+												noCloseMatches={payload.noCloseMatches}
 												setResolved={setResolved}
 												renderResults={!resolved}
 												resultsContainerClassName={resultsContainerClassName}
@@ -244,30 +268,41 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 function ResolveResults({
 	q,
 	results,
+	lowRankingResults,
+	noCloseMatches,
 	setResolved,
 	renderResults,
 	resultsContainerClassName,
 }: {
 	q: string
 	results: Array<SearchResult>
+	lowRankingResults: Array<SearchResult>
+	noCloseMatches: boolean
 	setResolved: React.Dispatch<
 		React.SetStateAction<{
 			q: string
 			results: Array<SearchResult>
+			lowRankingResults: Array<SearchResult>
+			noCloseMatches: boolean
 		} | null>
 	>
 	renderResults: boolean
 	resultsContainerClassName: string
 }) {
 	React.useEffect(() => {
-		setResolved({ q, results })
-	}, [q, results, setResolved])
+		setResolved({ q, results, lowRankingResults, noCloseMatches })
+	}, [q, results, lowRankingResults, noCloseMatches, setResolved])
 
 	if (!renderResults) return null
 
 	return (
 		<div className={resultsContainerClassName}>
-			<SearchResults q={q} results={results} />
+			<SearchResults
+				q={q}
+				results={results}
+				lowRankingResults={lowRankingResults}
+				noCloseMatches={noCloseMatches}
+			/>
 		</div>
 	)
 }
@@ -288,13 +323,95 @@ function SearchResultsFallback() {
 	)
 }
 
+function SearchHitRow({ r }: { r: SearchResult }) {
+	const href = r.url ?? (r.id ? `/` : '#')
+	const linkTo =
+		r.type === 'youtube' &&
+		typeof href === 'string' &&
+		href.startsWith('/youtube')
+			? (() => {
+					try {
+						const u = new URL(href, 'https://kentcdodds.com')
+						if (r.title) u.searchParams.set('title', r.title)
+						const desc = r.summary ?? r.snippet
+						if (desc) {
+							u.searchParams.set(
+								'desc',
+								desc.length > 400 ? `${desc.slice(0, 397)}...` : desc,
+							)
+						}
+						return `${u.pathname}?${u.searchParams.toString()}`
+					} catch {
+						return href
+					}
+				})()
+			: href
+	const semanticSearchState =
+		r.type === 'youtube'
+			? {
+					semanticSearch: {
+						title: r.title ?? null,
+						description: r.summary ?? r.snippet ?? null,
+					},
+				}
+			: undefined
+	const title = href ? (
+		<Link to={linkTo} state={semanticSearchState}>
+			{r.title ?? r.url ?? r.id}
+		</Link>
+	) : (
+		r.id
+	)
+	return (
+		<li className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-lg bg-gray-100 p-4 dark:bg-gray-800 sm:grid-cols-[4rem_minmax(0,1fr)] sm:p-6 md:grid-cols-[4rem_minmax(0,1fr)] md:gap-y-1">
+			<H4 className="col-span-2 min-w-0 text-balance wrap-anywhere leading-snug md:col-span-1 md:col-start-2 md:row-start-1 md:line-clamp-3 md:leading-tight">
+				{title}
+			</H4>
+			<div className="row-start-2 self-start md:row-span-3 md:row-start-1 md:self-start">
+				{r.imageUrl ? (
+					<img
+						src={r.imageUrl}
+						alt={r.imageAlt ?? ''}
+						className="h-14 w-14 rounded-lg object-cover sm:h-16 sm:w-16"
+						loading="lazy"
+					/>
+				) : (
+					<div className="h-14 w-14 rounded-lg bg-gray-200 sm:h-16 sm:w-16 dark:bg-gray-700" />
+				)}
+			</div>
+			<div className="col-start-2 row-start-2 flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-slate-500 md:row-start-2">
+				{r.type ? <span>{r.type}</span> : null}
+				{r.url ? (
+					<span className="max-w-full break-all text-slate-500">{r.url}</span>
+				) : null}
+			</div>
+			{r.summary || r.snippet ? (
+				<p className="col-span-2 mt-1 line-clamp-3 text-base text-slate-600 dark:text-slate-400 md:col-span-1 md:col-start-2 md:row-start-3 md:mt-0">
+					{r.summary ?? r.snippet}
+				</p>
+			) : null}
+		</li>
+	)
+}
+
 function SearchResults({
 	q,
 	results,
+	lowRankingResults,
+	noCloseMatches,
 }: {
 	q: string
 	results: Array<SearchResult>
+	lowRankingResults: Array<SearchResult>
+	noCloseMatches: boolean
 }) {
+	const [showLowRanking, setShowLowRanking] = React.useState(false)
+	React.useEffect(() => {
+		setShowLowRanking(false)
+	}, [q])
+
+	const hasLowRanking = lowRankingResults.length > 0
+
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -305,91 +422,53 @@ function SearchResults({
 			</div>
 			{results.length ? (
 				<ul className="space-y-6">
-					{results.map((r) => {
-						const href = r.url ?? (r.id ? `/` : '#')
-						const linkTo =
-							r.type === 'youtube' &&
-							typeof href === 'string' &&
-							href.startsWith('/youtube')
-								? (() => {
-										try {
-											const u = new URL(href, 'https://kentcdodds.com')
-											if (r.title) u.searchParams.set('title', r.title)
-											const desc = r.summary ?? r.snippet
-											if (desc) {
-												u.searchParams.set(
-													'desc',
-													desc.length > 400 ? `${desc.slice(0, 397)}...` : desc,
-												)
-											}
-											return `${u.pathname}?${u.searchParams.toString()}`
-										} catch {
-											return href
-										}
-									})()
-								: href
-						const semanticSearchState =
-							r.type === 'youtube'
-								? {
-										semanticSearch: {
-											title: r.title ?? null,
-											description: r.summary ?? r.snippet ?? null,
-										},
-									}
-								: undefined
-						return (
-							<li
-								key={r.id}
-								className="rounded-lg bg-gray-100 p-6 dark:bg-gray-800"
-							>
-								<div className="flex items-start justify-between gap-4">
-									<div className="flex min-w-0 flex-1 items-start gap-4">
-										<div className="shrink-0">
-											{r.imageUrl ? (
-												<img
-													src={r.imageUrl}
-													alt={r.imageAlt ?? ''}
-													className="h-16 w-16 rounded-lg object-cover"
-													loading="lazy"
-												/>
-											) : (
-												<div className="h-16 w-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
-											)}
-										</div>
-										<div className="min-w-0 flex-1">
-											<H4 className="truncate">
-												{href ? (
-													<Link to={linkTo} state={semanticSearchState}>
-														{r.title ?? r.url ?? r.id}
-													</Link>
-												) : (
-													r.id
-												)}
-											</H4>
-											<div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-slate-500">
-												{r.type ? <span>{r.type}</span> : null}
-												{r.url ? (
-													<span className="truncate">{r.url}</span>
-												) : null}
-											</div>
-											{r.summary || r.snippet ? (
-												<p className="mt-3 line-clamp-3 text-base text-slate-600 dark:text-slate-400">
-													{r.summary ?? r.snippet}
-												</p>
-											) : null}
-										</div>
-									</div>
-									<p className="shrink-0 text-sm text-slate-500">
-										{Number.isFinite(r.score) ? r.score.toFixed(3) : ''}
-									</p>
-								</div>
-							</li>
-						)
-					})}
+					{results.map((r) => (
+						<SearchHitRow key={r.id} r={r} />
+					))}
 				</ul>
+			) : noCloseMatches ? (
+				<div className="space-y-2">
+					<Paragraph textColorClassName="text-secondary">
+						{`No close matches for this query. The index had related candidates, but none met the confidence threshold.`}
+					</Paragraph>
+					<Paragraph textColorClassName="text-secondary">
+						{`Try different keywords, a shorter phrase, or check spelling.`}
+					</Paragraph>
+				</div>
 			) : (
 				<Paragraph textColorClassName="text-secondary">{`No matches found.`}</Paragraph>
 			)}
+			{hasLowRanking ? (
+				<div className="border-secondary border-t border-dashed pt-4">
+					<Button
+						type="button"
+						variant="secondary"
+						size="small"
+						onClick={() => setShowLowRanking((v) => !v)}
+						aria-expanded={showLowRanking}
+					>
+						{showLowRanking
+							? 'Hide low ranking results'
+							: `Show low ranking results (${lowRankingResults.length})`}
+					</Button>
+					{showLowRanking ? (
+						<div className="mt-4 space-y-3">
+							<H4 as="p" variant="secondary">
+								Lower-confidence matches
+							</H4>
+							<Paragraph textColorClassName="text-secondary" className="text-sm">
+								These pages scored below the main results threshold or beyond the
+								top slice. They may still be useful.
+							</Paragraph>
+							<ul className="space-y-6">
+								{lowRankingResults.map((r) => (
+									<SearchHitRow key={`low-${r.id}`} r={r} />
+								))}
+							</ul>
+						</div>
+					) : null}
+				</div>
+			) : null}
 		</div>
 	)
 }

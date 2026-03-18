@@ -94,8 +94,14 @@ export async function handleRequest({
 			if (request.method !== 'POST') return methodNotAllowed()
 			const body = await parseJsonBody(request)
 			const parsed = searchRequestSchema.parse(body)
-			const results = await service.search(parsed)
-			return json({ ok: true, results })
+			const { results, lowRankingResults, noCloseMatches } =
+				await service.search(parsed)
+			return json({
+				ok: true,
+				results,
+				lowRankingResults,
+				noCloseMatches,
+			})
 		}
 
 		if (url.pathname === '/internal/sync') {

@@ -68,7 +68,11 @@ export async function querySearchWorkerResults({
 }: {
 	query: string
 	topK: number
-}): Promise<Array<SearchResult>> {
+}): Promise<{
+	results: Array<SearchResult>
+	lowRankingResults: Array<SearchResult>
+	noCloseMatches: boolean
+}> {
 	const json = await requestSearchWorkerJson<SearchWorkerSearchResponse>({
 		path: '/search',
 		method: 'POST',
@@ -77,7 +81,13 @@ export async function querySearchWorkerResults({
 	if (!('results' in json) || !Array.isArray(json.results)) {
 		throw new Error('Search worker returned an invalid results payload')
 	}
-	return json.results
+	return {
+		results: json.results,
+		lowRankingResults: Array.isArray(json.lowRankingResults)
+			? json.lowRankingResults
+			: [],
+		noCloseMatches: Boolean(json.noCloseMatches),
+	}
 }
 
 export async function getSearchWorkerHealth() {

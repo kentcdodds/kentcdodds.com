@@ -21,9 +21,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	const headers = { 'Cache-Control': 'no-store' }
 
-	let results
+	let payload
 	try {
-		results = await searchKCD({ query, topK: 15, request })
+		payload = await searchKCD({ query, topK: 15, request })
 	} catch (error) {
 		if (error instanceof SearchQueryTooLongError) {
 			return json({ error: error.message }, { status: 400, headers })
@@ -31,24 +31,27 @@ export async function loader({ request }: Route.LoaderArgs) {
 		throw error
 	}
 	return json(
-		results.map((r) => {
-			const url = r.url ?? (r.id.startsWith('/') ? r.id : '')
-			const absoluteUrl = url.startsWith('http')
-				? url
-				: url.startsWith('/')
-					? `${domainUrl}${url}`
-					: url
-						? `${domainUrl}/${url}`
-						: domainUrl
-			return {
-				url: absoluteUrl,
-				segment: r.type ?? 'Results',
-				title: r.title ?? url ?? r.id,
-				summary: normalizeSummary(r.summary ?? r.snippet),
-				imageUrl: r.imageUrl,
-				imageAlt: r.imageAlt,
-			}
-		}),
+		{
+			noCloseMatches: payload.noCloseMatches,
+			results: payload.results.map((r) => {
+				const url = r.url ?? (r.id.startsWith('/') ? r.id : '')
+				const absoluteUrl = url.startsWith('http')
+					? url
+					: url.startsWith('/')
+						? `${domainUrl}${url}`
+						: url
+							? `${domainUrl}/${url}`
+							: domainUrl
+				return {
+					url: absoluteUrl,
+					segment: r.type ?? 'Results',
+					title: r.title ?? url ?? r.id,
+					summary: normalizeSummary(r.summary ?? r.snippet),
+					imageUrl: r.imageUrl,
+					imageAlt: r.imageAlt,
+				}
+			}),
+		},
 		{ headers },
 	)
 }

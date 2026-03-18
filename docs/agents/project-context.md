@@ -36,6 +36,8 @@ reference:
   and run worker/package scripts with `npm run <script> --workspace <name>`.
 - The main site lives in `services/site`. Root `npm run dev`, `npm run build`,
   `npm run test`, and similar commands forward to that workspace.
+- Search worker relevance thresholds (`M`, `R`, `noCloseMatches`): see
+  [`search-relevance.md`](./search-relevance.md).
 - Playwright already launches Chromium with fake media permissions/device input
   plus `tests/sample.wav`. If an e2e needs recorded audio, drive the real
   recorder UI and keep the fake-audio setup in Playwright/helpers rather than

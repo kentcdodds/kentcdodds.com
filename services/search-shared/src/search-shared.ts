@@ -33,6 +33,10 @@ export type SearchWorkerSearchResponse =
 	| {
 			ok: true
 			results: Array<SearchResult>
+			/** Candidates below primary confidence / beyond topK; for optional UI. */
+			lowRankingResults?: Array<SearchResult>
+			/** True when candidates existed but none met confidence thresholds. */
+			noCloseMatches?: boolean
 	  }
 	| {
 			ok: false

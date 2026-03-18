@@ -222,7 +222,11 @@ function NavSearch({
 	searchInputRef?: React.RefObject<HTMLInputElement | null>
 }) {
 	const navigate = useNavigate()
-	const fetcher = useFetcher<Array<SearchSuggestion> | { error: string }>({
+	const fetcher = useFetcher<
+		| Array<SearchSuggestion>
+		| { results: Array<SearchSuggestion>; noCloseMatches?: boolean }
+		| { error: string }
+	>({
 		key: 'navbar-search',
 	})
 	const [suggestions, setSuggestions] = React.useState<Array<SearchSuggestion>>(
@@ -250,6 +254,15 @@ function NavSearch({
 		if (Array.isArray(fetcher.data)) {
 			setFetchError(null)
 			setSuggestions(fetcher.data)
+			return
+		}
+		if (
+			fetcher.data &&
+			'results' in fetcher.data &&
+			Array.isArray(fetcher.data.results)
+		) {
+			setFetchError(null)
+			setSuggestions(fetcher.data.results)
 			return
 		}
 		if (fetcher.data && 'error' in fetcher.data) {

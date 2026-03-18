@@ -21,7 +21,11 @@ function createEnv(): Env {
 function createService() {
 	return {
 		health: vi.fn(async () => ({ syncedAt: '2026-03-17T00:00:00.000Z' })),
-		search: vi.fn(async () => [{ id: 'blog:hello-world', score: 0.9 }]),
+		search: vi.fn(async () => ({
+			results: [{ id: 'blog:hello-world', score: 0.9 }],
+			lowRankingResults: [],
+			noCloseMatches: false,
+		})),
 		sync: vi.fn(async () => ({ syncedAt: '2026-03-17T00:00:00.000Z' })),
 	}
 }
@@ -91,6 +95,8 @@ test('search endpoint returns fused results', async () => {
 	expect(await response.json()).toEqual({
 		ok: true,
 		results: [{ id: 'blog:hello-world', score: 0.9 }],
+		lowRankingResults: [],
+		noCloseMatches: false,
 	})
 })
 

@@ -325,6 +325,10 @@ The site no longer does any embedding, vector querying, or score fusion. It just
 
 `services/search-shared` (`@kcd-internal/search-shared`) exports the `SearchResult` type, `SearchQueryTooLongError`, `normalizeSearchQuery`, and the canonical doc-ID logic. Both the worker and the site import from it. That keeps the search contract consistent across the boundary without long relative paths or copy-paste drift.
 
+### Relevance filtering and `noCloseMatches`
+
+After RRF fusion, the worker applies a confidence step in `filterFusedResultsByConfidence` (`services/search-worker/src/search-results.ts`): **`SEARCH_CONFIDENCE_MIN_BEST_SCORE`** (default `0.013`) rejects queries whose best fused score is below that floor, and **`SEARCH_CONFIDENCE_RELATIVE_RATIO`** (default `0.5`) drops hits scoring below half of the top fused score (the top hit always survives when it clears the floor). The worker’s `/search` JSON includes **`noCloseMatches: true`** when candidates existed but none passed—distinct from an empty index. See `docs/agents/search-relevance.md` for tuning notes.
+
 ## What I Learned
 
 The search quality improvement was straightforward once the design was right. Exact terms like "React Testing Library" now surface the right content. Searching for API names and library identifiers works reliably. That part held up from the first implementation.

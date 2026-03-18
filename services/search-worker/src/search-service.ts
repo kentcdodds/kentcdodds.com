@@ -14,7 +14,8 @@ import {
 	asFiniteNumber,
 	asNonEmptyString,
 	collapseRetrievedMatches,
-	fuseRankedResults,
+	filterFusedResultsByConfidence,
+	fuseRankedResultsAll,
 	normalizeYoutubeTimestampSeconds,
 	type RankedDocResult,
 } from './search-results'
@@ -169,6 +170,12 @@ function createDefaultDependencies(env: Env): SearchDependencies {
 	}
 }
 
+export type SearchServiceSearchResult = {
+	results: Array<SearchResult>
+	lowRankingResults: Array<SearchResult>
+	noCloseMatches: boolean
+}
+
 export function createSearchService(
 	env: Env,
 	dependencies: SearchDependencies = createDefaultDependencies(env),
@@ -180,9 +187,15 @@ export function createSearchService(
 		}: {
 			query: string
 			topK?: number
-		}): Promise<Array<SearchResult>> {
+		}): Promise<SearchServiceSearchResult> {
 			const cleanedQuery = normalizeSearchQuery(query)
-			if (!cleanedQuery) return []
+			if (!cleanedQuery) {
+				return {
+					results: [],
+					lowRankingResults: [],
+					noCloseMatches: false,
+				}
+			}
 			if (cleanedQuery.length > SEARCH_MAX_QUERY_CHARS) {
 				throw new SearchQueryTooLongError(
 					cleanedQuery.length,
@@ -220,12 +233,21 @@ export function createSearchService(
 						imageAlt: match.imageAlt,
 					})),
 				).slice(0, safeTopK * 3)
-				const fusedResults = fuseRankedResults({
+				const fusedSorted = fuseRankedResultsAll({
 					semanticResults: [],
 					lexicalResults: lexicalResults as Array<RankedDocResult>,
-					topK: safeTopK,
 				})
-				return addYoutubeTimestampsToResults(fusedResults)
+				const { results, lowRankingResults, noCloseMatches } =
+					filterFusedResultsByConfidence({
+						fusedSorted,
+						topK: safeTopK,
+					})
+				return {
+					results: addYoutubeTimestampsToResults(results),
+					lowRankingResults:
+						addYoutubeTimestampsToResults(lowRankingResults),
+					noCloseMatches,
+				}
 			}
 
 			const [vector, lexicalMatches] = await Promise.all([
@@ -280,13 +302,21 @@ export function createSearchService(
 				})),
 			).slice(0, safeTopK * 3)
 
-			const fusedResults = fuseRankedResults({
+			const fusedSorted = fuseRankedResultsAll({
 				semanticResults: semanticResults as Array<RankedDocResult>,
 				lexicalResults: lexicalResults as Array<RankedDocResult>,
-				topK: safeTopK,
 			})
+			const { results, lowRankingResults, noCloseMatches } =
+				filterFusedResultsByConfidence({
+					fusedSorted,
+					topK: safeTopK,
+				})
 
-			return addYoutubeTimestampsToResults(fusedResults)
+			return {
+				results: addYoutubeTimestampsToResults(results),
+				lowRankingResults: addYoutubeTimestampsToResults(lowRankingResults),
+				noCloseMatches,
+			}
 		},
 		async health() {
 			await dependencies.ensureSchema()

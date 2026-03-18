@@ -164,6 +164,37 @@ export function fuseRankedResults({
 	lexicalResults: Array<RankedDocResult>
 	topK: number
 }) {
+	return fuseRankedResultsAll({ semanticResults, lexicalResults }).slice(
+		0,
+		topK,
+	)
+}
+
+/** RRF-style fused scores; typical single-list #1 ~0.016–0.019, strong dual ~0.035. */
+export const SEARCH_CONFIDENCE_MIN_BEST_SCORE = 0.013
+/** Keep hits within this fraction of the top fused score (drops weak tail). */
+export const SEARCH_CONFIDENCE_RELATIVE_RATIO = 0.5
+/** Max extra hits returned for optional “show low ranking” UI. */
+export const SEARCH_LOW_RANKING_MAX = 35
+
+function fuseMapToSortedResults(
+	fused: Map<string, { score: number; result: SearchResult }>,
+): Array<SearchResult> {
+	return [...fused.values()]
+		.sort((left, right) => right.score - left.score)
+		.map((entry) => ({
+			...entry.result,
+			score: entry.score,
+		}))
+}
+
+export function fuseRankedResultsAll({
+	semanticResults,
+	lexicalResults,
+}: {
+	semanticResults: Array<RankedDocResult>
+	lexicalResults: Array<RankedDocResult>
+}): Array<SearchResult> {
 	const rankConstant = 60
 	const weights = {
 		semantic: 1,
@@ -224,13 +255,59 @@ export function fuseRankedResults({
 	apply('semantic', semanticResults)
 	apply('lexical', lexicalResults)
 
-	return [...fused.values()]
-		.sort((left, right) => right.score - left.score)
-		.slice(0, topK)
-		.map((entry) => ({
-			...entry.result,
-			score: entry.score,
-		}))
+	return fuseMapToSortedResults(fused)
+}
+
+export function filterFusedResultsByConfidence({
+	fusedSorted,
+	topK,
+	minBestScore = SEARCH_CONFIDENCE_MIN_BEST_SCORE,
+	relativeRatio = SEARCH_CONFIDENCE_RELATIVE_RATIO,
+}: {
+	fusedSorted: Array<SearchResult>
+	topK: number
+	minBestScore?: number
+	relativeRatio?: number
+}): {
+	results: Array<SearchResult>
+	lowRankingResults: Array<SearchResult>
+	noCloseMatches: boolean
+} {
+	if (fusedSorted.length === 0) {
+		return { results: [], lowRankingResults: [], noCloseMatches: false }
+	}
+
+	const capLow = (items: Array<SearchResult>) =>
+		items.slice(0, SEARCH_LOW_RANKING_MAX)
+
+	const maxScore = fusedSorted[0]?.score ?? 0
+	if (!Number.isFinite(maxScore) || maxScore < minBestScore) {
+		return {
+			results: [],
+			lowRankingResults: capLow(fusedSorted),
+			noCloseMatches: true,
+		}
+	}
+
+	const threshold = maxScore * relativeRatio
+	const filtered = fusedSorted.filter((r) => r.score >= threshold)
+	if (filtered.length === 0) {
+		return {
+			results: [],
+			lowRankingResults: capLow(fusedSorted),
+			noCloseMatches: true,
+		}
+	}
+
+	const primary = filtered.slice(0, topK)
+	const primaryIds = new Set(primary.map((r) => r.id))
+	const lowRanking = fusedSorted.filter((r) => !primaryIds.has(r.id))
+
+	return {
+		results: primary,
+		lowRankingResults: capLow(lowRanking),
+		noCloseMatches: false,
+	}
 }
 
 export function normalizeYoutubeTimestampSeconds({

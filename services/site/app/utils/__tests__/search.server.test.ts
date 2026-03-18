@@ -20,8 +20,19 @@ const {
 			syncedAt: '2026-03-17T00:00:00.000Z',
 		})),
 		querySearchWorkerResultsMock: vi.fn<
-			(args: { query: string; topK: number }) => Promise<Array<SearchResult>>
-		>(async () => []),
+			(args: {
+				query: string
+				topK: number
+			}) => Promise<{
+				results: Array<SearchResult>
+				lowRankingResults: Array<SearchResult>
+				noCloseMatches: boolean
+			}>
+		>(async () => ({
+			results: [],
+			lowRankingResults: [],
+			noCloseMatches: false,
+		})),
 		getSemanticSearchPresentationMock: vi.fn(async () => ({})),
 		getLatestCachifiedKey: () => latestCachifiedKey,
 		setLatestCachifiedKey: (key: string | null) => {
@@ -69,16 +80,20 @@ test('searchKCD normalizes queries before calling the worker', async () => {
 		ok: true,
 		syncedAt: '2026-03-17T00:00:00.000Z',
 	})
-	querySearchWorkerResultsMock.mockResolvedValue([
-		{
-			id: 'blog:react-router',
-			score: 0.9,
-			type: 'blog',
-			title: 'React Router',
-			url: '/blog/react-router',
-			snippet: 'Routing content',
-		},
-	])
+	querySearchWorkerResultsMock.mockResolvedValue({
+		results: [
+			{
+				id: 'blog:react-router',
+				score: 0.9,
+				type: 'blog',
+				title: 'React Router',
+				url: '/blog/react-router',
+				snippet: 'Routing content',
+			},
+		],
+		noCloseMatches: false,
+		lowRankingResults: [],
+	})
 	getSemanticSearchPresentationMock.mockResolvedValue({})
 	using _ignoredEnv = setEnv({
 		SEARCH_WORKER_URL: 'https://search-worker.example',
@@ -93,7 +108,7 @@ test('searchKCD normalizes queries before calling the worker', async () => {
 		query: 'React Router',
 		topK: 5,
 	})
-	expect(getLatestCachifiedKey()).toContain('search:kcd:v1:')
+	expect(getLatestCachifiedKey()).toContain('search:kcd:v3:')
 })
 
 test('searchKCD enriches worker results with presentation data', async () => {
@@ -104,27 +119,33 @@ test('searchKCD enriches worker results with presentation data', async () => {
 		ok: true,
 		syncedAt: '2026-03-17T00:00:00.000Z',
 	})
-	querySearchWorkerResultsMock.mockResolvedValue([
-		{
-			id: 'blog:react-router',
-			score: 0.9,
-			type: 'blog',
-			title: 'React Router',
-			url: '/blog/react-router',
-			snippet: 'Routing content',
-		},
-	])
+	querySearchWorkerResultsMock.mockResolvedValue({
+		results: [
+			{
+				id: 'blog:react-router',
+				score: 0.9,
+				type: 'blog',
+				title: 'React Router',
+				url: '/blog/react-router',
+				snippet: 'Routing content',
+			},
+		],
+		noCloseMatches: false,
+		lowRankingResults: [],
+	})
 	getSemanticSearchPresentationMock.mockResolvedValue({
 		summary: 'Presentation summary',
 		imageUrl: '/image.png',
 		imageAlt: 'Image alt',
 	})
 
-	const results = await searchKCD({
+	const { results, noCloseMatches, lowRankingResults } = await searchKCD({
 		query: 'react router',
 		topK: 5,
 	})
 
+	expect(noCloseMatches).toBe(false)
+	expect(lowRankingResults).toEqual([])
 	expect(results).toEqual([
 		{
 			id: 'blog:react-router',
@@ -159,16 +180,20 @@ test('searchKCD bypasses cache keying when worker health is unavailable', async 
 	getSemanticSearchPresentationMock.mockReset()
 	setLatestCachifiedKey(null)
 	getSearchWorkerHealthMock.mockRejectedValue(new Error('boom'))
-	querySearchWorkerResultsMock.mockResolvedValue([
-		{
-			id: 'blog:react-router',
-			score: 0.9,
-			type: 'blog',
-			title: 'React Router',
-			url: '/blog/react-router',
-			snippet: 'Routing content',
-		},
-	])
+	querySearchWorkerResultsMock.mockResolvedValue({
+		results: [
+			{
+				id: 'blog:react-router',
+				score: 0.9,
+				type: 'blog',
+				title: 'React Router',
+				url: '/blog/react-router',
+				snippet: 'Routing content',
+			},
+		],
+		noCloseMatches: false,
+		lowRankingResults: [],
+	})
 	getSemanticSearchPresentationMock.mockResolvedValue({})
 
 	await searchKCD({
