@@ -96,7 +96,7 @@ function AppHotkeys() {
 		return () => {
 			document.removeEventListener('keydown', resetSequencesIfTyping, true)
 			document.removeEventListener('focusout', resetSequencesIfTyping, true)
-			for (const unregister of unregisterCallbacks) unregister()
+			for (const registration of unregisterCallbacks) registration.unregister()
 		}
 	}, [navigateToPath])
 
