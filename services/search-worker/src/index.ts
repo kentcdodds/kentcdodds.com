@@ -7,6 +7,7 @@ import {
 } from '@kcd-internal/search-shared'
 import { createSearchService, type SearchService } from './search-service'
 import { type Env } from './env'
+import { writeDebugLog } from './debug-log'
 
 const searchRequestSchema = z.object({
 	query: z.string(),
@@ -94,6 +95,18 @@ export async function handleRequest({
 			if (request.method !== 'POST') return methodNotAllowed()
 			const body = await parseJsonBody(request)
 			const parsed = searchRequestSchema.parse(body)
+			// #region agent log
+			writeDebugLog({
+				hypothesisId: 'A',
+				location: 'services/search-worker/src/index.ts:/search',
+				message: 'Parsed search request body',
+				data: {
+					query: parsed.query,
+					topK: parsed.topK ?? null,
+					queryLength: parsed.query.length,
+				},
+			})
+			// #endregion
 			const results = await service.search(parsed)
 			return json({ ok: true, results })
 		}

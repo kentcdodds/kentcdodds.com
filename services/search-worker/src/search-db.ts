@@ -3,6 +3,7 @@ import {
 	type LexicalSearchArtifact,
 } from '@kcd-internal/search-shared'
 import { sql } from './d1-sql.ts'
+import { writeDebugLog } from './debug-log'
 
 /** Lexical FTS row shape returned by {@link queryLexicalSearch}. */
 type LexicalSearchMatch = {
@@ -143,6 +144,19 @@ function buildLexicalSearchMatchQuery(query: string) {
 		if (token) terms.push(token)
 	}
 
+	// #region agent log
+	writeDebugLog({
+		hypothesisId: 'B',
+		location: 'services/search-worker/src/search-db.ts:buildLexicalSearchMatchQuery',
+		message: 'Built lexical search match query',
+		data: {
+			query,
+			terms,
+			matchQuery: terms.length ? terms.join(' OR ') : null,
+			termCount: terms.length,
+		},
+	})
+	// #endregion
 	if (!terms.length) return null
 	return terms.join(' OR ')
 }
@@ -402,46 +416,72 @@ export async function queryLexicalSearch({
 	if (!matchQuery) return [] as Array<LexicalSearchMatch>
 
 	const runQuery = async (candidateQuery: string) => {
-		const result = await db
-			.prepare(
-				`
-					SELECT
-						c.id,
-						c.type,
-						c.slug,
-						c.url,
-						c.title,
-						c.snippet,
-						c.chunkIndex,
-						c.chunkCount,
-						c.startSeconds,
-						c.endSeconds,
-						c.imageUrl,
-						c.imageAlt
-					FROM lexical_search_fts f
-					JOIN lexical_chunks c ON c.id = f.id
-					WHERE lexical_search_fts MATCH ?
-					ORDER BY bm25(lexical_search_fts, 10.0, 1.0), c.chunkIndex
-					LIMIT ?
-				`,
-			)
-			.bind(candidateQuery, topK)
-			.all<SqlRow>()
+		// #region agent log
+		writeDebugLog({
+			hypothesisId: 'C',
+			location: 'services/search-worker/src/search-db.ts:runQuery',
+			message: 'Executing lexical search query',
+			data: {
+				candidateQuery,
+				topK,
+			},
+		})
+		// #endregion
+		try {
+			const result = await db
+				.prepare(
+					`
+						SELECT
+							c.id,
+							c.type,
+							c.slug,
+							c.url,
+							c.title,
+							c.snippet,
+							c.chunkIndex,
+							c.chunkCount,
+							c.startSeconds,
+							c.endSeconds,
+							c.imageUrl,
+							c.imageAlt
+						FROM lexical_search_fts f
+						JOIN lexical_chunks c ON c.id = f.id
+						WHERE lexical_search_fts MATCH ?
+						ORDER BY bm25(lexical_search_fts, 10.0, 1.0), c.chunkIndex
+						LIMIT ?
+					`,
+				)
+				.bind(candidateQuery, topK)
+				.all<SqlRow>()
 
-		return (result.results ?? []).map((row) => ({
-			id: String(row.id),
-			type: asString(row.type),
-			slug: asString(row.slug),
-			title: asString(row.title),
-			url: asString(row.url),
-			snippet: asString(row.snippet),
-			chunkIndex: asNumber(row.chunkIndex),
-			chunkCount: asNumber(row.chunkCount),
-			startSeconds: asNumber(row.startSeconds),
-			endSeconds: asNumber(row.endSeconds),
-			imageUrl: asString(row.imageUrl),
-			imageAlt: asString(row.imageAlt),
-		}))
+			return (result.results ?? []).map((row) => ({
+				id: String(row.id),
+				type: asString(row.type),
+				slug: asString(row.slug),
+				title: asString(row.title),
+				url: asString(row.url),
+				snippet: asString(row.snippet),
+				chunkIndex: asNumber(row.chunkIndex),
+				chunkCount: asNumber(row.chunkCount),
+				startSeconds: asNumber(row.startSeconds),
+				endSeconds: asNumber(row.endSeconds),
+				imageUrl: asString(row.imageUrl),
+				imageAlt: asString(row.imageAlt),
+			}))
+		} catch (error) {
+			// #region agent log
+			writeDebugLog({
+				hypothesisId: 'C',
+				location: 'services/search-worker/src/search-db.ts:runQuery:catch',
+				message: 'Lexical search query failed',
+				data: {
+					candidateQuery,
+					errorMessage: error instanceof Error ? error.message : String(error),
+				},
+			})
+			// #endregion
+			throw error
+		}
 	}
 
 	try {
@@ -454,6 +494,19 @@ export async function queryLexicalSearch({
 			.map((token) => token.replace(/[^\p{L}\p{N}_-]+/gu, '').trim())
 			.filter(Boolean)
 			.join(' OR ')
+		// #region agent log
+		writeDebugLog({
+			hypothesisId: 'D',
+			location: 'services/search-worker/src/search-db.ts:queryLexicalSearch:catch',
+			message: 'Retrying lexical search with fallback query',
+			data: {
+				query,
+				matchQuery,
+				fallbackQuery: fallbackQuery || null,
+				errorMessage: error instanceof Error ? error.message : String(error),
+			},
+		})
+		// #endregion
 		if (!fallbackQuery) return []
 
 		return await runQuery(fallbackQuery)

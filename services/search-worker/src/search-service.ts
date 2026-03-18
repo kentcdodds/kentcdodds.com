@@ -20,6 +20,7 @@ import {
 } from './search-results'
 import { syncSearchArtifacts } from './search-sync'
 import { type Env } from './env'
+import { writeDebugLog } from './debug-log'
 
 type EmbeddingResponse = {
 	shape?: number[]
@@ -182,6 +183,19 @@ export function createSearchService(
 			topK?: number
 		}): Promise<Array<SearchResult>> {
 			const cleanedQuery = normalizeSearchQuery(query)
+			// #region agent log
+			writeDebugLog({
+				hypothesisId: 'A',
+				location: 'services/search-worker/src/search-service.ts:search',
+				message: 'Normalized search query',
+				data: {
+					rawQuery: query,
+					cleanedQuery,
+					rawLength: query.length,
+					cleanedLength: cleanedQuery.length,
+				},
+			})
+			// #endregion
 			if (!cleanedQuery) return []
 			if (cleanedQuery.length > SEARCH_MAX_QUERY_CHARS) {
 				throw new SearchQueryTooLongError(
