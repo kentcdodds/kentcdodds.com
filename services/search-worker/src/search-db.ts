@@ -131,17 +131,32 @@ function asNumber(value: unknown): number | undefined {
 	return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
-function buildLexicalSearchMatchQuery(query: string) {
+function quoteFtsPhrase(value: string) {
+	return `"${value.replace(/"/g, '""')}"`
+}
+
+function normalizeLexicalSearchToken(token: string) {
+	const normalizedToken = token.trim()
+	if (!normalizedToken || !/[\p{L}\p{N}_]/u.test(normalizedToken)) return null
+	return normalizedToken.includes('-')
+		? quoteFtsPhrase(normalizedToken)
+		: normalizedToken
+}
+
+export function buildLexicalSearchMatchQuery(query: string) {
 	const terms: string[] = []
-	for (const match of query.matchAll(/"([^"]+)"|([\p{L}\p{N}_-]+)/gu)) {
+	for (const match of query.matchAll(
+		/"([^"]+)"|([\p{L}\p{N}_]+(?:-[\p{L}\p{N}_]+)*)/gu,
+	)) {
 		const phrase = match[1]?.trim()
 		if (phrase) {
-			terms.push(`"${phrase.replace(/"/g, '""')}"`)
+			terms.push(quoteFtsPhrase(phrase))
 			continue
 		}
 
 		const token = match[2]?.trim()
-		if (token) terms.push(token)
+		const normalizedToken = token ? normalizeLexicalSearchToken(token) : null
+		if (normalizedToken) terms.push(normalizedToken)
 	}
 
 	// #region agent log
@@ -210,7 +225,9 @@ function buildDocRecords({
 
 function isFtsQuerySyntaxError(error: unknown) {
 	if (!(error instanceof Error)) return false
-	return /fts5|syntax error|malformed match|unterminated/i.test(error.message)
+	return /fts5|syntax error|malformed match|unterminated|no such column/i.test(
+		error.message,
+	)
 }
 
 async function runStatementsInTransaction({
@@ -489,11 +506,12 @@ export async function queryLexicalSearch({
 	} catch (error) {
 		if (!isFtsQuerySyntaxError(error)) throw error
 
-		const fallbackQuery = query
+		const fallbackSeed = query
 			.split(/\s+/u)
 			.map((token) => token.replace(/[^\p{L}\p{N}_-]+/gu, '').trim())
 			.filter(Boolean)
-			.join(' OR ')
+			.join(' ')
+		const fallbackQuery = buildLexicalSearchMatchQuery(fallbackSeed)
 		// #region agent log
 		writeDebugLog({
 			hypothesisId: 'D',
@@ -502,6 +520,7 @@ export async function queryLexicalSearch({
 			data: {
 				query,
 				matchQuery,
+				fallbackSeed: fallbackSeed || null,
 				fallbackQuery: fallbackQuery || null,
 				errorMessage: error instanceof Error ? error.message : String(error),
 			},
