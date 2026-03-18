@@ -100,3 +100,65 @@ test('queryLexicalSearch retries when D1 reports no such column', async () => {
 		},
 	])
 })
+
+test('queryLexicalSearch quotes uppercase OR tokens', async () => {
+	const { db, boundQueries } = createDb({
+		onAll: async () => ({
+			results: [
+				{
+					id: 'blog:or-token:chunk:0',
+					type: 'blog',
+					slug: 'or-token',
+					title: 'Literal OR token',
+					url: '/blog/or-token',
+					snippet: 'Contains the word OR as content',
+				},
+			],
+		}),
+	})
+
+	const results = await queryLexicalSearch({
+		db,
+		query: 'OR',
+		topK: 5,
+	})
+
+	expect(boundQueries).toEqual([
+		{
+			candidateQuery: '"OR"',
+			topK: 5,
+		},
+	])
+	expect(results[0]?.id).toBe('blog:or-token:chunk:0')
+})
+
+test('queryLexicalSearch quotes uppercase NEAR tokens', async () => {
+	const { db, boundQueries } = createDb({
+		onAll: async () => ({
+			results: [
+				{
+					id: 'blog:near-token:chunk:0',
+					type: 'blog',
+					slug: 'near-token',
+					title: 'Literal NEAR token',
+					url: '/blog/near-token',
+					snippet: 'Contains the word NEAR as content',
+				},
+			],
+		}),
+	})
+
+	const results = await queryLexicalSearch({
+		db,
+		query: 'NEAR',
+		topK: 5,
+	})
+
+	expect(boundQueries).toEqual([
+		{
+			candidateQuery: '"NEAR"',
+			topK: 5,
+		},
+	])
+	expect(results[0]?.id).toBe('blog:near-token:chunk:0')
+})

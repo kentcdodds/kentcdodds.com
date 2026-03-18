@@ -130,10 +130,16 @@ function asNumber(value: unknown): number | undefined {
 	return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
+function isReservedFtsOperator(term: string) {
+	return /^(AND|OR|NOT|NEAR)$/u.test(term)
+}
+
 function toSafeFtsTerm(term: string) {
 	const trimmed = term.trim()
 	if (!trimmed) return null
-	if (/^[\p{L}\p{N}_]+$/u.test(trimmed)) return trimmed
+	if (/^[\p{L}\p{N}_]+$/u.test(trimmed) && !isReservedFtsOperator(trimmed)) {
+		return trimmed
+	}
 	return `"${trimmed.replace(/"/g, '""')}"`
 }
 
