@@ -130,17 +130,27 @@ function asNumber(value: unknown): number | undefined {
 	return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
+function toSafeFtsTerm(term: string) {
+	const trimmed = term.trim()
+	if (!trimmed) return null
+	if (/^[\p{L}\p{N}_]+$/u.test(trimmed)) return trimmed
+	return `"${trimmed.replace(/"/g, '""')}"`
+}
+
 function buildLexicalSearchMatchQuery(query: string) {
 	const terms: string[] = []
 	for (const match of query.matchAll(/"([^"]+)"|([\p{L}\p{N}_-]+)/gu)) {
 		const phrase = match[1]?.trim()
 		if (phrase) {
-			terms.push(`"${phrase.replace(/"/g, '""')}"`)
+			const safePhrase = toSafeFtsTerm(phrase)
+			if (safePhrase) terms.push(safePhrase)
 			continue
 		}
 
 		const token = match[2]?.trim()
-		if (token) terms.push(token)
+		if (!token) continue
+		const safeToken = toSafeFtsTerm(token)
+		if (safeToken) terms.push(safeToken)
 	}
 
 	if (!terms.length) return null
@@ -196,7 +206,9 @@ function buildDocRecords({
 
 function isFtsQuerySyntaxError(error: unknown) {
 	if (!(error instanceof Error)) return false
-	return /fts5|syntax error|malformed match|unterminated/i.test(error.message)
+	return /fts5|syntax error|malformed match|unterminated|no such column/i.test(
+		error.message,
+	)
 }
 
 async function runStatementsInTransaction({
@@ -452,6 +464,7 @@ export async function queryLexicalSearch({
 		const fallbackQuery = query
 			.split(/\s+/u)
 			.map((token) => token.replace(/[^\p{L}\p{N}_-]+/gu, '').trim())
+			.map((token) => toSafeFtsTerm(token))
 			.filter(Boolean)
 			.join(' OR ')
 		if (!fallbackQuery) return []
