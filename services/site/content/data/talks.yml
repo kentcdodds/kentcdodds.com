@@ -6,6 +6,8 @@
       date: 2026-09-17
     - event: '[Nerdearla Argentina 2026](https://nerdearla.com/en/argentina/)'
       date: 2026-09-24
+    - event: '[React Summit US](https://reactsummit.us/)'
+      date: 2026-11-17
 
 - title: 'How I Build Web Applications in 2026'
   deliveries:
