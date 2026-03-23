@@ -618,6 +618,19 @@ as well as third party libraries. Async/await syntax is a special syntax for
 dealing with promises. The two go hand-in-hand.
 
 ```tsx lines=71-81
+// This is the mothership of all things asynchronous
+function timeout(duration = 0, shouldReject = false) {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			if (shouldReject) {
+				reject(`rejected after ${duration}ms`)
+			} else {
+				resolve(`resolved after ${duration}ms`)
+			}
+		}, duration)
+	})
+}
+
 function promises() {
 	const successfulPromise = timeout(100).then((result) => `success: ${result}`)
 
@@ -665,19 +678,6 @@ function log(...args) {
 
 function logError(...args) {
 	console.error(...args)
-}
-
-// This is the mothership of all things asynchronous
-function timeout(duration = 0, shouldReject = false) {
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {
-			if (shouldReject) {
-				reject(`rejected after ${duration}ms`)
-			} else {
-				resolve(`resolved after ${duration}ms`)
-			}
-		}, duration)
-	})
 }
 
 // in React:
