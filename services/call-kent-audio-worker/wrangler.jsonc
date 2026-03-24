@@ -21,7 +21,7 @@
 	"containers": [
 		{
 			"class_name": "Sandbox",
-			"image": "./sandbox.dockerfile",
+			"image": "docker.io/kentcdodds/kcd-call-kent-audio-sandbox:latest",
 			"instance_type": "standard-1",
 			"max_instances": 3,
 		},

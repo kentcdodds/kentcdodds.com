@@ -53,6 +53,18 @@ The sandbox image expects these files in `assets/`:
   need startup behavior, add a `CMD` instead and let the base image keep serving
   the sandbox control API.
 
+## Sandbox image publishing
+
+The sandbox image is built and pushed to Docker Hub by GitHub Actions whenever
+files under `services/call-kent-audio-worker/` change on `main`. The workflow
+publishes `docker.io/kentcdodds/kcd-call-kent-audio-sandbox:latest` and a
+short-SHA tag. `wrangler deploy` now pulls the pre-built image from Docker Hub
+instead of building it locally.
+
+To deploy a new sandbox image version, push the sandbox changes, wait for the
+GitHub Actions workflow to publish the image, then re-deploy the worker so the
+new image tag is pulled.
+
 Site development/tests still use the MSW Cloudflare mock instead of the real
 worker+sandbox path, and the sandbox CLI tests generate temporary fixture
 assets at runtime.
