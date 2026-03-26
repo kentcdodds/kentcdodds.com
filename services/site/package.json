@@ -212,7 +212,7 @@
     "react-router-auto-routes": "^0.8.1",
     "rimraf": "^6.1.3",
     "start-server-and-test": "^2.1.3",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "vite": "^7.3.1",
     "vite-env-only": "^3.0.3",
     "vite-plugin-cjs-interop": "^2.4.2",
