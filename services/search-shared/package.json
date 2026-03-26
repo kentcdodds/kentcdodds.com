@@ -11,7 +11,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@epic-web/config": "^1.24.1",
+    "@epic-web/config": "^2.0.0",
     "oxlint": "^1.51.0",
     "typescript": "^6.0.2"
   },
