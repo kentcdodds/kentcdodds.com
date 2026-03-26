@@ -41,6 +41,7 @@
     "nx:graph": "nx graph"
   },
   "devDependencies": {
+    "@epic-web/config": "^2.0.0",
     "nx": "^22.5.4"
   }
 }

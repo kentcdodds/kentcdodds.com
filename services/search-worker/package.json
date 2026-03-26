@@ -19,11 +19,11 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260306.1",
-    "@epic-web/config": "^1.24.1",
+    "@epic-web/config": "^2.0.0",
     "@types/node": "^25.5.0",
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "vitest": "^4.0.18",
     "wrangler": "^4.75.0"
   },
