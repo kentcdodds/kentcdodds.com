@@ -1,4 +1,7 @@
 name: 🔎 Index Semantic Search (youtube)
+# Scheduled runs are disabled: YouTube indexing runs from a home NAS (see
+# other/nas/youtube/). GitHub runners are often blocked by YouTube. Use
+# workflow_dispatch below only for a rare manual run from GitHub if needed.
 on:
   workflow_dispatch:
     inputs:
@@ -7,10 +10,6 @@ on:
         required: false
         type: string
         default: ''
-  schedule:
-    # 4am Mountain Time is 11:00 UTC during standard time.
-    # This drifts by one hour during daylight saving time.
-    - cron: '0 11 * * *'
 
 jobs:
   index:
@@ -64,6 +63,12 @@ jobs:
           YOUTUBE_VIDEO_IDS:
             ${{ github.event_name == 'workflow_dispatch' &&
             inputs.youtube_video_ids || vars.YOUTUBE_VIDEO_IDS }}
+
+          # Without these, GitHub runners often get LOGIN_REQUIRED / bot blocks from
+          # YouTube; the indexer then never reaches R2/Vectorize. Same values as local
+          # `.env` — repository secrets, not MSW (the indexer does not use mocks).
+          YOUTUBE_COOKIE: ${{ secrets.YOUTUBE_COOKIE }}
+          YOUTUBE_USER_AGENT: ${{ secrets.YOUTUBE_USER_AGENT }}
 
   sync-search-worker:
     needs: index
