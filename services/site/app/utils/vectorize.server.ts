@@ -55,12 +55,10 @@ export async function vectorizeDeleteByIds({
 				signal: controller.signal,
 			})
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : String(error)
-			throw new Error(
-				`Cloudflare API transport error (${path}): ${message}`,
-				{ cause: error },
-			)
+			const message = error instanceof Error ? error.message : String(error)
+			throw new Error(`Cloudflare API transport error (${path}): ${message}`, {
+				cause: error,
+			})
 		} finally {
 			clearTimeout(timeout)
 		}

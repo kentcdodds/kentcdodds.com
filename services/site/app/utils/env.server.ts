@@ -1,14 +1,17 @@
 import { z } from 'zod'
 
 const nonEmptyString = z.string().trim().min(1)
-const absoluteHttpUrlString = z.string().trim().refine((value) => {
-	try {
-		const url = new URL(value)
-		return url.protocol === 'http:' || url.protocol === 'https:'
-	} catch {
-		return false
-	}
-}, 'must be an absolute URL')
+const absoluteHttpUrlString = z
+	.string()
+	.trim()
+	.refine((value) => {
+		try {
+			const url = new URL(value)
+			return url.protocol === 'http:' || url.protocol === 'https:'
+		} catch {
+			return false
+		}
+	}, 'must be an absolute URL')
 
 const schemaBase = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),

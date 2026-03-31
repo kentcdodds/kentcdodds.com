@@ -364,17 +364,17 @@ function SearchHitRow({ r }: { r: SearchResult }) {
 	)
 	const showScore = typeof r.score === 'number' && Number.isFinite(r.score)
 	return (
-		<li className="relative grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-lg bg-gray-100 p-4 dark:bg-gray-800 sm:grid-cols-[4rem_minmax(0,1fr)] sm:p-6 md:grid-cols-[4rem_minmax(0,1fr)] md:gap-y-1">
+		<li className="relative grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-lg bg-gray-100 p-4 sm:grid-cols-[4rem_minmax(0,1fr)] sm:p-6 md:grid-cols-[4rem_minmax(0,1fr)] md:gap-y-1 dark:bg-gray-800">
 			{showScore ? (
 				<span
-					className="absolute right-3 top-3 font-mono text-[0.65rem] leading-none tabular-nums text-slate-400 sm:right-4 sm:top-4 dark:text-slate-500"
+					className="absolute top-3 right-3 font-mono text-[0.65rem] leading-none text-slate-400 tabular-nums sm:top-4 sm:right-4 dark:text-slate-500"
 					title="Fused search relevance score"
 				>
 					{r.score.toFixed(4)}
 				</span>
 			) : null}
 			<H4
-				className={`col-span-2 min-w-0 text-balance wrap-anywhere leading-snug md:col-span-1 md:col-start-2 md:row-start-1 md:line-clamp-3 md:leading-tight ${showScore ? 'pr-14 sm:pr-16' : ''}`}
+				className={`col-span-2 min-w-0 leading-snug text-balance wrap-anywhere md:col-span-1 md:col-start-2 md:row-start-1 md:line-clamp-3 md:leading-tight ${showScore ? 'pr-14 sm:pr-16' : ''}`}
 			>
 				{title}
 			</H4>
@@ -397,7 +397,7 @@ function SearchHitRow({ r }: { r: SearchResult }) {
 				) : null}
 			</div>
 			{r.summary || r.snippet ? (
-				<p className="col-span-2 mt-1 line-clamp-3 text-base text-slate-600 dark:text-slate-400 md:col-span-1 md:col-start-2 md:row-start-3 md:mt-0">
+				<p className="col-span-2 mt-1 line-clamp-3 text-base text-slate-600 md:col-span-1 md:col-start-2 md:row-start-3 md:mt-0 dark:text-slate-400">
 					{r.summary ?? r.snippet}
 				</p>
 			) : null}
@@ -467,9 +467,12 @@ function SearchResults({
 							<H4 as="p" variant="secondary">
 								Lower-confidence matches
 							</H4>
-							<Paragraph textColorClassName="text-secondary" className="text-sm">
-								These pages scored below the main results threshold or beyond the
-								top slice. They may still be useful.
+							<Paragraph
+								textColorClassName="text-secondary"
+								className="text-sm"
+							>
+								These pages scored below the main results threshold or beyond
+								the top slice. They may still be useful.
 							</Paragraph>
 							<ul className="space-y-6">
 								{lowRankingResults.map((r) => (

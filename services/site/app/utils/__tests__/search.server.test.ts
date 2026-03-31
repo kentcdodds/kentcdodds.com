@@ -20,10 +20,7 @@ const {
 			syncedAt: '2026-03-17T00:00:00.000Z',
 		})),
 		querySearchWorkerResultsMock: vi.fn<
-			(args: {
-				query: string
-				topK: number
-			}) => Promise<{
+			(args: { query: string; topK: number }) => Promise<{
 				results: Array<SearchResult>
 				lowRankingResults: Array<SearchResult>
 				noCloseMatches: boolean

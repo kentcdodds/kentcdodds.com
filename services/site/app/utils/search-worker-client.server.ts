@@ -41,9 +41,7 @@ async function requestSearchWorkerJson<T extends { ok: boolean }>({
 
 		if (!response.ok || json?.ok === false || json === null) {
 			throw new Error(
-				json?.ok === false &&
-				'error' in json &&
-				typeof json.error === 'string'
+				json?.ok === false && 'error' in json && typeof json.error === 'string'
 					? json.error
 					: `Search worker request failed (${response.status})${fallbackText ? `: ${fallbackText}` : ''}`,
 			)
