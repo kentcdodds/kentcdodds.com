@@ -41,7 +41,10 @@ import {
 	DUMMY_PASSWORD_HASH,
 	verifyPassword,
 } from '#app/utils/password.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import {
+	migrateHomeworkCompletionsToUser,
+	prisma,
+} from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/login'
@@ -172,9 +175,13 @@ export async function action({ request }: Route.ActionArgs) {
 					data: { userId: userWithPassword.id, clientId: null },
 					where: { clientId },
 				})
+				await migrateHomeworkCompletionsToUser({
+					userId: userWithPassword.id,
+					clientId,
+				})
 			}
 		} catch (error) {
-			console.error('Failed to migrate postReads on login', error)
+			console.error('Failed to migrate client data on login', error)
 		}
 		clientSession.setUser({})
 		await clientSession.getHeaders(headers)

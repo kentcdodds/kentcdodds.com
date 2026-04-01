@@ -14,7 +14,10 @@ import {
 	getPasswordStrengthError,
 	getPasswordHash,
 } from '#app/utils/password.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import {
+	migrateHomeworkCompletionsToUser,
+	prisma,
+} from '#app/utils/prisma.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import {
 	consumeVerification,
@@ -285,9 +288,13 @@ export async function action({ request }: Route.ActionArgs) {
 					data: { userId: userRecord.id, clientId: null },
 					where: { clientId },
 				})
+				await migrateHomeworkCompletionsToUser({
+					userId: userRecord.id,
+					clientId,
+				})
 			}
 		} catch (error) {
-			console.error('Failed to migrate postReads on password reset', error)
+			console.error('Failed to migrate client data on password reset', error)
 		}
 		clientSession.setUser({})
 		await clientSession.getHeaders(headers)

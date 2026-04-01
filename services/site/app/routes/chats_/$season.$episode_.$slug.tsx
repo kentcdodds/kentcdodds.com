@@ -16,7 +16,6 @@ import { Grid } from '#app/components/grid.tsx'
 import { IconLink } from '#app/components/icon-link.tsx'
 import {
 	ArrowIcon,
-	CheckCircledIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
 	ClipboardIcon,
@@ -30,6 +29,7 @@ import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
+import { HomeworkCompletionToggle } from '#app/routes/resources/homework-completion.tsx'
 import {
 	type CWKEpisode,
 	type CWKListItem,
@@ -39,7 +39,10 @@ import {
 	getCWKEpisodePath,
 	getFeaturedEpisode,
 } from '#app/utils/chats-with-kent.ts'
-import { getEpisodeFavoriteContentId } from '#app/utils/favorites.ts'
+import {
+	getEpisodeFavoriteContentId,
+	getEpisodeHomeworkContentId,
+} from '#app/utils/favorites.ts'
 import {
 	formatDate,
 	formatDuration,
@@ -51,7 +54,11 @@ import {
 	typedBoolean,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { getClientSession } from '#app/utils/client.server.ts'
+import {
+	getEpisodeHomeworkCompletions,
+	prisma,
+} from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getUser } from '#app/utils/session.server.ts'
@@ -141,6 +148,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		getUser(request, { timings }),
 		getSeasons({ request, timings }),
 	])
+	const clientSession = await getClientSession(request, user)
+	const clientId = clientSession.getClientId()
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`Season ${seasonNumber} not found`, { status: 404 })
@@ -173,6 +182,24 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				select: { id: true },
 			})
 		: null
+	const completedHomeworkIds = await getEpisodeHomeworkCompletions({
+		seasonNumber: episode.seasonNumber,
+		episodeNumber: episode.episodeNumber,
+		...(user ? { userId: user.id } : clientId ? { clientId } : {}),
+	})
+	const homeworkItems = episode.homeworkHTMLs.map((homeworkHTML, itemIndex) => {
+		const id = getEpisodeHomeworkContentId({
+			seasonNumber: episode.seasonNumber,
+			episodeNumber: episode.episodeNumber,
+			itemIndex,
+		})
+		return {
+			id,
+			itemIndex,
+			homeworkHTML,
+			isCompleted: completedHomeworkIds.has(id),
+		}
+	})
 
 	return json(
 		{
@@ -186,13 +213,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				season.episodes.filter((e) => episode !== e),
 			),
 			episode,
+			homeworkItems,
 			favoriteContentType,
 			favoriteContentId,
 			isFavorite: Boolean(favorite),
 		},
 		{
 			headers: {
-				'Cache-Control': user ? 'private, max-age=600' : 'public, max-age=600',
+				'Cache-Control': 'private, max-age=600',
 				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
 			},
@@ -203,9 +231,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 function Homework({
-	homeworkHTMLs = [],
+	homeworkItems,
+	seasonNumber,
+	episodeNumber,
 }: {
-	homeworkHTMLs: CWKEpisode['homeworkHTMLs']
+	homeworkItems: Array<{
+		id: string
+		itemIndex: number
+		homeworkHTML: string
+		isCompleted: boolean
+	}>
+	seasonNumber: number
+	episodeNumber: number
 }) {
 	return (
 		<div className="bg-secondary w-full rounded-lg p-10 pb-16">
@@ -215,21 +252,46 @@ function Homework({
 			</H6>
 
 			<ul className="text-primary html -mb-10 text-lg font-medium">
-				{homeworkHTMLs.map((homeworkHTML) => (
+				{homeworkItems.map((homeworkItem) => (
 					<li
-						key={homeworkHTML}
-						className="border-secondary flex border-t pt-8 pb-10"
+						key={homeworkItem.id}
+						className="border-secondary border-t pt-8 pb-10"
 					>
-						<CheckCircledIcon
-							className="mr-6 flex-none text-gray-400 dark:text-gray-600"
-							size={24}
+						<HomeworkToggle
+							seasonNumber={seasonNumber}
+							episodeNumber={episodeNumber}
+							homeworkItem={homeworkItem}
 						/>
-
-						<div dangerouslySetInnerHTML={{ __html: homeworkHTML }} />
 					</li>
 				))}
 			</ul>
 		</div>
+	)
+}
+
+function HomeworkToggle({
+	seasonNumber,
+	episodeNumber,
+	homeworkItem,
+}: {
+	seasonNumber: number
+	episodeNumber: number
+	homeworkItem: {
+		id: string
+		itemIndex: number
+		homeworkHTML: string
+		isCompleted: boolean
+	}
+}) {
+	return (
+		<HomeworkCompletionToggle
+			seasonNumber={seasonNumber}
+			episodeNumber={episodeNumber}
+			itemIndex={homeworkItem.itemIndex}
+			initialCompleted={homeworkItem.isCompleted}
+		>
+			<div dangerouslySetInnerHTML={{ __html: homeworkItem.homeworkHTML }} />
+		</HomeworkCompletionToggle>
 	)
 }
 
@@ -445,6 +507,7 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 	const { requestInfo } = useRootData()
 	const {
 		episode,
+		homeworkItems,
 		featured,
 		nextEpisode,
 		prevEpisode,
@@ -561,8 +624,12 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 				<Spacer size="3xs" className="col-span-full" />
 
 				<div className="col-span-full space-y-4 lg:col-span-8 lg:col-start-3">
-					{episode.homeworkHTMLs.length > 0 ? (
-						<Homework homeworkHTMLs={episode.homeworkHTMLs} />
+					{homeworkItems.length > 0 ? (
+						<Homework
+							homeworkItems={homeworkItems}
+							seasonNumber={episode.seasonNumber}
+							episodeNumber={episode.episodeNumber}
+						/>
 					) : null}
 					{episode.resources.length > 0 ? (
 						<Resources resources={episode.resources} />

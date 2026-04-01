@@ -31,7 +31,10 @@ import {
 	getPasswordHash,
 	getPasswordStrengthError,
 } from '#app/utils/password.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import {
+	migrateHomeworkCompletionsToUser,
+	prisma,
+} from '#app/utils/prisma.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
@@ -342,6 +345,10 @@ export async function action({ request }: Route.ActionArgs) {
 				await prisma.postRead.updateMany({
 					data: { userId: user.id, clientId: null },
 					where: { clientId },
+				})
+				await migrateHomeworkCompletionsToUser({
+					userId: user.id,
+					clientId,
 				})
 			}
 			clientSession.setUser({})
