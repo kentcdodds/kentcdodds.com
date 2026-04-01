@@ -415,7 +415,7 @@ function isYouTubeOnlyNode(node: M.PhrasingContent) {
 
 	if (node.type === 'text') {
 		const value = node.value.trim()
-		return Boolean(value) && findFirstYouTubeVideoIdInText(value) === value
+		return Boolean(value) && Boolean(getYouTubeVideoId(value))
 	}
 
 	return false
