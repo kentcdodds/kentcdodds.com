@@ -56,7 +56,10 @@ import { getPublicEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
 import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
-import { isSeason7ChatsPath } from './utils/season-7-promotification.ts'
+import {
+	isSeason7ChatsPath,
+	SEASON_7_PROMOTIFICATION_NAME,
+} from './utils/season-7-promotification.ts'
 import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
@@ -132,8 +135,6 @@ const PODCAST_LINKS_FALLBACK = {
 	chats: { latestSeasonNumber: null, latestSeasonPath: '/chats' },
 	calls: { latestSeasonNumber: null, latestSeasonPath: '/calls' },
 } as const
-
-const SEASON_7_PROMOTIFICATION_NAME = 'chats-with-kent-season-7'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
