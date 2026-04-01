@@ -11,20 +11,41 @@ up.
 
 ## Step 1: Scale Down
 
-Destroy all replica machines. **Keep the primary in dfw** (7817602a936548).
+First **identify the primary machine** (the one that must keep the LiteFS volume
+in **`dfw`**). Machine IDs change over time; do not rely on old IDs from this
+doc.
 
-```bash
-fly machine destroy 0802499c556068 -a kcd  # dfw replica
-fly machine destroy 48e3624a76dd28 -a kcd  # gru
-fly machine destroy 7811e97b0e2978 -a kcd  # jnb
-fly machine destroy 7843929b121938 -a kcd  # ams
-fly machine destroy 784e4d3fd595e8 -a kcd  # sin
-fly machine destroy 865139bee15658 -a kcd  # bom
-fly machine destroy d890de3fe99298 -a kcd  # syd
-fly machine destroy e822040fee7398 -a kcd  # cdg
-```
+1. List machines and read the **`role`** in Fly metadata (primary vs replica):
 
-**Do NOT destroy 7817602a936548** — that is the dfw primary with the volume.
+   ```bash
+   fly machines list -a kcd
+   ```
+
+   Or with JSON:
+
+   ```bash
+   fly machines list -a kcd --json | jq -r '.[] | "\(.id) \(.region) \(.config.metadata.role // "unknown-role")"'
+   ```
+
+   The row with **`primary`** is the one you **must not destroy**. If anything
+   looks ambiguous, confirm in the Fly dashboard or against response headers
+   (e.g. `X-Fly-Primary-Instance`) before deleting machines.
+
+2. **Destroy every other machine** (all replicas and any extra regional
+   instances). Example pattern — set `PRIMARY` to the id from step 1, verify it
+   is non-empty, then:
+
+   ```bash
+   PRIMARY='<paste-primary-machine-id-here>'
+   for id in $(fly machines list -a kcd --json | jq -r '.[].id'); do
+     if [ "$id" != "$PRIMARY" ]; then
+       fly machine destroy "$id" -a kcd --force
+     fi
+   done
+   ```
+
+**Never destroy the primary machine** identified above — it holds the volume
+your app depends on.
 
 ## Step 2: Deploy the Fix
 
@@ -74,10 +95,11 @@ Current standard regions:
 - `syd`
 - `cdg`
 
-Template (run sequentially, one region at a time):
+Template (run sequentially, one region at a time). Use the **same** primary
+machine id you kept in Step 1 (`<PRIMARY_MACHINE_ID>`):
 
 ```bash
-fly machine clone 7817602a936548 -a kcd --region <REGION>
+fly machine clone <PRIMARY_MACHINE_ID> -a kcd --region <REGION>
 fly machine status <NEW_MACHINE_ID> -a kcd
 fly checks list -a kcd
 ```
@@ -116,10 +138,11 @@ regions (`dfw`/`gru`).
 ## Notes
 
 - **Downtime**: Brief downtime during scale-down and deploy is expected.
-- **Primary**: The primary holds the LiteFS volume; it must stay in dfw
-  (primary_region in fly.toml).
-- **Machine IDs**: Run `fly machines list -a kcd` to get current IDs before
-  scaling down — they may change between runs.
+- **Primary**: The primary holds the LiteFS volume; it must stay in **`dfw`**
+  (`primary_region` in `fly.toml`). **Determine the current primary id before
+  destroying anything** — see Step 1.
+- **Machine IDs**: Always resolve primary and replica ids from `fly machines
+  list` (or `--json`) before each run; they change when machines are replaced.
 - **Avoid parallel startup**: Starting many regional machines concurrently can
   create noisy health-check failures and slow recovery; prefer strict serial
   rollout.
