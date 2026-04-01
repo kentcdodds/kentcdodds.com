@@ -80,6 +80,7 @@ type CWKEpisode = {
 	descriptionHTML: string
 	description: string
 	summaryHTML: string
+	youtubeVideoId?: string
 	publishedAt: string
 	updatedAt: string
 	seasonNumber: number

@@ -8,10 +8,15 @@ import {
 	data as json,
 	redirect,
 	type HeadersFunction,
+	type LinksFunction,
 } from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { ArrowLink, BackLink } from '#app/components/arrow-button.tsx'
 import { FourOhFour } from '#app/components/errors.tsx'
+import {
+	LiteYouTubeEmbed,
+	links as youTubeEmbedLinks,
+} from '#app/components/fullscreen-yt-embed.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { IconLink } from '#app/components/icon-link.tsx'
 import {
@@ -202,6 +207,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
+export const links: LinksFunction = () => {
+	return youTubeEmbedLinks()
+}
+
 function Homework({
 	homeworkHTMLs = [],
 }: {
@@ -353,6 +362,31 @@ function Transcript({
 					</span>
 				</button>
 			) : null}
+		</div>
+	)
+}
+
+function EpisodeVideo({
+	youtubeVideoId,
+	title,
+}: {
+	youtubeVideoId: string
+	title: string
+}) {
+	return (
+		<div className="col-span-full lg:col-span-8 lg:col-start-3">
+			<div className="overflow-hidden rounded-lg bg-black">
+				<LiteYouTubeEmbed
+					id={youtubeVideoId}
+					title={`${title} video`}
+					announce="Play video"
+					alwaysLoadIframe={true}
+					params={new URLSearchParams({
+						rel: '0',
+						modestbranding: '1',
+					}).toString()}
+				/>
+			</div>
 		</div>
 	)
 }
@@ -515,6 +549,16 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 						<PrevNextButton episodeListItem={nextEpisode} direction="next" />
 					</div>
 				</div>
+
+				{episode.youtubeVideoId ? (
+					<>
+						<EpisodeVideo
+							youtubeVideoId={episode.youtubeVideoId}
+							title={episode.title}
+						/>
+						<Spacer size="3xs" className="col-span-full" />
+					</>
+				) : null}
 
 				<H3
 					className="col-span-full lg:col-span-8 lg:col-start-3"
