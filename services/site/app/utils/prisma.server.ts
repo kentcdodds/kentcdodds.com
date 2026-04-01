@@ -4,8 +4,9 @@ import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
+import { getEpisodeHomeworkContentId } from '#app/utils/favorites.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
-import { PrismaClient } from './prisma-generated.server/client.ts'
+import { Prisma, PrismaClient } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
 const logThreshold = 500
@@ -156,13 +157,196 @@ async function addPostRead({
 	}
 }
 
+async function getEpisodeHomeworkCompletions({
+	seasonNumber,
+	episodeNumber,
+	userId,
+	clientId,
+}: {
+	seasonNumber: number
+	episodeNumber: number
+} & (
+	| { userId: string; clientId?: undefined | null }
+	| { userId?: undefined | null; clientId: string }
+	| { userId?: undefined | null; clientId?: undefined | null }
+)) {
+	const ownerWhere = userId ? { userId } : clientId ? { clientId } : null
+	if (!ownerWhere) return new Set<string>()
+	const completions = await prisma.homeworkCompletion.findMany({
+		where: {
+			...ownerWhere,
+			seasonNumber,
+			episodeNumber,
+		},
+		select: { itemIndex: true },
+	})
+	return new Set(
+		completions.map((completion) =>
+			getEpisodeHomeworkContentId({
+				seasonNumber,
+				episodeNumber,
+				itemIndex: completion.itemIndex,
+			}),
+		),
+	)
+}
+
+async function setEpisodeHomeworkCompletion({
+	seasonNumber,
+	episodeNumber,
+	itemIndex,
+	userId,
+	clientId,
+	completed,
+}: {
+	seasonNumber: number
+	episodeNumber: number
+	itemIndex: number
+	completed: boolean
+} & (
+	| { userId: string; clientId?: undefined | null }
+	| { userId?: undefined | null; clientId: string }
+)) {
+	if (userId) {
+		if (completed) {
+			await prisma.homeworkCompletion.upsert({
+				where: {
+					userId_seasonNumber_episodeNumber_itemIndex: {
+						userId,
+						seasonNumber,
+						episodeNumber,
+						itemIndex,
+					},
+				},
+				create: {
+					userId,
+					seasonNumber,
+					episodeNumber,
+					itemIndex,
+				},
+				update: {
+					updatedAt: new Date(),
+				},
+			})
+			return true
+		}
+
+		await prisma.homeworkCompletion.deleteMany({
+			where: {
+				userId,
+				seasonNumber,
+				episodeNumber,
+				itemIndex,
+			},
+		})
+		return false
+	}
+
+	const anonymousClientId = clientId
+	if (!anonymousClientId) {
+		throw new Error('clientId is required when userId is absent')
+	}
+
+	if (completed) {
+		await prisma.homeworkCompletion.upsert({
+			where: {
+				clientId_seasonNumber_episodeNumber_itemIndex: {
+					clientId: anonymousClientId,
+					seasonNumber,
+					episodeNumber,
+					itemIndex,
+				},
+			},
+			create: {
+				clientId: anonymousClientId,
+				seasonNumber,
+				episodeNumber,
+				itemIndex,
+			},
+			update: {
+				updatedAt: new Date(),
+			},
+		})
+		return true
+	}
+
+	await prisma.homeworkCompletion.deleteMany({
+		where: {
+			clientId: anonymousClientId,
+			seasonNumber,
+			episodeNumber,
+			itemIndex,
+		},
+	})
+	return false
+}
+
+async function migrateHomeworkCompletionsToUser({
+	userId,
+	clientId,
+}: {
+	userId: string
+	clientId: string
+}) {
+	const completions = await prisma.homeworkCompletion.findMany({
+		where: { clientId },
+		select: {
+			id: true,
+			seasonNumber: true,
+			episodeNumber: true,
+			itemIndex: true,
+		},
+	})
+	if (completions.length === 0) return 0
+
+	await prisma.$transaction(async (tx) => {
+		for (const completion of completions) {
+			try {
+				await tx.homeworkCompletion.upsert({
+					where: {
+						userId_seasonNumber_episodeNumber_itemIndex: {
+							userId,
+							seasonNumber: completion.seasonNumber,
+							episodeNumber: completion.episodeNumber,
+							itemIndex: completion.itemIndex,
+						},
+					},
+					create: {
+						userId,
+						seasonNumber: completion.seasonNumber,
+						episodeNumber: completion.episodeNumber,
+						itemIndex: completion.itemIndex,
+					},
+					update: {
+						updatedAt: new Date(),
+					},
+				})
+			} catch (error) {
+				if (
+					!(error instanceof Prisma.PrismaClientKnownRequestError) ||
+					error.code !== 'P2002'
+				) {
+					throw error
+				}
+			}
+		}
+
+		await tx.homeworkCompletion.deleteMany({ where: { clientId } })
+	})
+
+	return completions.length
+}
+
 export {
 	addPostRead,
 	createSession,
 	deleteExpiredSessions,
 	deleteExpiredVerifications,
 	getAllUserData,
+	getEpisodeHomeworkCompletions,
 	getUserFromSessionId,
+	migrateHomeworkCompletionsToUser,
 	prisma,
+	setEpisodeHomeworkCompletion,
 	sessionExpirationTime,
 }

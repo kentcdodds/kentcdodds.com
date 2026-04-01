@@ -36,3 +36,34 @@ export function parseEpisodeFavoriteContentId(contentId: string) {
 	if (String(episodeNumber) !== episodeRaw) return null
 	return { seasonNumber, episodeNumber }
 }
+
+/**
+ * Canonical identifier for one homework item within a Chats with Kent episode.
+ * Stored without leading zeroes so we have exactly one representation.
+ */
+export function getEpisodeHomeworkContentId({
+	seasonNumber,
+	episodeNumber,
+	itemIndex,
+}: {
+	seasonNumber: number
+	episodeNumber: number
+	itemIndex: number
+}) {
+	return `${String(seasonNumber)}:${String(episodeNumber)}:${String(itemIndex)}`
+}
+
+export function parseEpisodeHomeworkContentId(contentId: string) {
+	const [seasonRaw, episodeRaw, itemIndexRaw, ...rest] = contentId.split(':')
+	if (!seasonRaw || !episodeRaw || !itemIndexRaw || rest.length) return null
+	const seasonNumber = Number(seasonRaw)
+	const episodeNumber = Number(episodeRaw)
+	const itemIndex = Number(itemIndexRaw)
+	if (!Number.isInteger(seasonNumber) || seasonNumber < 1) return null
+	if (!Number.isInteger(episodeNumber) || episodeNumber < 1) return null
+	if (!Number.isInteger(itemIndex) || itemIndex < 0) return null
+	if (String(seasonNumber) !== seasonRaw) return null
+	if (String(episodeNumber) !== episodeRaw) return null
+	if (String(itemIndex) !== itemIndexRaw) return null
+	return { seasonNumber, episodeNumber, itemIndex }
+}

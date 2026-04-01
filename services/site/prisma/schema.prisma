@@ -34,6 +34,7 @@ model User {
   sessions  Session[]
   postReads PostRead[]
   favorites Favorite[]
+  homeworkCompletions HomeworkCompletion[]
 
   @@index([team])
   @@index([createdAt])
@@ -209,4 +210,22 @@ model Favorite {
   @@unique([userId, contentType, contentId])
   @@index([userId, createdAt])
   @@index([contentType, contentId])
+}
+
+model HomeworkCompletion {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String?
+  clientId      String?
+  seasonNumber  Int
+  episodeNumber Int
+  itemIndex     Int
+
+  @@unique([userId, seasonNumber, episodeNumber, itemIndex])
+  @@unique([clientId, seasonNumber, episodeNumber, itemIndex])
+  @@index([userId, seasonNumber, episodeNumber])
+  @@index([clientId, seasonNumber, episodeNumber])
+  @@index([seasonNumber, episodeNumber, itemIndex, createdAt])
 }
