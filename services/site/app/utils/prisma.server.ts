@@ -288,7 +288,8 @@ async function migrateHomeworkCompletionsToUser({
 	userId: string
 	clientId: string
 }) {
-	return prisma.$transaction(async (tx) => {
+	let completionCount = 0
+	await prisma.$transaction(async (tx) => {
 		const completions = await tx.homeworkCompletion.findMany({
 			where: { clientId },
 			select: {
@@ -298,7 +299,10 @@ async function migrateHomeworkCompletionsToUser({
 				itemIndex: true,
 			},
 		})
-		if (completions.length === 0) return 0
+		if (completions.length === 0) {
+			return
+		}
+		completionCount = completions.length
 
 		for (const completion of completions) {
 			try {
@@ -332,8 +336,9 @@ async function migrateHomeworkCompletionsToUser({
 		}
 
 		await tx.homeworkCompletion.deleteMany({ where: { clientId } })
-		return completions.length
 	})
+
+	return completionCount
 }
 
 export {

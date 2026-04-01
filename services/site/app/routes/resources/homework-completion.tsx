@@ -1,13 +1,12 @@
 import * as React from 'react'
-import {
-	data as json,
-	Link,
-	useFetcher,
-	type HeadersFunction,
-} from 'react-router'
+import { data as json, useFetcher, type HeadersFunction } from 'react-router'
 import { z } from 'zod'
 import { clsx } from 'clsx'
-import { CheckIcon, CheckCircledIcon, SpinnerIcon } from '#app/components/icons.tsx'
+import {
+	CheckIcon,
+	CheckCircledIcon,
+	SpinnerIcon,
+} from '#app/components/icons.tsx'
 import {
 	getEpisodeHomeworkContentId,
 	parseEpisodeHomeworkContentId,
@@ -33,15 +32,6 @@ function isHomeworkCompletionResponse(
 		typeof (data as HomeworkCompletionResponse).completed === 'boolean' &&
 		'authenticated' in data &&
 		typeof (data as HomeworkCompletionResponse).authenticated === 'boolean'
-	)
-}
-
-function isHomeworkCompletionSuccessResponse(
-	data: unknown,
-): data is HomeworkCompletionResponse & { error?: undefined } {
-	return (
-		isHomeworkCompletionResponse(data) &&
-		(!('error' in data) || data.error === undefined)
 	)
 }
 
@@ -72,9 +62,10 @@ export function HomeworkCompletionToggle({
 			: fetcher.formData?.get('completed') === 'false'
 				? false
 				: undefined
-	const fetchedCompleted = isHomeworkCompletionSuccessResponse(fetcher.data)
-		? fetcher.data.completed
-		: undefined
+	const fetchedCompleted =
+		isHomeworkCompletionResponse(fetcher.data) && !fetcher.data.error
+			? fetcher.data.completed
+			: undefined
 	const isCompleted =
 		optimisticCompleted ?? fetchedCompleted ?? initialCompleted ?? false
 	const isBusy = fetcher.state !== 'idle'
@@ -101,9 +92,7 @@ export function HomeworkCompletionToggle({
 			<span
 				className={clsx(
 					'min-w-0 transition',
-					isCompleted
-						? 'text-primary'
-						: 'text-primary/90 dark:text-white/90',
+					isCompleted ? 'text-primary' : 'text-primary/90 dark:text-white/90',
 				)}
 			>
 				{children}
@@ -111,29 +100,10 @@ export function HomeworkCompletionToggle({
 		</>
 	)
 
-	if (
-		fetcher.data &&
-		isHomeworkCompletionResponse(fetcher.data) &&
-		fetcher.data.error === 'LOGIN_REQUIRED'
-	) {
-		return (
-			<Link
-				to="/login"
-				className="group focus-ring flex w-full items-start rounded-lg px-2 py-2 text-left transition focus:outline-none"
-			>
-				{buttonContents}
-			</Link>
-		)
-	}
-
 	return (
 		<fetcher.Form method="POST" action={homeworkCompletionResourceRoute}>
 			<input type="hidden" name="contentId" value={contentId} />
-			<input
-				type="hidden"
-				name="completed"
-				value={String(!isCompleted)}
-			/>
+			<input type="hidden" name="completed" value={String(!isCompleted)} />
 			<button
 				type="submit"
 				disabled={isBusy}
@@ -195,7 +165,9 @@ export async function action({ request }: Route.ActionArgs) {
 		)
 	}
 
-	const parsedContentId = parseEpisodeHomeworkContentId(submission.data.contentId)
+	const parsedContentId = parseEpisodeHomeworkContentId(
+		submission.data.contentId,
+	)
 	if (!parsedContentId) {
 		return json(
 			{ completed: false, authenticated: false, error: 'INVALID_CONTENT_ID' },
@@ -258,7 +230,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		)
 	}
 
-	const parsedContentId = parseEpisodeHomeworkContentId(submission.data.contentId)
+	const parsedContentId = parseEpisodeHomeworkContentId(
+		submission.data.contentId,
+	)
 	if (!parsedContentId) {
 		return json(
 			{ completed: false, authenticated: false, error: 'INVALID_CONTENT_ID' },
@@ -306,5 +280,3 @@ export const headers: HeadersFunction = ({
 	}
 	return headers
 }
-
-export { homeworkCompletionResourceRoute }
