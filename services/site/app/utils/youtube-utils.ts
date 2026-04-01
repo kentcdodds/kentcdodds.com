@@ -58,4 +58,4 @@ function findFirstYouTubeVideoIdInText(text: string | null | undefined) {
 	return null
 }
 
-export { findFirstYouTubeVideoIdInText, getYouTubeVideoId, isYouTubeVideoId }
+export { findFirstYouTubeVideoIdInText, getYouTubeVideoId }

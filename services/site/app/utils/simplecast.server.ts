@@ -455,6 +455,7 @@ async function parseDescriptionMarkdown(
 
 	const isHTMLInput = descriptionInput.trim().startsWith('<')
 	let youtubeVideoId = findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined
+	let removedYouTubeOnlyParagraphs = false
 
 	const result = await unified()
 		.use(isHTMLInput ? parseHtml : parseMarkdown)
@@ -463,6 +464,7 @@ async function parseDescriptionMarkdown(
 			return function transformer(tree: M.Root) {
 				tree.children = tree.children.filter((child) => {
 					if (!isYouTubeOnlyParagraph(child)) return true
+					removedYouTubeOnlyParagraphs = true
 					youtubeVideoId ??= findYouTubeVideoIdInNodes([child]) ?? undefined
 					return false
 				})
@@ -471,6 +473,13 @@ async function parseDescriptionMarkdown(
 		.use(remark2rehype)
 		.use(rehypeStringify)
 		.process(descriptionInput)
+
+	if (isHTMLInput && !removedYouTubeOnlyParagraphs) {
+		return {
+			descriptionHTML: descriptionInput,
+			youtubeVideoId,
+		}
+	}
 
 	return {
 		descriptionHTML: result.value.toString(),
