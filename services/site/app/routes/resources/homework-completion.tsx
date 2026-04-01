@@ -63,7 +63,9 @@ export function HomeworkCompletionToggle({
 				? false
 				: undefined
 	const fetchedCompleted =
-		isHomeworkCompletionResponse(fetcher.data) && !fetcher.data.error
+		fetcher.state !== 'idle' &&
+		isHomeworkCompletionResponse(fetcher.data) &&
+		!fetcher.data.error
 			? fetcher.data.completed
 			: undefined
 	const isCompleted =
