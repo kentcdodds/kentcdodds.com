@@ -245,14 +245,14 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 				index={tabIndex}
 				onChange={handleTabChange}
 			>
-				<TabList className="col-span-full mb-20 flex flex-col items-start bg-transparent lg:flex-row lg:space-x-12">
+				<TabList className="col-span-full mb-20 flex flex-col items-start bg-transparent lg:flex-row lg:flex-nowrap lg:gap-x-12 lg:overflow-x-auto lg:overscroll-x-contain lg:pb-1">
 					{data.seasons.map((season) => (
 						<Tab
 							key={season.seasonNumber}
 							// Because we have a link right under the tab, we'll keep this off
 							// the tab "tree" and rely on focusing/activating the link.
 							tabIndex={-1}
-							className="border-none p-0 text-left text-4xl leading-tight focus:bg-transparent focus:outline-none"
+							className="border-none p-0 text-left text-4xl leading-tight focus:bg-transparent focus:outline-none lg:shrink-0"
 						>
 							{/*
                 The link is here for progressive enhancement. Even though this
@@ -263,7 +263,7 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 							<Link
 								preventScrollReset
 								className={clsx(
-									'hover:text-primary focus:text-primary focus:outline-none',
+									'whitespace-nowrap hover:text-primary focus:text-primary focus:outline-none',
 									{
 										'text-primary': season.seasonNumber === seasonNumber,
 										'text-slate-500': season.seasonNumber !== seasonNumber,
