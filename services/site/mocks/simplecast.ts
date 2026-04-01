@@ -89,6 +89,10 @@ ${faker.lorem.paragraphs(3)}
 
 * * *
 
+### Video
+
+[Watch the episode on YouTube](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
 ### Homework
 
 * ${homework.join('\n* ')}

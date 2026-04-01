@@ -408,7 +408,7 @@ function findYouTubeVideoIdInNodes(nodes: Array<U.Node>) {
 	return youtubeVideoId
 }
 
-function isYouTubeOnlyNode(node: U.Node) {
+function isYouTubeOnlyNode(node: M.PhrasingContent) {
 	if (node.type === 'link') {
 		return Boolean(getYouTubeVideoId(node.url))
 	}
@@ -421,9 +421,10 @@ function isYouTubeOnlyNode(node: U.Node) {
 	return false
 }
 
-function isYouTubeOnlyParagraph(node: U.Node) {
+function isYouTubeOnlyParagraph(node: U.Node): node is M.Paragraph {
 	if (node.type !== 'paragraph') return false
-	return node.children.every((child) => {
+	const paragraphNode = node as M.Paragraph
+	return paragraphNode.children.every((child: M.PhrasingContent) => {
 		if (child.type === 'text' && !child.value.trim()) return true
 		return isYouTubeOnlyNode(child)
 	})

@@ -560,12 +560,16 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 					</>
 				) : null}
 
-				<H3
-					className="col-span-full lg:col-span-8 lg:col-start-3"
-					dangerouslySetInnerHTML={{ __html: episode.descriptionHTML }}
-				/>
+				{episode.descriptionHTML ? (
+					<>
+						<H3
+							className="col-span-full lg:col-span-8 lg:col-start-3"
+							dangerouslySetInnerHTML={{ __html: episode.descriptionHTML }}
+						/>
 
-				<Spacer size="3xs" className="col-span-full" />
+						<Spacer size="3xs" className="col-span-full" />
+					</>
+				) : null}
 
 				<div className="col-span-full lg:col-span-8 lg:col-start-3">
 					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
