@@ -439,10 +439,13 @@ async function getQueue() {
 
 	_queue = new PQueue({
 		concurrency: 1,
-		timeout: 1000 * 30,
+		timeout: MDX_COMPILE_QUEUE_TIMEOUT_MS,
 	})
 	return _queue
 }
+
+/** Align with p-queue: allow large posts (Shiki, Mermaid, embeds) without false timeouts. */
+const MDX_COMPILE_QUEUE_TIMEOUT_MS = 1000 * 90
 
 // We have to use a queue because we can't run more than one of these at a time
 // or we'll hit an out of memory error because esbuild uses a lot of memory...

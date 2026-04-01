@@ -4,12 +4,12 @@ import { DatabaseSync } from 'node:sqlite'
 import {
 	type Cache,
 	cachified as baseCachified,
-	verboseReporter,
 	type CacheEntry,
 	type Cache as CachifiedCache,
 	type CachifiedOptions,
 	totalTtl,
 } from '@epic-web/cachified'
+import { siteCacheReporter } from '#app/utils/cache-reporter.server.ts'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import { updatePrimaryCacheValue } from '#app/routes/resources/cache.sqlite.ts'
@@ -236,7 +236,7 @@ export async function cachified<Value>({
 				return options.getFreshValue(context)
 			},
 		},
-		verboseReporter(),
+		siteCacheReporter<Value>(),
 	)
 	const result = await time(cachifiedPromise, {
 		timings,

@@ -23,6 +23,15 @@ const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 365 * 100
 const notFoundTTL = 1000 * 60 * 60 * 24
 const notFoundStaleWhileRevalidate = 0
 
+/** Spread SWR background refreshes so many stale keys don't hit the compile queue at once. */
+function staleRefreshJitterMs(key: string): number {
+	let h = 0
+	for (let i = 0; i < key.length; i++) {
+		h = Math.imul(31, h) + key.charCodeAt(i)
+	}
+	return Math.abs(h) % 2500
+}
+
 function applyNotFoundCacheMetadata(
 	metadata: { ttl?: number | null; swr?: number | null },
 	maxTtl: number | null | undefined,
@@ -58,6 +67,7 @@ export async function getMdxPage(
 			timings,
 			ttl,
 			staleWhileRevalidate: defaultStaleWhileRevalidate,
+			staleRefreshTimeout: staleRefreshJitterMs(key),
 			forceFresh,
 			checkValue: checkCompiledValue,
 			getFreshValue: async (context) => {
@@ -132,6 +142,7 @@ export async function getMdxDirList(
 		timings,
 		ttl,
 		staleWhileRevalidate: defaultStaleWhileRevalidate,
+		staleRefreshTimeout: staleRefreshJitterMs(key),
 		forceFresh,
 		key,
 		checkValue: (value: unknown) => Array.isArray(value),
@@ -169,6 +180,7 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 			timings,
 			ttl,
 			staleWhileRevalidate: defaultStaleWhileRevalidate,
+			staleRefreshTimeout: staleRefreshJitterMs(key),
 			forceFresh,
 			key,
 			getFreshValue: async () => {
@@ -210,6 +222,7 @@ export async function downloadMdxFilesCached(
 		timings,
 		ttl,
 		staleWhileRevalidate: defaultStaleWhileRevalidate,
+		staleRefreshTimeout: staleRefreshJitterMs(key),
 		forceFresh,
 		key,
 		checkValue: (value: unknown) => {
@@ -262,6 +275,7 @@ async function compileMdxCached({
 		staleWhileRevalidate: defaultStaleWhileRevalidate,
 		...options,
 		key,
+		staleRefreshTimeout: staleRefreshJitterMs(key),
 		checkValue: checkCompiledValue,
 		getFreshValue: async (context) => {
 			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
