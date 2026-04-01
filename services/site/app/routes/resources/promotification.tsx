@@ -1,5 +1,5 @@
 // A full stack component + action for promotional notification messages.
-// The user can dismiss (snooze) the promo for a period of time via an httpOnly cookie.
+// The user can dismiss a promo via an httpOnly cookie, either temporarily or once.
 import { invariantResponse } from '@epic-web/invariant'
 import * as cookie from 'cookie'
 import * as React from 'react'
@@ -40,7 +40,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 24 * 7 * 2
-	const MAX_MAX_AGE_SECONDS = 60 * 60 * 24 * 30 // 30 days ceiling
+	const MAX_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 10
 	const rawMaxAge = Number(formData.get('maxAge'))
 	const maxAge =
 		Number.isFinite(rawMaxAge) && rawMaxAge > 0
@@ -62,6 +62,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 type NotificationMessageProps = Parameters<typeof NotificationMessage>[0]
+const ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 10
 
 export function Promotification({
 	children,
@@ -69,27 +70,53 @@ export function Promotification({
 	dismissTimeSeconds = 60 * 60 * 24 * 4,
 	cookieValue,
 	promoEndTime,
+	hidePermanentlyOnInteraction = false,
 	...props
 }: {
 	promoName: string
 	/** maxAge for the cookie */
 	dismissTimeSeconds?: number
 	cookieValue: string | undefined
-	promoEndTime: Date
+	promoEndTime?: Date
+	hidePermanentlyOnInteraction?: boolean
 } & NotificationMessageProps & {
 		queryStringKey?: never
 		autoClose?: never
 		visibleMs?: never
 	} & Required<Pick<NotificationMessageProps, 'children'>>) {
-	const promoEndTimeMs = promoEndTime.getTime()
-	const [isPastEndTime, setIsPastEndTime] = useState(
-		() => promoEndTimeMs <= Date.now(),
+	const promoEndTimeMs = promoEndTime?.getTime() ?? null
+	const [isPastEndTime, setIsPastEndTime] = useState(() =>
+		promoEndTimeMs ? promoEndTimeMs <= Date.now() : false,
 	)
 
 	const [visible, setVisible] = useState(cookieValue !== 'hidden')
 	const fetcher = useFetcher<SerializeFrom<typeof action>>()
 	const showSpinner = useSpinDelay(fetcher.state !== 'idle')
 	const disableLink = fetcher.state !== 'idle' || fetcher.data?.success
+
+	function submitDismiss(maxAge: number) {
+		const formData = new FormData()
+		formData.set('promoName', promoName)
+		formData.set('maxAge', String(maxAge))
+		fetcher.submit(formData, {
+			action: '/resources/promotification',
+			method: 'POST',
+		})
+	}
+
+	function handleInteraction(event: React.MouseEvent<HTMLDivElement>) {
+		if (!hidePermanentlyOnInteraction) return
+		if (fetcher.state !== 'idle' || fetcher.data?.success) return
+		const target = event.target
+		if (!(target instanceof HTMLElement)) return
+		const interactiveElement = target.closest(
+			'a, button, input, select, textarea, [role="button"], [role="link"]',
+		)
+		if (!interactiveElement) return
+		if (interactiveElement.closest('[data-promotification-snooze]')) return
+		setVisible(false)
+		submitDismiss(ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS)
+	}
 
 	useEffect(() => {
 		if (fetcher.data?.success) {
@@ -104,71 +131,78 @@ export function Promotification({
 
 	useEffect(() => {
 		// `promoEndTime` can change if a parent swaps promos; keep this derived.
-		setIsPastEndTime(promoEndTimeMs <= Date.now())
+		setIsPastEndTime(promoEndTimeMs ? promoEndTimeMs <= Date.now() : false)
 	}, [promoEndTimeMs])
 
 	// Key fix for issue #462: compute from absolute end time each tick so we jump
 	// after tab inactivity rather than counting down rapidly to catch up.
-	const timeLeft = useCountdown(promoEndTimeMs, 1000)
+	const timeLeft = useCountdown(promoEndTimeMs ?? 0, 1000)
 	const completed = timeLeft <= 0
 	const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24))
 	const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24)
 	const minutes = Math.floor((timeLeft / 1000 / 60) % 60)
 	const seconds = Math.floor((timeLeft / 1000) % 60)
 
-	if (isPastEndTime) return null
+	if (promoEndTime && isPastEndTime) return null
 
 	return (
 		<NotificationMessage
 			{...props}
 			autoClose={false}
 			visible={visible}
-			onDismiss={() => setVisible(false)}
+			onDismiss={() => {
+				setVisible(false)
+				if (hidePermanentlyOnInteraction) {
+					submitDismiss(ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS)
+				}
+			}}
 		>
-			{children}
-			<div className="mt-4">
-				{completed ? (
-					<div>{`Time's up. The sale is over`}</div>
-				) : (
-					<>
-						<div className="flex flex-wrap gap-3 tabular-nums">
-							<span>
-								{days} day{days === 1 ? '' : 's'}
-							</span>
-							<span>
-								{hours} hour{hours === 1 ? '' : 's'}
-							</span>
-							<span>
-								{minutes} min{minutes === 1 ? '' : 's'}
-							</span>
-							<span>
-								{seconds} sec{seconds === 1 ? '' : 's'}
-							</span>
-						</div>
-						<fetcher.Form action="/resources/promotification" method="POST">
-							<input type="hidden" name="promoName" value={promoName} />
-							<input type="hidden" name="maxAge" value={dismissTimeSeconds} />
-							<div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-								{dismissError ? (
-									<p className="text-sm text-red-500" role="alert">
-										{dismissError}
-									</p>
-								) : null}
-								<LinkButton
-									type="submit"
-									className={`text-inverse flex items-center gap-1 transition-opacity ${
-										showSpinner ? 'opacity-50' : ''
-									}`}
-									disabled={disableLink}
-								>
-									<span>Remind me later</span>
-									<AlarmIcon />
-								</LinkButton>
-								<Spinner size={16} showSpinner={showSpinner} />
-							</div>
-						</fetcher.Form>
-					</>
-				)}
+			<div onClickCapture={handleInteraction}>
+				{children}
+				{promoEndTime ? (
+					<div className="mt-4">
+						{completed ? (
+							<div>{`Time's up. The sale is over`}</div>
+						) : (
+							<>
+								<div className="flex flex-wrap gap-3 tabular-nums">
+									<span>
+										{days} day{days === 1 ? '' : 's'}
+									</span>
+									<span>
+										{hours} hour{hours === 1 ? '' : 's'}
+									</span>
+									<span>
+										{minutes} min{minutes === 1 ? '' : 's'}
+									</span>
+									<span>
+										{seconds} sec{seconds === 1 ? '' : 's'}
+									</span>
+								</div>
+								<div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+									{dismissError ? (
+										<p className="text-sm text-red-500" role="alert">
+											{dismissError}
+										</p>
+									) : null}
+									<LinkButton
+										type="button"
+										className={`text-inverse flex items-center gap-1 transition-opacity ${
+											showSpinner ? 'opacity-50' : ''
+										}`}
+										data-promotification-snooze
+										disabled={disableLink}
+										onClick={() => submitDismiss(dismissTimeSeconds)}
+									>
+										<span>Remind me later</span>
+										<AlarmIcon />
+									</LinkButton>
+									<Spinner size={16} showSpinner={showSpinner} />
+								</div>
+							</>
+						)}
+					</div>
+				) : null}
 			</div>
 		</NotificationMessage>
 	)

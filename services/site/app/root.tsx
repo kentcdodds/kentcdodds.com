@@ -30,11 +30,16 @@ import {
 import { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
+import { ButtonLink } from './components/button.tsx'
 import { ErrorPage, FourHundred, FourOhFour } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
 import { Grimmacing } from './components/kifs.tsx'
 import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
+import {
+	Promotification,
+	getPromoCookieValue,
+} from './routes/resources/promotification.tsx'
 import { Spacer } from './components/spacer.tsx'
 import { TeamCircle } from './components/team-circle.tsx'
 import { getGenericSocialImage, illustrationImages, images } from './images.tsx'
@@ -125,6 +130,8 @@ const PODCAST_LINKS_FALLBACK = {
 	calls: { latestSeasonNumber: null, latestSeasonPath: '/calls' },
 } as const
 
+const SEASON_7_PROMOTIFICATION_NAME = 'chats-with-kent-season-7'
+
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const loaderStart = performance.now()
@@ -172,6 +179,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		latestPodcastSeasonLinks,
+		season7PromotificationCookieValue: getPromoCookieValue({
+			promoName: SEASON_7_PROMOTIFICATION_NAME,
+			request,
+		}),
 		ENV: getPublicEnv(),
 		randomFooterImageKey,
 		requestInfo: {
@@ -384,6 +395,23 @@ function App({
 			</head>
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
+				<Promotification
+					position="top-center"
+					promoName={SEASON_7_PROMOTIFICATION_NAME}
+					cookieValue={data.season7PromotificationCookieValue}
+					hidePermanentlyOnInteraction
+				>
+					<div className="space-y-4">
+						<p className="font-semibold">
+							{`Season 7 of Chats with Kent is out: Become a Product Engineer.`}
+						</p>
+						<div className="flex flex-wrap items-center justify-end gap-3">
+							<ButtonLink to="/chats/07" variant="secondary" size="medium">
+								{`Listen to season 7`}
+							</ButtonLink>
+						</div>
+					</div>
+				</Promotification>
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
 				<AppHotkeys />
