@@ -38,6 +38,8 @@ import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
 import {
 	Promotification,
+	PROMO_HIDDEN_COOKIE_VALUE,
+	createPromoHiddenSetCookieHeader,
 	getPromoCookieValue,
 } from './routes/resources/promotification.tsx'
 import { Spacer } from './components/spacer.tsx'
@@ -54,6 +56,7 @@ import { getPublicEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
 import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
+import { isSeason7ChatsPath } from './utils/season-7-promotification.ts'
 import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
@@ -136,6 +139,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const loaderStart = performance.now()
 	const podcastLinksAbortController = new AbortController()
+	const requestPath = new URL(request.url).pathname
 	const session = await getSession(request)
 	const [
 		user,
@@ -179,16 +183,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		latestPodcastSeasonLinks,
-		season7PromotificationCookieValue: getPromoCookieValue({
-			promoName: SEASON_7_PROMOTIFICATION_NAME,
-			request,
-		}),
+		season7PromotificationCookieValue: isSeason7ChatsPath(requestPath)
+			? PROMO_HIDDEN_COOKIE_VALUE
+			: getPromoCookieValue({
+					promoName: SEASON_7_PROMOTIFICATION_NAME,
+					request,
+			}),
 		ENV: getPublicEnv(),
 		randomFooterImageKey,
 		requestInfo: {
 			hints: getHints(request),
 			origin: getDomainUrl(request),
-			path: new URL(request.url).pathname,
+			path: requestPath,
 			flyPrimaryInstance: primaryInstance,
 			userPrefs: {
 				theme: getTheme(request),
@@ -208,6 +214,20 @@ export async function loader({ request }: Route.LoaderArgs) {
 	await session.getHeaders(headers)
 	await clientSession.getHeaders(headers)
 	await loginInfoSession.getHeaders(headers)
+	if (
+		isSeason7ChatsPath(requestPath) &&
+		getPromoCookieValue({
+			promoName: SEASON_7_PROMOTIFICATION_NAME,
+			request,
+		}) !== PROMO_HIDDEN_COOKIE_VALUE
+	) {
+		headers.append(
+			'Set-Cookie',
+			createPromoHiddenSetCookieHeader({
+				promoName: SEASON_7_PROMOTIFICATION_NAME,
+			}),
+		)
+	}
 	// Add root loader total for production diagnostics (visible in Server-Timing)
 	const rootLoaderTotal = performance.now() - loaderStart
 	const rootTimings = {
