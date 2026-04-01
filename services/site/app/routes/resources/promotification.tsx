@@ -113,6 +113,7 @@ export function Promotification({
 			'a, button, input, select, textarea, [role="button"], [role="link"]',
 		)
 		if (!interactiveElement) return
+		if (interactiveElement.closest('[data-promotification-snooze]')) return
 		setVisible(false)
 		submitDismiss(ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS)
 	}
@@ -189,6 +190,7 @@ export function Promotification({
 										className={`text-inverse flex items-center gap-1 transition-opacity ${
 											showSpinner ? 'opacity-50' : ''
 										}`}
+										data-promotification-snooze
 										disabled={disableLink}
 										onClick={() => submitDismiss(dismissTimeSeconds)}
 									>

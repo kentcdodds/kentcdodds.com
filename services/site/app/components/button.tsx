@@ -98,13 +98,16 @@ function LinkButton({
 function ButtonLink({
 	children,
 	variant = 'primary',
+	size = 'large',
 	className,
 	ref,
 	...rest
 }: React.ComponentPropsWithRef<typeof AnchorOrLink> & ButtonProps) {
 	return (
 		<AnchorOrLink ref={ref} className={getClassName({ className })} {...rest}>
-			<ButtonInner variant={variant}>{children}</ButtonInner>
+			<ButtonInner variant={variant} size={size}>
+				{children}
+			</ButtonInner>
 		</AnchorOrLink>
 	)
 }
