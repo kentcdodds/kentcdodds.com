@@ -415,7 +415,16 @@ function isYouTubeOnlyNode(node: M.PhrasingContent) {
 
 	if (node.type === 'text') {
 		const value = node.value.trim()
-		return Boolean(value) && Boolean(getYouTubeVideoId(value))
+		if (!value) return false
+
+		const youtubeVideoId = findFirstYouTubeVideoIdInText(value)
+		if (!youtubeVideoId) return false
+
+		const textWithoutYouTubeUrls = value.replace(/https?:\/\/\S+/g, (match) => {
+			const candidate = match.replace(/[<>"')\],.;!?]+$/g, '')
+			return getYouTubeVideoId(candidate) ? '' : match
+		})
+		return /^[\s\p{P}]*$/u.test(textWithoutYouTubeUrls)
 	}
 
 	return false
@@ -425,7 +434,7 @@ function isYouTubeOnlyParagraph(node: U.Node): node is M.Paragraph {
 	if (node.type !== 'paragraph') return false
 	const paragraphNode = node as M.Paragraph
 	return paragraphNode.children.every((child: M.PhrasingContent) => {
-		if (child.type === 'text' && !child.value.trim()) return true
+		if (child.type === 'text' && /^[\s\p{P}]*$/u.test(child.value)) return true
 		return isYouTubeOnlyNode(child)
 	})
 }
@@ -454,7 +463,7 @@ async function parseDescriptionMarkdown(
 	}
 
 	const isHTMLInput = descriptionInput.trim().startsWith('<')
-	let youtubeVideoId = findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined
+	let youtubeVideoId: string | undefined
 	let removedYouTubeOnlyParagraphs = false
 
 	const result = await unified()
@@ -477,13 +486,15 @@ async function parseDescriptionMarkdown(
 	if (isHTMLInput && !removedYouTubeOnlyParagraphs) {
 		return {
 			descriptionHTML: descriptionInput,
-			youtubeVideoId,
+			youtubeVideoId:
+				youtubeVideoId ?? findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined,
 		}
 	}
 
 	return {
 		descriptionHTML: result.value.toString(),
-		youtubeVideoId,
+		youtubeVideoId:
+			youtubeVideoId ?? findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined,
 	}
 }
 
@@ -734,4 +745,9 @@ async function getSeasonListItems({
 	return listItemSeasons
 }
 
-export { getSeasonListItems, getCachedSeasons as getSeasons, parseSummaryMarkdown }
+export {
+	getSeasonListItems,
+	getCachedSeasons as getSeasons,
+	parseDescriptionMarkdown,
+	parseSummaryMarkdown,
+}

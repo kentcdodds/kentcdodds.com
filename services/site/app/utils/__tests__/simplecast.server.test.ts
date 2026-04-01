@@ -9,7 +9,10 @@ vi.mock('../cache.server.ts', () => ({
 	}) => await getFreshValue({}),
 }))
 
-import { parseSummaryMarkdown } from '../simplecast.server.ts'
+import {
+	parseDescriptionMarkdown,
+	parseSummaryMarkdown,
+} from '../simplecast.server.ts'
 import { getYouTubeVideoId } from '../youtube-utils.ts'
 
 test('parseSummaryMarkdown extracts youtube video metadata section', async () => {
@@ -34,6 +37,32 @@ Welcome to the episode summary.
 	expect(result.resources).toEqual([
 		{ name: 'Docs', url: 'https://kentcdodds.com' },
 	])
+})
+
+test('parseDescriptionMarkdown strips metadata-only youtube paragraphs with punctuation', async () => {
+	const result = await parseDescriptionMarkdown(
+		`
+Lead-in description.
+
+(https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+		`.trim(),
+	)
+
+	expect(result.youtubeVideoId).toBe('dQw4w9WgXcQ')
+	expect(result.descriptionHTML).toContain('<p>Lead-in description.</p>')
+	expect(result.descriptionHTML).not.toContain('dQw4w9WgXcQ')
+})
+
+test('parseDescriptionMarkdown keeps incidental youtube links in content as fallback', async () => {
+	const result = await parseDescriptionMarkdown(
+		`
+Watch this recap on YouTube: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+		`.trim(),
+	)
+
+	expect(result.youtubeVideoId).toBe('dQw4w9WgXcQ')
+	expect(result.descriptionHTML).toContain('Watch this recap on YouTube:')
+	expect(result.descriptionHTML).toContain('dQw4w9WgXcQ')
 })
 
 test('getYouTubeVideoId supports common youtube url formats', () => {
