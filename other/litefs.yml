@@ -74,7 +74,7 @@ lease:
 
   consul:
     url: '${FLY_CONSUL_URL}'
-    key: 'litefs/${FLY_APP_NAME}_8'
+    key: 'litefs/${FLY_APP_NAME}_9'
 
 exec:
   - cmd: npx prisma@7 migrate deploy
