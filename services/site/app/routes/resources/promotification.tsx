@@ -15,6 +15,10 @@ import { Spinner } from '#app/components/spinner.tsx'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/promotification'
 
+export const PROMO_HIDDEN_COOKIE_VALUE = 'hidden'
+const DEFAULT_PROMO_MAX_AGE_SECONDS = 60 * 60 * 24 * 7 * 2
+const MAX_PROMO_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 10
+
 export function getPromoCookieValue({
 	promoName,
 	request,
@@ -24,6 +28,24 @@ export function getPromoCookieValue({
 }) {
 	const cookies = cookie.parseCookie(request.headers.get('Cookie') || '')
 	return cookies[promoName]
+}
+
+export function createPromoHiddenSetCookieHeader({
+	promoName,
+	maxAge = DEFAULT_PROMO_MAX_AGE_SECONDS,
+}: {
+	promoName: string
+	maxAge?: number
+}) {
+	return cookie.stringifySetCookie({
+		name: promoName,
+		value: PROMO_HIDDEN_COOKIE_VALUE,
+		httpOnly: true,
+		secure: true,
+		sameSite: 'lax',
+		path: '/',
+		maxAge,
+	})
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -39,23 +61,13 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
-	const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 24 * 7 * 2
-	const MAX_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 10
 	const rawMaxAge = Number(formData.get('maxAge'))
 	const maxAge =
 		Number.isFinite(rawMaxAge) && rawMaxAge > 0
-			? Math.min(Math.floor(rawMaxAge), MAX_MAX_AGE_SECONDS)
-			: DEFAULT_MAX_AGE_SECONDS
+			? Math.min(Math.floor(rawMaxAge), MAX_PROMO_MAX_AGE_SECONDS)
+			: DEFAULT_PROMO_MAX_AGE_SECONDS
 
-	const cookieHeader = cookie.stringifySetCookie({
-		name: promoName,
-		value: 'hidden',
-		httpOnly: true,
-		secure: true,
-		sameSite: 'lax',
-		path: '/',
-		maxAge,
-	})
+	const cookieHeader = createPromoHiddenSetCookieHeader({ promoName, maxAge })
 	return json({ success: true } as const, {
 		headers: { 'Set-Cookie': cookieHeader },
 	})
