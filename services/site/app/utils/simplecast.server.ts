@@ -434,9 +434,11 @@ async function parseEpisodeMarkdown(input: string | null | undefined) {
 	if (!input) return ''
 
 	const isHTMLInput = input.trim().startsWith('<')
+	if (isHTMLInput) {
+		return input
+	}
 	const result = await unified()
-		.use(isHTMLInput ? parseHtml : parseMarkdown)
-		.use(isHTMLInput ? rehype2remark : () => {})
+		.use(parseMarkdown)
 		.use(remark2rehype)
 		.use(rehypeStringify)
 		.process(input)
