@@ -18,7 +18,7 @@ import { isAbortError, throwIfAborted } from './abort-utils.server.ts'
 import { cache, cachified } from './cache.server.ts'
 import { getEnv } from './env.server.ts'
 import { fetchJsonWithRetryAfter } from './fetch-json-with-retry-after.server.ts'
-import { markdownToHtml, stripHtml } from './markdown.server.ts'
+import { stripHtml } from './markdown.server.ts'
 import { typedBoolean } from './misc.ts'
 import {
 	simplecastEpisodeSchema,
@@ -26,6 +26,10 @@ import {
 	simplecastSeasonsResponseSchema,
 } from './simplecast-api-schema.server.ts'
 import { type Timings } from './timing.server.ts'
+import {
+	findFirstYouTubeVideoIdInText,
+	getYouTubeVideoId,
+} from './youtube-utils.ts'
 
 function getSimplecastConfig() {
 	const env = getEnv()
@@ -83,6 +87,7 @@ const cwkCachedEpisodeSchema = z
 		transcriptHTML: z.string(),
 		simpleCastId: z.string().min(1),
 		mediaUrl: z.string().min(1),
+		youtubeVideoId: z.string().min(1).optional(),
 	})
 	.passthrough()
 
@@ -306,20 +311,11 @@ async function getEpisode(
 
 	const keywords = keywordsData?.collection?.map(({ value }) => value) ?? []
 	const [
+		{ descriptionHTML, youtubeVideoId: descriptionYouTubeVideoId },
+		{ summaryHTML, homeworkHTMLs, resources, guests, youtubeVideoId },
 		transcriptHTML,
-		descriptionHTML,
-		{ summaryHTML, homeworkHTMLs, resources, guests },
 	] = await Promise.all([
-		transcriptMarkdown
-			? transcriptMarkdown.trim().startsWith('<')
-				? transcriptMarkdown
-				: markdownToHtml(transcriptMarkdown)
-			: '',
-		descriptionMarkdown
-			? descriptionMarkdown.trim().startsWith('<')
-				? descriptionMarkdown
-				: markdownToHtml(descriptionMarkdown)
-			: '',
+		parseDescriptionMarkdown(descriptionMarkdown),
 		summaryMarkdown
 			? parseSummaryMarkdown(summaryMarkdown, `${id}-${slug}`)
 			: {
@@ -327,7 +323,9 @@ async function getEpisode(
 					homeworkHTMLs: [],
 					resources: [],
 					guests: [],
+					youtubeVideoId: null,
 				},
+		parseEpisodeMarkdown(transcriptMarkdown),
 	])
 
 	// Simplecast exposes both published and updated timestamps; fall back to
@@ -355,6 +353,7 @@ async function getEpisode(
 		},
 		simpleCastId: episodeId,
 		mediaUrl,
+		youtubeVideoId: youtubeVideoId ?? descriptionYouTubeVideoId ?? undefined,
 	}
 	return cwkEpisode
 }
@@ -387,16 +386,132 @@ function autoAffiliates() {
 	}
 }
 
+function findYouTubeVideoIdInNodes(nodes: Array<U.Node>) {
+	let youtubeVideoId: string | null = null
+
+	for (const node of nodes) {
+		visit(node, 'link', (link: M.Link) => {
+			if (youtubeVideoId) return
+			youtubeVideoId = getYouTubeVideoId(link.url)
+		})
+
+		if (youtubeVideoId) break
+
+		visit(node, 'text', (text: M.Text) => {
+			if (youtubeVideoId) return
+			youtubeVideoId = findFirstYouTubeVideoIdInText(text.value)
+		})
+
+		if (youtubeVideoId) break
+	}
+
+	return youtubeVideoId
+}
+
+function isYouTubeOnlyNode(node: M.PhrasingContent) {
+	if (node.type === 'link') {
+		return Boolean(getYouTubeVideoId(node.url))
+	}
+
+	if (node.type === 'text') {
+		const value = node.value.trim()
+		if (!value) return false
+
+		const youtubeVideoId = findFirstYouTubeVideoIdInText(value)
+		if (!youtubeVideoId) return false
+
+		const textWithoutYouTubeUrls = value.replace(/https?:\/\/\S+/g, (match) => {
+			const candidate = match.replace(/[<>"')\],.;!?]+$/g, '')
+			return getYouTubeVideoId(candidate) ? '' : match
+		})
+		return /^[\s\p{P}]*$/u.test(textWithoutYouTubeUrls)
+	}
+
+	return false
+}
+
+function isYouTubeOnlyParagraph(node: U.Node): node is M.Paragraph {
+	if (node.type !== 'paragraph') return false
+	const paragraphNode = node as M.Paragraph
+	return paragraphNode.children.every((child: M.PhrasingContent) => {
+		if (child.type === 'text' && /^[\s\p{P}]*$/u.test(child.value)) return true
+		return isYouTubeOnlyNode(child)
+	})
+}
+
+async function parseEpisodeMarkdown(input: string | null | undefined) {
+	if (!input) return ''
+
+	const isHTMLInput = input.trim().startsWith('<')
+	if (isHTMLInput) {
+		return input
+	}
+	const result = await unified()
+		.use(parseMarkdown)
+		.use(remark2rehype)
+		.use(rehypeStringify)
+		.process(input)
+
+	return result.value.toString()
+}
+
+async function parseDescriptionMarkdown(
+	descriptionInput: string | null | undefined,
+): Promise<Pick<CWKEpisode, 'descriptionHTML' | 'youtubeVideoId'>> {
+	if (!descriptionInput) {
+		return { descriptionHTML: '', youtubeVideoId: undefined }
+	}
+
+	const isHTMLInput = descriptionInput.trim().startsWith('<')
+	let youtubeVideoId: string | undefined
+	let removedYouTubeOnlyParagraphs = false
+
+	const result = await unified()
+		.use(isHTMLInput ? parseHtml : parseMarkdown)
+		.use(isHTMLInput ? rehype2remark : () => {})
+		.use(function extractDescriptionMetadata() {
+			return function transformer(tree: M.Root) {
+				tree.children = tree.children.filter((child) => {
+					if (!isYouTubeOnlyParagraph(child)) return true
+					removedYouTubeOnlyParagraphs = true
+					youtubeVideoId ??= findYouTubeVideoIdInNodes([child]) ?? undefined
+					return false
+				})
+			}
+		})
+		.use(remark2rehype)
+		.use(rehypeStringify)
+		.process(descriptionInput)
+
+	if (isHTMLInput && !removedYouTubeOnlyParagraphs) {
+		return {
+			descriptionHTML: descriptionInput,
+			youtubeVideoId:
+				youtubeVideoId ?? findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined,
+		}
+	}
+
+	return {
+		descriptionHTML: result.value.toString(),
+		youtubeVideoId:
+			youtubeVideoId ?? findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined,
+	}
+}
+
 async function parseSummaryMarkdown(
 	summaryInput: string,
 	errorKey: string,
 ): Promise<
-	Pick<CWKEpisode, 'summaryHTML' | 'resources' | 'guests' | 'homeworkHTMLs'>
+	Pick<
+		CWKEpisode,
+		'summaryHTML' | 'resources' | 'guests' | 'homeworkHTMLs' | 'youtubeVideoId'
+	>
 > {
 	const isHTMLInput = summaryInput.trim().startsWith('<')
 	const resources: CWKEpisode['resources'] = []
 	const guests: CWKEpisode['guests'] = []
 	const homeworkHTMLs: CWKEpisode['homeworkHTMLs'] = []
+	let youtubeVideoId: string | null = null
 
 	const result = await unified()
 		.use(isHTMLInput ? parseHtml : parseMarkdown)
@@ -472,6 +587,11 @@ async function parseSummaryMarkdown(
 								})
 							})
 						}
+					}
+					if (/^(video|youtube|youtube video)$/i.test(sectionTitle)) {
+						remove()
+						youtubeVideoId ??= findYouTubeVideoIdInNodes(children)
+						continue
 					}
 					if (/homework/i.test(sectionTitle)) {
 						remove()
@@ -584,6 +704,7 @@ async function parseSummaryMarkdown(
 		homeworkHTMLs,
 		resources,
 		guests,
+		youtubeVideoId: youtubeVideoId ?? undefined,
 	}
 }
 
@@ -624,4 +745,9 @@ async function getSeasonListItems({
 	return listItemSeasons
 }
 
-export { getSeasonListItems, getCachedSeasons as getSeasons }
+export {
+	getSeasonListItems,
+	getCachedSeasons as getSeasons,
+	parseDescriptionMarkdown,
+	parseSummaryMarkdown,
+}
