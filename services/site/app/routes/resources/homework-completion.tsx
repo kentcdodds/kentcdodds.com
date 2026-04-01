@@ -273,9 +273,11 @@ export const headers: HeadersFunction = ({
 			errorHeaders,
 		}),
 	)
-	for (const [headerName, headerValue] of loaderHeaders.entries()) {
-		if (headerName.toLowerCase() === 'set-cookie') {
-			headers.append('Set-Cookie', headerValue)
+	for (const sourceHeaders of [loaderHeaders, actionHeaders]) {
+		for (const [headerName, headerValue] of sourceHeaders.entries()) {
+			if (headerName.toLowerCase() === 'set-cookie') {
+				headers.append('Set-Cookie', headerValue)
+			}
 		}
 	}
 	return headers
