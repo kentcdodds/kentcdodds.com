@@ -294,7 +294,7 @@ export async function action({ request }: Route.ActionArgs) {
 				})
 			}
 		} catch (error) {
-			console.error('Failed to migrate postReads on password reset', error)
+			console.error('Failed to migrate client data on password reset', error)
 		}
 		clientSession.setUser({})
 		await clientSession.getHeaders(headers)

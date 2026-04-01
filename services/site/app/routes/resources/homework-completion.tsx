@@ -36,6 +36,15 @@ function isHomeworkCompletionResponse(
 	)
 }
 
+function isHomeworkCompletionSuccessResponse(
+	data: unknown,
+): data is HomeworkCompletionResponse & { error?: undefined } {
+	return (
+		isHomeworkCompletionResponse(data) &&
+		(!('error' in data) || data.error === undefined)
+	)
+}
+
 export function HomeworkCompletionToggle({
 	seasonNumber,
 	episodeNumber,
@@ -63,7 +72,7 @@ export function HomeworkCompletionToggle({
 			: fetcher.formData?.get('completed') === 'false'
 				? false
 				: undefined
-	const fetchedCompleted = isHomeworkCompletionResponse(fetcher.data)
+	const fetchedCompleted = isHomeworkCompletionSuccessResponse(fetcher.data)
 		? fetcher.data.completed
 		: undefined
 	const isCompleted =
@@ -276,6 +285,26 @@ export async function loader({ request }: Route.LoaderArgs) {
 	)
 }
 
-export const headers: HeadersFunction = reuseUsefulLoaderHeaders
+export const headers: HeadersFunction = ({
+	loaderHeaders,
+	parentHeaders,
+	actionHeaders,
+	errorHeaders,
+}) => {
+	const headers = new Headers(
+		reuseUsefulLoaderHeaders({
+			loaderHeaders,
+			parentHeaders,
+			actionHeaders,
+			errorHeaders,
+		}),
+	)
+	for (const [headerName, headerValue] of loaderHeaders.entries()) {
+		if (headerName.toLowerCase() === 'set-cookie') {
+			headers.append('Set-Cookie', headerValue)
+		}
+	}
+	return headers
+}
 
 export { homeworkCompletionResourceRoute }

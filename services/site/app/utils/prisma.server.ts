@@ -288,18 +288,18 @@ async function migrateHomeworkCompletionsToUser({
 	userId: string
 	clientId: string
 }) {
-	const completions = await prisma.homeworkCompletion.findMany({
-		where: { clientId },
-		select: {
-			id: true,
-			seasonNumber: true,
-			episodeNumber: true,
-			itemIndex: true,
-		},
-	})
-	if (completions.length === 0) return 0
+	return prisma.$transaction(async (tx) => {
+		const completions = await tx.homeworkCompletion.findMany({
+			where: { clientId },
+			select: {
+				id: true,
+				seasonNumber: true,
+				episodeNumber: true,
+				itemIndex: true,
+			},
+		})
+		if (completions.length === 0) return 0
 
-	await prisma.$transaction(async (tx) => {
 		for (const completion of completions) {
 			try {
 				await tx.homeworkCompletion.upsert({
@@ -332,9 +332,8 @@ async function migrateHomeworkCompletionsToUser({
 		}
 
 		await tx.homeworkCompletion.deleteMany({ where: { clientId } })
+		return completions.length
 	})
-
-	return completions.length
 }
 
 export {

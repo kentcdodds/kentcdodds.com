@@ -187,22 +187,19 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		episodeNumber: episode.episodeNumber,
 		...(user ? { userId: user.id } : clientId ? { clientId } : {}),
 	})
-	const homeworkItems = episode.homeworkHTMLs.map((homeworkHTML, itemIndex) => ({
-		id: getEpisodeHomeworkContentId({
+	const homeworkItems = episode.homeworkHTMLs.map((homeworkHTML, itemIndex) => {
+		const id = getEpisodeHomeworkContentId({
 			seasonNumber: episode.seasonNumber,
 			episodeNumber: episode.episodeNumber,
 			itemIndex,
-		}),
-		itemIndex,
-		homeworkHTML,
-		isCompleted: completedHomeworkIds.has(
-			getEpisodeHomeworkContentId({
-				seasonNumber: episode.seasonNumber,
-				episodeNumber: episode.episodeNumber,
-				itemIndex,
-			}),
-		),
-	}))
+		})
+		return {
+			id,
+			itemIndex,
+			homeworkHTML,
+			isCompleted: completedHomeworkIds.has(id),
+		}
+	})
 
 	return json(
 		{

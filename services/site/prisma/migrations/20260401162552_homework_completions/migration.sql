@@ -8,7 +8,8 @@ CREATE TABLE "HomeworkCompletion" (
     "seasonNumber" INTEGER NOT NULL,
     "episodeNumber" INTEGER NOT NULL,
     "itemIndex" INTEGER NOT NULL,
-    CONSTRAINT "HomeworkCompletion_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "HomeworkCompletion_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "HomeworkCompletion_owner_check" CHECK ("userId" IS NOT NULL OR "clientId" IS NOT NULL)
 );
 
 -- CreateIndex

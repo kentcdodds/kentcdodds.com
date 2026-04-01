@@ -148,3 +148,37 @@ test('action stores completion for anonymous client', async () => {
 		completed: true,
 	})
 })
+
+test('action stores completion for authenticated user', async () => {
+	vi.clearAllMocks()
+	sessionServerMocks.getUser.mockResolvedValue({ id: 'user-1' })
+	clientServerMocks.getClientSession.mockResolvedValue({
+		getClientId: vi.fn().mockReturnValue('client-1'),
+		getHeaders: vi.fn().mockResolvedValue(new Headers()),
+	})
+	prismaServerMocks.setEpisodeHomeworkCompletion.mockResolvedValue(true)
+
+	const formData = new FormData()
+	formData.set('contentId', '7:12:1')
+	formData.set('completed', 'true')
+
+	const request = new Request('http://localhost/resources/homework-completion', {
+		method: 'POST',
+		body: formData,
+	})
+	const result = (await action({ request } as any)) as {
+		type?: string
+		data?: unknown
+		init?: ResponseInit | null
+	}
+
+	expect(result.type).toBe('DataWithResponseInit')
+	expect(result.data).toEqual({ completed: true, authenticated: true })
+	expect(prismaServerMocks.setEpisodeHomeworkCompletion).toHaveBeenCalledWith({
+		seasonNumber: 7,
+		episodeNumber: 12,
+		itemIndex: 1,
+		userId: 'user-1',
+		completed: true,
+	})
+})
