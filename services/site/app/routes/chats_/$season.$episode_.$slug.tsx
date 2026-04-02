@@ -200,10 +200,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const listenedEpisodeIds = await getEpisodePodcastListens({
 		userId: user?.id,
 	})
-	const episodeListenContentId = getEpisodeListenContentId({
-		seasonNumber: episode.seasonNumber,
-		episodeNumber: episode.episodeNumber,
-	})
 	const completedHomeworkIds = await getEpisodeHomeworkCompletions({
 		seasonNumber: episode.seasonNumber,
 		episodeNumber: episode.episodeNumber,
@@ -250,8 +246,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			),
 			episode,
 			homeworkItems,
-			isListened: listenedEpisodeIds.has(episodeListenContentId),
-			listenContentId: episodeListenContentId,
+			isListened: listenedEpisodeIds.has(
+				getEpisodeListenContentId({
+					seasonNumber: episode.seasonNumber,
+					episodeNumber: episode.episodeNumber,
+				}),
+			),
 			listenRankings,
 			totalListens: formatNumber(totalListens),
 			leadingTeam: getRankingLeader(listenRankings)?.team ?? null,

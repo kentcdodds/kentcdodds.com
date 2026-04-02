@@ -553,7 +553,10 @@ async function getTotalPodcastEpisodeListens({
 		timings,
 		checkValue: (value: unknown) => typeof value === 'number',
 		getFreshValue: async () => {
-			const listenCounts = await getPodcastEpisodeListenCounts({ request, timings })
+			const listenCounts = await getPodcastEpisodeListenCounts({
+				request,
+				timings,
+			})
 			if (seasonNumber && episodeNumber) {
 				return listenCounts[`${seasonNumber}:${episodeNumber}`] ?? 0
 			}
@@ -644,6 +647,95 @@ async function getPodcastListenRankings({
 	)
 }
 
+async function getPodcastListenLeadersBySeason({
+	request,
+	seasonNumber,
+	forceFresh,
+	timings,
+}: {
+	request?: Request
+	seasonNumber: number
+	forceFresh?: boolean
+	timings?: Timings
+}) {
+	const key = `podcast:${seasonNumber}:episode-leaders`
+	return cachified({
+		key,
+		cache,
+		request,
+		timings,
+		ttl: 1000 * 60 * 60 * 24 * 7,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		forceFresh,
+		checkValue: (value: unknown) =>
+			value &&
+			typeof value === 'object' &&
+			!Array.isArray(value) &&
+			Object.values(value).every(
+				(team) => team === null || teams.includes(team as Team),
+			),
+		getFreshValue: async () => {
+			const [activeMembersEntries, recentListensEntries] = await Promise.all([
+				Promise.all(
+					teams.map(async (team) => [
+						team,
+						await getPodcastActiveMembers({ team, timings }),
+					]),
+				),
+				Promise.all(
+					teams.map(async (team) => [
+						team,
+						await getRecentPodcastListensByEpisode({
+							seasonNumber,
+							team,
+							timings,
+						}),
+					]),
+				),
+			])
+			const activeMembersByTeam = Object.fromEntries(
+				activeMembersEntries,
+			) as Record<Team, number>
+			const recentListensByTeam = Object.fromEntries(
+				recentListensEntries,
+			) as Record<Team, Record<number, number>>
+
+			const episodeNumbers = new Set<number>()
+			for (const team of teams) {
+				for (const episodeNumber of Object.keys(
+					recentListensByTeam[team] ?? {},
+				)) {
+					episodeNumbers.add(Number(episodeNumber))
+				}
+			}
+
+			const leadersByEpisode: Record<string, Team | null> = {}
+			for (const episodeNumber of episodeNumbers) {
+				const rankings = teams.map((team) => {
+					const activeMembers = activeMembersByTeam[team] ?? 0
+					const recentListens = recentListensByTeam[team]?.[episodeNumber] ?? 0
+					const ranking = activeMembers
+						? Number((recentListens / activeMembers).toFixed(4))
+						: 0
+					return { team, ranking }
+				})
+				const maxRanking = Math.max(...rankings.map((entry) => entry.ranking))
+				if (maxRanking <= 0) {
+					leadersByEpisode[String(episodeNumber)] = null
+					continue
+				}
+				const tiedLeaders = rankings.filter(
+					(entry) => entry.ranking === maxRanking,
+				)
+				const chosenLeader =
+					tiedLeaders[Math.floor(Math.random() * tiedLeaders.length)]
+				leadersByEpisode[String(episodeNumber)] = chosenLeader?.team ?? null
+			}
+			return leadersByEpisode
+		},
+	})
+}
+
 async function getRecentPodcastListens({
 	seasonNumber,
 	episodeNumber,
@@ -659,7 +751,9 @@ async function getRecentPodcastListens({
 	const count = await time(
 		prisma.podcastEpisodeListen.count({
 			where: {
-				...(seasonNumber && episodeNumber ? { seasonNumber, episodeNumber } : {}),
+				...(seasonNumber && episodeNumber
+					? { seasonNumber, episodeNumber }
+					: {}),
 				createdAt: { gt: withinTheLastSixMonths },
 				user: { team },
 			},
@@ -673,6 +767,37 @@ async function getRecentPodcastListens({
 		},
 	)
 	return count
+}
+
+async function getRecentPodcastListensByEpisode({
+	seasonNumber,
+	team,
+	timings,
+}: {
+	seasonNumber: number
+	team: Team
+	timings?: Timings
+}) {
+	const withinTheLastSixMonths = subMonths(new Date(), 6)
+	const rows = await time(
+		prisma.podcastEpisodeListen.groupBy({
+			by: ['episodeNumber'],
+			where: {
+				seasonNumber,
+				createdAt: { gt: withinTheLastSixMonths },
+				user: { team },
+			},
+			_count: { _all: true },
+		}),
+		{
+			timings,
+			type: 'getRecentPodcastListensByEpisode',
+			desc: `Getting podcast listens of season ${seasonNumber} by ${team} within the last 6 months`,
+		},
+	)
+	return Object.fromEntries(
+		rows.map((row) => [row.episodeNumber, row._count._all]),
+	)
 }
 
 async function getPodcastActiveMembers({
@@ -825,6 +950,7 @@ export {
 	getSlugReadsByUser,
 	getBlogPostReadCounts,
 	getPodcastEpisodeListenCounts,
+	getPodcastListenLeadersBySeason,
 	getPodcastListenRankings,
 	getTotalPodcastEpisodeListens,
 	getTotalPostReads,

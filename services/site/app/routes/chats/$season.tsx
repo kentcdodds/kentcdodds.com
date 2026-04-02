@@ -12,7 +12,7 @@ import { TriangleIcon } from '#app/components/icons.tsx'
 import { MissingSomething } from '#app/components/kifs.tsx'
 import { H3, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle, type Team } from '#app/types.ts'
-import { getPodcastListenRankings } from '#app/utils/blog.server.ts'
+import { getPodcastListenLeadersBySeason } from '#app/utils/blog.server.ts'
 import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
 import { orderBy } from '#app/utils/cjs/lodash.ts'
 import {
@@ -23,7 +23,6 @@ import {
 } from '#app/utils/misc-react.tsx'
 import { useChatsEpisodeUIState } from '#app/utils/providers.tsx'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
-import { getRankingLeader } from '#app/utils/team-rankings.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/$season'
 
@@ -56,22 +55,11 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		throw new Response(`No season for ${params.season}`, { status: 404 })
 	}
 
-	const listenRankingsByEpisode = Object.fromEntries(
-		await Promise.all(
-			season.episodes.map(async (episode) => {
-				const rankings = await getPodcastListenRankings({
-					request,
-					seasonNumber: episode.seasonNumber,
-					episodeNumber: episode.episodeNumber,
-					timings,
-				})
-				return [
-					String(episode.episodeNumber),
-					getRankingLeader(rankings)?.team ?? null,
-				] as const
-			}),
-		),
-	)
+	const listenRankingsByEpisode = await getPodcastListenLeadersBySeason({
+		request,
+		seasonNumber: season.seasonNumber,
+		timings,
+	})
 
 	return json(
 		{ season, listenRankingsByEpisode },
