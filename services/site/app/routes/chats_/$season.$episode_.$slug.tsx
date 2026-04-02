@@ -274,36 +274,6 @@ export const links: LinksFunction = () => {
 	return youTubeEmbedLinks()
 }
 
-function EpisodeListenSummary({
-	episodeTitle,
-	leadingTeam,
-}: {
-	episodeTitle: string
-	leadingTeam: string | null
-}) {
-	if (!leadingTeam) {
-		return (
-			<Paragraph prose={false} className="text-secondary mt-4">
-				No team has claimed this episode yet. Be the first to self-report that
-				you listened.
-			</Paragraph>
-		)
-	}
-
-	return (
-		<Paragraph prose={false} className="text-secondary mt-4">
-			The{' '}
-			<strong
-				className={`text-team-current set-color-team-current-${leadingTeam.toLowerCase()}`}
-			>
-				{leadingTeam.toLowerCase()}
-			</strong>{' '}
-			team currently owns this episode. Self-reporting that you listened to{' '}
-			<strong>{episodeTitle}</strong> affects the ranking.
-		</Paragraph>
-	)
-}
-
 function Homework({
 	homeworkItems,
 	seasonNumber,
@@ -651,10 +621,6 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 							{formatDate(episode.publishedAt)}
 						</time>
 					</H6>
-					<EpisodeListenSummary
-						episodeTitle={episode.title}
-						leadingTeam={leadingTeam}
-					/>
 				</div>
 			</Grid>
 
