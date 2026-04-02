@@ -17,11 +17,16 @@ reference:
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
 | Dev server      | `npm run dev` (starts on port 3000 with `MOCKS=true`)                             |
+| Format (staged) | `npm run format:staged`                                                           |
 | Lint            | `npm run lint`                                                                    |
 | Lint (all)      | `npm run lint:all`                                                                |
 | Typecheck       | `npm run typecheck`                                                               |
 | Typecheck (all) | `npm run typecheck:all`                                                           |
+| Build (all)     | `npm run build:all`                                                               |
 | Unit tests      | `npm run test` (runs backend + browser-mode tests)                                |
+| Tests (all)     | `npm run test:all`                                                                |
+| Pre-commit gate | `npm run precommit:verify`                                                        |
+| Pre-push gate   | `npm run prepush:verify`                                                          |
 | Backend tests   | `npm run test:backend`                                                            |
 | Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
 | E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
@@ -34,6 +39,9 @@ reference:
   values are sufficient.
 - This repo uses npm workspaces. Install dependencies from the repository root,
   and run worker/package scripts with `npm run <script> --workspace <name>`.
+- `npm install` runs `prepare`, which installs Husky hooks. Pre-commit formats
+  staged files with `lint-staged` and then runs workspace lint, typecheck, and
+  build checks. Pre-push runs workspace tests.
 - The main site lives in `services/site`. Root `npm run dev`, `npm run build`,
   `npm run test`, and similar commands forward to that workspace.
 - Search worker relevance thresholds (`M`, `R`, `noCloseMatches`): see

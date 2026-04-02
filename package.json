@@ -19,11 +19,14 @@
     "dev": "npm run dev --workspace kentcdodds.com",
     "start": "npm run start --workspace kentcdodds.com",
     "start:mocks": "npm run start:mocks --workspace kentcdodds.com",
+    "prepare": "husky",
     "build": "npm run build --workspace kentcdodds.com",
+    "build:all": "nx run-many -t build",
     "predeploy:healthcheck": "npm run predeploy:healthcheck --workspace kentcdodds.com",
     "prime-cache:prod": "npm run prime-cache:prod --workspace kentcdodds.com",
     "prime-cache:mocks": "npm run prime-cache:mocks --workspace kentcdodds.com",
     "test": "npm run test --workspace kentcdodds.com",
+    "test:all": "nx run-many -t test",
     "test:backend": "npm run test:backend --workspace kentcdodds.com",
     "test:backend:watch": "npm run test:backend:watch --workspace kentcdodds.com",
     "test:browser": "npm run test:browser --workspace kentcdodds.com",
@@ -34,14 +37,19 @@
     "lint": "npm run lint --workspace kentcdodds.com",
     "lint:all": "nx run-many -t lint",
     "format": "npm run format --workspace kentcdodds.com",
+    "format:staged": "lint-staged",
     "typecheck": "npm run typecheck --workspace kentcdodds.com",
     "typecheck:all": "nx run-many -t typecheck",
+    "precommit:verify": "npm run format:staged && npm run lint:all && npm run typecheck:all && npm run build:all",
+    "prepush:verify": "npm run test:all",
     "validate": "npm run validate --workspace kentcdodds.com",
     "setup": "npm install && npm run setup --workspace kentcdodds.com",
     "nx:graph": "nx graph"
   },
   "devDependencies": {
     "@epic-web/config": "^2.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "nx": "^22.5.4"
   }
 }
