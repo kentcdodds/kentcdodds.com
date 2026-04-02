@@ -37,6 +37,10 @@ export function parseEpisodeFavoriteContentId(contentId: string) {
 	return { seasonNumber, episodeNumber }
 }
 
+export const getEpisodeListenContentId = getEpisodeFavoriteContentId
+
+export const parseEpisodeListenContentId = parseEpisodeFavoriteContentId
+
 /**
  * Canonical identifier for one homework item within a Chats with Kent episode.
  * Stored without leading zeroes so we have exactly one representation.

@@ -543,7 +543,7 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 				<div className="relative col-span-full h-20">
 					<div className="absolute">
 						<TeamStats
-							totalReads={data.totalReads}
+							totalCount={data.totalReads}
 							rankings={data.readRankings}
 							pull="left"
 							direction="down"

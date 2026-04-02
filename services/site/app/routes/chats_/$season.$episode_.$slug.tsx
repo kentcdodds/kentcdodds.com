@@ -30,16 +30,22 @@ import {
 } from '#app/components/icons.tsx'
 import { FeaturedSection } from '#app/components/sections/featured-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
+import { TeamStats } from '#app/components/team-stats.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getSocialImageWithPreTitle } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import { HomeworkCompletionToggle } from '#app/routes/resources/homework-completion.tsx'
+import { PodcastListenToggle } from '#app/routes/resources/podcast-listen.tsx'
 import {
 	type CWKEpisode,
 	type CWKListItem,
 	type KCDHandle,
 } from '#app/types.ts'
+import {
+	getPodcastListenRankings,
+	getTotalPodcastEpisodeListens,
+} from '#app/utils/blog.server.ts'
 import {
 	getCWKEpisodePath,
 	getFeaturedEpisode,
@@ -47,6 +53,7 @@ import {
 import {
 	getEpisodeFavoriteContentId,
 	getEpisodeHomeworkContentId,
+	getEpisodeListenContentId,
 } from '#app/utils/favorites.ts'
 import {
 	formatDate,
@@ -59,15 +66,16 @@ import {
 	typedBoolean,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
-import { getClientSession } from '#app/utils/client.server.ts'
 import {
 	getEpisodeHomeworkCompletions,
+	getEpisodePodcastListens,
 	prisma,
 } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
+import { getRankingLeader } from '#app/utils/team-rankings.ts'
 import { Themed } from '#app/utils/theme.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -153,8 +161,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		getUser(request, { timings }),
 		getSeasons({ request, timings }),
 	])
-	const clientSession = await getClientSession(request, user)
-	const clientId = clientSession.getClientId()
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`Season ${seasonNumber} not found`, { status: 404 })
@@ -187,11 +193,39 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				select: { id: true },
 			})
 		: null
-	const completedHomeworkIds = await getEpisodeHomeworkCompletions({
+	const listenedEpisodeIds = await getEpisodePodcastListens({
+		userId: user?.id,
+	})
+	const episodeListenContentId = getEpisodeListenContentId({
 		seasonNumber: episode.seasonNumber,
 		episodeNumber: episode.episodeNumber,
-		...(user ? { userId: user.id } : clientId ? { clientId } : {}),
 	})
+	const completedHomeworkIds = await getEpisodeHomeworkCompletions(
+		user
+			? {
+					seasonNumber: episode.seasonNumber,
+					episodeNumber: episode.episodeNumber,
+					userId: user.id,
+				}
+			: {
+					seasonNumber: episode.seasonNumber,
+					episodeNumber: episode.episodeNumber,
+				},
+	)
+	const [listenRankings, totalListens] = await Promise.all([
+		getPodcastListenRankings({
+			request,
+			seasonNumber: episode.seasonNumber,
+			episodeNumber: episode.episodeNumber,
+			timings,
+		}),
+		getTotalPodcastEpisodeListens({
+			request,
+			seasonNumber: episode.seasonNumber,
+			episodeNumber: episode.episodeNumber,
+			timings,
+		}),
+	])
 	const homeworkItems = episode.homeworkHTMLs.map((homeworkHTML, itemIndex) => {
 		const id = getEpisodeHomeworkContentId({
 			seasonNumber: episode.seasonNumber,
@@ -219,6 +253,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			),
 			episode,
 			homeworkItems,
+			isListened: listenedEpisodeIds.has(episodeListenContentId),
+			listenContentId: episodeListenContentId,
+			listenRankings,
+			totalListens: String(totalListens),
+			leadingTeam: getRankingLeader(listenRankings)?.team ?? null,
 			favoriteContentType,
 			favoriteContentId,
 			isFavorite: Boolean(favorite),
@@ -237,6 +276,36 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const links: LinksFunction = () => {
 	return youTubeEmbedLinks()
+}
+
+function EpisodeListenSummary({
+	episodeTitle,
+	leadingTeam,
+}: {
+	episodeTitle: string
+	leadingTeam: string | null
+}) {
+	if (!leadingTeam) {
+		return (
+			<Paragraph prose={false} className="text-secondary mt-4">
+				No team has claimed this episode yet. Be the first to self-report that
+				you listened.
+			</Paragraph>
+		)
+	}
+
+	return (
+		<Paragraph prose={false} className="text-secondary mt-4">
+			The{' '}
+			<strong
+				className={`text-team-current set-color-team-current-${leadingTeam.toLowerCase()}`}
+			>
+				{leadingTeam.toLowerCase()}
+			</strong>{' '}
+			team currently owns this episode. Self-reporting listens to{' '}
+			<strong>{episodeTitle}</strong> affects the ranking.
+		</Paragraph>
+	)
 }
 
 function Homework({
@@ -545,6 +614,10 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 		featured,
 		nextEpisode,
 		prevEpisode,
+		isListened,
+		listenRankings,
+		totalListens,
+		leadingTeam,
 		favoriteContentType,
 		favoriteContentId,
 		isFavorite,
@@ -552,14 +625,24 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 	const permalink = `${requestInfo.origin}${getCWKEpisodePath(episode)}`
 
 	return (
-		<>
+		<div
+			className={
+				leadingTeam
+					? `set-color-team-current-${leadingTeam.toLowerCase()}`
+					: undefined
+			}
+		>
 			<Grid className="mt-24 mb-10 lg:mb-24">
-				<BackLink
-					to="/chats"
-					className="col-span-full lg:col-span-8 lg:col-start-3"
-				>
-					Back to overview
-				</BackLink>
+				<div className="col-span-full flex justify-between gap-6 lg:col-span-8 lg:col-start-3">
+					<BackLink to="/chats">Back to overview</BackLink>
+					<TeamStats
+						totalCount={totalListens}
+						rankings={listenRankings}
+						direction="down"
+						pull="right"
+						totalLabel="listens"
+					/>
+				</div>
 			</Grid>
 
 			<Grid as="header" className="mb-12">
@@ -571,6 +654,10 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 							{formatDate(episode.publishedAt)}
 						</time>
 					</H6>
+					<EpisodeListenSummary
+						episodeTitle={episode.title}
+						leadingTeam={leadingTeam}
+					/>
 				</div>
 			</Grid>
 
@@ -636,12 +723,21 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 
 				<div className="col-span-full lg:col-span-8 lg:col-start-3">
 					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-						<FavoriteToggle
-							contentType={favoriteContentType}
-							contentId={favoriteContentId}
-							initialIsFavorite={isFavorite}
-							label="Favorite episode"
-						/>
+						<div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+							<PodcastListenToggle
+								contentId={getEpisodeListenContentId({
+									seasonNumber: episode.seasonNumber,
+									episodeNumber: episode.episodeNumber,
+								})}
+								initialListened={isListened}
+							/>
+							<FavoriteToggle
+								contentType={favoriteContentType}
+								contentId={favoriteContentId}
+								initialIsFavorite={isFavorite}
+								label="Favorite episode"
+							/>
+						</div>
 						<IconLink
 							className="flex gap-2"
 							target="_blank"
@@ -719,7 +815,7 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 					imageAlt={listify(featured.guests.map((g) => g.name))}
 				/>
 			) : null}
-		</>
+		</div>
 	)
 }
 

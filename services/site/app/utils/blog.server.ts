@@ -11,6 +11,7 @@ import { getBlogMdxListItems } from './mdx.server.ts'
 import { getDomainUrl, getOptionalTeam, teams, typedBoolean } from './misc.ts'
 import { prisma } from './prisma.server.ts'
 import { getUser } from './session.server.ts'
+import { type TeamRanking as SharedTeamRanking } from './team-rankings.ts'
 import { teamEmoji } from './team-provider.tsx'
 import { time, type Timings } from './timing.server.ts'
 
@@ -308,10 +309,10 @@ async function getBlogReadRankings({
 			const rawRankingData = await Promise.all(
 				teams.map(async function getRankingsForTeam(team): Promise<{
 					team: Team
-					totalReads: number
+					totalCount: number
 					ranking: number
 				}> {
-					const totalReads = await prisma.postRead.count({
+					const totalCount = await prisma.postRead.count({
 						where: {
 							postSlug: slug,
 							user: { team },
@@ -323,17 +324,17 @@ async function getBlogReadRankings({
 					if (activeMembers) {
 						ranking = Number((recentReads / activeMembers).toFixed(4))
 					}
-					return { team, totalReads, ranking }
+					return { team, totalCount, ranking }
 				}),
 			)
 			const rankings = rawRankingData.map((r) => r.ranking)
 			const maxRanking = Math.max(...rankings)
 			const minRanking = Math.min(...rankings)
 			const rankPercentages = rawRankingData.map(
-				({ team, totalReads, ranking }) => {
+				({ team, totalCount, ranking }) => {
 					return {
 						team,
-						totalReads,
+						totalCount,
 						ranking,
 						percent: Number(
 							((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(
@@ -483,6 +484,251 @@ async function getSlugReadsByUser({
 	return Array.from(new Set(reads.map((read) => read.postSlug)))
 }
 
+async function getPodcastEpisodeListenCounts({
+	request,
+	timings,
+}: {
+	request?: Request
+	timings?: Timings
+}) {
+	return cachified({
+		key: 'podcast:episode-listen-counts',
+		ttl: 1000 * 60 * 30,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		cache: lruCache,
+		request,
+		timings,
+		checkValue: (value: unknown) =>
+			typeof value === 'object' &&
+			value !== null &&
+			!Array.isArray(value) &&
+			Object.values(value as Record<string, unknown>).every(
+				(v) => typeof v === 'number',
+			),
+		getFreshValue: async (context) => {
+			try {
+				const timeoutMs = context.background ? 1000 * 10 : 1000 * 5
+				const result = await promiseWithTimeout(
+					prisma.podcastEpisodeListen.groupBy({
+						by: ['seasonNumber', 'episodeNumber'],
+						_count: { _all: true },
+					}),
+					timeoutMs,
+				)
+
+				return Object.fromEntries(
+					result.map((row) => [
+						`${row.seasonNumber}:${row.episodeNumber}`,
+						row._count._all,
+					]),
+				) as Record<string, number>
+			} catch (error: unknown) {
+				console.error(`Failed to get podcast episode listen counts`, error)
+				context.metadata.ttl = 1000 * 60
+				return {}
+			}
+		},
+	})
+}
+
+async function getTotalPodcastEpisodeListens({
+	request,
+	seasonNumber,
+	episodeNumber,
+	timings,
+}: {
+	request?: Request
+	seasonNumber?: number
+	episodeNumber?: number
+	timings?: Timings
+}) {
+	const key = seasonNumber
+		? `total-podcast-episode-listens:${seasonNumber}:${episodeNumber}`
+		: 'total-podcast-episode-listens:__all__'
+	return cachified({
+		key,
+		cache: lruCache,
+		ttl: 1000 * 60 * 30,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		request,
+		timings,
+		checkValue: (value: unknown) => typeof value === 'number',
+		getFreshValue: async () => {
+			const listenCounts = await getPodcastEpisodeListenCounts({ request, timings })
+			if (seasonNumber && episodeNumber) {
+				return listenCounts[`${seasonNumber}:${episodeNumber}`] ?? 0
+			}
+			return Object.values(listenCounts).reduce((sum, count) => sum + count, 0)
+		},
+	})
+}
+
+async function getPodcastListenRankings({
+	request,
+	seasonNumber,
+	episodeNumber,
+	forceFresh,
+	timings,
+}: {
+	request?: Request
+	seasonNumber?: number
+	episodeNumber?: number
+	forceFresh?: boolean
+	timings?: Timings
+}) {
+	const episodeKey =
+		seasonNumber && episodeNumber
+			? `${seasonNumber}:${episodeNumber}`
+			: '__all_episodes__'
+	const key =
+		seasonNumber && episodeNumber
+			? `podcast:${episodeKey}:rankings`
+			: 'podcast:rankings'
+	const rankingObjs = await cachified({
+		key,
+		cache,
+		request,
+		timings,
+		ttl: seasonNumber ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		forceFresh,
+		checkValue: (value: unknown) =>
+			Array.isArray(value) &&
+			value.every((v) => typeof v === 'object' && 'team' in v),
+		getFreshValue: async () => {
+			const rawRankingData = await Promise.all(
+				teams.map(async function getRankingsForTeam(team): Promise<{
+					team: Team
+					totalCount: number
+					ranking: number
+				}> {
+					const where = seasonNumber
+						? {
+								seasonNumber,
+								episodeNumber,
+								user: { team },
+							}
+						: {
+								user: { team },
+							}
+					const totalCount = await prisma.podcastEpisodeListen.count({ where })
+					const activeMembers = await getPodcastActiveMembers({ team, timings })
+					const recentListens = await getRecentPodcastListens({
+						seasonNumber,
+						episodeNumber,
+						team,
+						timings,
+					})
+					let ranking = 0
+					if (activeMembers) {
+						ranking = Number((recentListens / activeMembers).toFixed(4))
+					}
+					return { team, totalCount, ranking }
+				}),
+			)
+			const rankings = rawRankingData.map((r) => r.ranking)
+			const maxRanking = Math.max(...rankings)
+			const minRanking = Math.min(...rankings)
+			return rawRankingData.map(({ team, totalCount, ranking }) => ({
+				team,
+				totalCount,
+				ranking,
+				percent: Number(
+					((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(2),
+				),
+			}))
+		},
+	})
+
+	return rankingObjs.sort(({ percent: a }, { percent: b }) =>
+		b === a ? (Math.random() > 0.5 ? -1 : 1) : a > b ? -1 : 1,
+	)
+}
+
+async function getRecentPodcastListens({
+	seasonNumber,
+	episodeNumber,
+	team,
+	timings,
+}: {
+	seasonNumber?: number
+	episodeNumber?: number
+	team: Team
+	timings?: Timings
+}) {
+	const withinTheLastSixMonths = subMonths(new Date(), 6)
+	const count = await time(
+		prisma.podcastEpisodeListen.count({
+			where: {
+				...(seasonNumber && episodeNumber ? { seasonNumber, episodeNumber } : {}),
+				createdAt: { gt: withinTheLastSixMonths },
+				user: { team },
+			},
+		}),
+		{
+			timings,
+			type: 'getRecentPodcastListens',
+			desc: `Getting podcast listens${
+				seasonNumber ? ` of ${seasonNumber}:${episodeNumber}` : ''
+			} by ${team} within the last 6 months`,
+		},
+	)
+	return count
+}
+
+async function getPodcastActiveMembers({
+	team,
+	timings,
+}: {
+	team: Team
+	timings?: Timings
+}) {
+	const withinTheLastYear = subYears(new Date(), 1)
+	const count = await time(
+		prisma.user.count({
+			where: {
+				team,
+				podcastEpisodeListens: {
+					some: {
+						createdAt: { gt: withinTheLastYear },
+					},
+				},
+			},
+		}),
+		{
+			timings,
+			type: 'getPodcastActiveMembers',
+			desc: `Getting active podcast listeners of ${team}`,
+		},
+	)
+	return count
+}
+
+async function getEpisodeListensByUser({
+	request,
+	timings,
+}: {
+	request: Request
+	timings?: Timings
+}) {
+	const user = await getUser(request)
+	if (!user) return []
+	const listens = await time(
+		prisma.podcastEpisodeListen.findMany({
+			where: { userId: user.id },
+			select: { seasonNumber: true, episodeNumber: true },
+		}),
+		{
+			timings,
+			type: 'getEpisodeListensByUser',
+			desc: `Getting podcast listens by ${user.id}`,
+		},
+	)
+	return Array.from(
+		new Set(listens.map((listen) => `${listen.seasonNumber}:${listen.episodeNumber}`)),
+	)
+}
+
 async function getPostJson(request: Request) {
 	const posts = await getBlogMdxListItems({ request })
 
@@ -602,8 +848,12 @@ export {
 	getBlogRecommendations,
 	getBlogReadRankings,
 	getAllBlogPostReadRankings,
+	getEpisodeListensByUser,
 	getSlugReadsByUser,
 	getBlogPostReadCounts,
+	getPodcastEpisodeListenCounts,
+	getPodcastListenRankings,
+	getTotalPodcastEpisodeListens,
 	getTotalPostReads,
 	getReaderCount,
 	getPostJson,

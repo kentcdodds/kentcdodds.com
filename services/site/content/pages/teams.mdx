@@ -113,27 +113,34 @@ Koala 🐨 and it stuck.
 ## Read Rankings
 
 When you read a blog post, that's marked in the database and your team gets
-points (note, this requires that you're [logged in](/login) so the proper team
-to associate the read with is known). Whichever team has the most points gets
-the highest ranking and "owns" that blog post. You'll notice which team is
-winning based on the graph at the top and bottom of the post as well as the
-highlight color throughout the post. There's also an overall leader and that
-team color controls the color of the blog page.
+points. The Chats with Kent podcast now works similarly: because many podcast
+players don't report back, episode pages include a self-report button you can
+use after you've listened. Both of these actions require that you're
+[logged in](/login) so the proper team to associate the activity with is known.
+Whichever team has the most points gets the highest ranking and "owns" that
+piece of content. You'll notice which team is winning based on the graph at the
+top and bottom of the page as well as the highlight color throughout. There's
+also an overall leader and that team color controls the color of the overview
+pages.
 
 Because you can choose your own team, the teams can be different sizes, so we
-don't just compute the teams by total number of blog post reads. Additionally,
-you get credit for every time you read a blog post.
+don't just compute the teams by total raw activity. Instead, rankings are
+normalized by active members.
 
 So here's how it works:
 
 - A blog post is marked as "read" when you've scrolled through the whole thing
   and you've been on the page for long enough to have actually read it.
-- For any given post, you get a recorded read every 7 days.
-- The team ranking is computed by taking the total number of recent reads
-  divided by the total number of active members.
-- A team member is considered active if they've read a blog post in the last
-  year.
-- A read is considered "recent" if it was read within the last 6 months.
+- A podcast episode is marked as listened when you use the self-report button on
+  the episode page.
+- Blog posts and podcast episodes each have their own rankings and overall
+  leaderboards.
+- The team ranking is computed by taking the total number of recent reads or
+  listens divided by the total number of active members for that content type.
+- A team member is considered active if they've read a blog post or reported a
+  podcast listen in the last year for that leaderboard.
+- A read or listen is considered "recent" if it happened within the last 6
+  months.
 
 So there you go. That's what the ranking is all about.
 

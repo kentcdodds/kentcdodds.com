@@ -18,6 +18,7 @@ import { BlogSection } from '#app/components/sections/blog-section.tsx'
 import { FeaturedSection } from '#app/components/sections/featured-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
+import { TeamStats } from '#app/components/team-stats.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import {
@@ -27,7 +28,11 @@ import {
 	images,
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { getBlogRecommendations } from '#app/utils/blog.server.ts'
+import {
+	getBlogRecommendations,
+	getPodcastListenRankings,
+	getTotalPodcastEpisodeListens,
+} from '#app/utils/blog.server.ts'
 import {
 	getCWKEpisodePath,
 	getFeaturedEpisode,
@@ -35,6 +40,7 @@ import {
 import {
 	formatDate,
 	formatDuration,
+	formatNumber,
 	getDisplayUrl,
 	getOrigin,
 	getUrl,
@@ -44,18 +50,29 @@ import {
 import { ChatsEpisodeUIStateProvider } from '#app/utils/providers.tsx'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
+import { getRankingLeader } from '#app/utils/team-rankings.ts'
+import { useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/_layout'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
-	const blogRecommendations = await getBlogRecommendations({ request, timings })
+	const [blogRecommendations, seasons, listenRankings, totalListens] =
+		await Promise.all([
+			getBlogRecommendations({ request, timings }),
+			getSeasonListItems({ request }),
+			getPodcastListenRankings({ request, timings }),
+			getTotalPodcastEpisodeListens({ request, timings }),
+		])
 
 	return json(
 		{
 			// we show the seasons in reverse order
-			seasons: (await getSeasonListItems({ request })).reverse(),
+			seasons: seasons.reverse(),
 			blogRecommendations,
+			listenRankings,
+			totalListens: formatNumber(totalListens),
+			overallLeadingTeam: getRankingLeader(listenRankings)?.team ?? null,
 		},
 		{
 			headers: {
@@ -104,6 +121,7 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')
 	const navigate = useNavigate()
 	const matches = useMatches()
+	const [userTeam] = useTeam()
 	const last = matches[matches.length - 1]
 
 	const seasonNumber = last?.params.season
@@ -131,13 +149,71 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 	const featured = getFeaturedEpisode(allEpisodes)
 
 	return (
-		<>
+		<div
+			className={
+				data.overallLeadingTeam
+					? `set-color-team-current-${data.overallLeadingTeam.toLowerCase()}`
+					: undefined
+			}
+		>
 			<HeroSection
 				title="Listen to chats with Kent C. Dodds here."
 				subtitle="Find all episodes of my podcast below."
 				imageBuilder={images.kayak}
 				imageSize="large"
 			/>
+
+			<Grid className="mb-14">
+				<div className="relative col-span-full h-20">
+					<div className="absolute">
+						<TeamStats
+							totalCount={data.totalListens}
+							rankings={data.listenRankings}
+							pull="left"
+							direction="down"
+							totalLabel="listens"
+						/>
+					</div>
+				</div>
+
+				<Spacer size="2xs" className="col-span-full" />
+
+				<Paragraph className="col-span-full" prose={false}>
+					{data.overallLeadingTeam ? (
+						<>
+							{`The `}
+							<strong
+								className={`text-team-current set-color-team-current-${data.overallLeadingTeam.toLowerCase()}`}
+							>
+								{data.overallLeadingTeam.toLowerCase()}
+							</strong>
+							{` team is leading the Chats with Kent rankings. `}
+							{userTeam === 'UNKNOWN' ? (
+								<>
+									<Link to="/login" className="underlined">
+										Login or sign up
+									</Link>
+									{` to choose your team and count your listens.`}
+								</>
+							) : userTeam === data.overallLeadingTeam ? (
+								`That’s your team. Keep the momentum going.`
+							) : (
+								<>
+									{`Self-report your listens to help the `}
+									<strong
+										className={`text-team-current set-color-team-current-${userTeam.toLowerCase()}`}
+									>
+										{userTeam.toLowerCase()}
+									</strong>{' '}
+									{`team take the top spot.`}
+								</>
+							)}
+						</>
+					) : (
+						`No team is leading yet. Start listening and claim the board.`
+					)}
+				</Paragraph>
+			</Grid>
 
 			<Grid>
 				<H6 as="div" className="col-span-full mb-6">
@@ -167,6 +243,7 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 						href={getCWKEpisodePath(featured)}
 						imageUrl={featured.image}
 						imageAlt={listify(featured.guests.map((g) => g.name))}
+						leadingTeam={null}
 					/>
 				</>
 			) : null}
@@ -364,7 +441,7 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 				title="Looking for more content?"
 				description="Have a look at these articles."
 			/>
-		</>
+		</div>
 	)
 }
 

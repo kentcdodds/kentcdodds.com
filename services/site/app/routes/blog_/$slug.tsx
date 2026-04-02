@@ -409,7 +409,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 				<div className="col-span-full flex justify-between lg:col-span-8 lg:col-start-3">
 					<BackLink to="/blog">Back to overview</BackLink>
 					<TeamStats
-						totalReads={data.totalReads}
+						totalCount={data.totalReads}
 						rankings={data.readRankings}
 						direction="down"
 						pull="right"
@@ -600,7 +600,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 			<Grid className="mb-24">
 				<div className="col-span-full flex justify-end lg:col-span-8 lg:col-start-3">
 					<TeamStats
-						totalReads={data.totalReads}
+						totalCount={data.totalReads}
 						rankings={data.readRankings}
 						direction="up"
 						pull="right"
