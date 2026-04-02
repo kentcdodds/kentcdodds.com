@@ -9,7 +9,6 @@ import {
 } from '#app/components/icons.tsx'
 import { parseEpisodeListenContentId } from '#app/utils/favorites.ts'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
-import { getRankingLeader } from '#app/utils/team-rankings.ts'
 import { useOptionalUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/podcast-listen'
 
@@ -189,8 +188,8 @@ export async function action({ request }: Route.ActionArgs) {
 			seasonNumber: parsedContentId.seasonNumber,
 			episodeNumber: parsedContentId.episodeNumber,
 			forceFresh: true,
-		}).then(getRankingLeader),
-		getPodcastListenRankings({ request, forceFresh: true }).then(getRankingLeader),
+		}),
+		getPodcastListenRankings({ request, forceFresh: true }),
 	])
 
 	return json({

@@ -486,9 +486,11 @@ async function getSlugReadsByUser({
 async function getPodcastEpisodeListenCounts({
 	request,
 	timings,
+	forceFresh,
 }: {
 	request?: Request
 	timings?: Timings
+	forceFresh?: boolean
 }) {
 	return cachified({
 		key: 'podcast:episode-listen-counts',
@@ -497,6 +499,7 @@ async function getPodcastEpisodeListenCounts({
 		cache: lruCache,
 		request,
 		timings,
+		forceFresh,
 		checkValue: (value: unknown) =>
 			typeof value === 'object' &&
 			value !== null &&
@@ -535,11 +538,13 @@ async function getTotalPodcastEpisodeListens({
 	seasonNumber,
 	episodeNumber,
 	timings,
+	forceFresh,
 }: {
 	request?: Request
 	seasonNumber?: number
 	episodeNumber?: number
 	timings?: Timings
+	forceFresh?: boolean
 }) {
 	const hasEpisode = seasonNumber !== undefined && episodeNumber !== undefined
 	const key = hasEpisode
@@ -552,11 +557,13 @@ async function getTotalPodcastEpisodeListens({
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		request,
 		timings,
+		forceFresh,
 		checkValue: (value: unknown) => typeof value === 'number',
 		getFreshValue: async () => {
 			const listenCounts = await getPodcastEpisodeListenCounts({
 				request,
 				timings,
+				forceFresh,
 			})
 			if (hasEpisode) {
 				return listenCounts[`${seasonNumber}:${episodeNumber}`] ?? 0
@@ -664,11 +671,11 @@ async function getPodcastListenLeadersBySeason({
 		ttl: 1000 * 60 * 60 * 24 * 7,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		forceFresh,
-		checkValue: (value: unknown) =>
-			value &&
+		checkValue: (value: unknown): value is Record<string, Team | null> =>
+			value !== null &&
 			typeof value === 'object' &&
 			!Array.isArray(value) &&
-			Object.values(value).every(
+			Object.values(value as Record<string, Team | null>).every(
 				(team) => team === null || teams.includes(team as Team),
 			),
 		getFreshValue: async () => {
@@ -748,7 +755,7 @@ async function getRecentPodcastListens({
 	const count = await time(
 		prisma.podcastEpisodeListen.count({
 			where: {
-				...(seasonNumber && episodeNumber
+				...(seasonNumber !== undefined && episodeNumber !== undefined
 					? { seasonNumber, episodeNumber }
 					: {}),
 				createdAt: { gt: withinTheLastSixMonths },

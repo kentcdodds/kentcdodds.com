@@ -164,3 +164,36 @@ test('action stores listen for authenticated user', async () => {
 		listened: true,
 	})
 })
+
+test('action removes listen for authenticated user', async () => {
+	vi.clearAllMocks()
+	sessionServerMocks.getUser.mockResolvedValue({ id: 'user-1' })
+	blogServerMocks.getPodcastListenRankings
+		.mockResolvedValueOnce([{ team: 'BLUE', ranking: 1, totalCount: 1, percent: 1 }])
+		.mockResolvedValueOnce([{ team: 'BLUE', ranking: 1, totalCount: 1, percent: 1 }])
+	prismaServerMocks.setEpisodePodcastListen.mockResolvedValue(false)
+
+	const formData = new FormData()
+	formData.set('contentId', '7:12')
+	formData.set('listened', 'false')
+
+	const request = new Request('http://localhost/resources/podcast-listen', {
+		method: 'POST',
+		body: formData,
+	})
+	const result = (await action({ request } as any)) as {
+		type?: string
+		data?: unknown
+		init?: ResponseInit | null
+	}
+
+	expect(result.type).toBe('DataWithResponseInit')
+	expect(result.data).toEqual({ listened: false, authenticated: true })
+	expect(litefsServerMocks.ensurePrimary).toHaveBeenCalledTimes(1)
+	expect(prismaServerMocks.setEpisodePodcastListen).toHaveBeenCalledWith({
+		seasonNumber: 7,
+		episodeNumber: 12,
+		userId: 'user-1',
+		listened: false,
+	})
+})

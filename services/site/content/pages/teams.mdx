@@ -140,10 +140,14 @@ So here's how it works:
   the episode page.
 - Blog posts and podcast episodes each have their own rankings and overall
   leaderboards.
-- The team ranking is computed by taking the total number of recent reads or
-  listens divided by the total number of active members for that content type.
-- A team member is considered active if they've read a blog post or reported a
-  podcast listen in the last year for that leaderboard.
+- For the blog leaderboard, the team ranking is computed by taking the total
+  number of recent reads divided by the number of active blog readers.
+- For the podcast leaderboard, the team ranking is computed by taking the total
+  number of recent listens divided by the number of active podcast listeners.
+- For the blog leaderboard, a member is active if they've read a blog post in
+  the last year.
+- For the podcast leaderboard, a member is active if they've reported a podcast
+  listen in the last year.
 - A read or listen is considered "recent" if it happened within the last 6
   months.
 

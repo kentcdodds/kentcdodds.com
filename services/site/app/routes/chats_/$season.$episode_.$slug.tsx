@@ -185,27 +185,26 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		seasonNumber: episode.seasonNumber,
 		episodeNumber: episode.episodeNumber,
 	})
-	const favorite = user
-		? await prisma.favorite.findUnique({
-				where: {
-					userId_contentType_contentId: {
-						userId: user.id,
-						contentType: favoriteContentType,
-						contentId: favoriteContentId,
-					},
-				},
-				select: { id: true },
-			})
-		: null
-	const listenedEpisodeIds = await getEpisodePodcastListens({
-		userId: user?.id,
-	})
-	const completedHomeworkIds = await getEpisodeHomeworkCompletions({
-		seasonNumber: episode.seasonNumber,
-		episodeNumber: episode.episodeNumber,
-		...(user ? { userId: user.id } : clientId ? { clientId } : {}),
-	})
-	const [listenRankings, totalListens] = await Promise.all([
+	const [favorite, listenedEpisodeIds, completedHomeworkIds, listenRankings, totalListens] =
+		await Promise.all([
+			user
+				? prisma.favorite.findUnique({
+						where: {
+							userId_contentType_contentId: {
+								userId: user.id,
+								contentType: favoriteContentType,
+								contentId: favoriteContentId,
+							},
+						},
+						select: { id: true },
+					})
+				: Promise.resolve(null),
+			getEpisodePodcastListens({ userId: user?.id }),
+			getEpisodeHomeworkCompletions({
+				seasonNumber: episode.seasonNumber,
+				episodeNumber: episode.episodeNumber,
+				...(user ? { userId: user.id } : clientId ? { clientId } : {}),
+			}),
 		getPodcastListenRankings({
 			request,
 			seasonNumber: episode.seasonNumber,
@@ -218,7 +217,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			episodeNumber: episode.episodeNumber,
 			timings,
 		}),
-	])
+		])
 	const homeworkItems = episode.homeworkHTMLs.map((homeworkHTML, itemIndex) => {
 		const id = getEpisodeHomeworkContentId({
 			seasonNumber: episode.seasonNumber,
@@ -299,7 +298,7 @@ function EpisodeListenSummary({
 			>
 				{leadingTeam.toLowerCase()}
 			</strong>{' '}
-			team currently owns this episode. Self-reporting listens to{' '}
+			team currently owns this episode. Self-reporting that you listened to{' '}
 			<strong>{episodeTitle}</strong> affects the ranking.
 		</Paragraph>
 	)
