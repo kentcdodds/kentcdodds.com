@@ -541,7 +541,8 @@ async function getTotalPodcastEpisodeListens({
 	episodeNumber?: number
 	timings?: Timings
 }) {
-	const key = seasonNumber
+	const hasEpisode = seasonNumber !== undefined && episodeNumber !== undefined
+	const key = hasEpisode
 		? `total-podcast-episode-listens:${seasonNumber}:${episodeNumber}`
 		: 'total-podcast-episode-listens:__all__'
 	return cachified({
@@ -557,7 +558,7 @@ async function getTotalPodcastEpisodeListens({
 				request,
 				timings,
 			})
-			if (seasonNumber && episodeNumber) {
+			if (hasEpisode) {
 				return listenCounts[`${seasonNumber}:${episodeNumber}`] ?? 0
 			}
 			return Object.values(listenCounts).reduce((sum, count) => sum + count, 0)
@@ -578,20 +579,16 @@ async function getPodcastListenRankings({
 	forceFresh?: boolean
 	timings?: Timings
 }) {
+	const hasEpisode = seasonNumber !== undefined && episodeNumber !== undefined
 	const episodeKey =
-		seasonNumber && episodeNumber
-			? `${seasonNumber}:${episodeNumber}`
-			: '__all_episodes__'
-	const key =
-		seasonNumber && episodeNumber
-			? `podcast:${episodeKey}:rankings`
-			: 'podcast:rankings'
+		hasEpisode ? `${seasonNumber}:${episodeNumber}` : '__all_episodes__'
+	const key = hasEpisode ? `podcast:${episodeKey}:rankings` : 'podcast:rankings'
 	const rankingObjs = await cachified({
 		key,
 		cache,
 		request,
 		timings,
-		ttl: seasonNumber ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
+		ttl: hasEpisode ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		forceFresh,
 		checkValue: (value: unknown) =>
@@ -604,7 +601,7 @@ async function getPodcastListenRankings({
 					totalCount: number
 					ranking: number
 				}> {
-					const where = seasonNumber
+					const where = hasEpisode
 						? {
 								seasonNumber,
 								episodeNumber,

@@ -7,7 +7,6 @@ import {
 	CheckCircledIcon,
 	SpinnerIcon,
 } from '#app/components/icons.tsx'
-import { getPodcastListenRankings } from '#app/utils/blog.server.ts'
 import { parseEpisodeListenContentId } from '#app/utils/favorites.ts'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { getRankingLeader } from '#app/utils/team-rankings.ts'
@@ -118,16 +117,22 @@ export function PodcastListenToggle({
 }
 
 async function getPodcastListenServerServices() {
-	const [{ ensurePrimary }, { getUser }, { setEpisodePodcastListen }] =
-		await Promise.all([
-			import('#app/utils/litefs-js.server.ts'),
-			import('#app/utils/session.server.ts'),
-			import('#app/utils/prisma.server.ts'),
-		])
+	const [
+		{ ensurePrimary },
+		{ getUser },
+		{ setEpisodePodcastListen },
+		{ getPodcastListenRankings },
+	] = await Promise.all([
+		import('#app/utils/litefs-js.server.ts'),
+		import('#app/utils/session.server.ts'),
+		import('#app/utils/prisma.server.ts'),
+		import('#app/utils/blog.server.ts'),
+	])
 	return {
 		ensurePrimary,
 		getUser,
 		setEpisodePodcastListen,
+		getPodcastListenRankings,
 	}
 }
 
@@ -137,7 +142,12 @@ const PodcastListenFormSchema = z.object({
 })
 
 export async function action({ request }: Route.ActionArgs) {
-	const { ensurePrimary, getUser, setEpisodePodcastListen } =
+	const {
+		ensurePrimary,
+		getUser,
+		setEpisodePodcastListen,
+		getPodcastListenRankings,
+	} =
 		await getPodcastListenServerServices()
 	const formData = await request.formData()
 	const submission = PodcastListenFormSchema.safeParse(

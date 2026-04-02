@@ -10,10 +10,13 @@ const litefsServerMocks = vi.hoisted(() => ({
 	getInstanceInfoSync: vi.fn().mockReturnValue({ currentIsPrimary: true }),
 }))
 
-const prismaServerMocks = vi.hoisted(() => ({
-	getEpisodePodcastListens: vi.fn(),
+const blogServerMocks = vi.hoisted(() => ({
 	getPodcastListenRankings: vi.fn(),
 	getTotalPodcastEpisodeListens: vi.fn(),
+}))
+
+const prismaServerMocks = vi.hoisted(() => ({
+	getEpisodePodcastListens: vi.fn(),
 	setEpisodePodcastListen: vi.fn(),
 }))
 
@@ -21,8 +24,8 @@ vi.mock('#app/utils/session.server.ts', () => sessionServerMocks)
 vi.mock('#app/utils/litefs-js.server.ts', () => litefsServerMocks)
 vi.mock('#app/utils/prisma.server.ts', () => prismaServerMocks)
 vi.mock('#app/utils/blog.server.ts', () => ({
-	getPodcastListenRankings: prismaServerMocks.getPodcastListenRankings,
-	getTotalPodcastEpisodeListens: prismaServerMocks.getTotalPodcastEpisodeListens,
+	getPodcastListenRankings: blogServerMocks.getPodcastListenRankings,
+	getTotalPodcastEpisodeListens: blogServerMocks.getTotalPodcastEpisodeListens,
 }))
 vi.mock('vite-env-only/macros', () => ({
 	serverOnly$: (fn: unknown) => fn,
@@ -129,12 +132,12 @@ test('action requires login', async () => {
 test('action stores listen for authenticated user', async () => {
 	vi.clearAllMocks()
 	sessionServerMocks.getUser.mockResolvedValue({ id: 'user-1' })
-	prismaServerMocks.getPodcastListenRankings
+	blogServerMocks.getPodcastListenRankings
 		.mockResolvedValueOnce([{ team: 'BLUE', ranking: 1, totalCount: 1, percent: 1 }])
 		.mockResolvedValueOnce([{ team: 'BLUE', ranking: 1, totalCount: 1, percent: 1 }])
 		.mockResolvedValueOnce([{ team: 'BLUE', ranking: 1, totalCount: 1, percent: 1 }])
 		.mockResolvedValueOnce([{ team: 'BLUE', ranking: 1, totalCount: 1, percent: 1 }])
-	prismaServerMocks.getTotalPodcastEpisodeListens.mockResolvedValue(1)
+	blogServerMocks.getTotalPodcastEpisodeListens.mockResolvedValue(1)
 	prismaServerMocks.setEpisodePodcastListen.mockResolvedValue(true)
 
 	const formData = new FormData()
