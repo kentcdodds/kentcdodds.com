@@ -58,6 +58,7 @@ import {
 import {
 	formatDate,
 	formatDuration,
+	formatNumber,
 	getDisplayUrl,
 	getOrigin,
 	getUrl,
@@ -72,6 +73,7 @@ import {
 	prisma,
 } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { getClientSession } from '#app/utils/client.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
@@ -161,6 +163,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		getUser(request, { timings }),
 		getSeasons({ request, timings }),
 	])
+	const clientSession = await getClientSession(request, user)
+	const clientId = clientSession.getClientId()
 	const season = seasons.find((s) => s.seasonNumber === seasonNumber)
 	if (!season) {
 		throw new Response(`Season ${seasonNumber} not found`, { status: 404 })
@@ -200,18 +204,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		seasonNumber: episode.seasonNumber,
 		episodeNumber: episode.episodeNumber,
 	})
-	const completedHomeworkIds = await getEpisodeHomeworkCompletions(
-		user
-			? {
-					seasonNumber: episode.seasonNumber,
-					episodeNumber: episode.episodeNumber,
-					userId: user.id,
-				}
-			: {
-					seasonNumber: episode.seasonNumber,
-					episodeNumber: episode.episodeNumber,
-				},
-	)
+	const completedHomeworkIds = await getEpisodeHomeworkCompletions({
+		seasonNumber: episode.seasonNumber,
+		episodeNumber: episode.episodeNumber,
+		...(user ? { userId: user.id } : clientId ? { clientId } : {}),
+	})
 	const [listenRankings, totalListens] = await Promise.all([
 		getPodcastListenRankings({
 			request,
@@ -256,18 +253,18 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			isListened: listenedEpisodeIds.has(episodeListenContentId),
 			listenContentId: episodeListenContentId,
 			listenRankings,
-			totalListens: String(totalListens),
+			totalListens: formatNumber(totalListens),
 			leadingTeam: getRankingLeader(listenRankings)?.team ?? null,
 			favoriteContentType,
 			favoriteContentId,
 			isFavorite: Boolean(favorite),
 		},
 		{
-			headers: {
+			headers: await clientSession.getHeaders({
 				'Cache-Control': 'private, max-age=600',
 				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
-			},
+			}),
 		},
 	)
 }

@@ -8,10 +8,7 @@ import {
 	SpinnerIcon,
 } from '#app/components/icons.tsx'
 import { getPodcastListenRankings } from '#app/utils/blog.server.ts'
-import {
-	getEpisodeListenContentId,
-	parseEpisodeListenContentId,
-} from '#app/utils/favorites.ts'
+import { parseEpisodeListenContentId } from '#app/utils/favorites.ts'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { getRankingLeader } from '#app/utils/team-rankings.ts'
 import { useOptionalUser } from '#app/utils/use-root-data.ts'
@@ -66,13 +63,14 @@ export function PodcastListenToggle({
 		isPodcastListenResponse(fetcher.data) && !fetcher.data.error
 			? fetcher.data.listened
 			: undefined
-	const isAuthenticated =
-		isPodcastListenResponse(fetcher.data) && fetcher.data.authenticated
 	const listened =
 		optimisticListened ?? fetchedListened ?? initialListened ?? false
 	const isBusy = fetcher.state !== 'idle'
 
-	if (!user || (isPodcastListenResponse(fetcher.data) && !fetcher.data.authenticated)) {
+	if (
+		!user ||
+		(isPodcastListenResponse(fetcher.data) && !fetcher.data.authenticated)
+	) {
 		return (
 			<Link
 				to="/login"
@@ -168,15 +166,6 @@ export async function action({ request }: Route.ActionArgs) {
 		)
 	}
 
-	const [beforeEpisodeLeader, beforeOverallLeader] = await Promise.all([
-		getPodcastListenRankings({
-			request,
-			seasonNumber: parsedContentId.seasonNumber,
-			episodeNumber: parsedContentId.episodeNumber,
-		}).then(getRankingLeader),
-		getPodcastListenRankings({ request }).then(getRankingLeader),
-	])
-
 	await ensurePrimary()
 	const listened = await setEpisodePodcastListen({
 		...parsedContentId,
@@ -184,7 +173,7 @@ export async function action({ request }: Route.ActionArgs) {
 		userId: user.id,
 	})
 
-	const [afterEpisodeLeader, afterOverallLeader] = await Promise.all([
+	await Promise.all([
 		getPodcastListenRankings({
 			request,
 			seasonNumber: parsedContentId.seasonNumber,
@@ -193,10 +182,6 @@ export async function action({ request }: Route.ActionArgs) {
 		}).then(getRankingLeader),
 		getPodcastListenRankings({ request, forceFresh: true }).then(getRankingLeader),
 	])
-	void beforeEpisodeLeader
-	void beforeOverallLeader
-	void afterEpisodeLeader
-	void afterOverallLeader
 
 	return json({
 		listened,
@@ -241,9 +226,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		)
 	}
 
-	const [{ getEpisodePodcastListens }] = await Promise.all([
-		import('#app/utils/prisma.server.ts'),
-	])
+	const { getEpisodePodcastListens } = await import('#app/utils/prisma.server.ts')
 	const listenIds = await getEpisodePodcastListens({ userId: user.id })
 
 	return json(

@@ -11,7 +11,6 @@ import { getBlogMdxListItems } from './mdx.server.ts'
 import { getDomainUrl, getOptionalTeam, teams, typedBoolean } from './misc.ts'
 import { prisma } from './prisma.server.ts'
 import { getUser } from './session.server.ts'
-import { type TeamRanking as SharedTeamRanking } from './team-rankings.ts'
 import { teamEmoji } from './team-provider.tsx'
 import { time, type Timings } from './timing.server.ts'
 
@@ -704,31 +703,6 @@ async function getPodcastActiveMembers({
 	return count
 }
 
-async function getEpisodeListensByUser({
-	request,
-	timings,
-}: {
-	request: Request
-	timings?: Timings
-}) {
-	const user = await getUser(request)
-	if (!user) return []
-	const listens = await time(
-		prisma.podcastEpisodeListen.findMany({
-			where: { userId: user.id },
-			select: { seasonNumber: true, episodeNumber: true },
-		}),
-		{
-			timings,
-			type: 'getEpisodeListensByUser',
-			desc: `Getting podcast listens by ${user.id}`,
-		},
-	)
-	return Array.from(
-		new Set(listens.map((listen) => `${listen.seasonNumber}:${listen.episodeNumber}`)),
-	)
-}
-
 async function getPostJson(request: Request) {
 	const posts = await getBlogMdxListItems({ request })
 
@@ -848,7 +822,6 @@ export {
 	getBlogRecommendations,
 	getBlogReadRankings,
 	getAllBlogPostReadRankings,
-	getEpisodeListensByUser,
 	getSlugReadsByUser,
 	getBlogPostReadCounts,
 	getPodcastEpisodeListenCounts,
