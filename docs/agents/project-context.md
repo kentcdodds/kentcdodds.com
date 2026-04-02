@@ -42,6 +42,9 @@ reference:
 - `npm install` runs `prepare`, which installs Husky hooks. Pre-commit formats
   staged files with `lint-staged` and then runs workspace lint, typecheck, and
   build checks. Pre-push runs workspace tests.
+- Partial workspace installs (for example CI jobs that run `npm ci --workspace
+kentcdodds.com`) intentionally skip Husky installation if the root `husky`
+  dependency is unavailable.
 - The main site lives in `services/site`. Root `npm run dev`, `npm run build`,
   `npm run test`, and similar commands forward to that workspace.
 - Search worker relevance thresholds (`M`, `R`, `noCloseMatches`): see

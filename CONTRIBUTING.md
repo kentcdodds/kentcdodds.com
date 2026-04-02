@@ -166,7 +166,9 @@ git hooks from the repository root:
 - `pre-push` runs the workspace test suite.
 
 After `npm install`, Husky installs the hooks automatically via the root
-`prepare` script. You can run the same checks manually if you want:
+`prepare` script. Partial workspace installs used in CI skip hook installation
+if Husky isn't available, so `npm ci --workspace=kentcdodds.com` still works.
+You can run the same checks manually if you want:
 
 ```sh
 npm run format
