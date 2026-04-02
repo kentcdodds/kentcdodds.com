@@ -2,6 +2,7 @@ import * as React from 'react'
 import { MemoryRouter } from 'react-router'
 import { render } from 'vitest-browser-react'
 import { expect, test, vi } from 'vitest'
+import { type TeamRanking } from '#app/utils/team-rankings.ts'
 
 const { mockUseRootData, mockUseOptionalUser, mockUseTeam } = vi.hoisted(() => ({
 	mockUseRootData: vi.fn(),
@@ -20,7 +21,7 @@ vi.mock('#app/utils/team-provider.tsx', () => ({
 
 import { TeamStats } from '#app/components/team-stats.tsx'
 
-const rankings = [
+const rankings: Array<TeamRanking> = [
 	{ team: 'RED', ranking: 1, totalCount: 12, percent: 1 },
 	{ team: 'BLUE', ranking: 2, totalCount: 8, percent: 0.67 },
 	{ team: 'YELLOW', ranking: 3, totalCount: 4, percent: 0.33 },
