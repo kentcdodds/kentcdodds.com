@@ -172,6 +172,7 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 							pull="left"
 							direction="down"
 							totalLabel="listens"
+							whatsThisHref="/teams#listen-rankings"
 						/>
 					</div>
 				</div>

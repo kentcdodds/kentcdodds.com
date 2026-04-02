@@ -638,6 +638,7 @@ export default function PodcastDetail({ loaderData }: Route.ComponentProps) {
 						direction="down"
 						pull="right"
 						totalLabel="listens"
+						whatsThisHref="/teams#listen-rankings"
 					/>
 				</div>
 			</Grid>
