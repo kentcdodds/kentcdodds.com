@@ -19,7 +19,7 @@
     "dev": "npm run dev --workspace kentcdodds.com",
     "start": "npm run start --workspace kentcdodds.com",
     "start:mocks": "npm run start:mocks --workspace kentcdodds.com",
-    "prepare": "sh -c 'if command -v husky >/dev/null 2>&1; then husky; else echo \"Skipping Husky install because the dependency is unavailable.\"; fi'",
+    "prepare": "husky",
     "build": "npm run build --workspace kentcdodds.com",
     "build:all": "nx run-many -t build",
     "predeploy:healthcheck": "npm run predeploy:healthcheck --workspace kentcdodds.com",
@@ -50,6 +50,7 @@
     "@epic-web/config": "^2.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "nx": "^22.5.4"
+    "nx": "^22.5.4",
+    "prettier": "^3.8.1"
   }
 }
