@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 📥 Install OAuth worker deps
-        run: npm ci --workspace=oauth
+        run: npm ci --workspace=oauth --include-workspace-root
 
       - name: 🔬 Lint OAuth worker
         run: npm run lint --workspace oauth

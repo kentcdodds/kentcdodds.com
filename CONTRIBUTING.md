@@ -158,16 +158,31 @@ npm run test:e2e:run
 
 ## Running static tests (Formatting/Linting/Typing)
 
-Everything's set up with TypeScript/Prettier/Oxlint. These should all run on
-commit (only relevant files are checked). You can run them individually though
-if you want:
+Everything's set up with TypeScript/Prettier/Oxlint, plus Husky + lint-staged
+git hooks from the repository root:
+
+- `pre-commit` formats staged files with Prettier, then runs workspace linting,
+  typechecking, and builds.
+- `pre-push` runs the workspace test suite.
+
+After `npm install`, Husky installs the hooks automatically via the root
+`prepare` script. CI workspace installs include the workspace root so the same
+plain `prepare` command works there too.
+You can run the same checks manually if you want:
 
 ```sh
 npm run format
+npm run format:staged
 npm run lint
 npm run lint:all
 npm run typecheck
 npm run typecheck:all
+npm run build
+npm run build:all
+npm run precommit:verify
+npm run test
+npm run test:all
+npm run prepush:verify
 ```
 
 These are all configured in the project to hopefully work with whatever editor

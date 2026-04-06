@@ -47,16 +47,30 @@ Start the development server:
 
 Then open `http://localhost:3000`.
 
+## Git hooks
+
+This repo uses Husky + lint-staged from the repository root.
+
+- On `git commit`, staged files are formatted with Prettier, then the repo runs
+  `npm run lint:all`, `npm run typecheck:all`, and `npm run build:all`.
+- On `git push`, the repo runs `npm run test:all`.
+
+If hooks stop running after a fresh clone, run `npm install` from the repo root
+to reinstall them via the `prepare` script.
+
 ## Useful scripts
 
 - `npm run dev` - start local development server
+- `npm run format:staged` - format staged files the same way pre-commit does
 - `npm run test` - run unit/component tests
+- `npm run test:all` - run workspace tests used by pre-push
 - `npm run test:e2e:dev` - run Playwright tests against dev server
 - `npm run lint` - run Oxlint
 - `npm run lint:all` - run lint across the site and workspace packages
 - `npm run typecheck` - run TypeScript checks
 - `npm run typecheck:all` - run TypeScript checks across all workspaces
 - `npm run build` - build the app
+- `npm run build:all` - run workspace builds used by pre-commit
 - `npm run nx:graph` - inspect the Nx workspace graph
 
 ## Contributing
