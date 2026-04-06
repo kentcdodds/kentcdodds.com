@@ -19,7 +19,7 @@
     "dev": "npm run dev --workspace kentcdodds.com",
     "start": "npm run start --workspace kentcdodds.com",
     "start:mocks": "npm run start:mocks --workspace kentcdodds.com",
-    "prepare": "node -e \"import('husky').then(({default: husky}) => { const output = husky(); if (output) console.log(output) }).catch(() => { console.log('Skipping Husky install because the dependency is unavailable.') })\"",
+    "prepare": "sh -c 'if command -v husky >/dev/null 2>&1; then husky; else echo \"Skipping Husky install because the dependency is unavailable.\"; fi'",
     "build": "npm run build --workspace kentcdodds.com",
     "build:all": "nx run-many -t build",
     "predeploy:healthcheck": "npm run predeploy:healthcheck --workspace kentcdodds.com",
