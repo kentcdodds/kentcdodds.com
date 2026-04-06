@@ -35,9 +35,10 @@ jobs:
         run: npm run typecheck --workspace oauth
 
       - name: ☁️ Deploy via Wrangler
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.80.0
           workingDirectory: services/oauth
           command: deploy --env production

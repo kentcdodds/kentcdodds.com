@@ -38,9 +38,10 @@ jobs:
         run: npm run test --workspace call-kent-audio-worker
 
       - name: ☁️ Deploy via Wrangler
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.80.0
           workingDirectory: services/call-kent-audio-worker
           command: deploy
