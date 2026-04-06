@@ -38,10 +38,8 @@ jobs:
         run: npm run test --workspace search-worker
 
       - name: ☁️ Deploy via Wrangler
-        uses: cloudflare/wrangler-action@v3.14.1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: 4.80.0
-          workingDirectory: services/search-worker
-          command: deploy
+        working-directory: services/search-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm exec wrangler -- deploy

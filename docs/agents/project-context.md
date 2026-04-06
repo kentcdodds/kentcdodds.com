@@ -44,10 +44,10 @@ reference:
   build checks. Pre-push runs workspace tests.
 - CI workflows that install a single workspace use `npm ci --include-workspace-root`
   so the root Husky dependency is still available during `prepare`.
-- Cloudflare worker deploy workflows should pin `wranglerVersion` in
-  `cloudflare/wrangler-action`; otherwise the action can silently fall back to a
-  runner-preinstalled Wrangler release, which may drift from the repo lockfile
-  and break Cloudflare Containers deploys.
+- Cloudflare worker deploy workflows should use the workspace-installed
+  Wrangler CLI (`npm exec wrangler -- ...`) instead of relying on
+  `cloudflare/wrangler-action` or a runner-preinstalled Wrangler release, so CI
+  deploys stay aligned with the repo lockfile.
 - The main site lives in `services/site`. Root `npm run dev`, `npm run build`,
   `npm run test`, and similar commands forward to that workspace.
 - Search worker relevance thresholds (`M`, `R`, `noCloseMatches`): see
