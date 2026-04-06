@@ -45,7 +45,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 📥 Install site deps
-        run: npm ci --workspace=kentcdodds.com
+        run: npm ci --workspace=kentcdodds.com --include-workspace-root
 
       - name: 🏄 Copy test env vars
         run: cp services/site/.env.example services/site/.env
@@ -90,15 +90,13 @@ jobs:
             site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
       - name: 🛠 Setup Database (migrations)
-        if:
-          ${{ inputs.run_pre_deploy_health_check &&
+        if: ${{ inputs.run_pre_deploy_health_check &&
           steps.site-cache.outputs.cache-hit != 'true' }}
         run: npx prisma migrate deploy
         working-directory: services/site
 
       - name: 😅 Generate Site Cache
-        if:
-          ${{ inputs.run_pre_deploy_health_check &&
+        if: ${{ inputs.run_pre_deploy_health_check &&
           steps.site-cache.outputs.cache-hit != 'true' }}
         run: npm run prime-cache:mocks
 
@@ -106,7 +104,7 @@ jobs:
         if: ${{ inputs.run_pre_deploy_health_check }}
         run: npm run predeploy:healthcheck
         env:
-          MOCKS: 'true'
+          MOCKS: "true"
 
       - name: 📦 Upload site build artifacts
         uses: actions/upload-artifact@v6
@@ -139,7 +137,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 📥 Install site deps
-        run: npm ci --workspace=kentcdodds.com
+        run: npm ci --workspace=kentcdodds.com --include-workspace-root
 
       - name: 🧰 Cache Playwright browsers
         id: playwright-cache
@@ -222,14 +220,14 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
         with:
-          fetch-depth: '50'
+          fetch-depth: "50"
 
       - name: 👀 Read app name
         uses: SebRollen/toml-action@v1.2.0
         id: app_name
         with:
-          file: 'fly.toml'
-          field: 'app'
+          file: "fly.toml"
+          field: "app"
 
       - name: 🎈 Setup Fly
         uses: superfly/flyctl-actions/setup-flyctl@1.5
@@ -242,8 +240,7 @@ jobs:
 
       - name: 🚀 Deploy Staging
         if: ${{ github.ref == 'refs/heads/dev' }}
-        run:
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
+        run: flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
           github.sha }} --dockerfile services/site/Dockerfile --app ${{
           steps.app_name.outputs.value }}-staging
         env:
@@ -251,8 +248,7 @@ jobs:
 
       - name: 🚀 Deploy Production
         if: ${{ github.ref == 'refs/heads/main' }}
-        run:
-          flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
+        run: flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
           github.sha }} --dockerfile services/site/Dockerfile --build-secret
           SENTRY_AUTH_TOKEN=${{
           secrets.SENTRY_AUTH_TOKEN }}

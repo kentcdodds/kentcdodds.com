@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 📥 Install search worker deps
-        run: npm ci --workspace=search-worker
+        run: npm ci --workspace=search-worker --include-workspace-root
 
       - name: 🔬 Lint search worker
         run: npm run lint --workspace search-worker

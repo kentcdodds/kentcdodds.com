@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       youtube_video_ids:
-        description: 'Comma-separated YouTube video IDs (optional)'
+        description: "Comma-separated YouTube video IDs (optional)"
         required: false
         type: string
-        default: ''
+        default: ""
 
 jobs:
   index:
@@ -30,7 +30,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 📥 Install site deps
-        run: npm ci --workspace=kentcdodds.com
+        run: npm ci --workspace=kentcdodds.com --include-workspace-root
 
       - name: 🔎 Index youtube playlist
         run: |
@@ -44,24 +44,19 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_AI_GATEWAY_ID: ${{ secrets.CLOUDFLARE_AI_GATEWAY_ID }}
-          CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:
-            ${{ secrets.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID }}
-          CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN:
-            ${{ secrets.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN }}
+          CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID: ${{ secrets.CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID }}
+          CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN }}
           CLOUDFLARE_VECTORIZE_INDEX: ${{ secrets.CLOUDFLARE_VECTORIZE_INDEX }}
-          CLOUDFLARE_AI_EMBEDDING_MODEL:
-            ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
+          CLOUDFLARE_AI_EMBEDDING_MODEL: ${{ secrets.CLOUDFLARE_AI_EMBEDDING_MODEL }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
 
           # Prefer setting this as a repository variable (or secret).
           # If it is not set, the script uses a built-in default playlist ID.
-          YOUTUBE_PLAYLIST_ID:
-            ${{ vars.YOUTUBE_PLAYLIST_ID || secrets.YOUTUBE_PLAYLIST_ID }}
+          YOUTUBE_PLAYLIST_ID: ${{ vars.YOUTUBE_PLAYLIST_ID || secrets.YOUTUBE_PLAYLIST_ID }}
 
           # Optional: force-index specific videos. Can be set either as a
           # workflow_dispatch input or as a repository variable.
-          YOUTUBE_VIDEO_IDS:
-            ${{ github.event_name == 'workflow_dispatch' &&
+          YOUTUBE_VIDEO_IDS: ${{ github.event_name == 'workflow_dispatch' &&
             inputs.youtube_video_ids || vars.YOUTUBE_VIDEO_IDS }}
 
           # Without these, GitHub runners often get LOGIN_REQUIRED / bot blocks from

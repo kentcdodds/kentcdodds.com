@@ -56,9 +56,7 @@ This repo uses Husky + lint-staged from the repository root.
 - On `git push`, the repo runs `npm run test:all`.
 
 If hooks stop running after a fresh clone, run `npm install` from the repo root
-to reinstall them via the `prepare` script. Partial workspace installs (like CI
-jobs that install only `kentcdodds.com`) skip Husky setup automatically when
-the root dependency is unavailable.
+to reinstall them via the `prepare` script.
 
 ## Useful scripts
 

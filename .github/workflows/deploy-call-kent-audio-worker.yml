@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 📥 Install audio worker deps
-        run: npm ci --workspace=call-kent-audio-worker
+        run: npm ci --workspace=call-kent-audio-worker --include-workspace-root
 
       - name: 🔬 Lint audio worker
         run: npm run lint --workspace call-kent-audio-worker
