@@ -308,10 +308,10 @@ async function getBlogReadRankings({
 			const rawRankingData = await Promise.all(
 				teams.map(async function getRankingsForTeam(team): Promise<{
 					team: Team
-					totalReads: number
+					totalCount: number
 					ranking: number
 				}> {
-					const totalReads = await prisma.postRead.count({
+					const totalCount = await prisma.postRead.count({
 						where: {
 							postSlug: slug,
 							user: { team },
@@ -323,17 +323,17 @@ async function getBlogReadRankings({
 					if (activeMembers) {
 						ranking = Number((recentReads / activeMembers).toFixed(4))
 					}
-					return { team, totalReads, ranking }
+					return { team, totalCount, ranking }
 				}),
 			)
 			const rankings = rawRankingData.map((r) => r.ranking)
 			const maxRanking = Math.max(...rankings)
 			const minRanking = Math.min(...rankings)
 			const rankPercentages = rawRankingData.map(
-				({ team, totalReads, ranking }) => {
+				({ team, totalCount, ranking }) => {
 					return {
 						team,
-						totalReads,
+						totalCount,
 						ranking,
 						percent: Number(
 							((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(
@@ -483,6 +483,355 @@ async function getSlugReadsByUser({
 	return Array.from(new Set(reads.map((read) => read.postSlug)))
 }
 
+async function getPodcastEpisodeListenCounts({
+	request,
+	timings,
+	forceFresh,
+}: {
+	request?: Request
+	timings?: Timings
+	forceFresh?: boolean
+}) {
+	return cachified({
+		key: 'podcast:episode-listen-counts',
+		ttl: 1000 * 60 * 30,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		cache: lruCache,
+		request,
+		timings,
+		forceFresh,
+		checkValue: (value: unknown) =>
+			typeof value === 'object' &&
+			value !== null &&
+			!Array.isArray(value) &&
+			Object.values(value as Record<string, unknown>).every(
+				(v) => typeof v === 'number',
+			),
+		getFreshValue: async (context) => {
+			try {
+				const timeoutMs = context.background ? 1000 * 10 : 1000 * 5
+				const result = await promiseWithTimeout(
+					prisma.podcastEpisodeListen.groupBy({
+						by: ['seasonNumber', 'episodeNumber'],
+						_count: { _all: true },
+					}),
+					timeoutMs,
+				)
+
+				return Object.fromEntries(
+					result.map((row) => [
+						`${row.seasonNumber}:${row.episodeNumber}`,
+						row._count._all,
+					]),
+				) as Record<string, number>
+			} catch (error: unknown) {
+				console.error(`Failed to get podcast episode listen counts`, error)
+				context.metadata.ttl = 1000 * 60
+				return {}
+			}
+		},
+	})
+}
+
+async function getTotalPodcastEpisodeListens({
+	request,
+	seasonNumber,
+	episodeNumber,
+	timings,
+	forceFresh,
+}: {
+	request?: Request
+	seasonNumber?: number
+	episodeNumber?: number
+	timings?: Timings
+	forceFresh?: boolean
+}) {
+	const hasEpisode = seasonNumber !== undefined && episodeNumber !== undefined
+	const key = hasEpisode
+		? `total-podcast-episode-listens:${seasonNumber}:${episodeNumber}`
+		: 'total-podcast-episode-listens:__all__'
+	return cachified({
+		key,
+		cache: lruCache,
+		ttl: 1000 * 60 * 30,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		request,
+		timings,
+		forceFresh,
+		checkValue: (value: unknown) => typeof value === 'number',
+		getFreshValue: async () => {
+			const listenCounts = await getPodcastEpisodeListenCounts({
+				request,
+				timings,
+				forceFresh,
+			})
+			if (hasEpisode) {
+				return listenCounts[`${seasonNumber}:${episodeNumber}`] ?? 0
+			}
+			return Object.values(listenCounts).reduce((sum, count) => sum + count, 0)
+		},
+	})
+}
+
+async function getPodcastListenRankings({
+	request,
+	seasonNumber,
+	episodeNumber,
+	forceFresh,
+	timings,
+}: {
+	request?: Request
+	seasonNumber?: number
+	episodeNumber?: number
+	forceFresh?: boolean
+	timings?: Timings
+}) {
+	const hasEpisode = seasonNumber !== undefined && episodeNumber !== undefined
+	const episodeKey =
+		hasEpisode ? `${seasonNumber}:${episodeNumber}` : '__all_episodes__'
+	const key = hasEpisode ? `podcast:${episodeKey}:rankings` : 'podcast:rankings'
+	const rankingObjs = await cachified({
+		key,
+		cache,
+		request,
+		timings,
+		ttl: hasEpisode ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		forceFresh,
+		checkValue: (value: unknown) =>
+			Array.isArray(value) &&
+			value.every((v) => typeof v === 'object' && 'team' in v),
+		getFreshValue: async () => {
+			const rawRankingData = await Promise.all(
+				teams.map(async function getRankingsForTeam(team): Promise<{
+					team: Team
+					totalCount: number
+					ranking: number
+				}> {
+					const where = hasEpisode
+						? {
+								seasonNumber,
+								episodeNumber,
+								user: { team },
+							}
+						: {
+								user: { team },
+							}
+					const totalCount = await prisma.podcastEpisodeListen.count({ where })
+					const activeMembers = await getPodcastActiveMembers({ team, timings })
+					const recentListens = await getRecentPodcastListens({
+						seasonNumber,
+						episodeNumber,
+						team,
+						timings,
+					})
+					let ranking = 0
+					if (activeMembers) {
+						ranking = Number((recentListens / activeMembers).toFixed(4))
+					}
+					return { team, totalCount, ranking }
+				}),
+			)
+			const rankings = rawRankingData.map((r) => r.ranking)
+			const maxRanking = Math.max(...rankings)
+			const minRanking = Math.min(...rankings)
+			return rawRankingData.map(({ team, totalCount, ranking }) => ({
+				team,
+				totalCount,
+				ranking,
+				percent: Number(
+					((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(2),
+				),
+			}))
+		},
+	})
+
+	return rankingObjs.sort(({ percent: a }, { percent: b }) =>
+		b === a ? (Math.random() > 0.5 ? -1 : 1) : a > b ? -1 : 1,
+	)
+}
+
+async function getPodcastListenLeadersBySeason({
+	request,
+	seasonNumber,
+	forceFresh,
+	timings,
+}: {
+	request?: Request
+	seasonNumber: number
+	forceFresh?: boolean
+	timings?: Timings
+}) {
+	const key = `podcast:${seasonNumber}:episode-leaders`
+	return cachified({
+		key,
+		cache,
+		request,
+		timings,
+		ttl: 1000 * 60 * 60 * 24 * 7,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24,
+		forceFresh,
+		checkValue: (value: unknown): value is Record<string, Team | null> =>
+			value !== null &&
+			typeof value === 'object' &&
+			!Array.isArray(value) &&
+			Object.values(value as Record<string, Team | null>).every(
+				(team) => team === null || teams.includes(team as Team),
+			),
+		getFreshValue: async () => {
+			const [activeMembersEntries, recentListensEntries] = await Promise.all([
+				Promise.all(
+					teams.map(async (team) => [
+						team,
+						await getPodcastActiveMembers({ team, timings }),
+					]),
+				),
+				Promise.all(
+					teams.map(async (team) => [
+						team,
+						await getRecentPodcastListensByEpisode({
+							seasonNumber,
+							team,
+							timings,
+						}),
+					]),
+				),
+			])
+			const activeMembersByTeam = Object.fromEntries(
+				activeMembersEntries,
+			) as Record<Team, number>
+			const recentListensByTeam = Object.fromEntries(
+				recentListensEntries,
+			) as Record<Team, Record<number, number>>
+
+			const episodeNumbers = new Set<number>()
+			for (const team of teams) {
+				for (const episodeNumber of Object.keys(
+					recentListensByTeam[team] ?? {},
+				)) {
+					episodeNumbers.add(Number(episodeNumber))
+				}
+			}
+
+			const leadersByEpisode: Record<string, Team | null> = {}
+			for (const episodeNumber of episodeNumbers) {
+				const rankings = teams.map((team) => {
+					const activeMembers = activeMembersByTeam[team] ?? 0
+					const recentListens = recentListensByTeam[team]?.[episodeNumber] ?? 0
+					const ranking = activeMembers
+						? Number((recentListens / activeMembers).toFixed(4))
+						: 0
+					return { team, ranking }
+				})
+				const maxRanking = Math.max(...rankings.map((entry) => entry.ranking))
+				if (maxRanking <= 0) {
+					leadersByEpisode[String(episodeNumber)] = null
+					continue
+				}
+				const tiedLeaders = rankings.filter(
+					(entry) => entry.ranking === maxRanking,
+				)
+				const chosenLeader =
+					tiedLeaders[Math.floor(Math.random() * tiedLeaders.length)]
+				leadersByEpisode[String(episodeNumber)] = chosenLeader?.team ?? null
+			}
+			return leadersByEpisode
+		},
+	})
+}
+
+async function getRecentPodcastListens({
+	seasonNumber,
+	episodeNumber,
+	team,
+	timings,
+}: {
+	seasonNumber?: number
+	episodeNumber?: number
+	team: Team
+	timings?: Timings
+}) {
+	const withinTheLastSixMonths = subMonths(new Date(), 6)
+	const count = await time(
+		prisma.podcastEpisodeListen.count({
+			where: {
+				...(seasonNumber !== undefined && episodeNumber !== undefined
+					? { seasonNumber, episodeNumber }
+					: {}),
+				createdAt: { gt: withinTheLastSixMonths },
+				user: { team },
+			},
+		}),
+		{
+			timings,
+			type: 'getRecentPodcastListens',
+			desc: `Getting podcast listens${
+				seasonNumber ? ` of ${seasonNumber}:${episodeNumber}` : ''
+			} by ${team} within the last 6 months`,
+		},
+	)
+	return count
+}
+
+async function getRecentPodcastListensByEpisode({
+	seasonNumber,
+	team,
+	timings,
+}: {
+	seasonNumber: number
+	team: Team
+	timings?: Timings
+}) {
+	const withinTheLastSixMonths = subMonths(new Date(), 6)
+	const rows = await time(
+		prisma.podcastEpisodeListen.groupBy({
+			by: ['episodeNumber'],
+			where: {
+				seasonNumber,
+				createdAt: { gt: withinTheLastSixMonths },
+				user: { team },
+			},
+			_count: { _all: true },
+		}),
+		{
+			timings,
+			type: 'getRecentPodcastListensByEpisode',
+			desc: `Getting podcast listens of season ${seasonNumber} by ${team} within the last 6 months`,
+		},
+	)
+	return Object.fromEntries(
+		rows.map((row) => [row.episodeNumber, row._count._all]),
+	)
+}
+
+async function getPodcastActiveMembers({
+	team,
+	timings,
+}: {
+	team: Team
+	timings?: Timings
+}) {
+	const withinTheLastYear = subYears(new Date(), 1)
+	const count = await time(
+		prisma.user.count({
+			where: {
+				team,
+				podcastEpisodeListens: {
+					some: {
+						createdAt: { gt: withinTheLastYear },
+					},
+				},
+			},
+		}),
+		{
+			timings,
+			type: 'getPodcastActiveMembers',
+			desc: `Getting active podcast listeners of ${team}`,
+		},
+	)
+	return count
+}
+
 async function getPostJson(request: Request) {
 	const posts = await getBlogMdxListItems({ request })
 
@@ -604,6 +953,10 @@ export {
 	getAllBlogPostReadRankings,
 	getSlugReadsByUser,
 	getBlogPostReadCounts,
+	getPodcastEpisodeListenCounts,
+	getPodcastListenLeadersBySeason,
+	getPodcastListenRankings,
+	getTotalPodcastEpisodeListens,
 	getTotalPostReads,
 	getReaderCount,
 	getPostJson,
