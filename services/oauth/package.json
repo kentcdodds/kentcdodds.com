@@ -26,7 +26,7 @@
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",
-    "wrangler": "^4.71.0"
+    "wrangler": "^4.80.0"
   },
   "prettier": "@epic-web/config/prettier"
 }

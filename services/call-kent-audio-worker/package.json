@@ -27,7 +27,7 @@
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",
     "vitest": "^4.0.18",
-    "wrangler": "^4.67.0"
+    "wrangler": "^4.80.0"
   },
   "prettier": "@epic-web/config/prettier"
 }
