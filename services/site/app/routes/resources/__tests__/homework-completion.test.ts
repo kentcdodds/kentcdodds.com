@@ -93,10 +93,13 @@ test('action validates content ids', async () => {
 	formData.set('contentId', 'bad-id')
 	formData.set('completed', 'true')
 
-	const request = new Request('http://localhost/resources/homework-completion', {
-		method: 'POST',
-		body: formData,
-	})
+	const request = new Request(
+		'http://localhost/resources/homework-completion',
+		{
+			method: 'POST',
+			body: formData,
+		},
+	)
 	const result = (await action({ request } as any)) as {
 		type?: string
 		data?: unknown
@@ -127,10 +130,13 @@ test('action stores completion for anonymous client', async () => {
 	formData.set('contentId', '7:12:1')
 	formData.set('completed', 'true')
 
-	const request = new Request('http://localhost/resources/homework-completion', {
-		method: 'POST',
-		body: formData,
-	})
+	const request = new Request(
+		'http://localhost/resources/homework-completion',
+		{
+			method: 'POST',
+			body: formData,
+		},
+	)
 	const result = (await action({ request } as any)) as {
 		type?: string
 		data?: unknown
@@ -162,10 +168,13 @@ test('action stores completion for authenticated user', async () => {
 	formData.set('contentId', '7:12:1')
 	formData.set('completed', 'true')
 
-	const request = new Request('http://localhost/resources/homework-completion', {
-		method: 'POST',
-		body: formData,
-	})
+	const request = new Request(
+		'http://localhost/resources/homework-completion',
+		{
+			method: 'POST',
+			body: formData,
+		},
+	)
 	const result = (await action({ request } as any)) as {
 		type?: string
 		data?: unknown

@@ -189,7 +189,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			: getPromoCookieValue({
 					promoName: SEASON_7_PROMOTIFICATION_NAME,
 					request,
-			}),
+				}),
 		ENV: getPublicEnv(),
 		randomFooterImageKey,
 		requestInfo: {

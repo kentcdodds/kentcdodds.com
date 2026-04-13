@@ -263,7 +263,7 @@ function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 							<Link
 								preventScrollReset
 								className={clsx(
-									'whitespace-nowrap hover:text-primary focus:text-primary focus:outline-none',
+									'hover:text-primary focus:text-primary whitespace-nowrap focus:outline-none',
 									{
 										'text-primary': season.seasonNumber === seasonNumber,
 										'text-slate-500': season.seasonNumber !== seasonNumber,

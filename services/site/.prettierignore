@@ -1,0 +1,10 @@
+/.cache
+/build
+/server-build
+/public/build
+/coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/.react-router/
+worker-configuration.d.ts

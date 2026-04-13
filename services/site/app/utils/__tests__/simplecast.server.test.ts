@@ -74,7 +74,9 @@ test('getYouTubeVideoId supports common youtube url formats', () => {
 		getYouTubeVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=abc'),
 	).toBe('dQw4w9WgXcQ')
 	expect(
-		getYouTubeVideoId('https://www.youtube.com/shorts/dQw4w9WgXcQ?feature=share'),
+		getYouTubeVideoId(
+			'https://www.youtube.com/shorts/dQw4w9WgXcQ?feature=share',
+		),
 	).toBe('dQw4w9WgXcQ')
 	expect(getYouTubeVideoId('https://kentcdodds.com')).toBeNull()
 })

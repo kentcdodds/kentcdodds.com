@@ -487,14 +487,18 @@ async function parseDescriptionMarkdown(
 		return {
 			descriptionHTML: descriptionInput,
 			youtubeVideoId:
-				youtubeVideoId ?? findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined,
+				youtubeVideoId ??
+				findFirstYouTubeVideoIdInText(descriptionInput) ??
+				undefined,
 		}
 	}
 
 	return {
 		descriptionHTML: result.value.toString(),
 		youtubeVideoId:
-			youtubeVideoId ?? findFirstYouTubeVideoIdInText(descriptionInput) ?? undefined,
+			youtubeVideoId ??
+			findFirstYouTubeVideoIdInText(descriptionInput) ??
+			undefined,
 	}
 }
 
