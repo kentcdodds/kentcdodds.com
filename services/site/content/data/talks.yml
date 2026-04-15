@@ -9,6 +9,29 @@
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2026-11-17
 
+- title: 'Building a Real AI assistant without extra inference cost'
+  deliveries:
+    - event: '[AI Engineer Miami](https://www.ai.engineer/miami)'
+      date: 2026-04-20
+  tags:
+    - ai
+    - mcp
+    - assistant
+    - agent
+    - security
+  description: >-
+    Most AI assistants are still just chats with tool access. This talk shows a
+    different approach: using MCP as a personal runtime. I'll walk through how
+    Kody uses `search`, `execute`, and `open_generated_ui` to discover
+    capabilities, run sandboxed workflows, manage and use memory, keep secrets
+    out of prompts, and turn generated interfaces into reusable software.
+
+
+    The goal isn't a better model. It's making AI assistants portable, secure,
+    and actually useful across MCP hosts. In this talk, you'll learn that with
+    the right primitives, you can create a highly capable assistant without
+    paying an extra cent for inference.
+
 - title: 'How I Build Web Applications in 2026'
   deliveries:
     - event: '[Resend DevTools Meetup](https://luma.com/ia00vywi)'
