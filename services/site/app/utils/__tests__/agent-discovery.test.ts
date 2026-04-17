@@ -29,7 +29,11 @@ test('only the homepage gets agent discovery headers', () => {
 })
 
 test('api catalog includes machine-readable agent resources', () => {
-	const catalog = getAgentApiCatalog(new Request('https://kentcdodds.com/'))
+	const catalog = getAgentApiCatalog(
+		new Request('https://kentcdodds.com/', {
+			headers: { host: 'kentcdodds.com' },
+		}),
+	)
 
 	expect(catalog.linkset[0]?.anchor).toBe(
 		'https://kentcdodds.com/.well-known/api-catalog',
