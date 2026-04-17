@@ -9,6 +9,7 @@ import {
 test('createMcpServerCard returns discovery metadata for the local MCP transport', () => {
 	const request = new Request(
 		'https://kentcdodds.com/.well-known/mcp/server-card.json',
+		{ headers: { host: 'kentcdodds.com' } },
 	)
 	const card = createMcpServerCard(request)
 
