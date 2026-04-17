@@ -1,4 +1,3 @@
-import { data as json } from 'react-router'
 import {
 	appendApiCatalogHeaders,
 	getAgentApiCatalog,
@@ -13,5 +12,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	})
 	appendApiCatalogHeaders(headers)
 
-	return json(getAgentApiCatalog(request), { headers })
+	const string = JSON.stringify(getAgentApiCatalog(request))
+	headers.set('Content-Length', String(Buffer.byteLength(string)))
+	return new Response(string, { headers })
 }
