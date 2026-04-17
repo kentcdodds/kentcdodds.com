@@ -92,7 +92,7 @@ export function registerSiteWebMcpTools() {
 	const registerToolCleanup = tryRegisterTools(
 		modelContext,
 		tools,
-		abortController.signal,
+		abortController,
 	)
 	if (registerToolCleanup) {
 		cleanupCallbacks.push(...registerToolCleanup)
@@ -134,18 +134,24 @@ function tryProvideContext(
 function tryRegisterTools(
 	modelContext: ModelContextLike,
 	tools: Array<ModelContextToolLike>,
-	signal: AbortSignal,
+	abortController: AbortController,
 ) {
 	if (typeof modelContext.registerTool !== 'function') return null
 
+	const cleanupCallbacks: Array<() => void> = []
+
 	try {
-		const cleanupCallbacks = tools.flatMap((tool) => {
-			const cleanup = modelContext.registerTool?.(tool, { signal })
-			return typeof cleanup === 'function' ? [cleanup] : []
-		})
+		for (const tool of tools) {
+			const cleanup = modelContext.registerTool?.(tool, {
+				signal: abortController.signal,
+			})
+			if (typeof cleanup === 'function') cleanupCallbacks.push(cleanup)
+		}
 		return cleanupCallbacks
 	} catch (error) {
 		console.warn('WebMCP registerTool registration failed', error)
+		abortController.abort()
+		for (const cleanup of cleanupCallbacks) cleanup()
 		return null
 	}
 }
