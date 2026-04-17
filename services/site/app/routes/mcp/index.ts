@@ -40,10 +40,14 @@ export async function action({ request }: Route.ActionArgs) {
 async function requireAuth(request: Request) {
 	const authInfo = await getAuthInfoFromOAuthFromRequest(request)
 	if (!authInfo) {
+		const resourceMetadataUrl = new URL(
+			'/.well-known/oauth-protected-resource/mcp',
+			request.url,
+		)
 		throw new Response('Unauthorized', {
 			status: 401,
 			headers: {
-				'WWW-Authenticate': `Bearer error="unauthorized", error_description="Unauthorized"`,
+				'WWW-Authenticate': `Bearer resource_metadata="${resourceMetadataUrl}", error="unauthorized", error_description="Unauthorized"`,
 			},
 		})
 	}
