@@ -5,6 +5,7 @@ import {
 	getApiCatalogResponse,
 	getApiDocsResponse,
 	getOpenApiResponse,
+	openApiPath,
 } from './utils/api-catalog.server.ts'
 import { getSitemapXml } from './utils/sitemap.server.ts'
 
@@ -20,7 +21,7 @@ const pathedRoutes: Record<string, Handler> = {
 	[apiDocsPath]: (request) => {
 		return getApiDocsResponse(request)
 	},
-	'/openapi.json': (request) => {
+	[openApiPath]: (request) => {
 		return getOpenApiResponse(request)
 	},
 	'/sitemap.xml': async (request, remixContext) => {

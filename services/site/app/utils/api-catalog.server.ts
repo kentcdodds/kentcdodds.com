@@ -28,6 +28,15 @@ function getAbsoluteUrl(origin: string, pathname: string) {
 	return pathname === '/' ? origin : `${origin}${pathname}`
 }
 
+function escapeHtml(value: string) {
+	return value
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#39;')
+}
+
 function createJsonResponse(
 	body: unknown,
 	{
@@ -309,6 +318,11 @@ function getApiDocsHtml(request: Request) {
 	const healthcheckUrl = getAbsoluteUrl(origin, healthcheckPath)
 	const searchUrl = `${getAbsoluteUrl(origin, '/resources/search')}?query=react`
 	const blogUrl = getAbsoluteUrl(origin, '/blog.json')
+	const safeCatalogUrl = escapeHtml(catalogUrl)
+	const safeOpenApiUrl = escapeHtml(openApiUrl)
+	const safeHealthcheckUrl = escapeHtml(healthcheckUrl)
+	const safeSearchUrl = escapeHtml(searchUrl)
+	const safeBlogUrl = escapeHtml(blogUrl)
 
 	return `<!doctype html>
 <html lang="en">
@@ -364,9 +378,9 @@ function getApiDocsHtml(request: Request) {
       <div class="card">
         <h2>Discovery</h2>
         <ul>
-          <li><a href="${catalogUrl}"><code>${catalogUrl}</code></a> - RFC 9727 API catalog</li>
-          <li><a href="${openApiUrl}"><code>${openApiUrl}</code></a> - OpenAPI 3.1 description</li>
-          <li><a href="${healthcheckUrl}"><code>${healthcheckUrl}</code></a> - Health endpoint</li>
+          <li><a href="${safeCatalogUrl}"><code>${safeCatalogUrl}</code></a> - RFC 9727 API catalog</li>
+          <li><a href="${safeOpenApiUrl}"><code>${safeOpenApiUrl}</code></a> - OpenAPI 3.1 description</li>
+          <li><a href="${safeHealthcheckUrl}"><code>${safeHealthcheckUrl}</code></a> - Health endpoint</li>
         </ul>
       </div>
 
@@ -381,10 +395,10 @@ function getApiDocsHtml(request: Request) {
 
       <div class="card">
         <h2>Quick examples</h2>
-        <pre>curl -H 'Accept: application/linkset+json' ${catalogUrl}
-curl ${openApiUrl}
-curl ${searchUrl}
-curl ${blogUrl}</pre>
+        <pre>curl -H 'Accept: application/linkset+json' ${safeCatalogUrl}
+curl ${safeOpenApiUrl}
+curl ${safeSearchUrl}
+curl ${safeBlogUrl}</pre>
       </div>
     </main>
   </body>
@@ -407,5 +421,6 @@ export {
 	getOpenApiDocument,
 	getOpenApiResponse,
 	linksetContentType,
+	openApiPath,
 	openApiContentType,
 }
