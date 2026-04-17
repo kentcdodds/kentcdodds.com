@@ -1,3 +1,5 @@
+import { escapeHtml } from './misc.ts'
+
 const callKentEpisodeArtworkSize = 200
 
 type GetPublishedCallKentEpisodeEmailParams = {
@@ -5,15 +7,6 @@ type GetPublishedCallKentEpisodeEmailParams = {
 	episodeTitle: string
 	episodeUrl: string
 	imageUrl?: string | null
-}
-
-function escapeHtml(value: string) {
-	return value
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;')
-		.replaceAll("'", '&#39;')
 }
 
 function getPublishedCallKentEpisodeEmail({

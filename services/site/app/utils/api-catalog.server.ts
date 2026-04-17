@@ -1,4 +1,4 @@
-import { getDomainUrl } from './misc.ts'
+import { escapeHtml, getDomainUrl } from './misc.ts'
 
 const apiCatalogPath = '/.well-known/api-catalog'
 const openApiPath = '/openapi.json'
@@ -26,15 +26,6 @@ type ApiCatalogDocument = {
 
 function getAbsoluteUrl(origin: string, pathname: string) {
 	return pathname === '/' ? origin : `${origin}${pathname}`
-}
-
-function escapeHtml(value: string) {
-	return value
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;')
-		.replaceAll("'", '&#39;')
 }
 
 function createJsonResponse(
@@ -412,7 +403,6 @@ function getApiDocsResponse(request: Request) {
 }
 
 export {
-	apiCatalogProfileUrl,
 	apiCatalogPath,
 	apiDocsPath,
 	getApiCatalogDocument,
