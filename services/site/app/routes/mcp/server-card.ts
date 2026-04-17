@@ -23,7 +23,7 @@ export function createMcpServerCard(request: Request) {
 			version: mcpServerVersion,
 		},
 		capabilities: {
-			tools: { dynamic: true },
+			tools: { dynamic: false },
 			resources: { dynamic: false },
 			prompts: { dynamic: false },
 		},
