@@ -96,6 +96,7 @@ async function maybeConvertHtmlResponseToMarkdown(response: Response) {
 	const html = await response.text()
 	const markdown = await convertHtmlToMarkdown(html)
 	const headers = new Headers(response.headers)
+	headers.delete('content-length')
 	headers.set('content-type', markdownContentType)
 	headers.set('x-markdown-tokens', String(estimateMarkdownTokens(markdown)))
 	appendVaryValue(headers, 'Accept')
