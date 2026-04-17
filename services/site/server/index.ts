@@ -4,10 +4,6 @@ import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import {
-	createRequestHandler,
-	type RequestHandler,
-} from '@react-router/express'
-import {
 	init as sentryInit,
 	setContext as sentrySetContext,
 } from '@sentry/react-router'
@@ -20,12 +16,13 @@ import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import onFinished from 'on-finished'
-import { type ServerBuild } from 'react-router'
+import { type RequestHandler, type ServerBuild } from 'react-router'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import { createRequestHandlerWithMarkdown } from './react-router-express-with-markdown.ts'
 
 sourceMapSupport.install()
 
@@ -426,7 +423,7 @@ async function getRequestHandler(): Promise<RequestHandler> {
 	function getLoadContext(req: any, res: any) {
 		return { cspNonce: res.locals.cspNonce }
 	}
-	return createRequestHandler({
+	return createRequestHandlerWithMarkdown({
 		build: MODE === 'development' ? getBuild : await getBuild(),
 		mode: MODE,
 		getLoadContext,
