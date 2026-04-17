@@ -19,12 +19,18 @@ const homepageAgentDiscoveryLinks = [
 	},
 ] as const
 
+type HomepageAgentDiscoveryLink = (typeof homepageAgentDiscoveryLinks)[number]
+
+function formatAgentDiscoveryLinkHeader(link: HomepageAgentDiscoveryLink) {
+	const params = [`rel="${link.rel}"`, `type="${link.type}"`]
+	if ('profile' in link) params.push(`profile="${link.profile}"`)
+	if (link.title) params.push(`title="${link.title}"`)
+	return `<${link.href}>; ${params.join('; ')}`
+}
+
 export function appendAgentDiscoveryHeaders(headers: Headers) {
 	for (const link of homepageAgentDiscoveryLinks) {
-		const params = [`rel="${link.rel}"`, `type="${link.type}"`]
-		if ('profile' in link) params.push(`profile="${link.profile}"`)
-		if (link.title) params.push(`title="${link.title}"`)
-		headers.append('Link', `<${link.href}>; ${params.join('; ')}`)
+		headers.append('Link', formatAgentDiscoveryLinkHeader(link))
 	}
 }
 
@@ -33,10 +39,11 @@ export function shouldAppendAgentDiscoveryHeaders(request: Request) {
 }
 
 export function appendApiCatalogHeaders(headers: Headers) {
-	headers.append(
-		'Link',
-		`</.well-known/api-catalog>; rel="api-catalog"; type="${apiCatalogMediaType}"; profile="${apiCatalogProfileUri}"; title="kentcdodds.com API catalog"`,
+	const apiCatalogLink = homepageAgentDiscoveryLinks.find(
+		(link) => link.rel === 'api-catalog',
 	)
+	if (!apiCatalogLink) return
+	headers.append('Link', formatAgentDiscoveryLinkHeader(apiCatalogLink))
 }
 
 export function getAgentApiCatalog(request: Request) {
