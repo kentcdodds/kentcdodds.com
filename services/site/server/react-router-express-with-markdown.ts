@@ -17,7 +17,7 @@ import {
 import {
 	maybeConvertHtmlResponseToMarkdown,
 	requestPrefersMarkdown,
-} from './markdown-negotiation.ts'
+} from './markdown-negotiation'
 
 type MaybePromise<T> = T | Promise<T>
 

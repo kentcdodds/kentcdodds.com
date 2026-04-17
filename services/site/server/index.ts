@@ -22,7 +22,7 @@ import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
-import { createRequestHandlerWithMarkdown } from './react-router-express-with-markdown.ts'
+import { createRequestHandlerWithMarkdown } from './react-router-express-with-markdown'
 
 sourceMapSupport.install()
 
