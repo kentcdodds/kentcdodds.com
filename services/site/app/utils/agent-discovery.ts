@@ -1,13 +1,14 @@
 import { getDomainUrl } from './misc.ts'
 
-const apiCatalogMediaType =
-	'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"'
+const apiCatalogMediaType = 'application/linkset+json'
+const apiCatalogProfileUri = 'https://www.rfc-editor.org/info/rfc9727'
 
 const homepageAgentDiscoveryLinks = [
 	{
 		href: '/.well-known/api-catalog',
 		rel: 'api-catalog',
 		type: apiCatalogMediaType,
+		profile: apiCatalogProfileUri,
 		title: 'kentcdodds.com API catalog',
 	},
 	{
@@ -21,6 +22,7 @@ const homepageAgentDiscoveryLinks = [
 export function appendAgentDiscoveryHeaders(headers: Headers) {
 	for (const link of homepageAgentDiscoveryLinks) {
 		const params = [`rel="${link.rel}"`, `type="${link.type}"`]
+		if ('profile' in link) params.push(`profile="${link.profile}"`)
 		if (link.title) params.push(`title="${link.title}"`)
 		headers.append('Link', `<${link.href}>; ${params.join('; ')}`)
 	}
@@ -33,7 +35,7 @@ export function shouldAppendAgentDiscoveryHeaders(request: Request) {
 export function appendApiCatalogHeaders(headers: Headers) {
 	headers.append(
 		'Link',
-		`</.well-known/api-catalog>; rel="api-catalog"; type="${apiCatalogMediaType}"; title="kentcdodds.com API catalog"`,
+		`</.well-known/api-catalog>; rel="api-catalog"; type="${apiCatalogMediaType}"; profile="${apiCatalogProfileUri}"; title="kentcdodds.com API catalog"`,
 	)
 }
 
