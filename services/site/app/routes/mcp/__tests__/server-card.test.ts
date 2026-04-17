@@ -22,7 +22,7 @@ test('createMcpServerCard returns discovery metadata for the local MCP transport
 		endpoint: `https://kentcdodds.com${mcpServerTransportPath}`,
 	})
 	expect(card.capabilities).toEqual({
-		tools: { dynamic: true },
+		tools: { dynamic: false },
 		resources: { dynamic: false },
 		prompts: { dynamic: false },
 	})
