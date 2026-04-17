@@ -37,7 +37,7 @@ function removeNonContentElements() {
 				)
 			) {
 				parent.children.splice(index, 1)
-				return [visit.SKIP, index]
+				return index
 			}
 		})
 	}

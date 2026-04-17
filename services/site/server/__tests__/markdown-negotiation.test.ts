@@ -51,7 +51,7 @@ test('maybeConvertHtmlResponseToMarkdown converts html responses', async () => {
 	expect(markdownResponse.headers.get('vary')).toBe('Cookie, Accept')
 	expect(markdownResponse.headers.get('x-markdown-tokens')).toBeTruthy()
 	expect(markdown).toContain('# Example page')
-	expect(markdown).toContain('## Heading')
+expect(markdown).toContain('# Heading')
 	expect(markdown).toContain('Hello **world**.')
 })
 

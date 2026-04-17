@@ -16,7 +16,7 @@ import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import onFinished from 'on-finished'
-import { type RequestHandler, type ServerBuild } from 'react-router'
+import { type ServerBuild } from 'react-router'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
@@ -419,7 +419,7 @@ app.use('/.well-known/{*splat}', (req, res, next) => {
 	next()
 })
 
-async function getRequestHandler(): Promise<RequestHandler> {
+async function getRequestHandler() {
 	function getLoadContext(req: any, res: any) {
 		return { cspNonce: res.locals.cspNonce }
 	}

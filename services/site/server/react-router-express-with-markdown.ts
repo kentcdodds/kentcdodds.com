@@ -2,7 +2,11 @@ import {
 	createReadableStreamFromReadable,
 	writeReadableStreamToWritable,
 } from '@react-router/node'
-import type { NextFunction, Request, Response } from 'express'
+import type {
+	NextFunction,
+	Request as ExpressRequest,
+	Response as ExpressResponse,
+} from 'express'
 import {
 	createRequestHandler as createReactRouterRequestHandler,
 	type AppLoadContext,
@@ -18,19 +22,19 @@ import {
 type MaybePromise<T> = T | Promise<T>
 
 type GetLoadContextFunction = (
-	req: Request,
-	res: Response,
+	req: ExpressRequest,
+	res: ExpressResponse,
 ) => UNSAFE_MiddlewareEnabled extends true
 	? MaybePromise<RouterContextProvider>
 	: MaybePromise<AppLoadContext>
 
 type ExpressRequestHandler = (
-	req: Request,
-	res: Response,
+	req: ExpressRequest,
+	res: ExpressResponse,
 	next: NextFunction,
 ) => Promise<void>
 
-function createRemixHeaders(requestHeaders: Request['headers']) {
+function createRemixHeaders(requestHeaders: ExpressRequest['headers']) {
 	const headers = new Headers()
 	for (const [key, values] of Object.entries(requestHeaders)) {
 		if (!values) continue
@@ -47,7 +51,7 @@ function createRemixHeaders(requestHeaders: Request['headers']) {
 	return headers
 }
 
-function createRemixRequest(req: Request, res: Response) {
+function createRemixRequest(req: ExpressRequest, res: ExpressResponse) {
 	const [, forwardedPortString] = req.get('X-Forwarded-Host')?.split(':') ?? []
 	const [, hostPortString] = req.get('host')?.split(':') ?? []
 	const forwardedPort = Number.parseInt(forwardedPortString ?? '', 10)
@@ -81,7 +85,7 @@ function createRemixRequest(req: Request, res: Response) {
 	return new Request(url.href, init)
 }
 
-async function sendResponse(res: Response, response: Response) {
+async function sendResponse(res: ExpressResponse, response: globalThis.Response) {
 	res.statusMessage = response.statusText
 	res.status(response.status)
 
@@ -106,13 +110,13 @@ function createRequestHandlerWithMarkdown({
 	getLoadContext,
 	mode = process.env.NODE_ENV,
 }: {
-	build: ServerBuild | (() => Promise<ServerBuild>)
+	build: ServerBuild | (() => ServerBuild | Promise<ServerBuild>)
 	getLoadContext?: GetLoadContextFunction
 	mode?: string
 }): ExpressRequestHandler {
 	const handleRequest = createReactRouterRequestHandler(build, mode)
 
-	return async (req: Request, res: Response, next: NextFunction) => {
+	return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
 		try {
 			const request = createRemixRequest(req, res)
 			const loadContext = await getLoadContext?.(req, res)
@@ -127,11 +131,6 @@ function createRequestHandlerWithMarkdown({
 			next(error)
 		}
 	}
-}
-
-async function getResponseText(response: Response) {
-	if (!response.body) return ''
-	return readableStreamToString(response.body, 'utf8')
 }
 
 export { createRequestHandlerWithMarkdown }
