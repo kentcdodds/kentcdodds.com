@@ -60,12 +60,6 @@ const NAVIGATION_DESTINATIONS = {
 	testimonials: '/testimonials',
 } as const satisfies Record<string, string>
 
-const WEB_MCP_TOOL_NAMES = [
-	'search_site_content',
-	'get_current_page_context',
-	'navigate_site',
-] as const
-
 declare global {
 	interface Navigator {
 		modelContext?: ModelContextLike
@@ -106,10 +100,6 @@ export function registerSiteWebMcpTools() {
 	}
 
 	return () => {}
-}
-
-export function getSiteWebMcpToolNames() {
-	return [...WEB_MCP_TOOL_NAMES]
 }
 
 function createCleanup(
@@ -266,6 +256,32 @@ async function executeSearchSiteContent(input: ToolInput) {
 			headers: { accept: 'application/json' },
 		},
 	)
+	if (!response.ok) {
+		let payload:
+			| {
+					error?: string
+					noCloseMatches?: boolean
+					results?: Array<Record<string, unknown>>
+			  }
+			| undefined
+
+		try {
+			payload = (await response.json()) as
+				| {
+						error?: string
+						noCloseMatches?: boolean
+						results?: Array<Record<string, unknown>>
+				  }
+				| undefined
+		} catch (error) {
+			console.warn('Search response was not JSON', error)
+		}
+
+		throw new Error(
+			payload?.error ?? `Search request failed (${response.status})`,
+		)
+	}
+
 	const payload = (await response.json()) as
 		| {
 				error?: string
@@ -273,12 +289,6 @@ async function executeSearchSiteContent(input: ToolInput) {
 				results?: Array<Record<string, unknown>>
 		  }
 		| undefined
-
-	if (!response.ok) {
-		throw new Error(
-			payload?.error ?? `Search request failed (${response.status})`,
-		)
-	}
 
 	const results = Array.isArray(payload?.results)
 		? payload.results.slice(0, maxResults)
@@ -340,7 +350,7 @@ async function navigateSite(input: ToolInput) {
 		throw new Error('destination is required')
 	}
 
-	if (!(destinationKey in NAVIGATION_DESTINATIONS)) {
+	if (!Object.hasOwn(NAVIGATION_DESTINATIONS, destinationKey)) {
 		throw new Error(`Unknown destination: ${destinationKey}`)
 	}
 
