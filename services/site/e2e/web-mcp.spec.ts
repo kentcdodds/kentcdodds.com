@@ -159,6 +159,7 @@ async function installThrowingCleanupState(page: Page) {
 	await page.addInitScript(() => {
 		Object.defineProperty(window, '__kcdWebMcpCleanup', {
 			configurable: true,
+			writable: true,
 			value: () => {
 				throw new Error('previous cleanup failed')
 			},
@@ -251,6 +252,15 @@ test('reinstalls WebMCP tools even if the previous cleanup throws', async ({
 				'navigate_site',
 			],
 		})
+
+	const cleanupReplaced = await page.evaluate(
+		() =>
+			typeof (window as Window).__kcdWebMcpCleanup === 'function' &&
+			(window as Window).__kcdWebMcpCleanup
+				?.toString()
+				.includes('cleanedUp') === true,
+	)
+	expect(cleanupReplaced).toBe(true)
 })
 
 test('navigate_site asks for confirmation without requestUserInteraction', async ({
