@@ -22,7 +22,6 @@ import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
-import { createRequestHandlerWithMarkdown } from './react-router-express-with-markdown'
 
 sourceMapSupport.install()
 
@@ -33,6 +32,10 @@ const localServerModuleExtension = import.meta.url.includes('/server-build/')
 async function importLocalServerModule<T>(specifier: string): Promise<T> {
 	return (await import(`${specifier}${localServerModuleExtension}`)) as T
 }
+
+const { createRequestHandlerWithMarkdown } = await importLocalServerModule<
+	typeof import('./react-router-express-with-markdown.ts')
+>('./react-router-express-with-markdown')
 
 const { scheduleExpiredDataCleanup } = await importLocalServerModule<
 	typeof import('./expired-sessions-cleanup.ts')
