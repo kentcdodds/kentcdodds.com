@@ -157,6 +157,7 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "remark-slug": "^7.0.1",
+    "remark-stringify": "^11.0.0",
     "request-ip": "^3.3.0",
     "server-timing": "^3.3.3",
     "source-map-support": "^0.5.21",

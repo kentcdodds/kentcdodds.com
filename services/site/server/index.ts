@@ -4,10 +4,6 @@ import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import {
-	createRequestHandler,
-	type RequestHandler,
-} from '@react-router/express'
-import {
 	init as sentryInit,
 	setContext as sentrySetContext,
 } from '@sentry/react-router'
@@ -36,6 +32,10 @@ const localServerModuleExtension = import.meta.url.includes('/server-build/')
 async function importLocalServerModule<T>(specifier: string): Promise<T> {
 	return (await import(`${specifier}${localServerModuleExtension}`)) as T
 }
+
+const { createRequestHandlerWithMarkdown } = await importLocalServerModule<
+	typeof import('./react-router-express-with-markdown.ts')
+>('./react-router-express-with-markdown')
 
 const { scheduleExpiredDataCleanup } = await importLocalServerModule<
 	typeof import('./expired-sessions-cleanup.ts')
@@ -422,11 +422,11 @@ app.use('/.well-known/{*splat}', (req, res, next) => {
 	next()
 })
 
-async function getRequestHandler(): Promise<RequestHandler> {
+async function getRequestHandler() {
 	function getLoadContext(req: any, res: any) {
 		return { cspNonce: res.locals.cspNonce }
 	}
-	return createRequestHandler({
+	return createRequestHandlerWithMarkdown({
 		build: MODE === 'development' ? getBuild : await getBuild(),
 		mode: MODE,
 		getLoadContext,
