@@ -21,6 +21,17 @@ const schemaBase = z.object({
 	EXPIRED_SESSIONS_CLEANUP_DISABLED: z.enum(['true', 'false']).optional(),
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
+	X402_WALLET_ADDRESS: z
+		.string()
+		.trim()
+		.regex(/^0x[a-fA-F0-9]{40}$/, 'must be a valid EVM wallet address')
+		.optional(),
+	X402_FACILITATOR_URL: absoluteHttpUrlString.optional(),
+	X402_PRICE_USD: z
+		.string()
+		.trim()
+		.regex(/^\$\d+(?:\.\d+)?$/, 'must be a USD price like $0.01')
+		.optional(),
 
 	FLY_APP_NAME: nonEmptyString,
 	FLY_REGION: nonEmptyString,

@@ -24,8 +24,13 @@ import { type ServerBuild } from 'react-router'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
+import { paymentMiddleware } from '@x402/express'
 import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import {
+	buildX402ProtectedRouteResponse,
+	getX402MiddlewareConfig,
+} from '../app/utils/x402.server.ts'
 
 sourceMapSupport.install()
 
@@ -421,6 +426,30 @@ app.use('/.well-known/{*splat}', (req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*')
 	next()
 })
+
+const x402Config = getX402MiddlewareConfig()
+
+if (x402Config) {
+	app.use(
+		paymentMiddleware(
+			{
+				[x402Config.routeKey]: {
+					accepts: x402Config.accepts,
+					description: x402Config.description,
+					mimeType: 'application/json',
+				},
+			},
+			x402Config.server,
+			undefined,
+			undefined,
+			false,
+		),
+	)
+
+	app.get(x402Config.endpointPath, (req, res) => {
+		res.json(buildX402ProtectedRouteResponse(req.originalUrl))
+	})
+}
 
 async function getRequestHandler(): Promise<RequestHandler> {
 	function getLoadContext(req: any, res: any) {
