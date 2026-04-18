@@ -29,7 +29,7 @@ function extractHtmlTitle(html: string) {
 		if (node.tagName !== 'title') return
 		const text = toString(node).replace(/\s+/g, ' ').trim()
 		title = text || null
-		return visit.EXIT
+		return false
 	})
 
 	return title
