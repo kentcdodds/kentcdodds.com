@@ -97,6 +97,13 @@ async function sendResponse(res: ExpressResponse, response: globalThis.Response)
 		res.append('Set-Cookie', cookie)
 	}
 
+	const contentType = response.headers.get('content-type')
+	const shouldVaryOnAccept =
+		response.ok && Boolean(contentType?.match(/\btext\/(html|markdown)\b/i))
+	if (shouldVaryOnAccept) {
+		res.vary('Accept')
+	}
+
 	if (response.headers.get('content-type')?.match(/text\/event-stream/i)) {
 		res.flushHeaders()
 	}
