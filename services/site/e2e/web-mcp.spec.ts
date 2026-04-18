@@ -155,6 +155,17 @@ async function readRegisterToolState(page: Page) {
 	})
 }
 
+async function installThrowingCleanupState(page: Page) {
+	await page.addInitScript(() => {
+		Object.defineProperty(window, '__kcdWebMcpCleanup', {
+			configurable: true,
+			value: () => {
+				throw new Error('previous cleanup failed')
+			},
+		})
+	})
+}
+
 test('registers WebMCP tools on page load with provideContext', async ({
 	page,
 }) => {
@@ -220,4 +231,92 @@ test('falls back to registerTool and executes WebMCP tools', async ({
 	expect(toolSummary.pageResult?.title).toContain('Kent C. Dodds')
 	expect(toolSummary.pageResult?.headings.length).toBeGreaterThan(0)
 	expect(toolSummary.pageResult?.textPreview.length).toBeGreaterThan(0)
+})
+
+test('reinstalls WebMCP tools even if the previous cleanup throws', async ({
+	page,
+}) => {
+	await installProvideContextShim(page)
+	await installThrowingCleanupState(page)
+	await page.goto('/')
+	await expect(page.getByRole('navigation')).toBeVisible()
+
+	await expect
+		.poll(() => readProvideContextState(page))
+		.toMatchObject({
+			provideContextCalls: 1,
+			names: [
+				'search_site_content',
+				'get_current_page_context',
+				'navigate_site',
+			],
+		})
+})
+
+test('navigate_site asks for confirmation without requestUserInteraction', async ({
+	page,
+}) => {
+	await installRegisterToolShim(page)
+	await page.goto('/')
+	await expect(page.getByRole('navigation')).toBeVisible()
+
+	await expect
+		.poll(() => readRegisterToolState(page))
+		.toMatchObject({
+			registerToolCalls: 3,
+			toolNames: [
+				'search_site_content',
+				'get_current_page_context',
+				'navigate_site',
+			],
+		})
+
+	const outcome = await page.evaluate(async () => {
+		const state = (
+			window as unknown as {
+				__webMcpTestState: {
+					tools: Array<RegisteredTool>
+				}
+			}
+		).__webMcpTestState
+		const navigateTool = state.tools.find(
+			(tool) => tool.name === 'navigate_site',
+		)
+		if (!navigateTool) throw new Error('Expected navigate_site tool')
+
+		const confirmCalls: Array<string> = []
+		const originalConfirm = window.confirm
+		window.confirm = (message?: string) => {
+			confirmCalls.push(message ?? '')
+			return false
+		}
+
+		try {
+			const result = (await navigateTool.execute({
+				destination: 'blog',
+			})) as {
+				cancelled?: boolean
+				destination?: string
+				url?: string
+			}
+
+			return {
+				result,
+				confirmCalls,
+				locationHref: window.location.href,
+			}
+		} finally {
+			window.confirm = originalConfirm
+		}
+	})
+
+	expect(outcome.confirmCalls).toEqual([
+		'Allow navigation to http://localhost:3000/blog?',
+	])
+	expect(outcome.result).toMatchObject({
+		cancelled: true,
+		destination: 'blog',
+		url: 'http://localhost:3000/blog',
+	})
+	expect(outcome.locationHref).toBe('http://localhost:3000/')
 })

@@ -71,7 +71,11 @@ declare global {
 }
 
 export function installSiteWebMcpTools() {
-	window.__kcdWebMcpCleanup?.()
+	try {
+		window.__kcdWebMcpCleanup?.()
+	} catch (error) {
+		console.warn('WebMCP previous cleanup failed', error)
+	}
 	window.__kcdWebMcpCleanup = registerSiteWebMcpTools()
 }
 
@@ -117,7 +121,9 @@ function createCleanup(
 }
 
 function runCleanupCallbacks(cleanupCallbacks: Array<() => void>) {
-	for (const cleanup of cleanupCallbacks) {
+	for (let index = cleanupCallbacks.length - 1; index >= 0; index--) {
+		const cleanup = cleanupCallbacks[index]
+		if (!cleanup) continue
 		try {
 			cleanup()
 		} catch (error) {
@@ -364,7 +370,10 @@ function truncateText(value: string, maxLength: number) {
 	return `${normalized.slice(0, maxLength - 3)}...`
 }
 
-async function navigateSite(input: ToolInput, client: ModelContextClientLike) {
+async function navigateSite(
+	input: ToolInput,
+	client: ModelContextClientLike | undefined,
+) {
 	const destinationKey = getTrimmedString(input, 'destination')
 	if (!destinationKey) {
 		throw new Error('destination is required')
@@ -384,16 +393,18 @@ async function navigateSite(input: ToolInput, client: ModelContextClientLike) {
 		if (query) url.searchParams.set('q', query)
 	}
 
-	if (client.requestUserInteraction) {
-		const shouldNavigate = await client.requestUserInteraction(async () =>
-			Promise.resolve(window.confirm(`Allow navigation to ${url.toString()}?`)),
-		)
-		if (!shouldNavigate) {
-			return {
-				cancelled: true,
-				destination: destinationKey,
-				url: url.toString(),
-			}
+	const shouldNavigate = client?.requestUserInteraction
+		? await client.requestUserInteraction(async () =>
+				Promise.resolve(
+					window.confirm(`Allow navigation to ${url.toString()}?`),
+				),
+			)
+		: window.confirm(`Allow navigation to ${url.toString()}?`)
+	if (!shouldNavigate) {
+		return {
+			cancelled: true,
+			destination: destinationKey,
+			url: url.toString(),
 		}
 	}
 
