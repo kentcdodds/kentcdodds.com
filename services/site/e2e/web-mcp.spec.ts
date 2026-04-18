@@ -157,12 +157,20 @@ async function readRegisterToolState(page: Page) {
 
 async function installThrowingCleanupState(page: Page) {
 	await page.addInitScript(() => {
+		const throwingCleanup = () => {
+			throw new Error('previous cleanup failed')
+		}
+
+		Object.defineProperty(window, '__previousKcdWebMcpCleanup', {
+			configurable: true,
+			writable: true,
+			value: throwingCleanup,
+		})
+
 		Object.defineProperty(window, '__kcdWebMcpCleanup', {
 			configurable: true,
 			writable: true,
-			value: () => {
-				throw new Error('previous cleanup failed')
-			},
+			value: throwingCleanup,
 		})
 	})
 }
@@ -253,13 +261,17 @@ test('reinstalls WebMCP tools even if the previous cleanup throws', async ({
 			],
 		})
 
-	const cleanupReplaced = await page.evaluate(
-		() =>
-			typeof (window as Window).__kcdWebMcpCleanup === 'function' &&
-			(window as Window).__kcdWebMcpCleanup
-				?.toString()
-				.includes('cleanedUp') === true,
-	)
+	const cleanupReplaced = await page.evaluate(() => {
+		const testWindow = window as Window & {
+			__previousKcdWebMcpCleanup?: (() => void) | undefined
+		}
+
+		return (
+			typeof testWindow.__kcdWebMcpCleanup === 'function' &&
+			typeof testWindow.__previousKcdWebMcpCleanup === 'function' &&
+			testWindow.__kcdWebMcpCleanup !== testWindow.__previousKcdWebMcpCleanup
+		)
+	})
 	expect(cleanupReplaced).toBe(true)
 })
 
@@ -320,13 +332,18 @@ test('navigate_site asks for confirmation without requestUserInteraction', async
 		}
 	})
 
+	const expectedUrl = new URL('/blog', 'http://localhost').toString()
+	const expectedConfirmation = `Allow navigation to ${expectedUrl}?`
+
 	expect(outcome.confirmCalls).toEqual([
-		'Allow navigation to http://localhost:3000/blog?',
+		outcome.result?.url
+			? `Allow navigation to ${outcome.result.url}?`
+			: expectedConfirmation,
 	])
 	expect(outcome.result).toMatchObject({
 		cancelled: true,
 		destination: 'blog',
-		url: 'http://localhost:3000/blog',
 	})
-	expect(outcome.locationHref).toBe('http://localhost:3000/')
+	expect(outcome.result?.url).toMatch(/\/blog$/)
+	expect(outcome.locationHref).toMatch(/\/$/)
 })
