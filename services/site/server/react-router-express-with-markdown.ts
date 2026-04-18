@@ -90,7 +90,11 @@ async function sendResponse(res: ExpressResponse, response: globalThis.Response)
 	res.status(response.status)
 
 	for (const [key, value] of response.headers.entries()) {
+		if (key.toLowerCase() === 'set-cookie') continue
 		res.append(key, value)
+	}
+	for (const cookie of getSetCookieHeaders(response.headers)) {
+		res.append('Set-Cookie', cookie)
 	}
 
 	if (response.headers.get('content-type')?.match(/text\/event-stream/i)) {
@@ -103,6 +107,12 @@ async function sendResponse(res: ExpressResponse, response: globalThis.Response)
 	}
 
 	res.end()
+}
+
+function getSetCookieHeaders(headers: Headers) {
+	return typeof headers.getSetCookie === 'function'
+		? headers.getSetCookie()
+		: []
 }
 
 function createRequestHandlerWithMarkdown({
@@ -133,4 +143,4 @@ function createRequestHandlerWithMarkdown({
 	}
 }
 
-export { createRequestHandlerWithMarkdown }
+export { createRequestHandlerWithMarkdown, getSetCookieHeaders }

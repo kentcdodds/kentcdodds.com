@@ -5,6 +5,7 @@ import {
 	maybeConvertHtmlResponseToMarkdown,
 	requestPrefersMarkdown,
 } from '../markdown-negotiation.ts'
+import { getSetCookieHeaders } from '../react-router-express-with-markdown.ts'
 
 test('requestPrefersMarkdown returns true when markdown outranks html', () => {
 	const accepts = (types: Array<string>) =>
@@ -64,4 +65,19 @@ test('maybeConvertHtmlResponseToMarkdown leaves non-html responses alone', async
 	const result = await maybeConvertHtmlResponseToMarkdown(response)
 
 	expect(result).toBe(response)
+})
+
+test('getSetCookieHeaders preserves multiple set-cookie headers', () => {
+	const response = new Response('ok', {
+		headers: [
+			['Set-Cookie', 'a=1; Path=/'],
+			['Set-Cookie', 'b=2; Path=/'],
+			['X-Test', 'ok'],
+		],
+	})
+
+	expect(getSetCookieHeaders(response.headers)).toEqual([
+		'a=1; Path=/',
+		'b=2; Path=/',
+	])
 })
