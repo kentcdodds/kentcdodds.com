@@ -75,7 +75,7 @@ export function installSiteWebMcpTools() {
 	window.__kcdWebMcpCleanup = registerSiteWebMcpTools()
 }
 
-export function registerSiteWebMcpTools() {
+function registerSiteWebMcpTools() {
 	const modelContext = navigator.modelContext
 	if (!modelContext) return () => {}
 
@@ -161,7 +161,7 @@ function tryRegisterTools(
 	} catch (error) {
 		console.warn('WebMCP registerTool registration failed', error)
 		abortController.abort()
-		for (const cleanup of cleanupCallbacks) cleanup()
+		runCleanupCallbacks(cleanupCallbacks)
 		return null
 	}
 }
