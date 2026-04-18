@@ -1,3 +1,4 @@
+import { toString } from 'hast-util-to-string'
 import { visit } from 'unist-util-visit'
 import rehypeParse from 'rehype-parse'
 import rehype2remark from 'rehype-remark'
@@ -7,7 +8,9 @@ import { unified } from 'unified'
 const markdownMediaType = 'text/markdown'
 const markdownContentType = `${markdownMediaType}; charset=utf-8`
 
-function requestPrefersMarkdown(accepts: (types: Array<string>) => string | false) {
+function requestPrefersMarkdown(
+	accepts: (types: Array<string>) => string | false,
+) {
 	return accepts(['text/html', markdownMediaType]) === markdownMediaType
 }
 
@@ -19,11 +22,17 @@ function responseCanBecomeMarkdown(response: Response) {
 }
 
 function extractHtmlTitle(html: string) {
-	const match = html.match(/<title>([\s\S]*?)<\/title>/i)
-	if (!match) return null
+	const tree = unified().use(rehypeParse).parse(html)
+	let title: string | null = null
 
-	const title = match[1]?.replace(/\s+/g, ' ').trim()
-	return title ? title : null
+	visit(tree, 'element', (node: any) => {
+		if (node.tagName !== 'title') return
+		const text = toString(node).replace(/\s+/g, ' ').trim()
+		title = text || null
+		return visit.EXIT
+	})
+
+	return title
 }
 
 function removeNonContentElements() {
