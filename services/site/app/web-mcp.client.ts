@@ -112,7 +112,17 @@ function createCleanup(
 		if (cleanedUp) return
 		cleanedUp = true
 		abortController.abort()
-		for (const cleanup of cleanupCallbacks) cleanup()
+		runCleanupCallbacks(cleanupCallbacks)
+	}
+}
+
+function runCleanupCallbacks(cleanupCallbacks: Array<() => void>) {
+	for (const cleanup of cleanupCallbacks) {
+		try {
+			cleanup()
+		} catch (error) {
+			console.warn('WebMCP cleanup callback failed', error)
+		}
 	}
 }
 
@@ -221,8 +231,8 @@ function createSiteTools(): Array<ModelContextToolLike> {
 				required: ['destination'],
 				additionalProperties: false,
 			},
-			async execute(input) {
-				return navigateSite(asToolInput(input))
+			async execute(input, client) {
+				return navigateSite(asToolInput(input), client)
 			},
 		},
 	]
@@ -312,6 +322,7 @@ function getCurrentPageContext() {
 	const main = document.querySelector('main')
 	const mainText =
 		main instanceof HTMLElement ? main.innerText : document.body.innerText
+	const canonicalLink = document.querySelector('link[rel="canonical"]')
 	const headingElements = document.querySelectorAll('main h1, main h2, main h3')
 	const headings = Array.from(headingElements)
 		.map((heading) => heading.textContent?.trim())
@@ -320,7 +331,10 @@ function getCurrentPageContext() {
 
 	return {
 		title: document.title,
-		url: window.location.href,
+		url:
+			canonicalLink instanceof HTMLLinkElement && canonicalLink.href
+				? canonicalLink.href
+				: window.location.href,
 		path: window.location.pathname,
 		description: getPageDescription(),
 		headings,
@@ -350,7 +364,7 @@ function truncateText(value: string, maxLength: number) {
 	return `${normalized.slice(0, maxLength - 3)}...`
 }
 
-async function navigateSite(input: ToolInput) {
+async function navigateSite(input: ToolInput, client: ModelContextClientLike) {
 	const destinationKey = getTrimmedString(input, 'destination')
 	if (!destinationKey) {
 		throw new Error('destination is required')
@@ -368,6 +382,19 @@ async function navigateSite(input: ToolInput) {
 	if (destinationKey === 'search') {
 		const query = getTrimmedString(input, 'query')
 		if (query) url.searchParams.set('q', query)
+	}
+
+	if (client.requestUserInteraction) {
+		const shouldNavigate = await client.requestUserInteraction(async () =>
+			Promise.resolve(window.confirm(`Allow navigation to ${url.toString()}?`)),
+		)
+		if (!shouldNavigate) {
+			return {
+				cancelled: true,
+				destination: destinationKey,
+				url: url.toString(),
+			}
+		}
 	}
 
 	window.location.assign(url.toString())
