@@ -14,6 +14,7 @@ import { prisma } from '#app/utils/prisma.server.js'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
+import { mcpServerName, mcpServerVersion } from './server-card.ts'
 
 export const requestStorage = new AsyncLocalStorage<Request>()
 
@@ -26,8 +27,8 @@ const transports = new Map<string, TransportEntry>()
 function createServer() {
 	const server = new McpServer(
 		{
-			name: 'kentcdodds.com',
-			version: '1.0.0',
+			name: mcpServerName,
+			version: mcpServerVersion,
 		},
 		{
 			capabilities: {
