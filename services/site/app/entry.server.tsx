@@ -11,6 +11,10 @@ import {
 	type LoaderFunctionArgs,
 	type HandleDocumentRequestFunction,
 } from 'react-router'
+import {
+	appendAgentDiscoveryHeaders,
+	shouldAppendAgentDiscoveryHeaders,
+} from '#app/utils/agent-discovery.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
@@ -55,6 +59,9 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		'Link',
 		'<https://res.cloudinary.com>; rel="preconnect"',
 	)
+	if (shouldAppendAgentDiscoveryHeaders(request)) {
+		appendAgentDiscoveryHeaders(responseHeaders)
+	}
 
 	// If the request is from a bot, we want to wait for the full
 	// response to render before sending it to the client. This
