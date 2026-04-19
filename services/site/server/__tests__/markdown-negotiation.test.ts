@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { execa } from 'execa'
 import { expect, test } from 'vitest'
 import {
 	markdownContentType,
@@ -80,4 +81,18 @@ test('getSetCookieHeaders preserves multiple set-cookie headers', () => {
 		'a=1; Path=/',
 		'b=2; Path=/',
 	])
+})
+
+test('react-router markdown handler imports under node native typescript', async () => {
+	const moduleUrl = new URL(
+		'../react-router-express-with-markdown.ts',
+		import.meta.url,
+	).href
+	const { stdout } = await execa('node', [
+		'--input-type=module',
+		'--eval',
+		`const mod = await import(${JSON.stringify(moduleUrl)}); console.log(typeof mod.createRequestHandlerWithMarkdown)`,
+	])
+
+	expect(stdout.trim()).toBe('function')
 })
