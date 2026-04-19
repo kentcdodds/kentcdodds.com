@@ -21,18 +21,17 @@ Use this skill when you need articles, podcast episodes, or other published cont
 
 ## Preferred workflow
 
-1. Fetch \`https://kentcdodds.com/blog.json\` first to enumerate blog posts with titles, descriptions, categories, dates, and canonical URLs.
-2. If the request might involve non-blog pages, fetch \`https://kentcdodds.com/sitemap.xml\` to discover canonical URLs across the site.
-3. If you need topical matching, query \`https://kentcdodds.com/search?query=<terms>\` and review the highest-signal results.
-4. Fetch the canonical page that best matches the request.
-5. When reading a page, prefer \`Accept: text/markdown\` so the site can return markdown instead of HTML when available.
+1. Query \`https://kentcdodds.com/search?query=<terms>\` first and review the highest-signal results.
+2. Fetch the canonical page that best matches the request.
+3. If the request might involve broader site discovery or you need alternate candidates, fetch \`https://kentcdodds.com/sitemap.xml\`.
+4. When reading a page, prefer \`Accept: text/markdown\` so the site can return markdown instead of HTML when available.
 
 ## Selection heuristics
 
 - Prefer canonical \`https://kentcdodds.com\` URLs over mirrors, embeds, or syndicated copies.
 - Prefer \`/blog/\` articles when the user wants detailed written guidance.
-- Use titles, descriptions, and categories from \`blog.json\` to narrow candidates before opening full pages.
-- If several posts match, prefer the newest relevant post unless the user asks for historical context.
+- Use the search results page to shortlist candidates before opening full pages.
+- If several results match, prefer the newest relevant post unless the user asks for historical context.
 `,
 } as const
 

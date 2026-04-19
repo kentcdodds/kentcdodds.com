@@ -43,6 +43,6 @@ test('skill markdown route serves the same artifact referenced by the index', as
 		getContentSearchSkillDigest(),
 	)
 	expect(body).toBe(getContentSearchSkillMarkdown())
-	expect(body).toContain('https://kentcdodds.com/blog.json')
+	expect(body).toContain('https://kentcdodds.com/search?query=<terms>')
 	expect(body).toContain('Accept: text/markdown')
 })
