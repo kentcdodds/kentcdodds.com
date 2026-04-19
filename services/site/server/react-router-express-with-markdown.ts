@@ -14,10 +14,16 @@ import {
 	type ServerBuild,
 	type UNSAFE_MiddlewareEnabled,
 } from 'react-router'
-import {
-	maybeConvertHtmlResponseToMarkdown,
-	requestPrefersMarkdown,
-} from './markdown-negotiation.js'
+
+const localServerModuleExtension = import.meta.url.includes('/server-build/')
+	? '.js'
+	: '.ts'
+const markdownNegotiationSpecifier = `./markdown-negotiation${localServerModuleExtension}`
+
+const { maybeConvertHtmlResponseToMarkdown, requestPrefersMarkdown } =
+	(await import(
+		markdownNegotiationSpecifier
+	)) as typeof import('./markdown-negotiation.ts')
 
 type MaybePromise<T> = T | Promise<T>
 
@@ -85,7 +91,10 @@ function createRemixRequest(req: ExpressRequest, res: ExpressResponse) {
 	return new Request(url.href, init)
 }
 
-async function sendResponse(res: ExpressResponse, response: globalThis.Response) {
+async function sendResponse(
+	res: ExpressResponse,
+	response: globalThis.Response,
+) {
 	res.statusMessage = response.statusText
 	res.status(response.status)
 
@@ -133,7 +142,11 @@ function createRequestHandlerWithMarkdown({
 }): ExpressRequestHandler {
 	const handleRequest = createReactRouterRequestHandler(build, mode)
 
-	return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+	return async (
+		req: ExpressRequest,
+		res: ExpressResponse,
+		next: NextFunction,
+	) => {
 		try {
 			const request = createRemixRequest(req, res)
 			const loadContext = await getLoadContext?.(req, res)
