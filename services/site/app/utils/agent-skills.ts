@@ -4,13 +4,15 @@ import { getDomainUrl } from './misc.ts'
 const agentSkillsDiscoverySchemaUrl =
 	'https://schemas.agentskills.io/discovery/0.2.0/schema.json'
 
-const contentSearchSkill = {
-	name: 'content-search',
-	type: 'skill-md',
-	description:
-		'Find relevant kentcdodds.com content and retrieve it from canonical, agent-friendly endpoints.',
-	path: '/.well-known/agent-skills/content-search/SKILL.md',
-	markdown: `---
+function createSha256Digest(contents: string) {
+	return `sha256:${createHash('sha256').update(contents, 'utf8').digest('hex')}`
+}
+
+function createContentDigestHeader(contents: string) {
+	return `sha-256=:${createHash('sha256').update(contents, 'utf8').digest('base64')}:`
+}
+
+const contentSearchSkillMarkdown = `---
 name: content-search
 description: Search kentcdodds.com content quickly and prefer canonical, agent-friendly sources.
 ---
@@ -32,23 +34,20 @@ Use this skill when you need articles, podcast episodes, or other published cont
 - Prefer \`/blog/\` articles when the user wants detailed written guidance.
 - Use the search results page to shortlist candidates before opening full pages.
 - If several results match, prefer the newest relevant post unless the user asks for historical context.
-`,
+`
+
+const contentSearchSkill = {
+	name: 'content-search',
+	type: 'skill-md',
+	description:
+		'Find relevant kentcdodds.com content and retrieve it from canonical, agent-friendly endpoints.',
+	path: '/.well-known/agent-skills/content-search/SKILL.md',
+	markdown: contentSearchSkillMarkdown,
+	digest: createSha256Digest(contentSearchSkillMarkdown),
+	contentDigest: createContentDigestHeader(contentSearchSkillMarkdown),
 } as const
 
 const agentSkillDefinitions = [contentSearchSkill] as const
-
-function createSha256Digest(contents: string) {
-	return `sha256:${createHash('sha256').update(contents, 'utf8').digest('hex')}`
-}
-
-function createContentDigestHeader(contents: string) {
-	return `sha-256=:${createHash('sha256').update(contents, 'utf8').digest('base64')}:`
-}
-
-const contentSearchSkillDigest = createSha256Digest(contentSearchSkill.markdown)
-const contentSearchSkillContentDigest = createContentDigestHeader(
-	contentSearchSkill.markdown,
-)
 export function getAgentSkillsDiscoveryDocument(request: Request) {
 	const origin = getDomainUrl(request)
 
@@ -59,10 +58,7 @@ export function getAgentSkillsDiscoveryDocument(request: Request) {
 			type: skill.type,
 			description: skill.description,
 			url: `${origin}${skill.path}`,
-			digest:
-				skill.name === contentSearchSkill.name
-					? contentSearchSkillDigest
-					: createSha256Digest(skill.markdown),
+			digest: skill.digest,
 		})),
 	} as const
 }
@@ -72,9 +68,9 @@ export function getContentSearchSkillMarkdown() {
 }
 
 export function getContentSearchSkillDigest() {
-	return contentSearchSkillDigest
+	return contentSearchSkill.digest
 }
 
 export function getContentSearchSkillContentDigest() {
-	return contentSearchSkillContentDigest
+	return contentSearchSkill.contentDigest
 }
