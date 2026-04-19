@@ -1,6 +1,7 @@
 import { getAgentSkillsDiscoveryDocument } from '#app/utils/agent-skills.ts'
+import { type Route } from './+types/agent-skills.index[.]json'
 
-export function loader({ request }: { request: Request }) {
+export function loader({ request }: Route.LoaderArgs) {
 	const body = JSON.stringify(getAgentSkillsDiscoveryDocument(request))
 
 	return new Response(body, {

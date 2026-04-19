@@ -41,11 +41,14 @@ function createSha256Digest(contents: string) {
 	return `sha256:${createHash('sha256').update(contents, 'utf8').digest('hex')}`
 }
 
-function createSha256ContentDigest(contents: string) {
-	const digest = createHash('sha256').update(contents, 'utf8').digest('base64')
-	return `sha-256=:${digest}:`
+function createContentDigestHeader(contents: string) {
+	return `sha-256=:${createHash('sha256').update(contents, 'utf8').digest('base64')}:`
 }
 
+const contentSearchSkillDigest = createSha256Digest(contentSearchSkill.markdown)
+const contentSearchSkillContentDigest = createContentDigestHeader(
+	contentSearchSkill.markdown,
+)
 export function getAgentSkillsDiscoveryDocument(request: Request) {
 	const origin = getDomainUrl(request)
 
@@ -56,7 +59,10 @@ export function getAgentSkillsDiscoveryDocument(request: Request) {
 			type: skill.type,
 			description: skill.description,
 			url: `${origin}${skill.path}`,
-			digest: createSha256Digest(skill.markdown),
+			digest:
+				skill.name === contentSearchSkill.name
+					? contentSearchSkillDigest
+					: createSha256Digest(skill.markdown),
 		})),
 	} as const
 }
@@ -66,9 +72,9 @@ export function getContentSearchSkillMarkdown() {
 }
 
 export function getContentSearchSkillDigest() {
-	return createSha256Digest(contentSearchSkill.markdown)
+	return contentSearchSkillDigest
 }
 
 export function getContentSearchSkillContentDigest() {
-	return createSha256ContentDigest(contentSearchSkill.markdown)
+	return contentSearchSkillContentDigest
 }
