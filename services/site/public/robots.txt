@@ -1,5 +1,10 @@
+# Signals:
+# search - build a search index and show results
+# ai-input - use content as live input for AI answers
+# ai-train - train or fine-tune AI models
+
 User-agent: *
-Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Content-Signal: ai-train=no, search=yes, ai-input=no
 Allow: /
 
 Sitemap: https://kentcdodds.com/sitemap.xml

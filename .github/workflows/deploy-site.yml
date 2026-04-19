@@ -148,8 +148,10 @@ jobs:
           restore-keys: |
             playwright-${{ runner.os }}-node${{ env.NODE_VERSION }}-
 
-      - name: 🎬 Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
+      - name: 🎬 Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
 
       - name: 🌐 Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
