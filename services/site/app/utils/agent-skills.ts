@@ -41,6 +41,11 @@ function createSha256Digest(contents: string) {
 	return `sha256:${createHash('sha256').update(contents, 'utf8').digest('hex')}`
 }
 
+function createSha256ContentDigest(contents: string) {
+	const digest = createHash('sha256').update(contents, 'utf8').digest('base64')
+	return `sha-256=:${digest}:`
+}
+
 export function getAgentSkillsDiscoveryDocument(request: Request) {
 	const origin = getDomainUrl(request)
 
@@ -62,4 +67,8 @@ export function getContentSearchSkillMarkdown() {
 
 export function getContentSearchSkillDigest() {
 	return createSha256Digest(contentSearchSkill.markdown)
+}
+
+export function getContentSearchSkillContentDigest() {
+	return createSha256ContentDigest(contentSearchSkill.markdown)
 }

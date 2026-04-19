@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { expect, test } from 'vitest'
 import {
+	getContentSearchSkillContentDigest,
 	getContentSearchSkillDigest,
 	getContentSearchSkillMarkdown,
 } from '#app/utils/agent-skills.ts'
@@ -40,7 +41,7 @@ test('skill markdown route serves the same artifact referenced by the index', as
 
 	expect(response.headers.get('Content-Type')).toContain('text/markdown')
 	expect(response.headers.get('Content-Digest')).toBe(
-		getContentSearchSkillDigest(),
+		getContentSearchSkillContentDigest(),
 	)
 	expect(body).toBe(getContentSearchSkillMarkdown())
 	expect(body).toContain('https://kentcdodds.com/search?query=<terms>')

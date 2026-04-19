@@ -1,5 +1,5 @@
 import {
-	getContentSearchSkillDigest,
+	getContentSearchSkillContentDigest,
 	getContentSearchSkillMarkdown,
 } from '#app/utils/agent-skills.ts'
 
@@ -9,7 +9,7 @@ export function loader() {
 	return new Response(markdown, {
 		headers: {
 			'Cache-Control': 'public, max-age=3600',
-			'Content-Digest': getContentSearchSkillDigest(),
+			'Content-Digest': getContentSearchSkillContentDigest(),
 			'Content-Length': String(Buffer.byteLength(markdown)),
 			'Content-Type': 'text/markdown; charset=utf-8',
 		},
