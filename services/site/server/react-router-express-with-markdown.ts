@@ -40,6 +40,39 @@ type ExpressRequestHandler = (
 	next: NextFunction,
 ) => Promise<void>
 
+const preflightAllowedMethods = 'GET,HEAD,PUT,PATCH,POST,DELETE'
+
+function handleOptionsPreflight(req: ExpressRequest, res: ExpressResponse) {
+	if (req.method !== 'OPTIONS') return false
+	if (!req.header('Access-Control-Request-Method')) return false
+
+	const existingVary = res.getHeader('Vary')
+	const varyBase = Array.isArray(existingVary)
+		? existingVary
+		: typeof existingVary === 'string'
+			? [existingVary]
+			: typeof existingVary === 'number'
+				? [String(existingVary)]
+				: []
+	const varyValues = new Set(
+		varyBase
+			.flatMap((value) => value.split(','))
+			.map((value) => value.trim())
+			.filter(Boolean),
+	)
+	varyValues.add('Origin')
+	varyValues.add('Access-Control-Request-Method')
+	varyValues.add('Access-Control-Request-Headers')
+	res.setHeader('Vary', Array.from(varyValues).join(', '))
+	res.header('Access-Control-Allow-Methods', preflightAllowedMethods)
+	res.header(
+		'Access-Control-Allow-Headers',
+		req.header('Access-Control-Request-Headers') || '*',
+	)
+	res.sendStatus(204)
+	return true
+}
+
 function createRemixHeaders(requestHeaders: ExpressRequest['headers']) {
 	const headers = new Headers()
 	for (const [key, values] of Object.entries(requestHeaders)) {
@@ -148,6 +181,8 @@ function createRequestHandlerWithMarkdown({
 		next: NextFunction,
 	) => {
 		try {
+			if (handleOptionsPreflight(req, res)) return
+
 			const request = createRemixRequest(req, res)
 			const loadContext = await getLoadContext?.(req, res)
 			let response = await handleRequest(request, loadContext)
