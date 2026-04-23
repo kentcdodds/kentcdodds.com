@@ -47,7 +47,6 @@ function handleOptionsPreflight(req: ExpressRequest, res: ExpressResponse) {
 	if (!req.header('Access-Control-Request-Method')) return false
 
 	const existingVary = res.getHeader('Vary')
-	res.setHeader('X-Preflight-Vary-Before', String(existingVary ?? ''))
 	const varyBase = Array.isArray(existingVary)
 		? existingVary
 		: typeof existingVary === 'string'
