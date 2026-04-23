@@ -44,6 +44,7 @@ const preflightAllowedMethods = 'GET,HEAD,PUT,PATCH,POST,DELETE'
 
 function handleOptionsPreflight(req: ExpressRequest, res: ExpressResponse) {
 	if (req.method !== 'OPTIONS') return false
+	if (!req.header('Access-Control-Request-Method')) return false
 
 	res.header('Access-Control-Allow-Methods', preflightAllowedMethods)
 	res.header(
