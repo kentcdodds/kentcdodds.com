@@ -7,5 +7,3 @@ declare module 'md5-hash' {
 	const md5 = md5Hash as unknown as (str: string) => string
 	export default md5
 }
-
-declare module 'on-headers'
