@@ -63,7 +63,8 @@ function handleOptionsPreflight(req: ExpressRequest, res: ExpressResponse) {
 	varyValues.add('Origin')
 	varyValues.add('Access-Control-Request-Method')
 	varyValues.add('Access-Control-Request-Headers')
-	res.setHeader('Vary', Array.from(varyValues).join(', '))
+	const varyHeader = Array.from(varyValues).join(', ')
+	res.setHeader('Vary', varyHeader)
 	res.header('Access-Control-Allow-Methods', preflightAllowedMethods)
 	res.header(
 		'Access-Control-Allow-Headers',
