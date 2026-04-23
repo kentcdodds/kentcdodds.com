@@ -40,6 +40,20 @@ type ExpressRequestHandler = (
 	next: NextFunction,
 ) => Promise<void>
 
+const preflightAllowedMethods = 'GET,HEAD,PUT,PATCH,POST,DELETE'
+
+function handleOptionsPreflight(req: ExpressRequest, res: ExpressResponse) {
+	if (req.method !== 'OPTIONS') return false
+
+	res.header('Access-Control-Allow-Methods', preflightAllowedMethods)
+	res.header(
+		'Access-Control-Allow-Headers',
+		req.header('Access-Control-Request-Headers') || '*',
+	)
+	res.sendStatus(204)
+	return true
+}
+
 function createRemixHeaders(requestHeaders: ExpressRequest['headers']) {
 	const headers = new Headers()
 	for (const [key, values] of Object.entries(requestHeaders)) {
@@ -148,6 +162,8 @@ function createRequestHandlerWithMarkdown({
 		next: NextFunction,
 	) => {
 		try {
+			if (handleOptionsPreflight(req, res)) return
+
 			const request = createRemixRequest(req, res)
 			const loadContext = await getLoadContext?.(req, res)
 			let response = await handleRequest(request, loadContext)
