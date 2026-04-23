@@ -46,8 +46,24 @@ function handleOptionsPreflight(req: ExpressRequest, res: ExpressResponse) {
 	if (req.method !== 'OPTIONS') return false
 	if (!req.header('Access-Control-Request-Method')) return false
 
-	res.vary('Access-Control-Request-Method')
-	res.vary('Access-Control-Request-Headers')
+	const existingVary = res.getHeader('Vary')
+	const varyBase = Array.isArray(existingVary)
+		? existingVary
+		: typeof existingVary === 'string'
+			? [existingVary]
+			: typeof existingVary === 'number'
+				? [String(existingVary)]
+				: []
+	const varyValues = new Set(
+		varyBase
+			.flatMap((value) => value.split(','))
+			.map((value) => value.trim())
+			.filter(Boolean),
+	)
+	varyValues.add('Origin')
+	varyValues.add('Access-Control-Request-Method')
+	varyValues.add('Access-Control-Request-Headers')
+	res.setHeader('Vary', Array.from(varyValues).join(', '))
 	res.header('Access-Control-Allow-Methods', preflightAllowedMethods)
 	res.header(
 		'Access-Control-Allow-Headers',
