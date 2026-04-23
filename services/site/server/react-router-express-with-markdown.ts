@@ -2,6 +2,7 @@ import {
 	createReadableStreamFromReadable,
 	writeReadableStreamToWritable,
 } from '@react-router/node'
+import onHeaders from 'on-headers'
 import type {
 	NextFunction,
 	Request as ExpressRequest,
@@ -46,10 +47,11 @@ function handleOptionsPreflight(req: ExpressRequest, res: ExpressResponse) {
 	if (req.method !== 'OPTIONS') return false
 	if (!req.header('Access-Control-Request-Method')) return false
 
-	res.setHeader(
-		'Vary',
-		'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
-	)
+	onHeaders(res, () => {
+		res.vary('Origin')
+		res.vary('Access-Control-Request-Method')
+		res.vary('Access-Control-Request-Headers')
+	})
 	res.header('Access-Control-Allow-Methods', preflightAllowedMethods)
 	res.header(
 		'Access-Control-Allow-Headers',
