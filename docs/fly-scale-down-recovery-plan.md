@@ -1,15 +1,15 @@
 # Fly.io Scale-Down Recovery Plan
 
 Recovery plan for kcd production when LiteFS/deployment issues cause cascading
-failures. Scale to a single instance, deploy the fix, verify, then scale back
-up.
+failures. Scale down to the two `dfw` machines, deploy the fix, verify, then
+scale back up slowly.
 
 ## Prerequisites
 
 - Fly CLI logged in (`fly auth whoami`)
 - FLY_MACHINE_ID fix committed and ready to deploy
 
-## Step 1: Scale Down
+## Step 1: Scale Down to Two `dfw` Machines
 
 First **identify the primary machine** (the one that must keep the LiteFS volume
 in **`dfw`**). Machine IDs change over time; do not rely on old IDs from this
@@ -31,21 +31,34 @@ doc.
    looks ambiguous, confirm in the Fly dashboard or against response headers
    (e.g. `X-Fly-Primary-Instance`) before deleting machines.
 
-2. **Destroy every other machine** (all replicas and any extra regional
-   instances). Example pattern — set `PRIMARY` to the id from step 1, verify it
-   is non-empty, then:
+2. Identify the **secondary `dfw` machine** you want to keep alongside the
+   primary. This should be a healthy `dfw` replica. Example JSON view:
+
+   ```bash
+   fly machines list -a kcd --json | jq -r '.[] | "\(.id) \(.region) \(.config.metadata.role // "unknown-role") \(.state)"'
+   ```
+
+   After this step, you should have exactly:
+   - the `dfw` primary machine
+   - one additional `dfw` machine
+
+3. **Destroy every other machine** (all non-`dfw` machines and any extra
+   `dfw` machines beyond the pair above). Example pattern — set `PRIMARY` and
+   `SECONDARY` to the ids you are keeping, verify both are non-empty, then:
 
    ```bash
    PRIMARY='<paste-primary-machine-id-here>'
+   SECONDARY='<paste-secondary-dfw-machine-id-here>'
    for id in $(fly machines list -a kcd --json | jq -r '.[].id'); do
-     if [ "$id" != "$PRIMARY" ]; then
+     if [ "$id" != "$PRIMARY" ] && [ "$id" != "$SECONDARY" ]; then
        fly machine destroy "$id" -a kcd --force
      fi
    done
    ```
 
 **Never destroy the primary machine** identified above — it holds the volume
-your app depends on.
+your app depends on. The goal is to end this step with exactly two started
+machines in `dfw`.
 
 ## Step 2: Deploy the Fix
 
@@ -69,8 +82,8 @@ fly deploy -a kcd --dockerfile services/site/Dockerfile \
 GitHub Actions can also deploy with upload enabled since it provides both
 values.
 
-This updates the single remaining machine with the new image (including the
-FLY_MACHINE_ID fix).
+This updates the remaining `dfw` pair with the new image (including the
+`FLY_MACHINE_ID` fix).
 
 ## Step 3: Verify
 
@@ -84,7 +97,7 @@ FLY_MACHINE_ID fix).
 Do **not** bring up all replicas at once. Clone the primary into one region,
 wait for health checks to pass, then move to the next region.
 
-Current standard regions:
+Current standard regions after `dfw`:
 
 - `dfw` (primary region; two instances for redundancy)
 - `gru`
@@ -141,8 +154,11 @@ regions (`dfw`/`gru`).
 - **Primary**: The primary holds the LiteFS volume; it must stay in **`dfw`**
   (`primary_region` in `fly.toml`). **Determine the current primary id before
   destroying anything** — see Step 1.
+- **Minimum recovery footprint**: Keep two started machines in `dfw` during the
+  recovery window so production stays concentrated in the primary region
+  without dropping to a single point of failure.
 - **Machine IDs**: Always resolve primary and replica ids from `fly machines
-  list` (or `--json`) before each run; they change when machines are replaced.
+list` (or `--json`) before each run; they change when machines are replaced.
 - **Avoid parallel startup**: Starting many regional machines concurrently can
   create noisy health-check failures and slow recovery; prefer strict serial
   rollout.

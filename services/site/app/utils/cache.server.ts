@@ -131,14 +131,21 @@ export const cache: CachifiedCache = {
 			void updatePrimaryCacheValue!({
 				key,
 				cacheValue: entry,
-			}).then((response: Response) => {
-				if (!response.ok) {
-					console.error(
-						`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-						{ entry },
-					)
-				}
 			})
+				.then((response: Response) => {
+					if (!response.ok) {
+						console.error(
+							`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
+							{ entry },
+						)
+					}
+				})
+				.catch((error: unknown) => {
+					console.error(
+						`Error updating cache value for key "${key}" on primary instance (${primaryInstance})`,
+						{ entry, error },
+					)
+				})
 		}
 	},
 	async delete(key) {
@@ -150,13 +157,20 @@ export const cache: CachifiedCache = {
 			void updatePrimaryCacheValue!({
 				key,
 				cacheValue: undefined,
-			}).then((response: Response) => {
-				if (!response.ok) {
-					console.error(
-						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-					)
-				}
 			})
+				.then((response: Response) => {
+					if (!response.ok) {
+						console.error(
+							`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
+						)
+					}
+				})
+				.catch((error: unknown) => {
+					console.error(
+						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance})`,
+						error,
+					)
+				})
 		}
 	},
 }

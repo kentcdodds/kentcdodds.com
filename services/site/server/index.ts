@@ -142,6 +142,13 @@ app.post('/__metronome', (req: any, res: any) => {
 	return res.send('Metronome is deprecated and no longer in use.')
 })
 
+app.get('/healthcheck', (_req, res) => {
+	// Keep Fly's app health check process-local so it can stay green even when
+	// LiteFS metadata or downstream dependencies are slow.
+	res.type('text/plain')
+	return res.send('OK')
+})
+
 app.use((req, res, next) => {
 	const metricName = 'middleware-get-instance-info'
 	startServerMetric(res, metricName, 'populate fly response headers')
