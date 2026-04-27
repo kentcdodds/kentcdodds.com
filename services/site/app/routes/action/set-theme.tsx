@@ -9,33 +9,15 @@ export async function loader() {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-	const contentType = request.headers.get('content-type')
-	const isJsonRequest = contentType?.includes('application/json') ?? false
-	const shouldTryJson = isJsonRequest || !contentType
-	if (shouldTryJson) {
-		let jsonPayload: unknown = null
-		try {
-			jsonPayload = await request.clone().json()
-		} catch (jsonError) {
-			if (isJsonRequest) {
-				return json({ error: 'Invalid JSON body.' }, { status: 400 })
-			}
+	let formData: FormData
+	try {
+		formData = await request.formData()
+	} catch (error) {
+		if (error instanceof TypeError) {
+			return json({ error: 'Invalid form body.' }, { status: 400 })
 		}
-
-		if (jsonPayload) {
-			const parsed = ThemeFormSchema.safeParse(jsonPayload)
-			if (!parsed.success) {
-				return json({ result: parsed.error.format() }, { status: 400 })
-			}
-			const { theme } = parsed.data
-			const responseInit = {
-				headers: { 'set-cookie': setTheme(theme) },
-			}
-			return json({ success: true, submission: parsed.data }, responseInit)
-		}
+		throw error
 	}
-
-	const formData = await request.formData()
 
 	const submission = parseWithZod(formData, {
 		schema: ThemeFormSchema,
