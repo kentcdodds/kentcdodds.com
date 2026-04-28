@@ -21,7 +21,7 @@ const flagshipProducts = [
 		id: 'epic-product',
 		promoKeywords: ['product', 'product-engineering', 'judgment'],
 		homeCard: {
-			title: 'Epic Product',
+			title: 'Epic Product Engineer',
 			description:
 				'Learn product engineering: judgment, constraints, and what should be built.',
 			label: 'Current focus: product engineering',
@@ -30,7 +30,7 @@ const flagshipProducts = [
 			...epicProductImage,
 		},
 		coursesCard: {
-			title: 'Epic Product',
+			title: 'Epic Product Engineer',
 			description:
 				'Learn product engineering: how to surface constraints, sharpen judgment, and decide what should be built before implementation.',
 			label: 'Current focus: product engineering',
@@ -39,7 +39,7 @@ const flagshipProducts = [
 			...epicProductImage,
 		},
 		blogCard: {
-			title: 'Epic Product',
+			title: 'Epic Product Engineer',
 			description:
 				'Learn product engineering: what should be built, why, and under what constraints.',
 			label: 'Product engineering training',

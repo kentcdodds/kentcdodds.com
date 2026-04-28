@@ -11,7 +11,7 @@ function CourseSection() {
 		<>
 			<HeaderSection
 				title="My flagship training"
-				subTitle="Start with Epic Product, then explore the rest of my courses."
+				subTitle="Start with Epic Product Engineer, then explore the rest of my courses."
 				cta="See all courses"
 				ctaUrl="/courses"
 				className="mb-16"

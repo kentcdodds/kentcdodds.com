@@ -69,7 +69,7 @@ function CoursesHome({ loaderData: data }: Route.ComponentProps) {
 		<>
 			<HeroSection
 				title="Level up as a developer."
-				subtitle="Start with Epic Product, my current focus, then go deeper on AI, full stack web, React, and testing."
+				subtitle="Start with Epic Product Engineer, my current focus, then go deeper on AI, full stack web, React, and testing."
 				imageBuilder={images.onewheel}
 			/>
 
