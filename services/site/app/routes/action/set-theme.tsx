@@ -9,7 +9,16 @@ export async function loader() {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-	const formData = await request.formData()
+	let formData: FormData
+	try {
+		formData = await request.formData()
+	} catch (error) {
+		if (error instanceof TypeError) {
+			return json({ error: 'Invalid form body.' }, { status: 400 })
+		}
+		throw error
+	}
+
 	const submission = parseWithZod(formData, {
 		schema: ThemeFormSchema,
 	})
