@@ -19,6 +19,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { TeamStats } from '#app/components/team-stats.tsx'
 import { H2, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
+import { getMatchingFlagshipProducts } from '#app/flagship-products.ts'
 import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import { type KCDHandle, type MdxListItem } from '#app/types.ts'
@@ -387,6 +388,9 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 		...(data.page.frontmatter.categories ?? []),
 		...(data.page.frontmatter.meta?.keywords ?? []),
 	]
+	const matchingFlagshipProducts = getMatchingFlagshipProducts(
+		categoriesAndKeywords,
+	)
 	useOnRead({
 		parentElRef: readMarker,
 		time: data.page.readTime?.time,
@@ -540,60 +544,13 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 				</Grid>
 			</main>
 
-			{categoriesAndKeywords.includes('react') ||
-			categoriesAndKeywords.includes('testing') ||
-			categoriesAndKeywords.includes('remix') ||
-			categoriesAndKeywords.includes('ai') ? (
+			{matchingFlagshipProducts.length ? (
 				<div className="px-10vw mx-auto mb-24 flex max-w-lg flex-col items-center justify-center gap-8 md:max-w-none md:flex-row">
-					{categoriesAndKeywords.includes('react') ? (
-						<div className="@container w-full max-w-lg">
-							<CourseCard
-								title="Epic React"
-								description="Get Really Good at React"
-								label="React course"
-								lightImageBuilder={images.courseEpicReact}
-								darkImageBuilder={images.courseEpicReactDark}
-								courseUrl="https://epicreact.dev"
-							/>
+					{matchingFlagshipProducts.map((product) => (
+						<div key={product.id} className="@container w-full max-w-lg">
+							<CourseCard {...product.blogCard} />
 						</div>
-					) : null}
-					{categoriesAndKeywords.includes('testing') ? (
-						<div className="@container w-full max-w-lg">
-							<CourseCard
-								title="Testing JavaScript"
-								description="Ship Apps with Confidence"
-								label="Testing course"
-								lightImageBuilder={images.courseTestingJS}
-								darkImageBuilder={images.courseTestingJSDark}
-								courseUrl="https://testingjavascript.com"
-							/>
-						</div>
-					) : null}
-					{categoriesAndKeywords.includes('remix') ? (
-						<div className="@container w-full max-w-lg">
-							<CourseCard
-								title="Epic Web"
-								description="Become a full stack web dev."
-								label="Full stack course"
-								lightImageBuilder={images.courseEpicWebLight}
-								darkImageBuilder={images.courseEpicWebDark}
-								courseUrl="https://www.epicweb.dev"
-							/>
-						</div>
-					) : null}
-					{categoriesAndKeywords.includes('ai') ||
-					categoriesAndKeywords.includes('mcp') ? (
-						<div className="@container w-full max-w-lg">
-							<CourseCard
-								title="Epic AI"
-								description="Learn to build AI-powered applications."
-								label="AI development course"
-								lightImageBuilder={images.courseEpicAILight}
-								darkImageBuilder={images.courseEpicAIDark}
-								courseUrl="https://www.epicai.pro"
-							/>
-						</div>
-					) : null}
+					))}
 				</div>
 			) : null}
 

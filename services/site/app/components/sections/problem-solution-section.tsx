@@ -180,27 +180,35 @@ function ProblemSolutionSection({
 								Date.now(),
 								new Date(2014, 0, 0),
 							)}
-              years. Tens of thousands of people have increased their confidence
-              in shipping software with
-            `}
+              years. My current focus is `}
+						<a
+							href="https://www.epicproduct.engineer"
+							className="text-orange-400!"
+						>
+							EpicProduct.engineer
+						</a>
+						{`, where I teach product engineering: how to surface constraints,
+              sharpen judgment, and decide what should be built before the code
+              gets written. If you want to go deeper technically, `}
+						<a href="https://www.epicai.pro" className="text-violet-400!">
+							EpicAI.pro
+						</a>
+						{`, `}
+						<a href="https://www.epicweb.dev" className="text-red-500!">
+							EpicWeb.dev
+						</a>
+						{`, `}
+						<a href="https://epicreact.dev" className="text-blue-500!">
+							EpicReact.dev
+						</a>
+						{`, and `}
 						<a
 							href="https://testingjavascript.com"
-							className="!text-yellow-500"
+							className="text-yellow-500!"
 						>
 							TestingJavaScript.com
 						</a>
-						{`
-              and even more have improved the performance and maintainability
-              of their React applications from what they've learned from
-            `}
-						<a href="https://epicreact.dev" className="!text-blue-500">
-							EpicReact.dev
-						</a>
-						{`. My latest efforts are pushing things to the whole stack with `}
-						<a href="https://www.epicstack.dev" className="!text-red-500">
-							EpicWeb.dev
-						</a>
-						.
+						{` cover AI, full stack web, React, and testing.`}
 					</Paragraph>
 
 					<ArrowLink to="/courses" className="mt-14">

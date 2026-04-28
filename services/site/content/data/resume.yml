@@ -68,10 +68,10 @@ experienceLong:
           across multiple companies; operating Epic Workshop (epicshop) for
           hands-on training at scale.'
       long:
-        - 'Building Epic* training: EpicReact, EpicWeb, TestingJavaScript,
-          EpicAI (MCP) serving 49k+ engineers; several-hundred-dollar pricing;
-          tens of millions in revenue since 2019 via individual and enterprise
-          licenses.'
+        - 'Building Epic* training: EpicProduct, EpicReact, EpicWeb,
+          TestingJavaScript, and EpicAI (MCP) serving 49k+ engineers;
+          several-hundred-dollar pricing; tens of millions in revenue since 2019
+          via individual and enterprise licenses.'
         - 'Standardized user-centric testing with Testing Library (33m+ weekly
           downloads); query APIs adopted in Playwright (18m+ weekly) and Vitest
           (30m+).'
@@ -79,7 +79,7 @@ experienceLong:
           stars) with hundreds of OSS projects and significant internal adoption
           across multiple companies.'
         - 'Operating Epic Workshop (epicshop), enabling hands-on training at
-          scale across EpicAI, EpicWeb, and EpicReact.'
+          scale across EpicProduct, EpicAI, EpicWeb, and EpicReact.'
   - company: 'Remix'
     role: 'Director of Developer Experience'
     dates: '2021–2022'
@@ -166,17 +166,17 @@ experienceShort:
           across multiple companies; operating Epic Workshop (epicshop) for
           hands-on training at scale.'
       long:
-        - 'Building Epic* training (EpicReact, EpicWeb, TestingJavaScript,
-          EpicAI) serving 49k+ engineers; several-hundred-dollar pricing; tens
-          of millions in revenue since 2019 via individual and enterprise
-          licenses.'
+        - 'Building Epic* training (EpicProduct, EpicReact, EpicWeb,
+          TestingJavaScript, EpicAI) serving 49k+ engineers;
+          several-hundred-dollar pricing; tens of millions in revenue since 2019
+          via individual and enterprise licenses.'
         - 'Standardized user-centric testing with Testing Library (33m+ weekly
           downloads); query APIs adopted in Playwright and Vitest.'
         - 'Designing Epic Stack as a production-ready reference app (5.5k GitHub
           stars) with hundreds of OSS projects and significant internal adoption
           across multiple companies.'
         - 'Operating Epic Workshop (epicshop), enabling hands-on training at
-          scale across EpicAI, EpicWeb, and EpicReact.'
+          scale across EpicProduct, EpicAI, EpicWeb, and EpicReact.'
   - company: 'Remix'
     role: 'Director of Developer Experience'
     dates: '2021–2022'

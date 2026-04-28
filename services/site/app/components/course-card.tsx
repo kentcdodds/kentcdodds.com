@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
+import { type CSSProperties } from 'react'
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
 import { Themed } from '#app/utils/theme.tsx'
 import { ArrowIcon } from './icons.tsx'
@@ -30,11 +31,28 @@ export type CourseCardProps = {
 			imageBuilder: ImageBuilder
 			lightImageBuilder?: never
 			darkImageBuilder?: never
+			imageSrc?: never
+			imageAlt?: never
+			imageClassName?: never
+			imageStyle?: never
 	  }
 	| {
 			imageBuilder?: never
 			lightImageBuilder: ImageBuilder
 			darkImageBuilder: ImageBuilder
+			imageSrc?: never
+			imageAlt?: never
+			imageClassName?: never
+			imageStyle?: never
+	  }
+	| {
+			imageBuilder?: never
+			lightImageBuilder?: never
+			darkImageBuilder?: never
+			imageSrc: string
+			imageAlt: string
+			imageClassName?: string
+			imageStyle?: CSSProperties
 	  }
 )
 
@@ -82,33 +100,80 @@ function CourseCardLink({
 	)
 }
 
+function CourseCardImage({
+	imageBuilder,
+	lightImageBuilder,
+	darkImageBuilder,
+	imageSrc,
+	imageAlt,
+	imageClassName,
+	imageStyle,
+	baseClassName,
+	widths,
+	sizes,
+}: {
+	imageBuilder?: ImageBuilder
+	lightImageBuilder?: ImageBuilder
+	darkImageBuilder?: ImageBuilder
+	imageSrc?: string
+	imageAlt?: string
+	imageClassName?: string
+	imageStyle?: CSSProperties
+	baseClassName: string
+	widths: Array<number>
+	sizes: Array<string>
+}) {
+	function getImg(builder: ImageBuilder) {
+		return (
+			<img
+				loading="lazy"
+				{...getImgProps(builder, {
+					className: clsx(baseClassName),
+					widths,
+					sizes,
+				})}
+			/>
+		)
+	}
+
+	if (imageBuilder) {
+		return getImg(imageBuilder)
+	}
+
+	if (imageSrc && imageAlt) {
+		return (
+			<img
+				alt={imageAlt}
+				className={clsx(baseClassName, imageClassName)}
+				loading="lazy"
+				src={imageSrc}
+				style={imageStyle}
+			/>
+		)
+	}
+
+	return (
+		<Themed
+			light={getImg(lightImageBuilder!)}
+			dark={getImg(darkImageBuilder!)}
+		/>
+	)
+}
+
 export function CourseCard({
 	title,
 	description,
 	imageBuilder,
 	darkImageBuilder,
 	lightImageBuilder,
+	imageSrc,
+	imageAlt,
+	imageClassName,
+	imageStyle,
 	courseUrl,
 	label,
 	horizontal = false,
 }: CourseCardProps) {
-	function getImg(builder: ImageBuilder) {
-		return (
-			<img
-				loading="lazy"
-				{...getImgProps(builder, {
-					className: clsx('z-10 h-[70%] w-auto'),
-					widths: [152, 304, 456, 608, 760, 940],
-					sizes: [
-						'(max-width: 375px) 152px',
-						'(min-width: 376px) and (max-width: 767px) 304px',
-						'470px',
-					],
-				})}
-			/>
-		)
-	}
-
 	return (
 		<div
 			className={clsx(
@@ -127,18 +192,26 @@ export function CourseCard({
 				</div>
 				<div
 					className={clsx(
-						'flex aspect-[4/3] items-center justify-center rounded-xl border border-gray-300 dark:border-black dark:border-gray-950',
-						horizontal && '@2xl:aspect-[11/6]',
+						'flex aspect-4/3 items-center justify-center rounded-xl border border-gray-300 dark:border-gray-950',
+						horizontal && '@2xl:aspect-11/6',
 					)}
 				>
-					{imageBuilder ? (
-						getImg(imageBuilder)
-					) : (
-						<Themed
-							light={getImg(lightImageBuilder)}
-							dark={getImg(darkImageBuilder)}
-						/>
-					)}
+					<CourseCardImage
+						baseClassName="z-10 h-[70%] w-auto"
+						darkImageBuilder={darkImageBuilder}
+						imageAlt={imageAlt}
+						imageBuilder={imageBuilder}
+						imageClassName={imageClassName}
+						imageSrc={imageSrc}
+						imageStyle={imageStyle}
+						lightImageBuilder={lightImageBuilder}
+						sizes={[
+							'(max-width: 375px) 152px',
+							'(min-width: 376px) and (max-width: 767px) 304px',
+							'470px',
+						]}
+						widths={[152, 304, 456, 608, 760, 940]}
+					/>
 
 					<svg
 						viewBox="0 0 440 240"
@@ -205,31 +278,26 @@ export function SmallCourseCard({
 	imageBuilder,
 	lightImageBuilder,
 	darkImageBuilder,
+	imageSrc,
+	imageAlt,
+	imageClassName,
+	imageStyle,
 	courseUrl,
 }: CourseCardProps) {
-	function getImg(builder: ImageBuilder) {
-		return (
-			<img
-				loading="lazy"
-				{...getImgProps(builder, {
-					className: 'h-32 w-auto flex-none object-contain',
-					widths: [128, 256, 384],
-					sizes: ['8rem'],
-				})}
-			/>
-		)
-	}
-
 	return (
-		<div className="course-card-gradient dark:bg-gray-850 relative col-span-full flex flex-col items-start overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-[rgba(0,0,0,0.05)] ring-inset @sm:p-9 @2xl/grid:col-span-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)] [&:nth-child(3n-2)]:col-span-12">
-			{imageBuilder ? (
-				getImg(imageBuilder)
-			) : (
-				<Themed
-					light={getImg(lightImageBuilder)}
-					dark={getImg(darkImageBuilder)}
-				/>
-			)}
+		<div className="course-card-gradient dark:bg-gray-850 relative col-span-full flex flex-col items-start overflow-hidden rounded-2xl bg-gray-100 p-6 ring-1 ring-[rgba(0,0,0,0.05)] ring-inset @sm:p-9 @2xl/grid:col-span-6 @2xl/grid:p-9 @6xl/grid:p-12 dark:ring-[rgba(255,255,255,0.05)]">
+			<CourseCardImage
+				baseClassName="h-32 w-auto flex-none object-contain"
+				darkImageBuilder={darkImageBuilder}
+				imageAlt={imageAlt}
+				imageBuilder={imageBuilder}
+				imageClassName={imageClassName}
+				imageSrc={imageSrc}
+				imageStyle={imageStyle}
+				lightImageBuilder={lightImageBuilder}
+				sizes={['8rem']}
+				widths={[128, 256, 384]}
+			/>
 
 			<h2 className={clsx(titleClassName, 'mt-12 pr-10')}>{title}</h2>
 			<p className={clsx(descriptionClassName, 'mt-2 mb-6 max-w-[700px]')}>

@@ -11,6 +11,7 @@ import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { TestimonialSection } from '#app/components/sections/testimonial-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
+import { flagshipProducts } from '#app/flagship-products.ts'
 import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import {
@@ -61,11 +62,14 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 }
 
 function CoursesHome({ loaderData: data }: Route.ComponentProps) {
+	const featuredProduct = flagshipProducts[0]!
+	const supportingProducts = flagshipProducts.slice(1)
+
 	return (
 		<>
 			<HeroSection
 				title="Level up as a developer."
-				subtitle="Invest in yourself with a premium dev course."
+				subtitle="Start with Epic Product, my current focus, then go deeper on AI, full stack web, React, and testing."
 				imageBuilder={images.onewheel}
 			/>
 
@@ -110,50 +114,18 @@ function CoursesHome({ loaderData: data }: Route.ComponentProps) {
 				Courses
 			</h2>
 
-			<Grid className="@container/grid !grid-cols-12 gap-6 md:gap-6 xl:gap-8">
-				<div className="@container col-span-full @2xl:col-span-6">
-					<CourseCard
-						title="Epic AI"
-						description="Learn to architect next-generation, AI-powered applications that are adaptive, context-aware, and deeply personalized using the Model Context Protocol (MCP)."
-						label="AI development course"
-						lightImageBuilder={images.courseEpicAILight}
-						darkImageBuilder={images.courseEpicAIDark}
-						courseUrl="https://www.epicai.pro"
-						horizontal
-					/>
+			<Grid className="@container/grid grid-cols-12! gap-6 md:gap-6 xl:gap-8">
+				<div className="@container col-span-full">
+					<CourseCard {...featuredProduct.coursesCard} />
 				</div>
-				<div className="@container col-span-full @2xl:col-span-6">
-					<CourseCard
-						title="Epic Web"
-						description="The best way to learn how to build Epic, full stack web applications you'll love to work on and your users will love to use."
-						label="Full stack course"
-						lightImageBuilder={images.courseEpicWebLight}
-						darkImageBuilder={images.courseEpicWebDark}
-						courseUrl="https://www.epicweb.dev"
-						horizontal
-					/>
-				</div>
-				<div className="@container col-span-full @2xl:col-span-6">
-					<CourseCard
-						title="Epic React"
-						description="The most comprehensive guide for pros."
-						label="React course"
-						lightImageBuilder={images.courseEpicReact}
-						darkImageBuilder={images.courseEpicReactDark}
-						courseUrl="https://epicreact.dev"
-					/>
-				</div>
-
-				<div className="@container col-span-full lg:mt-0 @2xl:col-span-6">
-					<CourseCard
-						title="Testing JavaScript"
-						description="Learn smart, efficient testing methods."
-						label="Testing course"
-						lightImageBuilder={images.courseTestingJS}
-						darkImageBuilder={images.courseTestingJSDark}
-						courseUrl="https://testingjavascript.com"
-					/>
-				</div>
+				{supportingProducts.map((product) => (
+					<div
+						key={product.id}
+						className="@container col-span-full lg:mt-0 @2xl:col-span-6"
+					>
+						<CourseCard {...product.coursesCard} />
+					</div>
+				))}
 
 				<SmallCourseCard
 					title="Advanced Remix"
