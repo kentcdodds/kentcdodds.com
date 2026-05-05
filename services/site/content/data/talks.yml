@@ -9,6 +9,34 @@
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2026-11-17
 
+- title: 'Building with Remix 3'
+  resources:
+    - '[Remix](https://remix.run)'
+    - '[Remix 3 API docs](https://api.remix.run/)'
+  deliveries:
+    - event:
+        '[Remix Utah
+        Meetup](https://www.meetup.com/remix-utah/events/314099238/)'
+      date: 2026-05-07
+  tags:
+    - remix
+    - web
+    - full-stack
+    - ai
+    - live coding
+  description: >-
+    Remix 3 wakes Remix up in a completely new direction: a batteries-included,
+    zero-dependency, bundler-free framework built around Web APIs, runtime-first
+    design, and one cohesive `remix` package. In this live-coded talk, I'll use
+    the current beta to build a real app and explore the full stack: serving
+    requests, routing, data schemas, forms and file uploads, sessions, auth,
+    storage, middleware, the CLI, testing, and UI.
+
+
+    Along the way, we'll talk about what it means for Remix 3 to avoid critical
+    dependencies and static-analysis magic, and how model-first design changes
+    framework APIs for humans and AI agents.
+
 - title: 'Build a Free Agent'
   deliveries:
     - event: '[AI Engineer Miami](https://www.ai.engineer/miami)'
