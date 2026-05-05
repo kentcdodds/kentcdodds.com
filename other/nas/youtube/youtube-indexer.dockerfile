@@ -18,7 +18,7 @@ COPY services/call-kent-audio-worker/package.json services/call-kent-audio-worke
 COPY services/search-worker/package.json services/search-worker/package.json
 COPY services/search-shared/package.json services/search-shared/package.json
 
-RUN npm ci --workspace=kentcdodds.com
+RUN npm ci --workspace=kentcdodds.com --include-workspace-root
 
 COPY . .
 
