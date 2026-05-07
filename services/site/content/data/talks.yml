@@ -9,6 +9,40 @@
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2026-11-17
 
+- title: 'The Last Software Engineer'
+  resources:
+    - '[article](https://www.epicproduct.engineer/the-last-software-engineer)'
+  deliveries:
+    - event:
+        '[WeAreDevelopers World
+        Congress](https://www.wearedevelopers.com/world-congress)'
+      date: 2026-07-09
+  tags:
+    - ai
+    - product engineering
+    - software development
+    - career
+  description: >-
+    I'm not here to tell you software engineering is ending soon. Nobody can put
+    a reliable date on that, and pretending otherwise is a distraction. But we
+    also have to admit something humbling: a year ago, most of us would not have
+    predicted coding agents would be this good. That should make us less
+    confident about predicting what they'll be able to do one year, or five
+    years, from now.
+
+
+    So let's use "The Last Software Engineer" as a thought exercise. If AI keeps
+    taking over more of the implementation work, what remains most human and
+    valuable for us to do? In this talk, we'll take one step back from the
+    hypothetical end and focus on the durable skill that has always separated
+    great engineers from merely productive ones: judgment.
+
+
+    The future belongs not to people who only know how to build, but to people
+    who know what should be built. We'll talk about product engineering,
+    accountability, trade-offs, constraints, evaluation, and how to keep making
+    software worth having in an AI era.
+
 - title: 'Building with Remix 3'
   resources:
     - '[Remix](https://remix.run)'
