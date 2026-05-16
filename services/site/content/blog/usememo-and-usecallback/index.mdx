@@ -466,7 +466,7 @@ function RenderPrimes({ iterations, multiplier }) {
 ```
 
 That could be pretty slow given the right `iterations` or `multiplier` and
-there's not too much you can do about that specifically. You can't automagically
+there's not too much you can do about that specifically. You can't automatically
 make your user's hardware faster. But you _can_ make it so you never have to
 calculate the same value twice in a row, which is what `useMemo` will do for
 you:
