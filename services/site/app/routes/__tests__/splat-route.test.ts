@@ -1,7 +1,11 @@
 import { createStaticHandler } from 'react-router'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import { action, loader } from '../$.tsx'
+
+vi.mock('vite-env-only/macros', () => ({
+	serverOnly$: (fn: unknown) => fn,
+}))
 
 type StaticHandlerContext = Awaited<
 	ReturnType<ReturnType<typeof createStaticHandler>['query']>
