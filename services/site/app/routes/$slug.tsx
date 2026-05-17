@@ -87,6 +87,27 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	)
 }
 
+export async function action({ params, request }: Route.ActionArgs) {
+	requireValidSlug(params.slug)
+
+	if (pathedRoutes[new URL(request.url).pathname]) {
+		return new Response('Not found', { status: 404 })
+	}
+
+	const page = await getMdxPage(
+		{ contentDir: 'pages', slug: params.slug },
+		{ request },
+	)
+	if (!page) {
+		return new Response('Not found', { status: 404 })
+	}
+
+	return new Response('Method Not Allowed', {
+		status: 405,
+		headers: { Allow: 'GET, HEAD' },
+	})
+}
+
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta = mdxPageMeta
