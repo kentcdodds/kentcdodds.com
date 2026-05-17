@@ -18,7 +18,7 @@ type RouteErrorResponse = {
 	error?: unknown
 }
 
-test.each(['/RSC/example.txt', '/session/root/shell', '/session'])(
+test.each(['/RSC/example.txt', '/session/root/shell'])(
 	'catch-all POST to %s returns a normal 404 route response',
 	async (pathname) => {
 		const handler = createStaticHandler([
