@@ -18,7 +18,7 @@ vi.mock('#app/components/arrow-button.tsx', () => ({
 vi.mock('#app/components/blurrable-image.tsx', () => ({
 	BlurrableImage: () => null,
 }))
-vi.mock('#app/components/error-boundary.tsx', () => ({
+vi.mock('#app/components/error-boundary', () => ({
 	GeneralErrorBoundary: () => null,
 }))
 vi.mock('#app/components/errors.tsx', () => ({
