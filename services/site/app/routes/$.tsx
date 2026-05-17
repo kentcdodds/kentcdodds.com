@@ -45,6 +45,10 @@ export async function loader({ request }: { request: Request }) {
 	})
 }
 
+export function action() {
+	return new Response('Not found', { status: 404 })
+}
+
 export default function NotFound() {
 	// due to the loader, this component will never be rendered, but we'll return
 	// the error boundary just in case.
