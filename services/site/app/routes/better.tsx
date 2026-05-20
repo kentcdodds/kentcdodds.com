@@ -15,6 +15,7 @@ import {
 } from '#app/components/icons.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
@@ -95,6 +96,15 @@ function PlaceholderBadge({ children }: { children: ReactNode }) {
 	)
 }
 
+function YouTubeButtonLabel({ children }: { children: ReactNode }) {
+	return (
+		<>
+			<YoutubeIcon size={28} />
+			<span className="pl-1">{children}</span>
+		</>
+	)
+}
+
 export default function BetterRoute() {
 	return (
 		<>
@@ -111,7 +121,7 @@ export default function BetterRoute() {
 						target="_blank"
 						rel="noreferrer noopener"
 					>
-						<YoutubeIcon /> Watch on YouTube
+						<YouTubeButtonLabel>Watch on YouTube</YouTubeButtonLabel>
 					</ButtonLink>
 				}
 			/>
@@ -163,7 +173,7 @@ export default function BetterRoute() {
 							target="_blank"
 							rel="noreferrer noopener"
 						>
-							<YoutubeIcon /> Subscribe on YouTube
+							<YouTubeButtonLabel>Subscribe on YouTube</YouTubeButtonLabel>
 						</ButtonLink>
 					</div>
 				</Grid>
@@ -240,47 +250,54 @@ export default function BetterRoute() {
 					</div>
 				</Grid>
 
-				<Grid className="mb-24 lg:mb-64" featured>
-					<div className="col-span-full lg:col-span-5">
-						<H6 as="h2" className="mb-6">
-							Episode 1 spotlight
-						</H6>
-						<H2 className="mb-8">The Last Software Engineer</H2>
-						<Paragraph className="mb-12">
-							The first episode is upcoming and starts with the question behind
-							Kent's essay: if AI changes the day-to-day mechanics of writing
-							code, what kind of engineer remains valuable?
-						</Paragraph>
-						<ArrowLink href={lastSoftwareEngineerUrl} direction="top-right">
-							Read the essay
-						</ArrowLink>
-					</div>
-					<div className="col-span-full mt-12 lg:col-span-6 lg:col-start-7 lg:mt-0">
-						<div className="bg-primary rounded-lg p-8 shadow-xl lg:p-12 dark:bg-gray-950">
-							<Paragraph
-								prose={false}
-								className="mb-6 text-base tracking-[0.25em] uppercase"
-								textColorClassName="text-secondary"
-							>
-								Coming soon
-							</Paragraph>
-							<H3 className="mb-6">Episode 1: The Last Software Engineer</H3>
-							<Paragraph className="mb-8">
-								Watch the first episode on YouTube when it lands. The feed is
-								ready for podcast apps too, but YouTube is the best place to
-								follow the show first.
-							</Paragraph>
-							<ButtonLink
-								variant="secondary"
-								href={betterYouTubeUrl}
-								target="_blank"
-								rel="noreferrer noopener"
-							>
-								<YoutubeIcon /> Watch on YouTube
-							</ButtonLink>
-						</div>
+				<Grid>
+					<div className="bg-secondary col-span-full rounded-lg px-8 py-12 md:px-14 md:py-16 lg:px-20 lg:py-20">
+						<Grid nested rowGap className="items-start">
+							<div className="col-span-full lg:col-span-5">
+								<H6 as="h2" className="mb-6">
+									Episode 1 spotlight
+								</H6>
+								<H2 className="mb-8">The Last Software Engineer</H2>
+								<Paragraph className="mb-12">
+									The first episode is upcoming and starts with the question
+									behind Kent's essay: if AI changes the day-to-day mechanics of
+									writing code, what kind of engineer remains valuable?
+								</Paragraph>
+								<ArrowLink href={lastSoftwareEngineerUrl} direction="top-right">
+									Read the essay
+								</ArrowLink>
+							</div>
+							<div className="col-span-full lg:col-span-6 lg:col-start-7">
+								<div className="bg-primary rounded-lg p-8 shadow-xl lg:p-12 dark:bg-gray-950">
+									<Paragraph
+										prose={false}
+										className="mb-6 text-base tracking-[0.25em] uppercase"
+										textColorClassName="text-secondary"
+									>
+										Coming soon
+									</Paragraph>
+									<H3 className="mb-6">
+										Episode 1: The Last Software Engineer
+									</H3>
+									<Paragraph className="mb-8">
+										Watch the first episode on YouTube when it lands. The feed
+										is ready for podcast apps too, but YouTube is the best place
+										to follow the show first.
+									</Paragraph>
+									<ButtonLink
+										variant="secondary"
+										href={betterYouTubeUrl}
+										target="_blank"
+										rel="noreferrer noopener"
+									>
+										<YouTubeButtonLabel>Watch on YouTube</YouTubeButtonLabel>
+									</ButtonLink>
+								</div>
+							</div>
+						</Grid>
 					</div>
 				</Grid>
+				<Spacer size="sm" />
 
 				<Grid className="mb-24 lg:mb-64">
 					<div className="col-span-full lg:col-span-6 lg:col-start-7">
@@ -334,7 +351,7 @@ export default function BetterRoute() {
 									target="_blank"
 									rel="noreferrer noopener"
 								>
-									Watch on YouTube
+									<YouTubeButtonLabel>Watch on YouTube</YouTubeButtonLabel>
 								</ButtonLink>
 							}
 						/>
@@ -405,7 +422,7 @@ export default function BetterRoute() {
 								target="_blank"
 								rel="noreferrer noopener"
 							>
-								<YoutubeIcon /> Subscribe on YouTube
+								<YouTubeButtonLabel>Subscribe on YouTube</YouTubeButtonLabel>
 							</ButtonLink>
 							<ExternalTextLink href={betterRssUrl}>RSS feed</ExternalTextLink>
 						</div>
