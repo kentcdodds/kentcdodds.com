@@ -70,6 +70,7 @@ function SitemapSection() {
 				<FooterLink name="Home" href="/" />
 				<FooterLink name="Blog" href="/blog" />
 				<FooterLink name="Courses" href="/courses" />
+				<FooterLink name="Better" href="/better" />
 				<FooterLink name="Discord" href="/discord" />
 				<FooterLink name="Chats Podcast" href="/chats" />
 				<FooterLink name="Talks" href="/talks" />

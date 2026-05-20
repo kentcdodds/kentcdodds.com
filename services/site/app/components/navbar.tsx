@@ -41,7 +41,6 @@ function useNavbarLinks(): {
 } {
 	const { latestPodcastSeasonLinks } = useRootData()
 
-	const chatsTo = latestPodcastSeasonLinks?.chats.latestSeasonPath ?? '/chats'
 	const callsTo = latestPodcastSeasonLinks?.calls.latestSeasonPath ?? '/calls'
 
 	const links = React.useMemo<Array<NavbarLinkItem>>(
@@ -49,12 +48,12 @@ function useNavbarLinks(): {
 			{ id: 'blog', name: 'Blog', to: '/blog' },
 			{ id: 'talks', name: 'Talks', to: '/talks' },
 			{ id: 'courses', name: 'Courses', to: '/courses' },
+			{ id: 'better', name: 'Better', to: '/better' },
 			{ id: 'discord', name: 'Discord', to: '/discord' },
-			{ id: 'chats', name: 'Chats', to: chatsTo, activeTo: '/chats' },
 			{ id: 'calls', name: 'Calls', to: callsTo, activeTo: '/calls' },
 			{ id: 'about', name: 'About', to: '/about' },
 		],
-		[chatsTo, callsTo],
+		[callsTo],
 	)
 
 	const mobileLinks = React.useMemo(

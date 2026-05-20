@@ -65,7 +65,4 @@ body:has(#mobile-menu:popover-open) [popovertarget='mobile-menu'] {
 	.navbar-links [data-nav-item='discord'] {
 		display: none;
 	}
-	.navbar-links [data-nav-item='chats'] {
-		display: none;
-	}
 }
