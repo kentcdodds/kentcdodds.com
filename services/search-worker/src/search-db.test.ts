@@ -1,5 +1,6 @@
 import { expect, test, vi } from 'vitest'
-import { queryLexicalSearch } from './search-db'
+import { type LexicalSearchArtifact } from '@kcd-internal/search-shared'
+import { queryLexicalSearch, replaceSearchSource } from './search-db'
 
 function createDb({
 	onAll,
@@ -24,6 +25,112 @@ function createDb({
 
 	return { db, boundQueries }
 }
+
+type BoundStatement = {
+	sql: string
+	values: Array<unknown>
+}
+
+function createBatchDb() {
+	const boundStatements: Array<BoundStatement> = []
+	const db = {
+		prepare: vi.fn((sql: string) => ({
+			bind: vi.fn((...values: Array<unknown>) => ({ sql, values })),
+		})),
+		batch: vi.fn(async (statements: Array<D1PreparedStatement>) => {
+			boundStatements.push(...(statements as unknown as Array<BoundStatement>))
+			return []
+		}),
+	} as unknown as D1Database
+
+	return { db, boundStatements }
+}
+
+test('replaceSearchSource scopes duplicate chunk storage ids by source', async () => {
+	const { db, boundStatements } = createBatchDb()
+	const artifact: LexicalSearchArtifact = {
+		version: 1,
+		generatedAt: '2026-05-27T00:00:00.000Z',
+		chunks: [
+			{
+				id: 'youtube:abc123def45:chunk:0',
+				type: 'youtube',
+				slug: 'abc123def45',
+				url: '/youtube?video=abc123def45',
+				title: 'Duplicate Test Video',
+				snippet: 'First duplicate chunk.',
+				text: 'first chunk text',
+				chunkIndex: 0,
+				chunkCount: 2,
+			},
+			{
+				id: 'youtube:abc123def45:chunk:0',
+				type: 'youtube',
+				slug: 'abc123def45',
+				url: '/youtube?video=abc123def45',
+				title: 'Duplicate Test Video',
+				snippet: 'Second duplicate chunk.',
+				text: 'second chunk text',
+				chunkIndex: 1,
+				chunkCount: 2,
+			},
+		],
+	}
+
+	await replaceSearchSource({
+		db,
+		sourceKey: 'lexical-search/repo-content.json',
+		artifact,
+		syncedAt: '2026-05-27T01:00:00.000Z',
+	})
+	await replaceSearchSource({
+		db,
+		sourceKey: 'lexical-search/youtube.json',
+		artifact,
+		syncedAt: '2026-05-27T01:00:00.000Z',
+	})
+
+	const chunkInsertStatements = boundStatements.filter((statement) =>
+		statement.sql.includes('INSERT INTO lexical_chunks'),
+	)
+	const chunkStorageIds = chunkInsertStatements.map((statement) =>
+		String(statement.values[0]),
+	)
+	expect(chunkStorageIds).toEqual([
+		JSON.stringify([
+			'chunk',
+			'lexical-search/repo-content.json',
+			'youtube:abc123def45:chunk:0',
+			0,
+		]),
+		JSON.stringify([
+			'chunk',
+			'lexical-search/repo-content.json',
+			'youtube:abc123def45:chunk:0',
+			1,
+		]),
+		JSON.stringify([
+			'chunk',
+			'lexical-search/youtube.json',
+			'youtube:abc123def45:chunk:0',
+			0,
+		]),
+		JSON.stringify([
+			'chunk',
+			'lexical-search/youtube.json',
+			'youtube:abc123def45:chunk:0',
+			1,
+		]),
+	])
+	expect(new Set(chunkStorageIds).size).toBe(chunkStorageIds.length)
+
+	const docInsertStatements = boundStatements.filter((statement) =>
+		statement.sql.includes('INSERT INTO lexical_docs'),
+	)
+	expect(docInsertStatements.map((statement) => statement.values[7])).toEqual([
+		2, 2,
+	])
+})
 
 test('queryLexicalSearch quotes hyphenated date tokens for FTS', async () => {
 	const { db, boundQueries } = createDb({
