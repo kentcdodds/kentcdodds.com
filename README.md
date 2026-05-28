@@ -18,7 +18,7 @@ Vite, and an Express server.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) `24`
+- [Node.js](https://nodejs.org/) `26`
 - `npm` `>=10`
 - [git](https://git-scm.com/)
 

@@ -1,4 +1,4 @@
-FROM node:24-bookworm-slim
+FROM node:26-bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	ca-certificates \
@@ -21,6 +21,9 @@ COPY services/search-shared/package.json services/search-shared/package.json
 RUN npm ci --workspace=kentcdodds.com --include-workspace-root
 
 COPY . .
+
+RUN chown -R node:node /app
+USER node
 
 # Default `docker run image` with no args. NAS script passes
 # `node --env-file=/run/secrets/youtube-indexer.env …` so secrets stay out of

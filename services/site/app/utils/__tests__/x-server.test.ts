@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { describe, expect, test, vi } from 'vitest'
 import { mswServer } from '#tests/msw-server.ts'
 import { type Tweet } from '../twitter/types/index.ts'
-import { getTweetEmbedHTML } from '../x.server.ts'
+import { getMetadataFromHtml, getTweetEmbedHTML } from '../x.server.ts'
 
 vi.mock('../cache.server.ts', () => ({
 	cache: {
@@ -122,5 +122,74 @@ describe('getTweetEmbedHTML', () => {
 			"It's not bad. I'm making progress and doing good work, but it's just utter chaos. I kinda like it.",
 		)
 		expect(html).not.toContain('class="tweet-read-more"')
+	})
+})
+
+test('getMetadataFromHtml extracts social metadata', () => {
+	const metadata = getMetadataFromHtml(
+		`
+			<html>
+				<head>
+					<title>Fallback title</title>
+					<meta property="og:title" content="Open Graph title" />
+					<meta name="description" content="Plain description" />
+					<meta property="og:image" content="/social.png" />
+				</head>
+			</html>
+		`,
+		'https://example.com/articles/node',
+	)
+
+	expect(metadata).toEqual({
+		title: 'Open Graph title',
+		description: 'Plain description',
+		image: 'https://example.com/social.png',
+	})
+})
+
+test('getMetadataFromHtml falls back to the document title', () => {
+	const metadata = getMetadataFromHtml(
+		`
+			<html>
+				<head>
+					<title>Fallback title</title>
+				</head>
+			</html>
+		`,
+		'https://example.com/articles/node',
+	)
+
+	expect(metadata.title).toBe('Fallback title')
+})
+
+test('getMetadataFromHtml preserves absolute image URLs', () => {
+	const metadata = getMetadataFromHtml(
+		`
+			<html>
+				<head>
+					<meta property="og:image" content="https://cdn.example.com/social.png" />
+				</head>
+			</html>
+		`,
+		'https://example.com/articles/node',
+	)
+
+	expect(metadata.image).toBe('https://cdn.example.com/social.png')
+})
+
+test('getMetadataFromHtml leaves missing metadata undefined', () => {
+	const metadata = getMetadataFromHtml(
+		`
+			<html>
+				<head></head>
+			</html>
+		`,
+		'https://example.com/articles/node',
+	)
+
+	expect(metadata).toEqual({
+		title: undefined,
+		description: undefined,
+		image: undefined,
 	})
 })
