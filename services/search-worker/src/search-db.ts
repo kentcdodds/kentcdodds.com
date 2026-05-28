@@ -122,6 +122,48 @@ type LexicalDocRecord = {
 	transcriptSource?: string
 }
 
+function getStorageId(parts: ReadonlyArray<string | number>) {
+	return JSON.stringify(parts)
+}
+
+function getStorageDocId({
+	sourceKey,
+	docId,
+}: {
+	sourceKey: string
+	docId: string
+}) {
+	return getStorageId(['doc', sourceKey, docId])
+}
+
+function getStorageChunkId({
+	sourceKey,
+	chunkId,
+	duplicateIndex,
+}: {
+	sourceKey: string
+	chunkId: string
+	duplicateIndex: number
+}) {
+	return getStorageId(['chunk', sourceKey, chunkId, duplicateIndex])
+}
+
+function getResultChunkId(storageChunkId: string) {
+	try {
+		const parts: unknown = JSON.parse(storageChunkId)
+		if (
+			Array.isArray(parts) &&
+			parts[0] === 'chunk' &&
+			typeof parts[2] === 'string'
+		) {
+			return parts[2]
+		}
+	} catch {
+		// Existing rows may use raw chunk IDs instead of JSON storage IDs.
+	}
+	return storageChunkId
+}
+
 function asString(value: unknown): string | undefined {
 	return typeof value === 'string' ? value : undefined
 }
@@ -185,14 +227,15 @@ function buildDocRecords({
 			url: chunk.url,
 			title: chunk.title,
 		})
-		const existing = docs.get(docId)
+		const storageDocId = getStorageDocId({ sourceKey, docId })
+		const existing = docs.get(storageDocId)
 		if (existing) {
 			existing.chunkCount += 1
 			continue
 		}
 
-		docs.set(docId, {
-			docId,
+		docs.set(storageDocId, {
+			docId: storageDocId,
 			sourceKey,
 			type: chunk.type,
 			slug: chunk.slug,
@@ -246,13 +289,7 @@ async function setMetadataValue({
 		.run()
 }
 
-async function getMetadataValue({
-	db,
-	key,
-}: {
-	db: D1Database
-	key: string
-}) {
+async function getMetadataValue({ db, key }: { db: D1Database; key: string }) {
 	const row = await db
 		.prepare('SELECT value FROM service_metadata WHERE key = ?')
 		.bind(key)
@@ -295,10 +332,16 @@ export async function replaceSearchSource({
 }) {
 	const docs = buildDocRecords({ sourceKey, artifact })
 	const statements: Array<D1PreparedStatement> = [
-		db.prepare('DELETE FROM lexical_search_fts WHERE sourceKey = ?').bind(sourceKey),
-		db.prepare('DELETE FROM lexical_chunks WHERE sourceKey = ?').bind(sourceKey),
+		db
+			.prepare('DELETE FROM lexical_search_fts WHERE sourceKey = ?')
+			.bind(sourceKey),
+		db
+			.prepare('DELETE FROM lexical_chunks WHERE sourceKey = ?')
+			.bind(sourceKey),
 		db.prepare('DELETE FROM lexical_docs WHERE sourceKey = ?').bind(sourceKey),
-		db.prepare('DELETE FROM lexical_sources WHERE sourceKey = ?').bind(sourceKey),
+		db
+			.prepare('DELETE FROM lexical_sources WHERE sourceKey = ?')
+			.bind(sourceKey),
 		db
 			.prepare(
 				`
@@ -337,6 +380,7 @@ export async function replaceSearchSource({
 		)
 	}
 
+	const chunkIdCounts = new Map<string, number>()
 	for (const chunk of artifact.chunks) {
 		const docId = getLexicalDocId({
 			chunkId: chunk.id,
@@ -345,6 +389,14 @@ export async function replaceSearchSource({
 			url: chunk.url,
 			title: chunk.title,
 		})
+		const duplicateIndex = chunkIdCounts.get(chunk.id) ?? 0
+		chunkIdCounts.set(chunk.id, duplicateIndex + 1)
+		const storageChunkId = getStorageChunkId({
+			sourceKey,
+			chunkId: chunk.id,
+			duplicateIndex,
+		})
+		const storageDocId = getStorageDocId({ sourceKey, docId })
 		statements.push(
 			db
 				.prepare(
@@ -357,8 +409,8 @@ export async function replaceSearchSource({
 					`,
 				)
 				.bind(
-					chunk.id,
-					docId,
+					storageChunkId,
+					storageDocId,
 					sourceKey,
 					chunk.type,
 					chunk.slug ?? null,
@@ -382,7 +434,7 @@ export async function replaceSearchSource({
 						VALUES (?, ?, ?, ?, ?)
 					`,
 				)
-				.bind(chunk.id, docId, sourceKey, chunk.title, chunk.text),
+				.bind(storageChunkId, storageDocId, sourceKey, chunk.title, chunk.text),
 		)
 	}
 
@@ -399,10 +451,18 @@ export async function clearSearchSource({
 	await runStatementsInTransaction({
 		db,
 		statements: [
-			db.prepare('DELETE FROM lexical_search_fts WHERE sourceKey = ?').bind(sourceKey),
-			db.prepare('DELETE FROM lexical_chunks WHERE sourceKey = ?').bind(sourceKey),
-			db.prepare('DELETE FROM lexical_docs WHERE sourceKey = ?').bind(sourceKey),
-			db.prepare('DELETE FROM lexical_sources WHERE sourceKey = ?').bind(sourceKey),
+			db
+				.prepare('DELETE FROM lexical_search_fts WHERE sourceKey = ?')
+				.bind(sourceKey),
+			db
+				.prepare('DELETE FROM lexical_chunks WHERE sourceKey = ?')
+				.bind(sourceKey),
+			db
+				.prepare('DELETE FROM lexical_docs WHERE sourceKey = ?')
+				.bind(sourceKey),
+			db
+				.prepare('DELETE FROM lexical_sources WHERE sourceKey = ?')
+				.bind(sourceKey),
 		],
 	})
 }
@@ -447,7 +507,7 @@ export async function queryLexicalSearch({
 			.all<SqlRow>()
 
 		return (result.results ?? []).map((row) => ({
-			id: String(row.id),
+			id: getResultChunkId(String(row.id)),
 			type: asString(row.type),
 			slug: asString(row.slug),
 			title: asString(row.title),
