@@ -6,8 +6,8 @@ APIs.
 
 ## Prerequisites
 
-- Node.js 24 is required (`engines` in `package.json`).
-  - Install via `nvm install 24 && nvm alias default 24`.
+- Node.js 25 is required (`engines` in `package.json`).
+  - Install via `nvm install 25 && nvm alias default 25`.
 
 ## Key commands
 
@@ -84,10 +84,6 @@ reference:
   SQLite DB without tripping Cursor's destructive-action guard. This is only for
   Playwright's dev/test DB reset path, not a general exemption for Prisma
   commands.
-- Playwright/Node 24 caveat: CI starts the production mock e2e server with
-  `npm run start:mocks:no-sparkplug` because Node 24.16 can hit the V8
-  `jit_page_->allocations_.erase(addr) == 1` crash under the e2e workload.
-  Keep that workaround until the CI Node version includes the V8 fix.
 - Oxlint config caveat: prefer package-export extends
   (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
   extends into `node_modules` can fail to inherit the shared env/rules.
@@ -112,7 +108,9 @@ output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
 
 ## Cloud / headless manual testing
 
-- The Cursor Cloud VM snapshot ships with Node 24 via nvm, Chrome configured to
+- The Cursor Cloud VM snapshot ships with Node 24 via nvm, so run
+  `nvm install 25 && nvm use 25` before installing dependencies or testing.
+  Chrome is configured to
   open `localhost:3000` on startup and new tabs, and the browser pre-logged-in
   as the seed admin user (`me@kentcdodds.com` / `iliketwix`).
 - The first request after starting the dev server compiles all MDX blog posts

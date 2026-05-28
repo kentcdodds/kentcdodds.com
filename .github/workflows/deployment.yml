@@ -10,7 +10,7 @@ env:
   # Set `SITE_CACHE_VERSION` as a repository variable so all workflows share one
   # knob for invalidation.
   SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION }}
-  NODE_VERSION: 24
+  NODE_VERSION: 25
 
 jobs:
   plan:
@@ -23,8 +23,7 @@ jobs:
       refresh_content: ${{ steps.plan.outputs.refresh_content }}
       index_semantic_content: ${{ steps.plan.outputs.index_semantic_content }}
       deploy_search_worker: ${{ steps.plan.outputs.deploy_search_worker }}
-      deploy_call_kent_audio_worker:
-        ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}
+      deploy_call_kent_audio_worker: ${{ steps.plan.outputs.deploy_call_kent_audio_worker }}
       deploy_oauth_worker: ${{ steps.plan.outputs.deploy_oauth_worker }}
     steps:
       - name: ⬇️ Checkout repo
@@ -66,15 +65,13 @@ jobs:
       should_deploy:
         ${{ github.event_name == 'push' && (github.ref_name == 'main' ||
         github.ref_name == 'dev') }}
-      run_pre_deploy_health_check:
-        ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      run_pre_deploy_health_check: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
     secrets: inherit
 
   refresh-content:
     name: 🥬 Refresh Content
     needs: [plan]
-    if:
-      ${{ github.event_name == 'push' && needs.plan.outputs.refresh_content ==
+    if: ${{ github.event_name == 'push' && needs.plan.outputs.refresh_content ==
       'true' }}
     uses: ./.github/workflows/refresh-content.yml
     with:
@@ -84,8 +81,7 @@ jobs:
   index-semantic-content:
     name: 🔎 Index Semantic Search (content)
     needs: [plan]
-    if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
       needs.plan.outputs.index_semantic_content == 'true' }}
     uses: ./.github/workflows/index-semantic-content.yml
     with:
@@ -96,8 +92,7 @@ jobs:
   deploy-search-worker:
     name: ⚙️ Deploy Search Worker
     needs: [plan]
-    if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
       needs.plan.outputs.deploy_search_worker == 'true' }}
     uses: ./.github/workflows/deploy-search-worker.yml
     secrets: inherit
@@ -105,8 +100,7 @@ jobs:
   deploy-call-kent-audio-worker:
     name: ⚙️ Deploy Call Kent Audio Worker
     needs: [plan]
-    if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
       needs.plan.outputs.deploy_call_kent_audio_worker == 'true' }}
     uses: ./.github/workflows/deploy-call-kent-audio-worker.yml
     secrets: inherit
@@ -114,8 +108,7 @@ jobs:
   deploy-oauth-worker:
     name: 🔐 Deploy OAuth Worker
     needs: [plan]
-    if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
       needs.plan.outputs.deploy_oauth_worker == 'true' }}
     uses: ./.github/workflows/deploy-oauth-worker.yml
     secrets: inherit

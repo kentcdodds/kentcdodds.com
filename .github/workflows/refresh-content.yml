@@ -11,7 +11,7 @@ on:
         description: Commit to refresh from (optional).
         required: false
         type: string
-        default: ''
+        default: ""
 
 jobs:
   refresh:
@@ -24,12 +24,12 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
         with:
-          fetch-depth: '50'
+          fetch-depth: "50"
 
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: 25
 
       - name: 🥬 Refresh Content
         run:
