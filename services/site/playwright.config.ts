@@ -78,7 +78,7 @@ export default defineConfig({
 	outputDir: 'test-results/',
 	webServer: {
 		command: process.env.CI
-			? `npx prisma migrate reset --force && cross-env PORT=${PORT} npm run start:mocks`
+			? `npx prisma migrate reset --force && cross-env PORT=${PORT} npm run start:mocks:no-sparkplug`
 			: `cross-env PORT=${PORT} npm run dev`,
 		port: Number(PORT),
 		// Default to a clean, deterministic server per run.

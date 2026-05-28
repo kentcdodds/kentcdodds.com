@@ -34,6 +34,7 @@
     "dev": "node ./server/dev-server.ts",
     "start": "cross-env NODE_ENV=production node ./index.ts",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true node ./index.ts",
+    "start:mocks:no-sparkplug": "cross-env NODE_ENV=production MOCKS=true node --no-sparkplug ./index.ts",
     "predeploy:healthcheck": "node ../../other/pre-deployment-health-check.ts",
     "curl:blog": "curl -I --silent http://localhost:$PORT/blog > /dev/null || true",
     "prime-cache:prod": "cross-env PORT=4001 npx start-server-and-test start http-get://localhost:4001 curl:blog && echo cache primed ⚡️",
