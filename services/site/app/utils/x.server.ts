@@ -1,10 +1,10 @@
 import http from 'http'
 import https from 'https'
 import { cachified, verboseReporter } from '@epic-web/cachified'
-import makeMetascraper from 'metascraper'
-import mDescription from 'metascraper-description'
-import mImage from 'metascraper-image'
-import mTitle from 'metascraper-title'
+import { toString } from 'hast-util-to-string'
+import rehypeParse from 'rehype-parse'
+import { unified } from 'unified'
+import { visit } from 'unist-util-visit'
 import { cache, lruCache } from './cache.server.ts'
 import { getEnv } from './env.server.ts'
 import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
@@ -12,14 +12,69 @@ import { formatDate, formatNumber, typedBoolean } from './misc.ts'
 import { getTweet } from './twitter/get-tweet.ts'
 import { type Tweet } from './twitter/types/index.ts'
 
-const metascraper = makeMetascraper([mTitle(), mDescription(), mImage()])
-
 type Metadata = {
-	// metascraper has types, but they just say all these values will be there
-	// whether you're actually parsing for them or not.
 	title?: string
 	description?: string
 	image?: string
+}
+
+function normalizeAttributeValue(value: unknown) {
+	if (typeof value === 'string') return value.trim()
+	if (typeof value === 'number') return String(value)
+	return null
+}
+
+function getFirstValue(
+	metadata: Map<string, string>,
+	keys: ReadonlyArray<string>,
+) {
+	for (const key of keys) {
+		const value = metadata.get(key)?.trim()
+		if (value) return value
+	}
+	return undefined
+}
+
+function resolveMetadataUrl(value: string | undefined, baseUrl: string) {
+	if (!value) return undefined
+	try {
+		return new URL(value, baseUrl).toString()
+	} catch {
+		return value
+	}
+}
+
+export function getMetadataFromHtml(html: string, url: string): Metadata {
+	const tree = unified().use(rehypeParse).parse(html)
+	const metadata = new Map<string, string>()
+	let title: string | undefined
+
+	visit(tree, 'element', (node: any) => {
+		if (node.tagName === 'title') {
+			title ??= toString(node).trim()
+			return
+		}
+
+		if (node.tagName !== 'meta') return
+
+		const properties = node.properties ?? {}
+		const key = normalizeAttributeValue(properties.property ?? properties.name)
+		const content = normalizeAttributeValue(properties.content)
+		if (key && content && !metadata.has(key)) metadata.set(key, content)
+	})
+
+	return {
+		title: getFirstValue(metadata, ['og:title', 'twitter:title']) ?? title,
+		description: getFirstValue(metadata, [
+			'og:description',
+			'twitter:description',
+			'description',
+		]),
+		image: resolveMetadataUrl(
+			getFirstValue(metadata, ['og:image', 'twitter:image']),
+			url,
+		),
+	}
 }
 
 async function getMetadata(url: string): Promise<Metadata> {
@@ -28,7 +83,7 @@ async function getMetadata(url: string): Promise<Metadata> {
 	if (getEnv().MOCKS) return {}
 
 	const html = await fetchWithTimeout(url, {}, 2_000).then((res) => res.text())
-	return metascraper({ html, url })
+	return getMetadataFromHtml(html, url)
 }
 
 function unshorten(

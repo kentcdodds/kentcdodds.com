@@ -29,7 +29,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 25
+          node-version: 26
 
       - name: 🥬 Refresh Content
         run:

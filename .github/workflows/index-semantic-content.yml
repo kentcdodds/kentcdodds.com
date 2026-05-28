@@ -25,7 +25,7 @@ env:
   # Set `SITE_CACHE_VERSION` as a repository variable so all workflows share one
   # knob for invalidation.
   SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION }}
-  NODE_VERSION: 25
+  NODE_VERSION: 26
 
 jobs:
   index:

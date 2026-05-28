@@ -6,8 +6,8 @@ APIs.
 
 ## Prerequisites
 
-- Node.js 25 is required (`engines` in `package.json`).
-  - Install via `nvm install 25 && nvm alias default 25`.
+- Node.js 26 is required (`engines` in `package.json`).
+  - Install via `nvm install 26 && nvm alias default 26`.
 
 ## Key commands
 
@@ -109,7 +109,7 @@ output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
 ## Cloud / headless manual testing
 
 - The Cursor Cloud VM snapshot ships with Node 24 via nvm, so run
-  `nvm install 25 && nvm use 25` before installing dependencies or testing.
+  `nvm install 26 && nvm use 26` before installing dependencies or testing.
   Chrome is configured to
   open `localhost:3000` on startup and new tabs, and the browser pre-logged-in
   as the seed admin user (`me@kentcdodds.com` / `iliketwix`).
