@@ -148,6 +148,22 @@ function getStorageChunkId({
 	return getStorageId(['chunk', sourceKey, chunkId, duplicateIndex])
 }
 
+function getResultChunkId(storageChunkId: string) {
+	try {
+		const parts: unknown = JSON.parse(storageChunkId)
+		if (
+			Array.isArray(parts) &&
+			parts[0] === 'chunk' &&
+			typeof parts[2] === 'string'
+		) {
+			return parts[2]
+		}
+	} catch {
+		// Existing rows may use raw chunk IDs instead of JSON storage IDs.
+	}
+	return storageChunkId
+}
+
 function asString(value: unknown): string | undefined {
 	return typeof value === 'string' ? value : undefined
 }
@@ -491,7 +507,7 @@ export async function queryLexicalSearch({
 			.all<SqlRow>()
 
 		return (result.results ?? []).map((row) => ({
-			id: String(row.id),
+			id: getResultChunkId(String(row.id)),
 			type: asString(row.type),
 			slug: asString(row.slug),
 			title: asString(row.title),

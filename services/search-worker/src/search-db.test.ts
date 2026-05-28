@@ -191,6 +191,35 @@ test('queryLexicalSearch quotes hyphenated date tokens for FTS', async () => {
 	])
 })
 
+test('queryLexicalSearch returns original chunk ids from storage ids', async () => {
+	const { db } = createDb({
+		onAll: async () => ({
+			results: [
+				{
+					id: JSON.stringify([
+						'chunk',
+						'lexical-search/repo-content.json',
+						'blog:doc-without-slug:chunk:0',
+						0,
+					]),
+					type: 'blog',
+					title: 'Doc Without Slug',
+					url: '/blog/doc-without-slug',
+					snippet: 'A lexical result with a storage ID.',
+				},
+			],
+		}),
+	})
+
+	const results = await queryLexicalSearch({
+		db,
+		query: 'doc',
+		topK: 5,
+	})
+
+	expect(results[0]?.id).toBe('blog:doc-without-slug:chunk:0')
+})
+
 test('queryLexicalSearch retries when D1 reports no such column', async () => {
 	const { db, boundQueries } = createDb({
 		onAll: async () => {
