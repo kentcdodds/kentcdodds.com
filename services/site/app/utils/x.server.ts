@@ -1,6 +1,7 @@
 import http from 'http'
 import https from 'https'
 import { cachified, verboseReporter } from '@epic-web/cachified'
+import type * as H from 'hast'
 import { toString } from 'hast-util-to-string'
 import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
@@ -49,7 +50,7 @@ export function getMetadataFromHtml(html: string, url: string): Metadata {
 	const metadata = new Map<string, string>()
 	let title: string | undefined
 
-	visit(tree, 'element', (node: any) => {
+	visit(tree, 'element', (node: H.Element) => {
 		if (node.tagName === 'title') {
 			title ??= toString(node).trim()
 			return

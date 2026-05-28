@@ -146,3 +146,50 @@ test('getMetadataFromHtml extracts social metadata', () => {
 		image: 'https://example.com/social.png',
 	})
 })
+
+test('getMetadataFromHtml falls back to the document title', () => {
+	const metadata = getMetadataFromHtml(
+		`
+			<html>
+				<head>
+					<title>Fallback title</title>
+				</head>
+			</html>
+		`,
+		'https://example.com/articles/node',
+	)
+
+	expect(metadata.title).toBe('Fallback title')
+})
+
+test('getMetadataFromHtml preserves absolute image URLs', () => {
+	const metadata = getMetadataFromHtml(
+		`
+			<html>
+				<head>
+					<meta property="og:image" content="https://cdn.example.com/social.png" />
+				</head>
+			</html>
+		`,
+		'https://example.com/articles/node',
+	)
+
+	expect(metadata.image).toBe('https://cdn.example.com/social.png')
+})
+
+test('getMetadataFromHtml leaves missing metadata undefined', () => {
+	const metadata = getMetadataFromHtml(
+		`
+			<html>
+				<head></head>
+			</html>
+		`,
+		'https://example.com/articles/node',
+	)
+
+	expect(metadata).toEqual({
+		title: undefined,
+		description: undefined,
+		image: undefined,
+	})
+})
