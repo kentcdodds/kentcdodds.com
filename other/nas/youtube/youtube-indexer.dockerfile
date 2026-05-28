@@ -22,6 +22,9 @@ RUN npm ci --workspace=kentcdodds.com --include-workspace-root
 
 COPY . .
 
+RUN chown -R node:node /app
+USER node
+
 # Default `docker run image` with no args. NAS script passes
 # `node --env-file=/run/secrets/youtube-indexer.env …` so secrets stay out of
 # `docker inspect` while Node 20+ loads the file before user code runs.
