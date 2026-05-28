@@ -126,6 +126,28 @@ function getStorageId(parts: ReadonlyArray<string | number>) {
 	return JSON.stringify(parts)
 }
 
+function getStorageDocId({
+	sourceKey,
+	docId,
+}: {
+	sourceKey: string
+	docId: string
+}) {
+	return getStorageId(['doc', sourceKey, docId])
+}
+
+function getStorageChunkId({
+	sourceKey,
+	chunkId,
+	duplicateIndex,
+}: {
+	sourceKey: string
+	chunkId: string
+	duplicateIndex: number
+}) {
+	return getStorageId(['chunk', sourceKey, chunkId, duplicateIndex])
+}
+
 function asString(value: unknown): string | undefined {
 	return typeof value === 'string' ? value : undefined
 }
@@ -189,7 +211,7 @@ function buildDocRecords({
 			url: chunk.url,
 			title: chunk.title,
 		})
-		const storageDocId = getStorageId(['doc', sourceKey, docId])
+		const storageDocId = getStorageDocId({ sourceKey, docId })
 		const existing = docs.get(storageDocId)
 		if (existing) {
 			existing.chunkCount += 1
@@ -353,13 +375,12 @@ export async function replaceSearchSource({
 		})
 		const duplicateIndex = chunkIdCounts.get(chunk.id) ?? 0
 		chunkIdCounts.set(chunk.id, duplicateIndex + 1)
-		const storageChunkId = getStorageId([
-			'chunk',
+		const storageChunkId = getStorageChunkId({
 			sourceKey,
-			chunk.id,
+			chunkId: chunk.id,
 			duplicateIndex,
-		])
-		const storageDocId = getStorageId(['doc', sourceKey, docId])
+		})
+		const storageDocId = getStorageDocId({ sourceKey, docId })
 		statements.push(
 			db
 				.prepare(

@@ -127,6 +127,18 @@ test('replaceSearchSource scopes duplicate chunk storage ids by source', async (
 	const docInsertStatements = boundStatements.filter((statement) =>
 		statement.sql.includes('INSERT INTO lexical_docs'),
 	)
+	expect(docInsertStatements.map((statement) => statement.values[0])).toEqual([
+		JSON.stringify([
+			'doc',
+			'lexical-search/repo-content.json',
+			'youtube:abc123def45',
+		]),
+		JSON.stringify([
+			'doc',
+			'lexical-search/youtube.json',
+			'youtube:abc123def45',
+		]),
+	])
 	expect(docInsertStatements.map((statement) => statement.values[7])).toEqual([
 		2, 2,
 	])
