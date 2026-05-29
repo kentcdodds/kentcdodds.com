@@ -4,7 +4,10 @@ import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { getEpisodeHomeworkContentId } from '#app/utils/favorites.ts'
+import {
+	getEpisodeHomeworkContentId,
+	getEpisodeListenContentId,
+} from '#app/utils/favorites.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { Prisma, PrismaClient } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
@@ -125,6 +128,9 @@ async function getAllUserData(userId: string) {
 		}),
 		favorites: prisma.favorite.findMany({ where: { userId } }),
 		postReads: prisma.postRead.findMany({ where: { userId } }),
+		podcastEpisodeListens: prisma.podcastEpisodeListen.findMany({
+			where: { userId },
+		}),
 		sessions: prisma.session.findMany({ where: { userId } }),
 	})
 }
@@ -189,6 +195,68 @@ async function getEpisodeHomeworkCompletions({
 			}),
 		),
 	)
+}
+
+async function getEpisodePodcastListens({
+	userId,
+}: {
+	userId?: string | null
+}) {
+	if (!userId) return new Set<string>()
+	const listens = await prisma.podcastEpisodeListen.findMany({
+		where: { userId },
+		select: { seasonNumber: true, episodeNumber: true },
+	})
+	return new Set(
+		listens.map((listen) =>
+			getEpisodeListenContentId({
+				seasonNumber: listen.seasonNumber,
+				episodeNumber: listen.episodeNumber,
+			}),
+		),
+	)
+}
+
+async function setEpisodePodcastListen({
+	seasonNumber,
+	episodeNumber,
+	userId,
+	listened,
+}: {
+	seasonNumber: number
+	episodeNumber: number
+	userId: string
+	listened: boolean
+}) {
+	if (listened) {
+		await prisma.podcastEpisodeListen.upsert({
+			where: {
+				userId_seasonNumber_episodeNumber: {
+					userId,
+					seasonNumber,
+					episodeNumber,
+				},
+			},
+			create: {
+				userId,
+				seasonNumber,
+				episodeNumber,
+			},
+			update: {
+				updatedAt: new Date(),
+			},
+		})
+		return true
+	}
+
+	await prisma.podcastEpisodeListen.deleteMany({
+		where: {
+			userId,
+			seasonNumber,
+			episodeNumber,
+		},
+	})
+	return false
 }
 
 async function setEpisodeHomeworkCompletion({
@@ -346,11 +414,13 @@ export {
 	createSession,
 	deleteExpiredSessions,
 	deleteExpiredVerifications,
+	getEpisodePodcastListens,
 	getAllUserData,
 	getEpisodeHomeworkCompletions,
 	getUserFromSessionId,
 	migrateHomeworkCompletionsToUser,
 	prisma,
+	setEpisodePodcastListen,
 	setEpisodeHomeworkCompletion,
 	sessionExpirationTime,
 }

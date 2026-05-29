@@ -5,6 +5,7 @@ import { Link } from 'react-router'
 import { kodyProfiles } from '#app/images.tsx'
 import { type Team } from '#app/types.ts'
 import { formatNumber, getOptionalTeam } from '#app/utils/misc.ts'
+import { type TeamRanking } from '#app/utils/team-rankings.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
 import { useOptionalUser, useRootData } from '#app/utils/use-root-data.ts'
 
@@ -14,25 +15,20 @@ const barColors: Record<Team, string> = {
 	BLUE: 'bg-team-blue',
 }
 
-type ReadRanking = {
-	totalReads: number
-	team: Team
-	percent: number
-	ranking: number
-}
-
 function Stat({
-	totalReads,
+	totalCount,
 	team,
 	percent,
 	ranking,
 	direction,
 	display,
 	onClick,
-}: ReadRanking & {
+	totalLabel,
+}: TeamRanking & {
 	direction: 'up' | 'down'
-	display: 'ranking' | 'reads'
+	display: 'ranking' | 'count'
 	onClick?: () => void
+	totalLabel: string
 }) {
 	const { userInfo } = useRootData()
 	const [currentTeam] = useTeam()
@@ -53,7 +49,7 @@ function Stat({
 			title={
 				display === 'ranking'
 					? `Rank of the ${team.toLowerCase()} team`
-					: `Total reads by the ${team.toLowerCase()} team`
+					: `Total ${totalLabel} by the ${team.toLowerCase()} team`
 			}
 			initial="initial"
 			whileHover="hover"
@@ -99,7 +95,7 @@ function Stat({
 						'top-0': direction === 'up',
 					})}
 				>
-					{formatNumber(display === 'ranking' ? ranking : totalReads)}
+					{formatNumber(display === 'ranking' ? ranking : totalCount)}
 				</motion.span>
 			</motion.div>
 
@@ -143,17 +139,21 @@ function Stat({
 }
 
 function TeamStats({
-	totalReads,
+	totalCount,
 	rankings,
 	direction,
 	pull,
 	onStatClick,
+	totalLabel = 'reads',
+	whatsThisHref = '/teams#read-rankings',
 }: {
-	totalReads: string
-	rankings: Array<ReadRanking>
+	totalCount: string
+	rankings: Array<TeamRanking>
 	direction: 'up' | 'down'
 	pull: 'left' | 'right'
 	onStatClick?: (team: Team) => void
+	totalLabel?: string
+	whatsThisHref?: string
 }) {
 	const optionalUser = useOptionalUser()
 	const [altDown, setAltDown] = React.useState(false)
@@ -205,12 +205,12 @@ function TeamStats({
 					},
 				)}
 			>
-				<span title="Total reads" className="text-primary">
-					{totalReads}{' '}
+				<span title={`Total ${totalLabel}`} className="text-primary">
+					{totalCount}{' '}
 				</span>
 				<Link
 					className="text-secondary underlined hover:text-team-current focus:text-team-current"
-					to="/teams#read-rankings"
+					to={whatsThisHref}
 				>
 					{`what's this?`}
 				</Link>
@@ -232,7 +232,8 @@ function TeamStats({
 							key={ranking.percent}
 							{...ranking}
 							direction={direction}
-							display={altDown ? 'reads' : 'ranking'}
+							display={altDown ? 'count' : 'ranking'}
+							totalLabel={totalLabel}
 							onClick={
 								onStatClick ? () => onStatClick(ranking.team) : undefined
 							}
