@@ -298,6 +298,7 @@ function PageLoadingMessage() {
 	React.useEffect(() => {
 		if (firstRender) return
 		if (navigation.state === 'idle') return
+		if (!navigation.location) return
 		setPendingPath(navigation.location.pathname)
 	}, [navigation])
 
