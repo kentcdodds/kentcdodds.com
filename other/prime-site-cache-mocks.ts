@@ -103,13 +103,30 @@ async function main() {
     code: number | null;
     signal: NodeJS.Signals | null;
   } | null = null;
+  let notifyServerExit:
+    | ((value: { code: number | null; signal: NodeJS.Signals | null }) => void)
+    | null = null;
+  const serverExited = new Promise<{
+    code: number | null;
+    signal: NodeJS.Signals | null;
+  }>((resolve) => {
+    notifyServerExit = resolve;
+  });
   server.once("exit", (code, signal) => {
     serverExit = { code, signal };
+    notifyServerExit?.(serverExit);
   });
 
   let cacheWarmed = false;
   try {
-    await waitForOk(healthUrl, 120_000);
+    await Promise.race([
+      waitForOk(healthUrl, 120_000),
+      serverExited.then(({ code, signal }) => {
+        throw new Error(
+          `Site server exited before readiness (code ${code}, signal ${signal ?? "null"})`,
+        );
+      }),
+    ]);
     await warmBlogPage();
     cacheWarmed = true;
     // Let in-flight single-fetch streams settle before shutdown (RR 7.16).
@@ -129,19 +146,14 @@ async function main() {
     }
   }
 
-  if (
-    !cacheWarmed ||
-    (serverExit && serverExit.code !== 0 && serverExit.code !== null)
-  ) {
-    if (!cacheWarmed) {
-      throw new Error("Failed to warm site cache");
-    }
+  if (!cacheWarmed) {
+    throw new Error("Failed to warm site cache");
+  }
+  if (serverExit && serverExit.code !== 0 && serverExit.code !== null) {
     // RR 7.16 can exit non-zero after client disconnect during stream teardown.
-    if (serverExit) {
-      console.warn(
-        `Server exited with code ${serverExit.code} after cache was warmed (signal ${serverExit.signal ?? "null"})`,
-      );
-    }
+    console.warn(
+      `Server exited with code ${serverExit.code} after cache was warmed (signal ${serverExit.signal ?? "null"})`,
+    );
   }
 }
 
