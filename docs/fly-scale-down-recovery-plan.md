@@ -119,6 +119,13 @@ fly checks list -a kcd
 
 Only continue to the next region after the new machine is healthy (`3/3`).
 
+If recreating a replica through the Machines API instead of `fly machine clone`,
+verify the process list before continuing. During the 2026-06-02 recovery,
+REST-created `gru`/`ams` replicas started `litefs mount` but never opened the
+service proxy on `:8080`, so the app process never started. In that state,
+destroy the new replica and keep the fleet at the last healthy footprint rather
+than adding more regions.
+
 If a machine fails to start or is left in a non-started state, destroy it before
 continuing:
 
