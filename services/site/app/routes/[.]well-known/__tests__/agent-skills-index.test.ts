@@ -15,6 +15,7 @@ function createIndexLoaderArgs(request: Request): IndexRoute.LoaderArgs {
 		params: {},
 		request,
 		unstable_pattern: '/.well-known/agent-skills/index.json',
+		unstable_url: new URL(request.url),
 	}
 }
 
