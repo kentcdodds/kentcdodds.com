@@ -157,7 +157,7 @@ function createSplatBuild({
 		publicPath: '/build/',
 		assetsBuildDirectory: 'build',
 		future: {
-			v8_passThroughRequests: false,
+			unstable_subResourceIntegrity: false,
 			unstable_trailingSlashAwareDataRequests: false,
 			v8_middleware: false,
 		},

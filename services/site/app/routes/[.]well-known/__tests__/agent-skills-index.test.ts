@@ -14,8 +14,7 @@ function createIndexLoaderArgs(request: Request): IndexRoute.LoaderArgs {
 		context: {},
 		params: {},
 		request,
-		pattern: '/.well-known/agent-skills/index.json',
-		url: new URL(request.url),
+		unstable_pattern: '/.well-known/agent-skills/index.json',
 	}
 }
 
