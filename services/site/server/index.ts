@@ -16,6 +16,7 @@ import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import onFinished from 'on-finished'
+import { EventEmitter } from 'events'
 import { type ServerBuild } from 'react-router'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
@@ -24,6 +25,45 @@ import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
 
 sourceMapSupport.install()
+
+function isIgnorableExternalNetworkError(error: unknown) {
+	const text =
+		error instanceof Error
+			? `${error.name} ${error.message} ${error.stack ?? ''}`
+			: String(error)
+	return (
+		(text.includes('EPROTO') && text.includes('wrong version number')) ||
+		text.includes('ETIMEDOUT')
+	)
+}
+
+if (process.env.NODE_ENV === 'production') {
+	const originalEmit = EventEmitter.prototype.emit
+	EventEmitter.prototype.emit = function emit(type, ...args) {
+		if (type === 'error' && isIgnorableExternalNetworkError(args[0])) {
+			console.error('[external-network] ignored background error', args[0])
+			return false
+		}
+		return originalEmit.call(this, type, ...args)
+	}
+
+	process.on('unhandledRejection', (reason) => {
+		if (isIgnorableExternalNetworkError(reason)) {
+			console.error('[external-network] ignored unhandled rejection', reason)
+			return
+		}
+		throw reason
+	})
+
+	process.setUncaughtExceptionCaptureCallback((error) => {
+		if (isIgnorableExternalNetworkError(error)) {
+			console.error('[external-network] ignored uncaught exception', error)
+			return
+		}
+		console.error(error)
+		process.exit(1)
+	})
+}
 
 const localServerModuleExtension = import.meta.url.includes('/server-build/')
 	? '.js'
