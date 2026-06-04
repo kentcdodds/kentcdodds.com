@@ -33,7 +33,8 @@ function isIgnorableExternalNetworkError(error: unknown) {
 			: String(error)
 	return (
 		(text.includes('EPROTO') && text.includes('wrong version number')) ||
-		text.includes('ETIMEDOUT')
+		text.includes('ETIMEDOUT') ||
+		text.includes('ECONNRESET')
 	)
 }
 
