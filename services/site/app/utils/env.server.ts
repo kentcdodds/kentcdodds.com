@@ -175,6 +175,7 @@ const schema = schemaBase.superRefine((values, ctx) => {
 
 type BaseEnv = z.infer<typeof schemaBase>
 type BaseEnvInput = z.input<typeof schemaBase>
+export type RuntimeEnvSource = Record<string, string | undefined>
 
 export type Env = Omit<
 	BaseEnv,
@@ -247,16 +248,28 @@ let _cache:
 			env: Env
 	  }
 	| undefined
+let runtimeEnvSource: RuntimeEnvSource | undefined
+
+export function setRuntimeEnvSource(source: RuntimeEnvSource) {
+	runtimeEnvSource = source
+	_cache = undefined
+}
+
+export function clearRuntimeEnvSource() {
+	runtimeEnvSource = undefined
+	_cache = undefined
+}
 
 export function getEnv(): Env {
 	const keys = Object.keys(schemaBase.shape) as Array<keyof BaseEnv>
+	const source = runtimeEnvSource ?? process.env
 	const fingerprint = keys
-		.map((k) => `${String(k)}=${process.env[String(k)] ?? ''}`)
+		.map((k) => `${String(k)}=${source[String(k)] ?? ''}`)
 		.join('\0')
 
 	if (_cache?.fingerprint === fingerprint) return _cache.env
 
-	const parsed = schema.safeParse(process.env)
+	const parsed = schema.safeParse(source)
 
 	if (parsed.success === false) {
 		// Prefer throwing the ZodError; `init()` prints a nicer message.
