@@ -5,7 +5,7 @@
 fuse:
   # Required. This is the mount directory that applications will
   # use to access their SQLite databases.
-  dir: '${LITEFS_DIR}'
+  dir: "${LITEFS_DIR}"
 
   # The debug flag enables debug logging of all FUSE API calls.
   # This will produce a lot of logging. Not for general use.
@@ -21,31 +21,31 @@ fuse:
 # to extend retention too long.
 data:
   # Path to internal data storage.
-  dir: '/data/litefs'
+  dir: "/data/litefs"
 
 proxy:
   # matches the internal_port in fly.toml
-  addr: ':${INTERNAL_PORT}'
+  addr: ":${INTERNAL_PORT}"
   # PORT is set in the Dockerfile
-  target: 'localhost:${PORT}'
-  db: '${DATABASE_FILENAME}'
+  target: "localhost:${PORT}"
+  db: "${DATABASE_FILENAME}"
   debug: false
   passthrough:
-    - '/build/*'
-    - '/favicons/*'
-    - '/images/*'
-    - '/fonts/*'
-    - '/*.png'
-    - '/*.ico'
-    - '/*.txt'
-    - '/*.webmanifest'
+    - "/build/*"
+    - "/favicons/*"
+    - "/images/*"
+    - "/fonts/*"
+    - "/*.png"
+    - "/*.ico"
+    - "/*.txt"
+    - "/*.webmanifest"
 
 tracing:
   # Toggles tracing if 'path' is also set. Defaults to true.
   enabled: true
 
   # Output path on disk.
-  path: '/var/log/litefs/trace.log'
+  path: "/var/log/litefs/trace.log"
 
   # Maximum size of a single trace log before rolling.
   # Specified in megabytes.
@@ -68,13 +68,13 @@ exit-on-error: false
 # These environment variables will be available in your Fly.io application.
 # You must specify "experiement.enable_consul" for FLY_CONSUL_URL to be available.
 lease:
-  type: 'consul'
+  type: "consul"
   candidate: ${FLY_REGION == 'dfw'}
-  advertise-url: 'http://${HOSTNAME}.vm.${FLY_APP_NAME}.internal:20202'
+  advertise-url: "http://${HOSTNAME}.vm.${FLY_APP_NAME}.internal:20202"
 
   consul:
-    url: '${FLY_CONSUL_URL}'
-    key: 'litefs/${FLY_APP_NAME}_9'
+    url: "${FLY_CONSUL_URL}"
+    key: "litefs/${FLY_APP_NAME}_10"
 
 exec:
   - cmd: npx prisma@7 migrate deploy
