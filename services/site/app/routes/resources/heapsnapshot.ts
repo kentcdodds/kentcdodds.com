@@ -1,14 +1,45 @@
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
-import { PassThrough } from 'stream'
-import v8 from 'v8'
-import { createReadableStreamFromReadable } from '@react-router/node'
 import { formatDate } from '#app/utils/misc.ts'
-import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/heapsnapshot'
 
+function isFlyNodeProduction() {
+	return (
+		typeof process !== 'undefined' &&
+		process.release?.name === 'node' &&
+		process.env.NODE_ENV === 'production' &&
+		Boolean(
+			process.env.FLY_APP_NAME &&
+			process.env.FLY_REGION &&
+			process.env.FLY_MACHINE_ID,
+		)
+	)
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
+	if (!isFlyNodeProduction()) {
+		throw new Response(
+			'Heap snapshots are only available on Fly.io production Node diagnostics.',
+			{ status: 501 },
+		)
+	}
+
+	const [
+		fs,
+		os,
+		path,
+		{ PassThrough },
+		v8,
+		{ createReadableStreamFromReadable },
+		{ requireAdminUser },
+	] = await Promise.all([
+		import('node:fs'),
+		import('node:os'),
+		import('node:path'),
+		import('node:stream'),
+		import('node:v8'),
+		import('@react-router/node'),
+		import('#app/utils/session.server.ts'),
+	])
+
 	await requireAdminUser(request)
 	const host =
 		request.headers.get('X-Forwarded-Host') ?? request.headers.get('host')
