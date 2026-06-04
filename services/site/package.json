@@ -69,6 +69,7 @@
     "@octokit/plugin-throttling": "^11.0.3",
     "@octokit/rest": "^22.0.1",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-d1": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@reach/accordion": "^0.18.0",
