@@ -76,13 +76,14 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN,required=false \
 FROM base
 
 ENV FLY="true"
-ENV LITEFS_DIR="/litefs"
+# TODO: re-enable LiteFS — use LITEFS_DIR="/litefs" and PORT="8081"
+ENV LITEFS_DIR="/data/litefs-disabled"
 
 ENV DATABASE_FILENAME="sqlite.db"
 ENV DATABASE_PATH="$LITEFS_DIR/$DATABASE_FILENAME"
 ENV DATABASE_URL="file:$DATABASE_PATH"
 ENV INTERNAL_PORT="8080"
-ENV PORT="8081"
+ENV PORT="8080"
 ENV NODE_ENV="production"
 # For WAL support: https://github.com/prisma/prisma-engines/issues/4675#issuecomment-1914383246
 ENV PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK = "1"
@@ -103,11 +104,11 @@ COPY --from=build /app/services/site/build /app/services/site/build
 COPY --from=build /app/services/site/public /app/services/site/public
 COPY --from=build /app/services/site/server-build /app/services/site/server-build
 
-# prepare for litefs
-COPY --from=flyio/litefs:0.5.11 /usr/local/bin/litefs /usr/local/bin/litefs
-ADD other/litefs.yml /etc/litefs.yml
-RUN mkdir -p /data ${LITEFS_DIR}
+# TODO: re-enable LiteFS
+# COPY --from=flyio/litefs:0.5.11 /usr/local/bin/litefs /usr/local/bin/litefs
+# ADD other/litefs.yml /etc/litefs.yml
+RUN mkdir -p /data /data/litefs-disabled
 
 WORKDIR /app/services/site
 
-CMD ["litefs", "mount"]
+CMD ["npm", "start"]

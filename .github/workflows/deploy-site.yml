@@ -253,6 +253,15 @@ jobs:
         run: flyctl deploy --depot --remote-only --build-arg COMMIT_SHA=${{
           github.sha }} --dockerfile services/site/Dockerfile --build-secret
           SENTRY_AUTH_TOKEN=${{
-          secrets.SENTRY_AUTH_TOKEN }}
+          secrets.SENTRY_AUTH_TOKEN }} --wait-timeout 20m
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # LiteFS exec hooks no longer run migrations while production bypasses LiteFS.
+      - name: 🛠 Run production migrations
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: >-
+          flyctl ssh console -a kcd -C
+          'sh -lc "cd /app/services/site && npx prisma@7 migrate deploy"'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

@@ -11,7 +11,7 @@ swap_size_mb = 512
 
 [experimental]
   auto_rollback = true
-  enable_consul = true
+  enable_consul = false
 
 [vm]
   cpu_kind = "shared"
@@ -75,9 +75,10 @@ swap_size_mb = 512
     path = "/healthcheck"
     protocol = "http"
 
-  [[services.http_checks]]
-    grace_period = "10s"
-    interval = "30s"
-    method = "GET"
-    timeout = "5s"
-    path = "/litefs/health"
+  # TODO: re-enable LiteFS proxy health check
+  # [[services.http_checks]]
+  #   grace_period = "10s"
+  #   interval = "30s"
+  #   method = "GET"
+  #   timeout = "5s"
+  #   path = "/litefs/health"
