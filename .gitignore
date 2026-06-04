@@ -39,8 +39,6 @@ other/postcss.ignored
 
 *.bkp.*
 
-*.heapsnapshot
-
 *.db-journal
 .wrangler
 other/wrangler-logs/
