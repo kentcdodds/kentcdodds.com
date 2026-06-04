@@ -91,20 +91,27 @@ async function serveTheBots(...args: DocRequestArgs) {
 		loadContext,
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
-	const controller = new AbortController()
-	setTimeout(() => controller.abort(), ABORT_DELAY)
-	const stream = await renderToReadableStream(
-		<NonceProvider value={nonce}>
-			<ServerRouter
-				context={reactRouterContext}
-				url={request.url}
-				nonce={nonce}
-			/>
-		</NonceProvider>,
-		{ nonce, signal: controller.signal },
-	)
-	// Use allReady to wait for the entire document to be ready.
-	await stream.allReady
+	const { controller, clearAbortTimeout } = createAbortTimeout()
+	let stream: Awaited<ReturnType<typeof renderToReadableStream>>
+	try {
+		stream = await renderToReadableStream(
+			<NonceProvider value={nonce}>
+				<ServerRouter
+					context={reactRouterContext}
+					url={request.url}
+					nonce={nonce}
+				/>
+			</NonceProvider>,
+			{ nonce, signal: controller.signal },
+		)
+		// Use allReady to wait for the entire document to be ready.
+		await stream.allReady
+	} catch (error) {
+		Sentry.captureException(error)
+		throw error
+	} finally {
+		clearAbortTimeout()
+	}
 	responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
 	return new Response(transformDataEvtAttributes(stream, nonce), {
 		status: responseStatusCode,
@@ -122,33 +129,57 @@ async function serveBrowsers(...args: DocRequestArgs) {
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
 	let didError = false
-	const controller = new AbortController()
-	setTimeout(() => controller.abort(), ABORT_DELAY)
-	const stream = await renderToReadableStream(
-		<NonceProvider value={nonce}>
-			<ServerRouter
-				context={reactRouterContext}
-				url={request.url}
-				nonce={nonce}
-			/>
-		</NonceProvider>,
-		{
-			nonce,
-			signal: controller.signal,
-			onError(err: unknown) {
-				didError = true
-				console.error(err)
+	const { controller, clearAbortTimeout } = createAbortTimeout()
+	let stream: Awaited<ReturnType<typeof renderToReadableStream>>
+	try {
+		stream = await renderToReadableStream(
+			<NonceProvider value={nonce}>
+				<ServerRouter
+					context={reactRouterContext}
+					url={request.url}
+					nonce={nonce}
+				/>
+			</NonceProvider>,
+			{
+				nonce,
+				signal: controller.signal,
+				onError(err: unknown) {
+					didError = true
+					console.error(err)
+					Sentry.captureException(err)
+				},
 			},
+		)
+	} catch (error) {
+		Sentry.captureException(error)
+		throw error
+	}
+	responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
+	return new Response(
+		transformDataEvtAttributes(stream, nonce, clearAbortTimeout),
+		{
+			status: didError ? 500 : responseStatusCode,
+			headers: responseHeaders,
 		},
 	)
-	responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
-	return new Response(transformDataEvtAttributes(stream, nonce), {
-		status: didError ? 500 : responseStatusCode,
-		headers: responseHeaders,
-	})
 }
 
-function transformDataEvtAttributes(stream: ReadableStream, nonce: string) {
+function createAbortTimeout() {
+	const controller = new AbortController()
+	const timeoutId = setTimeout(() => controller.abort(), ABORT_DELAY)
+	return {
+		controller,
+		clearAbortTimeout() {
+			clearTimeout(timeoutId)
+		},
+	}
+}
+
+function transformDataEvtAttributes(
+	stream: ReadableStream,
+	nonce: string,
+	onDone?: () => void,
+) {
 	// React won't render the onload prop, which blurrable image marks as data-evt-*.
 	return stream
 		.pipeThrough(new TextDecoderStream())
@@ -156,6 +187,9 @@ function transformDataEvtAttributes(stream: ReadableStream, nonce: string) {
 			new TransformStream({
 				transform(chunk: string, controller) {
 					controller.enqueue(chunk.replace(/data-evt-/g, `nonce="${nonce}" `))
+				},
+				flush() {
+					onDone?.()
 				},
 			}),
 		)
