@@ -6,7 +6,7 @@ import { Prisma } from './prisma-generated.server/client.ts'
 
 function getPrismaAdapter({
 	appDbBinding = getRuntimeBinding('APP_DB'),
-	databaseUrl = getEnv().DATABASE_URL,
+	databaseUrl,
 }: {
 	appDbBinding?: unknown
 	databaseUrl?: string
@@ -14,7 +14,7 @@ function getPrismaAdapter({
 	if (isD1Database(appDbBinding)) {
 		return new PrismaD1(appDbBinding as ConstructorParameters<typeof PrismaD1>[0])
 	}
-	return new PrismaBetterSqlite3({ url: databaseUrl })
+	return new PrismaBetterSqlite3({ url: databaseUrl ?? getEnv().DATABASE_URL })
 }
 
 function isD1Database(value: unknown) {

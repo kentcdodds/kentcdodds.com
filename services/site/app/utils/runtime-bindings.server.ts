@@ -1,11 +1,26 @@
-type RuntimeBindings = Record<string, unknown>
+import { getEnv } from './env.server.ts'
 
-declare global {
-	var __runtimeBindings: RuntimeBindings | undefined
+export type RuntimeBindingSource = Record<string, unknown>
+
+let runtimeBindingSource: RuntimeBindingSource | undefined
+
+function hasOwn(source: RuntimeBindingSource, name: string) {
+	return Object.prototype.hasOwnProperty.call(source, name)
 }
 
-function getRuntimeBinding(name: string) {
-	return globalThis.__runtimeBindings?.[name]
+export function setRuntimeBindingSource(source: RuntimeBindingSource) {
+	runtimeBindingSource = source
 }
 
-export { getRuntimeBinding }
+export function clearRuntimeBindingSource() {
+	runtimeBindingSource = undefined
+}
+
+export function getRuntimeBinding<T = unknown>(name: string): T | undefined {
+	if (runtimeBindingSource && hasOwn(runtimeBindingSource, name)) {
+		return runtimeBindingSource[name] as T | undefined
+	}
+
+	const env = getEnv() as RuntimeBindingSource
+	return env[name] as T | undefined
+}

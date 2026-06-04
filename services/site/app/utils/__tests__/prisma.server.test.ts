@@ -2,9 +2,13 @@ import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { PrismaD1 } from '@prisma/adapter-d1'
 import { afterEach, expect, test, vi } from 'vitest'
 import { getPrismaAdapter } from '../prisma-adapter.server.ts'
+import {
+	clearRuntimeBindingSource,
+	setRuntimeBindingSource,
+} from '../runtime-bindings.server.ts'
 
 afterEach(() => {
-	vi.unstubAllGlobals()
+	clearRuntimeBindingSource()
 })
 
 test('uses file SQLite when no D1 binding is present', () => {
@@ -24,11 +28,9 @@ test('uses D1 when APP_DB has the D1 binding shape', () => {
 		dump: vi.fn(),
 		withSession: vi.fn(),
 	}
-	vi.stubGlobal('__runtimeBindings', { APP_DB: d1Binding })
+	setRuntimeBindingSource({ APP_DB: d1Binding })
 
-	const adapter = getPrismaAdapter({
-		databaseUrl: 'file:./prisma/sqlite.db',
-	})
+	const adapter = getPrismaAdapter()
 
 	expect(adapter).toBeInstanceOf(PrismaD1)
 })
