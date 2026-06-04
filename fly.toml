@@ -69,7 +69,8 @@ swap_size_mb = 512
   [[services.http_checks]]
     interval = "10s"
     timeout = "5s"
-    grace_period = "1m0s"
+    # 1m0s was for LiteFS proxy startup plus cold boot; direct npm start can route sooner.
+    grace_period = "30s"
     restart_limit = 0
     method = "get"
     path = "/healthcheck"
