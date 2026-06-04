@@ -9,10 +9,6 @@ const clientServerMocks = vi.hoisted(() => ({
 	getClientSession: vi.fn(),
 }))
 
-const litefsServerMocks = vi.hoisted(() => ({
-	ensurePrimary: vi.fn(),
-}))
-
 const prismaServerMocks = vi.hoisted(() => ({
 	getEpisodeHomeworkCompletions: vi.fn(),
 	setEpisodeHomeworkCompletion: vi.fn(),
@@ -20,7 +16,6 @@ const prismaServerMocks = vi.hoisted(() => ({
 
 vi.mock('#app/utils/session.server.ts', () => sessionServerMocks)
 vi.mock('#app/utils/client.server.ts', () => clientServerMocks)
-vi.mock('#app/utils/litefs-js.server.ts', () => litefsServerMocks)
 vi.mock('#app/utils/prisma.server.ts', () => prismaServerMocks)
 
 import { action, loader } from '../homework-completion.tsx'
@@ -113,7 +108,6 @@ test('action validates content ids', async () => {
 		authenticated: false,
 		error: 'INVALID_CONTENT_ID',
 	})
-	expect(litefsServerMocks.ensurePrimary).not.toHaveBeenCalled()
 	expect(prismaServerMocks.setEpisodeHomeworkCompletion).not.toHaveBeenCalled()
 })
 
@@ -145,7 +139,6 @@ test('action stores completion for anonymous client', async () => {
 
 	expect(result.type).toBe('DataWithResponseInit')
 	expect(result.data).toEqual({ completed: true, authenticated: false })
-	expect(litefsServerMocks.ensurePrimary).toHaveBeenCalledTimes(1)
 	expect(prismaServerMocks.setEpisodeHomeworkCompletion).toHaveBeenCalledWith({
 		seasonNumber: 7,
 		episodeNumber: 12,

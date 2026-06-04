@@ -3,7 +3,6 @@ import { data as json, redirect } from 'react-router'
 import { cache } from '#app/utils/cache.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import {
 	getBlogMdxListItems,
 	getMdxDirList,
@@ -37,7 +36,6 @@ export function isRefreshShaInfo(value: any): value is RefreshShaInfo {
 export const commitShaKey = 'meta:last-refresh-commit-sha'
 
 export async function action({ request }: Route.ActionArgs) {
-	await ensurePrimary()
 	if (request.headers.get('auth') !== getEnv().REFRESH_CACHE_SECRET) {
 		return redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
 	}

@@ -125,18 +125,15 @@ export function HomeworkCompletionToggle({
 
 async function getHomeworkCompletionServerServices() {
 	const [
-		{ ensurePrimary },
 		{ getUser },
 		{ getClientSession },
 		{ setEpisodeHomeworkCompletion, getEpisodeHomeworkCompletions },
 	] = await Promise.all([
-		import('#app/utils/litefs-js.server.ts'),
 		import('#app/utils/session.server.ts'),
 		import('#app/utils/client.server.ts'),
 		import('#app/utils/prisma.server.ts'),
 	])
 	return {
-		ensurePrimary,
 		getUser,
 		getClientSession,
 		setEpisodeHomeworkCompletion,
@@ -151,7 +148,6 @@ const HomeworkCompletionFormSchema = z.object({
 
 export async function action({ request }: Route.ActionArgs) {
 	const {
-		ensurePrimary,
 		getUser,
 		getClientSession,
 		setEpisodeHomeworkCompletion,
@@ -176,8 +172,6 @@ export async function action({ request }: Route.ActionArgs) {
 			{ status: 400 },
 		)
 	}
-
-	await ensurePrimary()
 
 	const user = await getUser(request)
 	const clientSession = await getClientSession(request, user)

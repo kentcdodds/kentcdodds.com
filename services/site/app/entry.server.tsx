@@ -15,7 +15,6 @@ import {
 	appendAgentDiscoveryHeaders,
 	shouldAppendAgentDiscoveryHeaders,
 } from '#app/utils/agent-discovery.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
@@ -36,11 +35,6 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		loadContext,
 	] = args
 	const env = getEnv()
-	if (responseStatusCode >= 500) {
-		// if we had an error, let's just send this over to the primary and see
-		// if it can handle it.
-		await ensurePrimary()
-	}
 
 	for (const handler of otherRoutes) {
 		const otherRouteResponse = await handler(request, reactRouterContext)
@@ -197,10 +191,6 @@ function serveBrowsers(...args: DocRequestArgs) {
 }
 
 export async function handleDataRequest(response: Response) {
-	if (response.status >= 500) {
-		await ensurePrimary()
-	}
-
 	return response
 }
 
