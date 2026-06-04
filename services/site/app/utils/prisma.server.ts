@@ -1,11 +1,10 @@
 import { remember } from '@epic-web/remember'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
-import { getEnv } from '#app/utils/env.server.ts'
 import { getEpisodeHomeworkContentId } from '#app/utils/favorites.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
+import { getPrismaAdapter } from './prisma-adapter.server.ts'
 import { Prisma, PrismaClient } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -17,9 +16,8 @@ function getClient(): PrismaClient {
 	// NOTE: during development if you change anything in this function, remember
 	// that this only runs once per server restart and won't automatically be
 	// re-run per request like everything else is.
-	const url = getEnv().DATABASE_URL
 	const client = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
+		adapter: getPrismaAdapter(),
 		log: [
 			{ level: 'query', emit: 'event' },
 			{ level: 'error', emit: 'stdout' },
