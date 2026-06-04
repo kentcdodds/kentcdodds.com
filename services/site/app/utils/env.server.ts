@@ -264,7 +264,7 @@ export function getEnv(): Env {
 	const keys = Object.keys(schemaBase.shape) as Array<keyof BaseEnv>
 	const source = runtimeEnvSource ?? process.env
 	const fingerprint = keys
-		.map((k) => `${String(k)}=${source[String(k)] ?? ''}`)
+		.map((k) => `${String(k)}=${JSON.stringify(source[String(k)])}`)
 		.join('\0')
 
 	if (_cache?.fingerprint === fingerprint) return _cache.env

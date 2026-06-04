@@ -82,3 +82,16 @@ test('clearRuntimeEnvSource restores process.env reads', () => {
 	expect(getEnv().PORT).toBe(3100)
 	expect(getEnv().DATABASE_PATH).toBe('/tmp/process-env.sqlite')
 })
+
+test('getEnv cache distinguishes unset values from empty strings', () => {
+	using _env = setEnv({
+		SENTRY_DSN: undefined,
+	})
+	expect(getEnv().SENTRY_DSN).toBeUndefined()
+
+	using _updatedEnv = setEnv({
+		SENTRY_DSN: '',
+	})
+
+	expect(getEnv().SENTRY_DSN).toBe('')
+})
