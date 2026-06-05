@@ -64,29 +64,6 @@ test('RecordingForm submits a valid recording and follows the redirect', async (
 		requestInfo: { flyPrimaryInstance: 'primary-abc123' },
 	})
 
-	let loadEndListener: (() => void) | null = null
-	const readAsDataURL = vi.fn(function (this: SuccessfulFileReader) {
-		this.result = 'data:audio/wav;base64,ZmFrZQ=='
-		loadEndListener?.()
-	})
-
-	class SuccessfulFileReader {
-		result: string | ArrayBuffer | null = null
-		addEventListener(
-			eventName: string,
-			listener: EventListenerOrEventListenerObject,
-		) {
-			if (eventName === 'loadend') {
-				loadEndListener =
-					typeof listener === 'function'
-						? () => listener(new Event('loadend'))
-						: null
-			}
-		}
-		removeEventListener() {}
-		readAsDataURL = readAsDataURL
-	}
-
 	const fetchMock = vi.fn().mockResolvedValue({
 		ok: true,
 		redirected: true,
@@ -94,10 +71,6 @@ test('RecordingForm submits a valid recording and follows the redirect', async (
 		headers: new Headers(),
 	} as unknown as Response)
 
-	vi.stubGlobal(
-		'FileReader',
-		SuccessfulFileReader as unknown as typeof FileReader,
-	)
 	vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
 	const createObjectURL = vi
 		.spyOn(URL, 'createObjectURL')
@@ -107,15 +80,27 @@ test('RecordingForm submits a valid recording and follows the redirect', async (
 		.mockImplementation(() => {})
 
 	try {
+		const recording = new Blob(['audio'], { type: 'audio/webm' })
 		const screen = await render(
-			<RecordingForm audio={new Blob(['audio'])} intent="create-call" />,
+			<RecordingForm audio={recording} intent="create-call" />,
 		)
 		await screen.getByLabelText('Title').fill('My First Call')
 		await screen.getByRole('button', { name: 'Submit Recording' }).click()
 
 		await expect.poll(() => fetchMock.mock.calls.length).toBe(1)
-		expect(readAsDataURL).toHaveBeenCalledTimes(1)
 		expect(fetchMock.mock.calls[0]?.[0]).toBe('/resources/calls/save')
+		const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit
+		expect(requestInit.body).toBeInstanceOf(FormData)
+		const body = requestInit.body as FormData
+		expect(body.get('title')).toBe('My First Call')
+		expect(body.get('audio')).toBeInstanceOf(File)
+		const audio = body.get('audio') as File
+		expect(audio.size).toBe(recording.size)
+		expect(audio.type).toBe(recording.type)
+		expect((requestInit.headers as Headers).get('content-type')).toBeNull()
+		expect((requestInit.headers as Headers).get('fly-force-instance-id')).toBe(
+			'primary-abc123',
+		)
 		await expect.poll(() => mockNavigate.mock.calls.length).toBe(1)
 		expect(mockNavigate).toHaveBeenCalledWith(
 			'/calls/record/fake-call-id?ok=1#done',

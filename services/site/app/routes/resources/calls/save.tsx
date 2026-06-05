@@ -6,6 +6,7 @@ import {
 	deleteAudioObject,
 	getAudioBuffer,
 	parseBase64DataUrl,
+	putCallAudioFromBuffer,
 	putCallAudioFromDataUrl,
 	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
@@ -41,9 +42,42 @@ function getCheckboxFormValue(formData: FormData, key: string) {
 	return value === 'on' || value === 'true'
 }
 
+function getAudioFormValue(formData: FormData, key: string) {
+	const value = formData.get(key)
+	if (typeof value === 'string') return value
+	if (typeof File !== 'undefined' && value instanceof File) return value
+	return null
+}
+
+async function getAudioBufferFromFormValue(audio: string | File) {
+	if (typeof audio === 'string') {
+		return parseBase64DataUrl(audio)
+	}
+
+	return {
+		buffer: Buffer.from(await audio.arrayBuffer()),
+		contentType: audio.type || 'application/octet-stream',
+	}
+}
+
+async function putCallAudioFromFormValue({
+	callId,
+	audio,
+}: {
+	callId: string
+	audio: string | File
+}) {
+	if (typeof audio === 'string') {
+		return await putCallAudioFromDataUrl({ callId, dataUrl: audio })
+	}
+
+	const { buffer, contentType } = await getAudioBufferFromFormValue(audio)
+	return await putCallAudioFromBuffer({ callId, audio: buffer, contentType })
+}
+
 function getActionData(formData: FormData) {
 	const fields = {
-		audio: getStringFormValue(formData, 'audio'),
+		audio: getAudioFormValue(formData, 'audio'),
 		title: getStringFormValue(formData, 'title'),
 		notes: getStringFormValue(formData, 'notes'),
 	}
@@ -96,7 +130,7 @@ async function createCall({
 		}
 
 		const callId = randomUUID()
-		const stored = await putCallAudioFromDataUrl({ callId, dataUrl: audio })
+		const stored = await putCallAudioFromFormValue({ callId, audio })
 		let createdCall: { id: string }
 		try {
 			createdCall = await prisma.call.create({
@@ -399,7 +433,7 @@ async function createEpisodeDraft({
 	formData: FormData
 }) {
 	const callId = getStringFormValue(formData, 'callId')
-	const responseAudio = getStringFormValue(formData, 'audio')
+	const responseAudio = getAudioFormValue(formData, 'audio')
 	const formCallTitle = getStringFormValue(formData, 'callTitle')
 	const formNotes = getStringFormValue(formData, 'notes')
 	if (!callId) return redirectCallNotFound()
@@ -475,7 +509,9 @@ async function createEpisodeDraft({
 		if (!call.audioKey) {
 			throw new Error('Call audio is missing (audioKey is null).')
 		}
-		const parsedResponseAudio = parseBase64DataUrl(responseAudio!)
+		const parsedResponseAudio = await getAudioBufferFromFormValue(
+			responseAudio!,
+		)
 		const storedResponseAudio = await putEpisodeDraftResponseAudioFromBuffer({
 			draftId: draft.id,
 			audio: parsedResponseAudio.buffer,
