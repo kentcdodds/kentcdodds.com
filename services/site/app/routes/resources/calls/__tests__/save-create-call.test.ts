@@ -105,3 +105,32 @@ test('create-call still accepts a urlencoded audio data URL', async () => {
 	expect(response.status).toBe(302)
 	expect(response.headers.get('location')).toMatch(/^\/calls\/record\//)
 })
+
+test('create-call rejects malformed legacy audio strings', async () => {
+	const body = new URLSearchParams({
+		intent: 'create-call',
+		title: 'My malformed audio call',
+		audio: 'not-a-data-url',
+	})
+	const request = new Request('http://localhost/resources/calls/save', {
+		method: 'POST',
+		headers: {
+			host: 'localhost',
+			'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+		},
+		body,
+	})
+
+	const response = await action({ request } as never)
+
+	expect(response).toMatchObject({
+		init: {
+			status: 400,
+		},
+		data: {
+			errors: {
+				audio: 'Audio file is required',
+			},
+		},
+	})
+})

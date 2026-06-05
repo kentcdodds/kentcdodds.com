@@ -32,7 +32,12 @@ function getErrorForNotes(notes: string | null) {
 }
 
 function getErrorForAudio(audio: unknown) {
-	if (typeof audio === 'string' && audio.length > 0) return null
+	if (typeof audio === 'string') {
+		const value = audio.trim()
+		if (!value) return 'Audio file is required'
+		if (/^data:.+;base64,.+$/i.test(value)) return null
+		return 'Audio file is required'
+	}
 	if (typeof File !== 'undefined' && audio instanceof File && audio.size > 0) {
 		return null
 	}
