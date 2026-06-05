@@ -12,9 +12,7 @@ import {
 import { siteCacheReporter } from '#app/utils/cache-reporter.server.ts'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
-import { updatePrimaryCacheValue } from '#app/routes/resources/cache.sqlite.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { getInstanceInfo, getInstanceInfoSync } from './litefs-js.server.js'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -29,8 +27,6 @@ function createDatabase(tryAgain = true): DatabaseSync {
 	const parentDir = path.dirname(cacheDatabasePath)
 	fs.mkdirSync(parentDir, { recursive: true })
 	const db = new DatabaseSync(cacheDatabasePath)
-	const { currentIsPrimary } = getInstanceInfoSync()
-	if (!currentIsPrimary) return db
 
 	try {
 		// create cache table with metadata JSON column and value JSON column if it does not exist already
@@ -119,59 +115,14 @@ export const cache: CachifiedCache = {
 		}
 	},
 	async set(key, entry) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-		if (currentIsPrimary) {
-			preparedSet.run(
-				key,
-				JSON.stringify(entry.value, bufferReplacer),
-				JSON.stringify(entry.metadata),
-			)
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue!({
-				key,
-				cacheValue: entry,
-			})
-				.then((response: Response) => {
-					if (!response.ok) {
-						console.error(
-							`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-							{ entry },
-						)
-					}
-				})
-				.catch((error: unknown) => {
-					console.error(
-						`Error updating cache value for key "${key}" on primary instance (${primaryInstance})`,
-						{ entry, error },
-					)
-				})
-		}
+		preparedSet.run(
+			key,
+			JSON.stringify(entry.value, bufferReplacer),
+			JSON.stringify(entry.metadata),
+		)
 	},
 	async delete(key) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-		if (currentIsPrimary) {
-			preparedDelete.run(key)
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue!({
-				key,
-				cacheValue: undefined,
-			})
-				.then((response: Response) => {
-					if (!response.ok) {
-						console.error(
-							`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-						)
-					}
-				})
-				.catch((error: unknown) => {
-					console.error(
-						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance})`,
-						error,
-					)
-				})
-		}
+		preparedDelete.run(key)
 	},
 }
 

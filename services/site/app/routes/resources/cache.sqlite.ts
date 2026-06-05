@@ -1,23 +1,9 @@
 import { data as json, redirect } from 'react-router'
-import { serverOnly$ } from 'vite-env-only/macros'
 import { cache } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { fetchWithTimeout } from '#app/utils/fetch-with-timeout.server.ts'
-import {
-	getInstanceInfo,
-	getInternalInstanceDomain,
-} from '#app/utils/litefs-js.server.ts'
 import { type Route } from './+types/cache.sqlite'
 
-const PRIMARY_CACHE_SYNC_TIMEOUT_MS = 2_000
-
 export async function action({ request }: Route.ActionArgs) {
-	const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-	if (!currentIsPrimary) {
-		throw new Error(
-			`${request.url} should only be called on the primary instance (${primaryInstance})}`,
-		)
-	}
 	const token = getEnv().INTERNAL_COMMAND_TOKEN
 	const isAuthorized =
 		request.headers.get('Authorization') === `Bearer ${token}`
@@ -39,28 +25,3 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 	return json({ success: true })
 }
-
-export const updatePrimaryCacheValue = serverOnly$(
-	async ({ key, cacheValue }: { key: string; cacheValue: any }) => {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-		if (currentIsPrimary) {
-			throw new Error(
-				`updatePrimaryCacheValue should not be called on the primary instance (${primaryInstance})}`,
-			)
-		}
-		const domain = getInternalInstanceDomain(primaryInstance)
-		const token = getEnv().INTERNAL_COMMAND_TOKEN
-		return fetchWithTimeout(
-			`${domain}/resources/cache/sqlite`,
-			{
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ key, cacheValue }),
-			},
-			PRIMARY_CACHE_SYNC_TIMEOUT_MS,
-		)
-	},
-)

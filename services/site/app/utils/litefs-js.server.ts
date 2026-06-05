@@ -1,19 +1,23 @@
-export {
-	getInstanceInfo,
-	getInstanceInfoSync,
-	TXID_NUM_COOKIE_NAME,
-	waitForUpToDateTxNumber,
-	getTxNumber,
-	getTxSetCookieHeader,
-	checkCookieForTransactionalConsistency,
-	getInternalInstanceDomain,
-	getAllInstances,
-} from 'litefs-js'
+import { getEnv } from './env.server.ts'
 
-export {
-	ensurePrimary,
-	ensureInstance,
-	getReplayResponse,
-	handleTransactionalConsistency,
-	appendTxNumberCookie,
-} from 'litefs-js/remix'
+export function getInstanceInfoSync() {
+	const env = getEnv()
+	const currentInstance = env.FLY_MACHINE_ID
+	return {
+		currentInstance,
+		primaryInstance: currentInstance,
+		currentIsPrimary: true,
+	}
+}
+
+export async function getInstanceInfo() {
+	return getInstanceInfoSync()
+}
+
+export async function getAllInstances() {
+	const env = getEnv()
+	const { currentInstance } = getInstanceInfoSync()
+	return { [currentInstance]: env.FLY_REGION }
+}
+
+export async function ensureInstance(_instance: string) {}

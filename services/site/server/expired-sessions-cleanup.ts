@@ -12,8 +12,7 @@ type CleanupController = {
 
 type CleanupOptions = {
 	/**
-	 * How often to attempt cleanup. The cleanup itself is a no-op on
-	 * non-primary LiteFS instances.
+	 * How often to attempt cleanup.
 	 */
 	intervalMs?: number
 	/**
@@ -56,9 +55,7 @@ export function scheduleExpiredDataCleanup({
 		if (stopped) return
 		runningPromise = (async () => {
 			try {
-				const { currentIsPrimary, currentInstance, primaryInstance } =
-					await getInstanceInfo()
-				if (!currentIsPrimary) return
+				const { currentInstance, primaryInstance } = await getInstanceInfo()
 
 				const deletedSessionsCount = await deleteExpiredSessions()
 				const deletedVerificationsCount = await deleteExpiredVerifications()
