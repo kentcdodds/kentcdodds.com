@@ -31,9 +31,12 @@ function getErrorForNotes(notes: string | null) {
 	return null
 }
 
-function getErrorForAudio(audio: string | null) {
-	if (!audio) return 'Audio file is required'
-	return null
+function getErrorForAudio(audio: unknown) {
+	if (typeof audio === 'string' && audio.length > 0) return null
+	if (typeof File !== 'undefined' && audio instanceof File && audio.size > 0) {
+		return null
+	}
+	return 'Audio file is required'
 }
 
 export type Params = {

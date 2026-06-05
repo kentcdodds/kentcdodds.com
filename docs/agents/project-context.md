@@ -113,6 +113,9 @@ output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
   Chrome is configured to
   open `localhost:3000` on startup and new tabs, and the browser pre-logged-in
   as the seed admin user (`me@kentcdodds.com` / `iliketwix`).
+- If `node --version` still reports an older version after `nvm use 26`, the
+  `/exec-daemon/node` shim is ahead of nvm on `PATH`; prefix commands with
+  `PATH="$HOME/.nvm/versions/node/v26.3.0/bin:$PATH"` when testing.
 - The first request after starting the dev server compiles all MDX blog posts
   and can take ~30 s; subsequent loads are fast.
 - In cloud VMs, Chrome may block camera/microphone access by default. Visiting

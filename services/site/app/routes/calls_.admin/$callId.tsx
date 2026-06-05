@@ -399,32 +399,25 @@ function ResponseAudioDraftForm({
 		const callTitleValue = String(formData.get('callTitle') ?? '')
 		const notesValue = String(formData.get('notes') ?? '')
 
-		const reader = new FileReader()
-		const handleLoadEnd = async () => {
+		const body = new FormData()
+		body.set('intent', 'create-episode-draft')
+		body.set('callId', callId)
+		body.set('audio', audio, 'response-recording')
+		body.set('callTitle', callTitleValue)
+		body.set('notes', notesValue)
+
+		const headers = new Headers()
+		if (flyPrimaryInstance) {
+			headers.set('fly-force-instance-id', flyPrimaryInstance)
+		}
+
+		abortControllerRef.current?.abort()
+		const abortController = new AbortController()
+		abortControllerRef.current = abortController
+		setIsSubmitting(true)
+
+		void (async () => {
 			try {
-				if (typeof reader.result !== 'string') {
-					setError('Unable to read recording. Please try again.')
-					return
-				}
-
-				const body = new URLSearchParams()
-				body.set('intent', 'create-episode-draft')
-				body.set('callId', callId)
-				body.set('audio', reader.result)
-				body.set('callTitle', callTitleValue)
-				body.set('notes', notesValue)
-
-				const headers = new Headers({
-					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-				})
-				if (flyPrimaryInstance) {
-					headers.set('fly-force-instance-id', flyPrimaryInstance)
-				}
-
-				abortControllerRef.current?.abort()
-				const abortController = new AbortController()
-				abortControllerRef.current = abortController
-
 				const response = await fetch(recordingFormActionPath, {
 					method: 'POST',
 					body,
@@ -455,19 +448,12 @@ function ResponseAudioDraftForm({
 				if (e instanceof DOMException && e.name === 'AbortError') return
 				setError(e instanceof Error ? e.message : 'Unable to submit response.')
 			} finally {
+				if (abortControllerRef.current === abortController) {
+					abortControllerRef.current = null
+				}
 				setIsSubmitting(false)
 			}
-		}
-
-		reader.addEventListener('loadend', handleLoadEnd, { once: true })
-		setIsSubmitting(true)
-		try {
-			reader.readAsDataURL(audio)
-		} catch (e: unknown) {
-			reader.removeEventListener('loadend', handleLoadEnd)
-			setIsSubmitting(false)
-			setError(e instanceof Error ? e.message : 'Unable to read recording.')
-		}
+		})()
 	}
 
 	return (
