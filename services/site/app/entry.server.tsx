@@ -1,10 +1,7 @@
-import { PassThrough, Transform } from 'stream'
-
-import { createReadableStreamFromReadable } from '@react-router/node'
 import * as Sentry from '@sentry/react-router'
 import chalk from 'chalk'
 import { isbot } from 'isbot'
-import { renderToPipeableStream } from 'react-dom/server'
+import { renderToReadableStream } from 'react-dom/server'
 import {
 	ServerRouter,
 	type ActionFunctionArgs,
@@ -79,7 +76,7 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 	)
 }
 
-function serveTheBots(...args: DocRequestArgs) {
+async function serveTheBots(...args: DocRequestArgs) {
 	const [
 		request,
 		responseStatusCode,
@@ -88,8 +85,10 @@ function serveTheBots(...args: DocRequestArgs) {
 		loadContext,
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
-	return new Promise((resolve, reject) => {
-		const stream = renderToPipeableStream(
+	const { controller, clearAbortTimeout } = createAbortTimeout()
+	let stream: Awaited<ReturnType<typeof renderToReadableStream>>
+	try {
+		stream = await renderToReadableStream(
 			<NonceProvider value={nonce}>
 				<ServerRouter
 					context={reactRouterContext}
@@ -97,42 +96,24 @@ function serveTheBots(...args: DocRequestArgs) {
 					nonce={nonce}
 				/>
 			</NonceProvider>,
-			{
-				nonce,
-				// Use onAllReady to wait for the entire document to be ready
-				onAllReady() {
-					responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
-					const body = new PassThrough()
-
-					// find/replace all instances of the string "data-evt-" with ""
-					// this is a bit of a hack because React won't render the "onload"
-					// prop, which we use for blurrable image
-					const dataEvtTransform = new Transform({
-						transform(chunk, encoding, callback) {
-							const string = chunk.toString()
-							const replaced = string.replace(/data-evt-/g, `nonce="${nonce}" `)
-							callback(null, replaced)
-						},
-					})
-
-					stream.pipe(dataEvtTransform).pipe(body)
-					resolve(
-						new Response(createReadableStreamFromReadable(body), {
-							status: responseStatusCode,
-							headers: responseHeaders,
-						}),
-					)
-				},
-				onShellError(err: unknown) {
-					reject(err)
-				},
-			},
+			{ nonce, signal: controller.signal },
 		)
-		setTimeout(() => stream.abort(), ABORT_DELAY)
+		// Use allReady to wait for the entire document to be ready.
+		await stream.allReady
+	} catch (error) {
+		Sentry.captureException(error)
+		throw error
+	} finally {
+		clearAbortTimeout()
+	}
+	responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
+	return new Response(transformDataEvtAttributes(stream, nonce), {
+		status: responseStatusCode,
+		headers: responseHeaders,
 	})
 }
 
-function serveBrowsers(...args: DocRequestArgs) {
+async function serveBrowsers(...args: DocRequestArgs) {
 	const [
 		request,
 		responseStatusCode,
@@ -141,9 +122,11 @@ function serveBrowsers(...args: DocRequestArgs) {
 		loadContext,
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
-	return new Promise((resolve, reject) => {
-		let didError = false
-		const stream = renderToPipeableStream(
+	let didError = false
+	const { controller, clearAbortTimeout } = createAbortTimeout()
+	let stream: Awaited<ReturnType<typeof renderToReadableStream>>
+	try {
+		stream = await renderToReadableStream(
 			<NonceProvider value={nonce}>
 				<ServerRouter
 					context={reactRouterContext}
@@ -153,41 +136,58 @@ function serveBrowsers(...args: DocRequestArgs) {
 			</NonceProvider>,
 			{
 				nonce,
-				// use onShellReady to wait until a suspense boundary is triggered
-				onShellReady() {
-					responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
-					const body = new PassThrough()
-
-					// find/replace all instances of the string "data-evt-" with ""
-					// this is a bit of a hack because React won't render the "onload"
-					// prop, which we use for blurrable image
-					const dataEvtTransform = new Transform({
-						transform(chunk, encoding, callback) {
-							const string = chunk.toString()
-							const replaced = string.replace(/data-evt-/g, `nonce="${nonce}" `)
-							callback(null, replaced)
-						},
-					})
-
-					stream.pipe(dataEvtTransform).pipe(body)
-					resolve(
-						new Response(createReadableStreamFromReadable(body), {
-							status: didError ? 500 : responseStatusCode,
-							headers: responseHeaders,
-						}),
-					)
-				},
-				onShellError(err: unknown) {
-					reject(err)
-				},
+				signal: controller.signal,
 				onError(err: unknown) {
 					didError = true
 					console.error(err)
+					Sentry.captureException(err)
 				},
 			},
 		)
-		setTimeout(() => stream.abort(), ABORT_DELAY)
-	})
+	} catch (error) {
+		Sentry.captureException(error)
+		throw error
+	}
+	responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
+	return new Response(
+		transformDataEvtAttributes(stream, nonce, clearAbortTimeout),
+		{
+			status: didError ? 500 : responseStatusCode,
+			headers: responseHeaders,
+		},
+	)
+}
+
+function createAbortTimeout() {
+	const controller = new AbortController()
+	const timeoutId = setTimeout(() => controller.abort(), ABORT_DELAY)
+	return {
+		controller,
+		clearAbortTimeout() {
+			clearTimeout(timeoutId)
+		},
+	}
+}
+
+function transformDataEvtAttributes(
+	stream: ReadableStream,
+	nonce: string,
+	onDone?: () => void,
+) {
+	// React won't render the onload prop, which blurrable image marks as data-evt-*.
+	return stream
+		.pipeThrough(new TextDecoderStream())
+		.pipeThrough(
+			new TransformStream({
+				transform(chunk: string, controller) {
+					controller.enqueue(chunk.replace(/data-evt-/g, `nonce="${nonce}" `))
+				},
+				flush() {
+					onDone?.()
+				},
+			}),
+		)
+		.pipeThrough(new TextEncoderStream())
 }
 
 export async function handleDataRequest(response: Response) {
