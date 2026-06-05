@@ -110,6 +110,8 @@ output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
 
 - The Cursor Cloud VM snapshot ships with Node 24 via nvm, so run
   `nvm install 26 && nvm use 26` before installing dependencies or testing.
+  If the shell still resolves `/exec-daemon/node`, prepend nvm after switching:
+  `export PATH="$NVM_BIN:$PATH"`.
   Chrome is configured to
   open `localhost:3000` on startup and new tabs, and the browser pre-logged-in
   as the seed admin user (`me@kentcdodds.com` / `iliketwix`).
