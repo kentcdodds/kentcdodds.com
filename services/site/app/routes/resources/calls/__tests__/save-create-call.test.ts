@@ -1,4 +1,5 @@
 import { expect, test, vi } from 'vitest'
+import { type RecordingFormData } from '#app/components/calls/recording-form.tsx'
 
 vi.mock('#app/components/calls/recording-form.tsx', () => ({}))
 
@@ -57,6 +58,43 @@ vi.mock('#app/utils/call-kent-audio-processor.server.ts', () => ({
 	requestCallKentEpisodeAudioGeneration: vi.fn(),
 }))
 
+vi.mock('#app/utils/call-kent-audio-storage.server.ts', () => ({
+	deleteAudioObject: vi.fn(async () => {}),
+	getAudioBuffer: vi.fn(async () => Buffer.from('audio')),
+	parseBase64DataUrl: vi.fn((dataUrl: string) => ({
+		buffer: Buffer.from(dataUrl),
+		contentType: 'audio/webm',
+	})),
+	putCallAudioFromBuffer: vi.fn(
+		async ({
+			callId,
+			audio,
+			contentType,
+		}: {
+			callId: string
+			audio: Uint8Array
+			contentType: string
+		}) => ({
+			key: `audio-${callId}`,
+			contentType,
+			size: audio.byteLength,
+		}),
+	),
+	putCallAudioFromDataUrl: vi.fn(
+		async ({ callId }: { callId: string; dataUrl: string }) => ({
+			key: `audio-${callId}`,
+			contentType: 'audio/webm',
+			size: 1024,
+		}),
+	),
+	putEpisodeDraftResponseAudioFromBuffer: vi.fn(async () => ({
+		key: 'response-audio',
+		contentType: 'audio/webm',
+		size: 1024,
+	})),
+}))
+
+import { putCallAudioFromDataUrl } from '#app/utils/call-kent-audio-storage.server.ts'
 import { action } from '../save.tsx'
 
 test('create-call accepts a large multipart audio file', async () => {
@@ -107,6 +145,7 @@ test('create-call still accepts a urlencoded audio data URL', async () => {
 })
 
 test('create-call rejects malformed legacy audio strings', async () => {
+	vi.mocked(putCallAudioFromDataUrl).mockClear()
 	const body = new URLSearchParams({
 		intent: 'create-call',
 		title: 'My malformed audio call',
@@ -121,16 +160,18 @@ test('create-call rejects malformed legacy audio strings', async () => {
 		body,
 	})
 
-	const response = await action({ request } as never)
+	const result = (await action({ request } as never)) as {
+		type?: string
+		data?: RecordingFormData
+		init?: ResponseInit | null
+	}
 
-	expect(response).toMatchObject({
-		init: {
-			status: 400,
-		},
-		data: {
-			errors: {
-				audio: 'Audio file is required',
-			},
+	expect(result.type).toBe('DataWithResponseInit')
+	expect(result.init?.status).toBe(400)
+	expect(result.data).toMatchObject({
+		errors: {
+			audio: 'Audio file is required',
 		},
 	})
+	expect(putCallAudioFromDataUrl).not.toHaveBeenCalled()
 })

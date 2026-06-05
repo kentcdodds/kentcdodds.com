@@ -115,7 +115,7 @@ output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
   as the seed admin user (`me@kentcdodds.com` / `iliketwix`).
 - If `node --version` still reports an older version after `nvm use 26`, the
   `/exec-daemon/node` shim is ahead of nvm on `PATH`; prefix commands with
-  `PATH="$HOME/.nvm/versions/node/v26.3.0/bin:$PATH"` when testing.
+  `PATH="$(dirname "$(nvm which 26)"):$PATH"` when testing.
 - The first request after starting the dev server compiles all MDX blog posts
   and can take ~30 s; subsequent loads are fast.
 - In cloud VMs, Chrome may block camera/microphone access by default. Visiting
