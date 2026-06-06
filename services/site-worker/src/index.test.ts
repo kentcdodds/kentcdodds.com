@@ -3,12 +3,13 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import {
 	clearRuntimeEnvSource,
 	getEnv,
+	setRuntimeEnvSource,
 } from '../../site/app/utils/env.server.ts'
 import {
 	clearRuntimeBindingSource,
 	getRuntimeBinding,
 } from '../../site/app/utils/runtime-bindings.server.ts'
-import { handleRequest } from './index'
+import { getWorkerAllowedActionOrigins, handleRequest } from './index'
 
 afterEach(() => {
 	clearRuntimeBindingSource()
@@ -102,6 +103,23 @@ describe('site worker', () => {
 			cspNonce: 'test-nonce',
 			searchWorkerToken: 'from-worker-env',
 		})
+	})
+
+	test('allows actions from the current worker request host', () => {
+		const env = createWorkerEnv({
+			ALLOWED_ACTION_ORIGINS: 'kentcdodds.com,*.kentcdodds.com',
+		})
+		setRuntimeEnvSource(getStringEnvBindings(env))
+
+		expect(
+			getWorkerAllowedActionOrigins(
+				new Request('https://kentcdodds-com-staging.example.workers.dev/'),
+			),
+		).toEqual([
+			'kentcdodds.com',
+			'*.kentcdodds.com',
+			'kentcdodds-com-staging.example.workers.dev',
+		])
 	})
 })
 
@@ -232,4 +250,12 @@ function createWorkerEnv(overrides: Record<string, unknown> = {}) {
 		CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: 'call-kent-audio-secret',
 		...overrides,
 	}
+}
+
+function getStringEnvBindings(env: Record<string, unknown>) {
+	return Object.fromEntries(
+		Object.entries(env).filter((entry): entry is [string, string] => {
+			return typeof entry[1] === 'string'
+		}),
+	)
 }
