@@ -11,6 +11,11 @@
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --port 8788",
     "start": "wrangler dev --port 8788",
+    "d1:migrations:prepare": "node ./scripts/prepare-d1-migrations.mjs",
+    "d1:migrations:list:local": "npm run d1:migrations:prepare && wrangler d1 migrations list APP_DB --local",
+    "d1:migrations:apply:local": "npm run d1:migrations:prepare && wrangler d1 migrations apply APP_DB --local",
+    "d1:migrations:list:staging": "npm run d1:migrations:prepare && wrangler d1 migrations list APP_DB --remote",
+    "d1:migrations:apply:staging": "npm run d1:migrations:prepare && wrangler d1 migrations apply APP_DB --remote",
     "cf-typegen": "wrangler types"
   },
   "devDependencies": {

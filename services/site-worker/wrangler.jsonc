@@ -4,5 +4,14 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-03-17",
 	"compatibility_flags": ["nodejs_compat"],
-	"workers_dev": true
+	"workers_dev": true,
+	"d1_databases": [
+		{
+			"binding": "APP_DB",
+			"database_name": "kentcdodds-com-staging-app-db",
+			// Replace this after `wrangler d1 create kentcdodds-com-staging-app-db`.
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": ".wrangler/site-prisma-migrations"
+		}
+	]
 }
