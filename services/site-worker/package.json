@@ -4,14 +4,19 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build:site": "npm run build:router --workspace kentcdodds.com",
     "format": "prettier --write .",
     "lint": "oxlint . --ignore-pattern .wrangler",
     "test": "vitest --run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev --port 8788",
-    "start": "wrangler dev --port 8788",
+    "deploy": "npm run build:site && wrangler deploy",
+    "dev": "npm run build:site && wrangler dev --port 8788",
+    "start": "npm run dev",
+    "dry-run": "npm run build:site && wrangler deploy --dry-run",
     "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "react-router": "^7.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260306.1",

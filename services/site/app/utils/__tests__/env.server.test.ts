@@ -62,6 +62,33 @@ test('getEnv reads from the configured runtime env source', () => {
 	])
 })
 
+test('getEnv reads from the global runtime env source', () => {
+	using _env = setEnv({
+		PORT: '3100',
+		DATABASE_URL: 'file:/tmp/process-env.sqlite',
+		DATABASE_PATH: undefined,
+	})
+	const key = Symbol.for('kentcdodds.runtimeEnvSource')
+	const globalStore = globalThis as typeof globalThis &
+		Record<symbol, RuntimeEnvSource | undefined>
+	globalStore[key] = createRuntimeEnvSource({
+		PORT: '4300',
+		DATABASE_URL: 'file:/tmp/global-runtime-env-source.sqlite',
+		DATABASE_PATH: undefined,
+		MOCKS: 'true',
+	})
+
+	try {
+		const env = getEnv()
+
+		expect(env.PORT).toBe(4300)
+		expect(env.DATABASE_PATH).toBe('/tmp/global-runtime-env-source.sqlite')
+		expect(env.MOCKS).toBe(true)
+	} finally {
+		delete globalStore[key]
+	}
+})
+
 test('clearRuntimeEnvSource restores process.env reads', () => {
 	using _env = setEnv({
 		PORT: '3100',

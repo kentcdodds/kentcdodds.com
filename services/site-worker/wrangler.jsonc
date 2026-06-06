@@ -4,5 +4,9 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-03-17",
 	"compatibility_flags": ["nodejs_compat"],
-	"workers_dev": true
+	"workers_dev": true,
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "../site/build/client",
+	},
 }
