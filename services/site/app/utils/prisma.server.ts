@@ -3,6 +3,7 @@ import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session } from '#app/types.ts'
 import { getEpisodeHomeworkContentId } from '#app/utils/favorites.ts'
+import { migrateHomeworkCompletionsToUserRecords } from './homework-completion-migration.server.ts'
 import { getPrismaAdapter } from './prisma-adapter.server.ts'
 import { Prisma, PrismaClient } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
@@ -280,57 +281,17 @@ async function migrateHomeworkCompletionsToUser({
 	userId: string
 	clientId: string
 }) {
-	let completionCount = 0
-	await prisma.$transaction(async (tx) => {
-		const completions = await tx.homeworkCompletion.findMany({
-			where: { clientId },
-			select: {
-				id: true,
-				seasonNumber: true,
-				episodeNumber: true,
-				itemIndex: true,
-			},
-		})
-		if (completions.length === 0) {
-			return
-		}
-		completionCount = completions.length
-
-		for (const completion of completions) {
-			try {
-				await tx.homeworkCompletion.upsert({
-					where: {
-						userId_seasonNumber_episodeNumber_itemIndex: {
-							userId,
-							seasonNumber: completion.seasonNumber,
-							episodeNumber: completion.episodeNumber,
-							itemIndex: completion.itemIndex,
-						},
-					},
-					create: {
-						userId,
-						seasonNumber: completion.seasonNumber,
-						episodeNumber: completion.episodeNumber,
-						itemIndex: completion.itemIndex,
-					},
-					update: {
-						updatedAt: new Date(),
-					},
-				})
-			} catch (error) {
-				if (
-					!(error instanceof Prisma.PrismaClientKnownRequestError) ||
-					error.code !== 'P2002'
-				) {
-					throw error
-				}
-			}
-		}
-
-		await tx.homeworkCompletion.deleteMany({ where: { clientId } })
+	return migrateHomeworkCompletionsToUserRecords({
+		userId,
+		clientId,
+		homeworkCompletion: prisma.homeworkCompletion,
+		isUniqueConstraintError(error) {
+			return (
+				error instanceof Prisma.PrismaClientKnownRequestError &&
+				error.code === 'P2002'
+			)
+		},
 	})
-
-	return completionCount
 }
 
 export {

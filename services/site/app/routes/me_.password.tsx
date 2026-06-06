@@ -11,6 +11,7 @@ import {
 	verifyPassword,
 } from '#app/utils/password.server.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
+import { upsertPasswordAndDeleteSessions } from '#app/utils/prisma-write-flows.server.ts'
 import { getSession, requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.password'
 
@@ -105,15 +106,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const passwordHash = await getPasswordHash(password)
 
-	await prisma.$transaction([
-		prisma.password.upsert({
-			where: { userId: user.id },
-			update: { hash: passwordHash },
-			create: { userId: user.id, hash: passwordHash },
-		}),
-		// Invalidate all sessions (including this one) after a password change.
-		prisma.session.deleteMany({ where: { userId: user.id } }),
-	])
+	// Invalidate all sessions (including this one) after a password change.
+	await upsertPasswordAndDeleteSessions({
+		userId: user.id,
+		passwordHash,
+	})
 	const session = await getSession(request)
 	await session.signIn({ id: user.id })
 
