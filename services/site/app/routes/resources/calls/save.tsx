@@ -27,6 +27,10 @@ import {
 	getStringFormValue,
 } from '#app/utils/misc.ts'
 import { prisma } from '#app/utils/prisma.server.ts'
+import {
+	recordPublishedCallKentEpisode,
+	replaceCallKentEpisodeDraft,
+} from '#app/utils/prisma-write-flows.server.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
 import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
 import { teamEmoji } from '#app/utils/team-provider.tsx'
@@ -332,18 +336,14 @@ async function publishCall({
 		// Persist a per-caller record so users can see their episodes on /me even
 		// after the raw call record is removed.
 		try {
-			await prisma.$transaction([
-				prisma.callKentCallerEpisode.create({
-					data: {
-						userId: call.userId,
-						callTitle,
-						callNotes,
-						isAnonymous: call.isAnonymous,
-						transistorEpisodeId: published.transistorEpisodeId,
-					},
-				}),
-				prisma.call.delete({ where: { id: call.id } }),
-			])
+			await recordPublishedCallKentEpisode({
+				userId: call.userId,
+				callId: call.id,
+				callTitle,
+				callNotes,
+				isAnonymous: call.isAnonymous,
+				transistorEpisodeId: published.transistorEpisodeId,
+			})
 		} catch (error: unknown) {
 			console.error(
 				'Transistor episode already created but DB cleanup failed.',
@@ -462,14 +462,7 @@ async function createEpisodeDraft({
 	}
 
 	// Replace any existing draft so "re-record response" is safe and predictable.
-	const [, draft] = await prisma.$transaction([
-		prisma.callKentEpisodeDraft.deleteMany({ where: { callId } }),
-		prisma.callKentEpisodeDraft.create({
-			data: {
-				callId,
-			},
-		}),
-	])
+	const draft = await replaceCallKentEpisodeDraft({ callId })
 
 	try {
 		if (!call.audioKey) {

@@ -17,6 +17,7 @@ import {
 	migrateHomeworkCompletionsToUser,
 	prisma,
 } from '#app/utils/prisma.server.ts'
+import { upsertPasswordAndDeleteSessions } from '#app/utils/prisma-write-flows.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import {
 	consumeVerification,
@@ -259,15 +260,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const passwordHash = await getPasswordHash(password)
 
-	await prisma.$transaction([
-		prisma.password.upsert({
-			where: { userId: userRecord.id },
-			update: { hash: passwordHash },
-			create: { userId: userRecord.id, hash: passwordHash },
-		}),
-		// Sign out everywhere on password reset.
-		prisma.session.deleteMany({ where: { userId: userRecord.id } }),
-	])
+	// Sign out everywhere on password reset after storing the new password.
+	await upsertPasswordAndDeleteSessions({
+		userId: userRecord.id,
+		passwordHash,
+	})
 
 	const session = await getSession(request)
 	await session.signIn({ id: userRecord.id })
