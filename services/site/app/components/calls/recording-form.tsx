@@ -70,7 +70,6 @@ export function RecordingForm({
 	const navigate = useNavigate()
 	const revalidator = useRevalidator()
 	const { requestInfo, user, userInfo } = useRootData()
-	const flyPrimaryInstance = requestInfo.flyPrimaryInstance
 	const audioURL = React.useMemo(() => {
 		return URL.createObjectURL(audio)
 	}, [audio])
@@ -204,9 +203,6 @@ export function RecordingForm({
 				const headers = new Headers({
 					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
 				})
-				if (flyPrimaryInstance) {
-					headers.set('fly-force-instance-id', flyPrimaryInstance)
-				}
 				const abortController = new AbortController()
 				abortControllerRef.current = abortController
 

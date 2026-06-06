@@ -1,5 +1,5 @@
 import { getEnv } from '../app/utils/env.server.ts'
-import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import { getInstanceInfo } from '../app/utils/instance-info.server.ts'
 import {
 	deleteExpiredSessions,
 	deleteExpiredVerifications,

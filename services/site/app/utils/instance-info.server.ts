@@ -13,11 +13,3 @@ export function getInstanceInfoSync() {
 export async function getInstanceInfo() {
 	return getInstanceInfoSync()
 }
-
-export async function getAllInstances() {
-	const env = getEnv()
-	const { currentInstance } = getInstanceInfoSync()
-	return { [currentInstance]: env.FLY_REGION }
-}
-
-export async function ensureInstance(_instance: string) {}

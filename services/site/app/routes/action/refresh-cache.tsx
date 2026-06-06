@@ -42,11 +42,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const body = (await request.json()) as Body
 
-	function setShaInCache() {
+	async function setShaInCache() {
 		const { commitSha: sha } = body
 		if (sha) {
 			const value: RefreshShaInfo = { sha, date: new Date().toISOString() }
-			cache.set(commitShaKey, {
+			await cache.set(commitShaKey, {
 				value,
 				metadata: {
 					createdTime: new Date().getTime(),
@@ -59,9 +59,9 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if ('keys' in body && Array.isArray(body.keys)) {
 		for (const key of body.keys) {
-			void cache.delete(key)
+			await cache.delete(key)
 		}
-		setShaInCache()
+		await setShaInCache()
 		return json({
 			message: 'Deleting cache keys',
 			keys: body.keys,
@@ -122,7 +122,7 @@ export async function action({ request }: Route.ActionArgs) {
 			await Promise.all(promises)
 		}
 
-		setShaInCache()
+		await setShaInCache()
 		return json({
 			message: 'Refreshing cache for content paths',
 			contentPaths: refreshingContentPaths,

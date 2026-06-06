@@ -19,7 +19,6 @@ import {
 } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
-import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
 import {
 	useCapturedRouteError,
 	getDisplayUrl,
@@ -142,38 +141,32 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const podcastLinksAbortController = new AbortController()
 	const requestPath = new URL(request.url).pathname
 	const session = await getSession(request)
-	const [
-		user,
-		clientSession,
-		loginInfoSession,
-		primaryInstance,
-		latestPodcastSeasonLinks,
-	] = await Promise.all([
-		session.getUser({ timings }),
-		getClientSession(request, session.getUser({ timings })),
-		getLoginInfoSession(request),
-		getInstanceInfo().then((i) => i.primaryInstance),
-		time(
-			withTimeout(
-				getLatestPodcastSeasonLinks({
-					request,
-					timings,
-					signal: podcastLinksAbortController.signal,
-				}),
+	const [user, clientSession, loginInfoSession, latestPodcastSeasonLinks] =
+		await Promise.all([
+			session.getUser({ timings }),
+			getClientSession(request, session.getUser({ timings })),
+			getLoginInfoSession(request),
+			time(
+				withTimeout(
+					getLatestPodcastSeasonLinks({
+						request,
+						timings,
+						signal: podcastLinksAbortController.signal,
+					}),
+					{
+						timeoutMs: 2000,
+						fallback: PODCAST_LINKS_FALLBACK,
+						label: 'root:podcast-season-links',
+						onTimeout: () => podcastLinksAbortController.abort(),
+					},
+				),
 				{
-					timeoutMs: 2000,
-					fallback: PODCAST_LINKS_FALLBACK,
-					label: 'root:podcast-season-links',
-					onTimeout: () => podcastLinksAbortController.abort(),
+					timings,
+					type: 'root:podcast-season-links',
+					desc: 'podcast nav links (Simplecast + Transistor)',
 				},
 			),
-			{
-				timings,
-				type: 'root:podcast-season-links',
-				desc: 'podcast nav links (Simplecast + Transistor)',
-			},
-		),
-	])
+		])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
 	const randomFooterImageKey = randomFooterImageKeys[
@@ -196,7 +189,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 			hints: getHints(request),
 			origin: getDomainUrl(request),
 			path: requestPath,
-			flyPrimaryInstance: primaryInstance,
 			userPrefs: {
 				theme: getTheme(request),
 			},
@@ -529,20 +521,6 @@ export function ErrorBoundary() {
 			return (
 				<ErrorDoc>
 					<FourHundred error={error.data} />
-				</ErrorDoc>
-			)
-		}
-		if (error.status === 409) {
-			return (
-				<ErrorDoc>
-					<ErrorPage
-						heroProps={{
-							title: '409 - Oh no, you should never see this.',
-							subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
-							image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
-							action: <ArrowLink href="/">Go home</ArrowLink>,
-						}}
-					/>
 				</ErrorDoc>
 			)
 		}

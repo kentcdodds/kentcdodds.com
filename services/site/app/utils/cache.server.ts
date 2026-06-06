@@ -1,6 +1,3 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
 import {
 	type Cache,
 	cachified as baseCachified,
@@ -12,18 +9,51 @@ import {
 import { siteCacheReporter } from '#app/utils/cache-reporter.server.ts'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
-import { getEnv } from '#app/utils/env.server.ts'
+import {
+	getRuntimeBinding,
+	hasAppDbBinding,
+} from '#app/utils/runtime-bindings.server.ts'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
-const cacheDb = remember('cacheDb', createDatabase)
+type DatabaseSync = import('node:sqlite').DatabaseSync
+type StatementSync = ReturnType<DatabaseSync['prepare']>
 
-export function getCacheDb() {
-	return cacheDb
+type SqliteCacheState = {
+	db: DatabaseSync
+	preparedGet: StatementSync
+	preparedSet: StatementSync
+	preparedDelete: StatementSync
+	preparedAllKeys: StatementSync
+	preparedKeySearch: StatementSync
 }
 
-function createDatabase(tryAgain = true): DatabaseSync {
-	const cacheDatabasePath = getEnv().CACHE_DATABASE_PATH
+const sqliteCacheStates = remember(
+	'sqlite-cache-states',
+	() => new Map<string, Promise<SqliteCacheState>>(),
+)
+
+function getCacheDatabasePath() {
+	const cacheDatabasePath = getRuntimeBinding<string>(
+		'CACHE_DATABASE_PATH',
+	)?.trim()
+	if (cacheDatabasePath) return cacheDatabasePath
+	throw new Error(
+		'CACHE_DATABASE_PATH is required for the SQLite cache backend',
+	)
+}
+
+export async function getCacheDb() {
+	return (await getSqliteCacheState()).db
+}
+
+async function createDatabase(
+	cacheDatabasePath: string,
+	tryAgain = true,
+): Promise<DatabaseSync> {
+	const fs = await import('node:fs')
+	const path = await import('node:path')
+	const { DatabaseSync } = await import('node:sqlite')
 	const parentDir = path.dirname(cacheDatabasePath)
 	fs.mkdirSync(parentDir, { recursive: true })
 	const db = new DatabaseSync(cacheDatabasePath)
@@ -43,17 +73,47 @@ function createDatabase(tryAgain = true): DatabaseSync {
 			console.error(
 				`Error creating cache database, deleting the file at "${cacheDatabasePath}" and trying again...`,
 			)
-			return createDatabase(false)
+			return createDatabase(cacheDatabasePath, false)
 		}
 		throw error
 	}
 	return db
 }
 
+function getSqliteCacheState() {
+	const cacheDatabasePath = getCacheDatabasePath()
+	let state = sqliteCacheStates.get(cacheDatabasePath)
+	if (!state) {
+		state = createSqliteCacheState(cacheDatabasePath)
+		sqliteCacheStates.set(cacheDatabasePath, state)
+	}
+	return state
+}
+
+async function createSqliteCacheState(cacheDatabasePath: string) {
+	const db = await createDatabase(cacheDatabasePath)
+	return {
+		db,
+		preparedGet: db.prepare('SELECT value, metadata FROM cache WHERE key = ?'),
+		preparedSet: db.prepare(
+			'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (?, ?, ?)',
+		),
+		preparedDelete: db.prepare('DELETE FROM cache WHERE key = ?'),
+		preparedAllKeys: db.prepare('SELECT key FROM cache LIMIT ?'),
+		preparedKeySearch: db.prepare(
+			'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
+		),
+	}
+}
+
 const lruInstance = remember(
 	'lru-cache',
 	() => new LRUCache<string, CacheEntry<unknown>>({ max: 5000 }),
 )
+
+export function isFileCacheAvailable() {
+	return !hasAppDbBinding()
+}
 
 export const lruCache = {
 	set(key, value) {
@@ -71,14 +131,18 @@ export const lruCache = {
 	},
 } satisfies Cache
 
-const isBuffer = (obj: unknown): obj is Buffer =>
-	Buffer.isBuffer(obj) || obj instanceof Uint8Array
+const getBuffer = () => (globalThis as { Buffer?: typeof Buffer }).Buffer
+
+const isBuffer = (obj: unknown) =>
+	getBuffer()?.isBuffer(obj) || obj instanceof Uint8Array
 
 function bufferReplacer(_key: string, value: unknown) {
 	if (isBuffer(value)) {
+		const BufferConstructor = getBuffer()
+		if (!BufferConstructor) return value
 		return {
 			__isBuffer: true,
-			data: value.toString('base64'),
+			data: BufferConstructor.from(value).toString('base64'),
 		}
 	}
 	return value
@@ -91,22 +155,18 @@ function bufferReviver(_key: string, value: unknown) {
 		'__isBuffer' in value &&
 		(value as any).data
 	) {
-		return Buffer.from((value as any).data, 'base64')
+		const BufferConstructor = getBuffer()
+		if (!BufferConstructor) return value
+		return BufferConstructor.from((value as any).data, 'base64')
 	}
 	return value
 }
 
-const preparedGet = cacheDb.prepare(
-	'SELECT value, metadata FROM cache WHERE key = ?',
-)
-const preparedSet = cacheDb.prepare(
-	'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (?, ?, ?)',
-)
-const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
-
 export const cache: CachifiedCache = {
-	name: 'SQLite cache',
-	get(key) {
+	name: 'Application cache',
+	async get(key) {
+		if (hasAppDbBinding()) return lruCache.get(key) ?? null
+		const { preparedGet } = await getSqliteCacheState()
 		const result = preparedGet.get(key) as any
 		if (!result) return null
 		return {
@@ -115,6 +175,11 @@ export const cache: CachifiedCache = {
 		}
 	},
 	async set(key, entry) {
+		if (hasAppDbBinding()) {
+			lruCache.set(key, entry)
+			return
+		}
+		const { preparedSet } = await getSqliteCacheState()
 		preparedSet.run(
 			key,
 			JSON.stringify(entry.value, bufferReplacer),
@@ -122,28 +187,35 @@ export const cache: CachifiedCache = {
 		)
 	},
 	async delete(key) {
+		if (hasAppDbBinding()) {
+			lruCache.delete(key)
+			return
+		}
+		const { preparedDelete } = await getSqliteCacheState()
 		preparedDelete.run(key)
 	},
 }
 
-const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
 export async function getAllCacheKeys(limit: number) {
+	const sqlite = hasAppDbBinding()
+		? []
+		: (await getSqliteCacheState()).preparedAllKeys
+				.all(limit)
+				.map((row) => (row as { key: string }).key)
 	return {
-		sqlite: preparedAllKeys
-			.all(limit)
-			.map((row) => (row as { key: string }).key),
+		sqlite,
 		lru: [...lruInstance.keys()],
 	}
 }
 
-const preparedKeySearch = cacheDb.prepare(
-	'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
-)
 export async function searchCacheKeys(search: string, limit: number) {
+	const sqlite = hasAppDbBinding()
+		? []
+		: (await getSqliteCacheState()).preparedKeySearch
+				.all(`%${search}%`, limit)
+				.map((row) => (row as { key: string }).key)
 	return {
-		sqlite: preparedKeySearch
-			.all(`%${search}%`, limit)
-			.map((row) => (row as { key: string }).key),
+		sqlite,
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 	}
 }
