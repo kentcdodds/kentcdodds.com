@@ -19,6 +19,7 @@ minimal health endpoint:
 
 ## Staging D1
 
-The staging worker declares an `APP_DB` D1 binding and uses the existing
-`services/site/prisma/migrations` directory as its Wrangler migration source.
-See `docs/agents/cloudflare-staging-d1.md` for setup and migration commands.
+The staging worker declares an `APP_DB` D1 binding. Its migration scripts
+generate Wrangler-compatible D1 migration files from the existing
+`services/site/prisma/migrations` directory. See
+`docs/agents/cloudflare-staging-d1.md` for setup and migration commands.

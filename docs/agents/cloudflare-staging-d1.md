@@ -32,10 +32,11 @@ Copy the returned `database_id` into the `APP_DB` binding in
 
 ## Apply existing site migrations
 
-The site-worker D1 binding points `migrations_dir` at
-`../site/prisma/migrations`, so Wrangler applies the committed Prisma SQLite
-migrations directly. Do not duplicate the migration SQL into the worker
-workspace.
+The site-worker migration scripts generate Wrangler-compatible flat SQL files in
+`services/site-worker/.wrangler/site-prisma-migrations` from the committed
+`services/site/prisma/migrations/*/migration.sql` files before running
+`wrangler d1 migrations`. Do not commit or hand-edit the generated files, and do
+not duplicate the migration SQL into the worker workspace.
 
 Validate and apply migrations to the local Miniflare D1 database:
 
@@ -54,6 +55,12 @@ To inspect pending migrations without applying them:
 ```sh
 npm run d1:migrations:list:local --workspace site-worker
 npm run d1:migrations:list:staging --workspace site-worker
+```
+
+To regenerate the ignored D1 migration files without contacting D1:
+
+```sh
+npm run d1:migrations:prepare --workspace site-worker
 ```
 
 ## Local worker development
