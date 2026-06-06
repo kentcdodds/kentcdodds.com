@@ -8,6 +8,7 @@ import {
 	clearRuntimeBindingSource,
 	getRuntimeBinding,
 	setRuntimeBindingSource,
+	type RuntimeBindingSource,
 } from '../runtime-bindings.server.ts'
 
 afterEach(() => {
@@ -57,6 +58,30 @@ test('getRuntimeBinding prefers the configured binding source', () => {
 
 	expect(getRuntimeBinding('DB')).toBe(d1Binding)
 	expect(getRuntimeBinding('SEARCH_WORKER_TOKEN')).toBe('binding-search-token')
+})
+
+test('getRuntimeBinding reads from the global binding source', () => {
+	const d1Binding = {
+		prepare() {
+			return null
+		},
+	}
+	const key = Symbol.for('kentcdodds.runtimeBindingSource')
+	const globalStore = globalThis as typeof globalThis &
+		Record<symbol, RuntimeBindingSource | undefined>
+	globalStore[key] = {
+		DB: d1Binding,
+		SEARCH_WORKER_TOKEN: 'global-binding-search-token',
+	}
+
+	try {
+		expect(getRuntimeBinding('DB')).toBe(d1Binding)
+		expect(getRuntimeBinding('SEARCH_WORKER_TOKEN')).toBe(
+			'global-binding-search-token',
+		)
+	} finally {
+		delete globalStore[key]
+	}
 })
 
 test('getRuntimeBinding falls back to getEnv after clearing the binding source', () => {
