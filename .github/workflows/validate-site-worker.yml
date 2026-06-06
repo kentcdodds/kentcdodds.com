@@ -4,8 +4,10 @@ on:
   pull_request:
     paths:
       - .github/workflows/validate-site-worker.yml
+      - docs/agents/cloudflare-staging-d1.md
       - package-lock.json
       - package.json
+      - services/site/prisma/migrations/**
       - services/site-worker/**
   workflow_dispatch:
 
@@ -39,6 +41,12 @@ jobs:
 
       - name: Test site worker
         run: npm run test --workspace site-worker
+
+      - name: Validate staging D1 migrations
+        working-directory: services/site-worker
+        env:
+          CI: "true"
+        run: npm run d1:migrations:apply:local
 
       - name: Wrangler deploy dry run
         working-directory: services/site-worker

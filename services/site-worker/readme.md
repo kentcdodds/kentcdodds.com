@@ -16,3 +16,9 @@ minimal health endpoint:
   - `npm run test --workspace site-worker`
 - Validate the Worker bundle with:
   - `cd services/site-worker && npm exec wrangler -- deploy --dry-run`
+
+## Staging D1
+
+The staging worker declares an `APP_DB` D1 binding and uses the existing
+`services/site/prisma/migrations` directory as its Wrangler migration source.
+See `docs/agents/cloudflare-staging-d1.md` for setup and migration commands.
