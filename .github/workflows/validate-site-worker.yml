@@ -29,7 +29,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install site worker deps
-        run: npm ci --workspace=site-worker --include-workspace-root
+        run: npm ci --workspace=site-worker --workspace=kentcdodds.com --include-workspace-root
 
       - name: Lint site worker
         run: npm run lint --workspace site-worker
@@ -41,5 +41,4 @@ jobs:
         run: npm run test --workspace site-worker
 
       - name: Wrangler deploy dry run
-        working-directory: services/site-worker
-        run: npm exec wrangler -- deploy --dry-run
+        run: npm run dry-run --workspace site-worker
