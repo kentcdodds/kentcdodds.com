@@ -34,6 +34,12 @@ async function getPrismaMigrationDirs() {
 		.toSorted()
 }
 
+function prepareSqlForD1(sql) {
+	// D1 rejects TEMP tables in migrations; the guard table is dropped in the
+	// same migration, so a regular table preserves the check without persisting.
+	return sql.replaceAll('CREATE TEMP TABLE ', 'CREATE TABLE ')
+}
+
 await fs.rm(d1MigrationsDir, { recursive: true, force: true })
 await fs.mkdir(d1MigrationsDir, { recursive: true })
 
@@ -51,7 +57,7 @@ for (const migrationDir of migrationDirs) {
 		throw new Error(`Missing Prisma migration SQL file: ${source}`)
 	}
 
-	const sql = await fs.readFile(source, 'utf8')
+	const sql = prepareSqlForD1(await fs.readFile(source, 'utf8'))
 
 	if (!sql.trim()) {
 		throw new Error(`Prisma migration SQL file is empty: ${source}`)

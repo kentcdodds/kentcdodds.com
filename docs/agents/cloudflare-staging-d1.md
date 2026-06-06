@@ -38,6 +38,11 @@ The site-worker migration scripts generate Wrangler-compatible flat SQL files in
 `wrangler d1 migrations`. Do not commit or hand-edit the generated files, and do
 not duplicate the migration SQL into the worker workspace.
 
+The generated copy normalizes `CREATE TEMP TABLE` to `CREATE TABLE` because D1
+rejects temporary tables in migrations. The affected guard table is dropped in
+the same migration, so this keeps the safety check without changing the
+committed Prisma migration.
+
 Validate and apply migrations to the local Miniflare D1 database:
 
 ```sh
