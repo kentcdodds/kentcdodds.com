@@ -22,7 +22,7 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
-import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import { getInstanceInfo } from '../app/utils/instance-info.server.ts'
 
 sourceMapSupport.install()
 
@@ -184,8 +184,6 @@ app.post('/__metronome', (req: any, res: any) => {
 })
 
 app.get('/healthcheck', (_req, res) => {
-	// Keep Fly's app health check process-local so it can stay green even when
-	// LiteFS metadata or downstream dependencies are slow.
 	res.type('text/plain')
 	return res.send('OK')
 })
