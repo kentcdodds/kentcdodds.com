@@ -141,12 +141,12 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
 	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const { totalBlogReaders, posts } = data as SerializeFrom<typeof loader>
+	const blogData = data as SerializeFrom<typeof loader> | undefined
+	const totalBlogReaders = blogData?.totalBlogReaders ?? 'thousands of'
+	const articleCount = blogData ? formatNumber(blogData.posts.length) : 'many'
 	return getSocialMetas({
 		title: 'The Kent C. Dodds Blog',
-		description: `Join ${totalBlogReaders} people who have read Kent's ${formatNumber(
-			posts.length,
-		)} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
+		description: `Join ${totalBlogReaders} people who have read Kent's ${articleCount} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
 		keywords:
 			'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
 		url: getUrl(requestInfo),

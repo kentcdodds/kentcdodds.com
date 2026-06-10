@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { expect, test } from 'vitest'
 
-import { action } from '../promotification.tsx'
+import { action, loader } from '../promotification.tsx'
 
 function makeRequest(formData: FormData) {
 	return new Request('http://localhost/resources/promotification', {
@@ -66,4 +66,20 @@ test('action caps one-time promo cookie max age', async () => {
 	expect(result.type).toBe('DataWithResponseInit')
 	const cookieHeader = new Headers(result.init?.headers).get('Set-Cookie')
 	expect(cookieHeader).toContain(`Max-Age=${60 * 60 * 24 * 365 * 10}`)
+})
+
+test('loader rejects get requests with method not allowed', async () => {
+	const result = (await loader()) as {
+		type?: string
+		data?: unknown
+		init?: ResponseInit | null
+	}
+
+	expect(result.type).toBe('DataWithResponseInit')
+	expect(result.init?.status).toBe(405)
+	expect(new Headers(result.init?.headers).get('Allow')).toBe('POST')
+	expect(result.data).toEqual({
+		success: false,
+		error: 'Method Not Allowed',
+	})
 })
