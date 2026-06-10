@@ -16,7 +16,7 @@ swap_size_mb = 512
 [vm]
   cpu_kind = "shared"
   cpus = 1
-  memory_mb = 1024
+  memory_mb = 2048
 
 [[mounts]]
   source = "data_machines"
@@ -57,8 +57,8 @@ swap_size_mb = 512
     handlers = ["tls", "http"]
   [services.concurrency]
     type = "requests"
-    hard_limit = 200
-    soft_limit = 150
+    hard_limit = 50
+    soft_limit = 25
 
   [[services.tcp_checks]]
     interval = "15s"
@@ -70,7 +70,7 @@ swap_size_mb = 512
     interval = "10s"
     timeout = "5s"
     grace_period = "1m0s"
-    restart_limit = 0
+    restart_limit = 6
     method = "get"
     path = "/healthcheck"
     protocol = "http"

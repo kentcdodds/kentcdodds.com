@@ -48,6 +48,13 @@ export function createPromoHiddenSetCookieHeader({
 	})
 }
 
+export async function loader() {
+	return json({ success: false, error: 'Method Not Allowed' } as const, {
+		status: 405,
+		headers: { Allow: 'POST' },
+	})
+}
+
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
 	const promoName = formData.get('promoName')
