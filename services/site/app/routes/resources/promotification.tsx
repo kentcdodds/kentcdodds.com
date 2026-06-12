@@ -184,39 +184,64 @@ export function Promotification({
 							<div>{`Time's up. The sale is over`}</div>
 						) : (
 							<>
-								<div className="flex flex-wrap gap-3 tabular-nums">
-									<span>
-										{days} day{days === 1 ? '' : 's'}
-									</span>
-									<span>
-										{hours} hour{hours === 1 ? '' : 's'}
-									</span>
-									<span>
-										{minutes} min{minutes === 1 ? '' : 's'}
-									</span>
-									<span>
-										{seconds} sec{seconds === 1 ? '' : 's'}
-									</span>
-								</div>
-								<div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-									{dismissError ? (
-										<p className="text-sm text-red-500" role="alert">
-											{dismissError}
-										</p>
-									) : null}
-									<LinkButton
-										type="button"
-										className={`text-inverse flex items-center gap-1 transition-opacity ${
-											showSpinner ? 'opacity-50' : ''
-										}`}
-										data-promotification-snooze
-										disabled={disableLink}
-										onClick={() => submitDismiss(dismissTimeSeconds)}
+								<div className="flex flex-col gap-4 border-t border-gray-700 pt-4 sm:flex-row sm:items-center sm:justify-between">
+									<div
+										aria-label="promotion time remaining"
+										className="grid grid-cols-4 gap-2 text-center tabular-nums"
 									>
-										<span>Remind me later</span>
-										<AlarmIcon />
-									</LinkButton>
-									<Spinner size={16} showSpinner={showSpinner} />
+										<span className="rounded-md bg-white/10 px-2 py-1">
+											<span className="block text-base font-semibold">
+												{days}
+											</span>
+											<span className="text-secondary block text-xs tracking-wide uppercase">
+												day{days === 1 ? '' : 's'}
+											</span>
+										</span>
+										<span className="rounded-md bg-white/10 px-2 py-1">
+											<span className="block text-base font-semibold">
+												{hours}
+											</span>
+											<span className="text-secondary block text-xs tracking-wide uppercase">
+												hour{hours === 1 ? '' : 's'}
+											</span>
+										</span>
+										<span className="rounded-md bg-white/10 px-2 py-1">
+											<span className="block text-base font-semibold">
+												{minutes}
+											</span>
+											<span className="text-secondary block text-xs tracking-wide uppercase">
+												min{minutes === 1 ? '' : 's'}
+											</span>
+										</span>
+										<span className="rounded-md bg-white/10 px-2 py-1">
+											<span className="block text-base font-semibold">
+												{seconds}
+											</span>
+											<span className="text-secondary block text-xs tracking-wide uppercase">
+												sec{seconds === 1 ? '' : 's'}
+											</span>
+										</span>
+									</div>
+									<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+										{dismissError ? (
+											<p className="text-sm text-red-500" role="alert">
+												{dismissError}
+											</p>
+										) : null}
+										<LinkButton
+											type="button"
+											className={`text-inverse flex items-center gap-1 transition-opacity ${
+												showSpinner ? 'opacity-50' : ''
+											}`}
+											data-promotification-snooze
+											disabled={disableLink}
+											onClick={() => submitDismiss(dismissTimeSeconds)}
+										>
+											<span>Remind me later</span>
+											<AlarmIcon />
+										</LinkButton>
+										<Spinner size={16} showSpinner={showSpinner} />
+									</div>
 								</div>
 							</>
 						)}
