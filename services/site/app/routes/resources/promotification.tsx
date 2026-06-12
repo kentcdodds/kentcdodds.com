@@ -107,15 +107,23 @@ export function Promotification({
 		promoEndTimeMs ? promoEndTimeMs <= Date.now() : false,
 	)
 
-	const [visible, setVisible] = useState(cookieValue !== 'hidden')
+	const [visible, setVisible] = useState(
+		cookieValue !== PROMO_HIDDEN_COOKIE_VALUE,
+	)
+	const [submittedPromoName, setSubmittedPromoName] = useState<string | null>(
+		null,
+	)
 	const fetcher = useFetcher<SerializeFrom<typeof action>>()
 	const showSpinner = useSpinDelay(fetcher.state !== 'idle')
-	const disableLink = fetcher.state !== 'idle' || fetcher.data?.success
+	const disableLink =
+		fetcher.state !== 'idle' ||
+		(fetcher.data?.success && submittedPromoName === promoName)
 
 	function submitDismiss(maxAge: number) {
 		const formData = new FormData()
 		formData.set('promoName', promoName)
 		formData.set('maxAge', String(maxAge))
+		setSubmittedPromoName(promoName)
 		fetcher.submit(formData, {
 			action: '/resources/promotification',
 			method: 'POST',
@@ -137,10 +145,15 @@ export function Promotification({
 	}
 
 	useEffect(() => {
-		if (fetcher.data?.success) {
+		if (fetcher.data?.success && submittedPromoName === promoName) {
 			setVisible(false)
 		}
-	}, [fetcher.data])
+	}, [fetcher.data, promoName, submittedPromoName])
+
+	useEffect(() => {
+		setVisible(cookieValue !== PROMO_HIDDEN_COOKIE_VALUE)
+		setSubmittedPromoName(null)
+	}, [cookieValue, promoName])
 
 	const dismissError =
 		fetcher.state === 'idle' && fetcher.data && fetcher.data.success === false
@@ -155,13 +168,17 @@ export function Promotification({
 	// Key fix for issue #462: compute from absolute end time each tick so we jump
 	// after tab inactivity rather than counting down rapidly to catch up.
 	const timeLeft = useCountdown(promoEndTimeMs ?? 0, 1000)
-	const completed = timeLeft <= 0
+	const completed = promoEndTimeMs ? timeLeft <= 0 : false
 	const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24))
 	const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24)
 	const minutes = Math.floor((timeLeft / 1000 / 60) % 60)
 	const seconds = Math.floor((timeLeft / 1000) % 60)
 
-	if (promoEndTime && isPastEndTime) return null
+	useEffect(() => {
+		if (completed) setIsPastEndTime(true)
+	}, [completed])
+
+	if (promoEndTime && (isPastEndTime || completed)) return null
 
 	return (
 		<NotificationMessage
@@ -179,71 +196,67 @@ export function Promotification({
 				{children}
 				{promoEndTime ? (
 					<div className="mt-4">
-						{completed ? (
-							<div>{`Time's up. The sale is over`}</div>
-						) : (
-							<>
-								<div className="flex flex-col gap-4 border-t border-gray-700 pt-4 sm:flex-row sm:items-center sm:justify-between">
-									<div
-										aria-label="promotion time remaining"
-										className="grid grid-cols-4 gap-2 text-center tabular-nums"
-									>
-										<span className="rounded-md bg-white/10 px-2 py-1">
-											<span className="block text-base font-semibold">
-												{days}
-											</span>
-											<span className="text-secondary block text-xs tracking-wide uppercase">
-												day{days === 1 ? '' : 's'}
-											</span>
+						<>
+							<div className="flex flex-col gap-4 border-t border-gray-700 pt-4 sm:flex-row sm:items-center sm:justify-between">
+								<div
+									aria-label="promotion time remaining"
+									className="grid grid-cols-4 gap-2 text-center tabular-nums"
+								>
+									<span className="rounded-md bg-white/10 px-2 py-1">
+										<span className="block text-base font-semibold">
+											{days}
 										</span>
-										<span className="rounded-md bg-white/10 px-2 py-1">
-											<span className="block text-base font-semibold">
-												{hours}
-											</span>
-											<span className="text-secondary block text-xs tracking-wide uppercase">
-												hour{hours === 1 ? '' : 's'}
-											</span>
+										<span className="text-secondary block text-xs tracking-wide uppercase">
+											day{days === 1 ? '' : 's'}
 										</span>
-										<span className="rounded-md bg-white/10 px-2 py-1">
-											<span className="block text-base font-semibold">
-												{minutes}
-											</span>
-											<span className="text-secondary block text-xs tracking-wide uppercase">
-												min{minutes === 1 ? '' : 's'}
-											</span>
+									</span>
+									<span className="rounded-md bg-white/10 px-2 py-1">
+										<span className="block text-base font-semibold">
+											{hours}
 										</span>
-										<span className="rounded-md bg-white/10 px-2 py-1">
-											<span className="block text-base font-semibold">
-												{seconds}
-											</span>
-											<span className="text-secondary block text-xs tracking-wide uppercase">
-												sec{seconds === 1 ? '' : 's'}
-											</span>
+										<span className="text-secondary block text-xs tracking-wide uppercase">
+											hour{hours === 1 ? '' : 's'}
 										</span>
-									</div>
-									<div className="flex flex-wrap items-center gap-2 sm:justify-end">
-										{dismissError ? (
-											<p className="text-sm text-red-500" role="alert">
-												{dismissError}
-											</p>
-										) : null}
-										<button
-											type="button"
-											className={`inline-flex items-center gap-1 rounded-full border border-white/20 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-white/10 focus:ring-2 focus:ring-white/50 focus:outline-none ${
-												showSpinner ? 'opacity-50' : ''
-											}`}
-											data-promotification-snooze
-											disabled={disableLink}
-											onClick={() => submitDismiss(dismissTimeSeconds)}
-										>
-											<span>Remind me later</span>
-											<AlarmIcon />
-										</button>
-										<Spinner size={16} showSpinner={showSpinner} />
-									</div>
+									</span>
+									<span className="rounded-md bg-white/10 px-2 py-1">
+										<span className="block text-base font-semibold">
+											{minutes}
+										</span>
+										<span className="text-secondary block text-xs tracking-wide uppercase">
+											min{minutes === 1 ? '' : 's'}
+										</span>
+									</span>
+									<span className="rounded-md bg-white/10 px-2 py-1">
+										<span className="block text-base font-semibold">
+											{seconds}
+										</span>
+										<span className="text-secondary block text-xs tracking-wide uppercase">
+											sec{seconds === 1 ? '' : 's'}
+										</span>
+									</span>
 								</div>
-							</>
-						)}
+								<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+									{dismissError ? (
+										<p className="text-sm text-red-500" role="alert">
+											{dismissError}
+										</p>
+									) : null}
+									<button
+										type="button"
+										className={`inline-flex items-center gap-1 rounded-full border border-white/20 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-white/10 focus:ring-2 focus:ring-white/50 focus:outline-none ${
+											showSpinner ? 'opacity-50' : ''
+										}`}
+										data-promotification-snooze
+										disabled={disableLink}
+										onClick={() => submitDismiss(dismissTimeSeconds)}
+									>
+										<span>Remind me later</span>
+										<AlarmIcon />
+									</button>
+									<Spinner size={16} showSpinner={showSpinner} />
+								</div>
+							</div>
+						</>
 					</div>
 				) : null}
 			</div>

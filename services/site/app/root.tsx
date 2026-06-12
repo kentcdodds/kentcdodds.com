@@ -413,6 +413,7 @@ function App({
 				<PageLoadingMessage />
 				{data.productEngineeringWorkshopPromotification ? (
 					<Promotification
+						key={data.productEngineeringWorkshopPromotification.promoName}
 						position="top-center"
 						promoName={data.productEngineeringWorkshopPromotification.promoName}
 						cookieValue={
