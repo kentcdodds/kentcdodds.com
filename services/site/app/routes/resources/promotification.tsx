@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react'
 import { useFetcher, data as json } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 
-import { LinkButton } from '#app/components/button.tsx'
 import { useCountdown } from '#app/components/hooks/use-countdown.ts'
 import { AlarmIcon } from '#app/components/icons.tsx'
 import { NotificationMessage } from '#app/components/notification-message.tsx'
@@ -228,18 +227,18 @@ export function Promotification({
 												{dismissError}
 											</p>
 										) : null}
-										<LinkButton
+										<button
 											type="button"
-											className={`text-inverse flex items-center gap-1 transition-opacity ${
+											className={`text-primary inline-flex items-center gap-1 underline transition-opacity ${
 												showSpinner ? 'opacity-50' : ''
 											}`}
 											data-promotification-snooze
 											disabled={disableLink}
 											onClick={() => submitDismiss(dismissTimeSeconds)}
 										>
-											<span>Remind me later</span>
+											<span className="whitespace-nowrap">Remind me later</span>
 											<AlarmIcon />
-										</LinkButton>
+										</button>
 										<Spinner size={16} showSpinner={showSpinner} />
 									</div>
 								</div>
