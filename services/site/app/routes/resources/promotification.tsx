@@ -229,14 +229,14 @@ export function Promotification({
 										) : null}
 										<button
 											type="button"
-											className={`text-primary inline-flex items-center gap-1 underline transition-opacity ${
+											className={`inline-flex items-center gap-1 rounded-full border border-white/20 px-3 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-white/10 focus:ring-2 focus:ring-white/50 focus:outline-none ${
 												showSpinner ? 'opacity-50' : ''
 											}`}
 											data-promotification-snooze
 											disabled={disableLink}
 											onClick={() => submitDismiss(dismissTimeSeconds)}
 										>
-											<span className="whitespace-nowrap">Remind me later</span>
+											<span>Remind me later</span>
 											<AlarmIcon />
 										</button>
 										<Spinner size={16} showSpinner={showSpinner} />
