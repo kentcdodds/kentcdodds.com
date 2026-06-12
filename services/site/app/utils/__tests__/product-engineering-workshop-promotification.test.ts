@@ -18,7 +18,7 @@ test('returns the discount promotification before the discount expires', () => {
 		promoName: PRODUCT_ENGINEERING_WORKSHOP_DISCOUNT_PROMOTIFICATION_NAME,
 		promoEndTime: PRODUCT_ENGINEERING_WORKSHOP_DISCOUNT_END_TIME,
 		message:
-			'Save 40% on the July Product Engineering Workshop with Kent C. Dodds.',
+			'Learn the Durable Skills of a Product Engineer with Kent on July 7th at a 40% discount.',
 		buttonText: 'Claim the discount',
 	})
 })
