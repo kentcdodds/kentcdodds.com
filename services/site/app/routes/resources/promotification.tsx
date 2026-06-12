@@ -4,7 +4,7 @@ import { invariantResponse } from '@epic-web/invariant'
 import * as cookie from 'cookie'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { useFetcher, data as json } from 'react-router'
+import { useFetcher, useRevalidator, data as json } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 
 import { useCountdown } from '#app/components/hooks/use-countdown.ts'
@@ -114,10 +114,12 @@ export function Promotification({
 		null,
 	)
 	const fetcher = useFetcher<SerializeFrom<typeof action>>()
+	const revalidator = useRevalidator()
+	const revalidatedEndTimeRef = React.useRef<number | null>(null)
 	const showSpinner = useSpinDelay(fetcher.state !== 'idle')
-	const disableLink =
-		fetcher.state !== 'idle' ||
-		(fetcher.data?.success && submittedPromoName === promoName)
+	const dismissedSubmittedPromo =
+		fetcher.data?.success && submittedPromoName === promoName
+	const disableLink = fetcher.state !== 'idle' || dismissedSubmittedPromo
 
 	function submitDismiss(maxAge: number) {
 		const formData = new FormData()
@@ -132,7 +134,7 @@ export function Promotification({
 
 	function handleInteraction(event: React.MouseEvent<HTMLDivElement>) {
 		if (!hidePermanentlyOnInteraction) return
-		if (fetcher.state !== 'idle' || fetcher.data?.success) return
+		if (fetcher.state !== 'idle' || dismissedSubmittedPromo) return
 		const target = event.target
 		if (!(target instanceof HTMLElement)) return
 		const interactiveElement = target.closest(
@@ -145,10 +147,10 @@ export function Promotification({
 	}
 
 	useEffect(() => {
-		if (fetcher.data?.success && submittedPromoName === promoName) {
+		if (dismissedSubmittedPromo) {
 			setVisible(false)
 		}
-	}, [fetcher.data, promoName, submittedPromoName])
+	}, [dismissedSubmittedPromo])
 
 	useEffect(() => {
 		setVisible(cookieValue !== PROMO_HIDDEN_COOKIE_VALUE)
@@ -175,8 +177,12 @@ export function Promotification({
 	const seconds = Math.floor((timeLeft / 1000) % 60)
 
 	useEffect(() => {
-		if (completed) setIsPastEndTime(true)
-	}, [completed])
+		if (!completed || !promoEndTimeMs) return
+		setIsPastEndTime(true)
+		if (revalidatedEndTimeRef.current === promoEndTimeMs) return
+		revalidatedEndTimeRef.current = promoEndTimeMs
+		revalidator.revalidate()
+	}, [completed, promoEndTimeMs, revalidator])
 
 	if (promoEndTime && (isPastEndTime || completed)) return null
 
