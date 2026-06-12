@@ -12,7 +12,7 @@ function makeRequest(formData: FormData) {
 
 test('action stores a hidden cookie for a valid promo name', async () => {
 	const formData = new FormData()
-	formData.set('promoName', 'chats-with-kent-season-7')
+	formData.set('promoName', 'product-engineering-workshop-2026-07')
 	formData.set('maxAge', String(60 * 60 * 24))
 
 	const result = (await action({
@@ -26,7 +26,7 @@ test('action stores a hidden cookie for a valid promo name', async () => {
 	expect(result.type).toBe('DataWithResponseInit')
 	expect(result.init?.status).toBeUndefined()
 	const cookieHeader = new Headers(result.init?.headers).get('Set-Cookie')
-	expect(cookieHeader).toContain('chats-with-kent-season-7=hidden')
+	expect(cookieHeader).toContain('product-engineering-workshop-2026-07=hidden')
 	expect(cookieHeader).toContain('Max-Age=86400')
 })
 
@@ -52,7 +52,7 @@ test('action rejects invalid promo names', async () => {
 
 test('action caps one-time promo cookie max age', async () => {
 	const formData = new FormData()
-	formData.set('promoName', 'chats-with-kent-season-7')
+	formData.set('promoName', 'product-engineering-workshop-2026-07')
 	formData.set('maxAge', String(60 * 60 * 24 * 365 * 20))
 
 	const result = (await action({

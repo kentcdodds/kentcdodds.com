@@ -103,7 +103,7 @@ function NotificationMessage({
 						'text-inverse px-5vw pointer-events-none fixed right-0 left-0 z-50',
 						{
 							'bottom-8': position === 'bottom-right',
-							'top-8': position === 'top-center',
+							'top-24 md:top-28': position === 'top-center',
 						},
 					)}
 				>

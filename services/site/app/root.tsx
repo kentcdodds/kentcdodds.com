@@ -38,8 +38,6 @@ import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
 import {
 	Promotification,
-	PROMO_HIDDEN_COOKIE_VALUE,
-	createPromoHiddenSetCookieHeader,
 	getPromoCookieValue,
 } from './routes/resources/promotification.tsx'
 import { Spacer } from './components/spacer.tsx'
@@ -57,9 +55,9 @@ import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
 import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
 import {
-	isSeason7ChatsPath,
-	SEASON_7_PROMOTIFICATION_NAME,
-} from './utils/season-7-promotification.ts'
+	PRODUCT_ENGINEERING_WORKSHOP_URL,
+	getProductEngineeringWorkshopPromotification,
+} from './utils/product-engineering-workshop-promotification.ts'
 import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
@@ -179,17 +177,28 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const randomFooterImageKey = randomFooterImageKeys[
 		Math.floor(Math.random() * randomFooterImageKeys.length)
 	] as keyof typeof illustrationImages
+	const productEngineeringWorkshopPromotification =
+		getProductEngineeringWorkshopPromotification()
 
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		latestPodcastSeasonLinks,
-		season7PromotificationCookieValue: isSeason7ChatsPath(requestPath)
-			? PROMO_HIDDEN_COOKIE_VALUE
-			: getPromoCookieValue({
-					promoName: SEASON_7_PROMOTIFICATION_NAME,
-					request,
-				}),
+		productEngineeringWorkshopPromotification:
+			productEngineeringWorkshopPromotification
+				? {
+						...productEngineeringWorkshopPromotification,
+						promoEndTime:
+							productEngineeringWorkshopPromotification.promoEndTime.toISOString(),
+					}
+				: null,
+		productEngineeringWorkshopPromotificationCookieValue:
+			productEngineeringWorkshopPromotification
+				? getPromoCookieValue({
+						promoName: productEngineeringWorkshopPromotification.promoName,
+						request,
+					})
+				: undefined,
 		ENV: getPublicEnv(),
 		randomFooterImageKey,
 		requestInfo: {
@@ -215,20 +224,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 	await session.getHeaders(headers)
 	await clientSession.getHeaders(headers)
 	await loginInfoSession.getHeaders(headers)
-	if (
-		isSeason7ChatsPath(requestPath) &&
-		getPromoCookieValue({
-			promoName: SEASON_7_PROMOTIFICATION_NAME,
-			request,
-		}) !== PROMO_HIDDEN_COOKIE_VALUE
-	) {
-		headers.append(
-			'Set-Cookie',
-			createPromoHiddenSetCookieHeader({
-				promoName: SEASON_7_PROMOTIFICATION_NAME,
-			}),
-		)
-	}
 	// Add root loader total for production diagnostics (visible in Server-Timing)
 	const rootLoaderTotal = performance.now() - loaderStart
 	const rootTimings = {
@@ -416,23 +411,36 @@ function App({
 			</head>
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
-				<Promotification
-					position="top-center"
-					promoName={SEASON_7_PROMOTIFICATION_NAME}
-					cookieValue={data.season7PromotificationCookieValue}
-					hidePermanentlyOnInteraction
-				>
-					<div className="space-y-4">
-						<p className="font-semibold">
-							{`Season 7 of Chats with Kent is out: Become a Product Engineer.`}
-						</p>
-						<div className="flex flex-wrap items-center justify-end gap-3">
-							<ButtonLink to="/chats/07" variant="secondary" size="medium">
-								{`Listen to season 7`}
+				{data.productEngineeringWorkshopPromotification ? (
+					<Promotification
+						key={data.productEngineeringWorkshopPromotification.promoName}
+						position="top-center"
+						promoName={data.productEngineeringWorkshopPromotification.promoName}
+						cookieValue={
+							data.productEngineeringWorkshopPromotificationCookieValue
+						}
+						promoEndTime={
+							new Date(
+								data.productEngineeringWorkshopPromotification.promoEndTime,
+							)
+						}
+						hidePermanentlyOnInteraction
+					>
+						<div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+							<p className="max-w-md text-base leading-snug font-semibold">
+								{data.productEngineeringWorkshopPromotification.message}
+							</p>
+							<ButtonLink
+								to={PRODUCT_ENGINEERING_WORKSHOP_URL}
+								variant="secondary"
+								size="medium"
+								className="justify-self-start sm:justify-self-end"
+							>
+								{data.productEngineeringWorkshopPromotification.buttonText}
 							</ButtonLink>
 						</div>
-					</div>
-				</Promotification>
+					</Promotification>
+				) : null}
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
 				<AppHotkeys />
