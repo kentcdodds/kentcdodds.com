@@ -57,6 +57,10 @@ import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
 import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
 import {
+	PRODUCT_ENGINEERING_WORKSHOP_URL,
+	getProductEngineeringWorkshopPromotification,
+} from './utils/product-engineering-workshop-promotification.ts'
+import {
 	isSeason7ChatsPath,
 	SEASON_7_PROMOTIFICATION_NAME,
 } from './utils/season-7-promotification.ts'
@@ -179,11 +183,28 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const randomFooterImageKey = randomFooterImageKeys[
 		Math.floor(Math.random() * randomFooterImageKeys.length)
 	] as keyof typeof illustrationImages
+	const productEngineeringWorkshopPromotification =
+		getProductEngineeringWorkshopPromotification()
 
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		latestPodcastSeasonLinks,
+		productEngineeringWorkshopPromotification:
+			productEngineeringWorkshopPromotification
+				? {
+						...productEngineeringWorkshopPromotification,
+						promoEndTime:
+							productEngineeringWorkshopPromotification.promoEndTime.toISOString(),
+					}
+				: null,
+		productEngineeringWorkshopPromotificationCookieValue:
+			productEngineeringWorkshopPromotification
+				? getPromoCookieValue({
+						promoName: productEngineeringWorkshopPromotification.promoName,
+						request,
+					})
+				: PROMO_HIDDEN_COOKIE_VALUE,
 		season7PromotificationCookieValue: isSeason7ChatsPath(requestPath)
 			? PROMO_HIDDEN_COOKIE_VALUE
 			: getPromoCookieValue({
@@ -416,23 +437,54 @@ function App({
 			</head>
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
-				<Promotification
-					position="top-center"
-					promoName={SEASON_7_PROMOTIFICATION_NAME}
-					cookieValue={data.season7PromotificationCookieValue}
-					hidePermanentlyOnInteraction
-				>
-					<div className="space-y-4">
-						<p className="font-semibold">
-							{`Season 7 of Chats with Kent is out: Become a Product Engineer.`}
-						</p>
-						<div className="flex flex-wrap items-center justify-end gap-3">
-							<ButtonLink to="/chats/07" variant="secondary" size="medium">
-								{`Listen to season 7`}
-							</ButtonLink>
+				{data.productEngineeringWorkshopPromotification ? (
+					<Promotification
+						position="top-center"
+						promoName={data.productEngineeringWorkshopPromotification.promoName}
+						cookieValue={
+							data.productEngineeringWorkshopPromotificationCookieValue
+						}
+						promoEndTime={
+							new Date(
+								data.productEngineeringWorkshopPromotification.promoEndTime,
+							)
+						}
+						hidePermanentlyOnInteraction
+					>
+						<div className="space-y-4">
+							<p className="font-semibold">
+								{data.productEngineeringWorkshopPromotification.message}
+							</p>
+							<div className="flex flex-wrap items-center justify-end gap-3">
+								<ButtonLink
+									to={PRODUCT_ENGINEERING_WORKSHOP_URL}
+									variant="secondary"
+									size="medium"
+								>
+									{data.productEngineeringWorkshopPromotification.buttonText}
+								</ButtonLink>
+							</div>
 						</div>
-					</div>
-				</Promotification>
+					</Promotification>
+				) : (
+					<Promotification
+						position="top-center"
+						promoName={SEASON_7_PROMOTIFICATION_NAME}
+						cookieValue={data.season7PromotificationCookieValue}
+						hidePermanentlyOnInteraction
+					>
+						<div className="space-y-4">
+							<p className="font-semibold">
+								{`Season 7 of Chats with Kent is out: Become a Product Engineer.`}
+							</p>
+							<div className="flex flex-wrap items-center justify-end gap-3">
+								<ButtonLink to="/chats/07" variant="secondary" size="medium">
+									{`Listen to season 7`}
+								</ButtonLink>
+							</div>
+						</div>
+					</Promotification>
+				)}
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
 				<AppHotkeys />
