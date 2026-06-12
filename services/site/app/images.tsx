@@ -744,19 +744,24 @@ function getSocialImageWithPreTitle({
 	preTitle,
 	featuredImage: img,
 	url,
+	featuredImageStyle = 'portrait',
 }: {
 	title: string
 	preTitle: string
 	featuredImage: string
 	url: string
+	// square keeps 1:1 artwork (like podcast covers) uncropped and narrows the
+	// title column to make room for the wider image.
+	featuredImageStyle?: 'portrait' | 'square'
 }) {
 	const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
 
 	const encodedPreTitle = doubleEncode(emojiStrip(preTitle))
 	const preTitleSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_14,h_$gh,x_$gw_mul_1.5,y_$gh_mul_1.3,l_text:kentcdodds.com:Matter-Regular.woff2_50:${encodedPreTitle}`
 
+	const titleWidth = featuredImageStyle === 'square' ? 11 : 13.5
 	const encodedTitle = doubleEncode(emojiStrip(title))
-	const titleSection = `co_white,c_fit,g_north_west,w_$gw_mul_13.5,h_$gh_mul_7,x_$gw_mul_1.5,y_$gh_mul_2.3,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedTitle}`
+	const titleSection = `co_white,c_fit,g_north_west,w_$gw_mul_${titleWidth},h_$gh_mul_7,x_$gw_mul_1.5,y_$gh_mul_2.3,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedTitle}`
 
 	const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
 	const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
@@ -769,7 +774,9 @@ function getSocialImageWithPreTitle({
 		? toBase64(img)
 		: img.replace(/\//g, ':')
 	const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
-	const featuredImageSection = `c_fill,ar_3:4,r_12,g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
+	const featuredImageCrop =
+		featuredImageStyle === 'square' ? 'ar_1:1,r_24' : 'ar_3:4,r_12'
+	const featuredImageSection = `c_fill,${featuredImageCrop},g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
 
 	return [
 		`https://res.cloudinary.com/kentcdodds-com/image/upload`,

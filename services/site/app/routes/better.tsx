@@ -18,7 +18,11 @@ import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
-import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
+import {
+	getImgProps,
+	getSocialImageWithPreTitle,
+	images,
+} from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import {
 	type BetterWithKentEpisode,
@@ -36,6 +40,12 @@ import { type Route } from './+types/better'
 
 const epicProductEngineerUrl =
 	'https://www.epicproduct.engineer/become-an-epic-product-engineer-podcast'
+
+// The Better with Kent show artwork (the original Transistor upload, which the
+// podcast feed's <itunes:image> imgproxy URL points at). Cloudinary fetches and
+// caches it for the social image.
+const betterWithKentArtworkUrl =
+	'https://img-upload-production.transistor.fm/cfe9ede66d04d8e7e3d1f8f824dbe2b1.jpg'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings: Timings = {}
@@ -64,10 +74,12 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 		description:
 			'Durable skills for people who ship software. A solo show from Kent C. Dodds — one skill per episode, with homework. Watch on YouTube or listen wherever you get podcasts.',
 		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
+		image: getSocialImageWithPreTitle({
 			url: getDisplayUrl(requestInfo),
-			featuredImage: images.microphone.id,
-			words: `Better with Kent: Durable skills for people who ship software`,
+			featuredImage: betterWithKentArtworkUrl,
+			featuredImageStyle: 'square',
+			preTitle: 'A solo show from Kent C. Dodds',
+			title: 'Durable skills for people who ship software',
 		}),
 	})
 }
