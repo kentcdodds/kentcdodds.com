@@ -1,44 +1,68 @@
 import { type ReactNode } from 'react'
-import { type HeadersFunction, type MetaFunction } from 'react-router'
+import {
+	data,
+	type HeadersFunction,
+	type LinksFunction,
+	type MetaFunction,
+} from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { ButtonLink } from '#app/components/button.tsx'
-import { FeatureCard } from '#app/components/feature-card.tsx'
-import { Grid } from '#app/components/grid.tsx'
 import {
-	CheckCircledIcon,
-	HeartIcon,
-	MicrophoneIcon,
-	RssIcon,
-	TrophyIcon,
-	UsersIcon,
-	YoutubeIcon,
-} from '#app/components/icons.tsx'
+	LiteYouTubeEmbed,
+	links as youTubeEmbedLinks,
+} from '#app/components/fullscreen-yt-embed.tsx'
+import { Grid } from '#app/components/grid.tsx'
+import { YoutubeIcon } from '#app/components/icons.tsx'
+import { PodcastSubs } from '#app/components/podcast-subs.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
+import { externalLinks } from '#app/external-links.tsx'
 import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
-import { getDisplayUrl, getUrl } from '#app/utils/misc.ts'
+import {
+	type BetterWithKentEpisode,
+	getBetterWithKentEpisodes,
+} from '#app/utils/better-with-kent.server.ts'
+import {
+	formatDate,
+	getDisplayUrl,
+	getUrl,
+	reuseUsefulLoaderHeaders,
+} from '#app/utils/misc.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
+import { getServerTimeHeader, type Timings } from '#app/utils/timing.server.ts'
+import { type Route } from './+types/better'
 
-const betterYouTubeUrl = 'https://www.youtube.com/c/kentcdodds-vids'
-const betterRssUrl = 'https://feeds.transistor.fm/better-with-kent'
-const lastSoftwareEngineerUrl =
-	'https://www.epicproduct.engineer/the-last-software-engineer'
+const epicProductEngineerUrl =
+	'https://www.epicproduct.engineer/become-an-epic-product-engineer-podcast'
 
-export const headers: HeadersFunction = () => ({
-	'Cache-Control': 'public, max-age=3600',
-})
+export async function loader({ request }: Route.LoaderArgs) {
+	const timings: Timings = {}
+	const episodes = await getBetterWithKentEpisodes({ request, timings })
+	return data(
+		{ episodes },
+		{
+			headers: {
+				'Cache-Control': 'public, max-age=900',
+				'Server-Timing': getServerTimeHeader(timings),
+			},
+		},
+	)
+}
 
-export const meta: MetaFunction<{}, { root: RootLoaderType }> = ({
+export const headers: HeadersFunction = reuseUsefulLoaderHeaders
+
+export const links: LinksFunction = () => youTubeEmbedLinks()
+
+export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
 	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
 	return getSocialMetas({
 		title: 'Better with Kent',
 		description:
-			'Durable skills for people who ship software. Watch Better with Kent from Kent C. Dodds on YouTube.',
+			'Durable skills for people who ship software. A solo show from Kent C. Dodds — one skill per episode, with homework. Watch on YouTube or listen wherever you get podcasts.',
 		url: getUrl(requestInfo),
 		image: getGenericSocialImage({
 			url: getDisplayUrl(requestInfo),
@@ -48,86 +72,143 @@ export const meta: MetaFunction<{}, { root: RootLoaderType }> = ({
 	})
 }
 
-function ExternalTextLink({
-	href,
-	children,
+function getWatchUrl(videoId: string) {
+	return `https://www.youtube.com/watch?v=${videoId}`
+}
+
+function SubscribeButton({
+	children = 'Subscribe on YouTube',
+	variant = 'primary',
 }: {
-	href: string
-	children: ReactNode
+	children?: ReactNode
+	variant?: 'primary' | 'secondary'
 }) {
 	return (
-		<a
-			className="underlined focus:outline-none"
-			href={href}
+		<ButtonLink
+			variant={variant}
+			href={externalLinks.betterWithKentYouTube}
 			target="_blank"
 			rel="noreferrer noopener"
 		>
-			{children}
+			<YoutubeIcon size={28} />
+			<span className="pl-1">{children}</span>
+		</ButtonLink>
+	)
+}
+
+function EpisodeCard({ episode }: { episode: BetterWithKentEpisode }) {
+	return (
+		<a
+			className="focus-ring group block h-full w-full rounded-lg"
+			href={getWatchUrl(episode.videoId)}
+			target="_blank"
+			rel="noreferrer noopener"
+		>
+			<div className="aspect-video w-full overflow-hidden rounded-lg">
+				<img
+					loading="lazy"
+					alt={episode.title}
+					src={`https://i.ytimg.com/vi/${episode.videoId}/hq720.jpg`}
+					className="h-full w-full object-cover transition motion-safe:group-hover:scale-105 motion-safe:group-focus:scale-105"
+				/>
+			</div>
+			<div className="py-6">
+				<Paragraph
+					prose={false}
+					className="mb-2 text-base"
+					textColorClassName="text-secondary"
+				>
+					{formatDate(episode.publishedAt)}
+				</Paragraph>
+				<H3 as="p" className="mb-3">
+					{episode.title}
+				</H3>
+				{episode.description ? (
+					<Paragraph className="line-clamp-3">{episode.description}</Paragraph>
+				) : null}
+			</div>
 		</a>
 	)
 }
 
-function ListenCard({
-	title,
-	description,
-	icon,
-	action,
-}: {
-	title: string
-	description: string
-	icon: ReactNode
-	action: ReactNode
-}) {
-	return (
-		<div className="bg-secondary flex h-full flex-col rounded-lg px-8 py-10 lg:px-12">
-			<div className="text-primary mb-6">{icon}</div>
-			<H3 className="mb-4">{title}</H3>
-			<Paragraph className="mb-8 flex-auto">{description}</Paragraph>
-			<div>{action}</div>
-		</div>
-	)
-}
+export default function BetterRoute({
+	loaderData: { episodes },
+}: Route.ComponentProps) {
+	const [latestEpisode, ...earlierEpisodes] = episodes
 
-function PlaceholderBadge({ children }: { children: ReactNode }) {
-	return (
-		<span className="text-secondary inline-flex rounded-full border border-gray-300 px-5 py-2 text-base font-medium dark:border-gray-700">
-			{children}
-		</span>
-	)
-}
-
-function YouTubeButtonLabel({ children }: { children: ReactNode }) {
-	return (
-		<>
-			<YoutubeIcon size={28} />
-			<span className="pl-1">{children}</span>
-		</>
-	)
-}
-
-export default function BetterRoute() {
 	return (
 		<>
 			<HeroSection
 				title="Better with Kent"
-				subtitle="Durable skills for people who ship software"
+				subtitle="Durable skills for people who ship software."
 				imageBuilder={images.microphone}
-				arrowUrl="#what-is-the-show"
-				arrowLabel="What is Better with Kent?"
-				action={
-					<ButtonLink
-						variant="primary"
-						href={betterYouTubeUrl}
-						target="_blank"
-						rel="noreferrer noopener"
-					>
-						<YouTubeButtonLabel>Watch on YouTube</YouTubeButtonLabel>
-					</ButtonLink>
-				}
+				arrowUrl="#latest-episode"
+				arrowLabel="Watch the latest episode"
+				action={<SubscribeButton />}
 			/>
 
 			<main>
-				<Grid className="mb-24 lg:mb-64">
+				{latestEpisode ? (
+					<Grid className="mb-24 lg:mb-48" id="latest-episode" rowGap>
+						<div className="col-span-full lg:col-span-7">
+							<div className="overflow-hidden rounded-lg bg-black">
+								<LiteYouTubeEmbed
+									id={latestEpisode.videoId}
+									title={latestEpisode.title}
+									announce="Play video"
+									// the default poster resolution logic loads from
+									// img.youtube.com which our CSP img-src does not allow, so we
+									// point straight at the i.ytimg.com thumbnail instead.
+									thumbnail={`https://i.ytimg.com/vi/${latestEpisode.videoId}/maxresdefault.jpg`}
+									params="rel=0"
+								/>
+							</div>
+						</div>
+						<div className="col-span-full lg:col-span-4 lg:col-start-9">
+							<H6 as="h2" className="mb-4">
+								Latest episode
+							</H6>
+							<H3 as="p" className="mb-2">
+								{latestEpisode.title}
+							</H3>
+							<Paragraph
+								prose={false}
+								className="mb-6 text-base"
+								textColorClassName="text-secondary"
+							>
+								{formatDate(latestEpisode.publishedAt)}
+							</Paragraph>
+							{latestEpisode.description ? (
+								<Paragraph className="mb-8">
+									{latestEpisode.description}
+								</Paragraph>
+							) : null}
+							<ArrowLink
+								href={getWatchUrl(latestEpisode.videoId)}
+								direction="top-right"
+							>
+								Watch on YouTube
+							</ArrowLink>
+						</div>
+					</Grid>
+				) : (
+					<Grid className="mb-24 lg:mb-48" id="latest-episode">
+						<div className="bg-secondary col-span-full rounded-lg px-8 py-12 lg:px-12">
+							<H3 as="p" className="mb-4">
+								Episodes live on YouTube.
+							</H3>
+							<Paragraph className="mb-8">
+								Head over to the Better with Kent playlist to watch every
+								episode.
+							</Paragraph>
+							<SubscribeButton variant="secondary">
+								Watch on YouTube
+							</SubscribeButton>
+						</div>
+					</Grid>
+				)}
+
+				<Grid className="mb-24 lg:mb-48">
 					<div className="col-span-full lg:col-span-6 lg:col-start-1">
 						<div className="mb-12 aspect-[4/3] lg:mb-0">
 							<img
@@ -151,158 +232,116 @@ export default function BetterRoute() {
 					</div>
 
 					<div className="col-span-full lg:col-span-5 lg:col-start-8 lg:row-start-1">
-						<H2 id="what-is-the-show" className="mb-10">
-							A solo show about becoming the kind of person who ships better
-							software.
+						<H2 className="mb-10">
+							One durable skill per episode, straight to camera.
 						</H2>
-						<Paragraph className="mb-12">
-							Better with Kent is a talking-head video show from Kent C. Dodds
-							about the durable skills that keep mattering as tools, teams, and
-							careers change. Expect direct, thoughtful episodes about judgment,
-							product thinking, technical leadership, and the human side of
-							software work.
+						<Paragraph className="mb-8">
+							AI keeps making implementation cheaper. That doesn't make you less
+							valuable — it moves the value. Knowing what to build, what to fix
+							first, and what your users actually need is the work that stays
+							scarce. That's what this show is about.
 						</Paragraph>
-						<Paragraph className="mb-12">
-							It complements the guest conversations in Chats with Kent and the
-							Become a Product Engineer season. This one is Kent solo: concise,
-							opinionated, and focused on helping you build instincts that last.
+						<Paragraph className="mb-8">
+							Each episode I take one skill, framework, or hard-earned lesson
+							from real product work and land it in about fifteen minutes. No
+							tool demos, no hype. And every episode ends with homework you can
+							apply to your own backlog the same day.
 						</Paragraph>
-						<ButtonLink
-							variant="primary"
-							href={betterYouTubeUrl}
-							target="_blank"
-							rel="noreferrer noopener"
-						>
-							<YouTubeButtonLabel>Subscribe on YouTube</YouTubeButtonLabel>
-						</ButtonLink>
+						<Paragraph>
+							New episodes publish on YouTube first, with audio everywhere you
+							already listen.
+						</Paragraph>
 					</div>
 				</Grid>
 
-				<Grid className="mb-24 lg:mb-64">
+				<Grid className="mb-24 lg:mb-48">
 					<div className="col-span-full mb-12 hidden lg:col-span-4 lg:mb-0 lg:block">
-						<H6 as="h2">Why now?</H6>
+						<H6 as="h2">Why this show?</H6>
 					</div>
 					<div className="col-span-full mb-12 lg:col-span-8 lg:mb-20">
 						<H2 as="p" className="mb-3">
-							The work is changing quickly.
+							Shipping code is getting easier. Shipping the right thing isn't.
 						</H2>
 						<H2 as="p" variant="secondary">
-							The people who keep shipping well are the ones who get better at
-							choosing problems, understanding users, and making accountable
-							tradeoffs.
+							The engineers who stay valuable are the ones who get better at
+							judgment, prioritization, and understanding the people they build
+							for.
 						</H2>
 					</div>
 					<div className="col-span-full lg:col-span-4 lg:col-start-5 lg:pr-12">
 						<H6 as="h3" className="mb-4">
-							Tools are accelerating.
+							The expensive mistake has changed.
 						</H6>
 						<Paragraph className="mb-16">
-							AI can make code faster, but it does not decide what is worth
-							building, what risk to accept, or how to earn trust with the
-							people depending on your work.
+							When implementation was slow, bugs were the costly failure. Now
+							agents can build the wrong thing faster than ever — and the wrong
+							thing at speed is still the wrong thing.
 						</Paragraph>
 					</div>
 					<div className="col-span-full lg:col-span-4 lg:col-start-9 lg:pr-12">
 						<H6 as="h3" className="mb-4">
-							Craft still matters.
+							These skills outlast the toolchain.
 						</H6>
 						<Paragraph className="mb-16">
-							Better with Kent is for developers, product engineers, and team
-							leads who want durable skills they can carry across frameworks,
-							companies, and product cycles.
+							Frameworks and models churn. Problem clarity, prioritization,
+							empathy, and ownership transfer across every stack, team, and
+							product cycle.
 						</Paragraph>
 					</div>
 				</Grid>
 
-				<HeaderSection
-					title="What you will get better at."
-					subTitle="Four durable skills that outlast the latest toolchain."
-					className="mb-16"
-				/>
-				<Grid className="mb-24 lg:mb-64" rowGap>
-					<div className="col-span-full lg:col-span-6">
-						<FeatureCard
-							title="Judgment"
-							description="Practice making technical and product tradeoffs with the constraints in view, not just the code in front of you."
-							icon={<TrophyIcon size={48} />}
+				{earlierEpisodes.length ? (
+					<>
+						<HeaderSection
+							title="Catch up on the show."
+							subTitle="Every episode stands alone — start anywhere."
+							className="mb-16"
 						/>
-					</div>
-					<div className="col-span-full lg:col-span-6">
-						<FeatureCard
-							title="Accountability"
-							description="Own outcomes, communicate risk, and develop the reliability people trust when the work gets ambiguous."
-							icon={<CheckCircledIcon size={48} />}
-						/>
-					</div>
-					<div className="col-span-full lg:col-span-6">
-						<FeatureCard
-							title="Problem clarity"
-							description="Get sharper at naming the real problem so your implementation energy lands where it creates value."
-							icon={<MicrophoneIcon size={48} />}
-						/>
-					</div>
-					<div className="col-span-full lg:col-span-6">
-						<FeatureCard
-							title="Empathy"
-							description="Build the habit of seeing the humans around the software: users, teammates, stakeholders, and future maintainers."
-							icon={<HeartIcon size={48} />}
-						/>
-					</div>
-				</Grid>
-
-				<Grid>
-					<div className="bg-secondary col-span-full rounded-lg px-8 py-12 md:px-14 md:py-16 lg:px-20 lg:py-20">
-						<Grid nested rowGap className="items-start">
-							<div className="col-span-full lg:col-span-5">
-								<H6 as="h2" className="mb-6">
-									Episode 1 spotlight
-								</H6>
-								<H2 className="mb-8">The Last Software Engineer</H2>
-								<Paragraph className="mb-12">
-									The first episode is upcoming and starts with the question
-									behind Kent's essay: if AI changes the day-to-day mechanics of
-									writing code, what kind of engineer remains valuable?
-								</Paragraph>
-								<ArrowLink href={lastSoftwareEngineerUrl} direction="top-right">
-									Read the essay
+						<Grid className="mb-12" rowGap>
+							{earlierEpisodes.map((episode) => (
+								<div
+									key={episode.videoId}
+									className="col-span-full md:col-span-4"
+								>
+									<EpisodeCard episode={episode} />
+								</div>
+							))}
+						</Grid>
+						<Grid className="mb-24 lg:mb-48">
+							<div className="col-span-full">
+								<ArrowLink
+									href={externalLinks.betterWithKentPlaylist}
+									direction="top-right"
+								>
+									Browse all episodes on YouTube
 								</ArrowLink>
 							</div>
-							<div className="col-span-full lg:col-span-6 lg:col-start-7">
-								<div className="bg-primary rounded-lg p-8 shadow-xl lg:p-12 dark:bg-gray-950">
-									<Paragraph
-										prose={false}
-										className="mb-6 text-base tracking-[0.25em] uppercase"
-										textColorClassName="text-secondary"
-									>
-										Coming soon
-									</Paragraph>
-									<H3 className="mb-6">
-										Episode 1: The Last Software Engineer
-									</H3>
-									<Paragraph className="mb-8">
-										Watch the first episode on YouTube when it lands. The feed
-										is ready for podcast apps too, but YouTube is the best place
-										to follow the show first.
-									</Paragraph>
-									<ButtonLink
-										variant="secondary"
-										href={betterYouTubeUrl}
-										target="_blank"
-										rel="noreferrer noopener"
-									>
-										<YouTubeButtonLabel>Watch on YouTube</YouTubeButtonLabel>
-									</ButtonLink>
-								</div>
-							</div>
 						</Grid>
-					</div>
-				</Grid>
-				<Spacer size="sm" />
+					</>
+				) : null}
 
-				<Grid className="mb-24 lg:mb-64">
+				<HeaderSection
+					title="Never miss an episode."
+					subTitle="YouTube is the home of the show. Prefer audio? It's wherever you listen."
+					className="mb-16"
+				/>
+				<Grid className="mb-24 lg:mb-48" rowGap>
+					<div className="col-span-full">
+						<SubscribeButton />
+					</div>
+					<PodcastSubs
+						apple={externalLinks.betterWithKentApple}
+						pocketCasts={externalLinks.betterWithKentPocketCasts}
+						spotify={externalLinks.betterWithKentSpotify}
+						rss={externalLinks.betterWithKentRSS}
+					/>
+				</Grid>
+
+				<Grid className="mb-24 lg:mb-48">
 					<div className="col-span-full lg:col-span-6 lg:col-start-7">
 						<div className="mb-12 lg:mb-0">
 							<img
+								loading="lazy"
 								{...getImgProps(images.microphoneWithHands, {
 									className: 'rounded-lg object-cover',
 									widths: [512, 650, 840, 1024, 1300, 1680, 2000, 2520],
@@ -325,76 +364,25 @@ export default function BetterRoute() {
 					<div className="col-span-full lg:col-span-5 lg:col-start-1 lg:row-start-1">
 						<H2 className="mb-10">Want guest conversations too?</H2>
 						<H2 variant="secondary" as="p" className="mb-12">
-							Better with Kent is Kent solo. For long-form guest conversations
-							about becoming a product engineer, listen to Chats with Kent.
+							Better with Kent is just me. For interviews with engineers who
+							pair technical depth with product judgment, check out Become an
+							Epic Product Engineer.
 						</H2>
-						<ArrowLink to="/chats/07">Become a Product Engineer</ArrowLink>
+						<ArrowLink href={epicProductEngineerUrl} direction="top-right">
+							Become an Epic Product Engineer
+						</ArrowLink>
 					</div>
 				</Grid>
 
-				<HeaderSection
-					title="Listen and watch."
-					subTitle="YouTube is the primary home. Podcast app links can grow here as they become available."
-					className="mb-16"
-				/>
-				<Grid className="mb-24 lg:mb-64" rowGap>
-					<div className="col-span-full lg:col-span-4">
-						<ListenCard
-							title="YouTube"
-							description="Subscribe on YouTube for the primary Better with Kent experience and future playlist updates."
-							icon={<YoutubeIcon size={48} />}
-							action={
-								<ButtonLink
-									variant="primary"
-									size="medium"
-									href={betterYouTubeUrl}
-									target="_blank"
-									rel="noreferrer noopener"
-								>
-									<YouTubeButtonLabel>Watch on YouTube</YouTubeButtonLabel>
-								</ButtonLink>
-							}
-						/>
+				<Grid className="mb-24 lg:mb-48">
+					<div className="col-span-full lg:col-span-5 lg:col-start-1">
+						<H2 className="mb-8">Get better at the work beyond the code.</H2>
+						<H2 variant="secondary" as="p" className="mb-14">
+							Subscribe on YouTube so the next episode finds you.
+						</H2>
+						<SubscribeButton />
 					</div>
-					<div className="col-span-full lg:col-span-4">
-						<ListenCard
-							title="RSS"
-							description="Prefer a podcast app? Add the RSS feed directly while Apple Podcasts and Spotify listings are pending."
-							icon={<RssIcon size={48} />}
-							action={
-								<ArrowLink href={betterRssUrl} direction="top-right">
-									Open RSS feed
-								</ArrowLink>
-							}
-						/>
-					</div>
-					<div className="col-span-full lg:col-span-4">
-						<ListenCard
-							title="Apple and Spotify"
-							description="Dedicated Apple Podcasts and Spotify links will go here once those listings are live."
-							icon={<UsersIcon size={48} />}
-							action={
-								<div className="flex flex-wrap gap-3">
-									<PlaceholderBadge>Apple coming soon</PlaceholderBadge>
-									<PlaceholderBadge>Spotify coming soon</PlaceholderBadge>
-								</div>
-							}
-						/>
-					</div>
-					<div className="col-span-full">
-						<div className="border-secondary rounded-lg border border-dashed p-8 lg:p-12">
-							<H3 className="mb-4">Future playlist embed</H3>
-							<Paragraph>
-								When the Better with Kent YouTube playlist is ready, this
-								section can host an inline playlist embed without changing the
-								page structure.
-							</Paragraph>
-						</div>
-					</div>
-				</Grid>
-
-				<Grid className="mb-24 lg:mb-64">
-					<div className="col-span-full lg:col-span-4 lg:col-start-2">
+					<div className="col-span-full mt-12 lg:col-span-4 lg:col-start-8 lg:mt-0">
 						<img
 							loading="lazy"
 							{...getImgProps(images.microphone, {
@@ -407,25 +395,6 @@ export default function BetterRoute() {
 								],
 							})}
 						/>
-					</div>
-
-					<div className="col-span-full mt-4 lg:col-span-6 lg:col-start-7 lg:mt-0">
-						<H2 className="mb-8">Get better at the work beyond the code.</H2>
-						<H2 variant="secondary" as="p" className="mb-16">
-							Subscribe on YouTube and follow along as Better with Kent starts
-							with The Last Software Engineer.
-						</H2>
-						<div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-							<ButtonLink
-								variant="primary"
-								href={betterYouTubeUrl}
-								target="_blank"
-								rel="noreferrer noopener"
-							>
-								<YouTubeButtonLabel>Subscribe on YouTube</YouTubeButtonLabel>
-							</ButtonLink>
-							<ExternalTextLink href={betterRssUrl}>RSS feed</ExternalTextLink>
-						</div>
 					</div>
 				</Grid>
 			</main>

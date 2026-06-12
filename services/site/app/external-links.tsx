@@ -9,6 +9,15 @@ const externalLinks = {
 	callKentPocketCasts: 'https://pca.st/rpottw98',
 	callKentSpotify: 'https://open.spotify.com/show/6czfajqqSfPYD7bKZaFUNg',
 	callKentRSS: 'https://feeds.transistor.fm/call-kent',
+	betterWithKentYouTube:
+		'https://www.youtube.com/@KentCDodds-vids?sub_confirmation=1',
+	betterWithKentPlaylist:
+		'https://www.youtube.com/playlist?list=PLV5CVI1eNcJhP4nrJt85L7PxHjebFpDfY',
+	betterWithKentApple:
+		'https://podcasts.apple.com/us/podcast/better-with-kent/id1896798447',
+	betterWithKentPocketCasts: 'https://pca.st/itunes/1896798447',
+	betterWithKentSpotify: 'https://open.spotify.com/show/033lj6BDjJzIDM5k7iwNRU',
+	betterWithKentRSS: 'https://feeds.transistor.fm/better-with-kent',
 	discord: 'https://kcd.im/discord',
 	translationContributions:
 		'https://github.com/kentcdodds/kentcdodds.com/blob/main/CONTRIBUTING.md#translation-contributions',

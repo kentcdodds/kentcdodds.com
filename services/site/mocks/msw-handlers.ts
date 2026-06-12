@@ -11,6 +11,7 @@ import { searchWorkerHandlers } from './search-worker.ts'
 import { simplecastHandlers } from './simplecast.ts'
 import { transistorHandlers } from './transistor.ts'
 import { twitterHandlers } from './twitter.ts'
+import { youtubeHandlers } from './youtube.ts'
 import {
 	isConnectedToTheInternet,
 	readFixture,
@@ -103,5 +104,6 @@ export const mswHandlers: Array<HttpHandler> = [
 	...cloudflareHandlers,
 	...cloudflareR2Handlers,
 	...mermaidToSvgHandlers,
+	...youtubeHandlers,
 	...miscHandlers,
 ]
