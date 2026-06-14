@@ -93,25 +93,82 @@ export const links: LinksFunction = () => {
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings: Timings = {}
-	let postsDegraded = false
-	const posts = await withTimeout(
-		getBlogMdxListItems({ request, timings })
-			.then((allPosts) => allPosts.filter((p) => !p.frontmatter.draft))
-			.catch((error: unknown) => {
-				postsDegraded = true
+	let loaderDataDegraded = false
+	const withLoaderTimeout = <T,>(
+		promise: Promise<T>,
+		{
+			timeoutMs,
+			fallback,
+			label,
+		}: { timeoutMs: number; fallback: T; label: string },
+	) =>
+		withTimeout(
+			promise.catch((error: unknown) => {
+				loaderDataDegraded = true
 				throw error
 			}),
+			{
+				timeoutMs,
+				fallback,
+				label,
+				onTimeout: () => {
+					loaderDataDegraded = true
+				},
+			},
+		)
+	const postsPromise = withLoaderTimeout(
+		getBlogMdxListItems({ request, timings }).then((allPosts) =>
+			allPosts.filter((p) => !p.frontmatter.draft),
+		),
 		{
 			timeoutMs: BLOG_CONTENT_TIMEOUT_MS,
 			fallback: [],
 			label: 'blog:mdx-list-items',
-			onTimeout: () => {
-				postsDegraded = true
-			},
 		},
 	)
+	const readRankingsPromise = withLoaderTimeout(
+		getBlogReadRankings({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: [],
+			label: 'blog:read-rankings',
+		},
+	)
+	const totalReadsPromise = withLoaderTimeout(
+		getTotalPostReads({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: 0,
+			label: 'blog:total-post-reads',
+		},
+	)
+	const totalBlogReadersPromise = withLoaderTimeout(
+		getReaderCount({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: 0,
+			label: 'blog:reader-count',
+		},
+	)
+	const postReadCountsPromise = withLoaderTimeout(
+		getBlogPostReadCounts({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: {},
+			label: 'blog:post-read-counts',
+		},
+	)
+	const userReadsPromise = withLoaderTimeout(
+		getSlugReadsByUser({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: [],
+			label: 'blog:slug-reads-by-user',
+		},
+	)
+	const posts = await postsPromise
 	if (posts.length === 0) {
-		postsDegraded = true
+		loaderDataDegraded = true
 	}
 	const [
 		[recommended],
@@ -123,44 +180,27 @@ export async function loader({ request }: Route.LoaderArgs) {
 		userReads,
 	] = await Promise.all([
 		posts.length
-			? withTimeout(getBlogRecommendations({ request, limit: 1, timings }), {
-					timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
-					fallback: [],
-					label: 'blog:recommendations',
-				})
+			? withLoaderTimeout(
+					getBlogRecommendations({ request, limit: 1, timings }),
+					{
+						timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+						fallback: [],
+						label: 'blog:recommendations',
+					},
+				)
 			: [],
-		withTimeout(getBlogReadRankings({ request, timings }), {
-			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
-			fallback: [],
-			label: 'blog:read-rankings',
-		}),
-		withTimeout(getTotalPostReads({ request, timings }), {
-			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
-			fallback: 0,
-			label: 'blog:total-post-reads',
-		}),
-		withTimeout(getReaderCount({ request, timings }), {
-			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
-			fallback: 0,
-			label: 'blog:reader-count',
-		}),
+		readRankingsPromise,
+		totalReadsPromise,
+		totalBlogReadersPromise,
 		posts.length
-			? withTimeout(getAllBlogPostReadRankings({ request, timings }), {
+			? withLoaderTimeout(getAllBlogPostReadRankings({ request, timings }), {
 					timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
 					fallback: ALL_POST_READ_RANKINGS_FALLBACK,
 					label: 'blog:all-post-read-rankings',
 				})
 			: ALL_POST_READ_RANKINGS_FALLBACK,
-		withTimeout(getBlogPostReadCounts({ request, timings }), {
-			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
-			fallback: {},
-			label: 'blog:post-read-counts',
-		}),
-		withTimeout(getSlugReadsByUser({ request, timings }), {
-			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
-			fallback: [],
-			label: 'blog:slug-reads-by-user',
-		}),
+		postReadCountsPromise,
+		userReadsPromise,
 	])
 
 	const tags = new Set<string>()
@@ -185,7 +225,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	return json(data, {
 		headers: {
-			'Cache-Control': postsDegraded
+			'Cache-Control': loaderDataDegraded
 				? 'private, max-age=0, must-revalidate'
 				: 'private, max-age=3600',
 			Vary: 'Cookie',
