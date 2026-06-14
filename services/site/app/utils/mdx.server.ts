@@ -20,6 +20,7 @@ type CachifiedOptions = {
 
 const defaultTTL = 1000 * 60 * 60 * 24 * 14
 const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 365 * 100
+const blogListTTL = defaultStaleWhileRevalidate
 const notFoundTTL = 1000 * 60 * 60 * 24
 const notFoundStaleWhileRevalidate = 0
 
@@ -171,7 +172,7 @@ export async function getMdxDirList(
 }
 
 export async function getBlogMdxListItems(options: CachifiedOptions) {
-	const { request, forceFresh, ttl = defaultTTL, timings } = options
+	const { request, forceFresh, ttl = blogListTTL, timings } = options
 	const key = 'blog:mdx-list-items'
 	try {
 		return await cachified({
