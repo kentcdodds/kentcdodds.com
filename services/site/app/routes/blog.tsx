@@ -60,11 +60,21 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
-import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import {
+	getServerTimeHeader,
+	withTimeout,
+	type Timings,
+} from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/blog'
 
 const handleId = 'blog'
+const BLOG_CONTENT_TIMEOUT_MS = 3000
+const BLOG_SECONDARY_DATA_TIMEOUT_MS = 1000
+const ALL_POST_READ_RANKINGS_FALLBACK: Awaited<
+	ReturnType<typeof getAllBlogPostReadRankings>
+> = {}
+
 export const handle: KCDHandle = {
 	id: handleId,
 	getSitemapEntries: () => [{ route: `/blog`, priority: 0.7 }],
@@ -82,9 +92,85 @@ export const links: LinksFunction = () => {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const timings = {}
+	const timings: Timings = {}
+	let loaderDataDegraded = false
+	const withLoaderTimeout = <T,>(
+		promise: Promise<T>,
+		{
+			timeoutMs,
+			fallback,
+			label,
+		}: { timeoutMs: number; fallback: T; label: string },
+	) =>
+		withTimeout(
+			promise.catch((error: unknown) => {
+				loaderDataDegraded = true
+				throw error
+			}),
+			{
+				timeoutMs,
+				fallback,
+				label,
+				onTimeout: () => {
+					loaderDataDegraded = true
+				},
+			},
+		)
+	const postsPromise = withLoaderTimeout(
+		getBlogMdxListItems({ request, timings }).then((allPosts) =>
+			allPosts.filter((p) => !p.frontmatter.draft),
+		),
+		{
+			timeoutMs: BLOG_CONTENT_TIMEOUT_MS,
+			fallback: [],
+			label: 'blog:mdx-list-items',
+		},
+	)
+	const readRankingsPromise = withLoaderTimeout(
+		getBlogReadRankings({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: [],
+			label: 'blog:read-rankings',
+		},
+	)
+	const totalReadsPromise = withLoaderTimeout(
+		getTotalPostReads({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: 0,
+			label: 'blog:total-post-reads',
+		},
+	)
+	const totalBlogReadersPromise = withLoaderTimeout(
+		getReaderCount({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: 0,
+			label: 'blog:reader-count',
+		},
+	)
+	const postReadCountsPromise = withLoaderTimeout(
+		getBlogPostReadCounts({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: {},
+			label: 'blog:post-read-counts',
+		},
+	)
+	const userReadsPromise = withLoaderTimeout(
+		getSlugReadsByUser({ request, timings }),
+		{
+			timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+			fallback: [],
+			label: 'blog:slug-reads-by-user',
+		},
+	)
+	const posts = await postsPromise
+	if (posts.length === 0) {
+		loaderDataDegraded = true
+	}
 	const [
-		posts,
 		[recommended],
 		readRankings,
 		totalReads,
@@ -93,16 +179,28 @@ export async function loader({ request }: Route.LoaderArgs) {
 		postReadCounts,
 		userReads,
 	] = await Promise.all([
-		getBlogMdxListItems({ request }).then((allPosts) =>
-			allPosts.filter((p) => !p.frontmatter.draft),
-		),
-		getBlogRecommendations({ request, limit: 1, timings }),
-		getBlogReadRankings({ request, timings }),
-		getTotalPostReads({ request, timings }),
-		getReaderCount({ request, timings }),
-		getAllBlogPostReadRankings({ request, timings }),
-		getBlogPostReadCounts({ request, timings }),
-		getSlugReadsByUser({ request, timings }),
+		posts.length
+			? withLoaderTimeout(
+					getBlogRecommendations({ request, limit: 1, timings }),
+					{
+						timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+						fallback: [],
+						label: 'blog:recommendations',
+					},
+				)
+			: [],
+		readRankingsPromise,
+		totalReadsPromise,
+		totalBlogReadersPromise,
+		posts.length
+			? withLoaderTimeout(getAllBlogPostReadRankings({ request, timings }), {
+					timeoutMs: BLOG_SECONDARY_DATA_TIMEOUT_MS,
+					fallback: ALL_POST_READ_RANKINGS_FALLBACK,
+					label: 'blog:all-post-read-rankings',
+				})
+			: ALL_POST_READ_RANKINGS_FALLBACK,
+		postReadCountsPromise,
+		userReadsPromise,
 	])
 
 	const tags = new Set<string>()
@@ -127,7 +225,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	return json(data, {
 		headers: {
-			'Cache-Control': 'private, max-age=3600',
+			'Cache-Control': loaderDataDegraded
+				? 'private, max-age=0, must-revalidate'
+				: 'private, max-age=3600',
 			Vary: 'Cookie',
 			'Server-Timing': getServerTimeHeader(timings),
 		},

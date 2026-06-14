@@ -26,26 +26,92 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
 import { getUser } from '#app/utils/session.server.ts'
-import { getServerTimeHeader } from '#app/utils/timing.server.ts'
+import {
+	getServerTimeHeader,
+	withTimeout,
+	type Timings,
+} from '#app/utils/timing.server.ts'
 import { type Route } from './+types/index'
 
+const HOMEPAGE_BLOG_CONTENT_TIMEOUT_MS = 3000
+const HOMEPAGE_BLOG_STATS_TIMEOUT_MS = 1000
+
 export async function loader({ request }: Route.LoaderArgs) {
-	const timings = {}
-	const [
-		user,
-		posts,
-		totalBlogReads,
-		blogRankings,
-		totalBlogReaders,
-		blogRecommendations,
-	] = await Promise.all([
-		getUser(request),
+	const timings: Timings = {}
+	const userPromise = getUser(request)
+	let loaderDataDegraded = false
+	const withLoaderTimeout = <T,>(
+		promise: Promise<T>,
+		{
+			timeoutMs,
+			fallback,
+			label,
+		}: { timeoutMs: number; fallback: T; label: string },
+	) =>
+		withTimeout(
+			promise.catch((error: unknown) => {
+				loaderDataDegraded = true
+				throw error
+			}),
+			{
+				timeoutMs,
+				fallback,
+				label,
+				onTimeout: () => {
+					loaderDataDegraded = true
+				},
+			},
+		)
+	const postsPromise = withLoaderTimeout(
 		getBlogMdxListItems({ request, timings }),
+		{
+			timeoutMs: HOMEPAGE_BLOG_CONTENT_TIMEOUT_MS,
+			fallback: [],
+			label: 'index:blog-mdx-list-items',
+		},
+	)
+	const totalBlogReadsPromise = withLoaderTimeout(
 		getTotalPostReads({ request, timings }),
+		{
+			timeoutMs: HOMEPAGE_BLOG_STATS_TIMEOUT_MS,
+			fallback: 0,
+			label: 'index:total-post-reads',
+		},
+	)
+	const blogRankingsPromise = withLoaderTimeout(
 		getBlogReadRankings({ request, timings }),
+		{
+			timeoutMs: HOMEPAGE_BLOG_STATS_TIMEOUT_MS,
+			fallback: [],
+			label: 'index:blog-read-rankings',
+		},
+	)
+	const totalBlogReadersPromise = withLoaderTimeout(
 		getReaderCount({ request, timings }),
-		getBlogRecommendations({ request, timings }),
-	])
+		{
+			timeoutMs: HOMEPAGE_BLOG_STATS_TIMEOUT_MS,
+			fallback: 0,
+			label: 'index:reader-count',
+		},
+	)
+	const posts = await postsPromise
+	if (posts.length === 0) {
+		loaderDataDegraded = true
+	}
+	const [totalBlogReads, blogRankings, totalBlogReaders, blogRecommendations] =
+		await Promise.all([
+			totalBlogReadsPromise,
+			blogRankingsPromise,
+			totalBlogReadersPromise,
+			posts.length
+				? withLoaderTimeout(getBlogRecommendations({ request, timings }), {
+						timeoutMs: HOMEPAGE_BLOG_STATS_TIMEOUT_MS,
+						fallback: [],
+						label: 'index:blog-recommendations',
+					})
+				: [],
+		])
+	const user = await userPromise
 
 	return json(
 		{
@@ -67,7 +133,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 		{
 			headers: {
-				'Cache-Control': 'private, max-age=3600',
+				'Cache-Control': loaderDataDegraded
+					? 'private, max-age=0, must-revalidate'
+					: 'private, max-age=3600',
 				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
 			},

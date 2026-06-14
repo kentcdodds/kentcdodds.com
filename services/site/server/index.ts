@@ -120,8 +120,50 @@ const getBuild = async (): Promise<ServerBuild> => {
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const here = (...d: Array<string>) => path.join(__dirname, ...d)
 const primaryHost = 'kentcdodds.com'
+const INSTANCE_INFO_TIMEOUT_MS = 500
 const getHost = (req: { get: (key: string) => string | undefined }) =>
 	req.get('X-Forwarded-Host') ?? req.get('host') ?? ''
+
+async function getInstanceInfoWithFallback() {
+	let timeoutId: ReturnType<typeof setTimeout> | undefined
+	let didTimeout = false
+	const instanceInfoPromise = getInstanceInfo()
+	try {
+		const instanceInfo = await Promise.race([
+			instanceInfoPromise,
+			new Promise<Awaited<ReturnType<typeof getInstanceInfo>>>((resolve) => {
+				timeoutId = setTimeout(() => {
+					didTimeout = true
+					console.warn(
+						`getInstanceInfo timed out after ${INSTANCE_INFO_TIMEOUT_MS}ms; using local instance fallback`,
+					)
+					const currentInstance = env.FLY_MACHINE_ID
+					resolve({
+						currentInstance,
+						primaryInstance: currentInstance,
+						currentIsPrimary: true,
+					})
+				}, INSTANCE_INFO_TIMEOUT_MS)
+			}),
+		])
+		if (didTimeout) {
+			instanceInfoPromise.catch((lateError: unknown) => {
+				console.warn('getInstanceInfo failed after timeout fallback', lateError)
+			})
+		}
+		return instanceInfo
+	} catch (error: unknown) {
+		console.warn('getInstanceInfo failed; using local instance fallback', error)
+		const currentInstance = env.FLY_MACHINE_ID
+		return {
+			currentInstance,
+			primaryInstance: currentInstance,
+			currentIsPrimary: true,
+		}
+	} finally {
+		clearTimeout(timeoutId)
+	}
+}
 
 const SHOULD_INIT_SENTRY =
 	MODE === 'production' &&
@@ -193,7 +235,7 @@ app.get('/healthcheck', (_req, res) => {
 app.use((req, res, next) => {
 	const metricName = 'middleware-get-instance-info'
 	startServerMetric(res, metricName, 'populate fly response headers')
-	getInstanceInfo()
+	getInstanceInfoWithFallback()
 		.then(({ currentInstance, primaryInstance }) => {
 			res.set('X-Powered-By', 'Kody the Koala')
 			res.set('X-Fly-Region', env.FLY_REGION)

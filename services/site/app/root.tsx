@@ -150,7 +150,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 		session.getUser({ timings }),
 		getClientSession(request, session.getUser({ timings })),
 		getLoginInfoSession(request),
-		getInstanceInfo().then((i) => i.primaryInstance),
+		withTimeout(
+			getInstanceInfo().then((i) => i.primaryInstance),
+			{
+				timeoutMs: 500,
+				fallback: null,
+				label: 'root:get-instance-info',
+			},
+		),
 		time(
 			withTimeout(
 				getLatestPodcastSeasonLinks({
