@@ -1,4 +1,6 @@
 import { buildImageUrl } from 'cloudinary-build-url'
+import calculateReadingTime from 'reading-time'
+import * as YAML from 'yaml'
 import { type GitHubFile, type MdxPage } from '#app/types.ts'
 import { compileMdx } from '#app/utils/compile-mdx.server.ts'
 import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
@@ -47,6 +49,46 @@ function applyNotFoundCacheMetadata(
 const checkCompiledValue = (value: unknown) =>
 	typeof value === 'object' &&
 	(value === null || ('code' in value && 'frontmatter' in value))
+
+function parseYamlFrontmatter(source: string): Record<string, unknown> {
+	const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u)
+	if (!match) return {}
+	const raw = match[1] ?? ''
+	try {
+		const parsed = YAML.parse(raw)
+		return parsed && typeof parsed === 'object'
+			? (parsed as Record<string, unknown>)
+			: {}
+	} catch {
+		return {}
+	}
+}
+
+async function getMdxListItemFromDownloadedFiles({
+	slug,
+	entry,
+	files,
+}: {
+	slug: string
+	entry: string
+	files: Array<GitHubFile>
+}): Promise<Omit<MdxPage, 'code'> | null> {
+	const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
+	const indexFile = files.find(({ path }) => indexRegex.test(path))
+	if (!indexFile) return null
+
+	const frontmatter = parseYamlFrontmatter(
+		indexFile.content,
+	) as MdxPage['frontmatter']
+
+	return {
+		slug,
+		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
+		readTime: calculateReadingTime(indexFile.content),
+		dateDisplay: frontmatter.date ? formatDate(frontmatter.date) : undefined,
+		frontmatter,
+	}
+}
 
 export async function getMdxPage(
 	{
@@ -185,12 +227,24 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 			forceFresh,
 			key,
 			getFreshValue: async () => {
-				let pages = await getMdxPagesInDirectory('blog', options).then(
-					(allPosts) =>
-						allPosts.filter(
-							(p) => !p.frontmatter.draft && !p.frontmatter.unlisted,
-						),
+				const dirList = await getMdxDirList('blog', options)
+				let pages = (
+					await Promise.all(
+						dirList.map(async ({ slug }) => {
+							const downloaded = await downloadMdxFilesCached(
+								'blog',
+								slug,
+								options,
+							)
+							return getMdxListItemFromDownloadedFiles({
+								slug,
+								...downloaded,
+							})
+						}),
+					)
 				)
+					.filter(typedBoolean)
+					.filter((p) => !p.frontmatter.draft && !p.frontmatter.unlisted)
 
 				pages = pages.sort((a, z) => {
 					const aTime = new Date(a.frontmatter.date ?? '').getTime()
@@ -198,7 +252,7 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 					return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
 				})
 
-				return pages.map(({ code: _code, ...rest }) => rest)
+				return pages
 			},
 		})
 	} catch (error: unknown) {
