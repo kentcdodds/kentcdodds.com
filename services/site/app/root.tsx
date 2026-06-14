@@ -154,7 +154,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			getInstanceInfo().then((i) => i.primaryInstance),
 			{
 				timeoutMs: 500,
-				fallback: 'unknown',
+				fallback: null,
 				label: 'root:get-instance-info',
 			},
 		),

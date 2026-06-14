@@ -26,20 +26,34 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
 import { getUser } from '#app/utils/session.server.ts'
-import { getServerTimeHeader, withTimeout } from '#app/utils/timing.server.ts'
+import {
+	getServerTimeHeader,
+	withTimeout,
+	type Timings,
+} from '#app/utils/timing.server.ts'
 import { type Route } from './+types/index'
 
 const HOMEPAGE_BLOG_CONTENT_TIMEOUT_MS = 3000
 const HOMEPAGE_BLOG_STATS_TIMEOUT_MS = 1000
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const timings = {}
+	const timings: Timings = {}
 	const userPromise = getUser(request)
-	const posts = await withTimeout(getBlogMdxListItems({ request, timings }), {
-		timeoutMs: HOMEPAGE_BLOG_CONTENT_TIMEOUT_MS,
-		fallback: [],
-		label: 'index:blog-mdx-list-items',
-	})
+	let postsDegraded = false
+	const posts = await withTimeout(
+		getBlogMdxListItems({ request, timings }).catch((error: unknown) => {
+			postsDegraded = true
+			throw error
+		}),
+		{
+			timeoutMs: HOMEPAGE_BLOG_CONTENT_TIMEOUT_MS,
+			fallback: [],
+			label: 'index:blog-mdx-list-items',
+			onTimeout: () => {
+				postsDegraded = true
+			},
+		},
+	)
 	const [totalBlogReads, blogRankings, totalBlogReaders, blogRecommendations] =
 		await Promise.all([
 			withTimeout(getTotalPostReads({ request, timings }), {
@@ -87,7 +101,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 		{
 			headers: {
-				'Cache-Control': 'private, max-age=3600',
+				'Cache-Control': postsDegraded
+					? 'private, max-age=0, must-revalidate'
+					: 'private, max-age=3600',
 				Vary: 'Cookie',
 				'Server-Timing': getServerTimeHeader(timings),
 			},

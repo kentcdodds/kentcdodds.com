@@ -60,7 +60,11 @@ import {
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
-import { getServerTimeHeader, withTimeout } from '#app/utils/timing.server.ts'
+import {
+	getServerTimeHeader,
+	withTimeout,
+	type Timings,
+} from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/blog'
 
@@ -88,15 +92,22 @@ export const links: LinksFunction = () => {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const timings = {}
+	const timings: Timings = {}
+	let postsDegraded = false
 	const posts = await withTimeout(
-		getBlogMdxListItems({ request }).then((allPosts) =>
-			allPosts.filter((p) => !p.frontmatter.draft),
-		),
+		getBlogMdxListItems({ request, timings })
+			.then((allPosts) => allPosts.filter((p) => !p.frontmatter.draft))
+			.catch((error: unknown) => {
+				postsDegraded = true
+				throw error
+			}),
 		{
 			timeoutMs: BLOG_CONTENT_TIMEOUT_MS,
 			fallback: [],
 			label: 'blog:mdx-list-items',
+			onTimeout: () => {
+				postsDegraded = true
+			},
 		},
 	)
 	const [
@@ -171,7 +182,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	return json(data, {
 		headers: {
-			'Cache-Control': 'private, max-age=3600',
+			'Cache-Control': postsDegraded
+				? 'private, max-age=0, must-revalidate'
+				: 'private, max-age=3600',
 			Vary: 'Cookie',
 			'Server-Timing': getServerTimeHeader(timings),
 		},
