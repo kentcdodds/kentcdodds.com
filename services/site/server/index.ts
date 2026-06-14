@@ -126,11 +126,14 @@ const getHost = (req: { get: (key: string) => string | undefined }) =>
 
 async function getInstanceInfoWithFallback() {
 	let timeoutId: ReturnType<typeof setTimeout> | undefined
+	let didTimeout = false
+	const instanceInfoPromise = getInstanceInfo()
 	try {
-		return await Promise.race([
-			getInstanceInfo(),
+		const instanceInfo = await Promise.race([
+			instanceInfoPromise,
 			new Promise<Awaited<ReturnType<typeof getInstanceInfo>>>((resolve) => {
 				timeoutId = setTimeout(() => {
+					didTimeout = true
 					console.warn(
 						`getInstanceInfo timed out after ${INSTANCE_INFO_TIMEOUT_MS}ms; using local instance fallback`,
 					)
@@ -143,6 +146,12 @@ async function getInstanceInfoWithFallback() {
 				}, INSTANCE_INFO_TIMEOUT_MS)
 			}),
 		])
+		if (didTimeout) {
+			instanceInfoPromise.catch((lateError: unknown) => {
+				console.warn('getInstanceInfo failed after timeout fallback', lateError)
+			})
+		}
+		return instanceInfo
 	} catch (error: unknown) {
 		console.warn('getInstanceInfo failed; using local instance fallback', error)
 		const currentInstance = env.FLY_MACHINE_ID
