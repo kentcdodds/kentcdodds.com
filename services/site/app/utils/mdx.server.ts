@@ -1,4 +1,8 @@
+import { type Dirent } from 'node:fs'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { buildImageUrl } from 'cloudinary-build-url'
+import pLimit from 'p-limit'
 import calculateReadingTime from 'reading-time'
 import * as YAML from 'yaml'
 import { type GitHubFile, type MdxPage } from '#app/types.ts'
@@ -25,6 +29,8 @@ const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 365 * 100
 const blogListTTL = defaultStaleWhileRevalidate
 const notFoundTTL = 1000 * 60 * 60 * 24
 const notFoundStaleWhileRevalidate = 0
+const localBlogListItemLimit = pLimit(8)
+const downloadMdxFileLimit = pLimit(4)
 
 /** Spread SWR background refreshes so many stale keys don't hit the compile queue at once. */
 function staleRefreshJitterMs(key: string): number {
@@ -64,27 +70,77 @@ function parseYamlFrontmatter(source: string): Record<string, unknown> {
 	}
 }
 
-async function getMdxListItemFromDownloadedFiles({
+async function firstExistingFile(filePaths: Array<string>) {
+	for (const filePath of filePaths) {
+		try {
+			const stats = await fs.stat(filePath)
+			if (stats.isFile()) return filePath
+		} catch {
+			// try the next candidate
+		}
+	}
+	return null
+}
+
+function toGitHubEditPath(filePath: string) {
+	const relativePath = path
+		.relative(process.cwd(), filePath)
+		.replace(/\\/g, '/')
+	return relativePath.startsWith('services/site/')
+		? relativePath
+		: `services/site/${relativePath}`
+}
+
+async function getLocalBlogMdxFiles() {
+	const blogDir = path.join(process.cwd(), 'content', 'blog')
+	let entries: Array<Dirent>
+	try {
+		entries = await fs.readdir(blogDir, { withFileTypes: true })
+	} catch (error: unknown) {
+		console.error('mdx: failed to read local blog content directory', error)
+		return []
+	}
+
+	const files: Array<{ slug: string; filePath: string }> = []
+	for (const entry of entries) {
+		const name = entry.name
+		if (!name || name.startsWith('.') || entry.isSymbolicLink()) continue
+
+		if (entry.isFile() && /\.(mdx|md)$/i.test(name)) {
+			const slug = name.replace(/\.(mdx|md)$/i, '')
+			if (!slug) continue
+			files.push({ slug, filePath: path.join(blogDir, name) })
+			continue
+		}
+
+		if (entry.isDirectory()) {
+			const slug = name
+			if (!slug) continue
+			const filePath = await firstExistingFile([
+				path.join(blogDir, slug, 'index.mdx'),
+				path.join(blogDir, slug, 'index.md'),
+			])
+			if (filePath) files.push({ slug, filePath })
+		}
+	}
+
+	return files
+}
+
+async function getLocalBlogMdxListItem({
 	slug,
-	entry,
-	files,
+	filePath,
 }: {
 	slug: string
-	entry: string
-	files: Array<GitHubFile>
+	filePath: string
 }): Promise<Omit<MdxPage, 'code'> | null> {
-	const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
-	const indexFile = files.find(({ path }) => indexRegex.test(path))
-	if (!indexFile) return null
-
-	const frontmatter = parseYamlFrontmatter(
-		indexFile.content,
-	) as MdxPage['frontmatter']
+	const source = await fs.readFile(filePath, 'utf8')
+	const frontmatter = parseYamlFrontmatter(source) as MdxPage['frontmatter']
 
 	return {
 		slug,
-		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
-		readTime: calculateReadingTime(indexFile.content),
+		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${toGitHubEditPath(filePath)}`,
+		readTime: calculateReadingTime(source),
 		dateDisplay: frontmatter.date ? formatDate(frontmatter.date) : undefined,
 		frontmatter,
 	}
@@ -227,20 +283,14 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 			forceFresh,
 			key,
 			getFreshValue: async () => {
-				const dirList = await getMdxDirList('blog', options)
+				const localFiles = await getLocalBlogMdxFiles()
 				let pages = (
 					await Promise.all(
-						dirList.map(async ({ slug }) => {
-							const downloaded = await downloadMdxFilesCached(
-								'blog',
-								slug,
-								options,
-							)
-							return getMdxListItemFromDownloadedFiles({
-								slug,
-								...downloaded,
-							})
-						}),
+						localFiles.map(({ slug, filePath }) =>
+							localBlogListItemLimit(() =>
+								getLocalBlogMdxListItem({ slug, filePath }),
+							),
+						),
 					)
 				)
 					.filter(typedBoolean)
@@ -299,7 +349,9 @@ export async function downloadMdxFilesCached(
 			return true
 		},
 		getFreshValue: async (context) => {
-			const result = await downloadMdxFileOrDirectory(`${contentDir}/${slug}`)
+			const result = await downloadMdxFileLimit(() =>
+				downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
+			)
 			if (!result.files.length) {
 				applyNotFoundCacheMetadata(context.metadata, ttl)
 			}
