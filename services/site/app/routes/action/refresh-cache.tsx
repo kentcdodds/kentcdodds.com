@@ -4,11 +4,7 @@ import { cache } from '#app/utils/cache.server.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
-import {
-	getBlogMdxListItems,
-	getMdxDirList,
-	getMdxPage,
-} from '#app/utils/mdx.server.ts'
+import { getMdxDirList, getMdxPage } from '#app/utils/mdx.server.ts'
 import { getResumeData } from '#app/utils/resume.server.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
@@ -109,12 +105,8 @@ export async function action({ request }: Route.ActionArgs) {
 		// if any blog contentPaths were changed then let's update the dir list
 		// so it will appear on the blog page.
 		if (refreshingContentPaths.some((p) => p.startsWith('blog'))) {
-			promises.push(
-				getBlogMdxListItems({
-					request,
-					forceFresh: 'blog:dir-list,blog:mdx-list-items',
-				}),
-			)
+			promises.push(cache.delete('blog:dir-list'))
+			promises.push(cache.delete('blog:mdx-list-items'))
 		}
 		if (refreshingContentPaths.some((p) => p.startsWith('pages'))) {
 			promises.push(getMdxDirList('pages', { forceFresh: true }))
