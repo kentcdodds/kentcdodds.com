@@ -1,4 +1,3 @@
-import { nodeProfilingIntegration } from '@sentry/profiling-node'
 import * as Sentry from '@sentry/react-router'
 import { getEnv } from '../../app/utils/env.server.ts'
 
@@ -15,7 +14,7 @@ export function init() {
 	Sentry.init({
 		dsn: env.SENTRY_DSN,
 		environment: env.NODE_ENV,
-		tracesSampleRate: env.NODE_ENV === 'production' ? 1 : 0,
+		tracesSampleRate: env.NODE_ENV === 'production' ? 0.01 : 0,
 		denyUrls: [
 			/\/healthcheck/,
 			// TODO: be smarter about the public assets...
@@ -28,17 +27,13 @@ export function init() {
 			/\/favicon.ico/,
 			/\/site\.webmanifest/,
 		],
-		integrations: [
-			Sentry.httpIntegration(),
-			Sentry.prismaIntegration(),
-			nodeProfilingIntegration(),
-		],
+		integrations: [Sentry.httpIntegration(), Sentry.prismaIntegration()],
 		tracesSampler(samplingContext) {
 			// ignore healthcheck transactions by other services (consul, etc.)
 			if (samplingContext.request?.url?.includes('/healthcheck')) {
 				return 0
 			}
-			return 1
+			return env.NODE_ENV === 'production' ? 0.01 : 0
 		},
 		beforeSendTransaction(event) {
 			// ignore all healthcheck related transactions
