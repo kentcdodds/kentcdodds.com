@@ -53,7 +53,6 @@ import { getClientSession } from './utils/client.server.ts'
 import { getPublicEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
-import { getLatestPodcastSeasonLinks } from './utils/podcast-latest-season.server.ts'
 import {
 	PRODUCT_ENGINEERING_WORKSHOP_URL,
 	getProductEngineeringWorkshopPromotification,
@@ -137,48 +136,22 @@ const PODCAST_LINKS_FALLBACK = {
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const loaderStart = performance.now()
-	const podcastLinksAbortController = new AbortController()
 	const requestPath = new URL(request.url).pathname
 	const session = await getSession(request)
-	const [
-		user,
-		clientSession,
-		loginInfoSession,
-		primaryInstance,
-		latestPodcastSeasonLinks,
-	] = await Promise.all([
-		session.getUser({ timings }),
-		getClientSession(request, session.getUser({ timings })),
-		getLoginInfoSession(request),
-		withTimeout(
-			getInstanceInfo().then((i) => i.primaryInstance),
-			{
-				timeoutMs: 500,
-				fallback: null,
-				label: 'root:get-instance-info',
-			},
-		),
-		time(
+	const [user, clientSession, loginInfoSession, primaryInstance] =
+		await Promise.all([
+			session.getUser({ timings }),
+			getClientSession(request, session.getUser({ timings })),
+			getLoginInfoSession(request),
 			withTimeout(
-				getLatestPodcastSeasonLinks({
-					request,
-					timings,
-					signal: podcastLinksAbortController.signal,
-				}),
+				getInstanceInfo().then((i) => i.primaryInstance),
 				{
-					timeoutMs: 2000,
-					fallback: PODCAST_LINKS_FALLBACK,
-					label: 'root:podcast-season-links',
-					onTimeout: () => podcastLinksAbortController.abort(),
+					timeoutMs: 500,
+					fallback: null,
+					label: 'root:get-instance-info',
 				},
 			),
-			{
-				timings,
-				type: 'root:podcast-season-links',
-				desc: 'podcast nav links (Simplecast + Transistor)',
-			},
-		),
-	])
+		])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
 	const randomFooterImageKey = randomFooterImageKeys[
@@ -190,7 +163,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
-		latestPodcastSeasonLinks,
+		latestPodcastSeasonLinks: PODCAST_LINKS_FALLBACK,
 		productEngineeringWorkshopPromotification:
 			productEngineeringWorkshopPromotification
 				? {

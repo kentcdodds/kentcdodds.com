@@ -1,8 +1,6 @@
 import {
 	init as sentryInit,
 	reactRouterTracingIntegration,
-	replayIntegration,
-	browserProfilingIntegration,
 } from '@sentry/react-router'
 
 export function init() {
@@ -33,21 +31,16 @@ export function init() {
 		beforeSendTransaction(event) {
 			return event
 		},
-		integrations: [
-			reactRouterTracingIntegration(),
-			replayIntegration(),
-			browserProfilingIntegration(),
-		],
+		integrations: [reactRouterTracingIntegration()],
 
 		// Set tracesSampleRate to 1.0 to capture 100%
 		// of transactions for performance monitoring.
 		// We recommend adjusting this value in production
-		tracesSampleRate: 1.0,
+		tracesSampleRate: 0.01,
 
-		// Capture Replay for 10% of all sessions,
-		// plus for 100% of sessions with an error
-		replaysSessionSampleRate: 0.1,
-		replaysOnErrorSampleRate: 1.0,
+		// Keep error reporting on while avoiding replay/profiling load during incidents.
+		replaysSessionSampleRate: 0,
+		replaysOnErrorSampleRate: 0,
 	})
 }
 
