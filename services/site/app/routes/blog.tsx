@@ -110,6 +110,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 			},
 		},
 	)
+	if (posts.length === 0) {
+		postsDegraded = true
+	}
 	const [
 		[recommended],
 		readRankings,

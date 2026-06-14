@@ -47,8 +47,10 @@ export async function withTimeout<T>(
 	},
 ): Promise<T> {
 	let timeoutId: ReturnType<typeof setTimeout> | undefined
+	let didTimeout = false
 	const timeoutPromise = new Promise<never>((_, reject) => {
 		timeoutId = setTimeout(() => {
+			didTimeout = true
 			try {
 				onTimeout?.()
 			} catch (error) {
@@ -63,6 +65,11 @@ export async function withTimeout<T>(
 		return result
 	} catch (error) {
 		clearTimeout(timeoutId)
+		if (didTimeout) {
+			promise.catch((lateError: unknown) => {
+				console.warn(`${label}: failed after timeout fallback`, lateError)
+			})
+		}
 		console.warn(`${label}: timeout or error, using fallback`, error)
 		return fallback
 	}

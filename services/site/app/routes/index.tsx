@@ -54,6 +54,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 			},
 		},
 	)
+	if (posts.length === 0) {
+		postsDegraded = true
+	}
 	const [totalBlogReads, blogRankings, totalBlogReaders, blogRecommendations] =
 		await Promise.all([
 			withTimeout(getTotalPostReads({ request, timings }), {
