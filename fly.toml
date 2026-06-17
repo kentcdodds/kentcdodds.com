@@ -15,8 +15,8 @@ swap_size_mb = 512
 
 [vm]
   cpu_kind = "shared"
-  cpus = 1
-  memory_mb = 2048
+  cpus = 2
+  memory_mb = 4096
 
 [[mounts]]
   source = "data_machines"

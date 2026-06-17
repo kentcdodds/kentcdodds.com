@@ -42,6 +42,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 		headers: {
 			'Content-Type': 'application/xml',
 			'Content-Length': String(Buffer.byteLength(rss)),
+			'Cache-Control':
+				'public, max-age=600, s-maxage=2400, stale-while-revalidate=86400',
 		},
 	})
 }
