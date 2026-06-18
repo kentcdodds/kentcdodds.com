@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
-import { setEnv } from '#tests/env-disposable.ts'
-import { fetchSimplecastEpisodes } from '../index-podcasts.ts'
+import { setEnv } from '../env-disposable.ts'
+import { fetchSimplecastEpisodes } from '../../../../other/semantic-search/index-podcasts.ts'
 
 function jsonResponse(body: unknown, init?: ResponseInit) {
 	return new Response(JSON.stringify(body), {

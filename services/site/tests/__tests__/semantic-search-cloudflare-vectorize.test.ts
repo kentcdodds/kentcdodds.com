@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest'
-import { vectorizeDeleteByIds } from '../cloudflare.ts'
+import { vectorizeDeleteByIds } from '../../../../other/semantic-search/cloudflare.ts'
 
 const vectorizeConfig = {
 	accountId: 'account-id',
