@@ -163,6 +163,16 @@ function vectorsToNdjson(vectors: VectorizeVector[]) {
 	return `${vectors.map((v) => JSON.stringify(v)).join('\n')}\n`
 }
 
+function isLegacyVectorizeError(error: unknown) {
+	const message = error instanceof Error ? error.message : String(error)
+	return (
+		/\b404\b/i.test(message) ||
+		/not found/i.test(message) ||
+		/legacy/i.test(message) ||
+		/deprecated-v1/i.test(message)
+	)
+}
+
 async function vectorizeWriteNdjson({
 	accountId,
 	apiToken,
@@ -206,14 +216,7 @@ async function vectorizeWriteNdjson({
 		// Only fall back when we strongly suspect this is a legacy (v1) index.
 		// Falling back for transient errors makes v2 indexes fail with
 		// `vectorize.incorrect_api_version`.
-		const message = e instanceof Error ? e.message : String(e)
-		const looksLikeLegacyIndex =
-			/\b404\b/i.test(message) ||
-			/not found/i.test(message) ||
-			/legacy/i.test(message) ||
-			/deprecated-v1/i.test(message)
-
-		if (!looksLikeLegacyIndex) throw e
+		if (!isLegacyVectorizeError(e)) throw e
 
 		const pathLegacy = `/vectorize/indexes/${indexName}/${operation}`
 		const res = await cfFetch(
@@ -277,7 +280,9 @@ export async function vectorizeDeleteByIds({
 			{ method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
 		)
 		return (await res.json()) as any
-	} catch {
+	} catch (e) {
+		if (!isLegacyVectorizeError(e)) throw e
+
 		const res = await cfFetch(
 			{ accountId, apiToken, gatewayId, gatewayAuthToken },
 			`/vectorize/indexes/${indexName}/delete_by_ids`,

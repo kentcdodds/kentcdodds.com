@@ -1,4 +1,5 @@
 import slugify from '@sindresorhus/slugify'
+import { pathToFileURL } from 'node:url'
 import { getEpisodePath as getCallKentEpisodePath } from '#app/utils/call-kent.ts'
 import { getCWKEpisodePath } from '#app/utils/chats-with-kent.ts'
 import { markdownToHtml, stripHtml } from '#app/utils/markdown.server.ts'
@@ -63,6 +64,18 @@ function getRequiredEnv(name: string) {
 	return value
 }
 
+function getNumberEnv(name: string, fallback: number) {
+	const value = process.env[name]
+	if (!value) return fallback
+	const number = Number(value)
+	return Number.isFinite(number) ? number : fallback
+}
+
+async function sleep(ms: number) {
+	if (ms <= 0) return
+	await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 function batch<T>(items: T[], size: number) {
 	const result: T[][] = []
 	for (let i = 0; i < items.length; i += size) {
@@ -99,7 +112,7 @@ async function fetchJsonWithRetries<T>(
 					delayMs,
 				)}ms`,
 			)
-			await new Promise((r) => setTimeout(r, delayMs))
+			await sleep(delayMs)
 			continue
 		}
 		if (!res.ok) {
@@ -111,7 +124,7 @@ async function fetchJsonWithRetries<T>(
 						maxRetries + 1
 					}), waiting ${Math.round(delayMs)}ms`,
 				)
-				await new Promise((r) => setTimeout(r, delayMs))
+				await sleep(delayMs)
 				continue
 			}
 			return { ok: false, status: res.status }
@@ -254,11 +267,33 @@ function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
 	)
 }
 
-async function fetchSimplecastEpisodes() {
+function requireCompleteSimplecastResponse<T>(
+	json: T | SimplecastTooManyRequests,
+	label: string,
+): T {
+	if (isTooManyRequests(json)) {
+		throw new Error(`${label} returned Simplecast too_many_requests`)
+	}
+	return json
+}
+
+export async function fetchSimplecastEpisodes() {
 	const SIMPLECAST_KEY = getRequiredEnv('SIMPLECAST_KEY')
 	const PODCAST_ID = getRequiredEnv('CHATS_WITH_KENT_PODCAST_ID')
 	const headers = { authorization: `Bearer ${SIMPLECAST_KEY}` }
 	let tooManyRequestsCount = 0
+	const simplecastRetryOptions = {
+		maxRetries: getNumberEnv('SIMPLECAST_MAX_RETRIES', 8),
+		baseDelayMs: getNumberEnv('SIMPLECAST_BASE_DELAY_MS', 2_000),
+	}
+	const episodeDetailConcurrency = getNumberEnv(
+		'SIMPLECAST_EPISODE_DETAIL_CONCURRENCY',
+		1,
+	)
+	const episodeDetailSpacingMs = getNumberEnv(
+		'SIMPLECAST_EPISODE_DETAIL_SPACING_MS',
+		250,
+	)
 
 	const seasonsResult = await fetchJsonWithRetries<
 		| SimplecastCollectionResponse<SimplecastSeasonListItem>
@@ -266,6 +301,7 @@ async function fetchSimplecastEpisodes() {
 	>(`https://api.simplecast.com/podcasts/${PODCAST_ID}/seasons`, {
 		headers,
 		label: 'simplecast seasons',
+		...simplecastRetryOptions,
 		on429: () => {
 			tooManyRequestsCount++
 		},
@@ -273,8 +309,10 @@ async function fetchSimplecastEpisodes() {
 	if (!seasonsResult.ok) {
 		throw new Error(`Simplecast seasons error: ${seasonsResult.status}`)
 	}
-	const seasonsJson = seasonsResult.json
-	if (isTooManyRequests(seasonsJson)) return []
+	const seasonsJson = requireCompleteSimplecastResponse(
+		seasonsResult.json,
+		'simplecast seasons',
+	)
 
 	const seasonItems = seasonsJson.collection
 	const episodes: SimplecastEpisode[] = []
@@ -293,44 +331,54 @@ async function fetchSimplecastEpisodes() {
 		>(url.toString(), {
 			headers,
 			label: `simplecast season ${seasonId} episodes list`,
+			...simplecastRetryOptions,
 			on429: () => {
 				tooManyRequestsCount++
 			},
 		})
 		if (!seasonEpisodesResult.ok) {
-			console.warn(
+			throw new Error(
 				`Simplecast episodes list error: ${seasonEpisodesResult.status}`,
 			)
-			continue
 		}
-		const seasonEpisodesJson = seasonEpisodesResult.json
-		if (isTooManyRequests(seasonEpisodesJson)) continue
+		const seasonEpisodesJson = requireCompleteSimplecastResponse(
+			seasonEpisodesResult.json,
+			`simplecast season ${seasonId} episodes list`,
+		)
 
 		const listItems = seasonEpisodesJson.collection.filter(
 			(e) => e.status === 'published' && !e.is_hidden,
 		)
 
-		// Fetch episode details with limited concurrency to reduce 429s.
-		const details = await mapWithConcurrency(listItems, 3, async (e) => {
-			const result = await fetchJsonWithRetries<
-				SimplecastEpisode | SimplecastTooManyRequests
-			>(`https://api.simplecast.com/episodes/${e.id}`, {
-				headers,
-				label: `simplecast episode ${e.id}`,
-				on429: () => {
-					episodeDetail429s++
-				},
-			})
-			if (!result.ok) {
-				episodeDetailsFailed++
-				console.warn(`Simplecast episode error: ${result.status}`)
-				return null
-			}
-			const epJson = result.json
-			if (isTooManyRequests(epJson)) return null
-			if (!epJson.is_published) return null
-			return epJson
-		})
+		// Fetch episode details conservatively so a rate-limited source cannot
+		// produce a partial manifest that looks like deleted content.
+		const details = await mapWithConcurrency(
+			listItems,
+			episodeDetailConcurrency,
+			async (e) => {
+				const result = await fetchJsonWithRetries<
+					SimplecastEpisode | SimplecastTooManyRequests
+				>(`https://api.simplecast.com/episodes/${e.id}`, {
+					headers,
+					label: `simplecast episode ${e.id}`,
+					...simplecastRetryOptions,
+					on429: () => {
+						episodeDetail429s++
+					},
+				})
+				if (!result.ok) {
+					episodeDetailsFailed++
+					throw new Error(`Simplecast episode error: ${result.status}`)
+				}
+				const epJson = requireCompleteSimplecastResponse(
+					result.json,
+					`simplecast episode ${e.id}`,
+				)
+				if (!epJson.is_published) return null
+				await sleep(episodeDetailSpacingMs)
+				return epJson
+			},
+		)
 
 		episodes.push(...(details.filter(Boolean) as SimplecastEpisode[]))
 	}
@@ -671,7 +719,14 @@ async function main() {
 	)
 }
 
-main().catch((e) => {
-	console.error(e)
-	process.exitCode = 1
-})
+function isMainModule() {
+	const entryPoint = process.argv[1]
+	return entryPoint ? import.meta.url === pathToFileURL(entryPoint).href : false
+}
+
+if (isMainModule()) {
+	main().catch((e) => {
+		console.error(e)
+		process.exitCode = 1
+	})
+}
