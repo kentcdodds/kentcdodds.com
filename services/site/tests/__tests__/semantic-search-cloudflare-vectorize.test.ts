@@ -62,6 +62,9 @@ test('vectorizeDeleteByIds falls back to legacy endpoint for legacy-signature er
 	try {
 		await vectorizeDeleteByIds(vectorizeConfig)
 		expect(fetchMock).toHaveBeenCalledTimes(2)
+		expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+			'https://api.cloudflare.com/client/v4/accounts/account-id/vectorize/v2/indexes/search-index/delete_by_ids',
+		)
 		expect(String(fetchMock.mock.calls[1]?.[0])).toBe(
 			'https://api.cloudflare.com/client/v4/accounts/account-id/vectorize/indexes/search-index/delete_by_ids',
 		)
