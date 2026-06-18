@@ -48,3 +48,24 @@ test('vectorizeDeleteByIds does not mask non-legacy v2 errors', async () => {
 		fetchMock.mockRestore()
 	}
 })
+
+test('vectorizeDeleteByIds falls back to legacy endpoint for legacy-signature errors', async () => {
+	const fetchMock = vi
+		.spyOn(globalThis, 'fetch')
+		.mockResolvedValueOnce(new Response('not found', { status: 404 }))
+		.mockResolvedValueOnce(
+			new Response(
+				JSON.stringify({ success: true, result: { mutationId: 'legacy-m1' } }),
+			),
+		)
+
+	try {
+		await vectorizeDeleteByIds(vectorizeConfig)
+		expect(fetchMock).toHaveBeenCalledTimes(2)
+		expect(String(fetchMock.mock.calls[1]?.[0])).toBe(
+			'https://api.cloudflare.com/client/v4/accounts/account-id/vectorize/indexes/search-index/delete_by_ids',
+		)
+	} finally {
+		fetchMock.mockRestore()
+	}
+})

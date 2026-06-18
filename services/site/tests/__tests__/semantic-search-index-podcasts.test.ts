@@ -9,6 +9,33 @@ function jsonResponse(body: unknown, init?: ResponseInit) {
 	})
 }
 
+const simplecastTooManyRequests = {
+	status: 429,
+	href: null,
+	error_message: 'Rate limit exceeded',
+	error: 'too many requests',
+}
+
+test('fetchSimplecastEpisodes fails when seasons returns a Simplecast 429 body', async () => {
+	using _ignoredEnv = setEnv({
+		SIMPLECAST_KEY: 'simplecast-key',
+		CHATS_WITH_KENT_PODCAST_ID: 'podcast-id',
+		SIMPLECAST_MAX_RETRIES: '0',
+		SIMPLECAST_BASE_DELAY_MS: '0',
+	})
+	const fetchMock = vi
+		.spyOn(globalThis, 'fetch')
+		.mockResolvedValue(jsonResponse(simplecastTooManyRequests))
+
+	try {
+		await expect(fetchSimplecastEpisodes()).rejects.toThrow(
+			'simplecast seasons returned Simplecast 429: Rate limit exceeded',
+		)
+	} finally {
+		fetchMock.mockRestore()
+	}
+})
+
 test('fetchSimplecastEpisodes fails when an episodes list stays rate limited', async () => {
 	using _ignoredEnv = setEnv({
 		SIMPLECAST_KEY: 'simplecast-key',
@@ -35,7 +62,7 @@ test('fetchSimplecastEpisodes fails when an episodes list stays rate limited', a
 				href ===
 				'https://api.simplecast.com/seasons/season-id/episodes?limit=300'
 			) {
-				return jsonResponse({ too_many_requests: true }, { status: 429 })
+				return jsonResponse(simplecastTooManyRequests, { status: 429 })
 			}
 			throw new Error(`Unexpected Simplecast URL: ${href}`)
 		})
@@ -82,7 +109,7 @@ test('fetchSimplecastEpisodes fails when an episode detail stays rate limited', 
 				})
 			}
 			if (href === 'https://api.simplecast.com/episodes/episode-id') {
-				return jsonResponse({ too_many_requests: true }, { status: 429 })
+				return jsonResponse(simplecastTooManyRequests, { status: 429 })
 			}
 			throw new Error(`Unexpected Simplecast URL: ${href}`)
 		})

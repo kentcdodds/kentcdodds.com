@@ -235,7 +235,12 @@ async function fetchTransistorEpisodes() {
 }
 
 // --- Chats with Kent (Simplecast) ---
-type SimplecastTooManyRequests = { too_many_requests: true }
+type SimplecastTooManyRequests = {
+	status: 429
+	href: null
+	error_message: string
+	error: string
+}
 type SimplecastCollectionResponse<T> = { collection: T[] }
 type SimplecastSeasonListItem = { href: string; number: number }
 type SimplecastEpisodeListItem = {
@@ -262,8 +267,8 @@ function isTooManyRequests(json: unknown): json is SimplecastTooManyRequests {
 	return Boolean(
 		json &&
 		typeof json === 'object' &&
-		'too_many_requests' in json &&
-		(json as any).too_many_requests,
+		'status' in json &&
+		(json as { status?: unknown }).status === 429,
 	)
 }
 
@@ -272,7 +277,7 @@ function requireCompleteSimplecastResponse<T>(
 	label: string,
 ): T {
 	if (isTooManyRequests(json)) {
-		throw new Error(`${label} returned Simplecast too_many_requests`)
+		throw new Error(`${label} returned Simplecast 429: ${json.error_message}`)
 	}
 	return json
 }
@@ -374,8 +379,8 @@ export async function fetchSimplecastEpisodes() {
 					result.json,
 					`simplecast episode ${e.id}`,
 				)
-				if (!epJson.is_published) return null
 				await sleep(episodeDetailSpacingMs)
+				if (!epJson.is_published) return null
 				return epJson
 			},
 		)
