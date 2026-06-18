@@ -74,13 +74,6 @@ export async function vectorizeDeleteByIds({
 
 	const v2Path = `/vectorize/v2/indexes/${indexName}/delete_by_ids`
 	const v2Response = await doFetch(v2Path)
-	if (v2Response.status === 404 || v2Response.status === 405) {
-		const legacyPath = `/vectorize/indexes/${indexName}/delete_by_ids`
-		const legacyResponse = await doFetch(legacyPath)
-		await throwIfNotOk(legacyResponse, legacyPath)
-		return (await legacyResponse.json()) as CloudflareVectorizeDeleteResponse
-	}
-
 	await throwIfNotOk(v2Response, v2Path)
 	return (await v2Response.json()) as CloudflareVectorizeDeleteResponse
 }

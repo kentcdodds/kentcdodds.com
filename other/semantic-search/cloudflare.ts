@@ -191,41 +191,15 @@ async function vectorizeWriteNdjson({
 		'vectors.ndjson',
 	)
 
-	const pathV2 = `/vectorize/v2/indexes/${indexName}/${operation}`
-	try {
-		const res = await cfFetch(
-			{ accountId, apiToken, gatewayId, gatewayAuthToken },
-			pathV2,
-			{
-				method: 'POST',
-				body: form,
-			},
-		)
-		return (await res.json()) as any
-	} catch (e) {
-		// Only fall back when we strongly suspect this is a legacy (v1) index.
-		// Falling back for transient errors makes v2 indexes fail with
-		// `vectorize.incorrect_api_version`.
-		const message = e instanceof Error ? e.message : String(e)
-		const looksLikeLegacyIndex =
-			/\b404\b/i.test(message) ||
-			/not found/i.test(message) ||
-			/legacy/i.test(message) ||
-			/deprecated-v1/i.test(message)
-
-		if (!looksLikeLegacyIndex) throw e
-
-		const pathLegacy = `/vectorize/indexes/${indexName}/${operation}`
-		const res = await cfFetch(
-			{ accountId, apiToken, gatewayId, gatewayAuthToken },
-			pathLegacy,
-			{
-				method: 'POST',
-				body: form,
-			},
-		)
-		return (await res.json()) as any
-	}
+	const res = await cfFetch(
+		{ accountId, apiToken, gatewayId, gatewayAuthToken },
+		`/vectorize/v2/indexes/${indexName}/${operation}`,
+		{
+			method: 'POST',
+			body: form,
+		},
+	)
+	return (await res.json()) as any
 }
 
 export async function vectorizeUpsert({
@@ -270,19 +244,10 @@ export async function vectorizeDeleteByIds({
 	ids: string[]
 }) {
 	const body = JSON.stringify({ ids })
-	try {
-		const res = await cfFetch(
-			{ accountId, apiToken, gatewayId, gatewayAuthToken },
-			`/vectorize/v2/indexes/${indexName}/delete_by_ids`,
-			{ method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
-		)
-		return (await res.json()) as any
-	} catch {
-		const res = await cfFetch(
-			{ accountId, apiToken, gatewayId, gatewayAuthToken },
-			`/vectorize/indexes/${indexName}/delete_by_ids`,
-			{ method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
-		)
-		return (await res.json()) as any
-	}
+	const res = await cfFetch(
+		{ accountId, apiToken, gatewayId, gatewayAuthToken },
+		`/vectorize/v2/indexes/${indexName}/delete_by_ids`,
+		{ method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
+	)
+	return (await res.json()) as any
 }

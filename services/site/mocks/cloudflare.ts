@@ -1152,7 +1152,6 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 		},
 	),
 
-	// Vectorize query (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/query`,
 		async (args) => {
@@ -1161,16 +1160,6 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 		},
 	),
 
-	// Vectorize query (legacy)
-	http.post<any, DefaultBodyType>(
-		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/query`,
-		async (args) => {
-			if (!shouldMockCloudflare(args.request)) return passthrough()
-			return handleVectorizeQuery(args)
-		},
-	),
-
-	// Vectorize write operations (v2): insert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/insert`,
 		async (args) => {
@@ -1179,7 +1168,6 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 		},
 	),
 
-	// Vectorize write operations (v2): upsert
 	http.post<any, DefaultRequestMultipartBody>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/upsert`,
 		async (args) => {
@@ -1188,36 +1176,8 @@ export const cloudflareHandlers: Array<HttpHandler> = [
 		},
 	),
 
-	// Vectorize write operations (legacy): insert
-	http.post<any, DefaultRequestMultipartBody>(
-		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/insert`,
-		async (args) => {
-			if (!shouldMockCloudflare(args.request)) return passthrough()
-			return handleVectorizeInsert(args)
-		},
-	),
-
-	// Vectorize write operations (legacy): upsert
-	http.post<any, DefaultRequestMultipartBody>(
-		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/upsert`,
-		async (args) => {
-			if (!shouldMockCloudflare(args.request)) return passthrough()
-			return handleVectorizeUpsert(args)
-		},
-	),
-
-	// Vectorize delete_by_ids (v2)
 	http.post<any, DefaultBodyType>(
 		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/v2/indexes/:indexName/delete_by_ids`,
-		async (args) => {
-			if (!shouldMockCloudflare(args.request)) return passthrough()
-			return handleVectorizeDeleteByIds(args)
-		},
-	),
-
-	// Vectorize delete_by_ids (legacy)
-	http.post<any, DefaultBodyType>(
-		`${CLOUDFLARE_API_BASE}/accounts/:accountId/vectorize/indexes/:indexName/delete_by_ids`,
 		async (args) => {
 			if (!shouldMockCloudflare(args.request)) return passthrough()
 			return handleVectorizeDeleteByIds(args)
