@@ -225,7 +225,7 @@ function computeAllowedActionOrigins(values: BaseEnv) {
 			.filter(Boolean) ?? []
 
 	if (configuredOrigins.length > 0) return configuredOrigins
-	if (values.NODE_ENV !== 'production') return ['**']
+	if (values.NODE_ENV !== 'production' || values.MOCKS === 'true') return ['**']
 
 	const productionOrigins = ['kentcdodds.com', '*.kentcdodds.com']
 	// Fly.io app name is required by schema; keep the old behavior anyway.
