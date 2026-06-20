@@ -237,11 +237,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
+	loaderData,
 	matches,
 }) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const blogData = data as SerializeFrom<typeof loader> | undefined
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
+	const blogData = loaderData as SerializeFrom<typeof loader> | undefined
 	const totalBlogReaders = blogData?.totalBlogReaders ?? 'thousands of'
 	const articleCount = blogData ? formatNumber(blogData.posts.length) : 'many'
 	return getSocialMetas({

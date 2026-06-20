@@ -28,12 +28,12 @@ import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/testimonials'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
+	loaderData,
 	matches,
 }) => {
-	const testimonials = data?.testimonials
+	const testimonials = loaderData?.testimonials
 
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
 	const testimonialCount = testimonials ? `${testimonials.length} ` : ''
 	const title = `${testimonialCount}testimonials about Kent C. Dodds`
 	return getSocialMetas({

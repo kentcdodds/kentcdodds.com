@@ -59,13 +59,13 @@ function useMatchLoaderData<LoaderData>(handleId: string) {
 	if (!match) {
 		throw new Error(`No active route has a handle ID of ${handleId}`)
 	}
-	return match.data as LoaderData
+	return match.loaderData as LoaderData
 }
 function useOptionalMatchLoaderData<LoaderData>(handleId: string) {
 	const matches = useMatches()
 	return matches.find(
 		({ handle }) => (handle as KCDHandle | undefined)?.id === handleId,
-	)?.data as LoaderData | undefined
+	)?.loaderData as LoaderData | undefined
 }
 
 export {

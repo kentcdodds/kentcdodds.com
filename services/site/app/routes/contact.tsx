@@ -92,7 +92,7 @@ export const headers: HeadersFunction = () => ({
 export const meta: MetaFunction<{}, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
 	return getSocialMetas({
 		title: 'Contact Kent C. Dodds',
 		description: 'Send Kent C. Dodds a personal email.',

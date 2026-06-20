@@ -18,7 +18,7 @@ import { type Route } from './+types/subscribe'
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
 	return getSocialMetas({
 		title: `Subscribe to the KCD Mailing List`,
 		description: `Get weekly insights, ideas, and proven coding practices from the KCD Mailing List`,

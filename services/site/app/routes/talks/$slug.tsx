@@ -13,10 +13,10 @@ export const meta: MetaFunction<
 	{ root: RootLoaderType; 'routes/talks/_layout': typeof talkLoader }
 > = ({ matches, params }) => {
 	const { talks = [] } =
-		(matches.find((m) => m.id === 'routes/talks/_layout')?.data as
+		(matches.find((m) => m.id === 'routes/talks/_layout')?.loaderData as
 			| SerializeFrom<typeof talkLoader>
 			| undefined) ?? {}
-	const rootData = matches.find((m) => m.id === 'root')?.data as
+	const rootData = matches.find((m) => m.id === 'root')?.loaderData as
 		| SerializeFrom<RootLoaderType>
 		| undefined
 	if (!rootData) {

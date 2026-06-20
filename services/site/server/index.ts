@@ -17,12 +17,13 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import onFinished from 'on-finished'
 import { EventEmitter } from 'events'
-import { type ServerBuild } from 'react-router'
+import { RouterContextProvider, type ServerBuild } from 'react-router'
 import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
 import { getInstanceInfo } from '../app/utils/litefs-js.server.ts'
+import { cspNonceContext } from '../app/utils/request-context.ts'
 
 sourceMapSupport.install()
 
@@ -514,7 +515,9 @@ app.use('/.well-known/{*splat}', (req, res, next) => {
 
 async function getRequestHandler() {
 	function getLoadContext(req: any, res: any) {
-		return { cspNonce: res.locals.cspNonce }
+		const context = new RouterContextProvider()
+		context.set(cspNonceContext, res.locals.cspNonce)
+		return context
 	}
 	return createRequestHandlerWithMarkdown({
 		build: MODE === 'development' ? getBuild : await getBuild(),

@@ -91,12 +91,12 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export const meta: Route.MetaFunction = ({ data, matches }) => {
-	const episode = data?.episode
+export const meta: Route.MetaFunction = ({ loaderData, matches }) => {
+	const episode = loaderData?.episode
 
 	const rootMatch = matches.find((match) => match?.id === 'root')
 	const requestInfo = (
-		rootMatch?.data as SerializeFrom<RootLoaderType> | undefined
+		rootMatch?.loaderData as SerializeFrom<RootLoaderType> | undefined
 	)?.requestInfo
 	if (!episode) {
 		return [{ title: 'Chats with Kent Episode not found' }]

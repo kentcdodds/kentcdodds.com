@@ -86,7 +86,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
 	return getSocialMetas({
 		title: 'Call Kent Podcast',
 		description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,

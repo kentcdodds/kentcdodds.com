@@ -29,7 +29,9 @@ export default function RecordScreen({ matches }: Route.ComponentProps) {
 	const [mode, setMode] = React.useState<'record' | 'text'>('record')
 
 	const rootMatch = matches.find((m) => m?.id === 'root')
-	const rootData = rootMatch?.data as SerializeFrom<RootLoaderType> | undefined
+	const rootData = rootMatch?.loaderData as
+		| SerializeFrom<RootLoaderType>
+		| undefined
 	const { user, userInfo } = rootData ?? {}
 	// should be impossible...
 	if (!user || !userInfo) throw new Error('user and userInfo required')

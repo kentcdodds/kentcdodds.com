@@ -48,7 +48,7 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 	matches,
 }) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
 	return getSocialMetas({
 		title: 'Courses by Kent C. Dodds',
 		description: 'Get really good at making software with Kent C. Dodds',

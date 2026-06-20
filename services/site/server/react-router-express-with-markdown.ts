@@ -9,10 +9,8 @@ import type {
 } from 'express'
 import {
 	createRequestHandler as createReactRouterRequestHandler,
-	type AppLoadContext,
 	type RouterContextProvider,
 	type ServerBuild,
-	type UNSAFE_MiddlewareEnabled,
 } from 'react-router'
 
 const localServerModuleExtension = import.meta.url.includes('/server-build/')
@@ -30,9 +28,7 @@ type MaybePromise<T> = T | Promise<T>
 type GetLoadContextFunction = (
 	req: ExpressRequest,
 	res: ExpressResponse,
-) => UNSAFE_MiddlewareEnabled extends true
-	? MaybePromise<RouterContextProvider>
-	: MaybePromise<AppLoadContext>
+) => MaybePromise<RouterContextProvider>
 
 type ExpressRequestHandler = (
 	req: ExpressRequest,

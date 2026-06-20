@@ -73,8 +73,8 @@ export const handle: KCDHandle & { id: string } = {
 	id: 'root',
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-	const requestInfo = data?.requestInfo
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
+	const requestInfo = loaderData?.requestInfo
 	const title = 'Kent C. Dodds'
 	const description =
 		'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
