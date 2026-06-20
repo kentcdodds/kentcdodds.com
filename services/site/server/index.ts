@@ -516,7 +516,9 @@ app.use('/.well-known/{*splat}', (req, res, next) => {
 async function getRequestHandler() {
 	function getLoadContext(req: any, res: any) {
 		const context = new RouterContextProvider()
-		context.set(cspNonceContext, res.locals.cspNonce)
+		const nonce =
+			typeof res.locals.cspNonce === 'string' ? res.locals.cspNonce : ''
+		context.set(cspNonceContext, nonce)
 		return context
 	}
 	return createRequestHandlerWithMarkdown({
