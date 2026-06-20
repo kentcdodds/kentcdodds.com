@@ -24,7 +24,7 @@ import { meta } from '../blog.tsx'
 
 test('blog meta uses fallback copy when loader data is unavailable', () => {
 	const metas = meta({
-		data: undefined,
+		loaderData: undefined,
 		location: {
 			pathname: '/blog',
 			search: '',
@@ -37,7 +37,7 @@ test('blog meta uses fallback copy when loader data is unavailable', () => {
 				id: 'root',
 				pathname: '/',
 				params: {},
-				data: {
+				loaderData: {
 					requestInfo: {
 						origin: 'https://kentcdodds.com',
 						path: '/blog',
