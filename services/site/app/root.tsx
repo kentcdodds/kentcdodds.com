@@ -30,16 +30,11 @@ import {
 import { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
-import { ButtonLink } from './components/button.tsx'
 import { ErrorPage, FourHundred, FourOhFour } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
 import { Grimmacing } from './components/kifs.tsx'
 import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
-import {
-	Promotification,
-	getPromoCookieValue,
-} from './routes/resources/promotification.tsx'
 import { Spacer } from './components/spacer.tsx'
 import { TeamCircle } from './components/team-circle.tsx'
 import { getGenericSocialImage, illustrationImages, images } from './images.tsx'
@@ -53,10 +48,6 @@ import { getClientSession } from './utils/client.server.ts'
 import { getPublicEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
-import {
-	PRODUCT_ENGINEERING_WORKSHOP_URL,
-	getProductEngineeringWorkshopPromotification,
-} from './utils/product-engineering-workshop-promotification.ts'
 import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
@@ -157,28 +148,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const randomFooterImageKey = randomFooterImageKeys[
 		Math.floor(Math.random() * randomFooterImageKeys.length)
 	] as keyof typeof illustrationImages
-	const productEngineeringWorkshopPromotification =
-		getProductEngineeringWorkshopPromotification()
 
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		latestPodcastSeasonLinks: PODCAST_LINKS_FALLBACK,
-		productEngineeringWorkshopPromotification:
-			productEngineeringWorkshopPromotification
-				? {
-						...productEngineeringWorkshopPromotification,
-						promoEndTime:
-							productEngineeringWorkshopPromotification.promoEndTime.toISOString(),
-					}
-				: null,
-		productEngineeringWorkshopPromotificationCookieValue:
-			productEngineeringWorkshopPromotification
-				? getPromoCookieValue({
-						promoName: productEngineeringWorkshopPromotification.promoName,
-						request,
-					})
-				: undefined,
 		ENV: getPublicEnv(),
 		randomFooterImageKey,
 		requestInfo: {
@@ -391,36 +365,6 @@ function App({
 			</head>
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
-				{data.productEngineeringWorkshopPromotification ? (
-					<Promotification
-						key={data.productEngineeringWorkshopPromotification.promoName}
-						position="top-center"
-						promoName={data.productEngineeringWorkshopPromotification.promoName}
-						cookieValue={
-							data.productEngineeringWorkshopPromotificationCookieValue
-						}
-						promoEndTime={
-							new Date(
-								data.productEngineeringWorkshopPromotification.promoEndTime,
-							)
-						}
-						hidePermanentlyOnInteraction
-					>
-						<div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-							<p className="max-w-md text-base leading-snug font-semibold">
-								{data.productEngineeringWorkshopPromotification.message}
-							</p>
-							<ButtonLink
-								to={PRODUCT_ENGINEERING_WORKSHOP_URL}
-								variant="secondary"
-								size="medium"
-								className="justify-self-start sm:justify-self-end"
-							>
-								{data.productEngineeringWorkshopPromotification.buttonText}
-							</ButtonLink>
-						</div>
-					</Promotification>
-				) : null}
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
 				<AppHotkeys />
