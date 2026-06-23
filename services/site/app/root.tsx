@@ -53,11 +53,7 @@ import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
 import { getTheme } from './utils/theme.server.ts'
 import { useTheme } from './utils/theme.tsx'
-import {
-	getServerTimeHeader,
-	time,
-	withTimeout,
-} from './utils/timing.server.ts'
+import { getServerTimeHeader, withTimeout } from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
