@@ -232,6 +232,31 @@ app.get('/healthcheck', (_req, res) => {
 	return res.send('OK')
 })
 
+const bogusCrawlerCallPathEndings = new Set([
+	'Express.js',
+	'Next.js',
+	'React.js',
+	'index.js',
+	'meta.json',
+	'u003e',
+])
+
+function isBogusCrawlerPath(pathname: string) {
+	if (pathname.includes('/node_modules/')) return true
+	if (!pathname.startsWith('/calls/')) return false
+	const lastSegment = pathname.slice(pathname.lastIndexOf('/') + 1)
+	return bogusCrawlerCallPathEndings.has(lastSegment)
+}
+
+app.use((req, res, next) => {
+	if (!isBogusCrawlerPath(req.path)) {
+		next()
+		return
+	}
+	res.status(404).type('text/plain')
+	return res.send('Not found')
+})
+
 app.use((req, res, next) => {
 	const metricName = 'middleware-get-instance-info'
 	startServerMetric(res, metricName, 'populate fly response headers')
