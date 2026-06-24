@@ -232,72 +232,35 @@ seed script which will populate the database with some example data.
 
 ## Maintenance Tips
 
-### Adding more regions
+### Fly production topology
 
-When doing stuff like this it's not a bad idea to do a database backup first
-(even though Fly backs-up your volumes daily for you).
+The production site intentionally runs as a single Fly Machine in `dfw` with one
+attached SQLite volume. Do not scale the app above one machine, add app regions,
+or clone machines unless the database architecture changes to support
+replication again.
 
-Even though fly has a specific command for adding and removing regions, when
-regions have volumes, you instead control the regions by adding more volumes to
-specific regions and then scaling up. For example:
-
-```sh
-fly vol create data --size 3 --region ams
-fly scale count 2
-```
-
-For this app, avoid bringing up many regions simultaneously. Prefer cloning one
-machine at a time from the current primary and waiting for checks to pass before
-adding the next region:
+Before changing Fly machines or volumes, verify the current topology:
 
 ```sh
-fly machine clone <PRIMARY_MACHINE_ID> -a kcd --region <REGION>
-fly machine status <NEW_MACHINE_ID> -a kcd
-fly checks list -a kcd
+fly machines list -a kcd
+fly volumes list -a kcd
 ```
 
-### Removing regions
-
-Similar to adding regions, maybe backup the data.
-
-First, list the volumes and identify the volume IDs for the regions you want to
-remove:
+If cleanup leaves any machines in a non-started state, inspect them before
+destroying them:
 
 ```sh
-fly vol list
+fly machines list -a kcd
 ```
 
-Then destroy each volume you want to remove:
+After confirming a volume is unattached and no longer needed, destroy it by ID:
 
 ```sh
-fly vol destroy <VOL_ID>
+fly volumes list -a kcd
+fly volumes destroy <VOL_ID> -a kcd
 ```
 
-And when you're finished, scale down to the number of volumes you have:
-
-```sh
-fly scale count <COUNT>
-```
-
-If cleanup leaves any machines in a non-started state, destroy them:
-
-```sh
-for id in $(fly m list -a kcd --json | jq -r '.[] | select(.state != "started") | .id'); do
-  fly machine destroy "$id" -a kcd --force
-done
-```
-
-After removing regions, also clean up unattached volumes in those regions so you
-are not paying for orphaned storage:
-
-```sh
-for id in $(fly vol list -a kcd --json | jq -r '.[] | select(.attached_machine_id == null and (.region=="jnb" or .region=="ams" or .region=="sin" or .region=="bom" or .region=="syd" or .region=="cdg")) | .id'); do
-  fly vol destroy "$id" -a kcd --yes
-done
-```
-
-Run `fly vol list -a kcd` first and do not delete volumes attached to active
-machines.
+Do not delete volumes attached to active machines.
 
 ## Help needed
 

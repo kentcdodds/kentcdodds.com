@@ -58,6 +58,11 @@ reference:
   adding app runtime shortcuts.
 - SQLite is file-based: the database file lives at `services/site/prisma/sqlite.db`. No
   external database server is required.
+- Production runs as a single Fly Machine in `dfw` with one attached SQLite
+  volume. Do not add regions, clone machines, or use `fly scale count` above
+  `1` unless the database architecture changes to support replication again.
+  Historical blog content and disabled LiteFS compatibility code are not the
+  current production topology.
 - If Playwright E2E tests fail with Prisma "table does not exist" errors, run
   the DB reset + seed command from the table above to apply migrations and seed
   data.
