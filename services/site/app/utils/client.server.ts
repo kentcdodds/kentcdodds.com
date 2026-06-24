@@ -2,12 +2,15 @@
 // the posts they've read and make useful suggestions even if they're not logged in.
 
 import { createCookieSessionStorage } from 'react-router'
+import * as cookie from 'cookie'
 import * as uuid from 'uuid'
 import { getEnv } from './env.server.ts'
 
+const clientCookieName = 'KCD_client_id'
+
 const clientStorage = createCookieSessionStorage({
 	cookie: {
-		name: 'KCD_client_id',
+		name: clientCookieName,
 		secure: true,
 		secrets: [getEnv().SESSION_SECRET],
 		sameSite: 'lax',
@@ -78,4 +81,11 @@ async function getClientSession(request: Request, user: {} | null) {
 	}
 }
 
-export { getClientSession }
+function hasClientSessionCookie(request: Request) {
+	const cookieHeader = request.headers.get('Cookie')
+	return cookieHeader
+		? Boolean(cookie.parse(cookieHeader)[clientCookieName])
+		: false
+}
+
+export { getClientSession, hasClientSessionCookie }

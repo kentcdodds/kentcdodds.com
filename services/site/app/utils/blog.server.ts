@@ -4,7 +4,7 @@ import { type MdxListItem, type Team, type User } from '#app/types.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
-import { getClientSession } from './client.server.ts'
+import { getClientSession, hasClientSessionCookie } from './client.server.ts'
 import { sendMessageFromDiscordBot } from './discord.server.ts'
 import { getEnv } from './env.server.ts'
 import { getBlogMdxListItems } from './mdx.server.ts'
@@ -47,22 +47,30 @@ async function getBlogRecommendations({
 	)
 	// filter out what they've already read
 	const user = await getUser(request)
-	const client = await getClientSession(request, user)
-	const clientId = client.getClientId()
-	const where = user
-		? { user: { id: user.id }, postSlug: { notIn: exclude.filter(Boolean) } }
-		: { clientId, postSlug: { notIn: exclude.filter(Boolean) } }
-	const readPosts = await time(
-		prisma.postRead.groupBy({
-			by: ['postSlug'],
-			where,
-		}),
-		{
-			timings,
-			type: 'getReadPosts',
-			desc: 'getting slugs of all posts read by user',
-		},
-	)
+	const readPosts =
+		user || hasClientSessionCookie(request)
+			? await time(
+					prisma.postRead.groupBy({
+						by: ['postSlug'],
+						where: user
+							? {
+									user: { id: user.id },
+									postSlug: { notIn: exclude.filter(Boolean) },
+								}
+							: {
+									clientId: (
+										await getClientSession(request, user)
+									).getClientId(),
+									postSlug: { notIn: exclude.filter(Boolean) },
+								},
+					}),
+					{
+						timings,
+						type: 'getReadPosts',
+						desc: 'getting slugs of all posts read by user',
+					},
+				)
+			: []
 	exclude.push(...readPosts.map((p) => p.postSlug))
 
 	const recommendablePosts = allPosts.filter(
