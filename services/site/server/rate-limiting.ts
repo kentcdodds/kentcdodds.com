@@ -1,9 +1,63 @@
 import { type RequestHandler } from 'express'
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
 
+type RateLimitInfo = {
+	limit: number
+	remaining: number
+	resetTime?: Date
+}
+
+type RateLimitedRequest = Parameters<RequestHandler>[0] & {
+	rateLimit?: RateLimitInfo
+}
+
 type CreateRateLimitingMiddlewareOptions = {
 	mode?: string | undefined
 	mocks?: boolean | undefined
+}
+
+function getSearchHintQuery(path: string) {
+	return path
+		.replace(/^\/+/, '')
+		.replace(/[-_./]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim()
+}
+
+function getAgentSearchPath(req: Parameters<RequestHandler>[0]) {
+	const query = getSearchHintQuery(req.path)
+	if (!query) return '/resources/search?query='
+	return `/resources/search?query=${encodeURIComponent(query)}`
+}
+
+function setAgentSearchHintHeaders(
+	req: Parameters<RequestHandler>[0],
+	res: Parameters<RequestHandler>[1],
+) {
+	const searchPath = getAgentSearchPath(req)
+	res.setHeader(
+		'Link',
+		`<${searchPath}>; rel="search"; type="application/json"`,
+	)
+	res.setHeader(
+		'X-Agent-Search-Hint',
+		`Agents should use ${searchPath} for semantic search instead of bulk markdown scraping.`,
+	)
+}
+
+function getAgentSearchHintMarkdown(req: Parameters<RequestHandler>[0]) {
+	const searchPath = getAgentSearchPath(req)
+	return [
+		'# Markdown Rate Limit',
+		'',
+		'This markdown representation is rate limited to keep kentcdodds.com healthy.',
+		'',
+		'If you are an agent exploring the site, use the semantic search endpoint instead:',
+		'',
+		`\`${searchPath}\``,
+		'',
+		'Use specific natural-language queries, then fetch only the pages you need.',
+	].join('\n')
 }
 
 /**
@@ -26,7 +80,7 @@ export function createRateLimitingMiddleware(
 
 	const rateLimitDefault = {
 		windowMs: 60 * 1000,
-		limit: 1000 * maxMultiple,
+		limit: 300 * maxMultiple,
 		standardHeaders: true,
 		legacyHeaders: false,
 		validate: { trustProxy: false },
@@ -51,6 +105,28 @@ export function createRateLimitingMiddleware(
 		limit: 100 * maxMultiple,
 	})
 
+	const searchRateLimit = rateLimit({
+		...rateLimitDefault,
+		limit: 60 * maxMultiple,
+	})
+
+	const contentIndexRateLimit = rateLimit({
+		...rateLimitDefault,
+		limit: 30 * maxMultiple,
+	})
+
+	const markdownRateLimit = rateLimit({
+		...rateLimitDefault,
+		limit: 20 * maxMultiple,
+		handler: (req, res) => {
+			setAgentSearchHintHeaders(req, res)
+			res
+				.status(429)
+				.type('text/markdown')
+				.send(getAgentSearchHintMarkdown(req))
+		},
+	})
+
 	const generalRateLimit = rateLimit(rateLimitDefault)
 
 	return (req, res, next) => {
@@ -66,7 +142,9 @@ export function createRateLimitingMiddleware(
 			// Covers: /calls/admin, /cache/admin, /me/admin, /search/admin
 			'/admin',
 			'/resources/calls/save',
+			'/resources/calls/text-to-speech',
 			'/resources/webauthn',
+			'/action/mark-as-read',
 		]
 
 		if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -85,6 +163,39 @@ export function createRateLimitingMiddleware(
 		]
 		if (strongestGetPaths.some((p) => req.path.includes(p))) {
 			return strongestRateLimit(req, res, next)
+		}
+
+		// Markdown negotiation renders the normal route, then converts HTML to
+		// markdown server-side. Keep agent-style scraping from turning CPU-bound.
+		if (req.accepts(['html', 'text/markdown']) === 'text/markdown') {
+			return markdownRateLimit(req, res, () => {
+				const limit = (req as RateLimitedRequest).rateLimit
+				if (limit && limit.remaining <= limit.limit / 2) {
+					setAgentSearchHintHeaders(req, res)
+				}
+				next()
+			})
+		}
+
+		// Search calls the dedicated search worker and can fan out into result
+		// enrichment/cache work, so keep it tighter than ordinary document loads.
+		const searchGetPaths = ['/search', '/resources/search']
+		if (searchGetPaths.some((p) => req.path === p)) {
+			return searchRateLimit(req, res, next)
+		}
+
+		// These bulk/index routes are useful for crawlers and agents, but legitimate
+		// clients should not need to fetch them hundreds of times per minute.
+		const contentIndexGetPaths = [
+			'/sitemap.xml',
+			'/blog/rss.xml',
+			'/blog.json',
+			'/.well-known/api-catalog',
+			'/.well-known/api-docs',
+			'/openapi.json',
+		]
+		if (contentIndexGetPaths.some((p) => req.path === p)) {
+			return contentIndexRateLimit(req, res, next)
 		}
 
 		return generalRateLimit(req, res, next)

@@ -120,6 +120,121 @@ describe('rate limiting (epic-stack style)', () => {
 		expect(tooMany.status).toBe(429)
 	})
 
+	it('uses strongest limiter for POST /resources/calls/text-to-speech (paid API endpoint)', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 10; i++) {
+			const r = await fetch(
+				`${started.baseUrl}/resources/calls/text-to-speech`,
+				{
+					method: 'POST',
+				},
+			)
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(
+			`${started.baseUrl}/resources/calls/text-to-speech`,
+			{
+				method: 'POST',
+			},
+		)
+		expect(tooMany.status).toBe(429)
+	})
+
+	it('uses strongest limiter for POST /action/mark-as-read (read ranking work)', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 10; i++) {
+			const r = await fetch(`${started.baseUrl}/action/mark-as-read`, {
+				method: 'POST',
+			})
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(`${started.baseUrl}/action/mark-as-read`, {
+			method: 'POST',
+		})
+		expect(tooMany.status).toBe(429)
+	})
+
+	it('uses search limiter for GET /resources/search', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 60; i++) {
+			const r = await fetch(`${started.baseUrl}/resources/search?query=react`)
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(
+			`${started.baseUrl}/resources/search?query=react`,
+		)
+		expect(tooMany.status).toBe(429)
+	})
+
+	it('uses content index limiter for GET /sitemap.xml', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 30; i++) {
+			const r = await fetch(`${started.baseUrl}/sitemap.xml`)
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(`${started.baseUrl}/sitemap.xml`)
+		expect(tooMany.status).toBe(429)
+	})
+
+	it('uses markdown limiter for GET requests accepting text/markdown', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 9; i++) {
+			const r = await fetch(`${started.baseUrl}/blog/some-post`, {
+				headers: { Accept: 'text/markdown' },
+			})
+			expect(r.status).toBe(200)
+			expect(r.headers.get('x-agent-search-hint')).toBeNull()
+		}
+
+		const halfway = await fetch(`${started.baseUrl}/blog/some-post`, {
+			headers: { Accept: 'text/markdown' },
+		})
+		expect(halfway.status).toBe(200)
+		expect(halfway.headers.get('link')).toContain(
+			'</resources/search?query=blog%20some%20post>; rel="search"',
+		)
+		expect(halfway.headers.get('x-agent-search-hint')).toContain(
+			'/resources/search?query=blog%20some%20post',
+		)
+
+		for (let i = 0; i < 10; i++) {
+			const r = await fetch(`${started.baseUrl}/blog/some-post`, {
+				headers: { Accept: 'text/markdown' },
+			})
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(`${started.baseUrl}/blog/some-post`, {
+			headers: { Accept: 'text/markdown' },
+		})
+		expect(tooMany.status).toBe(429)
+		expect(tooMany.headers.get('content-type')).toContain('text/markdown')
+		expect(await tooMany.text()).toContain(
+			'/resources/search?query=blog%20some%20post',
+		)
+	})
+
+	it('uses lowered general limiter for ordinary GET requests', async () => {
+		started = await startTestServer()
+
+		for (let i = 0; i < 300; i++) {
+			const r = await fetch(`${started.baseUrl}/blog/some-post`)
+			expect(r.status).toBe(200)
+		}
+
+		const tooMany = await fetch(`${started.baseUrl}/blog/some-post`)
+		expect(tooMany.status).toBe(429)
+	})
+
 	it('sets standard RateLimit headers and disables legacy X-RateLimit headers', async () => {
 		started = await startTestServer()
 
