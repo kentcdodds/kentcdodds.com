@@ -82,6 +82,10 @@ async function firstExistingFile(filePaths: Array<string>) {
 	return null
 }
 
+function isReadmeMdxEntry(name: string) {
+	return /^readme(?:\.mdx?)?$/i.test(name)
+}
+
 function toGitHubEditPath(filePath: string) {
 	const relativePath = path
 		.relative(process.cwd(), filePath)
@@ -104,7 +108,14 @@ async function getLocalBlogMdxFiles() {
 	const files: Array<{ slug: string; filePath: string }> = []
 	for (const entry of entries) {
 		const name = entry.name
-		if (!name || name.startsWith('.') || entry.isSymbolicLink()) continue
+		if (
+			!name ||
+			name.startsWith('.') ||
+			isReadmeMdxEntry(name) ||
+			entry.isSymbolicLink()
+		) {
+			continue
+		}
 
 		if (entry.isFile() && /\.(mdx|md)$/i.test(name)) {
 			const slug = name.replace(/\.(mdx|md)$/i, '')
@@ -156,6 +167,8 @@ export async function getMdxPage(
 	},
 	options: CachifiedOptions,
 ): Promise<MdxPage | null> {
+	if (contentDir === 'blog' && isReadmeMdxEntry(slug)) return null
+
 	const { forceFresh, ttl = defaultTTL, request, timings } = options
 	const key = `mdx-page:${contentDir}:${slug}:compiled`
 	try {
@@ -256,7 +269,7 @@ export async function getMdxDirList(
 							.replace(`${fullContentDirPath}/`, '')
 							.replace(/\.mdx$/, ''),
 					}))
-					.filter(({ name }) => name !== 'README.md')
+					.filter(({ name }) => !isReadmeMdxEntry(name))
 				return dirList
 			} catch (error: unknown) {
 				console.error(
