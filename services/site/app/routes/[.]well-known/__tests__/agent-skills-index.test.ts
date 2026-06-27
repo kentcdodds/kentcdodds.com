@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { createHash } from 'node:crypto'
+import { RouterContextProvider } from 'react-router'
 import { expect, test } from 'vitest'
 import {
 	getContentSearchSkillDigest,
@@ -11,10 +12,11 @@ import { type Route as IndexRoute } from '../+types/agent-skills.index[.]json'
 
 function createIndexLoaderArgs(request: Request): IndexRoute.LoaderArgs {
 	return {
-		context: {},
+		context: new RouterContextProvider(),
 		params: {},
+		pattern: '/.well-known/agent-skills/index.json',
 		request,
-		unstable_pattern: '/.well-known/agent-skills/index.json',
+		url: new URL(request.url),
 	}
 }
 

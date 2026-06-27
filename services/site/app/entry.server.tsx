@@ -19,6 +19,7 @@ import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
+import { cspNonceContext } from './utils/request-context.ts'
 
 init()
 global.ENV = getPublicEnv()
@@ -93,7 +94,7 @@ function serveTheBots(...args: DocRequestArgs) {
 		reactRouterContext,
 		loadContext,
 	] = args
-	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
+	const nonce = loadContext.get(cspNonceContext)
 	return new Promise((resolve, reject) => {
 		const stream = renderToPipeableStream(
 			<NonceProvider value={nonce}>
@@ -146,7 +147,7 @@ function serveBrowsers(...args: DocRequestArgs) {
 		reactRouterContext,
 		loadContext,
 	] = args
-	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
+	const nonce = loadContext.get(cspNonceContext)
 	return new Promise((resolve, reject) => {
 		let didError = false
 		const stream = renderToPipeableStream(

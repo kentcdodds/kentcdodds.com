@@ -39,12 +39,12 @@ import { useOptionalUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/_layout'
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
+	loaderData,
 	matches,
 }) => {
-	const { talks = [], tags = [] } = data ?? {}
+	const { talks = [], tags = [] } = loaderData ?? {}
 
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
 	const talkCount = talks.length
 	const deliveryCount = talks.flatMap((t) => t.deliveries).length
 	const title = `${talkCount} talks by Kent all about software development`

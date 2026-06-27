@@ -48,43 +48,43 @@ type MetaLoader = () => Promise<
 >
 
 const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
-	data,
+	loaderData,
 	matches,
 }) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	if (data && 'page' in data) {
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
+	if (loaderData && 'page' in loaderData) {
 		// NOTE: keyword metadata is not used because it was used and abused by
 		// spammers. We use them for sorting on our own site, but we don't list
 		// it in the meta tags because it's possible to be penalized for doing so.
 		const { keywords: _keywords, ...extraMetaInfo } =
-			data.page.frontmatter.meta ?? {}
+			loaderData.page.frontmatter.meta ?? {}
 		const extraMeta: ExtraMeta = Object.entries(extraMetaInfo).reduce(
 			(acc: ExtraMeta, [key, val]) => [...acc, { [key]: String(val) }],
 			[],
 		)
 
-		let title = data.page.frontmatter.title
-		const isDraft = data.page.frontmatter.draft
-		const isUnlisted = data.page.frontmatter.unlisted
+		let title = loaderData.page.frontmatter.title
+		const isDraft = loaderData.page.frontmatter.draft
+		const isUnlisted = loaderData.page.frontmatter.unlisted
 		if (isDraft) title = `(DRAFT) ${title ?? ''}`
 
 		return [
 			isDraft || isUnlisted ? { robots: 'noindex' } : null,
 			...getSocialMetas({
 				title,
-				description: data.page.frontmatter.description,
+				description: loaderData.page.frontmatter.description,
 				url: getUrl(requestInfo),
 				image: getSocialImageWithPreTitle({
 					url: getDisplayUrl(requestInfo),
 					featuredImage:
-						data.page.frontmatter.bannerCloudinaryId ??
+						loaderData.page.frontmatter.bannerCloudinaryId ??
 						'kentcdodds.com/illustrations/kody-flying_blue',
 					title:
-						data.page.frontmatter.socialImageTitle ??
-						data.page.frontmatter.title ??
+						loaderData.page.frontmatter.socialImageTitle ??
+						loaderData.page.frontmatter.title ??
 						'Untitled',
 					preTitle:
-						data.page.frontmatter.socialImagePreTitle ??
+						loaderData.page.frontmatter.socialImagePreTitle ??
 						`Check out this article`,
 				}),
 				ogType: getUrl(requestInfo).includes('/blog/') ? 'article' : 'website',

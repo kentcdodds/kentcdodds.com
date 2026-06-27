@@ -70,10 +70,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
+	loaderData,
 	matches,
 }) => {
-	const { seasons } = data ?? {}
+	const { seasons } = loaderData ?? {}
 	if (!seasons) {
 		return [{ title: 'Chats with Kent Seasons not found' }]
 	}
@@ -82,7 +82,7 @@ export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
 		0,
 	)
 
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+	const requestInfo = matches.find((m) => m.id === 'root')?.loaderData.requestInfo
 
 	return getSocialMetas({
 		title: 'Chats with Kent C. Dodds Podcast',
