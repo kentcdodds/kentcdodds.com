@@ -18,6 +18,11 @@ function publishSharedReactGlobals() {
 }
 
 publishSharedReactGlobals()
+import {
+	beginCacheRequestStats,
+	endCacheRequestStats,
+	formatCacheRequestStatsHeader,
+} from '../../../site/app/utils/cache.server.ts'
 import { setRuntimeEnvSource, getEnv } from '../../../site/app/utils/env.server.ts'
 import {
 	setRuntimeBindingSource,
@@ -41,6 +46,8 @@ import {
 	maybeConvertHtmlResponseToMarkdown,
 	requestPrefersMarkdown,
 } from '../../../site/server/markdown-negotiation.ts'
+
+const ISOLATE_ID = crypto.randomUUID()
 
 type WorkerEnv = RuntimeBindingSource & Record<string, unknown>
 
@@ -292,69 +299,91 @@ async function handleSiteRequest(
 	ctx: ExecutionContext,
 ): Promise<Response> {
 	const startedAt = Date.now()
-	await ensureRuntimeBridges(env)
+	const cacheStats = beginCacheRequestStats()
+	try {
+		await ensureRuntimeBridges(env)
 
-	const preRouterResponse = await runPreRouterPipeline(request, env)
-	if (preRouterResponse) {
-		logRequest(request, preRouterResponse, startedAt)
-		return preRouterResponse
-	}
-
-	const cspNonce = createCspNonce()
-	const handler = await getSiteRequestHandler(request)
-	let response = await handler(request, {
-		cloudflare: { env, ctx },
-		cspNonce,
-	} as AppLoadContext)
-
-	const url = new URL(request.url)
-	const acceptHeader = request.headers.get('Accept') ?? ''
-	if (
-		requestPrefersMarkdown((types) => {
-			const accepts = acceptHeader
-				.split(',')
-				.map((part) => part.trim().split(';')[0]?.trim().toLowerCase())
-				.filter(Boolean)
-			for (const type of types.map((t) => t.toLowerCase())) {
-				if (accepts.includes(type)) return type
-			}
-			return false
-		})
-	) {
-		response = await maybeConvertHtmlResponseToMarkdown(response)
-	}
-
-	const headers = new Headers(response.headers)
-	applySecurityHeaders({ headers, request, cspNonce })
-	const mocks = getStringEnvBindings(env).MOCKS === 'true'
-	const rateLimit = checkRateLimit(request, { mocks })
-	applyRateLimitHeaders(headers, rateLimit)
-	if (
-		rateLimit.tier === 'markdown' &&
-		rateLimit.remaining <= rateLimit.limit / 2
-	) {
-		const hints = getAgentSearchHintHeaders(url.pathname)
-		for (const [key, value] of Object.entries(hints)) {
-			headers.set(key, value)
+		const preRouterResponse = await runPreRouterPipeline(request, env)
+		if (preRouterResponse) {
+			const headers = new Headers(preRouterResponse.headers)
+			headers.set('X-Isolate-Id', ISOLATE_ID)
+			headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
+			logRequest(
+				request,
+				new Response(preRouterResponse.body, {
+					status: preRouterResponse.status,
+					statusText: preRouterResponse.statusText,
+					headers,
+				}),
+				startedAt,
+			)
+			return new Response(preRouterResponse.body, {
+				status: preRouterResponse.status,
+				statusText: preRouterResponse.statusText,
+				headers,
+			})
 		}
-	}
-	if (url.pathname.startsWith('/.well-known/')) {
-		headers.set('Access-Control-Allow-Origin', '*')
-	}
-	if (
-		response.ok &&
-		Boolean(headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i))
-	) {
-		appendVaryAccept(headers)
-	}
 
-	const finalResponse = new Response(response.body, {
-		status: response.status,
-		statusText: response.statusText,
-		headers,
-	})
-	logRequest(request, finalResponse, startedAt)
-	return finalResponse
+		const cspNonce = createCspNonce()
+		const handler = await getSiteRequestHandler(request)
+		let response = await handler(request, {
+			cloudflare: { env, ctx },
+			cspNonce,
+		} as AppLoadContext)
+
+		const url = new URL(request.url)
+		const acceptHeader = request.headers.get('Accept') ?? ''
+		if (
+			requestPrefersMarkdown((types) => {
+				const accepts = acceptHeader
+					.split(',')
+					.map((part) => part.trim().split(';')[0]?.trim().toLowerCase())
+					.filter(Boolean)
+				for (const type of types.map((t) => t.toLowerCase())) {
+					if (accepts.includes(type)) return type
+				}
+				return false
+			})
+		) {
+			response = await maybeConvertHtmlResponseToMarkdown(response)
+		}
+
+		const headers = new Headers(response.headers)
+		applySecurityHeaders({ headers, request, cspNonce })
+		const mocks = getStringEnvBindings(env).MOCKS === 'true'
+		const rateLimit = checkRateLimit(request, { mocks })
+		applyRateLimitHeaders(headers, rateLimit)
+		if (
+			rateLimit.tier === 'markdown' &&
+			rateLimit.remaining <= rateLimit.limit / 2
+		) {
+			const hints = getAgentSearchHintHeaders(url.pathname)
+			for (const [key, value] of Object.entries(hints)) {
+				headers.set(key, value)
+			}
+		}
+		if (url.pathname.startsWith('/.well-known/')) {
+			headers.set('Access-Control-Allow-Origin', '*')
+		}
+		if (
+			response.ok &&
+			Boolean(headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i))
+		) {
+			appendVaryAccept(headers)
+		}
+		headers.set('X-Isolate-Id', ISOLATE_ID)
+		headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
+
+		const finalResponse = new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers,
+		})
+		logRequest(request, finalResponse, startedAt)
+		return finalResponse
+	} finally {
+		endCacheRequestStats()
+	}
 }
 
 export default {
