@@ -20,7 +20,36 @@ import { CacheRpc } from './rpc/cache-rpc.ts'
 import { ContentRpc } from './rpc/content-rpc.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
 import { getParentPrismaClient, PrismaRpc } from './rpc/prisma-rpc.ts'
-import type { ParentWorkerEnv } from './rpc/types.ts'
+import type {
+	DynamicWorkerConfig,
+	DynamicWorkerStub,
+	ParentWorkerEnv,
+} from './rpc/types.ts'
+
+// Reusing the same WorkerStub across requests keeps traffic pinned to warm
+// dynamic isolates instead of letting each `LOADER.get` call pick (or spawn)
+// a different isolate. Old build/content versions are never requested again,
+// so a tiny cache is enough.
+const workerStubCache = new Map<string, DynamicWorkerStub>()
+
+function getCachedWorkerStub(
+	workerId: string,
+	env: ParentWorkerEnv,
+	createConfig: () => DynamicWorkerConfig,
+	{ cacheable = true }: { cacheable?: boolean } = {},
+) {
+	const cached = cacheable ? workerStubCache.get(workerId) : undefined
+	if (cached) return cached
+	const stub = env.LOADER.get(workerId, async () => createConfig())
+	if (cacheable) {
+		workerStubCache.set(workerId, stub)
+		for (const key of workerStubCache.keys()) {
+			if (workerStubCache.size <= 4) break
+			if (key !== workerId) workerStubCache.delete(key)
+		}
+	}
+	return stub
+}
 import { serveStaticAsset } from './static-assets.ts'
 
 type ParentExecutionContext = ExecutionContext & {
@@ -54,7 +83,10 @@ async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	try {
 		bundle = JSON.parse(bodyText) as MdxArtifactBundle
 	} catch {
-		return Response.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
+		return Response.json(
+			{ ok: false, error: 'Invalid JSON body' },
+			{ status: 400 },
+		)
 	}
 
 	if (!bundle.version || typeof bundle.version !== 'string') {
@@ -100,13 +132,57 @@ async function fetchArtifactBundle(
 	env: ParentWorkerEnv,
 	r2Key: string,
 ): Promise<MdxArtifactBundle | null> {
+	// KV mirror first: with cacheTtl the read is served from the local edge
+	// cache (~10-30ms) instead of R2 (~300ms), which matters because parent
+	// isolates rotate and each cold parent needs the bundle.
+	try {
+		const mirrored = await env.CONTENT_KV.get(`mdx-bundle:${r2Key}`, {
+			type: 'json',
+			cacheTtl: 300,
+		})
+		if (mirrored) return mirrored as MdxArtifactBundle
+	} catch {
+		// fall through to R2
+	}
+
 	const object = await env.MDX_ARTIFACTS.get(r2Key)
 	if (!object) return null
 
+	let bundle: MdxArtifactBundle
 	try {
-		return (await object.json()) as MdxArtifactBundle
+		bundle = (await object.json()) as MdxArtifactBundle
 	} catch {
 		return null
+	}
+
+	try {
+		await env.CONTENT_KV.put(`mdx-bundle:${r2Key}`, JSON.stringify(bundle))
+	} catch {
+		// KV values cap at 25 MiB; if the bundle ever outgrows that we still
+		// serve from R2.
+	}
+	return bundle
+}
+
+const WARMUP_CRON = '*/2 * * * *'
+
+// Keeps the parent artifact cache and a few dynamic isolates warm so real
+// traffic is less likely to pay the cold-isolate cost.
+async function warmDynamicWorker(
+	env: ParentWorkerEnv,
+	ctx: ParentExecutionContext,
+) {
+	const paths = ['/', '/blog', '/healthcheck']
+	for (const path of paths) {
+		try {
+			const request = new Request(`https://warmup.internal${path}`, {
+				headers: { 'user-agent': 'kcd-site-worker-warmup' },
+			})
+			const response = await handleDynamicRequest(request, env, ctx)
+			await response.body?.cancel()
+		} catch (error) {
+			console.warn('warmup request failed', path, error)
+		}
 	}
 }
 
@@ -169,28 +245,33 @@ async function handleDynamicRequest(
 	const stringEnv = getStringEnvBindings(env)
 
 	let loaderCallbackMs = 0
-	const worker = env.LOADER.get(workerId, async () => {
-		const loaderCallbackStartedAt = performance.now()
-		const workerConfig = {
-			compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
-			compatibilityFlags: [
-				'nodejs_compat',
-				'no_handle_cross_request_promise_resolution',
-			],
-			mainModule: 'app-worker.js',
-			modules,
-			env: {
-				...stringEnv,
-				PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
-				CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
-				CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),
-				MDX_MODULES_AVAILABLE: 'true',
-			},
-			globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
-		}
-		loaderCallbackMs = performance.now() - loaderCallbackStartedAt
-		return workerConfig
-	})
+	const worker = getCachedWorkerStub(
+		workerId,
+		env,
+		() => {
+			const loaderCallbackStartedAt = performance.now()
+			const workerConfig = {
+				compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
+				compatibilityFlags: [
+					'nodejs_compat',
+					'no_handle_cross_request_promise_resolution',
+				],
+				mainModule: 'app-worker.js',
+				modules,
+				env: {
+					...stringEnv,
+					PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
+					CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
+					CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),
+					MDX_MODULES_AVAILABLE: 'true',
+				},
+				globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
+			}
+			loaderCallbackMs = performance.now() - loaderCallbackStartedAt
+			return workerConfig
+		},
+		{ cacheable: !freshIsolateNonce },
+	)
 
 	const beforeFetchAt = performance.now()
 	const response = await worker.getEntrypoint().fetch(request)
@@ -260,7 +341,16 @@ export default {
 		return handleDynamicRequest(request, env, ctx as ParentExecutionContext)
 	},
 
-	async scheduled(_controller: ScheduledController, env: ParentWorkerEnv) {
+	async scheduled(
+		controller: ScheduledController,
+		env: ParentWorkerEnv,
+		ctx: ExecutionContext,
+	) {
+		if (controller.cron === WARMUP_CRON) {
+			await warmDynamicWorker(env, ctx as ParentExecutionContext)
+			return
+		}
+
 		const prisma = getParentPrismaClient(env)
 		const result = await deleteExpiredSessionsAndVerifications(prisma)
 		if (
