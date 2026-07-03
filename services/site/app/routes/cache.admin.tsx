@@ -15,7 +15,8 @@ import { H2, H3 } from '#app/components/typography.tsx'
 import {
 	cache,
 	getAllCacheKeys,
-	isFileCacheAvailable,
+	getPersistentCacheLabel,
+	isCacheAdminAvailable,
 	lruCache,
 	searchCacheKeys,
 } from '#app/utils/cache.server.ts'
@@ -52,8 +53,8 @@ async function getMatchingCacheKeys({
 
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
-	if (!isFileCacheAvailable()) {
-		throw new Response('File cache admin is unavailable in this runtime.', {
+	if (!isCacheAdminAvailable()) {
+		throw new Response('Cache admin is unavailable in this runtime.', {
 			status: 404,
 		})
 	}
@@ -62,13 +63,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const limit = Number(searchParams.get('limit') ?? 100)
 
 	const cacheKeys = await getMatchingCacheKeys({ query, limit })
-	return json({ cacheKeys })
+	return json({
+		cacheKeys,
+		persistentCacheLabel: getPersistentCacheLabel(),
+	})
 }
 
 export async function action({ request }: Route.ActionArgs) {
 	await requireAdminUser(request)
-	if (!isFileCacheAvailable()) {
-		throw new Response('File cache admin is unavailable in this runtime.', {
+	if (!isCacheAdminAvailable()) {
+		throw new Response('Cache admin is unavailable in this runtime.', {
 			status: 404,
 		})
 	}
@@ -96,7 +100,8 @@ export async function action({ request }: Route.ActionArgs) {
 	invariantResponse(typeof type === 'string', 'type must be a string')
 
 	switch (type) {
-		case 'sqlite': {
+		case 'sqlite':
+		case 'kv': {
 			await cache.delete(key)
 			break
 		}
@@ -118,6 +123,7 @@ export default function CacheAdminRoute({
 	const submit = useSubmit()
 	const query = searchParams.get('query') ?? ''
 	const limit = searchParams.get('limit') ?? '100'
+	const persistentCacheType = data.persistentCacheLabel === 'KV' ? 'kv' : 'sqlite'
 	const matchingCacheValuesCount =
 		data.cacheKeys.sqlite.length + data.cacheKeys.lru.length
 
@@ -177,14 +183,24 @@ export default function CacheAdminRoute({
 			<div className="flex flex-col gap-4">
 				<H3>LRU Cache:</H3>
 				{data.cacheKeys.lru.map((key) => (
-					<CacheKeyRow key={key} cacheKey={key} type="lru" />
+					<CacheKeyRow
+						key={key}
+						cacheKey={key}
+						deleteType="lru"
+						resourceType="lru"
+					/>
 				))}
 			</div>
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
-				<H3>SQLite Cache:</H3>
+				<H3>{data.persistentCacheLabel} Cache:</H3>
 				{data.cacheKeys.sqlite.map((key) => (
-					<CacheKeyRow key={key} cacheKey={key} type="sqlite" />
+					<CacheKeyRow
+						key={key}
+						cacheKey={key}
+						deleteType={persistentCacheType}
+						resourceType="sqlite"
+					/>
 				))}
 			</div>
 		</div>
@@ -220,14 +236,22 @@ function DeleteAllMatchingCacheValuesButton({
 	)
 }
 
-function CacheKeyRow({ cacheKey, type }: { cacheKey: string; type: string }) {
+function CacheKeyRow({
+	cacheKey,
+	deleteType,
+	resourceType,
+}: {
+	cacheKey: string
+	deleteType: string
+	resourceType: string
+}) {
 	const fetcher = useFetcher()
 	const dc = useDoubleCheck()
 	return (
 		<div className="flex items-center gap-2 font-mono">
 			<fetcher.Form method="POST">
 				<input type="hidden" name="cacheKey" value={cacheKey} />
-				<input type="hidden" name="type" value={type} />
+				<input type="hidden" name="type" value={deleteType} />
 				<Button
 					size="small"
 					variant="danger"
@@ -240,7 +264,9 @@ function CacheKeyRow({ cacheKey, type }: { cacheKey: string; type: string }) {
 						: 'Deleting...'}
 				</Button>
 			</fetcher.Form>
-			<a href={`/resources/cache/${type}/${encodeURIComponent(cacheKey)}`}>
+			<a
+				href={`/resources/cache/${resourceType}/${encodeURIComponent(cacheKey)}`}
+			>
 				{cacheKey}
 			</a>
 		</div>

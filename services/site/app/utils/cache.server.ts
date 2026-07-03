@@ -137,8 +137,20 @@ export {
 	formatCacheRequestStatsHeader,
 } from '#app/utils/cache-request-stats.server.ts'
 
+export function isRpcCacheAvailable() {
+	return Boolean(getCacheRpcBinding())
+}
+
 export function isFileCacheAvailable() {
-	return !hasAppDbBinding() && !getCacheRpcBinding()
+	return !hasAppDbBinding() && !isRpcCacheAvailable()
+}
+
+export function isCacheAdminAvailable() {
+	return isFileCacheAvailable() || isRpcCacheAvailable()
+}
+
+export function getPersistentCacheLabel() {
+	return isRpcCacheAvailable() ? 'KV' : 'SQLite'
 }
 
 export const lruCache = {
