@@ -19,6 +19,7 @@ import {
 	getUrl,
 	typedBoolean,
 } from '#app/utils/misc-react.tsx'
+import { getRegisteredMdxComponent } from './mdx-component-registry.ts'
 import { getSocialMetas } from './seo.ts'
 import { Themed } from './theme.tsx'
 import { useOptionalUser } from './use-root-data.ts'
@@ -154,41 +155,30 @@ declare module 'react' {
 }
 
 /**
- * Server-side registry for worker-imported MDX modules (no eval).
- * Keyed by the mdx-bundler `code` string returned to route loaders.
- */
-const serverMdxRegistry = new Map<
-	string,
-	ComponentType<Record<string, unknown>>
->()
-
-export function registerMdxComponentForCode(
-	code: string,
-	mod: { default: ComponentType<Record<string, unknown>> },
-) {
-	const Component = mod.default
-	function KCDMdxComponent({
-		components,
-		...rest
-	}: {
-		components?: Record<string, ComponentType<unknown>>
-		[key: string]: unknown
-	}) {
-		return (
-			<Component components={{ ...mdxComponents, ...components }} {...rest} />
-		)
-	}
-	serverMdxRegistry.set(code, KCDMdxComponent)
-}
-
-/**
  * This should be rendered within a useMemo
  * @param code the code to get the component from
  * @returns the component
  */
 function getMdxComponent(code: string) {
-	const registered = serverMdxRegistry.get(code)
-	if (registered) return registered
+	const Registered = getRegisteredMdxComponent(code)
+	if (Registered) {
+		function KCDRegisteredMdxComponent({
+			components,
+			...rest
+		}: {
+			components?: Record<string, ComponentType<unknown>>
+			[key: string]: unknown
+		}) {
+			if (!Registered) throw new Error('registered MDX component went away')
+			return (
+				<Registered
+					components={{ ...mdxComponents, ...components }}
+					{...rest}
+				/>
+			)
+		}
+		return KCDRegisteredMdxComponent
+	}
 
 	const Component = mdxBundler.getMDXComponent(code)
 	function KCDMdxComponent({

@@ -21,7 +21,7 @@ import {
 	isWorkerContentMode,
 	type ContentArtifactDocument,
 } from './content-artifacts.server.ts'
-import { registerMdxComponentForCode } from './mdx.tsx'
+import { registerMdxComponentForCode } from './mdx-component-registry.ts'
 import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
 
