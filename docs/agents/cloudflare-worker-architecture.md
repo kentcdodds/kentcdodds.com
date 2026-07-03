@@ -11,15 +11,18 @@ the pieces in `services/site-worker` and the MDX artifact pipeline.
                         ┌──────────────────────────────────────────┐
  request ──────────────▶│ parent worker (services/site-worker)     │
                         │  - static assets (ASSETS binding)        │
-                        │  - fast paths: /healthcheck              │
+                        │  - fast paths: /healthcheck, /__meta     │
+                        │  - POST /resources/mdx-artifacts         │
                         │  - loads + routes to the dynamic app     │
                         │  - hosts RPC entrypoints:                │
                         │      PrismaRpc  (Prisma client on D1)    │
                         │      CacheRpc   (KV-backed cachified)    │
+                        │      OutboundProxy (outbound fetch)        │
                         │  - scheduled(): expired-data cleanup     │
-                        │  bindings: APP_DB (D1), SITE_CACHE_KV,   │
+                        │  bindings: APP_DB (D1), SITE_CACHE_KV,     │
                         │    CONTENT_KV, MDX_ARTIFACTS (R2),       │
-                        │    LOADER (worker_loaders), ASSETS       │
+                        │    LOADER, ASSETS, OAUTH_WORKER,           │
+                        │    SEARCH_WORKER (service bindings)        │
                         └───────────────┬──────────────────────────┘
                                         │ env.LOADER.get(id, cb)
                                         ▼
@@ -67,6 +70,9 @@ and hydration render identical trees.
 - WASM modules in the module map instantiate correctly.
 - `new Function` at request time inside a dynamic worker throws (as expected).
 - Dynamic workers can make outbound `fetch` by default.
+- **Worker-to-worker `fetch()` on `*.workers.dev` fails with CF error 1042.**
+  Outbound calls to production oauth/search workers use **service bindings**
+  (`OAUTH_WORKER`, `SEARCH_WORKER`) from the parent's `OutboundProxy`.
 
 ## Artifact bundle contract
 
@@ -110,6 +116,19 @@ whenever `POST /action/refresh-cache` is received, so newly published content
 flips the loader id (`app:{BUILD_SHA}:content:{version}`) and a fresh isolate
 picks up the new modules. No worker redeploy is needed for content changes.
 
+### Publishing artifacts
+
+Two paths:
+
+1. **Direct (privileged token):** `npm run publish:artifacts --workspace site-worker -- bundle.json`
+   uses Wrangler to write R2 + KV (needs D1/KV/R2 API permissions).
+2. **Via endpoint (CI / no CF resource API):** `npm run publish:artifacts --workspace site-worker -- bundle.json --via-endpoint https://…/resources/mdx-artifacts`
+   with `REFRESH_CACHE_SECRET` in the `auth` header (same convention as
+   `/action/refresh-cache`). The parent worker streams the bundle to R2,
+   updates `mdx-manifest:current`, and clears its manifest cache.
+
+`GET /__meta` returns `{ buildSha, contentVersion }` for deploy verification.
+
 ## Bootstrap ↔ app bridge (globals contract)
 
 The dynamic worker's main module (`app-worker.js`) is an esbuild bundle of
@@ -145,15 +164,23 @@ constraint checks) behaves the same.
 JSON encoding used by the SQLite cache (Buffer values base64-encoded with the
 existing reviver/replacer from `cache.server.ts`).
 
-## Outbound mocking (preview)
+## Outbound routing
 
 The dynamic worker is created with `globalOutbound` pointing at the parent's
-`OutboundProxy` entrypoint. By default it passes requests through unchanged.
-For external services without preview credentials (Mailgun, Discord, Kit,
-Verifier, Twitter API), it serves inline mock responses (same shapes as the
-MSW mocks in `services/site/mocks/`), keyed off hostname. Everything else
-(Cloudinary, GitHub raw, Transistor, Simplecast, search worker, oauth worker,
-oEmbed providers) passes through to the real services.
+`OutboundProxy` entrypoint.
+
+1. **Service bindings** — requests to `kcd-oauth-provider.kentcdodds.workers.dev`
+   or the hostname from `SEARCH_WORKER_URL` (default
+   `kcd-search-worker.kentcdodds.workers.dev`) are dispatched via
+   `OAUTH_WORKER.fetch()` / `SEARCH_WORKER.fetch()` instead of global `fetch`
+   (avoids CF error 1042 on worker-to-worker `*.workers.dev` calls).
+2. **Mocks** — Mailgun, Discord, Kit, Verifier, Twitter API get inline mock
+   responses (same shapes as MSW mocks in `services/site/mocks/`).
+3. **Passthrough** — everything else (Cloudinary, GitHub raw, Transistor,
+   Simplecast, oEmbed providers) uses global `fetch`.
+
+`mermaid-to-svg.kentcdodds.workers.dev` is compile-time only (not fetched at
+runtime in the worker).
 
 ## Dynamic worker env contract
 
@@ -193,10 +220,37 @@ preview deployment.
 
 ## Preview deployment (this branch)
 
-- Worker: `kentcdodds-com-cf-preview` (workers.dev)
-- D1: `kcd-site-cf-preview-db` (migrated via existing site-worker d1 scripts,
-  seeded with the standard seed data)
-- KV: `kcd-site-cf-preview-cache`, `kcd-site-cf-preview-content`
+- Worker: `kentcdodds-com-staging` (`kentcdodds-com-staging.kentcdodds.workers.dev`)
+- D1: `kentcdodds-com-staging-app-db` (`01a8ba77-2a63-4a14-898d-6023942a480f`)
+- KV: `SITE_CACHE_KV`=`5180bc7fb5b14a5888db2ed8ac0e21ee`,
+  `CONTENT_KV`=`976edaf098ed4c3391385bf7550ba5a6`
 - R2: `kcd-site-cf-preview-artifacts`
+- Service bindings: `kcd-oauth-provider`, `kcd-search-worker` (production workers)
 - Deploys from `.github/workflows/cf-preview-deploy.yml` on pushes to the
-  migration branch. Production resources are never touched.
+  migration branch. Production site resources are never touched.
+
+### CI token limitations
+
+The repo `CLOUDFLARE_API_TOKEN` can deploy worker scripts and upload secrets
+but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
+
+- Resource IDs are committed in `services/site-worker/wrangler.jsonc`; `npm run
+  provision:preview` skips Cloudflare API calls when IDs are present (use
+  `--force-ensure` for fresh environments with a privileged token).
+- D1 migrations and seed steps in CI are **non-fatal** with a loud warning.
+- Artifact publish in CI uses `POST /resources/mdx-artifacts` (no R2/KV API
+  needed).
+
+### Runbook: schema changes
+
+1. Apply migrations manually with a token that has D1 write access:
+   `npm run d1:migrations:apply:staging --workspace site-worker`
+2. Re-seed if needed: `npm run seed:preview-d1 --workspace site-worker`
+3. Redeploy the worker (schema is in the worker bundle via Prisma client).
+
+### Runbook: fresh environment provisioning
+
+1. Ensure a Cloudflare API token with D1/KV/R2 create permissions.
+2. `npm run provision:preview --workspace site-worker -- --force-ensure`
+3. Commit the stamped IDs back into `wrangler.jsonc` if new resources were created.
+4. Apply migrations, seed, deploy, upload secrets, publish artifacts.
