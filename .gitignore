@@ -48,3 +48,4 @@ other/postcss.ignored
 other/wrangler-logs/
 .react-router/
 /services/site/.react-router/
+/services/site/other/cache.db
