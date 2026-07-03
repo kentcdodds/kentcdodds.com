@@ -144,7 +144,8 @@ async function main() {
 			refreshCacheSecret,
 		),
 		SEARCH_WORKER_URL:
-			process.env.SEARCH_WORKER_URL ?? 'https://mock.search-worker.local',
+			process.env.SEARCH_WORKER_URL ??
+			'https://kcd-search-worker.kentcdodds.workers.dev',
 		SEARCH_WORKER_TOKEN: deriveOrEnv(
 			'SEARCH_WORKER_TOKEN',
 			'preview:SEARCH_WORKER_TOKEN',
