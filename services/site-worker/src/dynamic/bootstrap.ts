@@ -47,7 +47,12 @@ import {
 	requestPrefersMarkdown,
 } from '../../../site/server/markdown-negotiation.ts'
 
-const ISOLATE_ID = crypto.randomUUID()
+let isolateId: string | undefined
+
+function getIsolateId() {
+	if (!isolateId) isolateId = crypto.randomUUID()
+	return isolateId
+}
 
 type WorkerEnv = RuntimeBindingSource & Record<string, unknown>
 
@@ -306,7 +311,7 @@ async function handleSiteRequest(
 		const preRouterResponse = await runPreRouterPipeline(request, env)
 		if (preRouterResponse) {
 			const headers = new Headers(preRouterResponse.headers)
-			headers.set('X-Isolate-Id', ISOLATE_ID)
+			headers.set('X-Isolate-Id', getIsolateId())
 			headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
 			logRequest(
 				request,
@@ -371,7 +376,7 @@ async function handleSiteRequest(
 		) {
 			appendVaryAccept(headers)
 		}
-		headers.set('X-Isolate-Id', ISOLATE_ID)
+		headers.set('X-Isolate-Id', getIsolateId())
 		headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
 
 		const finalResponse = new Response(response.body, {
