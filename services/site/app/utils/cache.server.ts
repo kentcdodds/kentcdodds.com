@@ -119,10 +119,34 @@ async function createSqliteCacheState(cacheDatabasePath: string) {
 	}
 }
 
+const LRU_MAX_ENTRIES = 500
+
 const lruInstance = remember(
 	'lru-cache',
-	() => new LRUCache<string, CacheEntry<unknown>>({ max: 5000 }),
+	() => new LRUCache<string, CacheEntry<unknown>>({ max: LRU_MAX_ENTRIES }),
 )
+
+export type CacheRequestStats = {
+	lruHits: number
+	rpcCalls: number
+	rpcMs: number
+}
+
+let activeCacheStats: CacheRequestStats | null = null
+
+export function beginCacheRequestStats(): CacheRequestStats {
+	const stats = { lruHits: 0, rpcCalls: 0, rpcMs: 0 }
+	activeCacheStats = stats
+	return stats
+}
+
+export function endCacheRequestStats() {
+	activeCacheStats = null
+}
+
+export function formatCacheRequestStatsHeader(stats: CacheRequestStats) {
+	return `lru_hits=${stats.lruHits},rpc_calls=${stats.rpcCalls},rpc_ms=${stats.rpcMs.toFixed(1)}`
+}
 
 export function isFileCacheAvailable() {
 	return !hasAppDbBinding() && !getCacheRpcBinding()
@@ -181,8 +205,16 @@ export const cache: CachifiedCache = {
 		const rpc = getCacheRpcBinding()
 		if (rpc) {
 			const lruHit = lruCache.get(key)
-			if (lruHit) return lruHit
+			if (lruHit) {
+				if (activeCacheStats) activeCacheStats.lruHits++
+				return lruHit
+			}
+			const rpcStart = performance.now()
 			const entry = await rpc.get(key)
+			if (activeCacheStats) {
+				activeCacheStats.rpcCalls++
+				activeCacheStats.rpcMs += performance.now() - rpcStart
+			}
 			if (entry) lruCache.set(key, entry)
 			return entry
 		}

@@ -6,23 +6,38 @@ import {
 	getKvExpirationTtl,
 } from '../cache-encoding.ts'
 import type { ParentWorkerEnv } from './types.ts'
+import {
+	deleteKvCacheLruEntry,
+	getKvCacheLruEntry,
+	setKvCacheLruEntry,
+} from './kv-cache-lru.ts'
 
 const KV_VALUE_PREFIX = 'cache:value:'
 const KV_METADATA_PREFIX = 'cache:metadata:'
+const KV_EDGE_CACHE_TTL_SECONDS = 60
 
 export class CacheRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 	async get(key: string) {
+		const lruHit = getKvCacheLruEntry(key)
+		if (lruHit) return lruHit
+
+		const kvGetOptions = { cacheTtl: KV_EDGE_CACHE_TTL_SECONDS }
 		const [valueRaw, metadataRaw] = await Promise.all([
-			this.env.SITE_CACHE_KV.get(`${KV_VALUE_PREFIX}${key}`),
-			this.env.SITE_CACHE_KV.get(`${KV_METADATA_PREFIX}${key}`),
+			this.env.SITE_CACHE_KV.get(`${KV_VALUE_PREFIX}${key}`, kvGetOptions),
+			this.env.SITE_CACHE_KV.get(`${KV_METADATA_PREFIX}${key}`, kvGetOptions),
 		])
 
-		if (!valueRaw || !metadataRaw) return null
-
-		return decodeCacheEntry({ value: valueRaw, metadata: metadataRaw })
+		const entry = decodeCacheEntry(
+			valueRaw && metadataRaw
+				? { value: valueRaw, metadata: metadataRaw }
+				: null,
+		)
+		if (entry) setKvCacheLruEntry(key, entry)
+		return entry
 	}
 
 	async set(key: string, entry: CacheEntry<unknown>) {
+		setKvCacheLruEntry(key, entry)
 		const encoded = encodeCacheEntry(entry)
 		const expirationTtl = getKvExpirationTtl(entry)
 		const putOptions = expirationTtl ? { expirationTtl } : undefined
@@ -42,6 +57,7 @@ export class CacheRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 	}
 
 	async delete(key: string) {
+		deleteKvCacheLruEntry(key)
 		await Promise.all([
 			this.env.SITE_CACHE_KV.delete(`${KV_VALUE_PREFIX}${key}`),
 			this.env.SITE_CACHE_KV.delete(`${KV_METADATA_PREFIX}${key}`),
