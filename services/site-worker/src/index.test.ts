@@ -1,261 +1,172 @@
-import type { ServerBuild } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import {
-	clearRuntimeEnvSource,
-	getEnv,
-	setRuntimeEnvSource,
-} from '../../site/app/utils/env.server.ts'
+	bufferReplacer,
+	bufferReviver,
+	decodeCacheEntry,
+	encodeCacheEntry,
+	getKvExpirationTtl,
+} from './cache-encoding.ts'
 import {
-	clearRuntimeBindingSource,
-	getRuntimeBinding,
-} from '../../site/app/utils/runtime-bindings.server.ts'
-import { getWorkerAllowedActionOrigins, handleRequest } from './index'
+	clearManifestCache,
+	readMdxManifest,
+	shouldBypassManifestCache,
+} from './manifest.ts'
+import {
+	buildDynamicWorkerModuleMap,
+	buildSiteContentData,
+	type MdxArtifactBundle,
+} from './module-map.ts'
+import { mockRoutes, PASSTHROUGH_HOSTS } from './rpc/outbound-mock-routes.ts'
+import { getAssetCacheControl, isHard404AssetPath } from './static-assets.ts'
 
 afterEach(() => {
-	clearRuntimeBindingSource()
-	clearRuntimeEnvSource()
+	clearManifestCache()
+	vi.useRealTimers()
 })
 
-describe('site worker', () => {
-	test('returns ok from GET /health', async () => {
-		const response = await handleRequest(
-			new Request('https://example.com/health'),
-		)
+describe('manifest ttl', () => {
+	test('caches manifest reads for ~15 seconds', async () => {
+		vi.useFakeTimers()
+		const now = new Date('2026-07-03T12:00:00.000Z')
+		vi.setSystemTime(now)
 
-		await expect(response.json()).resolves.toEqual({ ok: true })
-		expect(response.status).toBe(200)
+		const get = vi
+			.fn()
+			.mockResolvedValue(
+				JSON.stringify({ version: 'v1', r2Key: 'mdx-artifacts/v1.json' }),
+			)
+
+		const store = { get }
+		await expect(readMdxManifest(store)).resolves.toEqual({
+			version: 'v1',
+			r2Key: 'mdx-artifacts/v1.json',
+		})
+		await expect(readMdxManifest(store)).resolves.toEqual({
+			version: 'v1',
+			r2Key: 'mdx-artifacts/v1.json',
+		})
+		expect(get).toHaveBeenCalledTimes(1)
+
+		vi.setSystemTime(new Date(now.getTime() + 16_000))
+		await expect(readMdxManifest(store)).resolves.toEqual({
+			version: 'v1',
+			r2Key: 'mdx-artifacts/v1.json',
+		})
+		expect(get).toHaveBeenCalledTimes(2)
 	})
 
-	test('rejects non-GET /health requests', async () => {
-		const response = await handleRequest(
-			new Request('https://example.com/health', { method: 'POST' }),
-		)
-
-		await expect(response.json()).resolves.toEqual({
-			ok: false,
-			error: 'Method not allowed',
-		})
-		expect(response.status).toBe(405)
-		expect(response.headers.get('Allow')).toBe('GET')
-	})
-
-	test('serves static assets from the ASSETS binding before React Router', async () => {
-		const assetFetch = vi.fn(async () => {
-			return new Response('asset body', {
-				headers: { 'content-type': 'text/plain' },
-			})
-		})
-		const getServerBuild = vi.fn<() => Promise<ServerBuild>>()
-		const response = await handleRequest(
-			new Request('https://example.com/build/app.js'),
-			{ ASSETS: { fetch: assetFetch } },
-			undefined,
-			{ getServerBuild },
-		)
-
-		expect(assetFetch).toHaveBeenCalledOnce()
-		expect(getServerBuild).not.toHaveBeenCalled()
-		await expect(response.text()).resolves.toBe('asset body')
-		expect(response.headers.get('content-type')).toBe('text/plain')
-	})
-
-	test('falls through missing assets to the React Router handler', async () => {
-		const appDb = { prepare: vi.fn() }
-		const response = await handleRequest(
-			new Request('https://example.com/missing.js'),
-			createWorkerEnv({
-				APP_DB: appDb,
-				ASSETS: {
-					fetch: async () => new Response('missing', { status: 404 }),
-				},
-			}),
-			undefined,
-			{
-				createCspNonce: () => 'test-nonce',
-				getServerBuild: async () => createTestBuild(appDb),
-			},
-		)
-
-		await expect(response.json()).resolves.toEqual({
-			appDbBindingAvailable: true,
-			cspNonce: 'test-nonce',
-			searchWorkerToken: 'worker-search-token',
-		})
-	})
-
-	test('bootstraps runtime env and bindings before React Router handles the request', async () => {
-		const appDb = { prepare: vi.fn() }
-		const response = await handleRequest(
-			new Request('https://example.com/'),
-			createWorkerEnv({
-				APP_DB: appDb,
-				SEARCH_WORKER_TOKEN: 'from-worker-env',
-			}),
-			undefined,
-			{
-				createCspNonce: () => 'test-nonce',
-				getServerBuild: async () => createTestBuild(appDb),
-			},
-		)
-
-		await expect(response.json()).resolves.toEqual({
-			appDbBindingAvailable: true,
-			cspNonce: 'test-nonce',
-			searchWorkerToken: 'from-worker-env',
-		})
-	})
-
-	test('allows actions from the current worker request host', () => {
-		const env = createWorkerEnv({
-			ALLOWED_ACTION_ORIGINS: 'kentcdodds.com,*.kentcdodds.com',
-		})
-		setRuntimeEnvSource(getStringEnvBindings(env))
-
+	test('bypasses cache on POST /action/refresh-cache', () => {
 		expect(
-			getWorkerAllowedActionOrigins(
-				new Request('https://kentcdodds-com-staging.example.workers.dev/'),
+			shouldBypassManifestCache(
+				new Request('https://example.com/action/refresh-cache', {
+					method: 'POST',
+				}),
 			),
-		).toEqual([
-			'kentcdodds.com',
-			'*.kentcdodds.com',
-			'kentcdodds-com-staging.example.workers.dev',
-		])
+		).toBe(true)
+		expect(
+			shouldBypassManifestCache(new Request('https://example.com/blog')),
+		).toBe(false)
 	})
 })
 
-function createTestBuild(appDb: unknown): ServerBuild {
-	return {
-		assets: {
-			entry: { imports: [], module: '/entry.js' },
-			routes: {
-				root: {
-					id: 'root',
-					path: '',
-					module: '/root.js',
-					hasAction: false,
-					hasLoader: false,
-					hasClientAction: false,
-					hasClientLoader: false,
-					hasClientMiddleware: false,
-					hasErrorBoundary: false,
-					clientActionModule: undefined,
-					clientLoaderModule: undefined,
-					clientMiddlewareModule: undefined,
-					hydrateFallbackModule: undefined,
+describe('module map assembly', () => {
+	test('builds vendor, content data, and per-document modules', () => {
+		const bundle: MdxArtifactBundle = {
+			schemaVersion: 1,
+			version: 'abc',
+			generatedAt: '2026-07-03T00:00:00.000Z',
+			documents: {
+				'blog/example': {
+					contentDir: 'blog',
+					slug: 'example',
+					code: 'client-code',
+					esm: 'export default function Example() { return null }',
 				},
 			},
-			url: '/build/manifest.js',
-			version: 'test',
-		},
-		entry: {
-			module: {
-				default(
-					_request,
-					responseStatusCode,
-					responseHeaders,
-					_context,
-					loadContext,
-				) {
-					return Response.json(
-						{
-							appDbBindingAvailable: getRuntimeBinding('APP_DB') === appDb,
-							cspNonce: String(loadContext.cspNonce),
-							searchWorkerToken: getEnv().SEARCH_WORKER_TOKEN,
-						},
-						{ headers: responseHeaders, status: responseStatusCode },
-					)
-				},
-			},
-		},
-		routes: {
-			root: {
-				id: 'root',
-				path: '',
-				module: {
-					default: function RootRoute() {
-						return null
-					},
-				},
-			},
-		},
-		publicPath: '/build/',
-		assetsBuildDirectory: 'build',
-		future: {
-			unstable_subResourceIntegrity: false,
-			unstable_trailingSlashAwareDataRequests: false,
-			v8_middleware: false,
-		},
-		ssr: true,
-		isSpaMode: false,
-		prerender: [],
-		routeDiscovery: { mode: 'lazy', manifestPath: '/__manifest' },
-	}
-}
+			blogList: [{ slug: 'example' }],
+			dirLists: { blog: [], pages: [] },
+			dataFiles: { 'data/testimonials.yml': 'name: Kent' },
+		}
 
-function createWorkerEnv(overrides: Record<string, unknown> = {}) {
-	return {
-		NODE_ENV: 'production',
-		PORT: '8788',
-		MOCKS: 'true',
-		FLY_APP_NAME: 'kcd-staging-worker',
-		FLY_REGION: 'local',
-		FLY_MACHINE_ID: 'worker',
-		LITEFS_DIR: './prisma',
-		DATABASE_URL: 'file:./prisma/sqlite.db',
-		CACHE_DATABASE_PATH: 'other/cache.db',
-		BOT_GITHUB_TOKEN: 'token',
-		CALL_KENT_PODCAST_ID: 'call-kent',
-		CHATS_WITH_KENT_PODCAST_ID: 'chats-with-kent',
-		KIT_API_KEY: 'kit-key',
-		KIT_API_SECRET: 'kit-secret',
-		DISCORD_ADMIN_USER_ID: 'discord-admin',
-		DISCORD_BLUE_CHANNEL: 'discord-blue-channel',
-		DISCORD_BLUE_ROLE: 'discord-blue-role',
-		DISCORD_BOT_TOKEN: 'discord-bot-token',
-		DISCORD_CALL_KENT_CHANNEL: 'discord-call-kent-channel',
-		DISCORD_CLIENT_ID: 'discord-client-id',
-		DISCORD_CLIENT_SECRET: 'discord-client-secret',
-		DISCORD_GUILD_ID: 'discord-guild',
-		DISCORD_LEADERBOARD_CHANNEL: 'discord-leaderboard',
-		DISCORD_MEMBER_ROLE: 'discord-member-role',
-		DISCORD_PRIVATE_BOT_CHANNEL: 'discord-private-channel',
-		DISCORD_RED_CHANNEL: 'discord-red-channel',
-		DISCORD_RED_ROLE: 'discord-red-role',
-		DISCORD_SCOPES: 'identify email',
-		DISCORD_YELLOW_CHANNEL: 'discord-yellow-channel',
-		DISCORD_YELLOW_ROLE: 'discord-yellow-role',
-		INTERNAL_COMMAND_TOKEN: 'internal-command-token',
-		MAGIC_LINK_SECRET: 'magic-link-secret',
-		MAILGUN_DOMAIN: 'example.com',
-		MAILGUN_SENDING_KEY: 'mailgun-key',
-		REFRESH_CACHE_SECRET: 'refresh-cache-secret',
-		SESSION_SECRET: 'session-secret',
-		SIMPLECAST_KEY: 'simplecast-key',
-		TRANSISTOR_API_SECRET: 'transistor-secret',
-		TWITTER_BEARER_TOKEN: 'twitter-token',
-		VERIFIER_API_KEY: 'verifier-key',
-		CF_INTERNAL_SECRET: 'cf-internal-secret',
-		SEARCH_WORKER_URL: 'https://mock.search-worker.local',
-		SEARCH_WORKER_TOKEN: 'worker-search-token',
-		CLOUDFLARE_ACCOUNT_ID: 'cloudflare-account',
-		CLOUDFLARE_API_TOKEN: 'cloudflare-api-token',
-		CLOUDFLARE_AI_GATEWAY_ID: 'cloudflare-ai-gateway',
-		CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: 'cloudflare-ai-gateway-token',
-		CLOUDFLARE_VECTORIZE_INDEX: 'cloudflare-vectorize-index',
-		R2_BUCKET: 'r2-bucket',
-		R2_ACCESS_KEY_ID: 'r2-access-key',
-		R2_SECRET_ACCESS_KEY: 'r2-secret-key',
-		CALL_KENT_R2_BUCKET: 'call-kent-r2-bucket',
-		CALL_KENT_AUDIO_CF_QUEUE_ID: 'call-kent-audio-queue',
-		CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: 'call-kent-audio-secret',
-		...overrides,
-	}
-}
+		const contentData = buildSiteContentData(bundle)
+		expect(contentData.blog).toBeUndefined()
+		expect(contentData['blog/example']).toEqual({
+			contentDir: 'blog',
+			slug: 'example',
+			code: 'client-code',
+		})
 
-function getStringEnvBindings(env: Record<string, unknown>) {
-	return Object.fromEntries(
-		Object.entries(env).filter((entry): entry is [string, string] => {
-			return typeof entry[1] === 'string'
-		}),
-	)
-}
+		const modules = buildDynamicWorkerModuleMap(bundle)
+		expect(typeof modules['app-worker.js']).toBe('string')
+		expect(modules.react).toEqual({ js: expect.any(String) })
+		expect(modules['site-content-data.json']).toEqual({ json: contentData })
+		expect(modules['mdx/blog/example.js']).toEqual({
+			js: 'export default function Example() { return null }',
+		})
+	})
+})
+
+describe('cache encoding', () => {
+	test('round-trips Buffer values through JSON encoding', () => {
+		const entry = {
+			metadata: {
+				createdTime: Date.now(),
+				ttl: 60_000,
+				swr: 30_000,
+			},
+			value: {
+				payload: Buffer.from('hello-cache'),
+			},
+		}
+
+		const encoded = encodeCacheEntry(entry)
+		const decoded = decodeCacheEntry(encoded)
+		expect(decoded?.value).toEqual({ payload: Buffer.from('hello-cache') })
+		expect(getKvExpirationTtl(entry)).toBeGreaterThanOrEqual(60)
+	})
+
+	test('buffer replacer and reviver are symmetric', () => {
+		const original = { data: Buffer.from('abc') }
+		const revived = JSON.parse(
+			JSON.stringify(original, bufferReplacer),
+			bufferReviver,
+		)
+		expect(revived.data.equals(Buffer.from('abc'))).toBe(true)
+	})
+})
+
+describe('static assets', () => {
+	test('applies express-parity cache headers', () => {
+		expect(getAssetCacheControl('/build/app.js')).toBe(
+			'public, max-age=31536000, immutable',
+		)
+		expect(getAssetCacheControl('/build/info.json')).toBe('no-cache')
+		expect(getAssetCacheControl('/images/foo.png')).toBe(
+			'public, max-age=604800',
+		)
+	})
+
+	test('hard 404s selected asset prefixes', () => {
+		expect(isHard404AssetPath('/build/missing.js')).toBe(true)
+		expect(isHard404AssetPath('/blog/missing')).toBe(false)
+	})
+})
+
+describe('outbound proxy routing', () => {
+	test('marks public hosts as passthrough', () => {
+		expect(PASSTHROUGH_HOSTS.has('api.twitter.com')).toBe(true)
+		expect(PASSTHROUGH_HOSTS.has('api.mailgun.net')).toBe(false)
+	})
+
+	test('includes mailgun, kit, discord, and verifier mocks', () => {
+		const hosts = new Set(mockRoutes.map((route) => route.host))
+		expect(hosts).toEqual(
+			new Set([
+				'api.mailgun.net',
+				'api.kit.com',
+				'discord.com',
+				'verifyright.co',
+			]),
+		)
+	})
+})

@@ -17,6 +17,12 @@ generator client {
   output   = "../app/utils/prisma-generated.server"
 }
 
+generator site_worker_client {
+  provider = "prisma-client"
+  output   = "../../site-worker/generated/prisma-client"
+  runtime  = "cloudflare"
+}
+
 model User {
   id        String     @id @default(uuid())
   createdAt DateTime   @default(now())

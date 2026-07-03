@@ -1,0 +1,24 @@
+export default {
+	async fetch(request, env) {
+		const marker = 'site-worker-placeholder-app'
+		const cacheKey = 'placeholder:rpc-smoke'
+
+		const prismaResult = await env.PRISMA_RPC.query('user', 'findMany', {})
+		await env.CACHE_RPC.set(cacheKey, {
+			metadata: {
+				createdTime: Date.now(),
+				ttl: 60_000,
+				swr: 0,
+			},
+			value: { marker, at: new Date().toISOString() },
+		})
+		const cacheResult = await env.CACHE_RPC.get(cacheKey)
+
+		return Response.json({
+			marker,
+			prisma: prismaResult,
+			cache: cacheResult,
+			path: new URL(request.url).pathname,
+		})
+	},
+}

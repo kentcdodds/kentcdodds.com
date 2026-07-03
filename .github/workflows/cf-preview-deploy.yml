@@ -37,3 +37,88 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm exec wrangler -- deploy --config other/loader-probe/wrangler.jsonc
+
+  deploy-site-preview:
+    name: 🚀 Deploy site preview worker
+    runs-on: ubuntu-latest
+    needs: loader-probe
+    permissions:
+      contents: read
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      BUILD_SHA: ${{ github.sha }}
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: 📥 Install dependencies
+        run: npm ci --workspace=site-worker --workspace=kentcdodds.com --include-workspace-root
+
+      - name: 🏗️ Build site client + server bundles
+        run: npm run build --workspace kentcdodds.com
+
+      - name: 📦 Compile MDX artifacts
+        run: npm run mdx:artifacts --workspace kentcdodds.com -- --out /tmp/mdx-bundle.json
+
+      - name: 🧩 Build app-worker dist placeholders
+        run: npm run build:app-worker --workspace site-worker
+
+      - name: ☁️ Provision preview resources
+        run: npm run provision:preview --workspace site-worker
+
+      - name: 🗄️ Apply D1 migrations (remote)
+        run: npm run d1:migrations:apply:staging --workspace site-worker
+
+      - name: 📤 Publish MDX artifacts
+        run: npm run publish:artifacts --workspace site-worker -- /tmp/mdx-bundle.json
+
+      - name: 🔐 Generate preview secrets
+        env:
+          REFRESH_CACHE_SECRET: ${{ secrets.REFRESH_CACHE_SECRET }}
+          BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          CLOUDFLARE_AI_GATEWAY_ID: ${{ secrets.CLOUDFLARE_AI_GATEWAY_ID }}
+          CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN: ${{ secrets.CLOUDFLARE_AI_GATEWAY_AUTH_TOKEN }}
+          CLOUDFLARE_VECTORIZE_INDEX: ${{ secrets.CLOUDFLARE_VECTORIZE_INDEX }}
+          SEARCH_WORKER_URL: ${{ secrets.SEARCH_WORKER_URL }}
+          SEARCH_WORKER_TOKEN: ${{ secrets.SEARCH_WORKER_TOKEN }}
+          SIMPLECAST_KEY: ${{ secrets.SIMPLECAST_KEY }}
+          TRANSISTOR_API_SECRET: ${{ secrets.TRANSISTOR_API_SECRET }}
+          CALL_KENT_PODCAST_ID: ${{ secrets.CALL_KENT_PODCAST_ID }}
+          CHATS_WITH_KENT_PODCAST_ID: ${{ secrets.CHATS_WITH_KENT_PODCAST_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: ${{ secrets.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET }}
+        run: node services/site-worker/scripts/generate-preview-secrets.mjs services/site-worker/.wrangler/preview-secrets.json
+
+      - name: 🔑 Upload worker secrets
+        run: npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/.wrangler/generated-wrangler.jsonc
+
+      - name: 🌱 Seed preview D1 (idempotent)
+        run: npm run seed:preview-d1 --workspace site-worker
+
+      - name: 🚀 Deploy site preview worker
+        run: npm run deploy --workspace site-worker 2>&1 | tee deploy-output.txt
+
+      - name: ✅ Smoke check healthcheck
+        run: |
+          WORKER_URL="$(grep -Eo 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy-output.txt | head -1)"
+          if [ -z "$WORKER_URL" ]; then
+            echo "Could not determine workers.dev URL from deploy output"
+            cat deploy-output.txt
+            exit 1
+          fi
+          curl --fail --silent --show-error "$WORKER_URL/healthcheck" | grep -Fx 'OK'
+
+      - name: ✅ Smoke check home + blog
+        run: |
+          WORKER_URL="$(grep -Eo 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy-output.txt | head -1)"
+          curl --fail --silent --show-error --output /dev/null --write-out '%{http_code}\n' "$WORKER_URL/" | grep -E '^(200|302)$'
+          curl --fail --silent --show-error --output /dev/null --write-out '%{http_code}\n' "$WORKER_URL/blog" | grep -E '^(200|302)$'
