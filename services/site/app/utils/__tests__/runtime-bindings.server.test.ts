@@ -7,6 +7,7 @@ import {
 import {
 	clearRuntimeBindingSource,
 	getRuntimeBinding,
+	hasAppDbBinding,
 	setRuntimeBindingSource,
 } from '../runtime-bindings.server.ts'
 
@@ -57,6 +58,20 @@ test('getRuntimeBinding prefers the configured binding source', () => {
 
 	expect(getRuntimeBinding('DB')).toBe(d1Binding)
 	expect(getRuntimeBinding('SEARCH_WORKER_TOKEN')).toBe('binding-search-token')
+})
+
+test('hasAppDbBinding recognizes D1-shaped APP_DB bindings', () => {
+	setRuntimeBindingSource({
+		APP_DB: {
+			prepare() {},
+			batch() {},
+			exec() {},
+			dump() {},
+			withSession() {},
+		},
+	})
+
+	expect(hasAppDbBinding()).toBe(true)
 })
 
 test('getRuntimeBinding falls back to getEnv after clearing the binding source', () => {

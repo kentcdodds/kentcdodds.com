@@ -22,16 +22,16 @@ const schemaBase = z.object({
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
-	FLY_APP_NAME: nonEmptyString,
-	FLY_REGION: nonEmptyString,
-	FLY_MACHINE_ID: nonEmptyString,
-	LITEFS_DIR: nonEmptyString,
+	FLY_APP_NAME: z.string().trim().optional(),
+	FLY_REGION: z.string().trim().optional(),
+	FLY_MACHINE_ID: z.string().trim().optional(),
+	LITEFS_DIR: z.string().trim().optional(),
 
-	// Used by LiteFS + tooling. Optional because it can be derived from
+	// Used by local/Fly SQLite tooling. Optional because it can be derived from
 	// `DATABASE_URL` when using SQLite `file:` URLs.
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
-	CACHE_DATABASE_PATH: nonEmptyString,
+	CACHE_DATABASE_PATH: z.string().trim().optional(),
 
 	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,
@@ -152,17 +152,6 @@ const schema = schemaBase.superRefine((values, ctx) => {
 		})
 	}
 
-	// If we weren't explicitly given a DATABASE_PATH, require a `file:` URL so we
-	// can derive one deterministically.
-	if (!values.DATABASE_PATH && !values.DATABASE_URL.startsWith('file:')) {
-		ctx.addIssue({
-			code: 'custom',
-			message:
-				'DATABASE_PATH is required when DATABASE_URL is not a SQLite file: URL',
-			path: ['DATABASE_PATH'],
-		})
-	}
-
 	const port = Number(values.PORT)
 	if (!Number.isFinite(port) || port <= 0) {
 		ctx.addIssue({
@@ -182,15 +171,21 @@ export type Env = Omit<
 	| 'PORT'
 	| 'MOCKS'
 	| 'DATABASE_PATH'
+	| 'FLY_APP_NAME'
+	| 'FLY_REGION'
 	| 'FLY_MACHINE_ID'
+	| 'CACHE_DATABASE_PATH'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
 	PORT: number
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
+	FLY_APP_NAME: string
+	FLY_REGION: string
 	/** Instance identifier; fallback for startup race when env may not be injected yet. */
 	FLY_MACHINE_ID: string
+	CACHE_DATABASE_PATH?: string
 	/**
 	 * Defaults to `CLOUDFLARE_AI_TEXT_MODEL` when not explicitly set.
 	 * This keeps Call Kent metadata generation aligned with the site's configured
@@ -238,7 +233,7 @@ function computeAllowedActionOrigins(values: BaseEnv) {
 
 function deriveDatabasePath(values: BaseEnv) {
 	if (values.DATABASE_PATH) return values.DATABASE_PATH
-	// superRefine ensures this is a `file:` URL at this point.
+	if (!values.DATABASE_URL.startsWith('file:')) return ''
 	return values.DATABASE_URL.slice('file:'.length)
 }
 
@@ -292,6 +287,8 @@ export function getEnv(): Env {
 		MOCKS: values.MOCKS === 'true',
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
+		FLY_APP_NAME: values.FLY_APP_NAME ?? '',
+		FLY_REGION: values.FLY_REGION ?? 'unknown',
 		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
 		CALL_KENT_AUDIO_CF_API_BASE_URL: callKentAudioCfApiBaseUrl,

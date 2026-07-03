@@ -1,9 +1,17 @@
 import { data as json, redirect } from 'react-router'
-import { cache } from '#app/utils/cache.server.ts'
+import { cache, isFileCacheAvailable } from '#app/utils/cache.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { type Route } from './+types/cache.sqlite'
 
 export async function action({ request }: Route.ActionArgs) {
+	if (!isFileCacheAvailable()) {
+		throw new Response(
+			'SQLite cache resources are unavailable in this runtime.',
+			{
+				status: 404,
+			},
+		)
+	}
 	const token = getEnv().INTERNAL_COMMAND_TOKEN
 	const isAuthorized =
 		request.headers.get('Authorization') === `Bearer ${token}`

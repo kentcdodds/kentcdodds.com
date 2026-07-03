@@ -24,9 +24,7 @@ import { RecordingForm } from '#app/components/calls/recording-form.tsx'
 
 test('RecordingForm validates the title before uploading audio', async () => {
 	vi.clearAllMocks()
-	mockUseRootData.mockReturnValue({
-		requestInfo: { flyPrimaryInstance: null },
-	})
+	mockUseRootData.mockReturnValue({})
 	const fetchMock = vi.fn()
 	vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
 	const createObjectURL = vi
@@ -60,9 +58,7 @@ test('RecordingForm validates the title before uploading audio', async () => {
 
 test('RecordingForm submits a valid recording and follows the redirect', async () => {
 	vi.clearAllMocks()
-	mockUseRootData.mockReturnValue({
-		requestInfo: { flyPrimaryInstance: 'primary-abc123' },
-	})
+	mockUseRootData.mockReturnValue({})
 
 	const fetchMock = vi.fn().mockResolvedValue({
 		ok: true,

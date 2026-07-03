@@ -19,7 +19,7 @@ import {
 } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
-import { getInstanceInfo } from '#app/utils/litefs-js.server.ts'
+import { getInstanceInfo } from '#app/utils/instance-info.server.ts'
 import {
 	useCapturedRouteError,
 	getDisplayUrl,
@@ -457,20 +457,6 @@ export function ErrorBoundary() {
 			return (
 				<ErrorDoc>
 					<FourHundred error={error.data} />
-				</ErrorDoc>
-			)
-		}
-		if (error.status === 409) {
-			return (
-				<ErrorDoc>
-					<ErrorPage
-						heroProps={{
-							title: '409 - Oh no, you should never see this.',
-							subtitle: `"${location.pathname}" tried telling fly to replay your request and missed this one.`,
-							image: <Grimmacing className="rounded-lg" aspectRatio="3:4" />,
-							action: <ArrowLink href="/">Go home</ArrowLink>,
-						}}
-					/>
 				</ErrorDoc>
 			)
 		}
