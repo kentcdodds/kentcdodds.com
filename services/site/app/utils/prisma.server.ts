@@ -84,14 +84,18 @@ async function deleteExpiredVerifications({
 	return result.count
 }
 
-async function getUserFromSessionId(
+const inflightSessionUsers = new Map<
+	string,
+	Promise<Awaited<ReturnType<typeof resolveUserFromSessionId>>>
+>()
+
+async function resolveUserFromSessionId(
 	sessionId: string,
 	{ timings }: { timings?: Timings } = {},
 ) {
 	const session = await time(
 		prisma.session.findUnique({
 			where: { id: sessionId },
-			include: { user: true },
 		}),
 		{ timings, type: 'getUserFromSessionId' },
 	)
@@ -99,14 +103,19 @@ async function getUserFromSessionId(
 		throw new Error('No user found')
 	}
 
-	if (Date.now() > session.expirationDate.getTime()) {
+	const expirationDate =
+		session.expirationDate instanceof Date
+			? session.expirationDate
+			: new Date(session.expirationDate as string)
+
+	if (Date.now() > expirationDate.getTime()) {
 		await prisma.session.delete({ where: { id: sessionId } })
 		throw new Error('Session expired. Please log in again.')
 	}
 
 	// if there's less than ~six months left, extend the session
 	const twoWeeks = 1000 * 60 * 60 * 24 * 30 * 6
-	if (Date.now() + twoWeeks > session.expirationDate.getTime()) {
+	if (Date.now() + twoWeeks > expirationDate.getTime()) {
 		const newExpirationDate = new Date(Date.now() + sessionExpirationTime)
 		await prisma.session.update({
 			data: { expirationDate: newExpirationDate },
@@ -114,7 +123,29 @@ async function getUserFromSessionId(
 		})
 	}
 
-	return session.user
+	const user = await time(
+		prisma.user.findUnique({ where: { id: session.userId } }),
+		{ timings, type: 'getUserFromSessionId:user' },
+	)
+	if (!user) {
+		throw new Error('No user found')
+	}
+
+	return user
+}
+
+async function getUserFromSessionId(
+	sessionId: string,
+	options: { timings?: Timings } = {},
+) {
+	const inflight = inflightSessionUsers.get(sessionId)
+	if (inflight) return inflight
+
+	const promise = resolveUserFromSessionId(sessionId, options).finally(() => {
+		inflightSessionUsers.delete(sessionId)
+	})
+	inflightSessionUsers.set(sessionId, promise)
+	return promise
 }
 
 async function getAllUserData(userId: string) {

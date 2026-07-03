@@ -10,28 +10,42 @@ import {
 } from './prisma.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
-const sessionIdKey = '__session_id__'
+const sessionIdKey = '__session_id__' as const
 
-const sessionStorage = createCookieSessionStorage({
-	cookie: {
-		name: 'KCD_root_session',
-		secure: true,
-		secrets: [getEnv().SESSION_SECRET],
-		sameSite: 'lax',
-		path: '/',
-		maxAge: sessionExpirationTime / 1000,
-		httpOnly: true,
-	},
-})
+type RootSessionData = {
+	[sessionIdKey]: string
+}
+
+let sessionStorage:
+	| ReturnType<typeof createCookieSessionStorage<RootSessionData>>
+	| undefined
+
+function getSessionStorage() {
+	if (!sessionStorage) {
+		sessionStorage = createCookieSessionStorage<RootSessionData>({
+			cookie: {
+				name: 'KCD_root_session',
+				secure: getEnv().NODE_ENV === 'production' && !getEnv().MOCKS,
+				secrets: [getEnv().SESSION_SECRET],
+				sameSite: 'lax',
+				path: '/',
+				maxAge: sessionExpirationTime / 1000,
+				httpOnly: true,
+			},
+		})
+	}
+	return sessionStorage
+}
 
 async function getSession(request: Request) {
-	const session = await sessionStorage.getSession(request.headers.get('Cookie'))
-	const initialValue = await sessionStorage.commitSession(session)
+	const storage = getSessionStorage()
+	const session = await storage.getSession(request.headers.get('Cookie'))
+	const initialValue = await storage.commitSession(session)
 	const getSessionId = () => session.get(sessionIdKey) as string | undefined
 	const unsetSessionId = () => session.unset(sessionIdKey)
 
 	const commit = async () => {
-		const currentValue = await sessionStorage.commitSession(session)
+		const currentValue = await storage.commitSession(session)
 		return currentValue === initialValue ? null : currentValue
 	}
 	return {
