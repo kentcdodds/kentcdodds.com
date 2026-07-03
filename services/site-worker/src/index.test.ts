@@ -7,6 +7,11 @@ import {
 	getKvExpirationTtl,
 } from './cache-encoding.ts'
 import {
+	deleteKvCacheLruEntry,
+	getKvCacheLruEntry,
+	setKvCacheLruEntry,
+} from './rpc/kv-cache-lru.ts'
+import {
 	clearManifestCache,
 	readMdxManifest,
 	shouldBypassManifestCache,
@@ -136,6 +141,25 @@ describe('cache encoding', () => {
 			bufferReviver,
 		)
 		expect(revived.data.equals(Buffer.from('abc'))).toBe(true)
+	})
+})
+
+describe('kv cache lru', () => {
+	test('stores and retrieves entries with ttl metadata', () => {
+		const key = `cache-test:${Date.now()}`
+		const entry = {
+			metadata: {
+				createdTime: Date.now(),
+				ttl: 60_000,
+				swr: 30_000,
+			},
+			value: { ok: true },
+		}
+
+		setKvCacheLruEntry(key, entry)
+		expect(getKvCacheLruEntry(key)).toEqual(entry)
+		deleteKvCacheLruEntry(key)
+		expect(getKvCacheLruEntry(key)).toBeNull()
 	})
 })
 
