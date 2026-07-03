@@ -165,6 +165,7 @@ const schema = schemaBase.superRefine((values, ctx) => {
 type BaseEnv = z.infer<typeof schemaBase>
 type BaseEnvInput = z.input<typeof schemaBase>
 export type RuntimeEnvSource = Record<string, string | undefined>
+const runtimeEnvSourceKey = Symbol.for('kentcdodds.runtimeEnvSource')
 
 export type Env = Omit<
 	BaseEnv,
@@ -247,17 +248,22 @@ let runtimeEnvSource: RuntimeEnvSource | undefined
 
 export function setRuntimeEnvSource(source: RuntimeEnvSource) {
 	runtimeEnvSource = source
+	getGlobalRuntimeEnvStore()[runtimeEnvSourceKey] = source
 	_cache = undefined
 }
 
 export function clearRuntimeEnvSource() {
 	runtimeEnvSource = undefined
+	delete getGlobalRuntimeEnvStore()[runtimeEnvSourceKey]
 	_cache = undefined
 }
 
 export function getEnv(): Env {
 	const keys = Object.keys(schemaBase.shape) as Array<keyof BaseEnv>
-	const source = runtimeEnvSource ?? process.env
+	const source =
+		runtimeEnvSource ??
+		getGlobalRuntimeEnvStore()[runtimeEnvSourceKey] ??
+		process.env
 	const fingerprint = keys
 		.map((k) => `${String(k)}=${JSON.stringify(source[String(k)])}`)
 		.join('\0')
@@ -305,6 +311,11 @@ export function getEnv(): Env {
 
 	_cache = { fingerprint, env }
 	return env
+}
+
+function getGlobalRuntimeEnvStore() {
+	return globalThis as typeof globalThis &
+		Record<symbol, RuntimeEnvSource | undefined>
 }
 
 export function init() {

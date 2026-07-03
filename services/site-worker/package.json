@@ -4,19 +4,26 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build:site": "npm run build:router --workspace kentcdodds.com",
     "format": "prettier --write .",
     "lint": "oxlint . --ignore-pattern .wrangler",
     "test": "vitest --run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev --port 8788",
-    "start": "wrangler dev --port 8788",
+    "deploy": "npm run build:site && wrangler deploy",
+    "dev": "npm run build:site && wrangler dev --port 8788",
+    "start": "npm run dev",
+    "dry-run": "npm run build:site && wrangler deploy --dry-run",
     "d1:migrations:prepare": "node ./scripts/prepare-d1-migrations.mjs",
     "d1:migrations:list:local": "npm run d1:migrations:prepare && wrangler d1 migrations list APP_DB --local",
     "d1:migrations:apply:local": "npm run d1:migrations:prepare && wrangler d1 migrations apply APP_DB --local",
     "d1:migrations:list:staging": "npm run d1:migrations:prepare && wrangler d1 migrations list APP_DB --remote",
     "d1:migrations:apply:staging": "npm run d1:migrations:prepare && wrangler d1 migrations apply APP_DB --remote",
     "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-router": "^7.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260306.1",
