@@ -1,0 +1,17 @@
+{
+	"$schema": "../../../node_modules/wrangler/config-schema.json",
+	"name": "kcd-app-worker-harness",
+	"main": "harness-parent.mjs",
+	"compatibility_date": "2026-03-17",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": true,
+	"worker_loaders": [{ "binding": "LOADER" }],
+	"dev": {
+		"port": 8801
+	},
+	"vars": {
+		"NODE_ENV": "production",
+		"MOCKS": "true",
+		"PORT": "8801"
+	}
+}
