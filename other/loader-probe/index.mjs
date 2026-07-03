@@ -75,7 +75,7 @@ export default {
 					},
 					env: {
 						PLAIN: 'plain-var-ok',
-						PARENT: ctx.exports.ProbeParent(),
+						PARENT: ctx.exports.ProbeParent({ props: {} }),
 					},
 				}),
 			)
