@@ -1,0 +1,27 @@
+{
+  "name": "site-worker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "oxlint . --ignore-pattern .wrangler",
+    "test": "vitest --run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --port 8788",
+    "start": "wrangler dev --port 8788",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260306.1",
+    "@epic-web/config": "^2.0.0",
+    "@types/node": "^25.5.0",
+    "oxlint": "^1.51.0",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2",
+    "vitest": "^4.0.18",
+    "wrangler": "^4.80.0"
+  },
+  "prettier": "@epic-web/config/prettier"
+}

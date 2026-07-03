@@ -7,7 +7,6 @@ import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { createAndSendPasswordResetVerificationEmail } from '#app/utils/password-reset.server.ts'
 import {
@@ -260,7 +259,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const passwordHash = await getPasswordHash(password)
 
-	await ensurePrimary()
 	await prisma.$transaction([
 		prisma.password.upsert({
 			where: { userId: userRecord.id },
@@ -283,7 +281,6 @@ export async function action({ request }: Route.ActionArgs) {
 		try {
 			const clientId = clientSession.getClientId()
 			if (clientId) {
-				await ensurePrimary()
 				await prisma.postRead.updateMany({
 					data: { userId: userRecord.id, clientId: null },
 					where: { clientId },

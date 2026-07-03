@@ -1,0 +1,45 @@
+name: Validate Site Worker
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/validate-site-worker.yml
+      - package-lock.json
+      - package.json
+      - services/site-worker/**
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate Site Worker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install site worker deps
+        run: npm ci --workspace=site-worker --include-workspace-root
+
+      - name: Lint site worker
+        run: npm run lint --workspace site-worker
+
+      - name: Typecheck site worker
+        run: npm run typecheck --workspace site-worker
+
+      - name: Test site worker
+        run: npm run test --workspace site-worker
+
+      - name: Wrangler deploy dry run
+        working-directory: services/site-worker
+        run: npm exec wrangler -- deploy --dry-run
