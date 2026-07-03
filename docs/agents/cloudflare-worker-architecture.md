@@ -212,6 +212,22 @@ runtime in the worker).
   `mdx/pages/uses.js` → `mdx/pages/react`), the module map must also include
   per-directory aliases (`mdx/pages/react`, `mdx/blog/react`, etc.).
 
+## Performance profile (measured July 2026)
+
+- Warm dynamic isolates serve pages in ~0.10-0.30s TTFB (measured from a US
+  VM; production Fly is ~0.15-0.20s), so warm traffic is at parity or faster.
+- Cold dynamic isolates cost ~1.4-2.5s: ~0.9s isolate creation + module-map
+  transfer + app bundle eval, plus first-request work. Mitigations in place:
+  minified app bundle (9.4 → 4.1MB), per-document `code` served via
+  `CONTENT_RPC` instead of shipping ~8.6MB in `site-content-data.json`,
+  parent-memory bundle/module-map caches, KV mirror of the artifact bundle
+  (`mdx-bundle:{r2Key}`, edge-cached with `cacheTtl`) so cold parents skip the
+  ~300ms R2 read, cached worker stubs, and a `*/2 * * * *` warmup cron hitting
+  `/`, `/blog`, `/healthcheck`.
+- Cloudflare rotates dynamic isolates aggressively at low traffic, so
+  low-traffic previews still see the cold tail on a fraction of requests;
+  sustained traffic keeps the pool warm.
+
 ## Local development
 
 Nothing changes for `npm run dev` (Node + Express + MSW). The worker path is
