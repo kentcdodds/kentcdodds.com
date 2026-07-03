@@ -22,7 +22,7 @@ import {
 	beginCacheRequestStats,
 	endCacheRequestStats,
 	formatCacheRequestStatsHeader,
-} from '../../../site/app/utils/cache.server.ts'
+} from '../../../site/app/utils/cache-request-stats.server.ts'
 import { setRuntimeEnvSource, getEnv } from '../../../site/app/utils/env.server.ts'
 import {
 	setRuntimeBindingSource,

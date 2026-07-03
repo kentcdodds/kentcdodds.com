@@ -10,6 +10,10 @@ import { siteCacheReporter } from '#app/utils/cache-reporter.server.ts'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import {
+	recordCacheLruHit,
+	recordCacheRpcCall,
+} from '#app/utils/cache-request-stats.server.ts'
+import {
 	getRuntimeBinding,
 	hasAppDbBinding,
 } from '#app/utils/runtime-bindings.server.ts'
@@ -126,27 +130,12 @@ const lruInstance = remember(
 	() => new LRUCache<string, CacheEntry<unknown>>({ max: LRU_MAX_ENTRIES }),
 )
 
-export type CacheRequestStats = {
-	lruHits: number
-	rpcCalls: number
-	rpcMs: number
-}
-
-let activeCacheStats: CacheRequestStats | null = null
-
-export function beginCacheRequestStats(): CacheRequestStats {
-	const stats = { lruHits: 0, rpcCalls: 0, rpcMs: 0 }
-	activeCacheStats = stats
-	return stats
-}
-
-export function endCacheRequestStats() {
-	activeCacheStats = null
-}
-
-export function formatCacheRequestStatsHeader(stats: CacheRequestStats) {
-	return `lru_hits=${stats.lruHits},rpc_calls=${stats.rpcCalls},rpc_ms=${stats.rpcMs.toFixed(1)}`
-}
+export type { CacheRequestStats } from '#app/utils/cache-request-stats.server.ts'
+export {
+	beginCacheRequestStats,
+	endCacheRequestStats,
+	formatCacheRequestStatsHeader,
+} from '#app/utils/cache-request-stats.server.ts'
 
 export function isFileCacheAvailable() {
 	return !hasAppDbBinding() && !getCacheRpcBinding()
@@ -206,15 +195,12 @@ export const cache: CachifiedCache = {
 		if (rpc) {
 			const lruHit = lruCache.get(key)
 			if (lruHit) {
-				if (activeCacheStats) activeCacheStats.lruHits++
+				recordCacheLruHit()
 				return lruHit
 			}
 			const rpcStart = performance.now()
 			const entry = await rpc.get(key)
-			if (activeCacheStats) {
-				activeCacheStats.rpcCalls++
-				activeCacheStats.rpcMs += performance.now() - rpcStart
-			}
+			recordCacheRpcCall(performance.now() - rpcStart)
 			if (entry) lruCache.set(key, entry)
 			return entry
 		}
