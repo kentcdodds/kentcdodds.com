@@ -63,6 +63,45 @@ function toPrismaRpcError(error: unknown) {
 	throw error
 }
 
+function coerceTemplateStringsArray(value: unknown): TemplateStringsArray {
+	if (
+		typeof value === 'object' &&
+		value !== null &&
+		Array.isArray((value as TemplateStringsArray).raw)
+	) {
+		return value as TemplateStringsArray
+	}
+
+	if (Array.isArray(value) && value.every((part) => typeof part === 'string')) {
+		const strings = value as string[]
+		const template = [...strings] as unknown as TemplateStringsArray
+		Object.defineProperty(template, 'raw', { value: [...strings] })
+		return template
+	}
+
+	throw new Prisma.PrismaClientValidationError(
+		'Invalid $queryRaw template strings payload',
+		{ clientVersion: Prisma.prismaVersion.client },
+	)
+}
+
+function reviveDates(value: unknown): unknown {
+	if (value === null || value === undefined) return value
+	if (
+		typeof value === 'string' &&
+		/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)
+	) {
+		return new Date(value)
+	}
+	if (Array.isArray(value)) return value.map(reviveDates)
+	if (typeof value === 'object') {
+		return Object.fromEntries(
+			Object.entries(value).map(([key, entry]) => [key, reviveDates(entry)]),
+		)
+	}
+	return value
+}
+
 export class PrismaRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 	async query(model: string, operation: string, args: unknown) {
 		try {
@@ -87,27 +126,75 @@ export class PrismaRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 			const result = await (
 				method as (value: unknown) => Promise<unknown>
 			).call(delegate, args)
-			return { ok: true as const, result }
+			return { ok: true as const, result: reviveDates(result) }
 		} catch (error) {
 			return toPrismaRpcError(error)
 		}
 	}
 
-	async raw(
-		kind: 'queryRawUnsafe' | 'executeRawUnsafe',
-		sql: string,
-		params: unknown[],
-	) {
+	async raw(method: string, query: unknown, values: unknown[] = []) {
 		try {
 			const prisma = getPrismaClient(this.env)
-			const method = prisma.$queryRawUnsafe
-			if (kind === 'executeRawUnsafe') {
-				const result = await prisma.$executeRawUnsafe(sql, ...params)
-				return { ok: true as const, result }
+
+			if (method === '$queryRaw' || method === '$executeRaw') {
+				const fn = (
+					prisma as unknown as Record<
+						string,
+						| ((strings: TemplateStringsArray, ...params: unknown[]) => Promise<unknown>)
+						| undefined
+					>
+				)[method]
+				if (!fn) {
+					return {
+						ok: false as const,
+						error: {
+							name: 'PrismaClientValidationError',
+							code: 'P2009',
+							message: `Prisma raw method ${method} is not available`,
+							meta: {},
+							clientVersion: Prisma.prismaVersion.client,
+						},
+					}
+				}
+				const strings = coerceTemplateStringsArray(query)
+				const result = await fn.call(prisma, strings, ...values)
+				return { ok: true as const, result: reviveDates(result) }
 			}
 
-			const result = await method.call(prisma, sql, ...params)
-			return { ok: true as const, result }
+			if (method === '$queryRawUnsafe' || method === '$executeRawUnsafe') {
+				const fn = (
+					prisma as unknown as Record<
+						string,
+						| ((sql: string, ...params: unknown[]) => Promise<unknown>)
+						| undefined
+					>
+				)[method]
+				if (!fn) {
+					return {
+						ok: false as const,
+						error: {
+							name: 'PrismaClientValidationError',
+							code: 'P2009',
+							message: `Prisma raw method ${method} is not available`,
+							meta: {},
+							clientVersion: Prisma.prismaVersion.client,
+						},
+					}
+				}
+				const result = await fn.call(prisma, query as string, ...values)
+				return { ok: true as const, result: reviveDates(result) }
+			}
+
+			return {
+				ok: false as const,
+				error: {
+					name: 'PrismaClientValidationError',
+					code: 'P2009',
+					message: `Unknown raw Prisma method ${method}`,
+					meta: {},
+					clientVersion: Prisma.prismaVersion.client,
+				},
+			}
 		} catch (error) {
 			return toPrismaRpcError(error)
 		}
