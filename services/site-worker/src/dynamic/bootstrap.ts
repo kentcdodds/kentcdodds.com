@@ -40,7 +40,7 @@ import {
 	matchRedirect,
 	oldImgSocialUrl,
 	parseRedirectsString,
-} from '../../../site/server/redirects-core.ts'
+} from '../../../site/app/utils/redirects-core.server.ts'
 import redirectsText from '../../../site/server/_redirects.txt'
 
 let isolateId: string | undefined

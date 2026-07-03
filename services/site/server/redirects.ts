@@ -4,7 +4,7 @@ import {
 	matchRedirect,
 	oldImgSocialUrl,
 	parseRedirectsString,
-} from './redirects-core.ts'
+} from '../app/utils/redirects-core.server.ts'
 
 function getRedirectsMiddleware({
 	redirectsString,
