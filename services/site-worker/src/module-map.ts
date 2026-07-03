@@ -87,6 +87,12 @@ export function buildDynamicWorkerModuleMap(
 	return modules
 }
 
-export function getDynamicWorkerId(buildSha: string, contentVersion: string) {
-	return `app:${buildSha}:content:${contentVersion}`
+export function getDynamicWorkerId(
+	buildSha: string,
+	contentVersion: string,
+	freshIsolateNonce?: string,
+) {
+	const base = `app:${buildSha}:content:${contentVersion}`
+	if (!freshIsolateNonce?.trim()) return base
+	return `${base}:fresh:${freshIsolateNonce.trim()}`
 }

@@ -128,7 +128,12 @@ async function handleDynamicRequest(
 	}
 
 	const buildSha = env.BUILD_SHA?.trim() || 'local-dev'
-	const workerId = getDynamicWorkerId(buildSha, manifest.version)
+	const freshIsolateNonce = request.headers.get('x-debug-fresh-isolate')
+	const workerId = getDynamicWorkerId(
+		buildSha,
+		manifest.version,
+		freshIsolateNonce ?? undefined,
+	)
 	const stringEnv = getStringEnvBindings(env)
 
 	const worker = env.LOADER.get(workerId, async () => ({

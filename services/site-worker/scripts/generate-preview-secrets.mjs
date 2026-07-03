@@ -11,7 +11,9 @@ function deriveSecret(label, refreshCacheSecret) {
 }
 
 function deriveOrEnv(key, label, refreshCacheSecret) {
-	return process.env[key] ?? deriveSecret(label, refreshCacheSecret)
+	const fromEnv = process.env[key]
+	if (typeof fromEnv === 'string' && fromEnv.trim()) return fromEnv.trim()
+	return deriveSecret(label, refreshCacheSecret)
 }
 
 async function main() {

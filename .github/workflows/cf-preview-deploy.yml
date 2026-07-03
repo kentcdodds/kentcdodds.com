@@ -135,8 +135,18 @@ jobs:
       - name: ✅ Smoke check home + blog
         run: |
           WORKER_URL="$(grep -Eo 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy-output.txt | head -1)"
-          curl --fail --silent --show-error --output /dev/null --write-out '%{http_code}\n' "$WORKER_URL/" | grep -E '^(200|302)$'
-          curl --fail --silent --show-error --output /dev/null --write-out '%{http_code}\n' "$WORKER_URL/blog" | grep -E '^(200|302)$'
+          for attempt in 1 2 3; do
+            home_code="$(curl --silent --output /dev/null --write-out '%{http_code}' "$WORKER_URL/")"
+            blog_code="$(curl --silent --output /dev/null --write-out '%{http_code}' "$WORKER_URL/blog")"
+            if echo "$home_code" | grep -E '^(200|302)$' && echo "$blog_code" | grep -E '^(200|302)$'; then
+              echo "Smoke check passed on attempt $attempt (home=$home_code blog=$blog_code)"
+              exit 0
+            fi
+            echo "Attempt $attempt failed (home=$home_code blog=$blog_code); retrying in 10s..."
+            sleep 10
+          done
+          echo "Smoke check failed after 3 attempts"
+          exit 1
 
       - name: ✅ Smoke check blog post
         run: |

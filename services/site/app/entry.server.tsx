@@ -17,8 +17,14 @@ import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
 import { getRuntimeBinding } from './utils/runtime-bindings.server.ts'
 
-init()
-global.ENV = getPublicEnv()
+let entryServerInitialized = false
+
+function ensureEntryServerInitialized() {
+	if (entryServerInitialized) return
+	init()
+	global.ENV = getPublicEnv()
+	entryServerInitialized = true
+}
 
 const ABORT_DELAY = 5000
 
@@ -49,6 +55,7 @@ function renderDocumentTree(
 type DocRequestArgs = Parameters<HandleDocumentRequestFunction>
 
 export default async function handleDocumentRequest(...args: DocRequestArgs) {
+	ensureEntryServerInitialized()
 	const [
 		request,
 		responseStatusCode,
@@ -241,6 +248,7 @@ export function handleError(
 	error: unknown,
 	{ request }: LoaderFunctionArgs | ActionFunctionArgs,
 ): void {
+	ensureEntryServerInitialized()
 	// Skip capturing if the request is aborted as Remix docs suggest
 	// Ref: https://remix.run/docs/en/main/file-conventions/entry.server#handleerror
 	if (request.signal.aborted) {

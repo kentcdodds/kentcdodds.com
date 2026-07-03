@@ -5,32 +5,43 @@ import { type GitHubFile } from '#app/types.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
 
-const ref = getEnv().GITHUB_REF
-
 const safePath = (s: string) => s.replace(/\\/g, '/')
 
 const Octokit = createOctokit.plugin(throttling)
 
-const octokit = new Octokit({
-	auth: getEnv().BOT_GITHUB_TOKEN,
-	throttle: {
-		onRateLimit: (retryAfter, options) => {
-			const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
-			const url = 'url' in options ? options.url : 'URL_UNKNOWN'
-			console.warn(
-				`Request quota exhausted for request ${method} ${url}. Retrying after ${retryAfter} seconds.`,
-			)
+type OctokitClient = InstanceType<typeof Octokit>
 
-			return true
+let octokitClient: OctokitClient | undefined
+
+function getRef() {
+	return getEnv().GITHUB_REF
+}
+
+function getOctokit(): OctokitClient {
+	if (octokitClient) return octokitClient
+
+	octokitClient = new Octokit({
+		auth: getEnv().BOT_GITHUB_TOKEN,
+		throttle: {
+			onRateLimit: (retryAfter, options) => {
+				const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
+				const url = 'url' in options ? options.url : 'URL_UNKNOWN'
+				console.warn(
+					`Request quota exhausted for request ${method} ${url}. Retrying after ${retryAfter} seconds.`,
+				)
+
+				return true
+			},
+			onSecondaryRateLimit: (_retryAfter, options) => {
+				const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
+				const url = 'url' in options ? options.url : 'URL_UNKNOWN'
+				// does not retry, only logs a warning
+				getOctokit().log.warn(`Abuse detected for request ${method} ${url}`)
+			},
 		},
-		onSecondaryRateLimit: (retryAfter, options) => {
-			const method = 'method' in options ? options.method : 'METHOD_UNKNOWN'
-			const url = 'url' in options ? options.url : 'URL_UNKNOWN'
-			// does not retry, only logs a warning
-			octokit.log.warn(`Abuse detected for request ${method} ${url}`)
-		},
-	},
-})
+	})
+	return octokitClient
+}
 
 async function downloadFirstMdxFile(
 	list: Array<{ name: string; type: string; path: string; sha: string }>,
@@ -159,7 +170,7 @@ async function downloadDirectory(dir: string): Promise<Array<GitHubFile>> {
  * @returns a promise that resolves to a string of the contents of the file
  */
 async function downloadFileBySha(sha: string) {
-	const { data } = await octokit.git.getBlob({
+	const { data } = await getOctokit().git.getBlob({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
 		file_sha: sha,
@@ -172,11 +183,11 @@ async function downloadFileBySha(sha: string) {
 // https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}
 // nice thing is it's not rate limited
 async function downloadFile(path: string) {
-	const { data } = await octokit.repos.getContent({
+	const { data } = await getOctokit().repos.getContent({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
 		path,
-		ref,
+		ref: getRef(),
 	})
 
 	if ('content' in data && 'encoding' in data) {
@@ -196,11 +207,11 @@ async function downloadFile(path: string) {
  * @returns a promise that resolves to a file ListItem of the files/directories in the given directory (not recursive)
  */
 async function downloadDirList(path: string) {
-	const resp = await octokit.repos.getContent({
+	const resp = await getOctokit().repos.getContent({
 		owner: 'kentcdodds',
 		repo: 'kentcdodds.com',
 		path,
-		ref,
+		ref: getRef(),
 	})
 	const data = resp.data
 

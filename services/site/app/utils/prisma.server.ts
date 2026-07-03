@@ -14,7 +14,17 @@ import { time, type Timings } from './timing.server.ts'
 
 const logThreshold = 500
 
-const prisma = remember('prisma', getClient)
+function getPrismaClient(): PrismaClient {
+	return remember('prisma', getClient)
+}
+
+const prisma = new Proxy({} as PrismaClient, {
+	get(_target, prop, receiver) {
+		const client = getPrismaClient() as object
+		const value = Reflect.get(client, prop, receiver)
+		return typeof value === 'function' ? value.bind(client) : value
+	},
+})
 
 function getClient(): PrismaClient {
 	const rpc = getPrismaRpcBinding()

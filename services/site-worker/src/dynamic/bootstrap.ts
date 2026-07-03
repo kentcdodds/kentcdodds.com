@@ -42,16 +42,50 @@ import {
 	parseRedirectsString,
 } from '../../../site/server/redirects-core.ts'
 import redirectsText from '../../../site/server/_redirects.txt'
-import {
-	maybeConvertHtmlResponseToMarkdown,
-	requestPrefersMarkdown,
-} from '../../../site/server/markdown-negotiation.ts'
 
 let isolateId: string | undefined
 
 function getIsolateId() {
 	if (!isolateId) isolateId = crypto.randomUUID()
 	return isolateId
+}
+
+const markdownMediaType = 'text/markdown'
+
+function requestPrefersMarkdown(
+	acceptHeader: string | null,
+): boolean {
+	if (!acceptHeader) return false
+	const entries = acceptHeader
+		.split(',')
+		.map((part) => part.trim())
+		.filter(Boolean)
+	let htmlQ = -1
+	let markdownQ = -1
+	for (const entry of entries) {
+		const segments = entry.split(';').map((segment) => segment.trim())
+		const type = segments[0]
+		if (!type) continue
+		const qParam = segments.find((segment) => segment.startsWith('q='))
+		const q = qParam ? Number.parseFloat(qParam.slice(2)) : 1
+		if (type === 'text/html') htmlQ = q
+		if (type === markdownMediaType) markdownQ = q
+	}
+	if (markdownQ < 0) return false
+	if (htmlQ < 0) return true
+	return markdownQ >= htmlQ
+}
+
+type MarkdownNegotiation = typeof import('../../../site/server/markdown-negotiation.ts')
+let markdownNegotiationPromise: Promise<MarkdownNegotiation> | undefined
+
+function getMarkdownNegotiation() {
+	if (!markdownNegotiationPromise) {
+		markdownNegotiationPromise = import(
+			'../../../site/server/markdown-negotiation.ts'
+		)
+	}
+	return markdownNegotiationPromise
 }
 
 type WorkerEnv = RuntimeBindingSource & Record<string, unknown>
@@ -344,17 +378,10 @@ async function handleSiteRequest(
 		const url = new URL(request.url)
 		const acceptHeader = request.headers.get('Accept') ?? ''
 		if (
-			requestPrefersMarkdown((types) => {
-				const accepts = acceptHeader
-					.split(',')
-					.map((part) => part.trim().split(';')[0]?.trim().toLowerCase())
-					.filter(Boolean)
-				for (const type of types.map((t) => t.toLowerCase())) {
-					if (accepts.includes(type)) return type
-				}
-				return false
-			})
+			requestPrefersMarkdown(acceptHeader)
 		) {
+			const { maybeConvertHtmlResponseToMarkdown } =
+				await getMarkdownNegotiation()
 			response = await maybeConvertHtmlResponseToMarkdown(response)
 		}
 
@@ -406,6 +433,18 @@ export default {
 			return await handleSiteRequest(request, env, ctx)
 		} catch (error: unknown) {
 			console.error('app-worker fetch failed', error)
+			const debugNonce = request.headers.get('x-debug-fresh-isolate')
+			if (debugNonce) {
+				const message =
+					error instanceof Error
+						? `${error.name}: ${error.message}`
+						: String(error)
+				const stack = error instanceof Error ? error.stack : undefined
+				return new Response(
+					`Internal Server Error\n${message}${stack ? `\n${stack}` : ''}`,
+					{ status: 500, headers: { 'content-type': 'text/plain; charset=utf-8' } },
+				)
+			}
 			return new Response('Internal Server Error', { status: 500 })
 		}
 	},

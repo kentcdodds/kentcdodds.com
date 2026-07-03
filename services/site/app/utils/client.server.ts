@@ -8,35 +8,49 @@ import { getEnv } from './env.server.ts'
 
 const clientCookieName = 'KCD_client_id'
 
-const clientStorage = createCookieSessionStorage({
-	cookie: {
-		name: clientCookieName,
-		secure: true,
-		secrets: [getEnv().SESSION_SECRET],
-		sameSite: 'lax',
-		path: '/',
-		httpOnly: true,
-	},
-})
+type ClientSessionData = {
+	clientId: string
+}
+
+let clientStorage:
+	| ReturnType<typeof createCookieSessionStorage<ClientSessionData>>
+	| undefined
+
+function getClientStorage() {
+	if (!clientStorage) {
+		clientStorage = createCookieSessionStorage<ClientSessionData>({
+			cookie: {
+				name: clientCookieName,
+				secure: true,
+				secrets: [getEnv().SESSION_SECRET],
+				sameSite: 'lax',
+				path: '/',
+				httpOnly: true,
+			},
+		})
+	}
+	return clientStorage
+}
 
 async function getClientSession(request: Request, user: {} | null) {
-	const session = await clientStorage.getSession(request.headers.get('Cookie'))
+	const storage = getClientStorage()
+	const session = await storage.getSession(request.headers.get('Cookie'))
 
 	// no client ID for you on my 100th birthday! 😂
 	const expires = new Date('2088-10-18')
 	const initialValue = user
 		? null
-		: await clientStorage.commitSession(session, { expires })
+		: await storage.commitSession(session, { expires })
 	async function commit() {
 		if (user) {
 			if (initialValue) {
-				const value = await clientStorage.destroySession(session)
+				const value = await storage.destroySession(session)
 				return value
 			} else {
 				return null
 			}
 		} else {
-			const currentValue = await clientStorage.commitSession(session, {
+			const currentValue = await storage.commitSession(session, {
 				expires,
 			})
 			return currentValue === initialValue ? null : currentValue
