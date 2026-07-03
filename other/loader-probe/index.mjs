@@ -3,7 +3,8 @@
 // 1. worker_loaders binding is deployable on this account
 // 2. plain vars pass through dynamic worker env
 // 3. ctx.exports loopback entrypoints support RPC from the dynamic worker
-// 4. dynamic import() of module-map modules works at request time
+// 4. dynamic import() of module-map modules works at request time,
+//    including variable specifiers and bare specifiers (e.g. 'react')
 // 5. WASM modules can be included in the module map and instantiated
 // 6. request-time eval/new Function is blocked inside dynamic workers
 import { WorkerEntrypoint } from 'cloudflare:workers'
@@ -15,16 +16,23 @@ const ADD_WASM = new Uint8Array([
 ])
 
 const DYNAMIC_MAIN = `
-import { helper } from './lib.mjs'
+import { helper } from './lib.js'
+import { fakeReactVersion } from 'react'
 
 export default {
 	async fetch(request, env) {
-		const results = { helper: null, dynamicImport: null, rpc: null, plainVar: null, wasm: null, evalBlocked: null, outboundFetch: null }
+		const results = {}
 		try { results.helper = helper() } catch (e) { results.helper = 'ERR: ' + e.message }
+		results.bareSpecifier = fakeReactVersion
 		try {
-			const mod = await import('./lazy.mjs')
+			const mod = await import('./lazy.js')
 			results.dynamicImport = mod.value
 		} catch (e) { results.dynamicImport = 'ERR: ' + e.message }
+		try {
+			const slug = 'first' + '-post'
+			const mod = await import('mdx/blog/' + slug + '.js')
+			results.variableDynamicImport = mod.title
+		} catch (e) { results.variableDynamicImport = 'ERR: ' + e.message }
 		try { results.rpc = await env.PARENT.ping('from-dynamic') } catch (e) { results.rpc = 'ERR: ' + e.message }
 		results.plainVar = env.PLAIN ?? 'MISSING'
 		try {
@@ -45,9 +53,6 @@ export default {
 }
 `
 
-const DYNAMIC_LIB = `export function helper() { return 'lib-ok' }`
-const DYNAMIC_LAZY = `export const value = 'dynamic-import-ok'`
-
 export class ProbeParent extends WorkerEntrypoint {
 	async ping(message) {
 		return `pong:${message}`
@@ -66,12 +71,16 @@ export default {
 				url.searchParams.get('id') ?? 'probe-v1',
 				async () => ({
 					compatibilityDate: '2026-03-17',
-					mainModule: 'main.mjs',
+					mainModule: 'main.js',
 					modules: {
-						'main.mjs': DYNAMIC_MAIN,
-						'lib.mjs': DYNAMIC_LIB,
-						'lazy.mjs': DYNAMIC_LAZY,
-						'add.wasm': ADD_WASM,
+						'main.js': DYNAMIC_MAIN,
+						'lib.js': `export function helper() { return 'lib-ok' }`,
+						'lazy.js': `export const value = 'dynamic-import-ok'`,
+						'mdx/blog/first-post.js': {
+							js: `export const title = 'variable-dynamic-import-ok'`,
+						},
+						react: { js: `export const fakeReactVersion = 'bare-specifier-ok'` },
+						'add.wasm': { wasm: ADD_WASM },
 					},
 					env: {
 						PLAIN: 'plain-var-ok',
