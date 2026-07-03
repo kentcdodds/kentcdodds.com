@@ -48,6 +48,10 @@ export default {
 			const res = await fetch('https://kentcdodds.com/healthcheck')
 			results.outboundFetch = res.status + ':' + (await res.text()).slice(0, 10)
 		} catch (e) { results.outboundFetch = 'ERR: ' + e.message }
+		try {
+			const res = await fetch('https://mocked.example.com/anything')
+			results.outboundMock = await res.json()
+		} catch (e) { results.outboundMock = 'ERR: ' + e.message }
 		return Response.json(results)
 	},
 }
@@ -56,6 +60,16 @@ export default {
 export class ProbeParent extends WorkerEntrypoint {
 	async ping(message) {
 		return `pong:${message}`
+	}
+}
+
+export class ProbeOutbound extends WorkerEntrypoint {
+	async fetch(request) {
+		const url = new URL(request.url)
+		if (url.hostname === 'mocked.example.com') {
+			return Response.json({ mocked: true, path: url.pathname })
+		}
+		return fetch(request)
 	}
 }
 
@@ -86,6 +100,7 @@ export default {
 						PLAIN: 'plain-var-ok',
 						PARENT: ctx.exports.ProbeParent({ props: {} }),
 					},
+					globalOutbound: ctx.exports.ProbeOutbound({ props: {} }),
 				}),
 			)
 			const entrypoint = worker.getEntrypoint()
