@@ -52,7 +52,8 @@
     "ci:verify": "run-s lint typecheck test build",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|less|scss|ts|tsx|md|gql|graphql|mdx|vue)\"",
     "typecheck": "react-router typegen && tsc -b .",
-    "mdx:artifacts": "node other/mdx-artifacts/compile-mdx-artifacts.ts",
+    "mdx:compile": "node other/mdx-artifacts/compile-mdx-artifacts.ts",
+    "mdx:artifacts": "npm run mdx:compile",
     "validate": "../../other/validate",
     "setup": "prisma migrate reset --force && npm run validate && npm run prime-cache:mocks && npm run test:e2e:install && npm run test:e2e:run"
   },

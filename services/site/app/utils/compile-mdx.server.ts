@@ -44,6 +44,50 @@ function interopDefault<T>(imported: T): T {
 const remarkEmbedder = interopDefault(remarkEmbedderImport)
 const oembedTransformer = interopDefault(oembedTransformerImport)
 
+type EmbedTransformer = {
+	shouldTransform: (url: string, ...args: Array<unknown>) => boolean
+	getHTML: (url: string, ...args: Array<unknown>) => unknown
+}
+
+let allowEmbedFallback = false
+let embedFallbackCount = 0
+
+export function configureMdxCompileOptions(options: {
+	allowEmbedFallback?: boolean
+}) {
+	allowEmbedFallback = options.allowEmbedFallback ?? false
+	embedFallbackCount = 0
+}
+
+export function getEmbedFallbackCount() {
+	return embedFallbackCount
+}
+
+function recordEmbedFallback(url: string, reason: string) {
+	embedFallbackCount++
+	console.warn(`[mdx:embed-fallback] ${url} (${reason})`)
+}
+
+function wrapEmbedTransformer<T extends EmbedTransformer>(transformer: T): T {
+	if (!allowEmbedFallback) return transformer
+
+	const { getHTML } = transformer
+	return {
+		...transformer,
+		getHTML: async (url: string, ...rest: Array<unknown>) => {
+			try {
+				return await getHTML(url, ...rest)
+			} catch (error: unknown) {
+				recordEmbedFallback(
+					url,
+					error instanceof Error ? error.message : String(error),
+				)
+				return null
+			}
+		},
+	}
+}
+
 // Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
 type MdxJsxAttribute = {
 	type: 'mdxJsxAttribute'
@@ -59,6 +103,9 @@ type MdxJsxFlowElement = {
 }
 
 function handleEmbedderError({ url }: { url: string }) {
+	if (allowEmbedFallback) {
+		recordEmbedFallback(url, 'remark-embedder handleError')
+	}
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`
 }
 
@@ -227,6 +274,14 @@ const eggheadTransformer = {
 	},
 }
 
+function getMdxEmbedTransformers(): Array<EmbedTransformer> {
+	return [
+		wrapEmbedTransformer(twitterTransformer),
+		wrapEmbedTransformer(eggheadTransformer),
+		wrapEmbedTransformer(oembedTransformer as EmbedTransformer),
+	]
+}
+
 function autoAffiliates() {
 	return async function affiliateTransformer(tree: M.Root) {
 		visit(tree, 'link', function visitor(linkNode: M.Link) {
@@ -371,18 +426,20 @@ function remarkMermaidCodeToThemedSvg() {
 	}
 }
 
-const mdxCustomRemarkPlugins: U.PluggableList = [
-	remarkMermaidCodeToThemedSvg,
-	[
-		remarkEmbedder,
-		{
-			handleError: handleEmbedderError,
-			handleHTML: handleEmbedderHtml,
-			transformers: [twitterTransformer, eggheadTransformer, oembedTransformer],
-		},
-	],
-	autoAffiliates,
-]
+function getMdxCustomRemarkPlugins(): U.PluggableList {
+	return [
+		remarkMermaidCodeToThemedSvg,
+		[
+			remarkEmbedder,
+			{
+				handleError: handleEmbedderError,
+				handleHTML: handleEmbedderHtml,
+				transformers: getMdxEmbedTransformers(),
+			},
+		],
+		autoAffiliates,
+	]
+}
 
 const mdxCustomRehypePlugins: U.PluggableList = [
 	optimizeCloudinaryImages,
@@ -404,7 +461,7 @@ function applyMdxBundlerPluginOptions(
 		remarkSlug,
 		[remarkAutolinkHeadings, { behavior: 'wrap' }],
 		gfm,
-		...mdxCustomRemarkPlugins,
+		...getMdxCustomRemarkPlugins(),
 	] as U.PluggableList
 	options.rehypePlugins = [
 		...(options.rehypePlugins ?? []),
@@ -687,7 +744,7 @@ export {
 	compileMdx as compileMdxUnqueued,
 	compileMdxEsm,
 	mdxCustomRehypePlugins,
-	mdxCustomRemarkPlugins,
+	getMdxCustomRemarkPlugins as mdxCustomRemarkPlugins,
 	MDX_ESM_EXTERNALS,
 	queuedCompileMdx as compileMdx,
 }

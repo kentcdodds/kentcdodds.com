@@ -4,6 +4,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import pLimit from 'p-limit'
 import {
+	configureMdxCompileOptions,
+	getEmbedFallbackCount,
+} from '#app/utils/compile-mdx.server.ts'
+import {
 	getLocalBlogMdxListItemsUncached,
 	getLocalMdxDirList,
 } from '#app/utils/mdx.server.ts'
@@ -21,12 +25,14 @@ type CliOptions = {
 	out: string
 	concurrency: number
 	only: Array<string> | null
+	allowEmbedFallback: boolean
 }
 
 function parseArgs(argv: Array<string>): CliOptions {
 	let out = '/tmp/bundle.json'
 	let concurrency = 1
 	let only: Array<string> | null = null
+	let allowEmbedFallback = false
 
 	for (let index = 0; index < argv.length; index++) {
 		const arg = argv[index]
@@ -51,6 +57,10 @@ function parseArgs(argv: Array<string>): CliOptions {
 				.filter(Boolean)
 			continue
 		}
+		if (arg === '--allow-embed-fallback') {
+			allowEmbedFallback = true
+			continue
+		}
 		if (arg === '--help' || arg === '-h') {
 			printHelp()
 			process.exit(0)
@@ -58,7 +68,7 @@ function parseArgs(argv: Array<string>): CliOptions {
 		throw new Error(`Unknown argument: ${arg}`)
 	}
 
-	return { out, concurrency, only }
+	return { out, concurrency, only, allowEmbedFallback }
 }
 
 function printHelp() {
@@ -68,6 +78,7 @@ Options:
   --out <path>           Output bundle JSON path (default: /tmp/bundle.json)
   --concurrency <n>      Parallel compile workers (default: 1)
   --only <keys>          Comma-separated document keys (e.g. blog/foo,pages/uses)
+  --allow-embed-fallback Log and continue when embed network calls fail (plain link)
 `)
 }
 
@@ -83,6 +94,7 @@ function filterDocuments(
 async function main() {
 	const startedAt = Date.now()
 	const options = parseArgs(process.argv.slice(2))
+	configureMdxCompileOptions({ allowEmbedFallback: options.allowEmbedFallback })
 	const allDocuments = await discoverLocalMdxDocuments()
 	const documents = filterDocuments(allDocuments, options.only)
 
@@ -160,6 +172,7 @@ async function main() {
 			{
 				documents: documents.length,
 				failures: failures.length,
+				embedFallbacks: getEmbedFallbackCount(),
 				bundleBytes: Buffer.byteLength(serialized, 'utf8'),
 				elapsedMs,
 				largestDocs: docSizes.slice(0, 10),
