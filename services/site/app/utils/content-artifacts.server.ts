@@ -8,6 +8,7 @@
 
 import { type ComponentType } from 'react'
 import { type MdxListItem } from '#app/types.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 
 const contentDataKey = Symbol.for('kentcdodds.contentData')
 const loadMdxModuleKey = Symbol.for('kentcdodds.loadMdxModule')
@@ -16,7 +17,7 @@ const loadMdxModuleKey = Symbol.for('kentcdodds.loadMdxModule')
 export type ContentArtifactDocument = {
 	contentDir: string
 	slug: string
-	code: string
+	code?: string
 	githubResolvable?: boolean
 	frontmatter: Record<string, unknown>
 	readTime?: { text: string; minutes: number; time: number; words: number }
@@ -44,6 +45,20 @@ export type LoadMdxModuleFn = (
 	slug: string,
 ) => Promise<MdxModule | null>
 
+export type ContentRpcBinding = {
+	getDocumentCode(contentDir: string, slug: string): Promise<string | null>
+}
+
+function isContentRpcBinding(value: unknown): value is ContentRpcBinding {
+	if (!value || typeof value !== 'object') return false
+	return typeof (value as ContentRpcBinding).getDocumentCode === 'function'
+}
+
+function getContentRpcBinding(): ContentRpcBinding | undefined {
+	const binding = getRuntimeBinding('CONTENT_RPC')
+	return isContentRpcBinding(binding) ? binding : undefined
+}
+
 function getArtifactStore() {
 	return globalThis as typeof globalThis & {
 		[contentDataKey]?: ContentArtifactData | null
@@ -70,4 +85,18 @@ export function getArtifactDataFile(key: string): string | null {
 	const data = getContentData()
 	if (!data) return null
 	return data.dataFiles[key] ?? null
+}
+
+export async function getDocumentCode(
+	contentDir: string,
+	slug: string,
+): Promise<string | null> {
+	const rpc = getContentRpcBinding()
+	if (rpc) {
+		return rpc.getDocumentCode(contentDir, slug)
+	}
+
+	const data = getContentData()
+	const doc = data?.documents[`${contentDir}/${slug}`]
+	return doc?.code ?? null
 }

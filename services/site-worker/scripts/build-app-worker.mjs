@@ -124,12 +124,19 @@ async function patchAppWorkerNodeRequires(outfile) {
 	const imports = nodeBuiltins.map(
 		(mod) => `import * as __node_${mod}__ from 'node:${mod}';`,
 	)
-	const replacements = nodeBuiltins.flatMap((mod) => [
-		[`__require("${mod}")`, `__node_${mod}__`],
-		[`__require('${mod}')`, `__node_${mod}__`],
-		[`__require("node:${mod}")`, `__node_${mod}__`],
-		[`__require('node:${mod}')`, `__node_${mod}__`],
-	])
+	const requireShimNames = new Set(['__require'])
+	const shimMatch = contents.match(/(\w+)=\([^]*?Dynamic require of/)
+	if (shimMatch?.[1]) requireShimNames.add(shimMatch[1])
+
+	const replacements = nodeBuiltins.flatMap((mod) => {
+		const target = `__node_${mod}__`
+		return Array.from(requireShimNames).flatMap((shim) => [
+			[`${shim}("${mod}")`, target],
+			[`${shim}('${mod}')`, target],
+			[`${shim}("node:${mod}")`, target],
+			[`${shim}('node:${mod}')`, target],
+		])
+	})
 	let changed = false
 	for (const [from, to] of replacements) {
 		if (contents.includes(from)) {
@@ -180,7 +187,7 @@ async function buildAppWorkerBundle() {
 			...stubAliases,
 		},
 		define: sharedDefine,
-		minify: false,
+		minify: true,
 		sourcemap: false,
 		logLevel: 'info',
 		plugins: [

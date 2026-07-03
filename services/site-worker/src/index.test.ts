@@ -12,6 +12,13 @@ import {
 	setKvCacheLruEntry,
 } from './rpc/kv-cache-lru.ts'
 import {
+	cacheArtifactBundle,
+	clearArtifactBundleCache,
+	getCachedArtifactBundle,
+	getDocumentCodeFromBundle,
+	getOrBuildModuleMap,
+} from './artifact-bundle-cache.ts'
+import {
 	clearManifestCache,
 	readMdxManifest,
 	shouldBypassManifestCache,
@@ -32,6 +39,7 @@ import { getAssetCacheControl, isHard404AssetPath } from './static-assets.ts'
 
 afterEach(() => {
 	clearManifestCache()
+	clearArtifactBundleCache()
 	vi.useRealTimers()
 })
 
@@ -104,8 +112,8 @@ describe('module map assembly', () => {
 		expect(contentData.documents['blog/example']).toEqual({
 			contentDir: 'blog',
 			slug: 'example',
-			code: 'client-code',
 		})
+		expect(contentData.documents['blog/example']).not.toHaveProperty('code')
 
 		const modules = buildDynamicWorkerModuleMap(bundle)
 		expect(typeof modules['app-worker.js']).toBe('string')
@@ -118,6 +126,35 @@ describe('module map assembly', () => {
 		expect(modules['mdx/blog/react/jsx-runtime']).toEqual({
 			js: expect.any(String),
 		})
+	})
+
+	test('caches bundles and module maps by version', () => {
+		const bundle: MdxArtifactBundle = {
+			schemaVersion: 1,
+			version: 'cache-test',
+			generatedAt: '2026-07-03T00:00:00.000Z',
+			documents: {
+				'blog/example': {
+					contentDir: 'blog',
+					slug: 'example',
+					code: 'client-code',
+					esm: 'export default function Example() { return null }',
+				},
+			},
+			blogList: [],
+			dirLists: { blog: [], pages: [] },
+			dataFiles: {},
+		}
+
+		cacheArtifactBundle(bundle.version, bundle)
+		expect(getCachedArtifactBundle(bundle.version)).toBe(bundle)
+		expect(getDocumentCodeFromBundle(bundle, 'blog', 'example')).toBe(
+			'client-code',
+		)
+
+		const firstMap = getOrBuildModuleMap(bundle.version, bundle)
+		const secondMap = getOrBuildModuleMap(bundle.version, bundle)
+		expect(secondMap).toBe(firstMap)
 	})
 })
 

@@ -1,15 +1,23 @@
-import { deleteExpiredSessionsAndVerifications } from './expired-cleanup.ts'
 import {
-	buildDynamicWorkerModuleMap,
-	getDynamicWorkerId,
-	type MdxArtifactBundle,
-} from './module-map.ts'
+	cacheArtifactBundle,
+	clearArtifactBundleCache,
+	getCachedArtifactBundle,
+	getCachedModuleMap,
+	getOrBuildModuleMap,
+} from './artifact-bundle-cache.ts'
+import {
+	formatColdStartTiming,
+	mergeColdStartTimingHeaders,
+} from './cold-start-timing.ts'
+import { deleteExpiredSessionsAndVerifications } from './expired-cleanup.ts'
+import { getDynamicWorkerId, type MdxArtifactBundle } from './module-map.ts'
 import {
 	clearManifestCache,
 	readMdxManifest,
 	shouldBypassManifestCache,
 } from './manifest.ts'
 import { CacheRpc } from './rpc/cache-rpc.ts'
+import { ContentRpc } from './rpc/content-rpc.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
 import { getParentPrismaClient, PrismaRpc } from './rpc/prisma-rpc.ts'
 import type { ParentWorkerEnv } from './rpc/types.ts'
@@ -19,11 +27,12 @@ type ParentExecutionContext = ExecutionContext & {
 	exports: {
 		PrismaRpc: (options: { props: Record<string, never> }) => unknown
 		CacheRpc: (options: { props: Record<string, never> }) => unknown
+		ContentRpc: (options: { props: Record<string, never> }) => unknown
 		OutboundProxy: (options: { props: Record<string, never> }) => unknown
 	}
 }
 
-export { CacheRpc, OutboundProxy, PrismaRpc }
+export { CacheRpc, ContentRpc, OutboundProxy, PrismaRpc }
 
 function getStringEnvBindings(env: ParentWorkerEnv) {
 	return Object.fromEntries(
@@ -63,6 +72,7 @@ async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	const manifest = JSON.stringify({ version: bundle.version, r2Key })
 	await env.CONTENT_KV.put('mdx-manifest:current', manifest)
 	clearManifestCache()
+	clearArtifactBundleCache()
 
 	return Response.json({ ok: true, version: bundle.version, r2Key })
 }
@@ -105,13 +115,16 @@ async function handleDynamicRequest(
 	env: ParentWorkerEnv,
 	ctx: ParentExecutionContext,
 ) {
+	const parentStartedAt = performance.now()
 	const bypassManifestCache = shouldBypassManifestCache(request)
 	if (bypassManifestCache) {
 		clearManifestCache()
+		clearArtifactBundleCache()
 	}
 	const manifest = await readMdxManifest(env.CONTENT_KV, {
 		bypassCache: bypassManifestCache,
 	})
+	const manifestMs = performance.now() - parentStartedAt
 
 	if (!manifest) {
 		return unprovisionedResponse({
@@ -119,13 +132,32 @@ async function handleDynamicRequest(
 		})
 	}
 
-	const bundle = await fetchArtifactBundle(env, manifest.r2Key)
+	const bundleFetchStartedAt = performance.now()
+	let bundle: MdxArtifactBundle | undefined = getCachedArtifactBundle(
+		manifest.version,
+	)
+	let bundleCacheHit = true
+	if (!bundle) {
+		bundleCacheHit = false
+		const fetchedBundle = await fetchArtifactBundle(env, manifest.r2Key)
+		if (fetchedBundle) {
+			bundle = fetchedBundle
+			cacheArtifactBundle(manifest.version, bundle)
+		}
+	}
+	const bundleFetchMs = performance.now() - bundleFetchStartedAt
+
 	if (!bundle) {
 		return unprovisionedResponse({
 			missing: `MDX_ARTIFACTS object ${manifest.r2Key}`,
 			manifestVersion: manifest.version,
 		})
 	}
+
+	const moduleMapStartedAt = performance.now()
+	const hadModuleMapCache = Boolean(getCachedModuleMap(manifest.version))
+	const modules = getOrBuildModuleMap(manifest.version, bundle)
+	const moduleMapMs = performance.now() - moduleMapStartedAt
 
 	const buildSha = env.BUILD_SHA?.trim() || 'local-dev'
 	const freshIsolateNonce = request.headers.get('x-debug-fresh-isolate')
@@ -136,24 +168,57 @@ async function handleDynamicRequest(
 	)
 	const stringEnv = getStringEnvBindings(env)
 
-	const worker = env.LOADER.get(workerId, async () => ({
-		compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
-		compatibilityFlags: [
-			'nodejs_compat',
-			'no_handle_cross_request_promise_resolution',
-		],
-		mainModule: 'app-worker.js',
-		modules: buildDynamicWorkerModuleMap(bundle),
-		env: {
-			...stringEnv,
-			PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
-			CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
-			MDX_MODULES_AVAILABLE: 'true',
-		},
-		globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
-	}))
+	let loaderCallbackMs = 0
+	const worker = env.LOADER.get(workerId, async () => {
+		const loaderCallbackStartedAt = performance.now()
+		const workerConfig = {
+			compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
+			compatibilityFlags: [
+				'nodejs_compat',
+				'no_handle_cross_request_promise_resolution',
+			],
+			mainModule: 'app-worker.js',
+			modules,
+			env: {
+				...stringEnv,
+				PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
+				CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
+				CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),
+				MDX_MODULES_AVAILABLE: 'true',
+			},
+			globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
+		}
+		loaderCallbackMs = performance.now() - loaderCallbackStartedAt
+		return workerConfig
+	})
 
-	return worker.getEntrypoint().fetch(request)
+	const beforeFetchAt = performance.now()
+	const response = await worker.getEntrypoint().fetch(request)
+	const parentSetupMs = beforeFetchAt - parentStartedAt
+	const totalMs = performance.now() - parentStartedAt
+	const parentTiming = formatColdStartTiming({
+		manifest: manifestMs,
+		bundle: bundleFetchMs,
+		moduleMap: moduleMapMs,
+		loader: loaderCallbackMs,
+		parentSetup: parentSetupMs,
+		total: totalMs,
+		bundleCache: bundleCacheHit ? 1 : 0,
+		moduleMapCache: hadModuleMapCache ? 1 : 0,
+	})
+	const headers = new Headers(response.headers)
+	headers.set(
+		'X-Cold-Start-Timing',
+		mergeColdStartTimingHeaders(
+			response.headers.get('X-Cold-Start-Timing') ?? undefined,
+			parentTiming,
+		),
+	)
+	return new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers,
+	})
 }
 
 export default {

@@ -17,6 +17,7 @@ import { formatDate, typedBoolean } from '#app/utils/misc.ts'
 import { cache, cachified } from './cache.server.ts'
 import {
 	getContentData,
+	getDocumentCode,
 	getLoadMdxModule,
 	isWorkerContentMode,
 	type ContentArtifactDocument,
@@ -214,8 +215,14 @@ async function getWorkerMdxPage({
 		return null
 	}
 
+	const code = await getDocumentCode(contentDir, slug)
+	if (!code) {
+		workerMdxPageCache.set(cacheKey, null)
+		return null
+	}
+
 	const page: MdxPage = {
-		code: doc.code,
+		code,
 		slug: doc.slug,
 		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/services/site/content/${contentDir}/${slug}`,
 		readTime: doc.readTime as MdxPage['readTime'],

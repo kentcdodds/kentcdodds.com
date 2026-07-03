@@ -38,8 +38,8 @@ export function buildSiteContentData(bundle: MdxArtifactBundle) {
 	const contentDocuments: Record<string, unknown> = {}
 
 	for (const [key, document] of Object.entries(documents)) {
-		const { esm: _esm, ...documentWithoutEsm } = document
-		contentDocuments[key] = documentWithoutEsm
+		const { esm: _esm, code: _code, ...documentWithoutEsmAndCode } = document
+		contentDocuments[key] = documentWithoutEsmAndCode
 	}
 
 	return { ...rest, documents: contentDocuments }
