@@ -49,3 +49,4 @@ other/wrangler-logs/
 .react-router/
 /services/site/.react-router/
 /services/site/other/cache.db
+/services/site-worker/generated-wrangler.jsonc

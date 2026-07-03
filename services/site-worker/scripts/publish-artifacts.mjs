@@ -49,9 +49,10 @@ async function main() {
 	if (!bundlePath) usage()
 
 	const local = process.argv.includes('--local')
-	const configPath =
-		getArgValue('--config') ??
-		path.join(workerDir, 'wrangler.jsonc')
+	const defaultConfig = local
+		? path.join(workerDir, 'wrangler.jsonc')
+		: path.join(workerDir, 'generated-wrangler.jsonc')
+	const configPath = getArgValue('--config') ?? defaultConfig
 
 	const bundleRaw = await fs.readFile(bundlePath, 'utf8')
 	const bundle = JSON.parse(bundleRaw)

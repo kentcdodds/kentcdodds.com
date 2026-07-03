@@ -108,7 +108,7 @@ jobs:
       # exist). `secret bulk` creates and deploys a new version that inherits
       # the uploaded module code.
       - name: 🔑 Upload worker secrets
-        run: npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/.wrangler/generated-wrangler.jsonc
+        run: npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/generated-wrangler.jsonc
 
       - name: ✅ Smoke check healthcheck
         run: |

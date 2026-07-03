@@ -10,7 +10,7 @@ const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 function getConfigPath() {
 	const index = process.argv.indexOf('--config')
 	if (index === -1) {
-		return path.join(workerDir, '.wrangler/generated-wrangler.jsonc')
+		return path.join(workerDir, 'generated-wrangler.jsonc')
 	}
 	return process.argv[index + 1]
 }
