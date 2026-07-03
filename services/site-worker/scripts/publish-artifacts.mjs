@@ -56,14 +56,28 @@ async function publishViaEndpoint(bundlePath, endpointUrl) {
 		throw new Error('Bundle JSON must include a string "version" field')
 	}
 
-	const response = await fetch(endpointUrl, {
-		method: 'POST',
-		headers: {
-			'content-type': 'application/json',
-			auth: secret,
-		},
-		body: bundleRaw,
-	})
+	// Worker secret uploads propagate asynchronously; a publish immediately
+	// after `wrangler secret bulk` can hit a version that still has the old
+	// REFRESH_CACHE_SECRET (the endpoint answers 404 on auth mismatch). Retry
+	// with backoff to ride out propagation.
+	let response
+	for (let attempt = 1; attempt <= 8; attempt++) {
+		response = await fetch(endpointUrl, {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json',
+				auth: secret,
+			},
+			body: bundleRaw,
+		})
+		if (response.ok) break
+		if (attempt < 8) {
+			console.warn(
+				`Publish attempt ${attempt} failed (${response.status}); retrying in 15s...`,
+			)
+			await new Promise((resolve) => setTimeout(resolve, 15_000))
+		}
+	}
 
 	const responseText = await response.text()
 	if (!response.ok) {
