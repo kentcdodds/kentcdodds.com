@@ -22,6 +22,12 @@ import {
 	type MdxArtifactBundle,
 } from './module-map.ts'
 import { mockRoutes, PASSTHROUGH_HOSTS } from './rpc/outbound-mock-routes.ts'
+import type { ParentWorkerEnv } from './rpc/types.ts'
+import {
+	getServiceBindingForHost,
+	OAUTH_WORKER_HOST,
+	SEARCH_WORKER_HOST,
+} from './rpc/worker-service-routing.ts'
 import { getAssetCacheControl, isHard404AssetPath } from './static-assets.ts'
 
 afterEach(() => {
@@ -177,6 +183,24 @@ describe('static assets', () => {
 	test('hard 404s selected asset prefixes', () => {
 		expect(isHard404AssetPath('/build/missing.js')).toBe(true)
 		expect(isHard404AssetPath('/blog/missing')).toBe(false)
+	})
+})
+
+describe('worker service routing', () => {
+	test('routes oauth and search worker hostnames through service bindings', () => {
+		const oauthBinding = { fetch: vi.fn() }
+		const searchBinding = { fetch: vi.fn() }
+		const env = {
+			OAUTH_WORKER: oauthBinding,
+			SEARCH_WORKER: searchBinding,
+			SEARCH_WORKER_URL: `https://${SEARCH_WORKER_HOST}`,
+		} as unknown as ParentWorkerEnv
+
+		expect(getServiceBindingForHost(OAUTH_WORKER_HOST, env)).toBe(oauthBinding)
+		expect(getServiceBindingForHost(SEARCH_WORKER_HOST, env)).toBe(
+			searchBinding,
+		)
+		expect(getServiceBindingForHost('api.mailgun.net', env)).toBeUndefined()
 	})
 })
 

@@ -1,6 +1,7 @@
 import { WorkerEntrypoint } from 'cloudflare:workers'
 import { mockRoutes, PASSTHROUGH_HOSTS } from './outbound-mock-routes.ts'
 import type { ParentWorkerEnv } from './types.ts'
+import { getServiceBindingForHost } from './worker-service-routing.ts'
 
 function json(data: unknown, init?: ResponseInit) {
 	return Response.json(data, init)
@@ -197,6 +198,11 @@ function findMockRoute(request: Request, url: URL) {
 export class OutboundProxy extends WorkerEntrypoint<ParentWorkerEnv> {
 	async fetch(request: Request) {
 		const url = new URL(request.url)
+
+		const serviceBinding = getServiceBindingForHost(url.hostname, this.env)
+		if (serviceBinding) {
+			return serviceBinding.fetch(request)
+		}
 
 		if (PASSTHROUGH_HOSTS.has(url.hostname)) {
 			return fetch(request)

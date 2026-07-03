@@ -21,6 +21,10 @@ export type WorkerLoaderBinding = {
 	}
 }
 
+export type ServiceWorkerBinding = {
+	fetch(request: Request): Response | Promise<Response>
+}
+
 export type ParentWorkerEnv = {
 	ASSETS?: AssetsBinding
 	APP_DB: D1Database
@@ -28,7 +32,11 @@ export type ParentWorkerEnv = {
 	CONTENT_KV: KVNamespace
 	MDX_ARTIFACTS: R2Bucket
 	LOADER: WorkerLoaderBinding
+	OAUTH_WORKER?: ServiceWorkerBinding
+	SEARCH_WORKER?: ServiceWorkerBinding
 	BUILD_SHA: string
 	COMPATIBILITY_DATE: string
+	REFRESH_CACHE_SECRET?: string
+	SEARCH_WORKER_URL?: string
 	[key: string]: unknown
 }

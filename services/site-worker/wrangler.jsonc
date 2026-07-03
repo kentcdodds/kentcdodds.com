@@ -17,11 +17,11 @@
 	"kv_namespaces": [
 		{
 			"binding": "SITE_CACHE_KV",
-			"id": "00000000-0000-0000-0000-000000000001"
+			"id": "5180bc7fb5b14a5888db2ed8ac0e21ee"
 		},
 		{
 			"binding": "CONTENT_KV",
-			"id": "00000000-0000-0000-0000-000000000002"
+			"id": "976edaf098ed4c3391385bf7550ba5a6"
 		}
 	],
 	"r2_buckets": [
@@ -34,8 +34,18 @@
 		{
 			"binding": "APP_DB",
 			"database_name": "kentcdodds-com-staging-app-db",
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "01a8ba77-2a63-4a14-898d-6023942a480f",
 			"migrations_dir": ".wrangler/site-prisma-migrations"
+		}
+	],
+	"services": [
+		{
+			"binding": "OAUTH_WORKER",
+			"service": "kcd-oauth-provider"
+		},
+		{
+			"binding": "SEARCH_WORKER",
+			"service": "kcd-search-worker"
 		}
 	],
 	"triggers": {
