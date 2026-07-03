@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "build:site": "npm run build:router --workspace kentcdodds.com",
+    "build:app-worker": "node ./scripts/build-app-worker.mjs",
+    "build:worker": "npm run build:site && npm run build:app-worker",
+    "dev:harness": "node ./scripts/dev-harness/run-harness.mjs",
     "format": "prettier --write .",
-    "lint": "oxlint . --ignore-pattern .wrangler",
+    "lint": "oxlint . --ignore-pattern .wrangler --ignore-pattern scripts/dev-harness/artifacts",
     "test": "vitest --run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "deploy": "npm run build:site && wrangler deploy",
@@ -21,6 +24,7 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "react": "^19.2.4",
     "react-router": "^7.0.0",
     "zod": "^4.3.6"
@@ -29,6 +33,7 @@
     "@cloudflare/workers-types": "^4.20260306.1",
     "@epic-web/config": "^2.0.0",
     "@types/node": "^25.5.0",
+    "esbuild": "^0.27.4",
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",

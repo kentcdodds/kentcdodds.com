@@ -2,6 +2,7 @@ import { cachified, verboseReporter } from '@epic-web/cachified'
 import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { cache, shouldForceFresh } from './cache.server.ts'
+import { getArtifactDataFile, isWorkerContentMode } from './content-artifacts.server.ts'
 import { downloadFile } from './github.server.ts'
 import { getGitHubContentPath } from './github-content-paths.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.ts'
@@ -149,9 +150,12 @@ async function getPeople({
 				ttl: 1000 * 60 * 60 * 24 * 30,
 				staleWhileRevalidate: 1000 * 60 * 60 * 24,
 				getFreshValue: async () => {
-					const creditsString = await downloadFile(
-						getGitHubContentPath('data/credits.yml'),
-					)
+					const creditsString = isWorkerContentMode()
+						? getArtifactDataFile('data/credits.yml')
+						: await downloadFile(getGitHubContentPath('data/credits.yml'))
+					if (!creditsString) {
+						throw new Error('credits.yml is unavailable')
+					}
 					const rawCredits = YAML.parse(creditsString)
 					if (!Array.isArray(rawCredits)) {
 						console.error('Credits is not an array', rawCredits)

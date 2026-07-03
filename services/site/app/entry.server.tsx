@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-router'
 import chalk from 'chalk'
 import { isbot } from 'isbot'
-import { renderToReadableStream } from 'react-dom/server'
+import { renderToReadableStream, renderToString } from 'react-dom/server'
 import {
 	ServerRouter,
 	type ActionFunctionArgs,
@@ -15,11 +15,36 @@ import {
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
+import { getRuntimeBinding } from './utils/runtime-bindings.server.ts'
 
 init()
 global.ENV = getPublicEnv()
 
 const ABORT_DELAY = 5000
+
+function isWorkerRuntime() {
+	return Boolean(getRuntimeBinding('PRISMA_RPC'))
+}
+
+function transformDataEvtAttributesString(html: string, nonce: string) {
+	return html.replace(/data-evt-/g, `nonce="${nonce}" `)
+}
+
+function renderDocumentTree(
+	reactRouterContext: DocRequestArgs[3],
+	request: Request,
+	nonce: string,
+) {
+	return (
+		<NonceProvider value={nonce}>
+			<ServerRouter
+				context={reactRouterContext}
+				url={request.url}
+				nonce={nonce}
+			/>
+		</NonceProvider>
+	)
+}
 
 type DocRequestArgs = Parameters<HandleDocumentRequestFunction>
 
@@ -85,17 +110,26 @@ async function serveTheBots(...args: DocRequestArgs) {
 		loadContext,
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
+	if (isWorkerRuntime()) {
+		try {
+			const html = renderToString(
+				renderDocumentTree(reactRouterContext, request, nonce),
+			)
+			responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
+			return new Response(transformDataEvtAttributesString(html, nonce), {
+				status: responseStatusCode,
+				headers: responseHeaders,
+			})
+		} catch (error) {
+			Sentry.captureException(error)
+			throw error
+		}
+	}
 	const { controller, clearAbortTimeout } = createAbortTimeout()
 	let stream: Awaited<ReturnType<typeof renderToReadableStream>>
 	try {
 		stream = await renderToReadableStream(
-			<NonceProvider value={nonce}>
-				<ServerRouter
-					context={reactRouterContext}
-					url={request.url}
-					nonce={nonce}
-				/>
-			</NonceProvider>,
+			renderDocumentTree(reactRouterContext, request, nonce),
 			{ nonce, signal: controller.signal },
 		)
 		// Use allReady to wait for the entire document to be ready.
@@ -122,18 +156,27 @@ async function serveBrowsers(...args: DocRequestArgs) {
 		loadContext,
 	] = args
 	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
+	if (isWorkerRuntime()) {
+		try {
+			const html = renderToString(
+				renderDocumentTree(reactRouterContext, request, nonce),
+			)
+			responseHeaders.set('Content-Type', 'text/html; charset=UTF-8')
+			return new Response(transformDataEvtAttributesString(html, nonce), {
+				status: responseStatusCode,
+				headers: responseHeaders,
+			})
+		} catch (error) {
+			Sentry.captureException(error)
+			throw error
+		}
+	}
 	let didError = false
 	const { controller, clearAbortTimeout } = createAbortTimeout()
 	let stream: Awaited<ReturnType<typeof renderToReadableStream>>
 	try {
 		stream = await renderToReadableStream(
-			<NonceProvider value={nonce}>
-				<ServerRouter
-					context={reactRouterContext}
-					url={request.url}
-					nonce={nonce}
-				/>
-			</NonceProvider>,
+			renderDocumentTree(reactRouterContext, request, nonce),
 			{
 				nonce,
 				signal: controller.signal,

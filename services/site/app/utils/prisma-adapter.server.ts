@@ -14,6 +14,15 @@ function getPrismaAdapter({
 	appDbBinding?: unknown
 	databaseUrl?: string
 } = {}): NonNullable<Prisma.PrismaClientOptions['adapter']> {
+	const prismaRpc = getRuntimeBinding('PRISMA_RPC')
+	if (
+		prismaRpc &&
+		typeof prismaRpc === 'object' &&
+		typeof (prismaRpc as { query?: unknown }).query === 'function' &&
+		typeof (prismaRpc as { raw?: unknown }).raw === 'function'
+	) {
+		throw new Error('PRISMA_RPC clients do not use a local Prisma adapter')
+	}
 	if (isD1Database(appDbBinding)) {
 		return new PrismaD1(
 			appDbBinding as ConstructorParameters<typeof PrismaD1>[0],

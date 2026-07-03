@@ -5,6 +5,10 @@ import { type Session } from '#app/types.ts'
 import { getEpisodeHomeworkContentId } from '#app/utils/favorites.ts'
 import { migrateHomeworkCompletionsToUserRecords } from './homework-completion-migration.server.ts'
 import { getPrismaAdapter } from './prisma-adapter.server.ts'
+import {
+	createPrismaRpcClient,
+	getPrismaRpcBinding,
+} from './prisma-rpc-client.server.ts'
 import { Prisma, PrismaClient } from './prisma-generated.server/client.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -13,6 +17,10 @@ const logThreshold = 500
 const prisma = remember('prisma', getClient)
 
 function getClient(): PrismaClient {
+	const rpc = getPrismaRpcBinding()
+	if (rpc) {
+		return createPrismaRpcClient(rpc)
+	}
 	// NOTE: during development if you change anything in this function, remember
 	// that this only runs once per server restart and won't automatically be
 	// re-run per request like everything else is.
