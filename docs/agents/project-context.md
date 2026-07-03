@@ -76,6 +76,15 @@ reference:
 - Search now runs through a dedicated Cloudflare Worker workspace at
   `services/search-worker`. Production/staging site envs must set
   `SEARCH_WORKER_URL` and `SEARCH_WORKER_TOKEN`.
+- The full site also runs on Cloudflare Workers via `services/site-worker`
+  (parent worker + Worker Loader dynamic app worker + MDX artifact pipeline).
+  Architecture, deploy loop, runbooks, and sharp edges are documented in
+  [`cloudflare-worker-architecture.md`](./cloudflare-worker-architecture.md).
+  Key caveats: production workerd forbids module-scope I/O/timers/random (keep
+  module init lazy — `wrangler dev` is lenient and won't catch this), and the
+  MDX artifact compiler (`npm run mdx:compile --workspace kentcdodds.com`)
+  requires the app server module graph to stay importable by plain Node (no
+  `.tsx` in the chain).
 - Search Worker URL: if `SEARCH_WORKER_URL` contains `mock`, MSW returns fixtures;
   otherwise MSW passthrough sends traffic to that URL (e.g. local `wrangler dev`
   on `http://127.0.0.1:8787`). Tests expect a mock URL (see `.env.example`).
