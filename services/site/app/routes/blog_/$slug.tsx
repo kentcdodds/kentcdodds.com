@@ -79,10 +79,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw redirect(`/blog/${canonicalSlug}`, { status: 301 })
 	}
 	const timings = {}
-	const page = await getMdxPage(
+	const pagePromise = getMdxPage(
 		{ contentDir: 'blog', slug: params.slug },
 		{ request, timings },
 	)
+	const userPromise = getUser(request, { timings })
+	const readRankingsPromise = getBlogReadRankings({
+		request,
+		slug: params.slug,
+		timings,
+	})
+	const totalReadsPromise = getTotalPostReads({
+		request,
+		slug: params.slug,
+		timings,
+	})
+	const page = await pagePromise
 
 	if (!page) {
 		// Avoid caching/creating per-slug stats entries for random 404 slugs. (issue #461)
@@ -111,7 +123,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		throw json(catchData, { status: 404, headers })
 	}
 
-	const userPromise = getUser(request, { timings })
 	const favoritePromise = userPromise.then((user) =>
 		user
 			? prisma.favorite.findUnique({
@@ -139,8 +150,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				],
 				exclude: [params.slug],
 			}),
-			getBlogReadRankings({ request, slug: params.slug, timings }),
-			getTotalPostReads({ request, slug: params.slug, timings }),
+			readRankingsPromise,
+			totalReadsPromise,
 			favoritePromise,
 		])
 

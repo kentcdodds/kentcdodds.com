@@ -94,24 +94,24 @@ export async function loader({ request }: Route.LoaderArgs) {
 			label: 'index:reader-count',
 		},
 	)
-	const posts = await postsPromise
-	if (posts.length === 0) {
-		loaderDataDegraded = true
-	}
-	const [totalBlogReads, blogRankings, totalBlogReaders, blogRecommendations] =
+	const [posts, totalBlogReads, blogRankings, totalBlogReaders, user] =
 		await Promise.all([
+			postsPromise,
 			totalBlogReadsPromise,
 			blogRankingsPromise,
 			totalBlogReadersPromise,
-			posts.length
-				? withLoaderTimeout(getBlogRecommendations({ request, timings }), {
-						timeoutMs: HOMEPAGE_BLOG_STATS_TIMEOUT_MS,
-						fallback: [],
-						label: 'index:blog-recommendations',
-					})
-				: [],
+			userPromise,
 		])
-	const user = await userPromise
+	if (posts.length === 0) {
+		loaderDataDegraded = true
+	}
+	const blogRecommendations = posts.length
+		? await withLoaderTimeout(getBlogRecommendations({ request, timings }), {
+				timeoutMs: HOMEPAGE_BLOG_STATS_TIMEOUT_MS,
+				fallback: [],
+				label: 'index:blog-recommendations',
+			})
+		: []
 
 	return json(
 		{
