@@ -24,7 +24,7 @@
   "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "type": "module",
   "scripts": {
-    "postinstall": "prisma generate --schema ./prisma/schema.prisma",
+    "postinstall": "prisma generate --schema ./prisma/schema.prisma --generator client",
     "clean": "rimraf ../../node_modules/.cache ./server/dist ./build ./public/build",
     "prebuild": "npm run clean && echo All clean ✨",
     "build": "run-s build:*",

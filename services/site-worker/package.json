@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "npm run prisma:generate",
-    "prisma:generate": "prisma generate --schema ../site/prisma/schema.prisma --generator site_worker_client",
+    "prisma:generate": "node -e \"fs.rmSync('./generated/prisma-client', { recursive: true, force: true })\" && prisma generate --schema ../site/prisma/schema.prisma --generator site_worker_client",
     "build:site": "npm run build:router --workspace kentcdodds.com",
     "build:app-worker": "node ./scripts/build-app-worker.mjs",
     "build:worker": "npm run build:site && npm run build:app-worker",
