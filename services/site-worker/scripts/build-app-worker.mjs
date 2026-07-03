@@ -25,6 +25,10 @@ const stubAliases = {
 		'prisma-adapter-better-sqlite3.ts',
 	),
 	esbuild: path.join(stubsDir, 'esbuild.ts'),
+	'@esbuild-plugins/node-resolve': path.join(
+		stubsDir,
+		'esbuild-node-resolve.ts',
+	),
 	'@mdx-js/esbuild': path.join(stubsDir, 'mdx-esbuild.ts'),
 	'mdx-bundler/client/index.js': path.join(
 		stubsDir,
@@ -112,6 +116,7 @@ async function patchAppWorkerNodeRequires(outfile) {
 		'process',
 		'stream',
 		'string_decoder',
+		'tty',
 		'url',
 		'util',
 		'zlib',
@@ -204,8 +209,8 @@ async function buildAppWorkerBundle() {
 			{
 				name: 'external-dynamic-imports',
 				setup(build) {
-					build.onResolve({ filter: /^site-content-data\.js$/ }, () => ({
-						path: 'site-content-data.js',
+					build.onResolve({ filter: /^site-content-data\.json$/ }, () => ({
+						path: 'site-content-data.json',
 						external: true,
 					}))
 					build.onResolve({ filter: /^mdx\// }, (args) => ({

@@ -1,4 +1,4 @@
-declare module 'site-content-data.js' {
+declare module 'site-content-data.json' {
 	const contentData: unknown
 	export default contentData
 }

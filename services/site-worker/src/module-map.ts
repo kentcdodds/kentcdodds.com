@@ -1,9 +1,6 @@
 import appWorkerSource from '../dist/app-worker.js.txt'
-import reactDomServerSource from '../dist/vendor/react-dom-server.js.txt'
-import reactDomSource from '../dist/vendor/react-dom.js.txt'
-import reactJsxDevRuntimeSource from '../dist/vendor/react-jsx-dev-runtime.js.txt'
-import reactJsxRuntimeSource from '../dist/vendor/react-jsx-runtime.js.txt'
-import reactSource from '../dist/vendor/react.js.txt'
+import reactJsxRuntimeShimSource from '../dist/react-jsx-runtime-shim.js.txt'
+import reactShimSource from '../dist/react-shim.js.txt'
 
 export type MdxArtifactDocument = {
 	contentDir: string
@@ -37,14 +34,31 @@ export type WorkerLoaderModuleMap = Record<string, WorkerLoaderModule>
 
 export function buildSiteContentData(bundle: MdxArtifactBundle) {
 	const { documents, ...rest } = bundle
-	const contentData: Record<string, unknown> = { ...rest }
+	const contentDocuments: Record<string, unknown> = {}
 
 	for (const [key, document] of Object.entries(documents)) {
 		const { esm: _esm, ...documentWithoutEsm } = document
-		contentData[key] = documentWithoutEsm
+		contentDocuments[key] = documentWithoutEsm
 	}
 
-	return contentData
+	return { ...rest, documents: contentDocuments }
+}
+
+function addNestedReactShimAliases(
+	modules: WorkerLoaderModuleMap,
+	reactShim: string,
+	jsxRuntimeShim: string,
+) {
+	const mdxPrefixes = new Set<string>()
+	for (const name of Object.keys(modules)) {
+		if (!name.startsWith('mdx/') || !name.endsWith('.js')) continue
+		const slash = name.lastIndexOf('/')
+		if (slash > 0) mdxPrefixes.add(`${name.slice(0, slash + 1)}`)
+	}
+	for (const prefix of mdxPrefixes) {
+		modules[`${prefix}react`] = { js: reactShim }
+		modules[`${prefix}react/jsx-runtime`] = { js: jsxRuntimeShim }
+	}
 }
 
 export function buildDynamicWorkerModuleMap(
@@ -52,11 +66,8 @@ export function buildDynamicWorkerModuleMap(
 ): WorkerLoaderModuleMap {
 	const modules: WorkerLoaderModuleMap = {
 		'app-worker.js': appWorkerSource,
-		react: { js: reactSource },
-		'react-dom': { js: reactDomSource },
-		'react-dom/server': { js: reactDomServerSource },
-		'react/jsx-runtime': { js: reactJsxRuntimeSource },
-		'react/jsx-dev-runtime': { js: reactJsxDevRuntimeSource },
+		react: { js: reactShimSource },
+		'react/jsx-runtime': { js: reactJsxRuntimeShimSource },
 		'site-content-data.json': { json: buildSiteContentData(bundle) },
 	}
 
@@ -69,6 +80,8 @@ export function buildDynamicWorkerModuleMap(
 		}
 		modules[moduleName] = { js: document.esm }
 	}
+
+	addNestedReactShimAliases(modules, reactShimSource, reactJsxRuntimeShimSource)
 
 	return modules
 }

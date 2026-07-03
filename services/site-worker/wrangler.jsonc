@@ -3,7 +3,7 @@
 	"name": "kentcdodds-com-staging",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-03-17",
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": ["nodejs_compat", "no_handle_cross_request_promise_resolution"],
 	"workers_dev": true,
 	"vars": {
 		"BUILD_SHA": "local-dev",

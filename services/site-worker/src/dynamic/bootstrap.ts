@@ -103,7 +103,7 @@ async function ensureRuntimeBridges(env: WorkerEnv) {
 	const loadMdxModuleKey = Symbol.for('kentcdodds.loadMdxModule')
 
 	if (!contentDataPromise) {
-		contentDataPromise = import('site-content-data.js').then(
+		contentDataPromise = import('site-content-data.json').then(
 			(mod) => mod.default,
 		)
 	}

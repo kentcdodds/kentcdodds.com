@@ -13,17 +13,16 @@ Cloudflare parent worker for the kentcdodds.com migration. See
   mocks)
 - Daily cron cleanup for expired `Session` / `Verification` rows
 
-## Dist placeholders (`dist/*.txt`)
+## Dist build (`dist/*.txt`)
 
-The parent bundle imports worker source text from:
+`npm run build:worker --workspace site-worker` produces:
 
-- `dist/app-worker.js.txt`
-- `dist/vendor/{react,react-dom,react-dom-server,react-jsx-runtime,react-jsx-dev-runtime}.js.txt`
+- `dist/app-worker.js.txt` — esbuild bundle of the dynamic app bootstrap
+- `dist/react-shim.js.txt` / `dist/react-jsx-runtime-shim.js.txt` — delegate
+  to the single React copy published on `globalThis` by `app-worker.js`
 
 Wrangler `rules: [{ type: "Text", globs: ["**/*.txt"] }]` inlines these as
-strings. The app-bundle workstream replaces the committed placeholders via
-`npm run build:app-worker --workspace site-worker` without changing parent
-worker code.
+strings in the parent worker bundle.
 
 ## Prisma on workerd
 
@@ -50,14 +49,14 @@ worker code.
 ## Local development
 
 ```sh
-npm run d1:migrations:apply:local --workspace site-worker
-npm run dev --workspace site-worker   # http://127.0.0.1:8792
-npm run test:local-e2e --workspace site-worker
+npm run build:worker --workspace site-worker
+npm run test:local-e2e --workspace site-worker   # migrations, seed, publish /tmp/bundle.json
+npm run dev --workspace site-worker                # http://127.0.0.1:8792
 ```
 
-`test:local-e2e` seeds a tiny MDX bundle into local R2/KV, starts
-`wrangler dev`, and asserts the placeholder dynamic worker returns
-PrismaRpc/CacheRpc round-trips.
+`test:local-e2e` applies D1 migrations, seeds the admin user, publishes the MDX
+artifact bundle into local R2/KV, and writes `.dev.vars`. Start `wrangler dev`
+separately for interactive testing.
 
 If `worker_loaders` is unavailable in your local Wrangler build, unit tests
 still cover manifest/module-map/cache/proxy logic; verify the loader path on the
@@ -82,9 +81,9 @@ CI runs the same flow from `.github/workflows/cf-preview-deploy.yml`.
 | Script              | Purpose                                                                          |
 | ------------------- | -------------------------------------------------------------------------------- |
 | `provision:preview` | Idempotently create D1/KV/R2 preview resources + write generated wrangler config |
-| `publish:artifacts` | Upload MDX bundle JSON to R2 + update `mdx-manifest:current`                     |
-| `seed:preview-d1`   | Idempotent preview seed (`me@kentcdodds.com` / `iliketwix`)                      |
-| `test:local-e2e`    | Local wrangler dev smoke with placeholder dynamic worker                         |
+| `publish:artifacts` | Upload MDX bundle JSON to R2 + update `mdx-manifest:current` (`--local` for dev) |
+| `seed:preview-d1`   | Idempotent preview seed (`me@kentcdodds.com` / `iliketwix`; `--local` for dev)   |
+| `test:local-e2e`    | Local migrations, seed, artifact publish, `.dev.vars` setup                      |
 
 D1 migration scripts accept `WRANGLER_CONFIG` (defaults to `wrangler.jsonc`
 locally and `.wrangler/generated-wrangler.jsonc` for remote).

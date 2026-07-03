@@ -4,7 +4,11 @@ import {
 	getDynamicWorkerId,
 	type MdxArtifactBundle,
 } from './module-map.ts'
-import { readMdxManifest, shouldBypassManifestCache } from './manifest.ts'
+import {
+	clearManifestCache,
+	readMdxManifest,
+	shouldBypassManifestCache,
+} from './manifest.ts'
 import { CacheRpc } from './rpc/cache-rpc.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
 import { getParentPrismaClient, PrismaRpc } from './rpc/prisma-rpc.ts'
@@ -60,6 +64,9 @@ async function handleDynamicRequest(
 	ctx: ParentExecutionContext,
 ) {
 	const bypassManifestCache = shouldBypassManifestCache(request)
+	if (bypassManifestCache) {
+		clearManifestCache()
+	}
 	const manifest = await readMdxManifest(env.CONTENT_KV, {
 		bypassCache: bypassManifestCache,
 	})
@@ -84,7 +91,10 @@ async function handleDynamicRequest(
 
 	const worker = env.LOADER.get(workerId, async () => ({
 		compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
-		compatibilityFlags: ['nodejs_compat'],
+		compatibilityFlags: [
+			'nodejs_compat',
+			'no_handle_cross_request_promise_resolution',
+		],
 		mainModule: 'app-worker.js',
 		modules: buildDynamicWorkerModuleMap(bundle),
 		env: {
