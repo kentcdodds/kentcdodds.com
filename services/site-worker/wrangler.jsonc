@@ -5,17 +5,50 @@
 	"compatibility_date": "2026-03-17",
 	"compatibility_flags": ["nodejs_compat"],
 	"workers_dev": true,
+	"vars": {
+		"BUILD_SHA": "local-dev",
+		"COMPATIBILITY_DATE": "2026-03-17"
+	},
+	"worker_loaders": [
+		{
+			"binding": "LOADER"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "SITE_CACHE_KV",
+			"id": "00000000-0000-0000-0000-000000000001"
+		},
+		{
+			"binding": "CONTENT_KV",
+			"id": "00000000-0000-0000-0000-000000000002"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MDX_ARTIFACTS",
+			"bucket_name": "kcd-site-cf-preview-artifacts"
+		}
+	],
 	"d1_databases": [
 		{
 			"binding": "APP_DB",
 			"database_name": "kentcdodds-com-staging-app-db",
-			// Replace this after `wrangler d1 create kentcdodds-com-staging-app-db`.
 			"database_id": "00000000-0000-0000-0000-000000000000",
 			"migrations_dir": ".wrangler/site-prisma-migrations"
 		}
 	],
+	"triggers": {
+		"crons": ["0 3 * * *"]
+	},
+	"rules": [
+		{
+			"type": "Text",
+			"globs": ["**/*.txt"]
+		}
+	],
 	"assets": {
 		"binding": "ASSETS",
-		"directory": "../site/build/client",
-	},
+		"directory": "../site/build/client"
+	}
 }

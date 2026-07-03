@@ -43,6 +43,8 @@ other/postcss.ignored
 
 *.db-journal
 .wrangler
+/services/site-worker/.dev.vars
+/services/site-worker/generated/
 other/wrangler-logs/
 .react-router/
 /services/site/.react-router/
