@@ -28,10 +28,12 @@ the pieces in `services/site-worker` and the MDX artifact pipeline.
                         │  id = app:{BUILD_SHA}:content:{version}  │
                         │  modules:                                │
                         │   - app-worker.js  (bootstrap + RR app)  │
-                        │   - react, react-dom, react-dom/server,  │
-                        │     react/jsx-runtime, scheduler (shared │
-                        │     vendor ESM so MDX modules and the    │
-                        │     app use ONE React instance)          │
+                        │     bundles react/react-dom/scheduler    │
+                        │     internally (single React instance)   │
+                        │   - react, react/jsx-runtime (shims that │
+                        │     read shared React from globalThis;   │
+                        │     plus per-MDX-dir aliases like        │
+                        │     mdx/pages/react for workerd resolve) │
                         │   - mdx/blog/{slug}.js (per post, ESM)   │
                         │   - mdx/pages/{slug}.js                  │
                         │   - site-content-data.json (yaml data,   │
@@ -177,7 +179,11 @@ oEmbed providers) passes through to the real services.
   mdx-bundler `new Function` path. Both variants are compiled from the same
   source with the same plugins, so trees match and hydration is clean.
 - The ESM variant externalizes `react` and `react/jsx-runtime`; those resolve
-  to the shared vendor modules in the module map (single React instance).
+  to shim modules in the module map that delegate to the single React copy
+  published on `globalThis` by `app-worker.js` at startup. Because workerd
+  resolves bare imports relative to nested MDX module paths (e.g.
+  `mdx/pages/uses.js` → `mdx/pages/react`), the module map must also include
+  per-directory aliases (`mdx/pages/react`, `mdx/blog/react`, etc.).
 
 ## Local development
 
