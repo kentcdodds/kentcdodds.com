@@ -70,7 +70,7 @@ describe('manifest ttl', () => {
 })
 
 describe('module map assembly', () => {
-	test('builds vendor, content data, and per-document modules', () => {
+	test('builds shims, content data, nested MDX aliases, and per-document modules', () => {
 		const bundle: MdxArtifactBundle = {
 			schemaVersion: 1,
 			version: 'abc',
@@ -89,8 +89,8 @@ describe('module map assembly', () => {
 		}
 
 		const contentData = buildSiteContentData(bundle)
-		expect(contentData.blog).toBeUndefined()
-		expect(contentData['blog/example']).toEqual({
+		expect(contentData).not.toHaveProperty('blog')
+		expect(contentData.documents['blog/example']).toEqual({
 			contentDir: 'blog',
 			slug: 'example',
 			code: 'client-code',
@@ -102,6 +102,10 @@ describe('module map assembly', () => {
 		expect(modules['site-content-data.json']).toEqual({ json: contentData })
 		expect(modules['mdx/blog/example.js']).toEqual({
 			js: 'export default function Example() { return null }',
+		})
+		expect(modules['mdx/blog/react']).toEqual({ js: expect.any(String) })
+		expect(modules['mdx/blog/react/jsx-runtime']).toEqual({
+			js: expect.any(String),
 		})
 	})
 })
