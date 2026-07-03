@@ -8,7 +8,7 @@ const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 
 function usage() {
 	console.error(
-		'Usage: node scripts/publish-artifacts.mjs <bundle.json> [--config path/to/wrangler.jsonc]',
+		'Usage: node scripts/publish-artifacts.mjs <bundle.json> [--config path/to/wrangler.jsonc] [--local]',
 	)
 	process.exit(1)
 }
@@ -48,9 +48,10 @@ async function main() {
 	const bundlePath = process.argv[2]
 	if (!bundlePath) usage()
 
+	const local = process.argv.includes('--local')
 	const configPath =
 		getArgValue('--config') ??
-		path.join(workerDir, '.wrangler/generated-wrangler.jsonc')
+		path.join(workerDir, 'wrangler.jsonc')
 
 	const bundleRaw = await fs.readFile(bundlePath, 'utf8')
 	const bundle = JSON.parse(bundleRaw)
@@ -71,7 +72,7 @@ async function main() {
 		config.r2_buckets?.find((entry) => entry.binding === 'MDX_ARTIFACTS')
 			?.bucket_name ?? 'kcd-site-cf-preview-artifacts'
 
-	runWrangler([
+	const r2Args = [
 		'r2',
 		'object',
 		'put',
@@ -80,26 +81,35 @@ async function main() {
 		bundlePath,
 		'--config',
 		configPath,
-		'--remote',
-	])
+	]
+	if (local) r2Args.push('--local')
+	else r2Args.push('--remote')
+	runWrangler(r2Args)
 
 	const manifest = JSON.stringify({
 		version: bundle.version,
 		r2Key,
 	})
 
-	runWrangler([
+	const kvArgs = [
 		'kv',
 		'key',
 		'put',
 		'mdx-manifest:current',
 		manifest,
-		'--namespace-id',
-		contentKv.id,
-		'--remote',
-	])
+		'--config',
+		configPath,
+	]
+	if (local) {
+		kvArgs.push('--binding', 'CONTENT_KV', '--local')
+	} else {
+		kvArgs.push('--namespace-id', contentKv.id, '--remote')
+	}
+	runWrangler(kvArgs)
 
-	console.log(`Published ${r2Key} and updated mdx-manifest:current`)
+	console.log(
+		`Published ${r2Key} and updated mdx-manifest:current (${local ? 'local' : 'remote'})`,
+	)
 }
 
 main().catch((error) => {

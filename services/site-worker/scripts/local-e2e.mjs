@@ -3,12 +3,12 @@ import { constants } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { spawn, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 
 const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const port = Number(process.env.SITE_WORKER_DEV_PORT ?? 8792)
 const configPath = path.join(workerDir, 'wrangler.jsonc')
-const bundlePath = path.join(workerDir, '.wrangler/local-e2e-bundle.json')
+const defaultBundlePath = '/tmp/bundle.json'
 
 function run(command, args, options = {}) {
 	const result = spawnSync(command, args, {
@@ -23,87 +23,6 @@ function run(command, args, options = {}) {
 		)
 	}
 	return `${result.stdout}\n${result.stderr}`.trim()
-}
-
-async function waitForHealthcheck() {
-	const url = `http://127.0.0.1:${port}/healthcheck`
-	for (let attempt = 0; attempt < 60; attempt += 1) {
-		try {
-			const response = await fetch(url)
-			if (response.ok && (await response.text()) === 'OK') return
-		} catch {
-			// retry
-		}
-		await new Promise((resolve) => setTimeout(resolve, 500))
-	}
-	throw new Error(`Timed out waiting for ${url}`)
-}
-
-async function seedLocalArtifacts() {
-	const bundle = {
-		schemaVersion: 1,
-		version: 'local-e2e',
-		generatedAt: new Date().toISOString(),
-		documents: {
-			'blog/e2e-post': {
-				contentDir: 'blog',
-				slug: 'e2e-post',
-				code: 'export default function Post() { return null }',
-				esm: 'export default function Post() { return null }',
-				frontmatter: { title: 'E2E Post' },
-			},
-		},
-		blogList: [],
-		dirLists: { blog: [], pages: [] },
-		dataFiles: {},
-	}
-
-	await fs.mkdir(path.dirname(bundlePath), { recursive: true })
-	await fs.writeFile(bundlePath, JSON.stringify(bundle))
-
-	const r2Key = `mdx-artifacts/${bundle.version}.json`
-	const manifest = JSON.stringify({
-		version: bundle.version,
-		r2Key,
-	})
-
-	run('npm', [
-		'exec',
-		'wrangler',
-		'--',
-		'r2',
-		'object',
-		'put',
-		`kcd-site-cf-preview-artifacts/${r2Key}`,
-		'--file',
-		bundlePath,
-		'--config',
-		configPath,
-		'--local',
-	])
-
-	run('npm', [
-		'exec',
-		'wrangler',
-		'--',
-		'kv',
-		'key',
-		'put',
-		'mdx-manifest:current',
-		manifest,
-		'--binding',
-		'CONTENT_KV',
-		'--config',
-		configPath,
-		'--local',
-	])
-}
-
-async function writeDevVars(secrets) {
-	const lines = Object.entries(secrets).map(
-		([key, value]) => `${key}=${JSON.stringify(value)}`,
-	)
-	await fs.writeFile(path.join(workerDir, '.dev.vars'), `${lines.join('\n')}\n`)
 }
 
 async function ensureAssetsDirectory() {
@@ -121,7 +40,7 @@ async function ensureAssetsDirectory() {
 
 const localDevSecrets = {
 	NODE_ENV: 'production',
-	PORT: '8792',
+	PORT: String(port),
 	MOCKS: 'true',
 	DATABASE_URL: 'file:./prisma/sqlite.db',
 	BOT_GITHUB_TOKEN: 'token',
@@ -171,68 +90,48 @@ const localDevSecrets = {
 	CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: 'call-kent-audio-secret',
 }
 
+async function writeDevVars(secrets) {
+	const lines = Object.entries(secrets).map(
+		([key, value]) => `${key}=${JSON.stringify(value)}`,
+	)
+	await fs.writeFile(path.join(workerDir, '.dev.vars'), `${lines.join('\n')}\n`)
+}
+
 async function main() {
+	const bundlePath = process.argv[2] ?? defaultBundlePath
+	try {
+		await fs.access(bundlePath, constants.F_OK)
+	} catch {
+		throw new Error(`Bundle not found at ${bundlePath}`)
+	}
+
+	console.log('Applying D1 migrations locally...')
 	run('npm', ['run', 'd1:migrations:apply:local', '--workspace', 'site-worker'])
+
+	console.log('Seeding preview D1 locally...')
+	run('node', [
+		path.join(workerDir, 'scripts/seed-preview-d1.mjs'),
+		'--local',
+		'--config',
+		configPath,
+	])
+
 	await ensureAssetsDirectory()
 	await writeDevVars(localDevSecrets)
-	await seedLocalArtifacts()
 
-	const devProcess = spawn(
-		'npm',
-		[
-			'exec',
-			'wrangler',
-			'--',
-			'dev',
-			'--config',
-			configPath,
-			'--port',
-			String(port),
-		],
-		{
-			cwd: workerDir,
-			stdio: ['ignore', 'pipe', 'pipe'],
-		},
+	console.log(`Publishing artifacts from ${bundlePath}...`)
+	run('node', [
+		path.join(workerDir, 'scripts/publish-artifacts.mjs'),
+		bundlePath,
+		'--config',
+		configPath,
+		'--local',
+	])
+
+	console.log('Local e2e setup complete.')
+	console.log(
+		`Start the parent worker with: npm run dev --workspace site-worker (port ${port})`,
 	)
-
-	let output = ''
-	devProcess.stdout.on('data', (chunk) => {
-		output += chunk.toString()
-	})
-	devProcess.stderr.on('data', (chunk) => {
-		output += chunk.toString()
-	})
-
-	try {
-		await waitForHealthcheck()
-
-		const response = await fetch(`http://127.0.0.1:${port}/`)
-		const body = await response.json()
-
-		console.log(JSON.stringify(body, null, 2))
-
-		if (!response.ok) {
-			throw new Error(`Expected 200 from /, got ${response.status}`)
-		}
-		if (body.marker !== 'site-worker-placeholder-app') {
-			throw new Error(`Unexpected marker: ${body.marker}`)
-		}
-		if (!body.prisma?.ok) {
-			throw new Error(`PrismaRpc round-trip failed: ${JSON.stringify(body.prisma)}`)
-		}
-		if (!body.cache?.value?.marker) {
-			throw new Error(`CacheRpc round-trip failed: ${JSON.stringify(body.cache)}`)
-		}
-
-		console.log('Local e2e passed')
-	} finally {
-		devProcess.kill('SIGTERM')
-		if (/worker_loaders/i.test(output) && /unsupported|not supported/i.test(output)) {
-			console.warn(
-				'worker_loaders may be unsupported in local wrangler dev; verify loader path on deployed preview',
-			)
-		}
-	}
 }
 
 main().catch((error) => {
