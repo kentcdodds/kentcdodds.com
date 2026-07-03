@@ -16,6 +16,19 @@ import {
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
+type CacheRpcBinding = {
+	get(key: string): Promise<CacheEntry<unknown> | null>
+	set(key: string, entry: CacheEntry<unknown>): Promise<void>
+	delete(key: string): Promise<void>
+	keys(prefix?: string, limit?: number): Promise<Array<string>>
+}
+
+function getCacheRpcBinding(): CacheRpcBinding | undefined {
+	const binding = getRuntimeBinding<CacheRpcBinding>('CACHE_RPC')
+	if (!binding || typeof binding.get !== 'function') return undefined
+	return binding
+}
+
 type DatabaseSync = import('node:sqlite').DatabaseSync
 type StatementSync = ReturnType<DatabaseSync['prepare']>
 
@@ -112,7 +125,7 @@ const lruInstance = remember(
 )
 
 export function isFileCacheAvailable() {
-	return !hasAppDbBinding()
+	return !hasAppDbBinding() && !getCacheRpcBinding()
 }
 
 export const lruCache = {
@@ -165,6 +178,14 @@ function bufferReviver(_key: string, value: unknown) {
 export const cache: CachifiedCache = {
 	name: 'Application cache',
 	async get(key) {
+		const rpc = getCacheRpcBinding()
+		if (rpc) {
+			const lruHit = lruCache.get(key)
+			if (lruHit) return lruHit
+			const entry = await rpc.get(key)
+			if (entry) lruCache.set(key, entry)
+			return entry
+		}
 		if (hasAppDbBinding()) return lruCache.get(key) ?? null
 		const { preparedGet } = await getSqliteCacheState()
 		const result = preparedGet.get(key) as any
@@ -175,6 +196,12 @@ export const cache: CachifiedCache = {
 		}
 	},
 	async set(key, entry) {
+		const rpc = getCacheRpcBinding()
+		if (rpc) {
+			lruCache.set(key, entry)
+			await rpc.set(key, entry)
+			return
+		}
 		if (hasAppDbBinding()) {
 			lruCache.set(key, entry)
 			return
@@ -187,6 +214,12 @@ export const cache: CachifiedCache = {
 		)
 	},
 	async delete(key) {
+		const rpc = getCacheRpcBinding()
+		if (rpc) {
+			lruCache.delete(key)
+			await rpc.delete(key)
+			return
+		}
 		if (hasAppDbBinding()) {
 			lruCache.delete(key)
 			return
@@ -197,6 +230,13 @@ export const cache: CachifiedCache = {
 }
 
 export async function getAllCacheKeys(limit: number) {
+	const rpc = getCacheRpcBinding()
+	if (rpc) {
+		return {
+			sqlite: await rpc.keys(undefined, limit),
+			lru: [...lruInstance.keys()],
+		}
+	}
 	const sqlite = hasAppDbBinding()
 		? []
 		: (await getSqliteCacheState()).preparedAllKeys
@@ -209,6 +249,14 @@ export async function getAllCacheKeys(limit: number) {
 }
 
 export async function searchCacheKeys(search: string, limit: number) {
+	const rpc = getCacheRpcBinding()
+	if (rpc) {
+		const keys = await rpc.keys(search, limit)
+		return {
+			sqlite: keys,
+			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
+		}
+	}
 	const sqlite = hasAppDbBinding()
 		? []
 		: (await getSqliteCacheState()).preparedKeySearch

@@ -1,5 +1,3 @@
-import http from 'http'
-import https from 'https'
 import { cachified, verboseReporter } from '@epic-web/cachified'
 import type * as H from 'hast'
 import { toString } from 'hast-util-to-string'
@@ -87,35 +85,19 @@ async function getMetadata(url: string): Promise<Metadata> {
 	return getMetadataFromHtml(html, url)
 }
 
-function unshorten(
-	urlString: string,
-	maxFollows: number = 10,
-): Promise<string> {
-	return new Promise((resolve, reject) => {
-		try {
-			const url = new URL(urlString)
-			if (url.protocol) {
-				const { request } = url.protocol === 'https:' ? https : http
-				request(urlString, { method: 'HEAD' }, (response) => {
-					const {
-						headers: { location },
-					} = response
-					if (location && location !== urlString && maxFollows > 0) {
-						const fullLocation = location.startsWith('/')
-							? new URL(location, url).toString()
-							: location
-						void unshorten(fullLocation, maxFollows - 1).then(resolve)
-					} else {
-						resolve(urlString)
-					}
-				}).end()
-			} else {
-				reject(`Invalid URL: ${urlString}`)
-			}
-		} catch (error: unknown) {
-			reject(error)
+async function unshorten(urlString: string, maxFollows = 10): Promise<string> {
+	let current = urlString
+	for (let follow = 0; follow < maxFollows; follow++) {
+		const response = await fetch(current, { method: 'HEAD', redirect: 'manual' })
+		const location = response.headers.get('location')
+		if (!location || response.status < 300 || response.status >= 400) {
+			return current
 		}
-	})
+		current = location.startsWith('/')
+			? new URL(location, current).toString()
+			: location
+	}
+	return current
 }
 
 async function getTweetCached(tweetId: string) {

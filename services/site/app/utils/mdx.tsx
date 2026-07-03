@@ -1,6 +1,7 @@
 import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
+import { type ComponentType } from 'react'
 import { type MetaFunction } from 'react-router'
 import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
 import { MermaidDiagram } from '#app/components/mermaid.tsx'
@@ -153,16 +154,47 @@ declare module 'react' {
 }
 
 /**
+ * Server-side registry for worker-imported MDX modules (no eval).
+ * Keyed by the mdx-bundler `code` string returned to route loaders.
+ */
+const serverMdxRegistry = new Map<
+	string,
+	ComponentType<Record<string, unknown>>
+>()
+
+export function registerMdxComponentForCode(
+	code: string,
+	mod: { default: ComponentType<Record<string, unknown>> },
+) {
+	const Component = mod.default
+	function KCDMdxComponent({
+		components,
+		...rest
+	}: {
+		components?: Record<string, ComponentType<unknown>>
+		[key: string]: unknown
+	}) {
+		return (
+			<Component components={{ ...mdxComponents, ...components }} {...rest} />
+		)
+	}
+	serverMdxRegistry.set(code, KCDMdxComponent)
+}
+
+/**
  * This should be rendered within a useMemo
  * @param code the code to get the component from
  * @returns the component
  */
 function getMdxComponent(code: string) {
+	const registered = serverMdxRegistry.get(code)
+	if (registered) return registered
+
 	const Component = mdxBundler.getMDXComponent(code)
 	function KCDMdxComponent({
 		components,
 		...rest
-	}: Parameters<typeof Component>['0']) {
+	}: Parameters<typeof Component>[0]) {
 		return (
 			<Component components={{ ...mdxComponents, ...components }} {...rest} />
 		)

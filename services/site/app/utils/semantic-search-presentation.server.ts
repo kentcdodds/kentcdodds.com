@@ -3,6 +3,11 @@ import path from 'node:path'
 import { slugifyWithCounter } from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { getImageBuilder, images } from '#app/images.tsx'
+import {
+	getArtifactDataFile,
+	getContentData,
+	isWorkerContentMode,
+} from '#app/utils/content-artifacts.server.ts'
 
 type SupportedRepoDocType =
 	| 'blog'
@@ -204,6 +209,13 @@ function parseYamlFrontmatter(source: string): Record<string, unknown> | null {
 }
 
 async function readMdxSourceForSlug(type: 'blog' | 'page', slug: string) {
+	if (isWorkerContentMode()) {
+		const doc = getContentData()?.documents[`${type}/${slug}`]
+		if (!doc) throw new Error(`Missing artifact document for ${type}/${slug}`)
+		const frontmatter = doc.frontmatter ?? {}
+		return `---\n${YAML.stringify(frontmatter)}---\n`
+	}
+
 	const root = getRepoRootDir()
 	if (type === 'page') {
 		const filename = path.join(root, 'content', 'pages', `${slug}.mdx`)
@@ -244,6 +256,23 @@ async function getMdxDocMeta({
 	if (cached) return cached
 
 	try {
+		if (isWorkerContentMode()) {
+			const doc = getContentData()?.documents[`${type}/${slug}`]
+			if (!doc) return null
+			const fm = doc.frontmatter ?? {}
+			const meta: RepoDocMeta = {
+				title: asNonEmptyString(fm.title),
+				summary: asNonEmptyString(fm.description),
+				cloudinaryId: asNonEmptyString(fm.bannerCloudinaryId),
+				imageAlt:
+					typeof fm.bannerAlt === 'string'
+						? normalizeText(fm.bannerAlt)
+						: undefined,
+			}
+			mdxMetaCache.set(cacheKey, meta)
+			return meta
+		}
+
 		const source = await readMdxSourceForSlug(type, slug)
 		const fm = parseYamlFrontmatter(source)
 		const title = asNonEmptyString(fm?.title)
@@ -270,6 +299,27 @@ type TalkMeta = { title: string; description?: string }
 let talksBySlug: Map<string, TalkMeta> | null = null
 async function loadTalksBySlug() {
 	if (talksBySlug) return talksBySlug
+	if (isWorkerContentMode()) {
+		const raw = getArtifactDataFile('data/talks.yml')
+		const parsed = raw ? YAML.parse(raw) : []
+		if (!Array.isArray(parsed)) {
+			talksBySlug = new Map()
+			return talksBySlug
+		}
+		talksBySlug = new Map(
+			parsed
+				.filter((talk) => talk && typeof talk === 'object')
+				.map((talk) => {
+					const title = asNonEmptyString((talk as TalkMeta).title) ?? 'TBA'
+					const description = asNonEmptyString(
+						(talk as { description?: string }).description,
+					)
+					const slug = asNonEmptyString((talk as { slug?: string }).slug) ?? title
+					return [slug, { title, description }] satisfies [string, TalkMeta]
+				}),
+		)
+		return talksBySlug
+	}
 	const root = getRepoRootDir()
 	const filename = path.join(root, 'content', 'data', 'talks.yml')
 	const raw = await fs.readFile(filename, 'utf8')

@@ -1,6 +1,7 @@
 import { type Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { type ComponentType } from 'react'
 import { buildImageUrl } from 'cloudinary-build-url'
 import pLimit from 'p-limit'
 import calculateReadingTime from 'reading-time'
@@ -14,6 +15,13 @@ import {
 } from '#app/utils/github.server.ts'
 import { formatDate, typedBoolean } from '#app/utils/misc.ts'
 import { cache, cachified } from './cache.server.ts'
+import {
+	getContentData,
+	getLoadMdxModule,
+	isWorkerContentMode,
+	type ContentArtifactDocument,
+} from './content-artifacts.server.ts'
+import { registerMdxComponentForCode } from './mdx.tsx'
 import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
 
@@ -157,6 +165,72 @@ async function getLocalBlogMdxListItem({
 	}
 }
 
+const workerMdxPageCache = new Map<string, MdxPage | null>()
+
+function resolveMdxModuleComponent(mod: Record<string, unknown>) {
+	const exported = mod.default
+	if (typeof exported === 'function') {
+		return exported as ComponentType<Record<string, unknown>>
+	}
+	if (
+		exported &&
+		typeof exported === 'object' &&
+		'default' in exported &&
+		typeof (exported as { default: unknown }).default === 'function'
+	) {
+		return (exported as { default: ComponentType<Record<string, unknown>> })
+			.default
+	}
+	return null
+}
+
+async function getWorkerMdxPage({
+	contentDir,
+	slug,
+}: {
+	contentDir: string
+	slug: string
+}): Promise<MdxPage | null> {
+	if (contentDir === 'blog' && isReadmeMdxEntry(slug)) return null
+
+	const cacheKey = `${contentDir}:${slug}`
+	if (workerMdxPageCache.has(cacheKey)) {
+		return workerMdxPageCache.get(cacheKey) ?? null
+	}
+
+	const contentData = getContentData()
+	if (!contentData) return null
+
+	const doc = contentData.documents[`${contentDir}/${slug}`] as
+		| ContentArtifactDocument
+		| undefined
+	if (!doc) {
+		workerMdxPageCache.set(cacheKey, null)
+		return null
+	}
+
+	const page: MdxPage = {
+		code: doc.code,
+		slug: doc.slug,
+		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/services/site/content/${contentDir}/${slug}`,
+		readTime: doc.readTime as MdxPage['readTime'],
+		dateDisplay: doc.dateDisplay,
+		frontmatter: doc.frontmatter as MdxPage['frontmatter'],
+	}
+
+	const loadMdx = getLoadMdxModule()
+	if (loadMdx) {
+		const mod = await loadMdx(contentDir, slug)
+		const Component = mod ? resolveMdxModuleComponent(mod) : null
+		if (Component) {
+			registerMdxComponentForCode(page.code, { default: Component })
+		}
+	}
+
+	workerMdxPageCache.set(cacheKey, page)
+	return page
+}
+
 export async function getMdxPage(
 	{
 		contentDir,
@@ -167,6 +241,10 @@ export async function getMdxPage(
 	},
 	options: CachifiedOptions,
 ): Promise<MdxPage | null> {
+	if (isWorkerContentMode()) {
+		return getWorkerMdxPage({ contentDir, slug })
+	}
+
 	if (contentDir === 'blog' && isReadmeMdxEntry(slug)) return null
 
 	const { forceFresh, ttl = defaultTTL, request, timings } = options
@@ -220,6 +298,18 @@ export async function getMdxPagesInDirectory(
 	contentDir: string,
 	options: CachifiedOptions,
 ) {
+	if (isWorkerContentMode()) {
+		const contentData = getContentData()
+		if (!contentData) return []
+		const dirList = contentData.dirLists[contentDir] ?? []
+		const pages = await Promise.all(
+			dirList.map(({ slug }) =>
+				getWorkerMdxPage({ contentDir, slug }),
+			),
+		)
+		return pages.filter(typedBoolean)
+	}
+
 	const dirList = await getMdxDirList(contentDir, options)
 
 	// our octokit throttle plugin will make sure we don't hit the rate limit
@@ -246,6 +336,10 @@ export async function getMdxDirList(
 	contentDir: string,
 	options?: CachifiedOptions,
 ) {
+	if (isWorkerContentMode()) {
+		return getContentData()?.dirLists[contentDir] ?? []
+	}
+
 	const { forceFresh, ttl = defaultTTL, request, timings } = options ?? {}
 	const key = getDirListKey(contentDir)
 	return cachified({
@@ -283,6 +377,10 @@ export async function getMdxDirList(
 }
 
 export async function getBlogMdxListItems(options: CachifiedOptions) {
+	if (isWorkerContentMode()) {
+		return getContentData()?.blogList ?? []
+	}
+
 	const { request, forceFresh, ttl = blogListTTL, timings } = options
 	const key = 'blog:mdx-list-items'
 	try {

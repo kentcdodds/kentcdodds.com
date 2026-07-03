@@ -4,6 +4,7 @@ import {
 } from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { cache, cachified } from '#app/utils/cache.server.ts'
+import { getArtifactDataFile, isWorkerContentMode } from '#app/utils/content-artifacts.server.ts'
 import { downloadFile } from '#app/utils/github.server.ts'
 import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
 import {
@@ -138,9 +139,12 @@ async function getTalksAndTags({
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 			forceFresh,
 			getFreshValue: async () => {
-				const talksString = await downloadFile(
-					getGitHubContentPath('data/talks.yml'),
-				)
+				const talksString = isWorkerContentMode()
+					? getArtifactDataFile('data/talks.yml')
+					: await downloadFile(getGitHubContentPath('data/talks.yml'))
+				if (!talksString) {
+					throw new Error('talks.yml is unavailable')
+				}
 				const rawTalks = YAML.parse(talksString) as Array<RawTalk>
 				if (!Array.isArray(rawTalks)) {
 					console.error('Talks is not an array', rawTalks)
