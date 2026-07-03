@@ -70,6 +70,7 @@ export function RecordingForm({
 	const navigate = useNavigate()
 	const revalidator = useRevalidator()
 	const { requestInfo, user, userInfo } = useRootData()
+	const flyPrimaryInstance = requestInfo.flyPrimaryInstance
 	const audioURL = React.useMemo(() => {
 		return URL.createObjectURL(audio)
 	}, [audio])
