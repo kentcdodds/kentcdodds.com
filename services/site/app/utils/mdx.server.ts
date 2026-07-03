@@ -209,6 +209,11 @@ async function getWorkerMdxPage({
 		return null
 	}
 
+	if (doc.githubResolvable === false) {
+		workerMdxPageCache.set(cacheKey, null)
+		return null
+	}
+
 	const page: MdxPage = {
 		code: doc.code,
 		slug: doc.slug,
@@ -564,16 +569,49 @@ export async function getLocalBlogMdxListItemsUncached() {
 		return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
 	})
 
+	const readmeListItem = await getReadmeBlogListItem()
+	if (readmeListItem) pages.push(readmeListItem)
+
 	return pages
+}
+
+async function getReadmeBlogListItem(): Promise<Omit<MdxPage, 'code'> | null> {
+	const filePath = path.join(process.cwd(), 'content', 'blog', 'README.md')
+	try {
+		const source = await fs.readFile(filePath, 'utf8')
+		const frontmatter = parseYamlFrontmatter(source) as MdxPage['frontmatter']
+		return {
+			slug: 'README',
+			editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${toGitHubEditPath(filePath)}`,
+			readTime: calculateReadingTime(source),
+			dateDisplay: frontmatter.date ? formatDate(frontmatter.date) : undefined,
+			frontmatter,
+		}
+	} catch {
+		return null
+	}
+}
+
+function toMdxDirListEntry(
+	filePath: string,
+	slug: string,
+): { name: string; slug: string; type: 'file' | 'dir' } {
+	const normalized = filePath.replace(/\\/g, '/')
+	const isDirectoryPost =
+		normalized.endsWith('/index.mdx') || normalized.endsWith('/index.md')
+	return {
+		name: path.basename(filePath),
+		slug,
+		type: isDirectoryPost ? 'dir' : 'file',
+	}
 }
 
 export async function getLocalMdxDirList(contentDir: 'blog' | 'pages') {
 	if (contentDir === 'blog') {
 		const localFiles = await getLocalBlogMdxFiles()
-		return localFiles.map(({ slug, filePath }) => ({
-			name: path.basename(filePath),
-			slug,
-		}))
+		return localFiles.map(({ slug, filePath }) =>
+			toMdxDirListEntry(filePath, slug),
+		)
 	}
 
 	const pagesDir = path.join(process.cwd(), 'content', 'pages')
@@ -595,6 +633,7 @@ export async function getLocalMdxDirList(contentDir: 'blog' | 'pages') {
 		.map((entry) => ({
 			name: entry.name,
 			slug: entry.name.replace(/\.(mdx|md)$/i, ''),
+			type: 'file' as const,
 		}))
 }
 

@@ -3,8 +3,9 @@ import {
 	compileMdxEsm,
 	compileMdxUnqueued,
 } from '#app/utils/compile-mdx.server.ts'
+import { resolveGitHubMdxFromDirList } from '#app/utils/github-mdx-resolve.server.ts'
 import { type MdxArtifactDocument } from '../../types/mdx-artifacts.ts'
-import { readLocalMdxFiles } from './local-content.ts'
+import { readLocalMdxFiles, readLocalMdxParentDirList } from './local-content.ts'
 import { withRetry } from './retry.ts'
 
 export async function compileMdxArtifactDocument({
@@ -18,6 +19,12 @@ export async function compileMdxArtifactDocument({
 	if (!download) {
 		throw new Error(`Missing local MDX content for ${contentDir}/${slug}`)
 	}
+
+	const parentDirList = await readLocalMdxParentDirList(contentDir)
+	const githubResolvable = resolveGitHubMdxFromDirList(
+		`${contentDir}/${slug}`,
+		parentDirList,
+	)
 
 	const label = `${contentDir}/${slug}`
 	const [iifeCompiled, esmCompiled] = await Promise.all([
@@ -48,6 +55,7 @@ export async function compileMdxArtifactDocument({
 		slug,
 		code: enriched.code,
 		esm: esmCompiled.code,
+		githubResolvable,
 		frontmatter: enriched.frontmatter,
 		readTime: enriched.readTime,
 		dateDisplay: enriched.dateDisplay,

@@ -68,10 +68,19 @@ describe('mdx-artifacts compile parity', () => {
 			contentDir: 'blog',
 			slug: 'state-colocation-will-make-your-react-app-faster',
 		})
+		expect(document.githubResolvable).toBe(true)
 		const parity = await verifyDocumentRenderParity(
 			document,
 			'blog/state-colocation-will-make-your-react-app-faster',
 		)
 		expect(parity.matches).toBe(true)
+	}, 180_000)
+
+	test('marks dotted slugs that prod GitHub resolution cannot fetch', async () => {
+		const document = await compileMdxArtifactDocument({
+			contentDir: 'blog',
+			slug: 'introducing-the-new-kentcdodds.com',
+		})
+		expect(document.githubResolvable).toBe(false)
 	}, 180_000)
 })

@@ -2,6 +2,7 @@ import { type Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { type GitHubFile } from '#app/types.ts'
+import { type GitHubDirListItem } from '#app/utils/github-mdx-resolve.server.ts'
 import { GITHUB_CONTENT_PATH } from '#app/utils/github-content-paths.server.ts'
 
 function isReadmeMdxEntry(name: string) {
@@ -132,6 +133,25 @@ export async function discoverLocalMdxDocuments(): Promise<
 	}
 
 	return documents.sort((a, b) => a.key.localeCompare(b.key))
+}
+
+export async function readLocalMdxParentDirList(
+	contentDir: 'blog' | 'pages',
+): Promise<Array<GitHubDirListItem>> {
+	const contentRoot = path.join(process.cwd(), 'content', contentDir)
+	let entries: Array<Dirent>
+	try {
+		entries = await fs.readdir(contentRoot, { withFileTypes: true })
+	} catch {
+		return []
+	}
+
+	return entries
+		.filter((entry) => entry.name && !entry.name.startsWith('.'))
+		.map((entry) => ({
+			name: entry.name,
+			type: entry.isDirectory() ? ('dir' as const) : ('file' as const),
+		}))
 }
 
 export async function readLocalMdxFiles(

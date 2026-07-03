@@ -1,6 +1,8 @@
 import * as React from 'react'
 
 function sleep(time) {
+	// Busy-wait demos are client-only; SSR must not burn CPU (Workers limits).
+	if (typeof window === 'undefined') return
 	const done = Date.now() + time
 	while (done > Date.now()) {
 		// sleep...

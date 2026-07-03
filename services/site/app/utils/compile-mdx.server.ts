@@ -567,7 +567,7 @@ function createMdxInMemoryEsbuildPlugin(
 						}
 					}
 				}
-				return {}
+				return null
 			})
 			build.onLoad({ filter: /.*/ }, async ({ path: filePath, pluginData }) => {
 				if (pluginData === undefined || !pluginData.inMemory) {
@@ -651,6 +651,7 @@ async function compileMdxEsm<FrontmatterType extends Record<string, unknown>>(
 			conditions: ['module', 'import', 'default'],
 			plugins: [
 				createMdxExternalReactEsbuildPlugin(),
+				createMdxInMemoryEsbuildPlugin(entryPath, absoluteFiles),
 				NodeResolvePlugin({
 					extensions: ['.js', '.ts', '.jsx', '.tsx'],
 					mainFields: ['module', 'browser', 'main'],
@@ -658,7 +659,6 @@ async function compileMdxEsm<FrontmatterType extends Record<string, unknown>>(
 						basedir: cwd,
 					},
 				}),
-				createMdxInMemoryEsbuildPlugin(entryPath, absoluteFiles),
 				mdxESBuild(
 					applyMdxBundlerPluginOptions(
 						{

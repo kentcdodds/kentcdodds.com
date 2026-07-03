@@ -17,6 +17,7 @@ export type ContentArtifactDocument = {
 	contentDir: string
 	slug: string
 	code: string
+	githubResolvable?: boolean
 	frontmatter: Record<string, unknown>
 	readTime?: { text: string; minutes: number; time: number; words: number }
 	dateDisplay?: string

@@ -4,6 +4,7 @@ import type { MdxListItem } from '#app/types.ts'
 export type MdxDirListEntry = {
 	name: string
 	slug: string
+	type: 'file' | 'dir'
 }
 
 export type MdxArtifactDocument = {
@@ -11,6 +12,8 @@ export type MdxArtifactDocument = {
 	slug: string
 	code: string
 	esm: string
+	/** False when prod GitHub path resolution would not find this slug. */
+	githubResolvable: boolean
 	frontmatter: MdxListItem['frontmatter']
 	readTime?: ReturnType<typeof calculateReadingTime>
 	dateDisplay?: string

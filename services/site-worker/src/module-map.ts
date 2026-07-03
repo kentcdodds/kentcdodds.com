@@ -7,6 +7,7 @@ export type MdxArtifactDocument = {
 	slug: string
 	esm: string
 	code?: string
+	githubResolvable?: boolean
 	frontmatter?: unknown
 	readTime?: unknown
 	dateDisplay?: string
