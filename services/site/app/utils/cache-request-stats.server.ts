@@ -4,26 +4,42 @@ export type CacheRequestStats = {
 	rpcMs: number
 }
 
-let activeCacheStats: CacheRequestStats | null = null
+const activeStatsKey = Symbol.for('kentcdodds.activeCacheRequestStats')
+
+type ActiveCacheStatsState = {
+	stats: CacheRequestStats
+}
+
+function getActiveStatsState(): ActiveCacheStatsState | null {
+	return (
+		(globalThis as Record<symbol, ActiveCacheStatsState | undefined>)[
+			activeStatsKey
+		] ?? null
+	)
+}
 
 export function beginCacheRequestStats(): CacheRequestStats {
 	const stats = { lruHits: 0, rpcCalls: 0, rpcMs: 0 }
-	activeCacheStats = stats
+	;(globalThis as Record<symbol, ActiveCacheStatsState>)[activeStatsKey] = {
+		stats,
+	}
 	return stats
 }
 
 export function endCacheRequestStats() {
-	activeCacheStats = null
+	delete (globalThis as Record<symbol, unknown>)[activeStatsKey]
 }
 
 export function recordCacheLruHit() {
-	if (activeCacheStats) activeCacheStats.lruHits++
+	const state = getActiveStatsState()
+	if (state) state.stats.lruHits++
 }
 
 export function recordCacheRpcCall(durationMs: number) {
-	if (!activeCacheStats) return
-	activeCacheStats.rpcCalls++
-	activeCacheStats.rpcMs += durationMs
+	const state = getActiveStatsState()
+	if (!state) return
+	state.stats.rpcCalls++
+	state.stats.rpcMs += durationMs
 }
 
 export function formatCacheRequestStatsHeader(stats: CacheRequestStats) {
