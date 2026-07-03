@@ -1,0 +1,39 @@
+name: ☁️ CF Preview Deploy
+
+# Deploys the Cloudflare preview of the site (and supporting probe/test
+# workers) from the migration branch. This workflow is intentionally scoped to
+# the migration branch and never touches production resources.
+on:
+  push:
+    branches:
+      - cursor/cloudflare-site-worker-2309
+
+concurrency:
+  group: cf-preview-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  loader-probe:
+    name: 🔬 Deploy loader probe worker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v6
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: 📥 Install site-worker deps
+        run: npm ci --workspace=site-worker --include-workspace-root
+
+      - name: ☁️ Deploy probe via Wrangler
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm exec wrangler -- deploy --config other/loader-probe/wrangler.jsonc
