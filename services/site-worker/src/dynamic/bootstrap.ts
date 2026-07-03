@@ -282,10 +282,10 @@ async function runPreRouterPipeline(
 	return null
 }
 
-function appendVaryAccept(headers: Headers) {
+function appendVaryValue(headers: Headers, value: string) {
 	const vary = headers.get('vary')
 	if (!vary) {
-		headers.set('vary', 'Accept')
+		headers.set('vary', value)
 		return
 	}
 	const values = new Set(
@@ -294,8 +294,13 @@ function appendVaryAccept(headers: Headers) {
 			.map((entry) => entry.trim())
 			.filter(Boolean),
 	)
-	values.add('Accept')
+	values.add(value)
 	headers.set('vary', Array.from(values).join(', '))
+}
+
+function appendVaryAccept(headers: Headers) {
+	appendVaryValue(headers, 'Accept')
+	appendVaryValue(headers, 'Accept-Encoding')
 }
 
 async function handleSiteRequest(

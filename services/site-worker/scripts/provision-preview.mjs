@@ -64,6 +64,31 @@ async function readBaseConfig() {
 	return JSON.parse(stripJsoncComments(raw))
 }
 
+function isPlaceholderId(id) {
+	return !id || String(id).startsWith('00000000-0000-0000')
+}
+
+function resourcesProvisioned(config) {
+	const d1 = config.d1_databases?.find(
+		(entry) => entry.binding === RESOURCES.d1.binding,
+	)
+	const siteCache = config.kv_namespaces?.find(
+		(entry) => entry.binding === 'SITE_CACHE_KV',
+	)
+	const contentKv = config.kv_namespaces?.find(
+		(entry) => entry.binding === 'CONTENT_KV',
+	)
+
+	return (
+		d1?.database_id &&
+		!isPlaceholderId(d1.database_id) &&
+		siteCache?.id &&
+		!isPlaceholderId(siteCache.id) &&
+		contentKv?.id &&
+		!isPlaceholderId(contentKv.id)
+	)
+}
+
 async function ensureD1Database(databaseName) {
 	const databases = await cfApi('/d1/database?per_page=100')
 	const existing = databases.find((entry) => entry.name === databaseName)
@@ -148,16 +173,41 @@ async function writeGeneratedConfig({
 }
 
 async function main() {
-	if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_ACCOUNT_ID) {
-		throw new Error(
-			'CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are required for provisioning',
-		)
-	}
-
+	const forceEnsure = process.argv.includes('--force-ensure')
 	const buildSha =
 		process.env.BUILD_SHA ??
 		process.env.GITHUB_SHA?.slice(0, 12) ??
 		'preview-local'
+
+	if (!(await pathExists(baseConfigPath))) {
+		throw new Error(`Missing base wrangler config at ${baseConfigPath}`)
+	}
+
+	const baseConfig = await readBaseConfig()
+
+	if (!forceEnsure && resourcesProvisioned(baseConfig)) {
+		const d1 = baseConfig.d1_databases.find(
+			(entry) => entry.binding === RESOURCES.d1.binding,
+		)
+		const kvIds = Object.fromEntries(
+			baseConfig.kv_namespaces.map((entry) => [entry.binding, entry.id]),
+		)
+		console.log(
+			'Preview resources already provisioned in wrangler.jsonc; skipping Cloudflare API calls',
+		)
+		await writeGeneratedConfig({
+			databaseId: d1.database_id,
+			kvIds,
+			buildSha,
+		})
+		return
+	}
+
+	if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_ACCOUNT_ID) {
+		throw new Error(
+			'CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are required for provisioning (or commit resource ids to wrangler.jsonc)',
+		)
+	}
 
 	const databaseId = await ensureD1Database(RESOURCES.d1.name)
 	const kvIds = {}
@@ -165,10 +215,6 @@ async function main() {
 		kvIds[namespace.binding] = await ensureKvNamespace(namespace.title)
 	}
 	await ensureR2Bucket(RESOURCES.r2.name)
-
-	if (!(await pathExists(baseConfigPath))) {
-		throw new Error(`Missing base wrangler config at ${baseConfigPath}`)
-	}
 
 	await writeGeneratedConfig({ databaseId, kvIds, buildSha })
 }

@@ -8,7 +8,7 @@ const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 
 function usage() {
 	console.error(
-		'Usage: node scripts/publish-artifacts.mjs <bundle.json> [--config path/to/wrangler.jsonc] [--local]',
+		'Usage: node scripts/publish-artifacts.mjs <bundle.json> [--config path/to/wrangler.jsonc] [--local] [--via-endpoint <url>]',
 	)
 	process.exit(1)
 }
@@ -44,16 +44,48 @@ async function readConfig(configPath) {
 	return JSON.parse(stripJsoncComments(raw))
 }
 
-async function main() {
-	const bundlePath = process.argv[2]
-	if (!bundlePath) usage()
+async function publishViaEndpoint(bundlePath, endpointUrl) {
+	const secret = process.env.REFRESH_CACHE_SECRET
+	if (!secret) {
+		throw new Error('REFRESH_CACHE_SECRET is required for --via-endpoint')
+	}
 
-	const local = process.argv.includes('--local')
-	const defaultConfig = local
-		? path.join(workerDir, 'wrangler.jsonc')
-		: path.join(workerDir, 'generated-wrangler.jsonc')
-	const configPath = getArgValue('--config') ?? defaultConfig
+	const bundleRaw = await fs.readFile(bundlePath, 'utf8')
+	const bundle = JSON.parse(bundleRaw)
+	if (!bundle.version || typeof bundle.version !== 'string') {
+		throw new Error('Bundle JSON must include a string "version" field')
+	}
 
+	const response = await fetch(endpointUrl, {
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json',
+			auth: secret,
+		},
+		body: bundleRaw,
+	})
+
+	const responseText = await response.text()
+	if (!response.ok) {
+		throw new Error(
+			`Artifact publish endpoint failed (${response.status}): ${responseText}`,
+		)
+	}
+
+	let payload
+	try {
+		payload = JSON.parse(responseText)
+	} catch {
+		payload = responseText
+	}
+
+	console.log(
+		`Published via ${endpointUrl} (version ${bundle.version})`,
+		payload,
+	)
+}
+
+async function publishViaWrangler(bundlePath, configPath, local) {
 	const bundleRaw = await fs.readFile(bundlePath, 'utf8')
 	const bundle = JSON.parse(bundleRaw)
 	if (!bundle.version || typeof bundle.version !== 'string') {
@@ -111,6 +143,25 @@ async function main() {
 	console.log(
 		`Published ${r2Key} and updated mdx-manifest:current (${local ? 'local' : 'remote'})`,
 	)
+}
+
+async function main() {
+	const bundlePath = process.argv[2]
+	if (!bundlePath) usage()
+
+	const viaEndpoint = getArgValue('--via-endpoint')
+	if (viaEndpoint) {
+		await publishViaEndpoint(bundlePath, viaEndpoint)
+		return
+	}
+
+	const local = process.argv.includes('--local')
+	const defaultConfig = local
+		? path.join(workerDir, 'wrangler.jsonc')
+		: path.join(workerDir, 'generated-wrangler.jsonc')
+	const configPath = getArgValue('--config') ?? defaultConfig
+
+	await publishViaWrangler(bundlePath, configPath, local)
 }
 
 main().catch((error) => {

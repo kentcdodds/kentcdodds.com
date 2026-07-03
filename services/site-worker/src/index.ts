@@ -33,6 +33,48 @@ function getStringEnvBindings(env: ParentWorkerEnv) {
 	)
 }
 
+const ARTIFACT_PUBLISH_PATH = '/resources/mdx-artifacts'
+
+async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
+	if (request.headers.get('auth') !== env.REFRESH_CACHE_SECRET) {
+		return new Response(null, { status: 404 })
+	}
+
+	const bodyText = await request.text()
+	let bundle: MdxArtifactBundle
+	try {
+		bundle = JSON.parse(bodyText) as MdxArtifactBundle
+	} catch {
+		return Response.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
+	}
+
+	if (!bundle.version || typeof bundle.version !== 'string') {
+		return Response.json(
+			{ ok: false, error: 'Bundle JSON must include a string "version" field' },
+			{ status: 400 },
+		)
+	}
+
+	const r2Key = `mdx-artifacts/${bundle.version}.json`
+	await env.MDX_ARTIFACTS.put(r2Key, bodyText, {
+		httpMetadata: { contentType: 'application/json' },
+	})
+
+	const manifest = JSON.stringify({ version: bundle.version, r2Key })
+	await env.CONTENT_KV.put('mdx-manifest:current', manifest)
+	clearManifestCache()
+
+	return Response.json({ ok: true, version: bundle.version, r2Key })
+}
+
+async function handleMetaRequest(env: ParentWorkerEnv) {
+	const manifest = await readMdxManifest(env.CONTENT_KV)
+	return Response.json({
+		buildSha: env.BUILD_SHA?.trim() || 'local-dev',
+		contentVersion: manifest?.version ?? null,
+	})
+}
+
 function unprovisionedResponse(details: Record<string, unknown>) {
 	return Response.json(
 		{
@@ -124,6 +166,20 @@ export default {
 				status: 200,
 				headers: { 'content-type': 'text/plain; charset=utf-8' },
 			})
+		}
+
+		if (url.pathname === '/__meta') {
+			if (request.method !== 'GET' && request.method !== 'HEAD') {
+				return new Response('Method not allowed', {
+					status: 405,
+					headers: { Allow: 'GET, HEAD' },
+				})
+			}
+			return handleMetaRequest(env)
+		}
+
+		if (url.pathname === ARTIFACT_PUBLISH_PATH && request.method === 'POST') {
+			return handlePublishArtifacts(request, env)
 		}
 
 		if (env.ASSETS) {

@@ -68,7 +68,7 @@ export function buildContentSecurityPolicy({
 			`'nonce-${nonce}'`,
 		],
 		'script-src-attr': ["'unsafe-inline'"],
-		'style-src': ["'self'", "'unsafe-inline'"],
+		'style-src': ["'self'", 'https:', "'unsafe-inline'"],
 		'object-src': ["'none'"],
 		'base-uri': ["'self'"],
 		'form-action': ["'self'"],
@@ -110,7 +110,7 @@ export function applySecurityHeaders({
 	headers.set('Access-Control-Allow-Origin', `${proto}://${host}`)
 	headers.set(
 		'Strict-Transport-Security',
-		`max-age=${60 * 60 * 24 * 365 * 100}`,
+		'max-age=31536000; includeSubDomains',
 	)
 	headers.set(
 		'Content-Security-Policy',
