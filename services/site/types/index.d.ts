@@ -192,6 +192,11 @@ declare module 'react' {
 
 export * from './simplecast.ts'
 export * from './transistor.ts'
+export type {
+	MdxArtifactBundle,
+	MdxArtifactDocument,
+	MdxDirListEntry,
+} from './mdx-artifacts.ts'
 export {
 	NonNullProperties,
 	Await,

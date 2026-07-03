@@ -296,26 +296,7 @@ export async function getBlogMdxListItems(options: CachifiedOptions) {
 			forceFresh,
 			key,
 			getFreshValue: async () => {
-				const localFiles = await getLocalBlogMdxFiles()
-				let pages = (
-					await Promise.all(
-						localFiles.map(({ slug, filePath }) =>
-							localBlogListItemLimit(() =>
-								getLocalBlogMdxListItem({ slug, filePath }),
-							),
-						),
-					)
-				)
-					.filter(typedBoolean)
-					.filter((p) => !p.frontmatter.draft && !p.frontmatter.unlisted)
-
-				pages = pages.sort((a, z) => {
-					const aTime = new Date(a.frontmatter.date ?? '').getTime()
-					const zTime = new Date(z.frontmatter.date ?? '').getTime()
-					return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
-				})
-
-				return pages
+				return getLocalBlogMdxListItemsUncached()
 			},
 		})
 	} catch (error: unknown) {
@@ -400,51 +381,123 @@ async function compileMdxCached({
 		getFreshValue: async (context) => {
 			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
 			if (compiledPage) {
-				if (
-					compiledPage.frontmatter.bannerCloudinaryId &&
-					!compiledPage.frontmatter.bannerBlurDataUrl
-				) {
-					try {
-						compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
-							compiledPage.frontmatter.bannerCloudinaryId,
-						)
-					} catch (error: unknown) {
-						console.error(
-							'oh no, there was an error getting the blur image data url',
-							error,
-						)
-					}
-				}
-				if (compiledPage.frontmatter.bannerCredit) {
-					const credit = await markdownToHtmlUnwrapped(
-						compiledPage.frontmatter.bannerCredit,
-					)
-					compiledPage.frontmatter.bannerCredit = credit
-					const noHtml = await stripHtml(credit)
-					if (!compiledPage.frontmatter.bannerAlt) {
-						compiledPage.frontmatter.bannerAlt = noHtml
-							.replace(/(photo|image)/i, '')
-							.trim()
-					}
-					if (!compiledPage.frontmatter.bannerTitle) {
-						compiledPage.frontmatter.bannerTitle = noHtml
-					}
-				}
-				return {
-					dateDisplay: compiledPage.frontmatter.date
-						? formatDate(compiledPage.frontmatter.date)
-						: undefined,
-					...compiledPage,
-					slug,
-					editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
-				}
-			} else {
-				applyNotFoundCacheMetadata(context.metadata, ttl)
-				return null
+				return enrichCompiledMdxPage({ slug, entry, compiledPage })
 			}
+			applyNotFoundCacheMetadata(context.metadata, ttl)
+			return null
 		},
 	})
 	return page
+}
+
+type CompiledMdxBase = {
+	code: string
+	readTime?: ReturnType<typeof calculateReadingTime>
+	frontmatter: MdxPage['frontmatter']
+}
+
+export async function enrichCompiledMdxPage({
+	slug,
+	entry,
+	compiledPage,
+}: {
+	slug: string
+	entry: string
+	compiledPage: CompiledMdxBase
+}): Promise<MdxPage> {
+	const page = {
+		...compiledPage,
+		slug,
+		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
+	}
+
+	if (
+		page.frontmatter.bannerCloudinaryId &&
+		!page.frontmatter.bannerBlurDataUrl
+	) {
+		try {
+			page.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
+				page.frontmatter.bannerCloudinaryId,
+			)
+		} catch (error: unknown) {
+			console.error(
+				'oh no, there was an error getting the blur image data url',
+				error,
+			)
+		}
+	}
+	if (page.frontmatter.bannerCredit) {
+		const credit = await markdownToHtmlUnwrapped(page.frontmatter.bannerCredit)
+		page.frontmatter.bannerCredit = credit
+		const noHtml = await stripHtml(credit)
+		if (!page.frontmatter.bannerAlt) {
+			page.frontmatter.bannerAlt = noHtml.replace(/(photo|image)/i, '').trim()
+		}
+		if (!page.frontmatter.bannerTitle) {
+			page.frontmatter.bannerTitle = noHtml
+		}
+	}
+
+	return {
+		dateDisplay: page.frontmatter.date
+			? formatDate(page.frontmatter.date)
+			: undefined,
+		...page,
+	}
+}
+
+export async function getLocalBlogMdxListItemsUncached() {
+	const localFiles = await getLocalBlogMdxFiles()
+	let pages = (
+		await Promise.all(
+			localFiles.map(({ slug, filePath }) =>
+				localBlogListItemLimit(() =>
+					getLocalBlogMdxListItem({ slug, filePath }),
+				),
+			),
+		)
+	)
+		.filter(typedBoolean)
+		.filter((p) => !p.frontmatter.draft && !p.frontmatter.unlisted)
+
+	pages = pages.sort((a, z) => {
+		const aTime = new Date(a.frontmatter.date ?? '').getTime()
+		const zTime = new Date(z.frontmatter.date ?? '').getTime()
+		return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
+	})
+
+	return pages
+}
+
+export async function getLocalMdxDirList(contentDir: 'blog' | 'pages') {
+	if (contentDir === 'blog') {
+		const localFiles = await getLocalBlogMdxFiles()
+		return localFiles.map(({ slug, filePath }) => ({
+			name: path.basename(filePath),
+			slug,
+		}))
+	}
+
+	const pagesDir = path.join(process.cwd(), 'content', 'pages')
+	let entries: Array<Dirent>
+	try {
+		entries = await fs.readdir(pagesDir, { withFileTypes: true })
+	} catch (error: unknown) {
+		console.error('mdx: failed to read local pages content directory', error)
+		return []
+	}
+
+	return entries
+		.filter(
+			(entry) =>
+				entry.isFile() &&
+				/\.(mdx|md)$/i.test(entry.name) &&
+				!isReadmeMdxEntry(entry.name),
+		)
+		.map((entry) => ({
+			name: entry.name,
+			slug: entry.name.replace(/\.(mdx|md)$/i, ''),
+		}))
 }
 
 async function getBlurDataUrl(cloudinaryId: string) {
@@ -471,3 +524,5 @@ async function getDataUrlForImage(imageUrl: string) {
 	const dataUrl = `data:${mime};base64,${base64}`
 	return dataUrl
 }
+
+export { isReadmeMdxEntry }

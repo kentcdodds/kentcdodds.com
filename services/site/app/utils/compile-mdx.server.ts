@@ -1,6 +1,12 @@
+import path from 'node:path'
+import { NodeResolvePlugin } from '@esbuild-plugins/node-resolve'
 import { rehypeCodeBlocksShiki } from '@kentcdodds/md-temp'
-import remarkEmbedder, { type TransformerInfo } from '@remark-embedder/core'
-import oembedTransformer from '@remark-embedder/transformer-oembed'
+import remarkEmbedderImport, {
+	type TransformerInfo,
+} from '@remark-embedder/core'
+import oembedTransformerImport from '@remark-embedder/transformer-oembed'
+import esbuild from 'esbuild'
+import grayMatter from 'gray-matter'
 import type * as H from 'hast'
 import lz from 'lz-string'
 import type * as M from 'mdast'
@@ -12,8 +18,31 @@ import gfm from 'remark-gfm'
 import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
+import { v4 as uuid } from 'uuid'
 import { type GitHubFile } from '#app/types.ts'
 import * as x from './x.server.ts'
+
+const MDX_ESM_EXTERNALS = [
+	'react',
+	'react/jsx-runtime',
+	'react/jsx-dev-runtime',
+	'react-dom',
+] as const
+
+function interopDefault<T>(imported: T): T {
+	if (
+		imported &&
+		typeof imported === 'object' &&
+		'default' in imported &&
+		(imported as { default?: T }).default != null
+	) {
+		return (imported as { default: T }).default
+	}
+	return imported
+}
+
+const remarkEmbedder = interopDefault(remarkEmbedderImport)
+const oembedTransformer = interopDefault(oembedTransformerImport)
 
 // Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
 type MdxJsxAttribute = {
@@ -342,7 +371,7 @@ function remarkMermaidCodeToThemedSvg() {
 	}
 }
 
-const remarkPlugins: U.PluggableList = [
+const mdxCustomRemarkPlugins: U.PluggableList = [
 	remarkMermaidCodeToThemedSvg,
 	[
 		remarkEmbedder,
@@ -355,50 +384,165 @@ const remarkPlugins: U.PluggableList = [
 	autoAffiliates,
 ]
 
-const rehypePlugins: U.PluggableList = [
+const mdxCustomRehypePlugins: U.PluggableList = [
 	optimizeCloudinaryImages,
 	trimCodeBlocks,
 	rehypeCodeBlocksShiki,
 	removePreContainerDivs,
 ]
 
-async function compileMdx<FrontmatterType extends Record<string, unknown>>(
+function applyMdxBundlerPluginOptions(
+	options: {
+		remarkPlugins?: U.PluggableList
+		rehypePlugins?: U.PluggableList
+		jsxImportSource?: string
+	},
+	_frontmatter?: Record<string, unknown>,
+) {
+	options.remarkPlugins = [
+		...(options.remarkPlugins ?? []),
+		remarkSlug,
+		[remarkAutolinkHeadings, { behavior: 'wrap' }],
+		gfm,
+		...mdxCustomRemarkPlugins,
+	] as U.PluggableList
+	options.rehypePlugins = [
+		...(options.rehypePlugins ?? []),
+		...mdxCustomRehypePlugins,
+	] as U.PluggableList
+	return options
+}
+
+type PreparedMdxBundle = {
+	indexFile: GitHubFile
+	files: Record<string, string>
+	entryPath: string
+	cwd: string
+	absoluteFiles: Record<string, string>
+}
+
+function prepareMdxBundleInputs(
 	slug: string,
 	githubFiles: Array<GitHubFile>,
-) {
+): PreparedMdxBundle | null {
 	const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
-	const indexFile = githubFiles.find(({ path }) => indexRegex.test(path))
+	const indexFile = githubFiles.find(({ path: filePath }) =>
+		indexRegex.test(filePath),
+	)
 	if (!indexFile) return null
 
 	const rootDir = indexFile.path.replace(/index.mdx?$/, '')
 	const relativeFiles: Array<GitHubFile> = githubFiles.map(
-		({ path, content }) => ({
-			path: path.replace(rootDir, './'),
+		({ path: filePath, content }) => ({
+			path: filePath.replace(rootDir, './'),
 			content,
 		}),
 	)
 	const files = arrayToObj(relativeFiles, {
 		keyName: 'path',
 		valueName: 'content',
-	})
+	}) as Record<string, string>
+
+	const cwd = path.join(process.cwd(), '__mdx_bundler_fake_dir__')
+	const entryPath = path.join(cwd, `./_mdx_bundler_entry_point-${uuid()}.mdx`)
+	const absoluteFiles: Record<string, string> = {
+		[entryPath]: indexFile.content,
+	}
+	for (const [filePath, fileCode] of Object.entries(files)) {
+		absoluteFiles[path.join(cwd, filePath)] = fileCode
+	}
+
+	return { indexFile, files, entryPath, cwd, absoluteFiles }
+}
+
+function createMdxExternalReactEsbuildPlugin(): esbuild.Plugin {
+	return {
+		name: 'mdx-external-react',
+		setup(build) {
+			build.onResolve({ filter: /^react(?:\/|$)/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}))
+			build.onResolve({ filter: /^react-dom(?:\/|$)/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}))
+		},
+	}
+}
+
+function createMdxInMemoryEsbuildPlugin(
+	entryPath: string,
+	absoluteFiles: Record<string, string>,
+): esbuild.Plugin {
+	return {
+		name: 'inMemory',
+		setup(build) {
+			build.onResolve({ filter: /.*/ }, ({ path: filePath, importer }) => {
+				if (filePath === entryPath) {
+					return {
+						path: filePath,
+						pluginData: {
+							inMemory: true,
+							contents: absoluteFiles[filePath],
+						},
+					}
+				}
+				const modulePath = path.resolve(path.dirname(importer), filePath)
+				if (modulePath in absoluteFiles) {
+					return {
+						path: modulePath,
+						pluginData: {
+							inMemory: true,
+							contents: absoluteFiles[modulePath],
+						},
+					}
+				}
+				for (const ext of ['.js', '.ts', '.jsx', '.tsx', '.json', '.mdx']) {
+					const fullModulePath = `${modulePath}${ext}`
+					if (fullModulePath in absoluteFiles) {
+						return {
+							path: fullModulePath,
+							pluginData: {
+								inMemory: true,
+								contents: absoluteFiles[fullModulePath],
+							},
+						}
+					}
+				}
+				return {}
+			})
+			build.onLoad({ filter: /.*/ }, async ({ path: filePath, pluginData }) => {
+				if (pluginData === undefined || !pluginData.inMemory) {
+					return null
+				}
+				const fileType = (path.extname(filePath) || '.jsx').slice(1)
+				const contents = absoluteFiles[filePath]
+				if (fileType === 'mdx') return null
+
+				const loader: esbuild.Loader =
+					build.initialOptions.loader?.[`.${fileType}`] ??
+					(fileType as esbuild.Loader)
+				return { contents, loader }
+			})
+		},
+	}
+}
+
+async function compileMdx<FrontmatterType extends Record<string, unknown>>(
+	slug: string,
+	githubFiles: Array<GitHubFile>,
+) {
+	const prepared = prepareMdxBundleInputs(slug, githubFiles)
+	if (!prepared) return null
+	const { indexFile, files } = prepared
 
 	try {
 		const { frontmatter, code } = await bundleMDX({
 			source: indexFile.content,
 			files,
 			mdxOptions(options) {
-				options.remarkPlugins = [
-					...(options.remarkPlugins ?? []),
-					remarkSlug,
-					[remarkAutolinkHeadings, { behavior: 'wrap' }],
-					gfm,
-					...remarkPlugins,
-				]
-				options.rehypePlugins = [
-					...(options.rehypePlugins ?? []),
-					...rehypePlugins,
-				]
-				return options
+				return applyMdxBundlerPluginOptions(options)
 			},
 		})
 		const readTime = calculateReadingTime(indexFile.content)
@@ -410,6 +554,87 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 		}
 	} catch (error: unknown) {
 		console.error(`Compilation error for slug: `, slug)
+		throw error
+	}
+}
+
+async function compileMdxEsm<FrontmatterType extends Record<string, unknown>>(
+	slug: string,
+	githubFiles: Array<GitHubFile>,
+) {
+	const prepared = prepareMdxBundleInputs(slug, githubFiles)
+	if (!prepared) return null
+	const { indexFile, entryPath, cwd, absoluteFiles } = prepared
+
+	try {
+		const [
+			{ default: mdxESBuild },
+			{ default: remarkFrontmatter },
+			{ default: remarkMdxFrontmatter },
+		] = await Promise.all([
+			import('@mdx-js/esbuild'),
+			import('remark-frontmatter'),
+			import('remark-mdx-frontmatter'),
+		])
+
+		const matter = grayMatter(indexFile.content)
+
+		const bundled = await esbuild.build({
+			entryPoints: [entryPath],
+			write: false,
+			absWorkingDir: cwd,
+			define: {
+				'process.env.NODE_ENV': JSON.stringify(
+					process.env.NODE_ENV ?? 'production',
+				),
+			},
+			jsx: 'automatic',
+			jsxImportSource: 'react',
+			mainFields: ['module', 'browser', 'main'],
+			conditions: ['module', 'import', 'default'],
+			plugins: [
+				createMdxExternalReactEsbuildPlugin(),
+				NodeResolvePlugin({
+					extensions: ['.js', '.ts', '.jsx', '.tsx'],
+					mainFields: ['module', 'browser', 'main'],
+					resolveOptions: {
+						basedir: cwd,
+					},
+				}),
+				createMdxInMemoryEsbuildPlugin(entryPath, absoluteFiles),
+				mdxESBuild(
+					applyMdxBundlerPluginOptions(
+						{
+							remarkPlugins: [
+								remarkFrontmatter,
+								[remarkMdxFrontmatter, { name: 'frontmatter' }],
+							],
+							jsxImportSource: 'react',
+						},
+						matter.data,
+					),
+				),
+			],
+			bundle: true,
+			format: 'esm',
+			external: [...MDX_ESM_EXTERNALS],
+			minify: true,
+		})
+
+		if (!bundled.outputFiles?.[0]) {
+			throw new Error(`esbuild produced no output for slug: ${slug}`)
+		}
+
+		const code = new TextDecoder().decode(bundled.outputFiles[0].contents)
+		const readTime = calculateReadingTime(indexFile.content)
+
+		return {
+			code,
+			readTime,
+			frontmatter: matter.data as FrontmatterType,
+		}
+	} catch (error: unknown) {
+		console.error(`ESM compilation error for slug: `, slug)
 		throw error
 	}
 }
@@ -457,4 +682,12 @@ async function queuedCompileMdx<
 	return result
 }
 
-export { queuedCompileMdx as compileMdx }
+export {
+	applyMdxBundlerPluginOptions,
+	compileMdx as compileMdxUnqueued,
+	compileMdxEsm,
+	mdxCustomRehypePlugins,
+	mdxCustomRemarkPlugins,
+	MDX_ESM_EXTERNALS,
+	queuedCompileMdx as compileMdx,
+}
