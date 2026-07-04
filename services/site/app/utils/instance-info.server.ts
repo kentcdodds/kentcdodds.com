@@ -6,7 +6,6 @@ export function getInstanceInfoSync() {
 	return {
 		currentInstance,
 		primaryInstance: currentInstance,
-		currentIsPrimary: true,
 	}
 }
 

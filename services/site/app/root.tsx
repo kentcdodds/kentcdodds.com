@@ -19,7 +19,7 @@ import {
 } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
-import { getInstanceInfo } from '#app/utils/instance-info.server.ts'
+import { getInstanceInfoSync } from '#app/utils/instance-info.server.ts'
 import {
 	useCapturedRouteError,
 	getDisplayUrl,
@@ -53,7 +53,7 @@ import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
 import { getTheme } from './utils/theme.server.ts'
 import { useTheme } from './utils/theme.tsx'
-import { getServerTimeHeader, withTimeout } from './utils/timing.server.ts'
+import { getServerTimeHeader } from './utils/timing.server.ts'
 import { getUserInfo } from './utils/user-info.server.ts'
 
 export const handle: KCDHandle & { id: string } = {
@@ -130,14 +130,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			session.getUser({ timings }),
 			getClientSession(request, session.getUser({ timings })),
 			getLoginInfoSession(request),
-			withTimeout(
-				getInstanceInfo().then((i) => i.primaryInstance),
-				{
-					timeoutMs: 500,
-					fallback: null,
-					label: 'root:get-instance-info',
-				},
-			),
+			Promise.resolve(getInstanceInfoSync().primaryInstance),
 		])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)

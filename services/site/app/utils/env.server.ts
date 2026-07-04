@@ -25,7 +25,6 @@ const schemaBase = z.object({
 	FLY_APP_NAME: z.string().trim().optional(),
 	FLY_REGION: z.string().trim().optional(),
 	FLY_MACHINE_ID: z.string().trim().optional(),
-	LITEFS_DIR: z.string().trim().optional(),
 
 	// Used by local/Fly SQLite tooling. Optional because it can be derived from
 	// `DATABASE_URL` when using SQLite `file:` URLs.
@@ -54,8 +53,6 @@ const schemaBase = z.object({
 	DISCORD_SCOPES: nonEmptyString,
 	DISCORD_YELLOW_CHANNEL: nonEmptyString,
 	DISCORD_YELLOW_ROLE: nonEmptyString,
-	INTERNAL_COMMAND_TOKEN: nonEmptyString,
-	MAGIC_LINK_SECRET: nonEmptyString,
 	MAILGUN_DOMAIN: nonEmptyString,
 	MAILGUN_SENDING_KEY: nonEmptyString,
 	REFRESH_CACHE_SECRET: nonEmptyString,

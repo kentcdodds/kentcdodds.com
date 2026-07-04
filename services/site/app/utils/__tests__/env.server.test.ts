@@ -132,7 +132,6 @@ test('getEnv accepts Worker-shaped config without LiteFS or file cache paths', (
 			FLY_APP_NAME: undefined,
 			FLY_REGION: undefined,
 			FLY_MACHINE_ID: undefined,
-			LITEFS_DIR: undefined,
 		}),
 	)
 
