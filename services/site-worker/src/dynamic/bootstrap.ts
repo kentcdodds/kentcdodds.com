@@ -22,6 +22,19 @@ import {
 	formatCacheRequestStatsHeader,
 } from '../../../site/app/utils/cache-request-stats.server.ts'
 import {
+	beginD1RequestStats,
+	endD1RequestStats,
+	formatD1RequestStatsHeader,
+} from '../../../site/app/utils/db/d1-request-stats.server.ts'
+import {
+	appendD1BookmarkCookie,
+	getD1BookmarkFromRequest,
+} from '../../../site/app/utils/db/d1-bookmark-cookie.server.ts'
+import {
+	getOutboundD1Bookmark,
+	runWithD1RequestContext,
+} from '../../../site/app/utils/db/d1-session-request.server.ts'
+import {
 	setRuntimeEnvSource,
 	getEnv,
 } from '../../../site/app/utils/env.server.ts'
@@ -418,108 +431,123 @@ async function handleSiteRequest(
 	const startedAt = Date.now()
 	const requestStartedAt = performance.now()
 	const cacheStats = beginCacheRequestStats()
+	const d1Stats = beginD1RequestStats()
+	const inboundBookmark = getD1BookmarkFromRequest(request)
 	try {
 		await ensureRuntimeBridges(env)
+		return await runWithD1RequestContext(request, async () => {
+			const preRouter = await runPreRouterPipeline(request, env)
+			const preRouterResponse = preRouter.response
+			if (preRouterResponse) {
+				const headers = new Headers(preRouterResponse.headers)
+				headers.set('X-Isolate-Id', getIsolateId())
+				headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
+				headers.set('X-D1-Stats', formatD1RequestStatsHeader(d1Stats))
+				if (firstRequestTimings) {
+					headers.set(
+						'X-Cold-Start-Timing',
+						formatColdStartTiming({
+							...firstRequestTimings,
+							request: performance.now() - requestStartedAt,
+						}),
+					)
+					firstRequestTimings = null
+				}
+				logRequest(
+					request,
+					new Response(preRouterResponse.body, {
+						status: preRouterResponse.status,
+						statusText: preRouterResponse.statusText,
+						headers,
+					}),
+					startedAt,
+				)
+				return new Response(preRouterResponse.body, {
+					status: preRouterResponse.status,
+					statusText: preRouterResponse.statusText,
+					headers,
+				})
+			}
 
-		const preRouter = await runPreRouterPipeline(request, env)
-		const preRouterResponse = preRouter.response
-		if (preRouterResponse) {
-			const headers = new Headers(preRouterResponse.headers)
+			const cspNonce = createCspNonce()
+			const handlerStartedAt = performance.now()
+			const handler = await getSiteRequestHandler(request)
+			const handlerReadyMs = performance.now() - handlerStartedAt
+			let response = await handler(request, {
+				cloudflare: { env, ctx },
+				cspNonce,
+			} as AppLoadContext)
+			const handlerServeMs = performance.now() - handlerStartedAt - handlerReadyMs
+
+			const url = new URL(request.url)
+			const acceptHeader = request.headers.get('Accept') ?? ''
+			if (requestPrefersMarkdown(acceptHeader)) {
+				const { maybeConvertHtmlResponseToMarkdown } =
+					await getMarkdownNegotiation()
+				response = await maybeConvertHtmlResponseToMarkdown(response)
+			}
+
+			const headers = new Headers(response.headers)
+			applySecurityHeaders({ headers, request, cspNonce })
+			// Reuse the pre-router rate-limit result so a request only consumes one
+			// quota unit (checkRateLimit increments the window on every call).
+			const mocks = getStringEnvBindings(env).MOCKS === 'true'
+			const rateLimit = preRouter.rateLimit ?? checkRateLimit(request, { mocks })
+			applyRateLimitHeaders(headers, rateLimit)
+			if (
+				rateLimit.tier === 'markdown' &&
+				rateLimit.remaining <= rateLimit.limit / 2
+			) {
+				const hints = getAgentSearchHintHeaders(url.pathname)
+				for (const [key, value] of Object.entries(hints)) {
+					headers.set(key, value)
+				}
+			}
+			if (url.pathname.startsWith('/.well-known/')) {
+				headers.set('Access-Control-Allow-Origin', '*')
+			}
+			if (
+				response.ok &&
+				Boolean(headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i))
+			) {
+				appendVaryAccept(headers)
+			}
 			headers.set('X-Isolate-Id', getIsolateId())
 			headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
+			headers.set('X-D1-Stats', formatD1RequestStatsHeader(d1Stats))
 			if (firstRequestTimings) {
 				headers.set(
 					'X-Cold-Start-Timing',
 					formatColdStartTiming({
 						...firstRequestTimings,
+						handlerReady: handlerReadyMs,
+						handlerServe: handlerServeMs,
 						request: performance.now() - requestStartedAt,
 					}),
 				)
 				firstRequestTimings = null
 			}
-			logRequest(
-				request,
-				new Response(preRouterResponse.body, {
-					status: preRouterResponse.status,
-					statusText: preRouterResponse.statusText,
-					headers,
-				}),
-				startedAt,
-			)
-			return new Response(preRouterResponse.body, {
-				status: preRouterResponse.status,
-				statusText: preRouterResponse.statusText,
+
+			const outboundBookmark = await getOutboundD1Bookmark()
+			if (
+				outboundBookmark &&
+				outboundBookmark !== inboundBookmark &&
+				outboundBookmark !== 'first-unconstrained' &&
+				outboundBookmark !== 'first-primary'
+			) {
+				appendD1BookmarkCookie(headers, outboundBookmark)
+			}
+			const finalResponse = new Response(response.body, {
+				status: response.status,
+				statusText: response.statusText,
 				headers,
 			})
-		}
-
-		const cspNonce = createCspNonce()
-		const handlerStartedAt = performance.now()
-		const handler = await getSiteRequestHandler(request)
-		const handlerReadyMs = performance.now() - handlerStartedAt
-		let response = await handler(request, {
-			cloudflare: { env, ctx },
-			cspNonce,
-		} as AppLoadContext)
-		const handlerServeMs = performance.now() - handlerStartedAt - handlerReadyMs
-
-		const url = new URL(request.url)
-		const acceptHeader = request.headers.get('Accept') ?? ''
-		if (requestPrefersMarkdown(acceptHeader)) {
-			const { maybeConvertHtmlResponseToMarkdown } =
-				await getMarkdownNegotiation()
-			response = await maybeConvertHtmlResponseToMarkdown(response)
-		}
-
-		const headers = new Headers(response.headers)
-		applySecurityHeaders({ headers, request, cspNonce })
-		// Reuse the pre-router rate-limit result so a request only consumes one
-		// quota unit (checkRateLimit increments the window on every call).
-		const mocks = getStringEnvBindings(env).MOCKS === 'true'
-		const rateLimit = preRouter.rateLimit ?? checkRateLimit(request, { mocks })
-		applyRateLimitHeaders(headers, rateLimit)
-		if (
-			rateLimit.tier === 'markdown' &&
-			rateLimit.remaining <= rateLimit.limit / 2
-		) {
-			const hints = getAgentSearchHintHeaders(url.pathname)
-			for (const [key, value] of Object.entries(hints)) {
-				headers.set(key, value)
-			}
-		}
-		if (url.pathname.startsWith('/.well-known/')) {
-			headers.set('Access-Control-Allow-Origin', '*')
-		}
-		if (
-			response.ok &&
-			Boolean(headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i))
-		) {
-			appendVaryAccept(headers)
-		}
-		headers.set('X-Isolate-Id', getIsolateId())
-		headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
-		if (firstRequestTimings) {
-			headers.set(
-				'X-Cold-Start-Timing',
-				formatColdStartTiming({
-					...firstRequestTimings,
-					handlerReady: handlerReadyMs,
-					handlerServe: handlerServeMs,
-					request: performance.now() - requestStartedAt,
-				}),
-			)
-			firstRequestTimings = null
-		}
-
-		const finalResponse = new Response(response.body, {
-			status: response.status,
-			statusText: response.statusText,
-			headers,
+			logRequest(request, finalResponse, startedAt)
+			return finalResponse
 		})
-		logRequest(request, finalResponse, startedAt)
-		return finalResponse
 	} finally {
 		endCacheRequestStats()
+		endD1RequestStats()
 	}
 }
 

@@ -11,10 +11,13 @@ import chalk from 'chalk'
 import { getEnv } from '#app/utils/env.server.ts'
 import { createSqliteExecutorDataTableAdapter } from './db/d1-data-table-adapter.server.ts'
 import { createBetterSqliteExecutor } from './db/better-sqlite-executor.server.ts'
+import { recordD1QueryMeta } from './db/d1-request-stats.server.ts'
 import { getD1RpcBinding } from './db/d1-rpc-client.server.ts'
+import { getRequestD1Session } from './db/d1-session-request.server.ts'
 import {
 	createDirectD1Executor,
 	createRpcD1Executor,
+	createSessionD1Executor,
 	type D1DatabaseLike,
 	type D1SqlExecutor,
 } from './db/d1-sql-executor.server.ts'
@@ -66,6 +69,25 @@ function createLoggingAdapter(adapter: DatabaseAdapter): DatabaseAdapter {
 	}) as DatabaseAdapter
 }
 
+function createStatsRecordingExecutor(executor: D1SqlExecutor): D1SqlExecutor {
+	return {
+		supportsSqlTransactions: executor.supportsSqlTransactions,
+		async query(sql, params = []) {
+			const result = await executor.query(sql, params)
+			recordD1QueryMeta(result.meta)
+			return result
+		},
+		async run(sql, params = []) {
+			const result = await executor.run(sql, params)
+			recordD1QueryMeta(result.meta)
+			return result
+		},
+		async exec(sql) {
+			await executor.exec(sql)
+		},
+	}
+}
+
 function getSqliteFilePath(databaseUrl: string) {
 	if (databaseUrl.startsWith('file:')) {
 		return databaseUrl.slice('file:'.length)
@@ -92,7 +114,9 @@ function createNodeDatabase(): Database {
 }
 
 function createRpcDatabase(executor: D1SqlExecutor): Database {
-	const adapter = createSqliteExecutorDataTableAdapter(executor)
+	const adapter = createSqliteExecutorDataTableAdapter(
+		createStatsRecordingExecutor(executor),
+	)
 	return createDatabase(adapter, { now: databaseNow })
 }
 
@@ -112,23 +136,44 @@ function getDirectD1Binding(): D1DatabaseLike | undefined {
 
 function createDirectDatabase(executor: D1SqlExecutor): Database {
 	const adapter = createLoggingAdapter(
-		createSqliteExecutorDataTableAdapter(executor),
+		createSqliteExecutorDataTableAdapter(createStatsRecordingExecutor(executor)),
 	)
 	return createDatabase(adapter, { now: databaseNow })
+}
+
+function resolveRequestScopedExecutor(
+	fallback: D1SqlExecutor,
+): D1SqlExecutor {
+	const session = getRequestD1Session()
+	if (!session) return fallback
+	return createSessionD1Executor(session)
 }
 
 function getDatabaseClient(): Database {
 	const rpc = getD1RpcBinding()
 	if (rpc) {
 		return remember('data-table-rpc', () =>
-			createRpcDatabase(createRpcD1Executor(rpc)),
+			createRpcDatabase(
+				createRpcD1Executor(rpc, () => getRequestD1Session()),
+			),
 		)
 	}
 
 	const directD1 = getDirectD1Binding()
 	if (directD1) {
+		const directExecutor = createDirectD1Executor(directD1)
 		return remember('data-table-direct-d1', () =>
-			createDirectDatabase(createDirectD1Executor(directD1)),
+			createDirectDatabase(
+				new Proxy(directExecutor, {
+					get(target, prop, receiver) {
+						const scoped = resolveRequestScopedExecutor(target)
+						const value = Reflect.get(scoped, prop, receiver)
+						return typeof value === 'function'
+							? value.bind(scoped)
+							: value
+					},
+				}),
+			),
 		)
 	}
 

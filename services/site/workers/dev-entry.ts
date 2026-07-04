@@ -11,6 +11,19 @@ import {
 	endCacheRequestStats,
 	formatCacheRequestStatsHeader,
 } from '#app/utils/cache-request-stats.server.ts'
+import {
+	beginD1RequestStats,
+	endD1RequestStats,
+	formatD1RequestStatsHeader,
+} from '#app/utils/db/d1-request-stats.server.ts'
+import {
+	appendD1BookmarkCookie,
+	getD1BookmarkFromRequest,
+} from '#app/utils/db/d1-bookmark-cookie.server.ts'
+import {
+	getOutboundD1Bookmark,
+	runWithD1RequestContext,
+} from '#app/utils/db/d1-session-request.server.ts'
 import { installDevMockFetch } from '#app/utils/dev-outbound-fetch.server.ts'
 import {
 	setDevWaitUntil,
@@ -445,86 +458,101 @@ async function handleSiteRequest(
 ): Promise<Response> {
 	const startedAt = Date.now()
 	const cacheStats = beginCacheRequestStats()
+	const d1Stats = beginD1RequestStats()
+	const inboundBookmark = getD1BookmarkFromRequest(request)
 	setDevWaitUntil(ctx.waitUntil.bind(ctx))
 	try {
 		await ensureRuntimeBridges(env)
-
-		const preRouter = await runPreRouterPipeline(request, env)
-		const preRouterResponse = preRouter.response
-		if (preRouterResponse) {
-			const headers = new Headers(preRouterResponse.headers)
-			headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
-			logRequest(
-				request,
-				new Response(preRouterResponse.body, {
+		return await runWithD1RequestContext(request, async () => {
+			const preRouter = await runPreRouterPipeline(request, env)
+			const preRouterResponse = preRouter.response
+			if (preRouterResponse) {
+				const headers = new Headers(preRouterResponse.headers)
+				headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
+				headers.set('X-D1-Stats', formatD1RequestStatsHeader(d1Stats))
+				logRequest(
+					request,
+					new Response(preRouterResponse.body, {
+						status: preRouterResponse.status,
+						statusText: preRouterResponse.statusText,
+						headers,
+					}),
+					startedAt,
+				)
+				return new Response(preRouterResponse.body, {
 					status: preRouterResponse.status,
 					statusText: preRouterResponse.statusText,
 					headers,
-				}),
-				startedAt,
-			)
-			return new Response(preRouterResponse.body, {
-				status: preRouterResponse.status,
-				statusText: preRouterResponse.statusText,
+				})
+			}
+
+			const cspNonce = createCspNonce()
+			const handler = await getSiteRequestHandler(request)
+			let response = await handler(request, {
+				cloudflare: { env, ctx },
+				cspNonce,
+			} as AppLoadContext)
+
+			const url = new URL(request.url)
+			const acceptHeader = request.headers.get('Accept') ?? ''
+			if (requestPrefersMarkdown(acceptHeader)) {
+				const { maybeConvertHtmlResponseToMarkdown } =
+					await getMarkdownNegotiation()
+				response = await maybeConvertHtmlResponseToMarkdown(response)
+			}
+
+			const headers = new Headers(response.headers)
+			applySecurityHeaders({
+				headers,
+				request,
+				cspNonce,
+				mode: import.meta.env.DEV ? 'development' : 'production',
+			})
+			const mocks = getStringEnvBindings(env).MOCKS === 'true'
+			const rateLimit = preRouter.rateLimit ?? checkRateLimit(request, { mocks })
+			applyRateLimitHeaders(headers, rateLimit)
+			if (
+				rateLimit.tier === 'markdown' &&
+				rateLimit.remaining <= rateLimit.limit / 2
+			) {
+				const hints = getAgentSearchHintHeaders(url.pathname)
+				for (const [key, value] of Object.entries(hints)) {
+					headers.set(key, value)
+				}
+			}
+			if (url.pathname.startsWith('/.well-known/')) {
+				headers.set('Access-Control-Allow-Origin', '*')
+			}
+			if (
+				response.ok &&
+				Boolean(headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i))
+			) {
+				appendVaryAccept(headers)
+			}
+			headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
+			headers.set('X-D1-Stats', formatD1RequestStatsHeader(d1Stats))
+
+			const outboundBookmark = await getOutboundD1Bookmark()
+			if (
+				outboundBookmark &&
+				outboundBookmark !== inboundBookmark &&
+				outboundBookmark !== 'first-unconstrained' &&
+				outboundBookmark !== 'first-primary'
+			) {
+				appendD1BookmarkCookie(headers, outboundBookmark)
+			}
+			const finalResponse = new Response(response.body, {
+				status: response.status,
+				statusText: response.statusText,
 				headers,
 			})
-		}
-
-		const cspNonce = createCspNonce()
-		const handler = await getSiteRequestHandler(request)
-		let response = await handler(request, {
-			cloudflare: { env, ctx },
-			cspNonce,
-		} as AppLoadContext)
-
-		const url = new URL(request.url)
-		const acceptHeader = request.headers.get('Accept') ?? ''
-		if (requestPrefersMarkdown(acceptHeader)) {
-			const { maybeConvertHtmlResponseToMarkdown } =
-				await getMarkdownNegotiation()
-			response = await maybeConvertHtmlResponseToMarkdown(response)
-		}
-
-		const headers = new Headers(response.headers)
-		applySecurityHeaders({
-			headers,
-			request,
-			cspNonce,
-			mode: import.meta.env.DEV ? 'development' : 'production',
+			logRequest(request, finalResponse, startedAt)
+			return finalResponse
 		})
-		const mocks = getStringEnvBindings(env).MOCKS === 'true'
-		const rateLimit = preRouter.rateLimit ?? checkRateLimit(request, { mocks })
-		applyRateLimitHeaders(headers, rateLimit)
-		if (
-			rateLimit.tier === 'markdown' &&
-			rateLimit.remaining <= rateLimit.limit / 2
-		) {
-			const hints = getAgentSearchHintHeaders(url.pathname)
-			for (const [key, value] of Object.entries(hints)) {
-				headers.set(key, value)
-			}
-		}
-		if (url.pathname.startsWith('/.well-known/')) {
-			headers.set('Access-Control-Allow-Origin', '*')
-		}
-		if (
-			response.ok &&
-			Boolean(headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i))
-		) {
-			appendVaryAccept(headers)
-		}
-		headers.set('X-Cache-Stats', formatCacheRequestStatsHeader(cacheStats))
-
-		const finalResponse = new Response(response.body, {
-			status: response.status,
-			statusText: response.statusText,
-			headers,
-		})
-		logRequest(request, finalResponse, startedAt)
-		return finalResponse
 	} finally {
 		setDevWaitUntil(null)
 		endCacheRequestStats()
+		endD1RequestStats()
 	}
 }
 

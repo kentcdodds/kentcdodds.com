@@ -3,16 +3,25 @@ import {
 	deserializeSqlRows,
 	serializeSqlParams,
 } from './row-serialization.server.ts'
+import {
+	getRequestD1Bookmark,
+	getRequestD1Session,
+	setRequestD1Bookmark,
+} from './d1-session-request.server.ts'
 
 export type D1Meta = {
 	changes?: number
 	last_row_id?: number
 	duration?: number
+	served_by_region?: string
+	served_by_colo?: string
+	served_by_primary?: boolean
 }
 
 export type D1StatementResult = {
 	results?: Array<Record<string, unknown>>
 	meta?: D1Meta
+	bookmark?: string | null
 }
 
 export type D1PreparedStatement = {
@@ -31,6 +40,15 @@ export type D1DatabaseLike = {
 	prepare(query: string): D1PreparedStatement
 	exec(query: string): Promise<unknown>
 	batch(statements: D1PreparedStatement[]): Promise<D1StatementResult[]>
+	withSession?(
+		constraintOrBookmark?: string,
+	): D1DatabaseSessionLike
+}
+
+export type D1DatabaseSessionLike = {
+	prepare(query: string): D1PreparedStatement
+	batch(statements: D1PreparedStatement[]): Promise<D1StatementResult[]>
+	getBookmark(): string | null
 }
 
 /**
@@ -48,6 +66,18 @@ export type D1SqlExecutor = {
 	supportsSqlTransactions?: boolean
 }
 
+export type D1RpcSessionBinding = {
+	query(
+		sql: string,
+		params?: readonly unknown[],
+	): Promise<D1StatementResult>
+	run(sql: string, params?: readonly unknown[]): Promise<D1StatementResult>
+	batch(
+		statements: ReadonlyArray<{ sql: string; params?: readonly unknown[] }>,
+	): Promise<D1StatementResult[]>
+	getBookmark(): string | null | Promise<string | null>
+}
+
 export type D1RpcBinding = {
 	query(
 		sql: string,
@@ -57,6 +87,67 @@ export type D1RpcBinding = {
 	batch(
 		statements: ReadonlyArray<{ sql: string; params?: readonly unknown[] }>,
 	): Promise<D1StatementResult[]>
+	sessionQuery?(
+		bookmark: string,
+		sql: string,
+		params?: readonly unknown[],
+	): Promise<D1StatementResult>
+	sessionRun?(
+		bookmark: string,
+		sql: string,
+		params?: readonly unknown[],
+	): Promise<D1StatementResult>
+	sessionBatch?(
+		bookmark: string,
+		statements: ReadonlyArray<{ sql: string; params?: readonly unknown[] }>,
+	): Promise<D1StatementResult[]>
+	createSession?(
+		bookmark?: string,
+	): D1RpcSessionBinding | Promise<D1RpcSessionBinding>
+}
+
+function mapStatementResult(result: {
+	results?: Array<Record<string, unknown>>
+	meta?: D1Meta
+}): D1StatementResult {
+	return {
+		results: deserializeSqlRows(result.results ?? []),
+		meta: result.meta,
+	}
+}
+
+export function createDirectSessionBinding(
+	session: D1DatabaseSessionLike,
+): D1RpcSessionBinding {
+	return {
+		async query(sql, params = []) {
+			const bound = session.prepare(sql).bind(...serializeSqlParams(params))
+			const result = await bound.all<Record<string, unknown>>()
+			return mapStatementResult(result)
+		},
+		async run(sql, params = []) {
+			const bound = session.prepare(sql).bind(...serializeSqlParams(params))
+			const result = await bound.run<Record<string, unknown>>()
+			return mapStatementResult(result)
+		},
+		async batch(statements) {
+			const prepared = statements.map((statement) =>
+				session.prepare(statement.sql).bind(
+					...serializeSqlParams(statement.params ?? []),
+				),
+			)
+			const results = await session.batch(prepared)
+			return results.map((result) =>
+				mapStatementResult({
+					results: (result.results ?? []) as Array<Record<string, unknown>>,
+					meta: result.meta,
+				}),
+			)
+		},
+		getBookmark() {
+			return session.getBookmark()
+		},
+	}
 }
 
 export function createDirectD1Executor(database: D1DatabaseLike): D1SqlExecutor {
@@ -65,18 +156,12 @@ export function createDirectD1Executor(database: D1DatabaseLike): D1SqlExecutor 
 		async query(sql, params = []) {
 			const bound = database.prepare(sql).bind(...serializeSqlParams(params))
 			const result = await bound.all<Record<string, unknown>>()
-			return {
-				results: deserializeSqlRows(result.results ?? []),
-				meta: result.meta,
-			}
+			return mapStatementResult(result)
 		},
 		async run(sql, params = []) {
 			const bound = database.prepare(sql).bind(...serializeSqlParams(params))
 			const result = await bound.run<Record<string, unknown>>()
-			return {
-				results: deserializeSqlRows(result.results ?? []),
-				meta: result.meta,
-			}
+			return mapStatementResult(result)
 		},
 		async exec(sql) {
 			await database.exec(sql)
@@ -84,25 +169,95 @@ export function createDirectD1Executor(database: D1DatabaseLike): D1SqlExecutor 
 	}
 }
 
-export function createRpcD1Executor(rpc: D1RpcBinding): D1SqlExecutor {
+export function createSessionD1Executor(
+	session: D1RpcSessionBinding,
+): D1SqlExecutor {
 	return {
 		supportsSqlTransactions: false,
 		async query(sql, params = []) {
-			const result = await rpc.query(sql, serializeSqlParams(params))
+			const result = await session.query(sql, serializeSqlParams(params))
 			return {
 				results: deserializeSqlRows(result.results ?? []),
 				meta: result.meta,
 			}
 		},
 		async run(sql, params = []) {
-			const result = await rpc.run(sql, serializeSqlParams(params))
+			const result = await session.run(sql, serializeSqlParams(params))
 			return {
 				results: deserializeSqlRows(result.results ?? []),
 				meta: result.meta,
 			}
 		},
 		async exec(sql) {
-			await rpc.run(sql)
+			await session.run(sql)
+		},
+	}
+}
+
+export function createRpcD1Executor(
+	rpc: D1RpcBinding,
+	resolveSession?: () => D1RpcSessionBinding | undefined,
+): D1SqlExecutor {
+	return {
+		supportsSqlTransactions: false,
+		async query(sql, params = []) {
+			const session = resolveSession?.() ?? getRequestD1Session()
+			if (session) {
+				const result = await session.query(sql, serializeSqlParams(params))
+				if (result.bookmark) setRequestD1Bookmark(result.bookmark)
+				return {
+					results: deserializeSqlRows(result.results ?? []),
+					meta: result.meta,
+				}
+			}
+			const bookmark = getRequestD1Bookmark()
+			const result =
+				bookmark && typeof rpc.sessionQuery === 'function'
+					? await rpc.sessionQuery(
+							bookmark,
+							sql,
+							serializeSqlParams(params),
+						)
+					: await rpc.query(sql, serializeSqlParams(params))
+			if (result.bookmark) setRequestD1Bookmark(result.bookmark)
+			return {
+				results: deserializeSqlRows(result.results ?? []),
+				meta: result.meta,
+			}
+		},
+		async run(sql, params = []) {
+			const session = resolveSession?.() ?? getRequestD1Session()
+			if (session) {
+				const result = await session.run(sql, serializeSqlParams(params))
+				if (result.bookmark) setRequestD1Bookmark(result.bookmark)
+				return {
+					results: deserializeSqlRows(result.results ?? []),
+					meta: result.meta,
+				}
+			}
+			const bookmark = getRequestD1Bookmark()
+			const result =
+				bookmark && typeof rpc.sessionRun === 'function'
+					? await rpc.sessionRun(bookmark, sql, serializeSqlParams(params))
+					: await rpc.run(sql, serializeSqlParams(params))
+			if (result.bookmark) setRequestD1Bookmark(result.bookmark)
+			return {
+				results: deserializeSqlRows(result.results ?? []),
+				meta: result.meta,
+			}
+		},
+		async exec(sql) {
+			const session = resolveSession?.() ?? getRequestD1Session()
+			if (session) {
+				await session.run(sql)
+				return
+			}
+			const bookmark = getRequestD1Bookmark()
+			const result =
+				bookmark && typeof rpc.sessionRun === 'function'
+					? await rpc.sessionRun(bookmark, sql)
+					: await rpc.run(sql)
+			if (result.bookmark) setRequestD1Bookmark(result.bookmark)
 		},
 	}
 }
