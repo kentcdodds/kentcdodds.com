@@ -195,30 +195,30 @@ async function getWorkerMdxPage({
 }): Promise<MdxPage | null> {
 	if (contentDir === 'blog' && isReadmeMdxEntry(slug)) return null
 
-	const cacheKey = `${contentDir}:${slug}`
-	if (workerMdxPageCache.has(cacheKey)) {
-		return workerMdxPageCache.get(cacheKey) ?? null
-	}
-
 	const contentData = getContentData()
 	if (!contentData) return null
+
+	const cacheKey = `${contentData.version}:${contentDir}:${slug}`
+	if (!import.meta.env.DEV && workerMdxPageCache.has(cacheKey)) {
+		return workerMdxPageCache.get(cacheKey) ?? null
+	}
 
 	const doc = contentData.documents[`${contentDir}/${slug}`] as
 		| ContentArtifactDocument
 		| undefined
 	if (!doc) {
-		workerMdxPageCache.set(cacheKey, null)
+		if (!import.meta.env.DEV) workerMdxPageCache.set(cacheKey, null)
 		return null
 	}
 
 	if (doc.githubResolvable === false) {
-		workerMdxPageCache.set(cacheKey, null)
+		if (!import.meta.env.DEV) workerMdxPageCache.set(cacheKey, null)
 		return null
 	}
 
 	const code = await getDocumentCode(contentDir, slug)
 	if (!code) {
-		workerMdxPageCache.set(cacheKey, null)
+		if (!import.meta.env.DEV) workerMdxPageCache.set(cacheKey, null)
 		return null
 	}
 
@@ -240,7 +240,9 @@ async function getWorkerMdxPage({
 		}
 	}
 
-	workerMdxPageCache.set(cacheKey, page)
+	if (!import.meta.env.DEV) {
+		workerMdxPageCache.set(cacheKey, page)
+	}
 	return page
 }
 
