@@ -2,8 +2,9 @@
 
 This documents the architecture for running the full kentcdodds.com site on
 Cloudflare Workers with user-facing feature parity, no Fly.io dependency, and
-content updates that do not require a redeploy. It is the shared contract for
-the pieces in `services/site-worker` and the MDX artifact pipeline.
+content updates that do not require a redeploy. **Production remains on Fly
+until DNS cutover** (Phase 3); this doc is the shared contract for the pieces
+in `services/site-worker` and the MDX artifact pipeline on the migration branch.
 
 ## Overview
 
@@ -17,8 +18,10 @@ the pieces in `services/site-worker` and the MDX artifact pipeline.
                         │  - hosts RPC entrypoints:                │
                         │      PrismaRpc  (Prisma client on D1)    │
                         │      CacheRpc   (KV-backed cachified)    │
+                        │      ContentRpc (per-doc client code)    │
                         │      OutboundProxy (outbound fetch)        │
-                        │  - scheduled(): expired-data cleanup     │
+                        │  - scheduled(): expired-data cleanup +   │
+                        │    dynamic-isolate warmup                │
                         │  bindings: APP_DB (D1), SITE_CACHE_KV,     │
                         │    CONTENT_KV, MDX_ARTIFACTS (R2),       │
                         │    LOADER, ASSETS, OAUTH_WORKER,           │
@@ -39,10 +42,11 @@ the pieces in `services/site-worker` and the MDX artifact pipeline.
                         │     mdx/pages/react for workerd resolve) │
                         │   - mdx/blog/{slug}.js (per post, ESM)   │
                         │   - mdx/pages/{slug}.js                  │
-                        │   - site-content-data.json (yaml data,   │
-                        │     blog list metadata, dir lists)       │
+                        │   - site-content-data.json (metadata +   │
+                        │     blogList, dirLists, dataFiles; no    │
+                        │     per-doc code/esm — see CONTENT_RPC)  │
                         │  env: string vars + PRISMA_RPC stub +    │
-                        │    CACHE_RPC stub (loopback entrypoints) │
+                        │    CACHE_RPC + CONTENT_RPC loopback stubs│
                         └──────────────────────────────────────────┘
 ```
 
@@ -54,10 +58,12 @@ request time. The client keeps the existing `new Function` mdx-bundler path
 (unchanged UX); the server imports the ESM variant of the same compile, so SSR
 and hydration render identical trees.
 
-## Empirically verified platform facts (probe worker)
+## Empirically verified platform facts (archived July 2026)
 
-`other/loader-probe` + `.github/workflows/cf-preview-deploy.yml` deploys
-`kcd-loader-probe-2309`. Verified on this account (July 2026):
+A temporary Worker Loader probe (`other/loader-probe`, worker
+`kcd-loader-probe-2309`) validated these facts on this account in July 2026.
+The probe and its CI job were removed after validation; the orchestrator deletes
+the deployed probe worker separately.
 
 - `worker_loaders` binding deploys via Wrangler (open beta, paid plan).
 - Module names must end in `.js`/`.py` unless declared with an explicit type
@@ -138,8 +144,9 @@ from `services/site`) can reach worker-provided content without static imports
 that would break the Node/dev build:
 
 - `globalThis[Symbol.for('kentcdodds.contentData')]` — the artifact bundle
-  JSON minus the per-document `esm` fields (metadata, `code` strings for the
-  client, blogList, dirLists, dataFiles).
+  JSON with per-document `code` and `esm` **stripped** (metadata, blogList,
+  dirLists, dataFiles only). Client IIFE strings are served on demand via
+  `CONTENT_RPC.getDocumentCode(contentDir, slug)`.
 - `globalThis[Symbol.for('kentcdodds.loadMdxModule')]` —
   `(contentDir: string, slug: string) => Promise<Record<string, unknown> | null>`
   implemented as `import('mdx/' + contentDir + '/' + slug + '.js')`.
@@ -159,10 +166,18 @@ throws for Prisma errors). The app-side proxy rethrows an `Error` with
 `name`/`code`/`meta` attached so existing error handling (e.g. unique
 constraint checks) behaves the same.
 
+`PrismaRpc.raw(method, query, values?)` supports `$queryRaw`, `$executeRaw`,
+`$queryRawUnsafe`, and `$executeRawUnsafe` with the same ok/error envelope.
+Used by app code paths that need raw SQL against D1.
+
 `CacheRpc` methods: `get(key)` → cache entry or `null`; `set(key, entry)`;
 `delete(key)`; `keys(prefix?, limit?)` → `string[]`. Entries are the same
 JSON encoding used by the SQLite cache (Buffer values base64-encoded with the
 existing reviver/replacer from `cache.server.ts`).
+
+`ContentRpc.getDocumentCode(contentDir, slug)` returns the mdx-bundler IIFE
+string for client hydration, or `null` if the document is missing. Reads from
+the parent's in-memory artifact bundle cache (populated from R2/KV).
 
 ## Outbound routing
 
@@ -174,10 +189,10 @@ The dynamic worker is created with `globalOutbound` pointing at the parent's
    `kcd-search-worker.kentcdodds.workers.dev`) are dispatched via
    `OAUTH_WORKER.fetch()` / `SEARCH_WORKER.fetch()` instead of global `fetch`
    (avoids CF error 1042 on worker-to-worker `*.workers.dev` calls).
-2. **Mocks** — Mailgun, Discord, Kit, Verifier, Twitter API get inline mock
-   responses (same shapes as MSW mocks in `services/site/mocks/`).
+2. **Mocks** — Mailgun, Discord, Kit, Verifier get inline mock responses (same
+   shapes as MSW mocks in `services/site/mocks/`).
 3. **Passthrough** — everything else (Cloudinary, GitHub raw, Transistor,
-   Simplecast, oEmbed providers) uses global `fetch`.
+   Simplecast, oEmbed providers, Twitter/X API hosts) uses global `fetch`.
 
 `mermaid-to-svg.kentcdodds.workers.dev` is compile-time only (not fetched at
 runtime in the worker).
@@ -186,14 +201,15 @@ runtime in the worker).
 
 - All string values from the parent worker env (vars + secrets) are passed
   through as plain strings.
-- `PRISMA_RPC`: loopback entrypoint with `query(model, operation, args)`
-  hitting the parent's PrismaClient (D1 adapter). The app's
-  `prisma.server.ts` returns a Proxy client when `PRISMA_RPC` is present.
+- `PRISMA_RPC`: loopback entrypoint with `query(model, operation, args)` and
+  `raw(method, query, values?)` hitting the parent's PrismaClient (D1 adapter).
+  The app's `prisma.server.ts` returns a Proxy client when `PRISMA_RPC` is
+  present.
 - `CACHE_RPC`: loopback entrypoint with `get(key)`, `set(key, entry)`,
   `delete(key)`, `keys(prefix?)` over `SITE_CACHE_KV`. `cache.server.ts` uses
   it as the cachified store when present (LRU stays in-isolate).
-- `MDX_MODULES_AVAILABLE`: `'true'` so app code knows server MDX components
-  come from the module map.
+- `CONTENT_RPC`: loopback entrypoint with
+  `getDocumentCode(contentDir, slug)` for client MDX IIFE strings.
 
 ## Server-side MDX rendering (no eval)
 
@@ -203,14 +219,24 @@ runtime in the worker).
   `${contentDir}/${slug}`.
 - `useMdxComponent` checks the server registry first (synchronously, during
   SSR); in the browser (or in Node dev) it falls back to the existing
-  mdx-bundler `new Function` path. Both variants are compiled from the same
-  source with the same plugins, so trees match and hydration is clean.
+  mdx-bundler `new Function` path via `getDocumentCode` / `CONTENT_RPC`. Both
+  variants are compiled from the same source with the same plugins, so trees
+  match and hydration is clean.
 - The ESM variant externalizes `react` and `react/jsx-runtime`; those resolve
   to shim modules in the module map that delegate to the single React copy
   published on `globalThis` by `app-worker.js` at startup. Because workerd
   resolves bare imports relative to nested MDX module paths (e.g.
   `mdx/pages/uses.js` → `mdx/pages/react`), the module map must also include
   per-directory aliases (`mdx/pages/react`, `mdx/blog/react`, etc.).
+
+## Scheduled tasks (crons)
+
+Configured in `services/site-worker/wrangler.jsonc`:
+
+- `0 3 * * *` — daily expired-data cleanup (`Session` / `Verification` rows
+  past expiry) via `deleteExpiredSessionsAndVerifications`.
+- `*/2 * * * *` — warmup cron hitting `/`, `/blog`, and `/healthcheck` to keep
+  the parent artifact cache and a few dynamic isolates warm.
 
 ## Performance profile (measured July 2026)
 
@@ -222,8 +248,7 @@ runtime in the worker).
   `CONTENT_RPC` instead of shipping ~8.6MB in `site-content-data.json`,
   parent-memory bundle/module-map caches, KV mirror of the artifact bundle
   (`mdx-bundle:{r2Key}`, edge-cached with `cacheTtl`) so cold parents skip the
-  ~300ms R2 read, cached worker stubs, and a `*/2 * * * *` warmup cron hitting
-  `/`, `/blog`, `/healthcheck`.
+  ~300ms R2 read, cached worker stubs, and the warmup cron above.
 - Cloudflare rotates dynamic isolates aggressively at low traffic, so
   low-traffic previews still see the cold tail on a fraction of requests;
   sustained traffic keeps the pool warm.
@@ -244,6 +269,17 @@ preview deployment.
 - Service bindings: `kcd-oauth-provider`, `kcd-search-worker` (production workers)
 - Deploys from `.github/workflows/cf-preview-deploy.yml` on pushes to the
   migration branch. Production site resources are never touched.
+
+### Resource naming
+
+Preview resources use two naming conventions from incremental provisioning:
+
+- **Worker + D1** — `kentcdodds-com-staging*` (worker script, D1 database).
+- **KV + R2** — `kcd-site-cf-preview-*` (cache/content KV namespaces, artifact
+  bucket).
+
+Unify naming at production cutover when provisioning fresh production
+bindings.
 
 ### CI token limitations
 
