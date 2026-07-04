@@ -2,7 +2,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type BetterSqlite3 from 'better-sqlite3'
-import { serializeSqlParams } from './row-serialization.server.ts'
+import { createBetterSqliteExecutor } from './better-sqlite-executor.server.ts'
+
+export { createBetterSqliteExecutor }
 
 const migrationsDir = path.resolve(
 	fileURLToPath(new URL('../../../prisma/migrations', import.meta.url)),
@@ -28,29 +30,4 @@ export function createMigratedMemoryDatabase(
 	database.pragma('foreign_keys = ON')
 	applyPrismaMigrations(database)
 	return database
-}
-
-export function createBetterSqliteExecutor(
-	database: BetterSqlite3.Database,
-) {
-	return {
-		async query(sql: string, params: readonly unknown[] = []) {
-			const results = database
-				.prepare(sql)
-				.all(...serializeSqlParams(params)) as Array<Record<string, unknown>>
-			return { results }
-		},
-		async run(sql: string, params: readonly unknown[] = []) {
-			const result = database.prepare(sql).run(...serializeSqlParams(params))
-			return {
-				meta: {
-					changes: result.changes,
-					last_row_id: Number(result.lastInsertRowid),
-				},
-			}
-		},
-		async exec(sql: string) {
-			database.exec(sql)
-		},
-	}
 }

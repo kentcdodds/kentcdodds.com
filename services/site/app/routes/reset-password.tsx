@@ -13,10 +13,13 @@ import {
 	getPasswordStrengthError,
 	getPasswordHash,
 } from '#app/utils/password.server.ts'
+import { db } from '#app/utils/db.server.ts'
 import {
-	migrateHomeworkCompletionsToUser,
-	prisma,
-} from '#app/utils/prisma.server.ts'
+	passwordTable,
+	postReadTable,
+	userTable,
+} from '#app/utils/db/schema.server.ts'
+import { migrateHomeworkCompletionsToUser } from '#app/utils/prisma.server.ts'
 import { upsertPasswordAndDeleteSessions } from '#app/utils/prisma-write-flows.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import {
@@ -88,11 +91,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const resetEmail = loginSession.getResetPasswordEmail()
 	let hasPassword: boolean | null = null
 	if (resetEmail) {
-		const userRecord = await prisma.user.findUnique({
+		const userRecord = await db.findOne(userTable, {
 			where: { email: resetEmail },
-			select: { password: { select: { userId: true } } },
 		})
-		hasPassword = Boolean(userRecord?.password)
+		hasPassword = userRecord
+			? Boolean(await db.find(passwordTable, userRecord.id))
+			: false
 	}
 	return json(
 		{
@@ -132,9 +136,8 @@ export async function action({ request }: Route.ActionArgs) {
 			})
 		}
 
-		const user = await prisma.user.findUnique({
+		const user = await db.findOne(userTable, {
 			where: { email },
-			select: { id: true, team: true },
 		})
 		if (user) {
 			await createAndSendPasswordResetVerificationEmail({
@@ -245,9 +248,8 @@ export async function action({ request }: Route.ActionArgs) {
 		)
 	}
 
-	const userRecord = await prisma.user.findUnique({
+	const userRecord = await db.findOne(userTable, {
 		where: { email: resetEmail },
-		select: { id: true },
 	})
 
 	if (!userRecord) {
@@ -278,10 +280,11 @@ export async function action({ request }: Route.ActionArgs) {
 		try {
 			const clientId = clientSession.getClientId()
 			if (clientId) {
-				await prisma.postRead.updateMany({
-					data: { userId: userRecord.id, clientId: null },
-					where: { clientId },
-				})
+				await db.updateMany(
+					postReadTable,
+					{ userId: userRecord.id, clientId: null },
+					{ where: { clientId } },
+				)
 				await migrateHomeworkCompletionsToUser({
 					userId: userRecord.id,
 					clientId,

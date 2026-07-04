@@ -1,7 +1,8 @@
 import { verifyRegistrationResponse } from '@simplewebauthn/server'
 import { data as json } from 'react-router'
+import { db } from '#app/utils/db.server.ts'
+import { passkeyTable } from '#app/utils/db/schema.server.ts'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import {
 	PasskeyCookieSchema,
@@ -70,10 +71,7 @@ export async function action({ request }: Route.ActionArgs) {
 	const { credential, credentialDeviceType, credentialBackedUp, aaguid } =
 		registrationInfo
 
-	const existingPasskey = await prisma.passkey.findUnique({
-		where: { id: credential.id },
-		select: { id: true },
-	})
+	const existingPasskey = await db.find(passkeyTable, credential.id)
 
 	if (existingPasskey) {
 		return json(
@@ -86,18 +84,16 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	// Create new passkey in database
-	await prisma.passkey.create({
-		data: {
-			id: credential.id,
-			aaguid,
-			publicKey: new Uint8Array(credential.publicKey),
-			userId: user.id,
-			webauthnUserId,
-			counter: credential.counter,
-			deviceType: credentialDeviceType,
-			backedUp: credentialBackedUp,
-			transports: credential.transports?.join(','),
-		},
+	await db.create(passkeyTable, {
+		id: credential.id,
+		aaguid,
+		publicKey: new Uint8Array(credential.publicKey),
+		userId: user.id,
+		webauthnUserId,
+		counter: credential.counter,
+		deviceType: credentialDeviceType,
+		backedUp: credentialBackedUp,
+		transports: credential.transports?.join(','),
 	})
 
 	// Clear the challenge cookie

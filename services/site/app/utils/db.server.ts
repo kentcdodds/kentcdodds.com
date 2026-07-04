@@ -7,10 +7,10 @@ import {
 	type DataManipulationRequest,
 	type DataManipulationResult,
 } from '@remix-run/data-table'
-import { createSqliteDatabaseAdapter } from '@remix-run/data-table-sqlite'
 import chalk from 'chalk'
 import { getEnv } from '#app/utils/env.server.ts'
 import { createSqliteExecutorDataTableAdapter } from './db/d1-data-table-adapter.server.ts'
+import { createBetterSqliteExecutor } from './db/better-sqlite-executor.server.ts'
 import { getD1RpcBinding } from './db/d1-rpc-client.server.ts'
 import {
 	createRpcD1Executor,
@@ -63,21 +63,6 @@ function createLoggingAdapter(adapter: DatabaseAdapter): DatabaseAdapter {
 	}) as DatabaseAdapter
 }
 
-function compatSqliteAdapter(database: BetterSqlite3.Database): DatabaseAdapter {
-	const adapter = createSqliteDatabaseAdapter(database)
-	return new Proxy(adapter, {
-		get(target, prop, receiver) {
-			if (prop === 'executeScript') {
-				return async (sql: string) => {
-					database.exec(sql)
-				}
-			}
-			const value = Reflect.get(target, prop, receiver)
-			return typeof value === 'function' ? value.bind(target) : value
-		},
-	}) as unknown as DatabaseAdapter
-}
-
 function getSqliteFilePath(databaseUrl: string) {
 	if (databaseUrl.startsWith('file:')) {
 		return databaseUrl.slice('file:'.length)
@@ -96,7 +81,9 @@ function getNodeSqliteDatabase() {
 
 function createNodeDatabase(): Database {
 	const adapter = createLoggingAdapter(
-		compatSqliteAdapter(getNodeSqliteDatabase()),
+		createSqliteExecutorDataTableAdapter(
+			createBetterSqliteExecutor(getNodeSqliteDatabase()),
+		),
 	)
 	return createDatabase(adapter, { now: databaseNow })
 }

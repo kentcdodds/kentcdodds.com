@@ -1,6 +1,8 @@
 import crypto from 'node:crypto'
 import bcrypt from 'bcrypt'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { and, eq, gt } from '@remix-run/data-table'
+import { db } from '#app/utils/db.server.ts'
+import { verificationTable } from '#app/utils/db/schema.server.ts'
 
 const VERIFICATION_CODE_DIGITS = 6
 const VERIFICATION_CODE_MAX_AGE_MS = 1000 * 60 * 10
@@ -27,17 +29,26 @@ export async function createVerification({
 	const codeHash = await bcrypt.hash(code, 10)
 	const expiresAt = new Date(Date.now() + VERIFICATION_CODE_MAX_AGE_MS)
 
-	const verification = await prisma.verification.create({
-		data: {
+	const verification = await db.create(
+		verificationTable,
+		{
 			type,
 			target,
 			codeHash,
 			expiresAt,
 		},
-		select: { id: true, expiresAt: true, target: true, type: true },
-	})
+		{ returnRow: true },
+	)
 
-	return { verification, code }
+	return {
+		verification: {
+			id: verification.id,
+			expiresAt: verification.expiresAt,
+			target: verification.target,
+			type: verification.type,
+		},
+		code,
+	}
 }
 
 export async function consumeVerification({
@@ -49,37 +60,19 @@ export async function consumeVerification({
 	code: string
 	type: VerificationType
 }) {
-	const verification = await prisma.verification.findUnique({
-		where: { id },
-		select: {
-			id: true,
-			type: true,
-			target: true,
-			codeHash: true,
-			expiresAt: true,
-		},
-	})
+	const verification = await db.find(verificationTable, id)
 
 	if (!verification) return null
 	if (verification.type !== type) return null
-	if (Date.now() > verification.expiresAt.getTime()) return null
+	if (Date.now() > new Date(verification.expiresAt as Date).getTime()) return null
 
 	const isValid = await bcrypt.compare(code, verification.codeHash)
 	if (!isValid) return null
 
-	try {
-		await prisma.verification.delete({ where: { id: verification.id } })
-	} catch (error: unknown) {
+	const deleted = await db.delete(verificationTable, verification.id)
+	if (!deleted) {
 		// Another request may have consumed/deleted it first.
-		if (
-			error &&
-			typeof error === 'object' &&
-			'code' in error &&
-			error.code === 'P2025'
-		) {
-			return null
-		}
-		throw error
+		return null
 	}
 
 	return { target: verification.target }
@@ -94,39 +87,19 @@ export async function consumeVerificationForTarget({
 	code: string
 	type: VerificationType
 }) {
-	const verification = await prisma.verification.findFirst({
-		where: {
-			target,
-			type,
-			expiresAt: { gt: new Date() },
-		},
-		orderBy: { createdAt: 'desc' },
-		select: {
-			id: true,
-			type: true,
-			target: true,
-			codeHash: true,
-			expiresAt: true,
-		},
+	const verification = await db.findOne(verificationTable, {
+		where: and(eq('target', target), eq('type', type), gt('expiresAt', new Date())),
+		orderBy: ['createdAt', 'desc'],
 	})
 	if (!verification) return null
 
 	const isValid = await bcrypt.compare(code, verification.codeHash)
 	if (!isValid) return null
 
-	try {
-		await prisma.verification.delete({ where: { id: verification.id } })
-	} catch (error: unknown) {
+	const deleted = await db.delete(verificationTable, verification.id)
+	if (!deleted) {
 		// Another request may have consumed/deleted it first.
-		if (
-			error &&
-			typeof error === 'object' &&
-			'code' in error &&
-			error.code === 'P2025'
-		) {
-			return null
-		}
-		throw error
+		return null
 	}
 
 	return { target: verification.target }

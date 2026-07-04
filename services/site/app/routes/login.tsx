@@ -40,10 +40,13 @@ import {
 	DUMMY_PASSWORD_HASH,
 	verifyPassword,
 } from '#app/utils/password.server.ts'
+import { db } from '#app/utils/db.server.ts'
 import {
-	migrateHomeworkCompletionsToUser,
-	prisma,
-} from '#app/utils/prisma.server.ts'
+	passwordTable,
+	postReadTable,
+	userTable,
+} from '#app/utils/db/schema.server.ts'
+import { migrateHomeworkCompletionsToUser } from '#app/utils/prisma.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/login'
@@ -134,21 +137,18 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
-	const userWithPassword = await prisma.user.findUnique({
+	const user = await db.findOne(userTable, {
 		where: { email },
-		select: {
-			id: true,
-			password: { select: { hash: true } },
-		},
 	})
+	const passwordRecord = user ? await db.find(passwordTable, user.id) : null
 
-	const passwordHash = userWithPassword?.password?.hash ?? DUMMY_PASSWORD_HASH
+	const passwordHash = passwordRecord?.hash ?? DUMMY_PASSWORD_HASH
 	const isValid = await verifyPassword({
 		password,
 		hash: passwordHash,
 	})
 
-	if (!userWithPassword?.password || !isValid) {
+	if (!user || !passwordRecord || !isValid) {
 		loginSession.flashError(
 			'Invalid email or password. If you do not have a password yet, use "Reset password" to set one.',
 		)
@@ -158,7 +158,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	const session = await getSession(request)
-	await session.signIn({ id: userWithPassword.id })
+	await session.signIn({ id: user.id })
 
 	const headers = new Headers()
 	loginSession.clean()
@@ -169,12 +169,13 @@ export async function action({ request }: Route.ActionArgs) {
 		try {
 			const clientId = clientSession.getClientId()
 			if (clientId) {
-				await prisma.postRead.updateMany({
-					data: { userId: userWithPassword.id, clientId: null },
-					where: { clientId },
-				})
+				await db.updateMany(
+					postReadTable,
+					{ userId: user.id, clientId: null },
+					{ where: { clientId } },
+				)
 				await migrateHomeworkCompletionsToUser({
-					userId: userWithPassword.id,
+					userId: user.id,
 					clientId,
 				})
 			}

@@ -24,10 +24,14 @@ import {
 	getPasswordHash,
 	getPasswordStrengthError,
 } from '#app/utils/password.server.ts'
+import { db, isUniqueConstraintError } from '#app/utils/db.server.ts'
 import {
-	migrateHomeworkCompletionsToUser,
-	prisma,
-} from '#app/utils/prisma.server.ts'
+	passwordTable,
+	postReadTable,
+	userTable,
+	verificationTable,
+} from '#app/utils/db/schema.server.ts'
+import { migrateHomeworkCompletionsToUser } from '#app/utils/prisma.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
@@ -107,9 +111,8 @@ export async function action({ request }: Route.ActionArgs) {
 			})
 		}
 
-		const userExists = await prisma.user.findUnique({
+		const userExists = await db.findOne(userTable, {
 			where: { email },
-			select: { id: true },
 		})
 		if (userExists) {
 			loginInfoSession.flashMessage(
@@ -140,7 +143,7 @@ export async function action({ request }: Route.ActionArgs) {
 		} catch (error: unknown) {
 			// Avoid leaving an unused verification record around if email sending fails.
 			try {
-				await prisma.verification.delete({ where: { id: verification.id } })
+				await db.delete(verificationTable, verification.id)
 			} catch (cleanupError) {
 				console.error(
 					'Failed to cleanup verification after email send failure',
@@ -260,23 +263,26 @@ export async function action({ request }: Route.ActionArgs) {
 		const passwordHash = await getPasswordHash(safePassword)
 		let user: { id: string }
 		try {
-			user = await prisma.user.create({
-				data: {
-					email: signupEmail,
-					firstName: safeFirstName,
-					team: safeTeam,
-					password: { create: { hash: passwordHash } },
-				},
-				select: { id: true },
+			user = await db.transaction(async (tx) => {
+				const createdUser = await tx.create(
+					userTable,
+					{
+						email: signupEmail,
+						firstName: safeFirstName,
+						team: safeTeam,
+						role: 'MEMBER',
+					},
+					{ returnRow: true },
+				)
+				await tx.create(passwordTable, {
+					userId: createdUser.id,
+					hash: passwordHash,
+				})
+				return { id: createdUser.id }
 			})
 		} catch (error: unknown) {
 			// If the account was created in another concurrent attempt, send the user to login.
-			if (
-				error &&
-				typeof error === 'object' &&
-				'code' in error &&
-				error.code === 'P2002'
-			) {
+			if (isUniqueConstraintError(error)) {
 				loginInfoSession.clean()
 				loginInfoSession.flashMessage(
 					'An account already exists for that email. Log in instead (or reset your password).',
@@ -295,10 +301,7 @@ export async function action({ request }: Route.ActionArgs) {
 			fields: { kcd_team: safeTeam, kcd_site_id: user.id },
 		})
 			.then(async (sub) => {
-				await prisma.user.update({
-					data: { kitId: String(sub.id) },
-					where: { id: user.id },
-				})
+				await db.update(userTable, user.id, { kitId: String(sub.id) })
 			})
 			.catch((error) => {
 				console.error('Failed to tag subscriber on signup', error)
@@ -326,10 +329,11 @@ export async function action({ request }: Route.ActionArgs) {
 			const clientId = clientSession.getClientId()
 			// update all PostReads from clientId to userId
 			if (clientId) {
-				await prisma.postRead.updateMany({
-					data: { userId: user.id, clientId: null },
-					where: { clientId },
-				})
+				await db.updateMany(
+					postReadTable,
+					{ userId: user.id, clientId: null },
+					{ where: { clientId } },
+				)
 				await migrateHomeworkCompletionsToUser({
 					userId: user.id,
 					clientId,
@@ -421,9 +425,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 
 	// If a user already exists for this email, stop signup and send them to login.
-	const userExists = await prisma.user.findUnique({
+	const userExists = await db.findOne(userTable, {
 		where: { email: signupEmail },
-		select: { id: true },
 	})
 	if (userExists) {
 		loginInfoSession.unsetSignupEmail()

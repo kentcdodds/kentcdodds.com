@@ -1,11 +1,13 @@
+import { and, eq, ne } from '@remix-run/data-table'
 import { createCookieSessionStorage, redirect } from 'react-router'
 import { z } from 'zod'
-import { type User } from '#app/utils/prisma-generated.server/client.ts'
+import { type User } from '#app/types.ts'
+import { db } from '#app/utils/db.server.ts'
+import { sessionTable, userTable } from '#app/utils/db/schema.server.ts'
 import { getEnv } from './env.server.ts'
 import {
 	createSession,
 	getUserFromSessionId,
-	prisma,
 	sessionExpirationTime,
 } from './prisma.server.ts'
 import { time, type Timings } from './timing.server.ts'
@@ -72,20 +74,9 @@ async function getSession(request: Request) {
 			const sessionId = getSessionId()
 			if (sessionId) {
 				unsetSessionId()
-				prisma.session
-					.delete({ where: { id: sessionId } })
-					.catch((error: unknown) => {
-						// It's possible the session was already deleted (ex: user deleted).
-						if (
-							error &&
-							typeof error === 'object' &&
-							'code' in error &&
-							error.code === 'P2025'
-						) {
-							return
-						}
-						console.error(`Failure deleting user session: `, error)
-					})
+				void db.delete(sessionTable, sessionId).catch((error: unknown) => {
+					console.error(`Failure deleting user session: `, error)
+				})
 			}
 		},
 		commit,
@@ -120,8 +111,8 @@ async function deleteOtherSessions(request: Request) {
 		return
 	}
 	const user = await getUserFromSessionId(token)
-	await prisma.session.deleteMany({
-		where: { userId: user.id, NOT: { id: token } },
+	await db.deleteMany(sessionTable, {
+		where: and(eq('userId', user.id), ne('id', token)),
 	})
 }
 
@@ -164,7 +155,7 @@ async function getUser(
 		type: 'getAuthInfoFromOAuthFromRequest',
 	})
 	if (authInfo?.extra.userId) {
-		return prisma.user.findUnique({ where: { id: authInfo.extra.userId } })
+		return db.find(userTable, authInfo.extra.userId) as Promise<User | null>
 	}
 	const { session } = await getSession(request)
 
