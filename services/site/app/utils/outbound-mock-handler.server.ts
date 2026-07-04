@@ -191,6 +191,14 @@ export async function handleOutboundMockRoute(
 		return json({ status: true })
 	}
 
+	if (
+		route.host === 'www.gravatar.com' &&
+		request.method === 'HEAD' &&
+		/^\/avatar\/[^/]+$/.test(url.pathname)
+	) {
+		return new Response(null, { status: 404 })
+	}
+
 	return fetch(request)
 }
 

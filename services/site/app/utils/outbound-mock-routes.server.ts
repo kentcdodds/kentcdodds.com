@@ -80,6 +80,13 @@ export const mockRoutes: Array<OutboundMockRoute> = [
 			return /^\/verify\/[^/]+$/.test(url.pathname)
 		},
 	},
+	{
+		host: 'www.gravatar.com',
+		method: 'HEAD',
+		match(url) {
+			return /^\/avatar\/[^/]+$/.test(url.pathname)
+		},
+	},
 ]
 
 export function findOutboundMockRoute(request: Request, url: URL) {

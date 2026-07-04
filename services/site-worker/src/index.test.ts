@@ -265,6 +265,7 @@ describe('outbound proxy routing', () => {
 				'api.kit.com',
 				'discord.com',
 				'verifyright.co',
+				'www.gravatar.com',
 			]),
 		)
 	})
