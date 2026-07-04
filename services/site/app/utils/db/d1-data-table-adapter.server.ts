@@ -82,7 +82,8 @@ export class SqliteExecutorDataTableAdapter implements DatabaseAdapter {
 			request.operation.kind === 'select' ||
 			request.operation.kind === 'count' ||
 			request.operation.kind === 'exists' ||
-			hasReturningClause(request.operation)
+			hasReturningClause(request.operation) ||
+			(request.operation.kind === 'raw' && isReadSql(statement.text))
 
 		if (shouldReadRows) {
 			const result = await this.#executor.query(
@@ -206,6 +207,11 @@ export function createSqliteExecutorDataTableAdapter(
 	},
 ) {
 	return new SqliteExecutorDataTableAdapter(executor, options)
+}
+
+function isReadSql(text: string) {
+	const trimmed = text.trimStart().toLowerCase()
+	return trimmed.startsWith('select') || trimmed.startsWith('with')
 }
 
 function hasReturningClause(statement: DataManipulationOperation) {

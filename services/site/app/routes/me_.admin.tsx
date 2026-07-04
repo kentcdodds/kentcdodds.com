@@ -19,12 +19,19 @@ import {
 	getErrorMessage,
 	isTeam,
 	teamDisplay,
-	typedBoolean,
 	useDebounce,
 	useDoubleCheck,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { and, eq, gt, gte, like, lt, or, sql } from '@remix-run/data-table'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callTable,
+	passkeyTable,
+	postReadTable,
+	sessionTable,
+	userTable,
+} from '#app/utils/db/schema.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.admin'
@@ -87,14 +94,6 @@ const isOrderField = (s: unknown): s is OrderField =>
 async function getLoaderData({ request }: { request: Request }) {
 	const { searchParams } = new URL(request.url)
 	const query = searchParams.get('q')
-	const select: Record<UserFields, true> = {
-		createdAt: true,
-		firstName: true,
-		email: true,
-		id: true,
-		team: true,
-		role: true,
-	}
 
 	let order: SortOrder = 'asc'
 	let orderField: OrderField = 'createdAt'
@@ -114,6 +113,12 @@ async function getLoaderData({ request }: { request: Request }) {
 	const start30 = subDays(today, 29)
 	const trendStart = subDays(today, TREND_DAYS - 1)
 
+	const userListQuery = db
+		.query(userTable)
+		.select('createdAt', 'firstName', 'email', 'id', 'team', 'role')
+		.orderBy(orderField, order)
+		.limit(limit)
+
 	const [
 		users,
 		totalUsers,
@@ -126,76 +131,86 @@ async function getLoaderData({ request }: { request: Request }) {
 		calls30,
 		postReads7,
 		postReads30,
-		signupDailyCounts,
-		readDailyCounts,
-		teamCountsRaw,
-		roleCountsRaw,
-		topPostsRaw,
+		signupDailyResult,
+		readDailyResult,
+		teamCountsResult,
+		roleCountsResult,
+		topPostsResult,
 	] = await Promise.all([
-		prisma.user.findMany({
-			where: query
-				? {
-						OR: [
-							{ firstName: { contains: query } },
-							{ email: { contains: query } },
-							{ id: { contains: query } },
-							isTeam(query) ? { team: { equals: query } } : null,
-						].filter(typedBoolean),
-					}
-				: {},
-			select,
-			orderBy: { [orderField]: order },
-			take: limit,
+		query
+			? userListQuery
+					.where(
+						or(
+							like('firstName', `%${query}%`),
+							like('email', `%${query}%`),
+							like('id', `%${query}%`),
+							...(isTeam(query) ? [eq('team', query)] : []),
+						),
+					)
+					.all()
+			: userListQuery.all(),
+		db.count(userTable),
+		db.count(userTable, { where: gte('createdAt', start7) }),
+		db.count(userTable, {
+			where: and(gte('createdAt', startPrev7), lt('createdAt', start7)),
 		}),
-		prisma.user.count(),
-		prisma.user.count({ where: { createdAt: { gte: start7 } } }),
-		prisma.user.count({
-			where: {
-				createdAt: {
-					gte: startPrev7,
-					lt: start7,
-				},
-			},
-		}),
-		prisma.user.count({ where: { createdAt: { gte: start30 } } }),
-		prisma.passkey.count(),
-		prisma.session.count({ where: { expirationDate: { gt: now } } }),
-		prisma.call.count(),
-		prisma.call.count({ where: { createdAt: { gte: start30 } } }),
-		prisma.postRead.count({ where: { createdAt: { gte: start7 } } }),
-		prisma.postRead.count({ where: { createdAt: { gte: start30 } } }),
-		prisma.$queryRaw<DailyCountRow[]>`
+		db.count(userTable, { where: gte('createdAt', start30) }),
+		db.count(passkeyTable),
+		db.count(sessionTable, { where: gt('expirationDate', now) }),
+		db.count(callTable),
+		db.count(callTable, { where: gte('createdAt', start30) }),
+		db.count(postReadTable, { where: gte('createdAt', start7) }),
+		db.count(postReadTable, { where: gte('createdAt', start30) }),
+		db.exec(sql`
 			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
 			FROM "User"
 			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
 			GROUP BY DATE("createdAt", 'localtime')
 			ORDER BY day ASC
-		`,
-		prisma.$queryRaw<DailyCountRow[]>`
+		`),
+		db.exec(sql`
 			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
 			FROM "PostRead"
 			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
 			GROUP BY DATE("createdAt", 'localtime')
 			ORDER BY day ASC
-		`,
-		prisma.user.groupBy({
-			by: ['team'],
-			_count: { team: true },
-			orderBy: { _count: { team: 'desc' } },
-		}),
-		prisma.user.groupBy({
-			by: ['role'],
-			_count: { role: true },
-			orderBy: { _count: { role: 'desc' } },
-		}),
-		prisma.postRead.groupBy({
-			by: ['postSlug'],
-			_count: { postSlug: true },
-			where: { createdAt: { gte: start7 } },
-			orderBy: { _count: { postSlug: 'desc' } },
-			take: 5,
-		}),
+		`),
+		db.exec(sql`
+			SELECT "team", COUNT(*) AS count
+			FROM "User"
+			GROUP BY "team"
+			ORDER BY count DESC
+		`),
+		db.exec(sql`
+			SELECT "role", COUNT(*) AS count
+			FROM "User"
+			GROUP BY "role"
+			ORDER BY count DESC
+		`),
+		db.exec(sql`
+			SELECT "postSlug", COUNT(*) AS count
+			FROM "PostRead"
+			WHERE "createdAt" >= ${start7}
+			GROUP BY "postSlug"
+			ORDER BY count DESC
+			LIMIT 5
+		`),
 	])
+
+	const signupDailyCounts = (signupDailyResult.rows ?? []) as Array<DailyCountRow>
+	const readDailyCounts = (readDailyResult.rows ?? []) as Array<DailyCountRow>
+	const teamCountsRaw = (teamCountsResult.rows ?? []).map((row) => ({
+		team: String(row.team),
+		_count: { team: Number(row.count) },
+	}))
+	const roleCountsRaw = (roleCountsResult.rows ?? []).map((row) => ({
+		role: String(row.role),
+		_count: { role: Number(row.count) },
+	}))
+	const topPostsRaw = (topPostsResult.rows ?? []).map((row) => ({
+		postSlug: String(row.postSlug),
+		_count: { postSlug: Number(row.count) },
+	}))
 
 	const signupTrend = buildDailySeries({
 		start: trendStart,
@@ -239,7 +254,7 @@ async function getLoaderData({ request }: { request: Request }) {
 	return {
 		users: users.map((user) => ({
 			...user,
-			createdAt: formatDate(user.createdAt),
+			createdAt: formatDate(user.createdAt as Date),
 		})),
 		stats: {
 			totalUsers,
@@ -280,12 +295,9 @@ export async function action({ request }: Route.ActionArgs) {
 		if (!id) return json({ error: 'id is required' }, { status: 400 })
 
 		if (request.method === 'DELETE') {
-			await prisma.user.delete({ where: { id } })
+			await db.delete(userTable, id)
 		} else {
-			await prisma.user.update({
-				where: { id },
-				data: values,
-			})
+			await db.update(userTable, id, values)
 		}
 	} catch (error: unknown) {
 		console.error(error)

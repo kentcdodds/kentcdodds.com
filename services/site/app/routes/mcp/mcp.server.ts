@@ -10,7 +10,9 @@ import { getBlogRecommendations } from '#app/utils/blog.server.js'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
-import { prisma } from '#app/utils/prisma.server.js'
+import { sql } from '@remix-run/data-table'
+import { db } from '#app/utils/db.server.js'
+import { postReadTable, userTable } from '#app/utils/db/schema.server.js'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
@@ -59,10 +61,7 @@ function createServer() {
 		},
 		async ({ firstName }, extra) => {
 			const user = await requireUser(extra.authInfo)
-			await prisma.user.update({
-				where: { id: user.id },
-				data: { firstName },
-			})
+			await db.update(userTable, user.id, { firstName })
 			return { content: [{ type: 'text', text: 'User info updated' }] }
 		},
 	)
@@ -76,22 +75,20 @@ function createServer() {
 		async (_, extra) => {
 			const request = requireRequest()
 			const user = await requireUser(extra.authInfo)
-			const postReads = await prisma.postRead.findMany({
-				where: { userId: user.id },
-				select: {
-					postSlug: true,
-					createdAt: true,
-				},
-				orderBy: {
-					createdAt: 'desc',
-				},
-			})
+			const postReads = await db
+				.query(postReadTable)
+				.where({ userId: user.id })
+				.select('postSlug', 'createdAt')
+				.orderBy('createdAt', 'desc')
+				.all()
 			const domainUrl = getDomainUrl(request)
 			const groupedBySlug = groupBy(postReads, 'postSlug')
 			const posts = Object.entries(groupedBySlug).map(([postSlug, reads]) => ({
 				url: `${domainUrl}/blog/${postSlug}`,
 				readCount: reads.length,
-				reads: reads.map(({ createdAt }) => createdAt.toISOString()),
+				reads: reads.map(({ createdAt }) =>
+					(createdAt as Date).toISOString(),
+				),
 			}))
 
 			return {
@@ -144,16 +141,17 @@ function createServer() {
 		async () => {
 			const request = requireRequest()
 			const domainUrl = getDomainUrl(request)
-			const mostPopularPosts = await prisma.postRead.groupBy({
-				by: ['postSlug'],
-				_count: true,
-				orderBy: {
-					_count: {
-						postSlug: 'desc',
-					},
-				},
-				take: 10,
-			})
+			const popularPostsResult = await db.exec(sql`
+				SELECT "postSlug", COUNT(*) AS count
+				FROM "PostRead"
+				GROUP BY "postSlug"
+				ORDER BY count DESC
+				LIMIT 10
+			`)
+			const mostPopularPosts = (popularPostsResult.rows ?? []).map((row) => ({
+				postSlug: String(row.postSlug),
+				_count: Number(row.count),
+			}))
 
 			const posts = mostPopularPosts.map(({ postSlug, _count }) => ({
 				url: `${domainUrl}/blog/${postSlug}`,
@@ -523,20 +521,20 @@ function getUserId(authInfo?: AuthInfo): string | null {
 async function getUser(authInfo?: AuthInfo) {
 	const userId = getUserId(authInfo)
 	if (!userId) return null
-	const user = await prisma.user.findUnique({
-		where: { id: userId },
-		select: {
-			id: true,
-			firstName: true,
-			email: true,
-			team: true,
-			_count: {
-				select: { postReads: true },
-			},
-		},
+	const userRow = await db.findOne(userTable, { where: { id: userId } })
+	if (!userRow) return null
+	const postReadCount = await db.count(postReadTable, {
+		where: { userId },
 	})
-	if (!user) return null
-	return user
+	return {
+		id: userRow.id,
+		firstName: userRow.firstName,
+		email: userRow.email,
+		team: userRow.team,
+		_count: {
+			postReads: postReadCount,
+		},
+	}
 }
 
 async function requireUser(authInfo: AuthInfo | undefined) {

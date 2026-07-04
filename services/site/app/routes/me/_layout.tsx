@@ -47,7 +47,13 @@ import {
 	TEAM_SKIING_MAP,
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callKentCallerEpisodeTable,
+	favoriteTable,
+	sessionTable,
+	userTable,
+} from '#app/utils/db/schema.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	deleteOtherSessions,
@@ -101,24 +107,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	const [sessionCount, rawFavorites, callKentCallerEpisodes] =
 		await Promise.all([
-			prisma.session.count({
-				where: { userId: user.id },
-			}),
-			prisma.favorite.findMany({
-				where: { userId: user.id },
-				select: { contentType: true, contentId: true, createdAt: true },
-				orderBy: { createdAt: 'desc' },
-			}),
-			prisma.callKentCallerEpisode.findMany({
-				where: { userId: user.id },
-				select: {
-					id: true,
-					transistorEpisodeId: true,
-					isAnonymous: true,
-					createdAt: true,
-				},
-				orderBy: { createdAt: 'desc' },
-			}),
+			db.count(sessionTable, { where: { userId: user.id } }),
+			db
+				.query(favoriteTable)
+				.where({ userId: user.id })
+				.select('contentType', 'contentId', 'createdAt')
+				.orderBy('createdAt', 'desc')
+				.all(),
+			db
+				.query(callKentCallerEpisodeTable)
+				.where({ userId: user.id })
+				.select('id', 'transistorEpisodeId', 'isAnonymous', 'createdAt')
+				.orderBy('createdAt', 'desc')
+				.all(),
 		])
 
 	const wantsBlogPosts = rawFavorites.some((f) => f.contentType === 'blog-post')
@@ -345,10 +346,7 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 		if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
 			await deleteDiscordCache(user.discordId)
-			await prisma.user.update({
-				where: { id: user.id },
-				data: { discordId: null },
-			})
+			await db.update(userTable, user.id, { discordId: null })
 			const searchParams = new URLSearchParams({
 				message: `✅ Connection deleted`,
 			})
@@ -360,10 +358,7 @@ export async function action({ request }: Route.ActionArgs) {
 				validators: { firstName: getFirstNameError },
 				handleFormValues: async ({ firstName }) => {
 					if (firstName && user.firstName !== firstName) {
-						await prisma.user.update({
-							where: { id: user.id },
-							data: { firstName },
-						})
+						await db.update(userTable, user.id, { firstName })
 					}
 					const searchParams = new URLSearchParams({
 						message: `✅ Sucessfully saved your info`,
@@ -385,7 +380,7 @@ export async function action({ request }: Route.ActionArgs) {
 			if (user.discordId) await deleteDiscordCache(user.discordId)
 			if (user.kitId) await deleteKitCache(user.kitId)
 
-			await prisma.user.delete({ where: { id: user.id } })
+			await db.delete(userTable, user.id)
 			const searchParams = new URLSearchParams({
 				message: `✅ Your KCD account and all associated data has been completely deleted from the KCD database.`,
 			})
