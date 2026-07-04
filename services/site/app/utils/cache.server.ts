@@ -15,7 +15,6 @@ import {
 } from '#app/utils/cache-request-stats.server.ts'
 import {
 	getRuntimeBinding,
-	hasAppDbBinding,
 } from '#app/utils/runtime-bindings.server.ts'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
@@ -58,10 +57,6 @@ function getCacheDatabasePath() {
 	throw new Error(
 		'CACHE_DATABASE_PATH is required for the SQLite cache backend',
 	)
-}
-
-export async function getCacheDb() {
-	return (await getSqliteCacheState()).db
 }
 
 async function createDatabase(
@@ -142,7 +137,7 @@ export function isRpcCacheAvailable() {
 }
 
 export function isFileCacheAvailable() {
-	return !hasAppDbBinding() && !isRpcCacheAvailable()
+	return !isRpcCacheAvailable()
 }
 
 export function isCacheAdminAvailable() {
@@ -216,7 +211,6 @@ export const cache: CachifiedCache = {
 			if (entry) lruCache.set(key, entry)
 			return entry
 		}
-		if (hasAppDbBinding()) return lruCache.get(key) ?? null
 		const { preparedGet } = await getSqliteCacheState()
 		const result = preparedGet.get(key) as any
 		if (!result) return null
@@ -230,10 +224,6 @@ export const cache: CachifiedCache = {
 		if (rpc) {
 			lruCache.set(key, entry)
 			await rpc.set(key, entry)
-			return
-		}
-		if (hasAppDbBinding()) {
-			lruCache.set(key, entry)
 			return
 		}
 		const { preparedSet } = await getSqliteCacheState()
@@ -250,10 +240,6 @@ export const cache: CachifiedCache = {
 			await rpc.delete(key)
 			return
 		}
-		if (hasAppDbBinding()) {
-			lruCache.delete(key)
-			return
-		}
 		const { preparedDelete } = await getSqliteCacheState()
 		preparedDelete.run(key)
 	},
@@ -267,11 +253,9 @@ export async function getAllCacheKeys(limit: number) {
 			lru: [...lruInstance.keys()],
 		}
 	}
-	const sqlite = hasAppDbBinding()
-		? []
-		: (await getSqliteCacheState()).preparedAllKeys
-				.all(limit)
-				.map((row) => (row as { key: string }).key)
+	const sqlite = (await getSqliteCacheState()).preparedAllKeys
+			.all(limit)
+			.map((row) => (row as { key: string }).key)
 	return {
 		sqlite,
 		lru: [...lruInstance.keys()],
@@ -287,11 +271,9 @@ export async function searchCacheKeys(search: string, limit: number) {
 			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 		}
 	}
-	const sqlite = hasAppDbBinding()
-		? []
-		: (await getSqliteCacheState()).preparedKeySearch
-				.all(`%${search}%`, limit)
-				.map((row) => (row as { key: string }).key)
+	const sqlite = (await getSqliteCacheState()).preparedKeySearch
+			.all(`%${search}%`, limit)
+			.map((row) => (row as { key: string }).key)
 	return {
 		sqlite,
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),

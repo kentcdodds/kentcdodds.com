@@ -1,8 +1,5 @@
 import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
-import {
-	Prisma,
-	type PrismaClient,
-} from './prisma-generated.server/client.ts'
+import { type PrismaClient } from './prisma-generated.server/client.ts'
 
 type PrismaRpcError = {
 	name: string
@@ -108,10 +105,4 @@ export function createPrismaRpcClient(rpc: PrismaRpcBinding): PrismaClient {
 		},
 	)
 	return client as PrismaClient
-}
-
-export function isPrismaKnownRequestError(
-	error: unknown,
-): error is Prisma.PrismaClientKnownRequestError {
-	return error instanceof Prisma.PrismaClientKnownRequestError
 }

@@ -31,18 +31,6 @@ export function getRuntimeBinding<T = unknown>(name: string): T | undefined {
 	return env[name] as T | undefined
 }
 
-export function isD1Database(value: unknown) {
-	if (!value || typeof value !== 'object') return false
-	const binding = value as Record<string, unknown>
-	return ['prepare', 'batch', 'exec', 'dump', 'withSession'].every(
-		(method) => typeof binding[method] === 'function',
-	)
-}
-
-export function hasAppDbBinding(appDbBinding = getRuntimeBinding('APP_DB')) {
-	return isD1Database(appDbBinding)
-}
-
 function getGlobalRuntimeBindingStore() {
 	return globalThis as typeof globalThis &
 		Record<symbol, RuntimeBindingSource | undefined>
