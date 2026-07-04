@@ -9,9 +9,8 @@
     "build:site": "npm run build:router --workspace kentcdodds.com",
     "build:app-worker": "node ./scripts/build-app-worker.mjs",
     "build:worker": "npm run build:site && npm run build:app-worker",
-    "dev:harness": "node ./scripts/dev-harness/run-harness.mjs",
     "format": "prettier --write .",
-    "lint": "oxlint . --ignore-pattern .wrangler --ignore-pattern generated --ignore-pattern scripts/dev-harness/artifacts",
+    "lint": "oxlint . --ignore-pattern .wrangler --ignore-pattern generated",
     "test": "vitest --run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "deploy": "wrangler deploy --config generated-wrangler.jsonc",
@@ -36,8 +35,7 @@
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.2",
     "react": "^19.2.4",
-    "react-router": "^7.0.0",
-    "zod": "^4.3.6"
+    "react-router": "^7.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260306.1",
