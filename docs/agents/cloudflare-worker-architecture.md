@@ -229,6 +229,17 @@ runtime in the worker).
   `mdx/pages/uses.js` → `mdx/pages/react`), the module map must also include
   per-directory aliases (`mdx/pages/react`, `mdx/blog/react`, etc.).
 
+## SSR streaming requirement (React Router hydration)
+
+The dynamic worker must use `renderToReadableStream` for document SSR (same as
+production Node). `renderToString` sets React Router's static SSR context, which
+**omits** the inline `streamController.enqueue` / `streamController.close`
+scripts that deliver turbo-stream loader state to the client. Without those
+scripts, `HydratedRouter` never finishes decoding state, `fetcher.Form` submit
+handlers never attach, and forms like the theme toggle fall through to native
+full-page POSTs. Verify with curl: preview HTML must contain
+`streamController.enqueue` (7 inline scripts on the homepage, matching prod).
+
 ## Scheduled tasks (crons)
 
 Configured in `services/site-worker/wrangler.jsonc`:
