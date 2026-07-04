@@ -288,7 +288,13 @@ export default {
 			if (assetResponse) return assetResponse
 		}
 
-		if (url.pathname === '/action/refresh-cache' && request.method === 'POST') {
+		if (
+			url.pathname === '/action/refresh-cache' &&
+			request.method === 'POST' &&
+			// The app route re-validates too, but the generation bump must not be
+			// reachable without the secret or anyone could bust the page cache.
+			request.headers.get('auth') === env.REFRESH_CACHE_SECRET
+		) {
 			await bumpPageCacheGeneration(env.CONTENT_KV)
 			clearPageCacheGenerationCache()
 		}
