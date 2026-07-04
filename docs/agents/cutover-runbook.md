@@ -325,6 +325,55 @@ See pipeline test output in PR / agent report. Rough guide from inflated fixture
 
 ---
 
+## D1 read replication
+
+Enable globally for staging and production D1 databases:
+
+```bash
+export CLOUDFLARE_API_TOKEN=…   # needs D1:Edit
+export CLOUDFLARE_ACCOUNT_ID=a41d50ecaf0ae0f86dd1824ef6729cb2
+
+# Staging
+curl -sX PUT \
+  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/01a8ba77-2a63-4a14-898d-6023942a480f" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"read_replication":{"mode":"auto"}}'
+
+# Production
+curl -sX PUT \
+  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/af33bd8b-c9b2-484a-afa5-43ee322ff49c" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"read_replication":{"mode":"auto"}}'
+```
+
+`npm run provision:preview --workspace site-worker` (and `provision:production`) also
+calls `ensureReadReplication` idempotently when a privileged token is present; CI
+tokens without D1:Edit log a warning and continue.
+
+Verify mode + primary region:
+
+```bash
+curl -sX GET \
+  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/af33bd8b-c9b2-484a-afa5-43ee322ff49c" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" | jq '.result | {read_replication, running_in_region, primary_location_hint}'
+```
+
+**Primary location (July 2026):** both `kentcdodds-com-staging-app-db` and
+`kentcdodds-com-db` report `running_in_region: ENAM` (databases created from a
+US-east VM/API). The REST field `primary_location_hint` may be absent on older
+databases; prefer `running_in_region` when checking. If production D1 is ever
+recreated, record the new primary region here and in agent docs — replica
+warm-up and APAC latency measurements depend on primary distance.
+
+The app uses D1 Sessions API (`withSession` + `kcd_d1_bookmark` cookie) so
+reads can hit regional replicas while preserving read-your-writes. Responses
+include `X-D1-Stats` (`queries`, `primary`, `replica`, `regions=…`) for
+observability.
+
+---
+
 ## Limitations / accepted losses
 
 | Scenario | Handling |

@@ -186,6 +186,56 @@ async function ensureR2Bucket(bucketName) {
 	console.log(`Created R2 bucket: ${bucketName}`)
 }
 
+async function ensureReadReplication(databaseId, databaseName) {
+	try {
+		const current = await cfApi(`/d1/database/${databaseId}`)
+		const mode = current.read_replication?.mode ?? 'disabled'
+		const primaryRegion =
+			current.primary_location_hint ?? current.running_in_region ?? 'unknown'
+		if (mode === 'auto') {
+			console.log(
+				`D1 read replication already enabled: ${databaseName} (${databaseId}); primary=${primaryRegion}`,
+			)
+			return { mode, primaryRegion }
+		}
+
+		await cfApi(`/d1/database/${databaseId}`, {
+			method: 'PUT',
+			body: { read_replication: { mode: 'auto' } },
+		})
+		const updated = await cfApi(`/d1/database/${databaseId}`)
+		const updatedPrimary =
+			updated.primary_location_hint ?? updated.running_in_region ?? primaryRegion
+		console.log(
+			`Enabled D1 read replication: ${databaseName} (${databaseId}); primary=${updatedPrimary}`,
+		)
+		return {
+			mode: updated.read_replication?.mode ?? 'auto',
+			primaryRegion: updatedPrimary,
+		}
+	} catch (error) {
+		console.warn(
+			`Could not ensure read replication for ${databaseName} (${databaseId}): ${error.message}`,
+		)
+		console.warn(
+			'CI token may lack D1:Edit; enable read replication manually in the dashboard.',
+		)
+		return null
+	}
+}
+
+async function maybeEnsureReadReplication(config, resources, target) {
+	const d1 = config.d1_databases?.find(
+		(entry) => entry.binding === resources.d1.binding,
+	)
+	const databaseId = d1?.database_id
+	if (!databaseId || isPlaceholderId(databaseId)) return
+	if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_ACCOUNT_ID) {
+		return
+	}
+	await ensureReadReplication(databaseId, resources.d1.name)
+}
+
 async function writeGeneratedConfig({ config, buildSha, target }) {
 	const output = {
 		...config,
@@ -231,6 +281,7 @@ async function main() {
 		console.log(
 			`${target} resources already provisioned in wrangler.jsonc; skipping Cloudflare API calls`,
 		)
+		await maybeEnsureReadReplication(targetConfig, resources, target)
 		await writeGeneratedConfig({
 			config: targetConfig,
 			buildSha,
@@ -264,6 +315,8 @@ async function main() {
 			id: kvIds[entry.binding] ?? entry.id,
 		})),
 	}
+
+	await maybeEnsureReadReplication(provisionedConfig, resources, target)
 
 	await writeGeneratedConfig({
 		config: provisionedConfig,

@@ -164,6 +164,14 @@ keep working).
 cross the JSRPC boundary via `row-serialization.server.ts` (Dates → ISO strings,
 bigint → number, byte views → ArrayBuffer).
 
+For D1 Sessions + read replication, the app path uses `sessionQuery`,
+`sessionRun`, and `sessionBatch` (bookmark-threaded over RPC) plus optional
+`createSession()` → `D1RpcSession` `RpcTarget` stubs. The dynamic worker keeps
+the active bookmark in a per-request global store (`kcd_d1_bookmark` cookie,
+HttpOnly, 600s max-age). Responses include `X-D1-Stats`
+(`queries`, `primary`, `replica`, `regions=…`) with D1 `meta.served_by_*`
+aggregates.
+
 `CacheRpc` methods: `get(key)` → cache entry or `null`; `set(key, entry)`;
 `delete(key)`; `keys(prefix?, limit?)` → `string[]`. Entries are the same
 JSON encoding used by the SQLite cache (Buffer values base64-encoded with the
