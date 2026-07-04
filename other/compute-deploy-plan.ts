@@ -17,12 +17,14 @@ const nonFlyDeployablePathPrefixes = [
 	'services/call-kent-audio-worker/',
 	'services/search-worker/',
 	'services/oauth/',
+	'services/site-worker/',
 ]
 
 const nonFlyDeployableFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 	'.github/workflows/deploy-search-worker.yml',
 	'.github/workflows/deploy-oauth-worker.yml',
+	'.github/workflows/cf-preview-deploy.yml',
 ])
 
 const semanticContentPathPrefixes = [

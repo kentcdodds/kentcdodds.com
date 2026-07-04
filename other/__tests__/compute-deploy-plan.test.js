@@ -184,7 +184,62 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 		log,
 	})
 
-	expect(deployPlan.deploySite).toBe(true)
+	expect(deployPlan.deploySite).toBe(false)
+})
+
+test('skips site deploy when deployment diff only includes site-worker changes', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
+		if (url.endsWith('/refresh-commit-sha.json')) {
+			return { sha: 'refresh-sha' }
+		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+	})
+	const getChangedFilesImpl = vi.fn(
+		async (ignoredCurrentCommitSha, compareCommitSha) => {
+			if (compareCommitSha === 'deployed-site-sha') {
+				return [
+					{
+						changeType: 'modified',
+						filename: 'services/site-worker/src/index.ts',
+					},
+					{
+						changeType: 'modified',
+						filename: '.github/workflows/cf-preview-deploy.yml',
+					},
+				]
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return []
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return []
+			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
+			}
+			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
+		},
+	)
+	const log = createLogger()
+
+	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
+		currentCommitSha: 'current-sha',
+		pushBeforeSha: 'push-before-sha',
+		eventName: 'push',
+		fetchJsonImpl,
+		getChangedFilesImpl,
+		fetchImpl,
+		log,
+	})
+
+	expect(deployPlan.deploySite).toBe(false)
 })
 
 test('plans search worker deploys for shared contract changes', async () => {
