@@ -1,6 +1,10 @@
 // Adapted from epicweb-dev/epicflare worker/d1-data-table-adapter.ts (MIT) and
 // parameterized over a thin SQL executor so the same adapter works for direct
 // D1 (parent worker) and D1_RPC loopback (dynamic app worker).
+//
+// Transaction invariant: D1 executors set `supportsSqlTransactions: false` so
+// beginTransaction/commit/rollback become no-ops (D1 forbids SQL BEGIN/COMMIT).
+// Node better-sqlite3 keeps `supportsSqlTransactions: true` for real transactions.
 import {
 	getTableName,
 	getTablePrimaryKey,

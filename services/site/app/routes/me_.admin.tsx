@@ -24,6 +24,7 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
 import { and, eq, gt, gte, like, lt, or, sql } from '@remix-run/data-table'
+import { batchExecRawSql, type RawSqlBatchResult } from '#app/utils/db/d1-batch.server.ts'
 import { db } from '#app/utils/db.server.ts'
 import {
 	callTable,
@@ -131,11 +132,7 @@ async function getLoaderData({ request }: { request: Request }) {
 		calls30,
 		postReads7,
 		postReads30,
-		signupDailyResult,
-		readDailyResult,
-		teamCountsResult,
-		roleCountsResult,
-		topPostsResult,
+		trendBatchResults,
 	] = await Promise.all([
 		query
 			? userListQuery
@@ -161,41 +158,57 @@ async function getLoaderData({ request }: { request: Request }) {
 		db.count(callTable, { where: gte('createdAt', start30) }),
 		db.count(postReadTable, { where: gte('createdAt', start7) }),
 		db.count(postReadTable, { where: gte('createdAt', start30) }),
-		db.exec(sql`
-			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
-			FROM "User"
-			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
-			GROUP BY DATE("createdAt", 'localtime')
-			ORDER BY day ASC
-		`),
-		db.exec(sql`
-			SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
-			FROM "PostRead"
-			WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
-			GROUP BY DATE("createdAt", 'localtime')
-			ORDER BY day ASC
-		`),
-		db.exec(sql`
-			SELECT "team", COUNT(*) AS count
-			FROM "User"
-			GROUP BY "team"
-			ORDER BY count DESC
-		`),
-		db.exec(sql`
-			SELECT "role", COUNT(*) AS count
-			FROM "User"
-			GROUP BY "role"
-			ORDER BY count DESC
-		`),
-		db.exec(sql`
-			SELECT "postSlug", COUNT(*) AS count
-			FROM "PostRead"
-			WHERE "createdAt" >= ${start7}
-			GROUP BY "postSlug"
-			ORDER BY count DESC
-			LIMIT 5
-		`),
+		batchExecRawSql([
+			sql`
+				SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
+				FROM "User"
+				WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
+				GROUP BY DATE("createdAt", 'localtime')
+				ORDER BY day ASC
+			`,
+			sql`
+				SELECT DATE("createdAt", 'localtime') AS day, COUNT(*) AS count
+				FROM "PostRead"
+				WHERE DATE("createdAt", 'localtime') >= DATE(${trendStart}, 'localtime')
+				GROUP BY DATE("createdAt", 'localtime')
+				ORDER BY day ASC
+			`,
+			sql`
+				SELECT "team", COUNT(*) AS count
+				FROM "User"
+				GROUP BY "team"
+				ORDER BY count DESC
+			`,
+			sql`
+				SELECT "role", COUNT(*) AS count
+				FROM "User"
+				GROUP BY "role"
+				ORDER BY count DESC
+			`,
+			sql`
+				SELECT "postSlug", COUNT(*) AS count
+				FROM "PostRead"
+				WHERE "createdAt" >= ${start7}
+				GROUP BY "postSlug"
+				ORDER BY count DESC
+				LIMIT 5
+			`,
+		]),
 	])
+
+	const [
+		signupDailyResult,
+		readDailyResult,
+		teamCountsResult,
+		roleCountsResult,
+		topPostsResult,
+	] = trendBatchResults as [
+		RawSqlBatchResult,
+		RawSqlBatchResult,
+		RawSqlBatchResult,
+		RawSqlBatchResult,
+		RawSqlBatchResult,
+	]
 
 	const signupDailyCounts = (signupDailyResult.rows ?? []) as Array<DailyCountRow>
 	const readDailyCounts = (readDailyResult.rows ?? []) as Array<DailyCountRow>
