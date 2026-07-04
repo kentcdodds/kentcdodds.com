@@ -11,7 +11,11 @@ import {
 	mergeColdStartTimingHeaders,
 } from './cold-start-timing.ts'
 import { deleteExpiredSessionsAndVerifications } from './expired-cleanup.ts'
-import { getDynamicWorkerId, type MdxArtifactBundle } from './module-map.ts'
+import {
+	getAppCodeHash,
+	getDynamicWorkerId,
+	type MdxArtifactBundle,
+} from './module-map.ts'
 import {
 	clearManifestCache,
 	readMdxManifest,
@@ -187,8 +191,9 @@ async function handleDynamicRequest(
 	const modules = getOrBuildModuleMap(manifest.version, bundle)
 	const moduleMapMs = performance.now() - moduleMapStartedAt
 
-	const buildSha = env.BUILD_SHA?.trim() || 'local-dev'
-	const workerId = getDynamicWorkerId(buildSha, manifest.version)
+	// Keyed by actual code content (not deploy SHA) so redeploys with an
+	// unchanged app bundle keep reusing warm dynamic isolates.
+	const workerId = getDynamicWorkerId(await getAppCodeHash(), manifest.version)
 	const stringEnv = getStringEnvBindings(env)
 
 	let loaderCallbackMs = 0
@@ -283,20 +288,13 @@ export default {
 			if (assetResponse) return assetResponse
 		}
 
-		if (
-			url.pathname === '/action/refresh-cache' &&
-			request.method === 'POST'
-		) {
+		if (url.pathname === '/action/refresh-cache' && request.method === 'POST') {
 			await bumpPageCacheGeneration(env.CONTENT_KV)
 			clearPageCacheGenerationCache()
 		}
 
 		return handlePageCacheRequest(request, env, ctx, (dynamicRequest) =>
-			handleDynamicRequest(
-				dynamicRequest,
-				env,
-				ctx as ParentExecutionContext,
-			),
+			handleDynamicRequest(dynamicRequest, env, ctx as ParentExecutionContext),
 		)
 	},
 

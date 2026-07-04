@@ -71,6 +71,29 @@ export function buildDynamicWorkerModuleMap(
 	return modules
 }
 
-export function getDynamicWorkerId(buildSha: string, contentVersion: string) {
-	return `app:${buildSha}:content:${contentVersion}`
+export function getDynamicWorkerId(codeHash: string, contentVersion: string) {
+	return `app:${codeHash}:content:${contentVersion}`
+}
+
+let appCodeHashPromise: Promise<string> | null = null
+
+/**
+ * Stable hash of the dynamic worker's actual code. Using this (instead of the
+ * deploy BUILD_SHA) in the loader id means redeploys that don't change the
+ * app bundle keep the same worker id, so the platform can reuse existing warm
+ * dynamic isolates across deploys.
+ */
+export function getAppCodeHash(): Promise<string> {
+	if (!appCodeHashPromise) {
+		appCodeHashPromise = (async () => {
+			const encoded = new TextEncoder().encode(
+				`${appWorkerSource}\u0000${reactShimSource}\u0000${reactJsxRuntimeShimSource}`,
+			)
+			const digest = await crypto.subtle.digest('SHA-256', encoded)
+			return Array.from(new Uint8Array(digest).slice(0, 8), (byte) =>
+				byte.toString(16).padStart(2, '0'),
+			).join('')
+		})()
+	}
+	return appCodeHashPromise
 }
