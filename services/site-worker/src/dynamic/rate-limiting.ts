@@ -17,7 +17,7 @@ type RateLimitWindow = {
 	resetAt: number
 }
 
-type RateLimitResult = {
+export type RateLimitResult = {
 	allowed: boolean
 	limit: number
 	remaining: number

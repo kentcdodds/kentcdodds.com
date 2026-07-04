@@ -21,7 +21,10 @@ import {
 	endCacheRequestStats,
 	formatCacheRequestStatsHeader,
 } from '../../../site/app/utils/cache-request-stats.server.ts'
-import { setRuntimeEnvSource, getEnv } from '../../../site/app/utils/env.server.ts'
+import {
+	setRuntimeEnvSource,
+	getEnv,
+} from '../../../site/app/utils/env.server.ts'
 import {
 	setRuntimeBindingSource,
 	type RuntimeBindingSource,
@@ -29,6 +32,7 @@ import {
 import { applySecurityHeaders } from './csp.ts'
 import { formatColdStartTiming } from '../cold-start-timing.ts'
 import {
+	type RateLimitResult,
 	applyRateLimitHeaders,
 	checkRateLimit,
 	createRateLimitedResponse,
@@ -51,9 +55,7 @@ function getIsolateId() {
 
 const markdownMediaType = 'text/markdown'
 
-function requestPrefersMarkdown(
-	acceptHeader: string | null,
-): boolean {
+function requestPrefersMarkdown(acceptHeader: string | null): boolean {
 	if (!acceptHeader) return false
 	const entries = acceptHeader
 		.split(',')
@@ -75,14 +77,14 @@ function requestPrefersMarkdown(
 	return markdownQ >= htmlQ
 }
 
-type MarkdownNegotiation = typeof import('../../../site/server/markdown-negotiation.ts')
+type MarkdownNegotiation =
+	typeof import('../../../site/server/markdown-negotiation.ts')
 let markdownNegotiationPromise: Promise<MarkdownNegotiation> | undefined
 
 function getMarkdownNegotiation() {
 	if (!markdownNegotiationPromise) {
-		markdownNegotiationPromise = import(
-			'../../../site/server/markdown-negotiation.ts'
-		)
+		markdownNegotiationPromise =
+			import('../../../site/server/markdown-negotiation.ts')
 	}
 	return markdownNegotiationPromise
 }
@@ -129,7 +131,9 @@ function isBogusCrawlerPath(pathname: string) {
 function createCspNonce() {
 	const bytes = new Uint8Array(16)
 	crypto.getRandomValues(bytes)
-	return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+	return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+		'',
+	)
 }
 
 function getStringEnvBindings(env: WorkerEnv) {
@@ -245,40 +249,53 @@ function redirectResponse(destination: string, status = 301) {
 	})
 }
 
+type PreRouterResult = {
+	response: Response | null
+	rateLimit: RateLimitResult | null
+}
+
 async function runPreRouterPipeline(
 	request: Request,
 	env: WorkerEnv,
-): Promise<Response | null> {
+): Promise<PreRouterResult> {
 	const url = new URL(request.url)
 	const host = getHost(request)
 	const proto = request.headers.get('X-Forwarded-Proto') ?? 'https'
 
 	if (url.pathname === '/img/social' && request.method === 'GET') {
-		return redirectResponse(oldImgSocialUrl, 302)
-	}
-
-	if (url.pathname === '/__metronome' && request.method === 'POST') {
-		return new Response('Metronome is deprecated and no longer in use.', {
-			status: 503,
-		})
+		return { response: redirectResponse(oldImgSocialUrl, 302), rateLimit: null }
 	}
 
 	if (isBogusCrawlerPath(url.pathname)) {
-		return new Response('Not found', { status: 404 })
+		return {
+			response: new Response('Not found', { status: 404 }),
+			rateLimit: null,
+		}
 	}
 
 	if (host === 'www.kentcdodds.com') {
-		return redirectResponse(`https://kentcdodds.com${url.pathname}${url.search}`)
+		return {
+			response: redirectResponse(
+				`https://kentcdodds.com${url.pathname}${url.search}`,
+			),
+			rateLimit: null,
+		}
 	}
 	if (host === 'blog.kentcdodds.com') {
 		const blogPath = url.pathname === '/' ? '' : url.pathname
-		return redirectResponse(
-			`https://kentcdodds.com/blog${blogPath}${url.search}`,
-		)
+		return {
+			response: redirectResponse(
+				`https://kentcdodds.com/blog${blogPath}${url.search}`,
+			),
+			rateLimit: null,
+		}
 	}
 
 	if (proto === 'http') {
-		return redirectResponse(`https://${host}${url.pathname}${url.search}`)
+		return {
+			response: redirectResponse(`https://${host}${url.pathname}${url.search}`),
+			rateLimit: null,
+		}
 	}
 
 	const redirectDestination = matchRedirect({
@@ -290,18 +307,27 @@ async function runPreRouterPipeline(
 		host,
 	})
 	if (redirectDestination) {
-		return redirectResponse(redirectDestination, 307)
+		return {
+			response: redirectResponse(redirectDestination, 307),
+			rateLimit: null,
+		}
 	}
 
 	if (url.pathname.endsWith('/') && url.pathname.length > 1) {
 		const safepath = url.pathname.slice(0, -1).replace(/\/+/g, '/')
-		return redirectResponse(`${safepath}${url.search}`)
+		return {
+			response: redirectResponse(`${safepath}${url.search}`),
+			rateLimit: null,
+		}
 	}
 
 	const mocks = getStringEnvBindings(env).MOCKS === 'true'
 	const rateLimit = checkRateLimit(request, { mocks })
 	if (!rateLimit.allowed) {
-		return createRateLimitedResponse(request, rateLimit)
+		return {
+			response: createRateLimitedResponse(request, rateLimit),
+			rateLimit,
+		}
 	}
 
 	if (url.pathname === '/redirect.html' && request.method === 'GET') {
@@ -311,25 +337,31 @@ async function runPreRouterPipeline(
 		})
 		applySecurityHeaders({ headers, request, cspNonce })
 		applyRateLimitHeaders(headers, rateLimit)
-		return new Response(getRickRollHtml(cspNonce), { headers })
+		return {
+			response: new Response(getRickRollHtml(cspNonce), { headers }),
+			rateLimit,
+		}
 	}
 
 	if (
 		url.pathname.startsWith('/.well-known/') &&
 		request.method === 'OPTIONS'
 	) {
-		return new Response(null, {
-			status: 204,
-			headers: {
-				'Access-Control-Allow-Origin': '*',
-				'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
-				'Access-Control-Allow-Headers':
-					request.headers.get('Access-Control-Request-Headers') ?? '*',
-			},
-		})
+		return {
+			response: new Response(null, {
+				status: 204,
+				headers: {
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
+					'Access-Control-Allow-Headers':
+						request.headers.get('Access-Control-Request-Headers') ?? '*',
+				},
+			}),
+			rateLimit,
+		}
 	}
 
-	return null
+	return { response: null, rateLimit }
 }
 
 function appendVaryValue(headers: Headers, value: string) {
@@ -364,7 +396,8 @@ async function handleSiteRequest(
 	try {
 		await ensureRuntimeBridges(env)
 
-		const preRouterResponse = await runPreRouterPipeline(request, env)
+		const preRouter = await runPreRouterPipeline(request, env)
+		const preRouterResponse = preRouter.response
 		if (preRouterResponse) {
 			const headers = new Headers(preRouterResponse.headers)
 			headers.set('X-Isolate-Id', getIsolateId())
@@ -407,9 +440,7 @@ async function handleSiteRequest(
 
 		const url = new URL(request.url)
 		const acceptHeader = request.headers.get('Accept') ?? ''
-		if (
-			requestPrefersMarkdown(acceptHeader)
-		) {
+		if (requestPrefersMarkdown(acceptHeader)) {
 			const { maybeConvertHtmlResponseToMarkdown } =
 				await getMarkdownNegotiation()
 			response = await maybeConvertHtmlResponseToMarkdown(response)
@@ -417,8 +448,10 @@ async function handleSiteRequest(
 
 		const headers = new Headers(response.headers)
 		applySecurityHeaders({ headers, request, cspNonce })
+		// Reuse the pre-router rate-limit result so a request only consumes one
+		// quota unit (checkRateLimit increments the window on every call).
 		const mocks = getStringEnvBindings(env).MOCKS === 'true'
-		const rateLimit = checkRateLimit(request, { mocks })
+		const rateLimit = preRouter.rateLimit ?? checkRateLimit(request, { mocks })
 		applyRateLimitHeaders(headers, rateLimit)
 		if (
 			rateLimit.tier === 'markdown' &&
