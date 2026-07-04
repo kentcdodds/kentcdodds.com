@@ -81,6 +81,8 @@
     "@react-router/node": "^7.0.0",
     "@remark-embedder/core": "^3.0.3",
     "@remark-embedder/transformer-oembed": "^5.0.1",
+    "@remix-run/data-table": "^0.3.0",
+    "@remix-run/data-table-sqlite": "^0.3.0",
     "@sentry/react-router": "^10.39.0",
     "@sentry/vite-plugin": "^5.1.1",
     "@simplewebauthn/browser": "^13.2.2",
