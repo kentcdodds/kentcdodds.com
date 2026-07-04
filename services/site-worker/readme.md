@@ -56,7 +56,7 @@ deployed preview worker.
 CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... npm run provision:preview --workspace site-worker
 WRANGLER_CONFIG=generated-wrangler.jsonc npm run d1:migrations:apply:staging --workspace site-worker
 npm run publish:artifacts --workspace site-worker -- /path/to/bundle.json
-REFRESH_CACHE_SECRET=... node services/site-worker/scripts/generate-preview-secrets.mjs
+REFRESH_CACHE_SECRET=... node services/site-worker/scripts/generate-worker-secrets.mjs --target=staging services/site-worker/.wrangler/preview-secrets.json
 npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/generated-wrangler.jsonc
 npm run seed:preview-d1 --workspace site-worker
 BUILD_SHA=$(git rev-parse HEAD) npm run deploy --workspace site-worker
@@ -68,7 +68,9 @@ CI runs the same flow from `.github/workflows/cf-preview-deploy.yml`.
 
 | Script              | Purpose                                                                          |
 | ------------------- | -------------------------------------------------------------------------------- |
-| `provision:preview` | Idempotently create D1/KV/R2 preview resources + write generated wrangler config |
+| `provision:preview` | Staging target: write `generated-wrangler.jsonc` (`--target=staging`, default) |
+| `provision:production` | Production target: write `generated-wrangler.jsonc` |
+| `secrets:generate` | Build worker secrets JSON (`generate-worker-secrets.mjs`; pass `--target=`) |
 | `publish:artifacts` | Upload MDX bundle JSON to R2 + update `mdx-manifest:current` (`--local` for dev) |
 | `seed:preview-d1`   | Idempotent preview seed (`me@kentcdodds.com` / `iliketwix`; `--local` for dev)   |
 | `test:local-e2e`    | Local migrations, seed, artifact publish, `.dev.vars` setup                      |
