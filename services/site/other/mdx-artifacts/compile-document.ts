@@ -1,7 +1,7 @@
 import { type MdxPage } from '#app/types.ts'
 import {
+	compileMdx,
 	compileMdxEsm,
-	compileMdxUnqueued,
 } from '#app/utils/compile-mdx.server.ts'
 import { resolveGitHubMdxFromDirList } from '#app/utils/github-mdx-resolve.server.ts'
 import { type MdxArtifactDocument } from '../../types/mdx-artifacts.ts'
@@ -30,8 +30,7 @@ export async function compileMdxArtifactDocument({
 	const [iifeCompiled, esmCompiled] = await Promise.all([
 		withRetry({
 			label: `${label} (iife)`,
-			fn: () =>
-				compileMdxUnqueued<MdxPage['frontmatter']>(slug, download.files),
+			fn: () => compileMdx<MdxPage['frontmatter']>(slug, download.files),
 		}),
 		withRetry({
 			label: `${label} (esm)`,

@@ -11,7 +11,6 @@ import type * as H from 'hast'
 import lz from 'lz-string'
 import type * as M from 'mdast'
 import { bundleMDX } from 'mdx-bundler'
-import PQueue from 'p-queue'
 import calculateReadingTime from 'reading-time'
 import remarkAutolinkHeadings from 'remark-autolink-headings'
 import gfm from 'remark-gfm'
@@ -715,36 +714,11 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
 	return obj
 }
 
-let _queue: PQueue | null = null
-async function getQueue() {
-	if (_queue) return _queue
-
-	_queue = new PQueue({
-		concurrency: 1,
-		timeout: MDX_COMPILE_QUEUE_TIMEOUT_MS,
-	})
-	return _queue
-}
-
-/** Align with p-queue: allow large posts (Shiki, Mermaid, embeds) without false timeouts. */
-const MDX_COMPILE_QUEUE_TIMEOUT_MS = 1000 * 90
-
-// We have to use a queue because we can't run more than one of these at a time
-// or we'll hit an out of memory error because esbuild uses a lot of memory...
-async function queuedCompileMdx<
-	FrontmatterType extends Record<string, unknown>,
->(...args: Parameters<typeof compileMdx>) {
-	const queue = await getQueue()
-	const result = await queue.add(() => compileMdx<FrontmatterType>(...args))
-	return result
-}
-
 export {
 	applyMdxBundlerPluginOptions,
-	compileMdx as compileMdxUnqueued,
+	compileMdx,
 	compileMdxEsm,
 	mdxCustomRehypePlugins,
 	getMdxCustomRemarkPlugins as mdxCustomRemarkPlugins,
 	MDX_ESM_EXTERNALS,
-	queuedCompileMdx as compileMdx,
 }

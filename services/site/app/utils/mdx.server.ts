@@ -6,23 +6,15 @@ import { buildImageUrl } from 'cloudinary-build-url'
 import pLimit from 'p-limit'
 import calculateReadingTime from 'reading-time'
 import * as YAML from 'yaml'
-import { type GitHubFile, type MdxPage } from '#app/types.ts'
-import { compileMdx } from '#app/utils/compile-mdx.server.ts'
-import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
-import {
-	downloadDirList,
-	downloadMdxFileOrDirectory,
-} from '#app/utils/github.server.ts'
-import { formatDate, typedBoolean } from '#app/utils/misc.ts'
-import { cache, cachified } from './cache.server.ts'
+import { type MdxPage } from '#app/types.ts'
 import {
 	getArtifactDirList,
 	getContentData,
 	getDocumentCode,
 	getLoadMdxModule,
-	isWorkerContentMode,
 	type ContentArtifactDocument,
 } from './content-artifacts.server.ts'
+import { formatDate } from './misc.ts'
 import { registerMdxComponentForCode } from './mdx-component-registry.ts'
 import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
@@ -34,37 +26,7 @@ type CachifiedOptions = {
 	timings?: Timings
 }
 
-const defaultTTL = 1000 * 60 * 60 * 24 * 14
-const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 365 * 100
-const blogListTTL = defaultStaleWhileRevalidate
-const notFoundTTL = 1000 * 60 * 60 * 24
-const notFoundStaleWhileRevalidate = 0
 const localBlogListItemLimit = pLimit(8)
-const downloadMdxFileLimit = pLimit(4)
-
-/** Spread SWR background refreshes so many stale keys don't hit the compile queue at once. */
-function staleRefreshJitterMs(key: string): number {
-	let h = 0
-	for (let i = 0; i < key.length; i++) {
-		h = Math.imul(31, h) + key.charCodeAt(i)
-	}
-	return Math.abs(h) % 2500
-}
-
-function applyNotFoundCacheMetadata(
-	metadata: { ttl?: number | null; swr?: number | null },
-	maxTtl: number | null | undefined,
-) {
-	// Cache negative lookups briefly to avoid hammering GitHub for repeated 404s,
-	// but don't keep them around for long (and never serve them stale).
-	const effectiveMaxTtl = typeof maxTtl === 'number' ? maxTtl : Infinity
-	metadata.ttl = Math.min(effectiveMaxTtl, notFoundTTL)
-	metadata.swr = notFoundStaleWhileRevalidate
-}
-
-const checkCompiledValue = (value: unknown) =>
-	typeof value === 'object' &&
-	(value === null || ('code' in value && 'frontmatter' in value))
 
 function parseYamlFrontmatter(source: string): Record<string, unknown> {
 	const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u)
@@ -254,254 +216,34 @@ export async function getMdxPage(
 		contentDir: string
 		slug: string
 	},
-	options: CachifiedOptions,
+	_options: CachifiedOptions,
 ): Promise<MdxPage | null> {
-	if (isWorkerContentMode()) {
-		return getWorkerMdxPage({ contentDir, slug })
-	}
-
-	if (contentDir === 'blog' && isReadmeMdxEntry(slug)) return null
-
-	const { forceFresh, ttl = defaultTTL, request, timings } = options
-	const key = `mdx-page:${contentDir}:${slug}:compiled`
-	try {
-		const page = await cachified({
-			key,
-			cache,
-			request,
-			timings,
-			ttl,
-			staleWhileRevalidate: defaultStaleWhileRevalidate,
-			staleRefreshTimeout: staleRefreshJitterMs(key),
-			forceFresh,
-			checkValue: checkCompiledValue,
-			getFreshValue: async (context) => {
-				const pageFiles = await downloadMdxFilesCached(
-					contentDir,
-					slug,
-					options,
-				)
-				const compiledPage = await compileMdxCached({
-					contentDir,
-					slug,
-					...pageFiles,
-					options,
-				}).catch((err) => {
-					console.error(`Failed to get a fresh value for mdx:`, {
-						contentDir,
-						slug,
-					})
-					return Promise.reject(err)
-				})
-				if (!compiledPage) {
-					applyNotFoundCacheMetadata(context.metadata, ttl)
-				}
-				return compiledPage
-			},
-		})
-		return page
-	} catch (error: unknown) {
-		console.error(
-			`mdx: failed to load page ${contentDir}/${slug}, returning null`,
-			error,
-		)
-		return null
-	}
+	return getWorkerMdxPage({ contentDir, slug })
 }
 
 export async function getMdxPagesInDirectory(
 	contentDir: string,
-	options: CachifiedOptions,
+	_options: CachifiedOptions,
 ) {
-	if (isWorkerContentMode()) {
-		const contentData = getContentData()
-		if (!contentData) return []
-		const dirList = getArtifactDirList(contentData, contentDir)
-		const pages = await Promise.all(
-			dirList.map(({ slug }) =>
-				getWorkerMdxPage({ contentDir, slug }),
-			),
-		)
-		return pages.filter(typedBoolean)
-	}
-
-	const dirList = await getMdxDirList(contentDir, options)
-
-	// our octokit throttle plugin will make sure we don't hit the rate limit
-	const pageDatas = await Promise.all(
-		dirList.map(async ({ slug }) => {
-			return {
-				...(await downloadMdxFilesCached(contentDir, slug, options)),
-				slug,
-			}
-		}),
-	)
-
+	const contentData = getContentData()
+	if (!contentData) return []
+	const dirList = getArtifactDirList(contentData, contentDir)
 	const pages = await Promise.all(
-		pageDatas.map((pageData) =>
-			compileMdxCached({ contentDir, ...pageData, options }),
-		),
+		dirList.map(({ slug }) => getWorkerMdxPage({ contentDir, slug })),
 	)
-	return pages.filter(typedBoolean)
+	return pages.filter((page): page is MdxPage => page !== null)
 }
-
-const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
 export async function getMdxDirList(
 	contentDir: string,
-	options?: CachifiedOptions,
+	_options?: CachifiedOptions,
 ) {
-	if (isWorkerContentMode()) {
-		const contentData = getContentData()
-		return contentData ? getArtifactDirList(contentData, contentDir) : []
-	}
-
-	const { forceFresh, ttl = defaultTTL, request, timings } = options ?? {}
-	const key = getDirListKey(contentDir)
-	return cachified({
-		cache,
-		request,
-		timings,
-		ttl,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		staleRefreshTimeout: staleRefreshJitterMs(key),
-		forceFresh,
-		key,
-		checkValue: (value: unknown) => Array.isArray(value),
-		getFreshValue: async () => {
-			try {
-				const fullContentDirPath = getGitHubContentPath(contentDir)
-				const dirList = (await downloadDirList(fullContentDirPath))
-					.map(({ name, path }) => ({
-						name,
-						slug: path
-							.replace(/\\/g, '/')
-							.replace(`${fullContentDirPath}/`, '')
-							.replace(/\.mdx$/, ''),
-					}))
-					.filter(({ name }) => !isReadmeMdxEntry(name))
-				return dirList
-			} catch (error: unknown) {
-				console.error(
-					`mdx: failed to fetch GitHub dir list for ${contentDir}, returning empty`,
-					error,
-				)
-				return []
-			}
-		},
-	})
+	const contentData = getContentData()
+	return contentData ? getArtifactDirList(contentData, contentDir) : []
 }
 
-export async function getBlogMdxListItems(options: CachifiedOptions) {
-	if (isWorkerContentMode()) {
-		return getContentData()?.blogList ?? []
-	}
-
-	const { request, forceFresh, ttl = blogListTTL, timings } = options
-	const key = 'blog:mdx-list-items'
-	try {
-		return await cachified({
-			cache,
-			request,
-			timings,
-			ttl,
-			staleWhileRevalidate: defaultStaleWhileRevalidate,
-			staleRefreshTimeout: staleRefreshJitterMs(key),
-			forceFresh,
-			key,
-			getFreshValue: async () => {
-				return getLocalBlogMdxListItemsUncached()
-			},
-		})
-	} catch (error: unknown) {
-		console.error(
-			`mdx: failed to load blog list items, returning empty fallback`,
-			error,
-		)
-		return []
-	}
-}
-
-export async function downloadMdxFilesCached(
-	contentDir: string,
-	slug: string,
-	options: CachifiedOptions,
-) {
-	const { forceFresh, ttl = defaultTTL, request, timings } = options
-	const key = `${contentDir}:${slug}:downloaded`
-	const downloaded = await cachified({
-		cache,
-		request,
-		timings,
-		ttl,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		staleRefreshTimeout: staleRefreshJitterMs(key),
-		forceFresh,
-		key,
-		checkValue: (value: unknown) => {
-			if (typeof value !== 'object') {
-				return `value is not an object`
-			}
-			if (value === null) {
-				return `value is null`
-			}
-
-			const download = value as Record<string, unknown>
-			if (!Array.isArray(download.files)) {
-				return `value.files is not an array`
-			}
-			if (typeof download.entry !== 'string') {
-				return `value.entry is not a string`
-			}
-
-			return true
-		},
-		getFreshValue: async (context) => {
-			const result = await downloadMdxFileLimit(() =>
-				downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
-			)
-			if (!result.files.length) {
-				applyNotFoundCacheMetadata(context.metadata, ttl)
-			}
-			return result
-		},
-	})
-	return downloaded
-}
-
-async function compileMdxCached({
-	contentDir,
-	slug,
-	entry,
-	files,
-	options,
-}: {
-	contentDir: string
-	slug: string
-	entry: string
-	files: Array<GitHubFile>
-	options: CachifiedOptions
-}) {
-	const { ttl = defaultTTL } = options
-	const key = `${contentDir}:${slug}:compiled`
-	const page = await cachified({
-		cache,
-		ttl: defaultTTL,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		...options,
-		key,
-		staleRefreshTimeout: staleRefreshJitterMs(key),
-		checkValue: checkCompiledValue,
-		getFreshValue: async (context) => {
-			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
-			if (compiledPage) {
-				return enrichCompiledMdxPage({ slug, entry, compiledPage })
-			}
-			applyNotFoundCacheMetadata(context.metadata, ttl)
-			return null
-		},
-	})
-	return page
+export async function getBlogMdxListItems(_options: CachifiedOptions) {
+	return getContentData()?.blogList ?? []
 }
 
 type CompiledMdxBase = {
@@ -571,7 +313,7 @@ export async function getLocalBlogMdxListItemsUncached() {
 			),
 		)
 	)
-		.filter(typedBoolean)
+		.filter((page): page is Omit<MdxPage, 'code'> => page !== null)
 		.filter((p) => !p.frontmatter.draft && !p.frontmatter.unlisted)
 
 	pages = pages.sort((a, z) => {
