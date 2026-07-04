@@ -467,13 +467,18 @@ export async function computeDeployPlan({
 		changedFiles: refreshChangedFiles,
 	} = refreshResult
 
+	const deploySite = shouldDeploySite(siteChangedFiles)
+	const refreshContent = deploySite
+		? false
+		: shouldRunPathTarget({
+				changedFiles: refreshChangedFiles,
+				pathPrefixes: ['services/site/content/'],
+				runWhenUnknown: isPushEvent,
+			})
+
 	const deployPlan = {
-		deploySite: shouldDeploySite(siteChangedFiles),
-		refreshContent: shouldRunPathTarget({
-			changedFiles: refreshChangedFiles,
-			pathPrefixes: ['services/site/content/'],
-			runWhenUnknown: isPushEvent,
-		}),
+		deploySite,
+		refreshContent,
 		indexSemanticContent: shouldRunPathTarget({
 			changedFiles: pushChangedFiles,
 			pathPrefixes: semanticContentPathPrefixes,

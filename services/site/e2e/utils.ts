@@ -1,11 +1,12 @@
+import fs from 'node:fs'
 import path from 'path'
 import BetterSqlite3 from 'better-sqlite3'
-import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
+import { createCookieSessionStorage } from 'react-router'
 import {
 	createDatabase,
 	type Database,
@@ -13,29 +14,43 @@ import {
 import { inList } from '@remix-run/data-table'
 import { createSqliteExecutorDataTableAdapter } from '#app/utils/db/d1-data-table-adapter.server.ts'
 import { createBetterSqliteExecutor } from '#app/utils/db/better-sqlite-executor.server.ts'
-import { userTable, type User } from '#app/utils/db/schema.server.ts'
-import { getSession } from '../app/utils/session.server.ts'
+import { sessionTable, userTable, type User } from '#app/utils/db/schema.server.ts'
+import { getEnv } from '#app/utils/env.server.ts'
+import { sessionExpirationTime } from '#app/utils/user-data.server.ts'
+import { localD1StateDir } from '../scripts/local-d1-state.mjs'
 import { createUser } from '../prisma/seed-utils.ts'
 
 const e2eDir = path.dirname(fileURLToPath(import.meta.url))
 const siteDir = path.join(e2eDir, '..')
+const sessionIdKey = '__session_id__' as const
+
+function findLocalD1SqliteFile() {
+	if (!fs.existsSync(localD1StateDir)) return null
+	const stack = [localD1StateDir]
+	while (stack.length > 0) {
+		const current = stack.pop()
+		if (!current) continue
+		for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+			const fullPath = path.join(current, entry.name)
+			if (entry.isDirectory()) {
+				stack.push(fullPath)
+				continue
+			}
+			if (entry.isFile() && entry.name.endsWith('.sqlite')) {
+				return fullPath
+			}
+		}
+	}
+	return null
+}
 
 function getLocalD1SqlitePath() {
-	const result = spawnSync(
-		'node',
-		[path.join(siteDir, 'scripts/find-local-d1-sqlite.mjs')],
-		{
-			cwd: siteDir,
-			encoding: 'utf8',
-		},
-	)
-	if (result.status !== 0) {
+	const sqlitePath = findLocalD1SqliteFile()
+	if (!sqlitePath) {
 		throw new Error(
-			`Failed to locate local D1 sqlite file:\n${result.stdout}\n${result.stderr}`,
+			`Could not find local D1 sqlite under ${localD1StateDir}. Run npm run db:reset --workspace kentcdodds.com or start the dev worker once.`,
 		)
 	}
-	const sqlitePath = result.stdout.trim().split('\n').at(-1)?.trim()
-	invariant(sqlitePath, 'local D1 sqlite path is required for e2e helpers')
 	return sqlitePath
 }
 
@@ -133,6 +148,32 @@ export async function deleteUserByEmail(email: string) {
 	await db.delete(userTable, user.id)
 }
 
+async function createE2eSessionCookie(userId: string) {
+	const db = getE2eDatabase()
+	const userSession = await db.create(
+		sessionTable,
+		{
+			userId,
+			expirationDate: new Date(Date.now() + sessionExpirationTime),
+		},
+		{ returnRow: true },
+	)
+	const storage = createCookieSessionStorage({
+		cookie: {
+			name: 'KCD_root_session',
+			secure: getEnv().NODE_ENV === 'production' && !getEnv().MOCKS,
+			secrets: [getEnv().SESSION_SECRET],
+			sameSite: 'lax',
+			path: '/',
+			maxAge: sessionExpirationTime / 1000,
+			httpOnly: true,
+		},
+	})
+	const session = await storage.getSession()
+	session.set(sessionIdKey, userSession.id)
+	return storage.commitSession(session)
+}
+
 export const test = base.extend<{
 	login: (userOverrides?: Partial<User>) => Promise<User>
 }>({
@@ -141,9 +182,7 @@ export const test = base.extend<{
 			invariant(baseURL, 'baseURL is required playwright config')
 			return use(async (userOverrides) => {
 				const user = await insertNewUser(userOverrides)
-				const session = await getSession(new Request(baseURL))
-				await session.signIn(user)
-				const cookieValue = await session.commit()
+				const cookieValue = await createE2eSessionCookie(user.id)
 				invariant(
 					cookieValue,
 					'Something weird happened creating a session for a new user. No cookie value given from session.commit()',

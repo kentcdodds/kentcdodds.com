@@ -75,11 +75,61 @@ test('deploys the site when deployment diff includes a site-deployable file', as
 	})
 
 	expect(deployPlan.deploySite).toBe(true)
-	expect(deployPlan.refreshContent).toBe(true)
+	expect(deployPlan.refreshContent).toBe(false)
 	expect(deployPlan.indexSemanticContent).toBe(true)
 	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
+})
+
+test('skips refresh content when site deploy will publish MDX artifacts', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
+		if (url.endsWith('/refresh-commit-sha.json')) {
+			return { sha: 'refresh-sha' }
+		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+	})
+	const getChangedFilesImpl = vi.fn(
+		async (ignoredCurrentCommitSha, compareCommitSha) => {
+			if (compareCommitSha === 'deployed-site-sha') {
+				return [
+					{ changeType: 'modified', filename: 'services/site/app/routes/index.tsx' },
+					{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' },
+				]
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
+			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
+			}
+			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
+		},
+	)
+	const log = createLogger()
+
+	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
+		currentCommitSha: 'current-sha',
+		pushBeforeSha: 'push-before-sha',
+		eventName: 'push',
+		fetchJsonImpl,
+		getChangedFilesImpl,
+		fetchImpl,
+		log,
+	})
+
+	expect(deployPlan.deploySite).toBe(true)
+	expect(deployPlan.refreshContent).toBe(false)
 })
 
 test('deploys the site when the site workflow changes', async () => {
