@@ -330,17 +330,24 @@ function encodePageCacheEntry(
 	body: string,
 ): PageCacheEntry | null {
 	const headers = headersToStore(response)
+	const contentType = normalizeContentType(response.headers.get('content-type'))
 	const csp = headers.find(
 		([name]) => name.toLowerCase() === 'content-security-policy',
 	)?.[1]
 	const nonce = extractNonceFromCsp(csp)
-	if (nonce && !body.includes(nonce)) return null
+	if (
+		contentType === 'text/html' &&
+		nonce &&
+		!body.includes(nonce)
+	) {
+		return null
+	}
 
 	return {
 		body,
 		status: response.status,
 		headers,
-		nonce,
+		nonce: contentType === 'text/html' ? nonce : '',
 		storedAt: Date.now(),
 	}
 }

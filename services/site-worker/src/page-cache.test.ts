@@ -166,6 +166,15 @@ describe('store eligibility', () => {
 		})
 		expect(isPageCacheStoreEligible(jsonFeed, '/blog.json')).toBe(true)
 		expect(isPageCacheStoreEligible(jsonFeed, '/search')).toBe(false)
+
+		const markdown = new Response('# Title', {
+			status: 200,
+			headers: {
+				'content-type': 'text/markdown',
+				'content-security-policy': "script-src 'nonce-abc123'",
+			},
+		})
+		expect(isPageCacheStoreEligible(markdown, '/blog/post')).toBe(true)
 	})
 })
 
