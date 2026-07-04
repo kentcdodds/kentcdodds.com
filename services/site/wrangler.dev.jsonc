@@ -1,0 +1,44 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "kentcdodds-com-dev",
+	"main": "workers/dev-entry.ts",
+	"compatibility_date": "2026-03-17",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"no_handle_cross_request_promise_resolution"
+	],
+	"workers_dev": true,
+	"vars": {
+		"NODE_ENV": "development",
+		"MOCKS": "true",
+		"PORT": "3000"
+	},
+	"d1_databases": [
+		{
+			"binding": "APP_DB",
+			"database_name": "kentcdodds-com-dev",
+			"database_id": "local-dev-placeholder",
+			"migrations_dir": "../site-worker/.wrangler/site-prisma-migrations"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "SITE_CACHE_KV",
+			"id": "local-dev-site-cache-kv"
+		},
+		{
+			"binding": "CONTENT_KV",
+			"id": "local-dev-content-kv"
+		}
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./public"
+	},
+	"rules": [
+		{
+			"type": "Text",
+			"globs": ["**/*.txt"]
+		}
+	]
+}
