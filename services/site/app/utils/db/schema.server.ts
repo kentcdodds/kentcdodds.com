@@ -238,39 +238,66 @@ export const homeworkCompletionTable = table({
 	afterRead: reviveDateColumns(dateColumns.homeworkCompletion),
 })
 
-export const userPassword = hasOne(userTable, passwordTable)
-export const userPasskeys = hasMany(userTable, passkeyTable)
-export const userCalls = hasMany(userTable, callTable)
+export const userPassword = hasOne(userTable, passwordTable, {
+	foreignKey: 'userId',
+})
+export const userPasskeys = hasMany(userTable, passkeyTable, {
+	foreignKey: 'userId',
+})
+export const userCalls = hasMany(userTable, callTable, { foreignKey: 'userId' })
 export const userCallKentCallerEpisodes = hasMany(
 	userTable,
 	callKentCallerEpisodeTable,
+	{ foreignKey: 'userId' },
 )
-export const userSessions = hasMany(userTable, sessionTable)
-export const userPostReads = hasMany(userTable, postReadTable)
-export const userFavorites = hasMany(userTable, favoriteTable)
+export const userSessions = hasMany(userTable, sessionTable, {
+	foreignKey: 'userId',
+})
+export const userPostReads = hasMany(userTable, postReadTable, {
+	foreignKey: 'userId',
+})
+export const userFavorites = hasMany(userTable, favoriteTable, {
+	foreignKey: 'userId',
+})
 export const userHomeworkCompletions = hasMany(
 	userTable,
 	homeworkCompletionTable,
+	{ foreignKey: 'userId' },
 )
 
-export const passwordUser = belongsTo(passwordTable, userTable)
-export const sessionUser = belongsTo(sessionTable, userTable)
-export const callUser = belongsTo(callTable, userTable)
-export const callEpisodeDraft = hasOne(callTable, callKentEpisodeDraftTable)
+export const passwordUser = belongsTo(passwordTable, userTable, {
+	foreignKey: 'userId',
+})
+export const sessionUser = belongsTo(sessionTable, userTable, {
+	foreignKey: 'userId',
+})
+export const callUser = belongsTo(callTable, userTable, { foreignKey: 'userId' })
+export const callEpisodeDraft = hasOne(callTable, callKentEpisodeDraftTable, {
+	foreignKey: 'callId',
+})
 export const callKentEpisodeDraftCall = belongsTo(
 	callKentEpisodeDraftTable,
 	callTable,
+	{ foreignKey: 'callId' },
 )
 export const callKentCallerEpisodeUser = belongsTo(
 	callKentCallerEpisodeTable,
 	userTable,
+	{ foreignKey: 'userId' },
 )
-export const postReadUser = belongsTo(postReadTable, userTable)
-export const passkeyUser = belongsTo(passkeyTable, userTable)
-export const favoriteUser = belongsTo(favoriteTable, userTable)
+export const postReadUser = belongsTo(postReadTable, userTable, {
+	foreignKey: 'userId',
+})
+export const passkeyUser = belongsTo(passkeyTable, userTable, {
+	foreignKey: 'userId',
+})
+export const favoriteUser = belongsTo(favoriteTable, userTable, {
+	foreignKey: 'userId',
+})
 export const homeworkCompletionUser = belongsTo(
 	homeworkCompletionTable,
 	userTable,
+	{ foreignKey: 'userId' },
 )
 
 export type User = {

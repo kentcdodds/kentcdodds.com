@@ -9,7 +9,7 @@ import {
 	createSession,
 	getUserFromSessionId,
 	sessionExpirationTime,
-} from './prisma.server.ts'
+} from './user-data.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
 const sessionIdKey = '__session_id__' as const

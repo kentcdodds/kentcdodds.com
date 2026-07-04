@@ -3,7 +3,7 @@ import { getInstanceInfo } from '../app/utils/instance-info.server.ts'
 import {
 	deleteExpiredSessions,
 	deleteExpiredVerifications,
-} from '../app/utils/prisma.server.ts'
+} from '../app/utils/user-data.server.ts'
 
 type CleanupController = {
 	stop: () => Promise<void>
