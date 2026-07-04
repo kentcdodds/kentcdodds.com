@@ -28,6 +28,10 @@ export type RateLimitResult = {
 const WINDOW_MS = 60 * 1000
 const windows = new Map<string, RateLimitWindow>()
 
+export function clearRateLimitWindowsForTests() {
+	windows.clear()
+}
+
 const strongestNonGetPaths = [
 	'/login',
 	'/signup',
