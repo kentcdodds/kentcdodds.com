@@ -1,8 +1,9 @@
 # Project context
 
 This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
-with Express, SQLite (via `@remix-run/data-table` on Node; Prisma schema tooling
-for migrations), and extensive MSW mocks for all external APIs.
+running on Cloudflare Workers in production, with a workerd-native local dev
+stack (`@cloudflare/vite-plugin` + Miniflare D1/KV). Prisma schema tooling
+remains for migrations; runtime DB access uses `@remix-run/data-table`.
 
 ## Prerequisites
 
@@ -16,7 +17,7 @@ reference:
 
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
-| Dev server      | `npm run dev` (starts on port 3000 with `MOCKS=true`)                             |
+| Dev server      | `npm run dev` (workerd + Vite HMR on port 3000; `MOCKS=true` by default)          |
 | Format (staged) | `npm run format:staged`                                                           |
 | Lint            | `npm run lint`                                                                    |
 | Lint (all)      | `npm run lint:all`                                                                |
@@ -30,12 +31,16 @@ reference:
 | Backend tests   | `npm run test:backend`                                                            |
 | Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
 | E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
-| DB reset + seed | `npm exec --workspace kentcdodds.com prisma migrate reset --force`                |
+| DB reset + seed | `npm run db:reset --workspace kentcdodds.com` (local Miniflare D1)                |
 
 ## Non-obvious caveats
 
-- All external APIs are mocked via MSW when `MOCKS=true` (the default in dev).
-  No real API keys are needed for local development; `services/site/.env.example`
+- All external APIs are mocked when `MOCKS=true` (the default in dev). The dev
+  worker wraps outbound `fetch` with the same mock routes as production's
+  `OutboundProxy` (no MSW in workerd). Signup verification emails are captured
+  to `services/site/mocks/msw.local.json` via the MDX dev-watcher sidecar
+  (`POST /__dev/capture-email` on port 3099) and logged to the dev worker
+  console. No real API keys are needed for local development; `services/site/.env.example`
   values are sufficient.
 - This repo uses npm workspaces. Install dependencies from the repository root,
   and run worker/package scripts with `npm run <script> --workspace <name>`.
@@ -56,13 +61,16 @@ reference:
   plus `tests/sample.wav`. If an e2e needs recorded audio, drive the real
   recorder UI and keep the fake-audio setup in Playwright/helpers rather than
   adding app runtime shortcuts.
-- SQLite is file-based: the database file lives at `services/site/prisma/sqlite.db`. No
-  external database server is required for local dev or e2e.
+- SQLite is file-based for **unit tests** (`services/site/prisma/sqlite.db` via
+  `DATABASE_URL`). **Local dev and Playwright e2e** use Miniflare's persistent
+  local D1 (`.wrangler/state/v3/d1/...` relative to `services/site`).
 - **Production** runs on the Cloudflare Worker `kentcdodds-com` (D1 + KV + R2).
-  **Local dev and Playwright e2e** use the Node/Express server in `services/site`.
-- If Playwright E2E tests fail with SQLite "table does not exist" errors, run
-  the DB reset + seed command from the table above to apply migrations and seed
-  data.
+  **Local dev and Playwright e2e** run the app in real workerd via
+  `@cloudflare/vite-plugin` (single-worker model for HMR; see
+  `docs/agents/cloudflare-worker-architecture.md`).
+- If Playwright E2E tests fail with D1 "table does not exist" errors, run
+  `npm run db:reset --workspace kentcdodds.com` to apply migrations and seed
+  data against the local Miniflare D1 database.
 - Production schema changes must follow widen-then-narrow rollouts:
   deploy backward-compatible "widen" changes first, then ship narrowing
   constraints/removals in a follow-up deploy. Apply D1 migrations with
@@ -70,8 +78,8 @@ reference:
   the staging equivalent for preview.
 - When shipping a widen migration, create a linked follow-up issue for the
   narrow step before merging so the cleanup pass does not get forgotten.
-- Cache database: a separate SQLite cache DB is created at `services/site/other/cache.db`.
-  It's populated on first request or via `npm run prime-cache:mocks`.
+- Cache in dev uses the local Miniflare `SITE_CACHE_KV` binding (not a separate
+  SQLite cache file). Production uses KV via `CACHE_RPC` from the dynamic worker.
 - Search now runs through a dedicated Cloudflare Worker workspace at
   `services/search-worker`. Production/staging site envs must set
   `SEARCH_WORKER_URL` and `SEARCH_WORKER_TOKEN`.
@@ -88,15 +96,17 @@ reference:
   otherwise MSW passthrough sends traffic to that URL (e.g. local `wrangler dev`
   on `http://127.0.0.1:8787`). Tests expect a mock URL (see `.env.example`).
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
-  Changes to content files are auto-detected by the dev server's file watcher.
-- `npm run dev` should not wrap `services/site/index.ts` in an outer `node --watch`. React
-  Router dev rewrites `.react-router/types` on startup, which can trigger an
-  infinite restart loop in headless/CI environments.
+  The MDX dev-watcher sidecar (`other/mdx-artifacts/dev-watcher.ts`) compiles
+  content to `node_modules/.cache/mdx-dev/` and triggers Vite full-reload on change.
+- `npm run dev` runs concurrently: MDX dev-watcher sidecar + `react-router dev`
+  (Vite + `@cloudflare/vite-plugin`). Do not wrap in an outer `node --watch`.
+  React Router dev rewrites `.react-router/types` on startup, which can trigger
+  an infinite restart loop in headless/CI environments.
 - Playwright/Prisma caveat: `services/site/playwright.config.ts` sets
   `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` so e2e runs can reset the local
-  SQLite DB without tripping Cursor's destructive-action guard. This is only for
-  Playwright's dev/test DB reset path, not a general exemption for Prisma
-  commands.
+  D1 database (`npm run db:reset`) without tripping Cursor's destructive-action
+  guard. This is only for Playwright's dev/test DB reset path, not a general
+  exemption for Prisma commands.
 - Oxlint config caveat: prefer package-export extends
   (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
   extends into `node_modules` can fail to inherit the shared env/rules.
@@ -105,19 +115,19 @@ reference:
   merges tiny trailing transcript chunks at ingest time, but old vectors can
   still linger until the next YouTube reindex.
 - Call Kent FFmpeg offload caveat: episode audio generation runs through a
-  Cloudflare queue/worker/sandbox pipeline. Local site development still uses
-  the MSW Cloudflare mock end-to-end, but running the real worker sandbox
-  locally requires Docker plus real R2-accessible inputs because the site's MSW
-  R2 mock does not extend into sandbox containers. The sandbox image expects
-  `services/call-kent-audio-worker/assets/{intro,interstitial,outro}.mp3`.
+  Cloudflare queue/worker/sandbox pipeline. Local site development uses the dev
+  worker's outbound fetch mocks end-to-end, but running the real worker sandbox
+  locally requires Docker plus real R2-accessible inputs. The sandbox image
+  expects `services/call-kent-audio-worker/assets/{intro,interstitial,outro}.mp3`.
 
 ## Seed data
 
-The seed script (`services/site/prisma/seed.ts`) creates an admin user:
-`me@kentcdodds.com` / `iliketwix` (role ADMIN, Blue Team).
+The seed script (`services/site/scripts/seed-local-d1.mjs`) creates an admin
+user against the local Miniflare D1 database: `me@kentcdodds.com` / `iliketwix`
+(role ADMIN, Blue Team).
 
-After `prisma migrate reset --force`, verify the seed ran (look for `created`
-output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
+After `npm run db:reset --workspace kentcdodds.com`, verify the seed ran.
+Unit tests still use `prisma/seed.ts` against the file-based SQLite test DB.
 
 ## Cloud / headless manual testing
 
@@ -131,8 +141,8 @@ output). If it didn't, run `node prisma/seed.ts` from `services/site/`.
 - If `node --version` still reports an older version after `nvm use 26`, the
   `/exec-daemon/node` shim is ahead of nvm on `PATH`; prefix commands with
   `PATH="$(dirname "$(nvm which 26)"):$PATH"` when testing.
-- The first request after starting the dev server compiles all MDX blog posts
-  and can take ~30 s; subsequent loads are fast.
+- The first request after starting the dev server may compile all MDX blog posts
+  via the sidecar watcher and can take ~30 s; subsequent loads are fast.
 - In cloud VMs, Chrome may block camera/microphone access by default. Visiting
   `/calls/record/new` can hit the route ErrorBoundary unless `localhost` is
   allowed mic/camera access in site settings (even if you intend to use the

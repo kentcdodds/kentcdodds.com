@@ -73,51 +73,12 @@ jobs:
       - name: 🔬 Verify site
         run: npm run ci:verify --workspace=kentcdodds.com
 
-      - name: 🏦 Prime Site Cache
-        id: site-cache
-        if: ${{ inputs.run_pre_deploy_health_check }}
-        uses: actions/cache@v5
-        with:
-          path: services/site/other/cache.db
-          key: >-
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
-            }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
-              'package-lock.json',
-              'services/site/app/utils/cache.server.ts',
-              'services/site/app/utils/compile-mdx.server.ts',
-              'services/site/app/utils/github.server.ts',
-              'services/site/app/utils/markdown.server.ts',
-              'services/site/app/utils/mdx.server.ts',
-              'services/site/content/**',
-              'services/site/mocks/**'
-            ) }}
-          restore-keys: |
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
-
-      - name: 🛠 Setup Database (migrations)
-        if: ${{ inputs.run_pre_deploy_health_check &&
-          steps.site-cache.outputs.cache-hit != 'true' }}
-        run: npx prisma migrate deploy
-        working-directory: services/site
-
-      - name: 😅 Generate Site Cache
-        if: ${{ inputs.run_pre_deploy_health_check &&
-          steps.site-cache.outputs.cache-hit != 'true' }}
-        run: npm run prime-cache:mocks
-
-      - name: 🩺 Smoke test /healthcheck (production build)
-        if: ${{ inputs.run_pre_deploy_health_check }}
-        run: npm run predeploy:healthcheck
-        env:
-          MOCKS: "true"
-
       - name: 📦 Upload site build artifacts
         uses: actions/upload-artifact@v6
         with:
           name: site-build-artifacts
           path: |
             services/site/build/
-            services/site/server-build/
           retention-days: 7
 
   playwright:
@@ -161,45 +122,12 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npm run test:e2e:install --workspace kentcdodds.com
 
-      - name: 📦 Download site build artifacts
-        uses: actions/download-artifact@v6
-        with:
-          name: site-build-artifacts
-          path: services/site
-
-      - name: 🛠 Setup Database
-        run: npx prisma migrate reset --force
-        working-directory: services/site
-
-      - name: 🏦 Prime Site Cache
-        id: site-cache
-        uses: actions/cache@v5
-        with:
-          path: services/site/other/cache.db
-          key: >-
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
-            }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
-              'package-lock.json',
-              'services/site/app/utils/cache.server.ts',
-              'services/site/app/utils/compile-mdx.server.ts',
-              'services/site/app/utils/github.server.ts',
-              'services/site/app/utils/markdown.server.ts',
-              'services/site/app/utils/mdx.server.ts',
-              'services/site/content/**',
-              'services/site/mocks/**'
-            ) }}
-          restore-keys: |
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
-
-      - name: 😅 Generate Site Cache
-        if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npm run prime-cache:mocks
-
       - name: 🎭 Playwright tests
         run: npx playwright test
         working-directory: services/site
         env:
           PORT: 8811
+          CI: true
 
       - name: 📊 Upload report
         uses: actions/upload-artifact@v6

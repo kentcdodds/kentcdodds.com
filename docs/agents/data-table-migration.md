@@ -9,7 +9,8 @@ migrate reset`).
 
 | Runtime | DB access |
 | --- | --- |
-| Node dev + Fly | `db` → `createSqliteDatabaseAdapter(better-sqlite3)` on `DATABASE_URL` |
+| Local dev (Vite + workerd) | `db` → direct D1 executor on `APP_DB` (Miniflare local) |
+| Unit tests (Node) | `db` → `createSqliteDatabaseAdapter(better-sqlite3)` on `DATABASE_URL` |
 | Cloudflare dynamic worker | `db` → `SqliteExecutorDataTableAdapter` over `D1_RPC` |
 | Cloudflare parent worker | Direct D1 executor (`APP_DB`) for scheduled cleanup |
 
@@ -35,7 +36,9 @@ Do **not** import the `remix` umbrella package; use the standalone packages abov
 
 1. **Dynamic worker** — when `D1_RPC` is present on runtime bindings, `db` uses
    `SqliteExecutorDataTableAdapter` over an RPC executor (parent worker hits D1).
-2. **Node dev + Fly** — otherwise `createSqliteDatabaseAdapter(better-sqlite3)`
+2. **Local dev worker** — when `APP_DB` is a real `D1Database` binding (`.prepare`/`.batch`),
+   `db` uses a direct-D1 executor (`createDirectD1Executor`).
+3. **Node unit tests** — otherwise `createSqliteDatabaseAdapter(better-sqlite3)`
    against `DATABASE_URL`.
 
 ## Executor / adapter design

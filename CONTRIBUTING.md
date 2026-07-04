@@ -100,14 +100,11 @@ cp services/site/.env.example services/site/.env
 # Install deps
 npm install
 
-# setup database
-npm exec --workspace kentcdodds.com prisma migrate reset --force
+# setup local D1 (migrations + seed)
+npm run db:reset --workspace kentcdodds.com
 
 # run build, typecheck, linting
 npm run validate
-
-# setup cache database
-npm run prime-cache:mocks
 
 # Install playwright browsers
 npm run test:e2e:install
@@ -128,17 +125,19 @@ And open up `http://localhost:3000` and rock!
 ## Mocks
 
 Everything's mocked locally so you should be able to work completely offline.
-The DB runs locally, but all third party endpoints are mocked out via
-[`MSW`](https://mswjs.io/).
+The local D1 database runs via Miniflare; all third party endpoints are mocked
+via the dev worker's outbound fetch wrapper (same routes as production's
+`OutboundProxy`). Unit tests still use MSW in Node via `msw/node`.
+
+Signup verification emails are captured to `services/site/mocks/msw.local.json`
+and logged to the dev worker console.
 
 ## Caching
 
-Because the mdx files are built on-demand and that can take some time, we
-heavily cache them in sqlite. This means that if you need to work on content,
-you'll need a way to clear the cache. Luckily, when running the dev script, we
-have a file watcher that auto-updates the cache as you save the file. It should
-happen so fast you don't even notice what's going on, but I thought I'd mention
-it here just so you know if it doesn't work.
+MDX content is pre-compiled by the dev-watcher sidecar into
+`node_modules/.cache/mdx-dev/`. On file save, the watcher recompiles the
+changed document and triggers a Vite full-reload. Application data caching uses
+the local Miniflare `SITE_CACHE_KV` binding.
 
 ## Running automated tests
 
@@ -224,11 +223,17 @@ becoming permanent and helps avoid schema/code rollout mismatches.
 One common command you might need to run is to re-seed the database:
 
 ```sh
-npm exec --workspace kentcdodds.com prisma migrate reset --force
+npm run db:reset --workspace kentcdodds.com
 ```
 
-In addition to resetting your database to the latest schema, it'll also run the
-seed script which will populate the database with some example data.
+This applies Prisma migrations to the local Miniflare D1 database and runs the
+seed script (admin user `me@kentcdodds.com` / `iliketwix`).
+
+For unit tests only, you can still reset the file-based SQLite test DB:
+
+```sh
+npm exec --workspace kentcdodds.com prisma migrate reset --force
+```
 
 ## Maintenance Tips
 
@@ -236,11 +241,13 @@ seed script which will populate the database with some example data.
 
 Production runs on the Cloudflare Worker `kentcdodds-com` (see
 `docs/agents/cloudflare-worker-architecture.md`). Local development and CI/e2e
-still use the Node server in `services/site`.
+run the app in workerd via `@cloudflare/vite-plugin` (single-worker HMR model).
 
 Schema changes: widen-then-narrow migrations; apply remote D1 migrations via
 `npm run d1:migrations:apply:production --workspace site-worker` after merging
 widen steps.
+
+Local D1 reset + seed: `npm run db:reset --workspace kentcdodds.com`.
 
 ## Help needed
 

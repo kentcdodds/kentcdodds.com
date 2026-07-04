@@ -3,8 +3,8 @@
 This documents the architecture for running the full kentcdodds.com site on
 Cloudflare Workers with user-facing feature parity, no Fly.io dependency, and
 content updates that do not require a redeploy. **Production deploys exclusively
-to Cloudflare Workers** (`kentcdodds-com`); local dev and CI/e2e still use the
-Node/Express server in `services/site`.
+to Cloudflare Workers** (`kentcdodds-com`); local dev and CI/e2e run the app in
+real workerd via `@cloudflare/vite-plugin` (single-worker HMR model).
 
 ## Overview
 
@@ -335,9 +335,58 @@ The parent in-memory generation cache is cleared on bump.
 
 ## Local development
 
-Nothing changes for `npm run dev` (Node + Express + MSW). The worker path is
-exercised via `services/site-worker` scripts (miniflare/wrangler dev) and the
-preview deployment.
+`npm run dev` (in `services/site`) runs two processes concurrently:
+
+1. **MDX dev-watcher sidecar** (`other/mdx-artifacts/dev-watcher.ts`) — compiles
+   all local MDX on startup (cached under `node_modules/.cache/mdx-dev/`), watches
+   `content/` for changes, and exposes `POST /__dev/capture-email` (port 3099)
+   for Mailgun mock email capture.
+2. **Vite + React Router dev** with `@cloudflare/vite-plugin` — serves the app
+   in real workerd with local D1/KV bindings from `wrangler.dev.jsonc`.
+
+### Dev vs production fidelity trade-off
+
+The Vite plugin uses a **single-worker** model for HMR. Production uses the
+**parent worker + Worker Loader dynamic worker** topology with RPC stubs
+(`D1_RPC`, `CACHE_RPC`, `CONTENT_RPC`). Local dev binds D1/KV directly and
+loads MDX server modules via Vite `/@fs` dynamic imports (no eval in workerd).
+Staging/preview deploys and CI e2e against the dev worker exercise real workerd
+but not the parent/loader split; preview/production smoke tests cover the full
+topology.
+
+### Dev worker entry
+
+`services/site/workers/dev-entry.ts` — `createRequestHandler` +
+`virtual:react-router/server-build`, runtime env/binding bridges, pre-router
+pipeline (rate limiting, CSP), outbound fetch mocks when `MOCKS=true`, and MDX
+content from `virtual:mdx-dev-manifest` + `/@fs` module imports.
+
+### MDX in dev (no eval in workerd)
+
+Compiled server ESM modules are written as real files under
+`node_modules/.cache/mdx-dev/modules/{contentDir}/{slug}.{hash}.mjs`. The dev
+worker imports them via `import('/@fs' + path + '?t=' + mtime)`. Client `code`
+(IIFE strings) still hydrates via `new Function` in the browser. React is
+deduped via Vite resolution so interactive MDX SSR shares one React instance.
+
+### Database and cache in dev
+
+- `APP_DB` — local Miniflare D1 (persistent under `.wrangler/state/v3/d1/`).
+  Seed: `npm run db:reset --workspace kentcdodds.com`.
+- `SITE_CACHE_KV` / `CONTENT_KV` — local Miniflare KV simulations.
+- `db.server.ts` uses a direct-D1 executor when bindings expose `.prepare`/`.batch`.
+- `cache.server.ts` uses direct KV when `SITE_CACHE_KV` is present.
+
+### Outbound mocks in dev
+
+MSW (`msw/node`) cannot run in workerd. When `MOCKS=true`, the dev worker wraps
+`globalThis.fetch` with routes from `outbound-mock-routes.server.ts` (shared
+with site-worker's `OutboundProxy`). Signup verification emails are captured to
+`mocks/msw.local.json` via the sidecar HTTP endpoint and logged to the worker
+console.
+
+The production worker path is exercised via `services/site-worker` scripts
+(wrangler dev, preview deployment) and CI smoke tests.
 
 ## Preview deployment (migration branch)
 
