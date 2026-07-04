@@ -69,7 +69,6 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN,required=false \
       export SENTRY_UPLOAD="false"; \
       echo "Sentry sourcemap upload disabled (missing SENTRY_AUTH_TOKEN or COMMIT_SHA)"; \
     fi && \
-    npx prisma@7 generate && \
     npm run build
 
 # build smaller image for running
@@ -99,7 +98,6 @@ WORKDIR /app/
 ADD . .
 
 COPY --from=production-deps /app/node_modules /app/node_modules
-COPY --from=build /app/services/site/app/utils/prisma-generated.server /app/services/site/app/utils/prisma-generated.server
 COPY --from=build /app/services/site/build /app/services/site/build
 COPY --from=build /app/services/site/public /app/services/site/public
 COPY --from=build /app/services/site/server-build /app/services/site/server-build

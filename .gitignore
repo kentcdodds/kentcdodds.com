@@ -13,8 +13,6 @@ tsconfig.tsbuildinfo
 *.tsbuildinfo
 /services/site/prisma/sqlite.db
 /services/site/prisma/sqlite.db-journal
-/services/site/app/utils/prisma-generated.server
-
 *.local.*
 
 .env

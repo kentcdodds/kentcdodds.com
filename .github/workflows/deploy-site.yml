@@ -113,7 +113,6 @@ jobs:
           path: |
             services/site/build/
             services/site/server-build/
-            services/site/app/utils/prisma-generated.server/
           retention-days: 7
 
   playwright:
