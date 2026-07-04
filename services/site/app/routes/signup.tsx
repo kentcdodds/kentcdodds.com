@@ -31,7 +31,7 @@ import {
 	userTable,
 	verificationTable,
 } from '#app/utils/db/schema.server.ts'
-import { migrateHomeworkCompletionsToUser } from '#app/utils/prisma.server.ts'
+import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'

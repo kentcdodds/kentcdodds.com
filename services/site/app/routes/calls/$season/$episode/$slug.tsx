@@ -19,7 +19,8 @@ import {
 } from '#app/utils/call-kent.ts'
 import { getEpisodeFavoriteContentId } from '#app/utils/favorites.ts'
 import { getUrl, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { favoriteTable } from '#app/utils/db/schema.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getUser } from '#app/utils/session.server.ts'
@@ -126,15 +127,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		episodeNumber: episode.episodeNumber,
 	})
 	const favorite = user
-		? await prisma.favorite.findUnique({
+		? await db.findOne(favoriteTable, {
 				where: {
-					userId_contentType_contentId: {
-						userId: user.id,
-						contentType: 'call-kent-episode',
-						contentId,
-					},
+					userId: user.id,
+					contentType: 'call-kent-episode',
+					contentId,
 				},
-				select: { id: true },
 			})
 		: null
 

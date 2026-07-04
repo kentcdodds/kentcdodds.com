@@ -1,5 +1,6 @@
+import { db } from './db.server.ts'
+import { verificationTable } from './db/schema.server.ts'
 import { getDomainUrl } from './misc.ts'
-import { prisma } from './prisma.server.ts'
 import { sendPasswordResetEmail } from './send-email.server.ts'
 import { createVerification } from './verification.server.ts'
 
@@ -43,7 +44,7 @@ export async function createAndSendPasswordResetVerificationEmail({
 		if (verificationId) {
 			try {
 				// Best effort: don't leave unused verifications around if email sending fails.
-				await prisma.verification.delete({ where: { id: verificationId } })
+				await db.delete(verificationTable, verificationId)
 			} catch (cleanupError) {
 				console.error(
 					'Failed to cleanup verification after password reset email failure',

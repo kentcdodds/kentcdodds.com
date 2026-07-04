@@ -6,7 +6,7 @@ import {
 	type Call,
 	type Session,
 	type User,
-} from '#app/utils/prisma-generated.server/client.ts'
+} from '#app/utils/db/schema.server.ts'
 
 type NonNullProperties<Type> = {
 	[Key in keyof Type]-?: Exclude<Type[Key], null | undefined>

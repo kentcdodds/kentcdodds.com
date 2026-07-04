@@ -43,7 +43,8 @@ import {
 } from '#app/utils/misc.ts'
 import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
 import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { favoriteTable } from '#app/utils/db/schema.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
@@ -114,15 +115,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const userPromise = getUser(request, { timings })
 	const favoritePromise = userPromise.then((user) =>
 		user
-			? prisma.favorite.findUnique({
+			? db.findOne(favoriteTable, {
 					where: {
-						userId_contentType_contentId: {
-							userId: user.id,
-							contentType: 'blog-post',
-							contentId: params.slug,
-						},
+						userId: user.id,
+						contentType: 'blog-post',
+						contentId: params.slug,
 					},
-					select: { id: true },
 				})
 			: null,
 	)

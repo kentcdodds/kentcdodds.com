@@ -60,10 +60,11 @@ import {
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
 import { getClientSession } from '#app/utils/client.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { favoriteTable } from '#app/utils/db/schema.server.ts'
 import {
 	getEpisodeHomeworkCompletions,
-	prisma,
-} from '#app/utils/prisma.server.ts'
+} from '#app/utils/user-data.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getUser } from '#app/utils/session.server.ts'
@@ -176,15 +177,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		episodeNumber: episode.episodeNumber,
 	})
 	const favorite = user
-		? await prisma.favorite.findUnique({
+		? await db.findOne(favoriteTable, {
 				where: {
-					userId_contentType_contentId: {
-						userId: user.id,
-						contentType: favoriteContentType,
-						contentId: favoriteContentId,
-					},
+					userId: user.id,
+					contentType: favoriteContentType,
+					contentId: favoriteContentId,
 				},
-				select: { id: true },
 			})
 		: null
 	const completedHomeworkIds = await getEpisodeHomeworkCompletions({

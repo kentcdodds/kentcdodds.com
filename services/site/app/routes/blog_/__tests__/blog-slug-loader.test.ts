@@ -23,11 +23,9 @@ const sessionServerMocks = vi.hoisted(() => ({
 // requiring DATABASE_URL and an actual SQLite DB in unit tests.
 vi.mock('#app/utils/session.server.ts', () => sessionServerMocks)
 
-vi.mock('#app/utils/prisma.server.ts', () => ({
-	prisma: {
-		favorite: {
-			findUnique: vi.fn().mockResolvedValue(null),
-		},
+vi.mock('#app/utils/db.server.ts', () => ({
+	db: {
+		findOne: vi.fn().mockResolvedValue(null),
 	},
 }))
 

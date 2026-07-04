@@ -46,7 +46,7 @@ import {
 	postReadTable,
 	userTable,
 } from '#app/utils/db/schema.server.ts'
-import { migrateHomeworkCompletionsToUser } from '#app/utils/prisma.server.ts'
+import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
 import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/login'
