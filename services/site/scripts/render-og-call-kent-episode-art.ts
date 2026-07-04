@@ -5,6 +5,7 @@ import { createElement } from 'react'
 import satori, { init as initSatori } from 'satori/standalone'
 import { Resvg, initWasm as initResvgWasm } from '@resvg/resvg-wasm'
 import {
+	CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT,
 	computeCallKentEpisodeArtLayout,
 	layoutBoxesForDump,
 } from '../app/og/call-kent-episode-art-layout.ts'
@@ -15,7 +16,8 @@ import {
 	resolveSocialBackgroundDataUri,
 } from '../app/og/assets.server.ts'
 
-const OUTPUT_DIR = '/tmp/og-iter2'
+const OUTPUT_DIR = '/tmp/og-iter3'
+const CANVAS = 1400
 const require = createRequire(import.meta.url)
 
 const roundAvatarDataUri =
@@ -34,7 +36,7 @@ const samples = [
 			avatarKind: 'cloudinary' as const,
 			avatarSource: 'kentcdodds.com/illustrations/kody/kody_profile_blue',
 			avatarIsRound: false,
-			size: 1400,
+			size: CANVAS,
 		},
 	},
 	{
@@ -47,7 +49,7 @@ const samples = [
 			avatarKind: 'fetch' as const,
 			avatarSource: roundAvatarDataUri,
 			avatarIsRound: true,
-			size: 1400,
+			size: CANVAS,
 		},
 	},
 	{
@@ -59,10 +61,22 @@ const samples = [
 			avatarKind: 'fetch' as const,
 			avatarSource: roundAvatarDataUri,
 			avatarIsRound: true,
-			size: 1400,
+			size: CANVAS,
 		},
 	},
 ]
+
+function readPngDimensions(pngPath: string) {
+	const buf = readFileSync(pngPath)
+	return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) }
+}
+
+function readDataUriPngDimensions(dataUri: string) {
+	const base64 = dataUri.split(',')[1]
+	if (!base64) throw new Error('Invalid data URI')
+	const buf = Buffer.from(base64, 'base64')
+	return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) }
+}
 
 async function loadFonts() {
 	const [regular, medium] = await Promise.all([
@@ -90,6 +104,19 @@ async function loadFonts() {
 	]
 }
 
+async function renderPng(
+	element: ReturnType<typeof createElement>,
+	width: number,
+	height: number,
+	fonts: Awaited<ReturnType<typeof loadFonts>>,
+) {
+	const svg = await satori(element, { width, height, fonts })
+	const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: width } })
+	const png = resvg.render().asPng()
+	resvg.free()
+	return png
+}
+
 async function main() {
 	const yogaWasm = readFileSync(require.resolve('satori/yoga.wasm'))
 	const resvgWasm = readFileSync(
@@ -104,8 +131,54 @@ async function main() {
 		resolveMicIllustrationDataUri(),
 	])
 
+	const micAssetDims = readDataUriPngDimensions(mic)
+	console.log(
+		`Mic asset data URI IHDR: ${micAssetDims.width}x${micAssetDims.height} (ratio ${(micAssetDims.width / micAssetDims.height).toFixed(4)})`,
+	)
+
 	mkdirSync(OUTPUT_DIR, { recursive: true })
-	const layoutDump: Record<string, unknown> = {}
+
+	const g = CANVAS / 12
+	const micHeight = 11 * g
+	const micWidth = micHeight * CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT
+	const micOnlyPng = await renderPng(
+		createElement(
+			'div',
+			{
+				style: {
+					width: CANVAS,
+					height: CANVAS,
+					display: 'flex',
+					position: 'relative',
+					backgroundColor: '#1f2028',
+				},
+			},
+			createElement('img', {
+				src: mic,
+				width: micWidth,
+				height: micHeight,
+				style: {
+					position: 'absolute',
+					top: (CANVAS - micHeight) / 2,
+					right: g,
+					width: micWidth,
+					height: micHeight,
+				},
+			}),
+		),
+		CANVAS,
+		CANVAS,
+		fonts,
+	)
+	writeFileSync(join(OUTPUT_DIR, 'mic-only.png'), micOnlyPng)
+	console.log(
+		`Wrote ${join(OUTPUT_DIR, 'mic-only.png')} (container ${micWidth.toFixed(1)}x${micHeight.toFixed(1)})`,
+	)
+
+	const layoutDump: Record<string, unknown> = {
+		micAsset: micAssetDims,
+		micContainer: { width: micWidth, height: micHeight },
+	}
 
 	for (const sample of samples) {
 		const layout = computeCallKentEpisodeArtLayout(
@@ -120,25 +193,27 @@ async function main() {
 			size: 700,
 		})
 
-		const width = sample.params.size
-		const height = sample.params.size
-		const element = createElement(CallKentEpisodeArt, {
-			...sample.params,
-			background,
-			avatar,
-			mic,
-		})
-		const svg = await satori(element, { width, height, fonts })
-		const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: width } })
-		const png = resvg.render().asPng()
-		resvg.free()
+		const png = await renderPng(
+			createElement(CallKentEpisodeArt, {
+				...sample.params,
+				background,
+				avatar,
+				mic,
+			}),
+			sample.params.size,
+			sample.params.size,
+			fonts,
+		)
 
 		if (png[0] !== 0x89 || png[1] !== 0x50 || png[2] !== 0x4e || png[3] !== 0x47) {
 			throw new Error(`Invalid PNG for ${sample.filename}`)
 		}
 
 		writeFileSync(join(OUTPUT_DIR, sample.filename), png)
-		console.log(`Wrote ${join(OUTPUT_DIR, sample.filename)} (${width}x${height})`)
+		const dims = readPngDimensions(join(OUTPUT_DIR, sample.filename))
+		console.log(
+			`Wrote ${join(OUTPUT_DIR, sample.filename)} (${dims.width}x${dims.height})`,
+		)
 	}
 
 	writeFileSync(

@@ -96,7 +96,11 @@ export async function resolveAvatarDataUri({
 
 export async function resolveMicIllustrationDataUri() {
 	const url = cloudinaryUrl('kentcdodds.com/illustrations/mic', {
-		transformations: { resize: { width: 900, height: 900 } },
+		transformations: {
+			resize: {
+				height: 1900,
+			},
+		},
 	})
 	return fetchAsDataUri(url)
 }

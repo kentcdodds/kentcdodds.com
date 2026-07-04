@@ -5,8 +5,12 @@ export const CALL_KENT_EPISODE_ART_GRID_DIVISIONS = 12
 export const CALL_KENT_EPISODE_ART_TITLE_MAX_CHARS = 50
 export const CALL_KENT_EPISODE_ART_TITLE_MAX_LINES = 3
 
-// Measured from kentcdodds.com/illustrations/mic.png (956×1898).
-export const CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT = 956 / 1898
+// Measured from kentcdodds.com/illustrations/mic.png IHDR (956×1898).
+export const CALL_KENT_MIC_ILLUSTRATION_NATURAL_WIDTH = 956
+export const CALL_KENT_MIC_ILLUSTRATION_NATURAL_HEIGHT = 1898
+export const CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT =
+	CALL_KENT_MIC_ILLUSTRATION_NATURAL_WIDTH /
+	CALL_KENT_MIC_ILLUSTRATION_NATURAL_HEIGHT
 
 export type CallKentEpisodeArtElementBox = {
 	left: number
@@ -19,7 +23,8 @@ export type CallKentEpisodeArtLayout = {
 	canvasSize: number
 	g: number
 	textLines: number
-	title: CallKentEpisodeArtElementBox & { fontSize: number }
+	layoutTitleLines: number
+	title: CallKentEpisodeArtElementBox & { fontSize: number; minHeight: number }
 	avatar: CallKentEpisodeArtElementBox
 	mic: CallKentEpisodeArtElementBox & { right: number }
 	url: CallKentEpisodeArtElementBox & { fontSize: number; bottom: number }
@@ -37,6 +42,18 @@ export function countCallKentEpisodeArtTitleLines(title: string) {
 	)
 }
 
+export function countCallKentEpisodeArtLayoutTitleLines(title: string) {
+	const charLines = countCallKentEpisodeArtTitleLines(title)
+	const stripped = stripEmoji(title)
+	const truncated = stripped.length > CALL_KENT_EPISODE_ART_TITLE_MAX_CHARS
+
+	if (truncated || charLines >= CALL_KENT_EPISODE_ART_TITLE_MAX_LINES) {
+		return CALL_KENT_EPISODE_ART_TITLE_MAX_LINES
+	}
+
+	return charLines
+}
+
 export function formatCallKentEpisodeArtTitle(title: string) {
 	const stripped = stripEmoji(title)
 	if (stripped.length <= CALL_KENT_EPISODE_ART_TITLE_MAX_CHARS) {
@@ -51,6 +68,9 @@ export function computeCallKentEpisodeArtLayout(
 ): CallKentEpisodeArtLayout {
 	const g = canvasSize / CALL_KENT_EPISODE_ART_GRID_DIVISIONS
 	const textLines = countCallKentEpisodeArtTitleLines(title)
+	const layoutTitleLines = countCallKentEpisodeArtLayoutTitleLines(title)
+	const titleFontSize = scaleFontSize(180, canvasSize)
+	const titleMinHeight = 2.6 * g
 	const micHeight = 11 * g
 	const micWidth = micHeight * CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT
 
@@ -58,16 +78,18 @@ export function computeCallKentEpisodeArtLayout(
 		canvasSize,
 		g,
 		textLines,
+		layoutTitleLines,
 		title: {
 			left: 0.8 * g,
 			top: 0.8 * g,
 			width: 6 * g,
-			height: 2.6 * g,
-			fontSize: scaleFontSize(180, canvasSize),
+			height: titleMinHeight,
+			minHeight: titleMinHeight,
+			fontSize: titleFontSize,
 		},
 		avatar: {
 			left: 0.8 * g,
-			top: (textLines + 0.6) * g,
+			top: (layoutTitleLines + 0.6) * g,
 			width: 5.5 * g,
 			height: 5.5 * g,
 		},
@@ -102,6 +124,7 @@ export function layoutBoxesForDump(layout: CallKentEpisodeArtLayout) {
 		canvasSize: layout.canvasSize,
 		g: layout.g,
 		textLines: layout.textLines,
+		layoutTitleLines: layout.layoutTitleLines,
 		title: layout.title,
 		avatar: layout.avatar,
 		mic: layout.mic,

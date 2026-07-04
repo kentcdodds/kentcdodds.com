@@ -7,7 +7,7 @@ import {
 	layoutBoxesForDump,
 } from '../call-kent-episode-art-layout.ts'
 
-const OUTPUT_DIR = '/tmp/og-iter2'
+const OUTPUT_DIR = '/tmp/og-iter3'
 
 const roundAvatarDataUri =
 	'data:image/svg+xml;base64,' +
@@ -70,23 +70,23 @@ describe('call-kent-episode-art sample renders', () => {
 		)
 
 		expect(layoutBoxesForDump(shortLayout)).toMatchObject({
-			textLines: 1,
+			layoutTitleLines: 1,
 			title: { left: 0.8 * g, top: 0.8 * g, width: 6 * g },
 			avatar: { top: 1.6 * g, width: 5.5 * g },
 			name: { bottom: 4.2 * g },
 			url: { bottom: 0.8 * g },
 		})
 		expect(layoutBoxesForDump(longLayout)).toMatchObject({
-			textLines: 3,
+			layoutTitleLines: 3,
 			avatar: { top: 3.6 * g },
 			name: { bottom: 2.2 * g },
 		})
 		expect(longLayout.avatar.top).toBeGreaterThanOrEqual(
-			longLayout.title.top + longLayout.title.height,
+			longLayout.title.top + longLayout.title.minHeight,
 		)
 	})
 
-	test('render script writes 1400x1400 PNGs to /tmp/og-iter2', () => {
+	test('render script writes 1400x1400 PNGs to /tmp/og-iter3', () => {
 		execSync('node scripts/render-og-call-kent-episode-art.mjs', {
 			cwd: join(process.cwd()),
 			stdio: 'pipe',
@@ -103,6 +103,7 @@ describe('call-kent-episode-art sample renders', () => {
 			expect(png[3]).toBe(0x47)
 		}
 
+		expect(existsSync(join(OUTPUT_DIR, 'mic-only.png'))).toBe(true)
 		expect(existsSync(join(OUTPUT_DIR, 'layout.json'))).toBe(true)
 	}, 120_000)
 })

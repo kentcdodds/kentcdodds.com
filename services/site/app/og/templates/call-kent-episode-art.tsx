@@ -58,15 +58,12 @@ export function CallKentEpisodeArt({
 					left: layout.title.left,
 					top: layout.title.top,
 					width: layout.title.width,
-					height: layout.title.height,
-					display: '-webkit-box',
-					WebkitBoxOrient: 'vertical',
-					WebkitLineClamp: 3,
-					overflow: 'hidden',
+					minHeight: layout.title.minHeight,
 					color: OG_COLORS.white,
 					fontSize: layout.title.fontSize,
 					fontWeight: 500,
 					lineHeight: 1.1,
+					lineClamp: 3,
 				}}
 			>
 				{displayTitle}
@@ -121,13 +118,14 @@ export function CallKentEpisodeArt({
 			<img
 				src={mic}
 				alt=""
+				width={layout.mic.width}
+				height={layout.mic.height}
 				style={{
 					position: 'absolute',
 					top: layout.mic.top,
 					right: layout.mic.right,
 					width: layout.mic.width,
 					height: layout.mic.height,
-					objectFit: 'contain',
 				}}
 			/>
 		</div>
