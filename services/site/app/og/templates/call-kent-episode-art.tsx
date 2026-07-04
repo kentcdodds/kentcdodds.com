@@ -1,3 +1,4 @@
+import { computeCallKentEpisodeArtLayout } from '../call-kent-episode-art-layout.ts'
 import { OG_COLORS } from '../constants.ts'
 import { stripEmoji } from '../assets.server.ts'
 
@@ -9,6 +10,7 @@ export type CallKentEpisodeArtProps = {
 	background: string
 	avatar: string
 	mic: string
+	size?: number
 }
 
 export function CallKentEpisodeArt({
@@ -19,15 +21,15 @@ export function CallKentEpisodeArt({
 	background,
 	avatar,
 	mic,
+	size = 1400,
 }: CallKentEpisodeArtProps) {
-	const titleLines = Math.ceil(Math.min(stripEmoji(title).length, 50) / 18)
-	const avatarTop = 120 + titleLines * 34
+	const layout = computeCallKentEpisodeArtLayout(size, title)
 
 	return (
 		<div
 			style={{
-				width: '100%',
-				height: '100%',
+				width: size,
+				height: size,
 				display: 'flex',
 				position: 'relative',
 				backgroundColor: '#1f2028',
@@ -41,82 +43,86 @@ export function CallKentEpisodeArt({
 					position: 'absolute',
 					top: 0,
 					left: 0,
-					width: '100%',
-					height: '100%',
+					width: size,
+					height: size,
 					objectFit: 'cover',
 				}}
 			/>
-			<div
-				style={{
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'space-between',
-					width: '100%',
-					height: '100%',
-					padding: '56px',
-					position: 'relative',
-					zIndex: 1,
-				}}
-			>
-				<div
-					style={{
-						color: OG_COLORS.white,
-						fontSize: 72,
-						fontWeight: 500,
-						lineHeight: 1.05,
-						maxWidth: '62%',
-					}}
-				>
-					{stripEmoji(title)}
-				</div>
-				<img
-					src={avatar}
-					alt=""
-					style={{
-						position: 'absolute',
-						top: avatarTop,
-						left: 56,
-						width: 360,
-						height: 360,
-						borderRadius: avatarIsRound ? 999 : 0,
-						objectFit: 'cover',
-					}}
-				/>
-				<div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-					<div
-						style={{
-							color: OG_COLORS.muted,
-							fontSize: 34,
-							lineHeight: 1.2,
-						}}
-					>
-						{stripEmoji(url)}
-					</div>
-					<div
-						style={{
-							color: OG_COLORS.muted,
-							fontSize: 40,
-							lineHeight: 1.2,
-						}}
-					>
-						{stripEmoji(name)}
-					</div>
-				</div>
-			</div>
 			<img
 				src={mic}
 				alt=""
 				style={{
 					position: 'absolute',
-					right: 56,
-					top: '50%',
-					transform: 'translateY(-50%)',
-					width: 420,
-					height: 420,
+					top: layout.mic.top,
+					right: layout.mic.right,
+					width: layout.mic.width,
+					height: layout.mic.height,
 					objectFit: 'contain',
-					zIndex: 1,
 				}}
 			/>
+			<div
+				style={{
+					position: 'absolute',
+					left: layout.title.left,
+					top: layout.title.top,
+					width: layout.title.width,
+					height: layout.title.height,
+					display: 'flex',
+					color: OG_COLORS.white,
+					fontSize: layout.title.fontSize,
+					fontWeight: 500,
+					lineHeight: 1.1,
+				}}
+			>
+				{stripEmoji(title)}
+			</div>
+			<img
+				src={avatar}
+				alt=""
+				style={{
+					position: 'absolute',
+					top: layout.avatar.top,
+					left: layout.avatar.left,
+					width: layout.avatar.width,
+					height: layout.avatar.height,
+					borderRadius: avatarIsRound ? layout.avatar.width / 2 : 0,
+					objectFit: 'cover',
+				}}
+			/>
+			<div
+				style={{
+					position: 'absolute',
+					left: layout.name.left,
+					bottom: layout.name.bottom,
+					width: layout.name.width,
+					height: layout.name.height,
+					display: 'flex',
+					alignItems: 'flex-end',
+					color: OG_COLORS.muted,
+					fontSize: layout.name.fontSize,
+					fontWeight: 400,
+					lineHeight: 1.2,
+				}}
+			>
+				{stripEmoji(name)}
+			</div>
+			<div
+				style={{
+					position: 'absolute',
+					left: layout.url.left,
+					bottom: layout.url.bottom,
+					width: layout.url.width,
+					height: layout.url.height,
+					display: 'flex',
+					alignItems: 'flex-end',
+					color: OG_COLORS.muted,
+					fontSize: layout.url.fontSize,
+					fontWeight: 400,
+					lineHeight: 1.2,
+				}}
+			>
+				{stripEmoji(url)}
+			</div>
 		</div>
 	)
 }
