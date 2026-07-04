@@ -7,8 +7,9 @@ import { type SearchResult } from '@kcd-internal/search-shared'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
 import { getBlogRecommendations } from '#app/utils/blog.server.js'
+import { cache, cachified } from '#app/utils/cache.server.js'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
-import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
+import { GITHUB_CONTENT_PATH } from '#app/utils/github-content-paths.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
 import { sql } from '@remix-run/data-table'
 import { db } from '#app/utils/db.server.js'
@@ -25,6 +26,39 @@ type TransportEntry =
 	| Promise<WebStandardStreamableHTTPServerTransport>
 
 const transports = new Map<string, TransportEntry>()
+
+const rawBlogPostBase = `https://raw.githubusercontent.com/kentcdodds/kentcdodds.com/main/${GITHUB_CONTENT_PATH}/blog`
+
+async function fetchRawBlogPostFiles(slug: string) {
+	const candidates = [
+		`${rawBlogPostBase}/${slug}.mdx`,
+		`${rawBlogPostBase}/${slug}.md`,
+		`${rawBlogPostBase}/${slug}/index.mdx`,
+		`${rawBlogPostBase}/${slug}/index.md`,
+	]
+	for (const url of candidates) {
+		const response = await fetch(url)
+		if (!response.ok) continue
+		const content = await response.text()
+		const filePath = url.replace(
+			'https://raw.githubusercontent.com/kentcdodds/kentcdodds.com/main/',
+			'',
+		)
+		return [{ path: filePath, content }]
+	}
+	return []
+}
+
+async function getRawBlogPostFilesCached(slug: string) {
+	return cachified({
+		cache,
+		key: `mcp:blog-post-raw:${slug}`,
+		ttl: 1000 * 60 * 60 * 24,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 7,
+		getFreshValue: () => fetchRawBlogPostFiles(slug),
+		checkValue: (value: unknown) => Array.isArray(value),
+	})
+}
 
 function createServer() {
 	const server = new McpServer(
@@ -292,7 +326,7 @@ function createServer() {
 			},
 		},
 		async ({ slug }) => {
-			const { files } = await downloadMdxFilesCached('blog', slug, {})
+			const files = await getRawBlogPostFilesCached(slug)
 
 			if (!files.length) {
 				return {
