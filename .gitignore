@@ -26,9 +26,6 @@ tsconfig.tsbuildinfo
 /services/site/playwright-report/
 /services/site/playwright/.cache/
 /services/site-worker/dist
-/services/site-worker/scripts/dev-harness/harness-modules.generated.mjs
-/services/site-worker/scripts/dev-harness/.dev.vars
-
 *.bkp.*
 
 *.db-journal
