@@ -20,8 +20,7 @@ import {
 } from '#app/components/icons.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { images } from '#app/images.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { handleFormSubmission } from '#app/utils/actions.server.ts'
@@ -35,11 +34,8 @@ import {
 import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import {
 	getDiscordAuthorizeURL,
-	getDisplayUrl,
 	getErrorMessage,
-	getOrigin,
 	getTeam,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
 import {
@@ -54,7 +50,6 @@ import {
 	sessionTable,
 	userTable,
 } from '#app/utils/db/schema.server.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import {
 	deleteOtherSessions,
 	getSession,
@@ -76,22 +71,8 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const domain = new URL(getOrigin(requestInfo)).host
-	return getSocialMetas({
-		title: `Your account on ${domain}`,
-		description: `Personal account information on ${domain}.`,
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.kodySnowboardingGray(),
-			words: `View your account info on ${domain}`,
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 type FavoriteDisplayItem = {
 	contentType: FavoriteContentType
@@ -254,6 +235,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const activity: 'skiing' | 'snowboarding' | 'onewheeling' =
 		activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
 
+	const domain = new URL(request.url).host
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: `Your account on ${domain}`,
+		description: `Personal account information on ${domain}.`,
+		socialImage: {
+			kind: 'generic-social',
+			words: `View your account info on ${domain}`,
+			featuredImage: images.kodySnowboardingGray(),
+		},
+	})
+
 	const callKentCallerEpisodesDisplay = callKentCallerEpisodes.map((entry) => {
 		const episode = callEpisodeByTransistorId.get(entry.transistorEpisodeId)
 		if (!episode) {
@@ -291,6 +285,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			teamType: activity,
 			favorites,
 			callKentCallerEpisodes: callKentCallerEpisodesDisplay,
+			socialMetas,
 		} as const,
 		{
 			headers: {

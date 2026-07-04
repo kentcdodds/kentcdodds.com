@@ -22,7 +22,33 @@ vi.mock('#app/utils/use-root-data.ts', () => ({
 
 import { meta } from '../blog.tsx'
 
-test('blog meta uses fallback copy when loader data is unavailable', () => {
+test('blog meta returns loader social metas when available', () => {
+	const socialMetas = [
+		{ title: 'Kent C. Dodds Blog' },
+		{
+			name: 'description',
+			content:
+				"Join thousands of people who have read Kent's many articles on JavaScript, TypeScript, React, Testing, Career, and more.",
+		},
+	]
+
+	const metas = meta({
+		data: { socialMetas },
+		location: {
+			pathname: '/blog',
+			search: '',
+			hash: '',
+			state: null,
+			key: 'default',
+		},
+		matches: [],
+		params: {},
+	} as never)
+
+	expect(metas).toEqual(socialMetas)
+})
+
+test('blog meta returns empty array when loader data is unavailable', () => {
 	const metas = meta({
 		data: undefined,
 		location: {
@@ -32,27 +58,9 @@ test('blog meta uses fallback copy when loader data is unavailable', () => {
 			state: null,
 			key: 'default',
 		},
-		matches: [
-			{
-				id: 'root',
-				pathname: '/',
-				params: {},
-				data: {
-					requestInfo: {
-						origin: 'https://kentcdodds.com',
-						path: '/blog',
-						userPrefs: { theme: 'light' },
-					},
-				},
-				handle: undefined,
-			},
-		],
+		matches: [],
 		params: {},
 	} as never)
 
-	expect(metas).toContainEqual({
-		name: 'description',
-		content:
-			"Join thousands of people who have read Kent's many articles on JavaScript, TypeScript, React, Testing, Career, and more.",
-	})
+	expect(metas).toEqual([])
 })

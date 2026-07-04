@@ -19,7 +19,6 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import {
-	getGenericSocialImage,
 	getImageBuilder,
 	getImgProps,
 	images,
@@ -29,16 +28,12 @@ import { type CallKentSeason, type KCDHandle } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
 import {
-	getDisplayUrl,
-	getOrigin,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
 import {
 	CallsEpisodeUIStateProvider,
 	useMatchLoaderData,
 } from '#app/utils/providers.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
@@ -68,9 +63,27 @@ export async function loader({ request }: Route.LoaderArgs) {
 		getBlogRecommendations({ request, timings }),
 		getEpisodes({ request, timings }),
 	])
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: 'Call Kent Podcast',
+		description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
+		keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
+		socialImage: {
+			kind: 'generic-social',
+			words: 'Listen to the Call Kent Podcast and make your own call.',
+			featuredImage: images.microphone({
+				resize: {
+					type: 'pad',
+					width: 1200,
+					height: 1200,
+				},
+			}),
+		},
+	})
 
 	return json(
-		{ blogRecommendations, episodes },
+		{ blogRecommendations, episodes, socialMetas },
 		{
 			headers: {
 				'Cache-Control': 'private, max-age=3600',
@@ -83,33 +96,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	return getSocialMetas({
-		title: 'Call Kent Podcast',
-		description: `Leave Kent an audio message here, then your message and Kent's response are published in the podcast.`,
-		keywords: 'podcast, call kent, call kent c. dodds, the call kent podcast',
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			words: 'Listen to the Call Kent Podcast and make your own call.',
-			featuredImage: images.microphone({
-				// if we don't do this resize, the narrow microphone appears on the
-				// far right of the social image
-				resize: {
-					type: 'pad',
-					width: 1200,
-					height: 1200,
-				},
-			}),
-			url: getDisplayUrl({
-				origin: getOrigin(requestInfo),
-				path: '/calls',
-			}),
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 export default function CallHomeScreen({
 	loaderData: data,

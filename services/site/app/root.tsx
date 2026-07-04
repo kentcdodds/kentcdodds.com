@@ -36,7 +36,7 @@ import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
 import { Spacer } from './components/spacer.tsx'
 import { TeamCircle } from './components/team-circle.tsx'
-import { getGenericSocialImage, illustrationImages, images } from './images.tsx'
+import { illustrationImages, images } from './images.tsx'
 import appStyles from './styles/app.css?url'
 import noScriptStyles from './styles/no-script.css?url'
 import proseStyles from './styles/prose.css?url'
@@ -47,7 +47,6 @@ import { getClientSession } from './utils/client.server.ts'
 import { getPublicEnv } from './utils/env.server.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
-import { getSocialMetas } from './utils/seo.ts'
 import { getSession } from './utils/session.server.ts'
 import { TeamProvider, useTeam } from './utils/team-provider.tsx'
 import { getTheme } from './utils/theme.server.ts'
@@ -61,28 +60,13 @@ export const handle: KCDHandle & { id: string } = {
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	const requestInfo = data?.requestInfo
-	const title = 'Kent C. Dodds'
-	const description =
-		'Come check out how Kent C. Dodds can help you level up your career as a software engineer.'
 	return [
 		{ viewport: 'width=device-width,initial-scale=1,viewport-fit=cover' },
 		{
 			'theme-color':
 				requestInfo?.userPrefs.theme === 'dark' ? '#1F2028' : '#FFF',
 		},
-		...getSocialMetas({
-			keywords:
-				'Learn React, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
-			url: getUrl(requestInfo),
-			image: getGenericSocialImage({
-				url: getDisplayUrl(requestInfo),
-				words:
-					'Helping people make the world a better place through quality software.',
-				featuredImage: 'kentcdodds.com/illustrations/kody-flying_blue',
-			}),
-			title,
-			description,
-		}),
+		...(data?.rootSocialMetas ?? []),
 	]
 }
 
@@ -135,24 +119,41 @@ export async function loader({ request }: Route.LoaderArgs) {
 		Math.floor(Math.random() * randomFooterImageKeys.length)
 	] as keyof typeof illustrationImages
 
+	const requestInfo = {
+		hints: getHints(request),
+		origin: getDomainUrl(request),
+		path: requestPath,
+		userPrefs: {
+			theme: getTheme(request),
+		},
+		session: {
+			email: loginInfoSession.getEmail(),
+			signupEmail: loginInfoSession.getSignupEmail(),
+		},
+	}
+
 	const data = {
 		user,
 		userInfo: user ? await getUserInfo(user, { request, timings }) : null,
 		latestPodcastSeasonLinks: PODCAST_LINKS_FALLBACK,
 		ENV: getPublicEnv(),
 		randomFooterImageKey,
-		requestInfo: {
-			hints: getHints(request),
-			origin: getDomainUrl(request),
-			path: requestPath,
-			userPrefs: {
-				theme: getTheme(request),
+		requestInfo,
+		rootSocialMetas: (
+			await import('#app/og/page-meta.server.ts')
+		).buildPageSocialMetas(requestInfo, {
+			title: 'Kent C. Dodds',
+			description:
+				'Come check out how Kent C. Dodds can help you level up your career as a software engineer.',
+			keywords:
+				'Learn React, Testing JavaScript Training, React Training, Learn JavaScript, Learn TypeScript',
+			socialImage: {
+				kind: 'generic-social',
+				words:
+					'Helping people make the world a better place through quality software.',
+				featuredImage: 'kentcdodds.com/illustrations/kody-flying_blue',
 			},
-			session: {
-				email: loginInfoSession.getEmail(),
-				signupEmail: loginInfoSession.getSignupEmail(),
-			},
-		},
+		}),
 	}
 
 	const headers: HeadersInit = new Headers()

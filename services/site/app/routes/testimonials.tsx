@@ -14,47 +14,39 @@ import {
 import { TestimonialCard } from '#app/components/sections/testimonial-card.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2 } from '#app/components/typography.tsx'
-import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { getImgProps, images } from '#app/images.tsx'
+import { externalLinks } from '#app/external-links.tsx'
 import {
-	getDisplayUrl,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
-import { externalLinks } from '#app/external-links.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/testimonials'
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
-	matches,
-}) => {
-	const testimonials = data?.testimonials
-
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const testimonialCount = testimonials ? `${testimonials.length} ` : ''
-	const title = `${testimonialCount}testimonials about Kent C. Dodds`
-	return getSocialMetas({
-		title,
-		description: `Check out ${testimonialCount}testimonials about Kent C. Dodds and how the things he's done has helped people in their goals.`,
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.kentHoldingOutCody.id,
-			words: title,
-		}),
-	})
-}
-
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
+
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: 'Kent C. Dodds Testimonials',
+		description: 'Read what people are saying about Kent C. Dodds',
+		socialImage: {
+			kind: 'generic-social',
+			words: 'Curious to read what people are saying about Kent?',
+			featuredImage: images.microphone.id,
+		},
+	})
 
 	return json(
-		{ testimonials: await getTestimonials({ request, timings }) },
+		{
+			testimonials: await getTestimonials({ request, timings }),
+			socialMetas,
+		},
 		{
 			headers: {
 				'Cache-Control': 'private, max-age=3600',

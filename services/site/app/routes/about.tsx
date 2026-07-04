@@ -30,18 +30,14 @@ import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import {
 	getImgProps,
-	getSocialImageWithPreTitle,
 	images,
 } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import {
-	getDisplayUrl,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -50,12 +46,25 @@ import { type Route } from './+types/about'
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const { talks } = await getTalksAndTags({ request, timings })
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: 'About Kent C. Dodds',
+		description: 'Get to know Kent C. Dodds',
+		keywords: 'about, kent, kent c. dodds, kent dodds',
+		socialImage: {
+			kind: 'social-preview',
+			preTitle: 'Get to know',
+			title: 'Kent C. Dodds',
+			featuredImage: 'kent/video-stills/snowboard-butter',
+		},
+	})
 
 	return json(
 		{
 			blogRecommendations: await getBlogRecommendations({ request, timings }),
-			// they're ordered by date, so we'll grab two random of the first 10.
 			talkRecommendations: shuffle(talks.slice(0, 14)).slice(0, 4),
+			socialMetas,
 		},
 		{
 			headers: {
@@ -69,23 +78,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	return getSocialMetas({
-		title: 'About Kent C. Dodds',
-		description: 'Get to know Kent C. Dodds',
-		keywords: 'about, kent, kent c. dodds, kent dodds',
-		url: getUrl(requestInfo),
-		image: getSocialImageWithPreTitle({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: 'kent/video-stills/snowboard-butter',
-			preTitle: 'Get to know',
-			title: `Kent C. Dodds`,
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 export const links: LinksFunction = () => {
 	return youTubeEmbedLinks()

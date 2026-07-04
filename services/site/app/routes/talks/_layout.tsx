@@ -16,55 +16,47 @@ import { CourseSection } from '#app/components/sections/course-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Tag } from '#app/components/tag.tsx'
 import { H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { images } from '#app/images.tsx'
 import {
 	FavoriteToggle,
 	favoriteResourceRoute,
 } from '#app/routes/resources/favorite.tsx'
 import {
 	formatDate,
-	getDisplayUrl,
-	getUrl,
-	listify,
 	parseDate,
 	reuseUsefulLoaderHeaders,
 	useUpdateQueryStringValueWithoutNavigation,
 } from '#app/utils/misc-react.tsx'
 import { externalLinks } from '#app/external-links.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
+import { listify } from '#app/utils/misc.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { useOptionalUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/_layout'
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
-	matches,
-}) => {
-	const { talks = [], tags = [] } = data ?? {}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
+export async function loader({ request }: Route.LoaderArgs) {
+	const talksAndTags = await getTalksAndTags({ request })
+	const { talks, tags } = talksAndTags
 	const talkCount = talks.length
 	const deliveryCount = talks.flatMap((t) => t.deliveries).length
 	const title = `${talkCount} talks by Kent all about software development`
 	const topicsList = listify(tags.slice(0, 6))
-	return getSocialMetas({
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
 		title,
 		description: `Check out Kent's ${talkCount} talks he's delivered ${deliveryCount} times. Topics include: ${topicsList}`,
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.teslaY.id,
+		socialImage: {
+			kind: 'generic-social',
 			words: title,
-		}),
+			featuredImage: images.teslaY.id,
+		},
 	})
-}
 
-export async function loader({ request }: Route.LoaderArgs) {
-	const talksAndTags = await getTalksAndTags({ request })
-
-	return json(talksAndTags, {
+	return json({ ...talksAndTags, socialMetas }, {
 		headers: {
 			'Cache-Control': 'public, max-age=3600',
 			Vary: 'Cookie',

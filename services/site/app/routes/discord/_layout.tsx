@@ -34,16 +34,12 @@ import { TestimonialSection } from '#app/components/sections/testimonial-section
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H5, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
-import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { getImgProps, images } from '#app/images.tsx'
 import {
 	getDiscordAuthorizeURL,
-	getDisplayUrl,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -57,9 +53,21 @@ export async function loader({ request }: Route.LoaderArgs) {
 		subjects: ['Discord Community'],
 		categories: ['community'],
 	})
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: 'The Epic Web Community on Discord',
+		description:
+			'Make friends, share ideas, connect, network, and improve yourself in the Epic Web Community on Discord',
+		socialImage: {
+			kind: 'generic-social',
+			words: 'Join the Epic Web Community on Discord',
+			featuredImage: images.helmet.id,
+		},
+	})
 
 	return json(
-		{ testimonials },
+		{ testimonials, socialMetas },
 		{
 			headers: {
 				'Cache-Control': 'public, max-age=3600',
@@ -72,22 +80,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	return getSocialMetas({
-		title: 'The Epic Web Community on Discord',
-		description:
-			'Make friends, share ideas, connect, network, and improve yourself in the Epic Web Community on Discord',
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.helmet.id,
-			words: `Join the Epic Web Community on Discord`,
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 export interface CategoryCardProps {
 	title: string

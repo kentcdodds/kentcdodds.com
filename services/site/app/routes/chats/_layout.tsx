@@ -21,7 +21,6 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import {
-	getGenericSocialImage,
 	getImageBuilder,
 	getImgProps,
 	images,
@@ -35,14 +34,10 @@ import {
 import {
 	formatDate,
 	formatDuration,
-	getDisplayUrl,
-	getOrigin,
-	getUrl,
 	listify,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
 import { ChatsEpisodeUIStateProvider } from '#app/utils/providers.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/_layout'
@@ -50,12 +45,29 @@ import { type Route } from './+types/_layout'
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
+	const seasons = (await getSeasonListItems({ request })).reverse()
+	const episodeCount = seasons.reduce(
+		(acc, season) => acc + season.episodes.length,
+		0,
+	)
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: 'Chats with Kent C. Dodds Podcast',
+		description: `Become a better person with ${episodeCount} interesting and actionable conversations with interesting people.`,
+		keywords: 'chats with kent, kent c. dodds',
+		socialImage: {
+			kind: 'generic-social',
+			words: 'Listen to the Chats with Kent Podcast',
+			featuredImage: images.kayak.id,
+		},
+	})
 
 	return json(
 		{
-			// we show the seasons in reverse order
-			seasons: (await getSeasonListItems({ request })).reverse(),
+			seasons,
 			blogRecommendations,
+			socialMetas,
 		},
 		{
 			headers: {
@@ -69,36 +81,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
-	matches,
-}) => {
-	const { seasons } = data ?? {}
-	if (!seasons) {
-		return [{ title: 'Chats with Kent Seasons not found' }]
-	}
-	const episodeCount = seasons.reduce(
-		(acc, season) => acc + season.episodes.length,
-		0,
-	)
-
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-
-	return getSocialMetas({
-		title: 'Chats with Kent C. Dodds Podcast',
-		description: `Become a better person with ${episodeCount} interesting and actionable conversations with interesting people.`,
-		keywords: `chats with kent, kent c. dodds`,
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			words: 'Listen to the Chats with Kent Podcast',
-			featuredImage: images.kayak.id,
-			url: getDisplayUrl({
-				origin: getOrigin(requestInfo),
-				path: '/chats',
-			}),
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? [{ title: 'Chats with Kent Seasons not found' }]
 
 function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')

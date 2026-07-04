@@ -20,21 +20,16 @@ import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import {
 	getImgProps,
-	getSocialImageWithPreTitle,
 	images,
 } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
 import {
 	type BetterWithKentEpisode,
 	getBetterWithKentEpisodes,
 } from '#app/utils/better-with-kent.server.ts'
 import {
 	formatDate,
-	getDisplayUrl,
-	getUrl,
 	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
+} from '#app/utils/misc-react.tsx'
 import { getServerTimeHeader, type Timings } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/better'
 
@@ -50,8 +45,22 @@ const betterWithKentArtworkUrl =
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings: Timings = {}
 	const episodes = await getBetterWithKentEpisodes({ request, timings })
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: 'Better with Kent',
+		description:
+			'Durable skills for people who ship software. A solo show from Kent C. Dodds — one skill per episode, with homework. Watch on YouTube or listen wherever you get podcasts.',
+		socialImage: {
+			kind: 'social-preview',
+			preTitle: 'A solo show from Kent C. Dodds',
+			title: 'Durable skills for people who ship software',
+			featuredImage: betterWithKentArtworkUrl,
+			featuredImageStyle: 'square',
+		},
+	})
 	return data(
-		{ episodes },
+		{ episodes, socialMetas },
 		{
 			headers: {
 				'Cache-Control': 'public, max-age=900',
@@ -65,24 +74,8 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const links: LinksFunction = () => youTubeEmbedLinks()
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	return getSocialMetas({
-		title: 'Better with Kent',
-		description:
-			'Durable skills for people who ship software. A solo show from Kent C. Dodds — one skill per episode, with homework. Watch on YouTube or listen wherever you get podcasts.',
-		url: getUrl(requestInfo),
-		image: getSocialImageWithPreTitle({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: betterWithKentArtworkUrl,
-			featuredImageStyle: 'square',
-			preTitle: 'A solo show from Kent C. Dodds',
-			title: 'Durable skills for people who ship software',
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 function getWatchUrl(videoId: string) {
 	return `https://www.youtube.com/watch?v=${videoId}`

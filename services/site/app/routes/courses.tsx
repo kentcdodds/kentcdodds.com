@@ -12,14 +12,10 @@ import { TestimonialSection } from '#app/components/sections/testimonial-section
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
 import { flagshipProducts } from '#app/flagship-products.ts'
-import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { getImgProps, images } from '#app/images.tsx'
 import {
-	getDisplayUrl,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/courses'
@@ -31,9 +27,20 @@ export async function loader({ request }: Route.LoaderArgs) {
 		request,
 		categories: ['courses', 'teaching'],
 	})
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: 'Courses by Kent C. Dodds',
+		description: 'Get really good at making software with Kent C. Dodds',
+		socialImage: {
+			kind: 'generic-social',
+			words: 'Level up your skills with self-paced courses from Kent C. Dodds',
+			featuredImage: images.onewheel.id,
+		},
+	})
 
 	return json(
-		{ testimonials },
+		{ testimonials, socialMetas },
 		{
 			headers: {
 				'Cache-Control': 'public, max-age=3600',
@@ -45,21 +52,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	return getSocialMetas({
-		title: 'Courses by Kent C. Dodds',
-		description: 'Get really good at making software with Kent C. Dodds',
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.onewheel.id,
-			words: `Level up your skills with self-paced courses from Kent C. Dodds`,
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 function CoursesHome({ loaderData: data }: Route.ComponentProps) {
 	const featuredProduct = flagshipProducts[0]!

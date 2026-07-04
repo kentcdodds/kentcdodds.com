@@ -147,7 +147,9 @@ describe('/blog/:slug loader cache behavior', () => {
 		blogServerMocks.getBlogReadRankings.mockResolvedValueOnce([])
 		blogServerMocks.getTotalPostReads.mockResolvedValueOnce(0)
 
-		const request = new Request('http://localhost/blog/my-post')
+		const request = new Request('http://localhost/blog/my-post', {
+			headers: { host: 'localhost' },
+		})
 		const params = { slug: 'my-post' }
 
 		const result = (await loader({ request, params } as any)) as any

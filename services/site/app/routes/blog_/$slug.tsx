@@ -3,6 +3,7 @@ import * as React from 'react'
 import {
 	data as json,
 	type HeadersFunction,
+	type MetaFunction,
 	Link,
 	redirect,
 	useParams,
@@ -33,11 +34,11 @@ import { getBlogMdxListItems, getMdxPage } from '#app/utils/mdx.server.ts'
 import {
 	getBannerAltProp,
 	getBannerTitleProp,
-	mdxPageMeta,
 	useMdxComponent,
 } from '#app/utils/mdx.tsx'
 import {
 	formatNumber,
+	getDomainUrl,
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
@@ -161,6 +162,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	return json(
 		{
 			page,
+			socialMetas: (
+				await import('#app/utils/mdx-meta.server.ts')
+			).buildMdxPageSocialMetas(page, {
+				origin: getDomainUrl(request),
+				path: new URL(request.url).pathname,
+			}),
 			isFavorite: Boolean(favorite),
 			recommendations,
 			readRankings,
@@ -173,7 +180,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta = mdxPageMeta
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+	if (
+		data != null &&
+		typeof data === 'object' &&
+		'socialMetas' in data &&
+		Array.isArray(data.socialMetas)
+	) {
+		return data.socialMetas
+	}
+	return []
+}
 
 function useOnRead({
 	parentElRef,
