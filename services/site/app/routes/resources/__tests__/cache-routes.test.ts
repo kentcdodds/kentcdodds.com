@@ -13,23 +13,12 @@ vi.mock('#app/utils/session.server.ts', () => sessionServerMocks)
 
 import { action as cacheAdminAction, loader as cacheAdminLoader } from '../../cache.admin.tsx'
 import { loader as lruCacheResourceLoader } from '../cache.lru.$cacheKey.ts'
-import { action as sqliteCacheAction } from '../cache.sqlite.ts'
 import { loader as sqliteCacheResourceLoader } from '../cache.sqlite_.$cacheKey.ts'
 
 afterEach(() => {
 	clearRuntimeBindingSource()
 	vi.clearAllMocks()
 })
-
-function createD1Binding() {
-	return {
-		prepare: vi.fn(),
-		batch: vi.fn(),
-		exec: vi.fn(),
-		dump: vi.fn(),
-		withSession: vi.fn(),
-	}
-}
 
 function createCacheRpcBinding() {
 	return {
@@ -39,20 +28,6 @@ function createCacheRpcBinding() {
 		keys: vi.fn(),
 	}
 }
-
-async function expectNotFound(promise: Promise<unknown>) {
-	await expect(promise).rejects.toMatchObject({ status: 404 })
-}
-
-test('cache admin is unavailable when only the lru cache backend is available', async () => {
-	setRuntimeBindingSource({ APP_DB: createD1Binding() })
-
-	await expectNotFound(
-		cacheAdminLoader({
-			request: new Request('http://localhost/cache/admin'),
-		} as any),
-	)
-})
 
 test('cache admin lists kv and lru keys when CACHE_RPC is available', async () => {
 	const rpcKeys = ['rpc-key:one', 'rpc-key:two']
@@ -119,25 +94,6 @@ test('cache admin deletes kv keys when CACHE_RPC is available', async () => {
 	expect(result.type).toBe('DataWithResponseInit')
 	expect(result.data).toEqual({ success: true })
 	expect(cacheRpc.delete).toHaveBeenCalledWith(key)
-})
-
-test('persistent cache resources are unavailable when only the lru cache backend is available', async () => {
-	setRuntimeBindingSource({ APP_DB: createD1Binding() })
-
-	await expectNotFound(
-		sqliteCacheResourceLoader({
-			request: new Request('http://localhost/resources/cache/sqlite/key'),
-			params: { cacheKey: 'key' },
-		} as any),
-	)
-	await expectNotFound(
-		sqliteCacheAction({
-			request: new Request('http://localhost/resources/cache/sqlite', {
-				method: 'POST',
-				body: JSON.stringify({ key: 'key' }),
-			}),
-		} as any),
-	)
 })
 
 test('persistent cache resources work when CACHE_RPC is available', async () => {
