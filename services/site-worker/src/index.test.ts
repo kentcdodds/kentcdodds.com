@@ -89,20 +89,32 @@ describe('manifest ttl', () => {
 })
 
 describe('module map assembly', () => {
+	const exampleDocument = {
+		contentDir: 'blog',
+		slug: 'example',
+		code: 'client-code',
+		esm: 'export default function Example() { return null }',
+		githubResolvable: true,
+		editLink:
+			'https://github.com/kentcdodds/kentcdodds.com/edit/main/services/site/content/blog/example.mdx',
+		frontmatter: { title: 'Example' },
+	} as const
+
 	test('builds shims, content data, nested MDX aliases, and per-document modules', () => {
 		const bundle: MdxArtifactBundle = {
 			schemaVersion: 1,
 			version: 'abc',
 			generatedAt: '2026-07-03T00:00:00.000Z',
 			documents: {
-				'blog/example': {
-					contentDir: 'blog',
-					slug: 'example',
-					code: 'client-code',
-					esm: 'export default function Example() { return null }',
-				},
+				'blog/example': exampleDocument,
 			},
-			blogList: [{ slug: 'example' }],
+			blogList: [
+				{
+					slug: 'example',
+					editLink: exampleDocument.editLink,
+					frontmatter: exampleDocument.frontmatter,
+				},
+			],
 			dirLists: { blog: [], pages: [] },
 			dataFiles: { 'data/testimonials.yml': 'name: Kent' },
 		}
@@ -112,6 +124,9 @@ describe('module map assembly', () => {
 		expect(contentData.documents['blog/example']).toEqual({
 			contentDir: 'blog',
 			slug: 'example',
+			githubResolvable: true,
+			editLink: exampleDocument.editLink,
+			frontmatter: exampleDocument.frontmatter,
 		})
 		expect(contentData.documents['blog/example']).not.toHaveProperty('code')
 
@@ -134,12 +149,7 @@ describe('module map assembly', () => {
 			version: 'cache-test',
 			generatedAt: '2026-07-03T00:00:00.000Z',
 			documents: {
-				'blog/example': {
-					contentDir: 'blog',
-					slug: 'example',
-					code: 'client-code',
-					esm: 'export default function Example() { return null }',
-				},
+				'blog/example': exampleDocument,
 			},
 			blogList: [],
 			dirLists: { blog: [], pages: [] },

@@ -1,8 +1,4 @@
-import type { ParentWorkerEnv } from './types.ts'
-
-export type ServiceWorkerBinding = {
-	fetch(request: Request): Response | Promise<Response>
-}
+import type { ParentWorkerEnv, ServiceWorkerBinding } from './types.ts'
 
 export const OAUTH_WORKER_HOST = 'kcd-oauth-provider.kentcdodds.workers.dev'
 export const SEARCH_WORKER_HOST = 'kcd-search-worker.kentcdodds.workers.dev'
