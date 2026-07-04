@@ -1,20 +1,33 @@
-import type { PrismaClient } from '../generated/prisma-client/client.ts'
+import { createDatabase } from '@remix-run/data-table'
+import { lt } from '@remix-run/data-table'
+import { createSqliteExecutorDataTableAdapter } from '../../site/app/utils/db/d1-data-table-adapter.server.ts'
+import { createDirectD1Executor } from '../../site/app/utils/db/d1-sql-executor.server.ts'
+import {
+	sessionTable,
+	verificationTable,
+} from '../../site/app/utils/db/schema.server.ts'
+import type { ParentWorkerEnv } from './rpc/types.ts'
 
 export async function deleteExpiredSessionsAndVerifications(
-	prisma: PrismaClient,
+	env: ParentWorkerEnv,
 	now = new Date(),
 ) {
+	const db = createDatabase(
+		createSqliteExecutorDataTableAdapter(createDirectD1Executor(env.APP_DB)),
+		{ now: () => new Date() },
+	)
+
 	const [sessions, verifications] = await Promise.all([
-		prisma.session.deleteMany({
-			where: { expirationDate: { lt: now } },
+		db.deleteMany(sessionTable, {
+			where: lt('expirationDate', now),
 		}),
-		prisma.verification.deleteMany({
-			where: { expiresAt: { lt: now } },
+		db.deleteMany(verificationTable, {
+			where: lt('expiresAt', now),
 		}),
 	])
 
 	return {
-		deletedSessionsCount: sessions.count,
-		deletedVerificationsCount: verifications.count,
+		deletedSessionsCount: sessions.affectedRows,
+		deletedVerificationsCount: verifications.affectedRows,
 	}
 }
