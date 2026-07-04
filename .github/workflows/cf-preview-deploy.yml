@@ -57,7 +57,7 @@ jobs:
       - name: 🚀 Deploy site preview worker
         run: npm run deploy --workspace site-worker 2>&1 | tee deploy-output.txt
 
-      - name: 🔐 Generate preview secrets
+      - name: 🔐 Generate worker secrets
         env:
           REFRESH_CACHE_SECRET: ${{ secrets.REFRESH_CACHE_SECRET }}
           BOT_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -73,7 +73,7 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: ${{ secrets.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET }}
-        run: node services/site-worker/scripts/generate-preview-secrets.mjs services/site-worker/.wrangler/preview-secrets.json
+        run: node services/site-worker/scripts/generate-worker-secrets.mjs --target=staging services/site-worker/.wrangler/preview-secrets.json
 
       - name: 🔑 Upload worker secrets
         run: npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/generated-wrangler.jsonc

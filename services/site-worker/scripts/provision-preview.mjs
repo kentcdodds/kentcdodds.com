@@ -3,11 +3,12 @@ import { constants } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+
 const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const baseConfigPath = path.join(workerDir, 'wrangler.jsonc')
 const generatedConfigPath = path.join(workerDir, 'generated-wrangler.jsonc')
 
-const RESOURCES = {
+const STAGING_RESOURCES = {
 	d1: {
 		name: 'kentcdodds-com-staging-app-db',
 		binding: 'APP_DB',
@@ -20,6 +21,34 @@ const RESOURCES = {
 		name: 'kcd-site-cf-preview-artifacts',
 		binding: 'MDX_ARTIFACTS',
 	},
+}
+
+const PRODUCTION_RESOURCES = {
+	d1: {
+		name: 'kentcdodds-com-db',
+		binding: 'APP_DB',
+	},
+	kv: [
+		{ title: 'kentcdodds-com-cache', binding: 'SITE_CACHE_KV' },
+		{ title: 'kentcdodds-com-content', binding: 'CONTENT_KV' },
+	],
+	r2: {
+		name: 'kentcdodds-com-artifacts',
+		binding: 'MDX_ARTIFACTS',
+	},
+}
+
+function parseTarget() {
+	const targetArg = process.argv.find((arg) => arg.startsWith('--target='))
+	const target = targetArg?.split('=')[1] ?? 'staging'
+	if (target !== 'staging' && target !== 'production') {
+		throw new Error(`Invalid --target=${target}; expected staging or production`)
+	}
+	return target
+}
+
+function getResourcesForTarget(target) {
+	return target === 'production' ? PRODUCTION_RESOURCES : STAGING_RESOURCES
 }
 
 // Use the Cloudflare REST API directly rather than parsing wrangler CLI
@@ -68,9 +97,23 @@ function isPlaceholderId(id) {
 	return !id || String(id).startsWith('00000000-0000-0000')
 }
 
-function resourcesProvisioned(config) {
+function resolveTargetConfig(baseConfig, target) {
+	if (target === 'production') {
+		const production = baseConfig.env?.production
+		if (!production) {
+			throw new Error('Missing env.production block in wrangler.jsonc')
+		}
+		const { env: _env, ...shared } = baseConfig
+		return { ...shared, ...production }
+	}
+
+	const { env: _env, ...staging } = baseConfig
+	return staging
+}
+
+function resourcesProvisioned(config, resources) {
 	const d1 = config.d1_databases?.find(
-		(entry) => entry.binding === RESOURCES.d1.binding,
+		(entry) => entry.binding === resources.d1.binding,
 	)
 	const siteCache = config.kv_namespaces?.find(
 		(entry) => entry.binding === 'SITE_CACHE_KV',
@@ -141,38 +184,28 @@ async function ensureR2Bucket(bucketName) {
 	console.log(`Created R2 bucket: ${bucketName}`)
 }
 
-async function writeGeneratedConfig({
-	databaseId,
-	kvIds,
-	buildSha,
-}) {
-	const config = await readBaseConfig()
-
-	config.d1_databases = config.d1_databases.map((entry) =>
-		entry.binding === RESOURCES.d1.binding
-			? { ...entry, database_id: databaseId }
-			: entry,
-	)
-
-	config.kv_namespaces = config.kv_namespaces.map((entry) => ({
-		...entry,
-		id: kvIds[entry.binding] ?? entry.id,
-	}))
-
-	config.vars = {
-		...config.vars,
-		BUILD_SHA: buildSha,
+async function writeGeneratedConfig({ config, buildSha, target }) {
+	const output = {
+		...config,
+		vars: {
+			...config.vars,
+			BUILD_SHA: buildSha,
+		},
 	}
 
 	await fs.mkdir(path.dirname(generatedConfigPath), { recursive: true })
 	await fs.writeFile(
 		generatedConfigPath,
-		`${JSON.stringify(config, null, '\t')}\n`,
+		`${JSON.stringify(output, null, '\t')}\n`,
 	)
-	console.log(`Wrote ${path.relative(workerDir, generatedConfigPath)}`)
+	console.log(
+		`Wrote ${path.relative(workerDir, generatedConfigPath)} (target=${target})`,
+	)
 }
 
 async function main() {
+	const target = parseTarget()
+	const resources = getResourcesForTarget(target)
 	const forceEnsure = process.argv.includes('--force-ensure')
 	const buildSha =
 		process.env.BUILD_SHA ??
@@ -184,21 +217,22 @@ async function main() {
 	}
 
 	const baseConfig = await readBaseConfig()
+	const targetConfig = resolveTargetConfig(baseConfig, target)
 
-	if (!forceEnsure && resourcesProvisioned(baseConfig)) {
-		const d1 = baseConfig.d1_databases.find(
-			(entry) => entry.binding === RESOURCES.d1.binding,
+	if (!forceEnsure && resourcesProvisioned(targetConfig, resources)) {
+		const d1 = targetConfig.d1_databases.find(
+			(entry) => entry.binding === resources.d1.binding,
 		)
 		const kvIds = Object.fromEntries(
-			baseConfig.kv_namespaces.map((entry) => [entry.binding, entry.id]),
+			targetConfig.kv_namespaces.map((entry) => [entry.binding, entry.id]),
 		)
 		console.log(
-			'Preview resources already provisioned in wrangler.jsonc; skipping Cloudflare API calls',
+			`${target} resources already provisioned in wrangler.jsonc; skipping Cloudflare API calls`,
 		)
 		await writeGeneratedConfig({
-			databaseId: d1.database_id,
-			kvIds,
+			config: targetConfig,
 			buildSha,
+			target,
 		})
 		return
 	}
@@ -209,14 +243,31 @@ async function main() {
 		)
 	}
 
-	const databaseId = await ensureD1Database(RESOURCES.d1.name)
+	const databaseId = await ensureD1Database(resources.d1.name)
 	const kvIds = {}
-	for (const namespace of RESOURCES.kv) {
+	for (const namespace of resources.kv) {
 		kvIds[namespace.binding] = await ensureKvNamespace(namespace.title)
 	}
-	await ensureR2Bucket(RESOURCES.r2.name)
+	await ensureR2Bucket(resources.r2.name)
 
-	await writeGeneratedConfig({ databaseId, kvIds, buildSha })
+	const provisionedConfig = {
+		...targetConfig,
+		d1_databases: targetConfig.d1_databases.map((entry) =>
+			entry.binding === resources.d1.binding
+				? { ...entry, database_id: databaseId }
+				: entry,
+		),
+		kv_namespaces: targetConfig.kv_namespaces.map((entry) => ({
+			...entry,
+			id: kvIds[entry.binding] ?? entry.id,
+		})),
+	}
+
+	await writeGeneratedConfig({
+		config: provisionedConfig,
+		buildSha,
+		target,
+	})
 }
 
 main().catch((error) => {

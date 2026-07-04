@@ -1,5 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
+	// Default (staging) — used by `wrangler dev`, dry-run, and branch preview deploys.
 	"name": "kentcdodds-com-staging",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-03-17",
@@ -60,5 +61,36 @@
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "../site/build/client"
+	},
+	"env": {
+		"production": {
+			"name": "kentcdodds-com",
+			// Custom domain (kentcdodds.com) is attached manually at DNS cutover.
+			// Do not add routes or custom_domains here until cutover is complete.
+			"kv_namespaces": [
+				{
+					"binding": "SITE_CACHE_KV",
+					"id": "9430f933f2ff4bc5881385851869b02e"
+				},
+				{
+					"binding": "CONTENT_KV",
+					"id": "e9ec6e92d8034f3db76343162f2b3a26"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "MDX_ARTIFACTS",
+					"bucket_name": "kentcdodds-com-artifacts"
+				}
+			],
+			"d1_databases": [
+				{
+					"binding": "APP_DB",
+					"database_name": "kentcdodds-com-db",
+					"database_id": "af33bd8b-c9b2-484a-afa5-43ee322ff49c",
+					"migrations_dir": ".wrangler/site-prisma-migrations"
+				}
+			]
+		}
 	}
 }

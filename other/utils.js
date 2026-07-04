@@ -1,9 +1,14 @@
-const hostname =
-	process.env.GITHUB_REF_NAME === 'dev'
-		? 'kcd-staging.fly.dev'
-		: 'kentcdodds.com'
-
 const defaultTimeoutMs = 30_000
+
+function getSiteHostname() {
+	if (process.env.WORKER_URL) {
+		return new URL(process.env.WORKER_URL).hostname
+	}
+	if (process.env.SITE_URL) {
+		return new URL(process.env.SITE_URL).hostname
+	}
+	return 'kentcdodds-com.kentcdodds.workers.dev'
+}
 
 function withStatusMessage(statusCode, body) {
 	const message =
@@ -32,7 +37,7 @@ export async function postRefreshCache({
 		try {
 			const postDataString = JSON.stringify(postData)
 			const options = {
-				hostname,
+				hostname: getSiteHostname(),
 				port: 443,
 				path: `/action/refresh-cache`,
 				method: 'POST',

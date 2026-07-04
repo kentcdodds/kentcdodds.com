@@ -31,7 +31,7 @@ const defaultDeployPlanOpts = {
 	refName: 'main',
 }
 
-test('deploys the site when deployment diff includes a fly-deployable file', async () => {
+test('deploys the site when deployment diff includes a site-deployable file', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -135,7 +135,7 @@ test('deploys the site when the site workflow changes', async () => {
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
 
-test('skips site deploy when deployment diff only includes non-fly targets', async () => {
+test('skips site deploy when deployment diff only includes non-site targets', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -187,7 +187,7 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 	expect(deployPlan.deploySite).toBe(false)
 })
 
-test('skips site deploy when deployment diff only includes site-worker changes', async () => {
+test('deploys the site when deployment diff only includes site-worker changes', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -239,7 +239,7 @@ test('skips site deploy when deployment diff only includes site-worker changes',
 		log,
 	})
 
-	expect(deployPlan.deploySite).toBe(false)
+	expect(deployPlan.deploySite).toBe(true)
 })
 
 test('plans search worker deploys for shared contract changes', async () => {

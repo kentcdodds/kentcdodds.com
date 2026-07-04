@@ -6,21 +6,18 @@ import { fetchJson, getChangedFiles } from './get-changed-files.js'
 const GITHUB_API_BASE = 'https://api.github.com'
 
 const defaultBaseUrl =
-	process.env.GITHUB_REF_NAME === 'dev'
-		? 'https://kcd-staging.fly.dev'
-		: 'https://kentcdodds.com'
+	process.env.SITE_URL ?? 'https://kentcdodds-com.kentcdodds.workers.dev'
 
 const defaultFetchTimeoutMs = 10_000
 
-const nonFlyDeployablePathPrefixes = [
+const nonSiteDeployablePathPrefixes = [
 	'services/site/content/',
 	'services/call-kent-audio-worker/',
 	'services/search-worker/',
 	'services/oauth/',
-	'services/site-worker/',
 ]
 
-const nonFlyDeployableFiles = new Set([
+const nonSiteDeployableFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 	'.github/workflows/deploy-search-worker.yml',
 	'.github/workflows/deploy-oauth-worker.yml',
@@ -233,18 +230,18 @@ function hasChangedExactFile(
 	return hasChangedPath(changedFiles, (filename) => files.has(filename))
 }
 
-function isFlyDeployablePath(filename: string) {
+function isSiteDeployablePath(filename: string) {
 	return (
-		!nonFlyDeployablePathPrefixes.some((prefix) =>
+		!nonSiteDeployablePathPrefixes.some((prefix) =>
 			filename.startsWith(prefix),
-		) && !nonFlyDeployableFiles.has(filename)
+		) && !nonSiteDeployableFiles.has(filename)
 	)
 }
 
 function shouldDeploySite(changedFiles: null | Array<ChangedFile>) {
 	if (changedFiles === null) return true
 	if (changedFiles.length === 0) return false
-	return changedFiles.some((file) => isFlyDeployablePath(file.filename))
+	return changedFiles.some((file) => isSiteDeployablePath(file.filename))
 }
 
 function shouldRunPathTarget({

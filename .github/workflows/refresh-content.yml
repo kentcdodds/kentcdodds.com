@@ -20,6 +20,9 @@ jobs:
     concurrency:
       group: refresh-content-${{ github.ref }}
       cancel-in-progress: true
+    env:
+      SITE_URL: https://kentcdodds-com.kentcdodds.workers.dev
+      WORKER_URL: https://kentcdodds-com.kentcdodds.workers.dev
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
@@ -30,8 +33,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 26
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: 🥬 Refresh Content
+      - name: 📥 Install dependencies
+        run: npm ci --workspace=kentcdodds.com --include-workspace-root
+
+      - name: 🥬 Refresh changed content
         run:
           node ./other/refresh-changed-content.ts ${{ inputs.current_commit_sha
           || github.sha }}

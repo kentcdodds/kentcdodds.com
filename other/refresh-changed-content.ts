@@ -1,12 +1,12 @@
 // try to keep this dep-free so we don't have to install deps
-import { pathToFileURL } from 'url'
+import { spawnSync } from 'node:child_process'
+import fs from 'node:fs/promises'
+import { pathToFileURL } from 'node:url'
 import { getChangedFiles, fetchJson } from './get-changed-files.js'
 import { postRefreshCache } from './utils.js'
 
 const defaultBaseUrl =
-	process.env.GITHUB_REF_NAME === 'dev'
-		? 'https://kcd-staging.fly.dev'
-		: 'https://kentcdodds.com'
+	process.env.SITE_URL ?? 'https://kentcdodds-com.kentcdodds.workers.dev'
 
 const defaultFetchTimeoutMs = 10_000
 
@@ -49,7 +49,7 @@ async function postRefreshCacheWithRetry({
 	baseDelayMs = defaultRefreshRetryOptions.baseDelayMs,
 }: {
 	postRefreshCacheImpl: typeof postRefreshCache
-	postData: { contentPaths: Array<string>; commitSha?: string }
+	postData: { commitSha?: string; keys?: Array<string> }
 	log: Pick<typeof console, 'warn'>
 	maxAttempts?: number
 	baseDelayMs?: number
@@ -83,24 +83,99 @@ async function postRefreshCacheWithRetry({
 	}
 }
 
+function getWorkerUrl() {
+	if (process.env.WORKER_URL) return process.env.WORKER_URL.replace(/\/$/, '')
+	return defaultBaseUrl.replace(/\/$/, '')
+}
+
+function compileMdxArtifacts(bundlePath: string) {
+	const result = spawnSync(
+		'npm',
+		[
+			'run',
+			'mdx:compile',
+			'--workspace',
+			'kentcdodds.com',
+			'--',
+			'--out',
+			bundlePath,
+		],
+		{
+			encoding: 'utf8',
+			stdio: 'inherit',
+		},
+	)
+	if (result.status !== 0) {
+		throw new Error('mdx:compile failed')
+	}
+}
+
+async function publishArtifacts(bundlePath: string, workerUrl: string) {
+	const secret = process.env.REFRESH_CACHE_SECRET
+	if (!secret) {
+		throw new Error('REFRESH_CACHE_SECRET is required to publish artifacts')
+	}
+
+	const bundleRaw = await fs.readFile(bundlePath, 'utf8')
+	const bundle = JSON.parse(bundleRaw)
+	if (!bundle.version || typeof bundle.version !== 'string') {
+		throw new Error('Bundle JSON must include a string "version" field')
+	}
+
+	const endpointUrl = `${workerUrl}/resources/mdx-artifacts`
+	let response: Response | undefined
+	for (let attempt = 1; attempt <= 8; attempt++) {
+		response = await fetch(endpointUrl, {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json',
+				auth: secret,
+			},
+			body: bundleRaw,
+		})
+		if (response.ok) break
+		if (attempt < 8) {
+			console.warn(
+				`Publish attempt ${attempt} failed (${response.status}); retrying in 15s...`,
+			)
+			await sleep(15_000)
+		}
+	}
+
+	const responseText = await response!.text()
+	if (!response.ok) {
+		throw new Error(
+			`Artifact publish endpoint failed (${response.status}): ${responseText}`,
+		)
+	}
+
+	return { version: bundle.version, responseText }
+}
+
 export async function refreshChangedContent({
 	currentCommitSha,
 	baseUrl = defaultBaseUrl,
+	bundlePath = process.env.MDX_BUNDLE_PATH ?? '/tmp/mdx-bundle.json',
+	workerUrl = getWorkerUrl(),
 	fetchJsonImpl = fetchJson,
 	getChangedFilesImpl = getChangedFiles,
 	postRefreshCacheImpl = postRefreshCache,
 	log = console,
 	maxRefreshAttempts = defaultRefreshRetryOptions.maxAttempts,
 	retryDelayMs = defaultRefreshRetryOptions.baseDelayMs,
+	skipPublish = process.env.SKIP_ARTIFACT_PUBLISH === 'true',
 }: {
 	currentCommitSha?: string
 	baseUrl?: string
+	bundlePath?: string
+	workerUrl?: string
 	fetchJsonImpl?: typeof fetchJson
 	getChangedFilesImpl?: typeof getChangedFiles
 	postRefreshCacheImpl?: typeof postRefreshCache
 	log?: Pick<typeof console, 'log' | 'warn' | 'error'>
 	maxRefreshAttempts?: number
 	retryDelayMs?: number
+	skipPublish?: boolean
 } = {}) {
 	if (!currentCommitSha) {
 		throw new Error('currentCommitSha is required')
@@ -132,15 +207,22 @@ export async function refreshChangedContent({
 		return { status: 'no-content-changes' as const }
 	}
 
-	log.log(`⚡️ Content changed. Requesting the cache be refreshed.`, {
+	log.log(`⚡️ Content changed. Publishing compiled artifacts.`, {
 		currentCommitSha,
 		compareSha,
 		contentPaths,
+		workerUrl,
 	})
+
+	if (!skipPublish) {
+		compileMdxArtifacts(bundlePath)
+		const publishResult = await publishArtifacts(bundlePath, workerUrl)
+		log.log(`Published artifact bundle version ${publishResult.version}`)
+	}
+
 	const refreshResult = await postRefreshCacheWithRetry({
 		postRefreshCacheImpl,
 		postData: {
-			contentPaths,
 			commitSha: currentCommitSha,
 		},
 		log,
@@ -149,13 +231,14 @@ export async function refreshChangedContent({
 	})
 
 	if (refreshResult.ok) {
-		log.log(`Content change request finished.`, {
+		log.log(`Content refresh finished.`, {
 			response: refreshResult.response,
 			attempts: refreshResult.attempts,
 		})
 		return {
 			status: 'refreshed' as const,
 			attempts: refreshResult.attempts,
+			contentPaths,
 		}
 	}
 
@@ -172,6 +255,7 @@ export async function refreshChangedContent({
 	return {
 		status: 'refresh-failed' as const,
 		attempts: refreshResult.attempts,
+		contentPaths,
 	}
 }
 
