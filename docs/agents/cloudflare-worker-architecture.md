@@ -1,10 +1,14 @@
-# Cloudflare worker architecture (site migration)
+# Cloudflare worker architecture
 
 This documents the architecture for running the full kentcdodds.com site on
-Cloudflare Workers with user-facing feature parity, no Fly.io dependency, and
-content updates that do not require a redeploy. **Production deploys exclusively
-to Cloudflare Workers** (`kentcdodds-com`); local dev and CI/e2e run the app in
-real workerd via `@cloudflare/vite-plugin` (single-worker HMR model).
+Cloudflare Workers with user-facing feature parity and content updates that do
+not require a redeploy. **Production deploys exclusively to Cloudflare Workers**
+(`kentcdodds-com`); local dev and CI/e2e run the app in real workerd via
+`@cloudflare/vite-plugin` (single-worker HMR model).
+
+> **Migration history:** Fly → Cloudflare cutover completed in PR
+> [#813](https://github.com/kentcdodds/kentcdodds.com/pull/813). For the ordered
+> production procedure, see [cutover-runbook.md](./cutover-runbook.md).
 
 ## Overview
 
@@ -159,23 +163,22 @@ keep working).
 
 ## RPC error contract
 
-`D1Rpc` exposes `query(sql, params?)`, `run(sql, params?)`, and
-`batch(statements)` for SQL-level access to `APP_DB`. Params and row values
-cross the JSRPC boundary via `row-serialization.server.ts` (Dates → ISO strings,
-bigint → number, byte views → ArrayBuffer).
+`D1Rpc` exposes session-scoped SQL over `APP_DB`: `createSession(bookmark?)`,
+`sessionQuery(bookmark, sql, params?)`, `sessionRun(...)`, and
+`sessionBatch(...)`. Params and row values cross the JSRPC boundary via
+`row-serialization.server.ts` (Dates → ISO strings, bigint → number, byte views
+→ ArrayBuffer).
 
-For D1 Sessions + read replication, the app path uses `sessionQuery`,
-`sessionRun`, and `sessionBatch` (bookmark-threaded over RPC) plus optional
-`createSession()` → `D1RpcSession` `RpcTarget` stubs. The dynamic worker keeps
-the active bookmark in a per-request global store (`kcd_d1_bookmark` cookie,
-HttpOnly, 600s max-age). Responses include `X-D1-Stats`
-(`queries`, `primary`, `replica`, `regions=…`) with D1 `meta.served_by_*`
-aggregates.
+The dynamic worker keeps the active D1 session bookmark in a per-request global
+store (`kcd_d1_bookmark` cookie, HttpOnly, 600s max-age) so reads can use
+regional replicas while preserving read-your-writes. Responses include
+`X-D1-Stats` (`queries`, `primary`, `replica`, `regions=…`) with D1
+`meta.served_by_*` aggregates. See [D1 read replication](#d1-read-replication)
+below.
 
 `CacheRpc` methods: `get(key)` → cache entry or `null`; `set(key, entry)`;
-`delete(key)`; `keys(prefix?, limit?)` → `string[]`. Entries are the same
-JSON encoding used by the SQLite cache (Buffer values base64-encoded with the
-existing reviver/replacer from `cache.server.ts`).
+`delete(key)`; `keys(prefix?, limit?)` → `string[]`. Entries use the KV JSON
+encoding from `cache-encoding.server.ts` (Buffer values base64-encoded).
 
 `ContentRpc.getDocumentCode(contentDir, slug)` returns the mdx-bundler IIFE
 string for client hydration, or `null` if the document is missing. Reads from
@@ -203,9 +206,9 @@ runtime in the worker).
 
 - All string values from the parent worker env (vars + secrets) are passed
   through as plain strings.
-- `D1_RPC`: loopback entrypoint with `query(sql, params?)`, `run(sql, params?)`,
-  and `batch(statements)` over the parent's `APP_DB` D1 binding. The app's
-  `db.server.ts` uses `SqliteExecutorDataTableAdapter` over this RPC when present.
+- `D1_RPC`: loopback entrypoint with session-scoped SQL methods over the parent's
+  `APP_DB` D1 binding. The app's `db.server.ts` uses
+  `SqliteExecutorDataTableAdapter` over this RPC when present.
 - `CACHE_RPC`: loopback entrypoint with `get(key)`, `set(key, entry)`,
   `delete(key)`, `keys(prefix?)` over `SITE_CACHE_KV`. `cache.server.ts` uses
   it as the cachified store when present (LRU stays in-isolate).
@@ -233,13 +236,13 @@ runtime in the worker).
 ## SSR streaming requirement (React Router hydration)
 
 The dynamic worker must use `renderToReadableStream` for document SSR (same as
-production Node). `renderToString` sets React Router's static SSR context, which
-**omits** the inline `streamController.enqueue` / `streamController.close`
-scripts that deliver turbo-stream loader state to the client. Without those
-scripts, `HydratedRouter` never finishes decoding state, `fetcher.Form` submit
-handlers never attach, and forms like the theme toggle fall through to native
-full-page POSTs. Verify with curl: preview HTML must contain
-`streamController.enqueue` (7 inline scripts on the homepage, matching prod).
+production). React Router's static SSR context omits the inline
+`streamController.enqueue` / `streamController.close` scripts that deliver
+turbo-stream loader state to the client when a non-streaming renderer is used.
+Without those scripts, `HydratedRouter` never finishes decoding state,
+`fetcher.Form` submit handlers never attach, and forms like the theme toggle
+fall through to native full-page POSTs. Verify with curl: HTML must contain
+`streamController.enqueue` (7 inline scripts on the homepage).
 
 ## Scheduled tasks (crons)
 
@@ -393,10 +396,22 @@ with site-worker's `OutboundProxy`). Signup verification emails are captured to
 `mocks/msw.local.json` via the sidecar HTTP endpoint and logged to the worker
 console.
 
-The production worker path is exercised via `services/site-worker` scripts
-(wrangler dev, preview deployment) and CI smoke tests.
+The full parent + dynamic worker topology is exercised via
+`services/site-worker` (`npm run dev --workspace site-worker` on port 8792),
+staging/preview deploys, and CI smoke tests.
 
-## Preview deployment (migration branch)
+### Site-worker local dev
+
+After local D1 migrations are applied, start the staging worker:
+
+```sh
+npm run dev --workspace site-worker
+```
+
+The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
+(plain text `OK`) plus the full site routes through the dynamic app worker.
+
+## Staging / preview deployment
 
 - Worker: `kentcdodds-com-staging` (`kentcdodds-com-staging.kentcdodds.workers.dev`)
 - D1: `kentcdodds-com-staging-app-db` (`01a8ba77-2a63-4a14-898d-6023942a480f`)
@@ -404,8 +419,7 @@ The production worker path is exercised via `services/site-worker` scripts
   `CONTENT_KV`=`976edaf098ed4c3391385bf7550ba5a6`
 - R2: `kcd-site-cf-preview-artifacts`
 - Service bindings: `kcd-oauth-provider`, `kcd-search-worker` (production workers)
-- Deploys from `.github/workflows/cf-preview-deploy.yml` on pushes to the
-  migration branch (`cursor/cloudflare-site-worker-2309` until merge).
+- Deploys from `.github/workflows/cf-preview-deploy.yml` on qualifying PRs.
 
 ## Production deployment (main)
 
@@ -443,10 +457,29 @@ but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 - Artifact publish in CI uses `POST /resources/mdx-artifacts` (no R2/KV API
   needed).
 
+### D1 migrations
+
+The site-worker migration scripts generate Wrangler-compatible flat SQL files in
+`services/site-worker/.wrangler/site-prisma-migrations` from the committed
+`services/site/prisma/migrations/*/migration.sql` files before running
+`wrangler d1 migrations`. Do not commit or hand-edit the generated files.
+
+The generated copy normalizes `CREATE TEMP TABLE` to `CREATE TABLE` because D1
+rejects temporary tables in migrations.
+
+| Command | Target |
+| --- | --- |
+| `npm run d1:migrations:prepare --workspace site-worker` | Regenerate migration files (no D1 contact) |
+| `npm run d1:migrations:list:local --workspace site-worker` | List pending local Miniflare D1 |
+| `npm run d1:migrations:apply:local --workspace site-worker` | Apply to local Miniflare D1 |
+| `npm run d1:migrations:list:staging --workspace site-worker` | List pending remote staging D1 |
+| `npm run d1:migrations:apply:staging --workspace site-worker` | Apply to remote staging D1 |
+| `npm run d1:migrations:apply:production --workspace site-worker` | Apply to remote production D1 |
+
 ### Runbook: schema changes
 
-1. Apply migrations manually with a token that has D1 write access:
-   `npm run d1:migrations:apply:staging --workspace site-worker`
+1. Apply migrations manually with a token that has D1 write access (staging or
+   production command from the table above).
 2. Re-seed if needed: `npm run seed:preview-d1 --workspace site-worker`
 3. Redeploy the worker (schema is applied via D1 migrations, not a generated client).
 
@@ -456,3 +489,42 @@ but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 2. `npm run provision:preview --workspace site-worker -- --force-ensure`
 3. Commit the stamped IDs back into `wrangler.jsonc` if new resources were created.
 4. Apply migrations, seed, deploy, upload secrets, publish artifacts.
+
+## D1 read replication
+
+Enable globally for staging and production D1 databases (needs D1:Edit token):
+
+```bash
+export CLOUDFLARE_API_TOKEN=…
+export CLOUDFLARE_ACCOUNT_ID=a41d50ecaf0ae0f86dd1824ef6729cb2
+
+# Staging (01a8ba77-2a63-4a14-898d-6023942a480f)
+curl -sX PUT \
+  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/01a8ba77-2a63-4a14-898d-6023942a480f" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"read_replication":{"mode":"auto"}}'
+
+# Production (af33bd8b-c9b2-484a-afa5-43ee322ff49c)
+curl -sX PUT \
+  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/af33bd8b-c9b2-484a-afa5-43ee322ff49c" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"read_replication":{"mode":"auto"}}'
+```
+
+`npm run provision:preview --workspace site-worker` (and `provision:production`)
+calls `ensureReadReplication` idempotently when a privileged token is present; CI
+tokens without D1:Edit log a warning and continue.
+
+Verify mode + primary region:
+
+```bash
+curl -sX GET \
+  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/af33bd8b-c9b2-484a-afa5-43ee322ff49c" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" | jq '.result | {read_replication, running_in_region, primary_location_hint}'
+```
+
+**Primary location (July 2026):** both staging and production D1 report
+`running_in_region: ENAM`. Prefer `running_in_region` over
+`primary_location_hint` when checking older databases.

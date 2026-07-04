@@ -66,10 +66,14 @@ reference:
   local D1 (`services/site/.wrangler/state/v3/d1/...`). Migrations, seed, the
   Vite plugin, and e2e helpers share the path from
   `services/site/scripts/local-d1-state.mjs` (`--persist-to` / `persistState`).
-- **Production** runs on the Cloudflare Worker `kentcdodds-com` (D1 + KV + R2).
-  **Local dev and Playwright e2e** run the app in real workerd via
-  `@cloudflare/vite-plugin` (single-worker model for HMR; see
-  `docs/agents/cloudflare-worker-architecture.md`).
+- **Production** runs on Cloudflare Worker `kentcdodds-com` (D1 + KV + R2).
+  Local dev and e2e use workerd via `@cloudflare/vite-plugin`. Architecture,
+  deploy, D1 migrations, and sharp edges:
+  [`cloudflare-worker-architecture.md`](./cloudflare-worker-architecture.md).
+  MDX artifact compiler (`npm run mdx:compile --workspace kentcdodds.com`)
+  requires the app server module graph to stay importable by plain Node (no
+  `.tsx` in the chain). Production workerd forbids module-scope I/O/timers/random
+  (keep module init lazy — `wrangler dev` is lenient and won't catch this).
 - If Playwright E2E tests fail with D1 "table does not exist" errors, run
   `npm run db:reset --workspace kentcdodds.com` to apply migrations and seed
   data against the local Miniflare D1 database.
@@ -80,20 +84,9 @@ reference:
   the staging equivalent for preview.
 - When shipping a widen migration, create a linked follow-up issue for the
   narrow step before merging so the cleanup pass does not get forgotten.
-- Cache in dev uses the local Miniflare `SITE_CACHE_KV` binding (not a separate
-  SQLite cache file). Production uses KV via `CACHE_RPC` from the dynamic worker.
-- Search now runs through a dedicated Cloudflare Worker workspace at
-  `services/search-worker`. Production/staging site envs must set
-  `SEARCH_WORKER_URL` and `SEARCH_WORKER_TOKEN`.
-- The full site also runs on Cloudflare Workers via `services/site-worker`
-  (parent worker + Worker Loader dynamic app worker + MDX artifact pipeline).
-  Architecture, deploy loop, runbooks, and sharp edges are documented in
-  [`cloudflare-worker-architecture.md`](./cloudflare-worker-architecture.md).
-  Key caveats: production workerd forbids module-scope I/O/timers/random (keep
-  module init lazy — `wrangler dev` is lenient and won't catch this), and the
-  MDX artifact compiler (`npm run mdx:compile --workspace kentcdodds.com`)
-  requires the app server module graph to stay importable by plain Node (no
-  `.tsx` in the chain).
+- Cache uses `SITE_CACHE_KV` in dev (Miniflare) and `CACHE_RPC` in production.
+- Search runs through `services/search-worker`. Production/staging site envs must
+  set `SEARCH_WORKER_URL` and `SEARCH_WORKER_TOKEN`.
 - Search Worker URL: if `SEARCH_WORKER_URL` contains `mock`, MSW returns fixtures;
   otherwise MSW passthrough sends traffic to that URL (e.g. local `wrangler dev`
   on `http://127.0.0.1:8787`). Tests expect a mock URL (see `.env.example`).

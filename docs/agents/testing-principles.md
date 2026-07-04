@@ -26,7 +26,9 @@ magic.
 - Prefer behavior assertions over implementation details. Avoid pinning CSS
   classes, exact request headers, or incidental markup unless they are the
   contract under test.
-- Run server tests with `bun test server` to avoid Playwright spec discovery.
+- Run backend unit tests with `npm run test:backend --workspace kentcdodds.com`
+  (or `npm run test:backend:watch` while iterating). Site-worker tests:
+  `npm run test --workspace site-worker`.
 - In backend Vitest tests, modules that transitively import `cache.server.ts`
   may require mocking `../cache.server.ts` first; otherwise `vite-env-only`
   macros (for `serverOnly$` route exports) can fail to transform in Node test

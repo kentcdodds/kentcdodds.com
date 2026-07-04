@@ -15,9 +15,9 @@ Ordered procedure for hard cutover of **kentcdodds.com** from the Fly.io app (`k
 - [ ] Production worker deployed and healthy (`kentcdodds-com` on `*.kentcdodds.workers.dev`).
 - [ ] D1 `kentcdodds-com-db` (`af33bd8b-c9b2-484a-afa5-43ee322ff49c`) has all Prisma migrations applied:
   ```bash
-  npm run d1:migrations:apply:staging --workspace site-worker
+  npm run d1:migrations:apply:production --workspace site-worker
   ```
-  (Uses `generated-wrangler.jsonc` pointed at production bindings after merge.)
+  (Uses `generated-wrangler.jsonc` pointed at production bindings.)
 - [ ] MDX artifacts published to production R2/KV; `GET /__meta` shows expected `buildSha` + `contentVersion`.
 - [ ] Smoke test on workers.dev URL (login, blog, mark-as-read, favorites).
 
@@ -315,64 +315,21 @@ Keep Fly idle (not destroyed) until the confidence window ends.
 
 ---
 
-## Performance expectations (measured on migration test fixture)
+## Performance expectations
 
-See pipeline test output in PR / agent report. Rough guide from inflated fixture (~50k `PostRead`, ~500 users):
-
-- Full import: order of **minutes** for ~50k rows dominated by `PostRead`.
-- Extrapolate **~X rows/sec** from pipeline test; production `PostRead` row count dominates total time.
-- Chunking defaults: 500 rows/INSERT, 50 statements/file, `PRAGMA defer_foreign_keys` per file.
-
----
+Migration import time scales with row count; `PostRead` dominates. Use
+`npm run migrate:pipeline-test --workspace site-worker` against an inflated
+fixture for a local timing baseline.
 
 ## D1 read replication
 
-Enable globally for staging and production D1 databases:
+Enable read replication on staging and production D1 before cutover — see
+[cloudflare-worker-architecture.md § D1 read replication](./cloudflare-worker-architecture.md#d1-read-replication)
+for `curl` commands and verification.
 
-```bash
-export CLOUDFLARE_API_TOKEN=…   # needs D1:Edit
-export CLOUDFLARE_ACCOUNT_ID=a41d50ecaf0ae0f86dd1824ef6729cb2
+Pre-cutover checklist:
 
-# Staging
-curl -sX PUT \
-  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/01a8ba77-2a63-4a14-898d-6023942a480f" \
-  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{"read_replication":{"mode":"auto"}}'
-
-# Production
-curl -sX PUT \
-  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/af33bd8b-c9b2-484a-afa5-43ee322ff49c" \
-  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{"read_replication":{"mode":"auto"}}'
-```
-
-`npm run provision:preview --workspace site-worker` (and `provision:production`) also
-calls `ensureReadReplication` idempotently when a privileged token is present; CI
-tokens without D1:Edit log a warning and continue.
-
-Verify mode + primary region:
-
-```bash
-curl -sX GET \
-  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/af33bd8b-c9b2-484a-afa5-43ee322ff49c" \
-  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" | jq '.result | {read_replication, running_in_region, primary_location_hint}'
-```
-
-**Primary location (July 2026):** both `kentcdodds-com-staging-app-db` and
-`kentcdodds-com-db` report `running_in_region: ENAM` (databases created from a
-US-east VM/API). The REST field `primary_location_hint` may be absent on older
-databases; prefer `running_in_region` when checking. If production D1 is ever
-recreated, record the new primary region here and in agent docs — replica
-warm-up and APAC latency measurements depend on primary distance.
-
-The app uses D1 Sessions API (`withSession` + `kcd_d1_bookmark` cookie) so
-reads can hit regional replicas while preserving read-your-writes. Responses
-include `X-D1-Stats` (`queries`, `primary`, `replica`, `regions=…`) for
-observability.
-
----
+- [ ] Staging and production D1 have `read_replication.mode: auto` enabled.
 
 ## Limitations / accepted losses
 
@@ -382,5 +339,5 @@ observability.
 | Deletes during cutover window | **Not replicated** — accepted |
 | Fly receives writes after snapshot, before DNS flip | Include in backfill if captured in a newer snapshot or same DB file |
 | Rollback to Fly after D1 writes | D1-only writes **lost** |
-| Cache DB (`cache.db`) | **Not migrated** — ephemeral; rebuilds on traffic |
+| Cache DB (`SITE_CACHE_KV`) | **Not migrated** — ephemeral; rebuilds on traffic |
 | `_prisma_migrations` | **Not migrated** — D1 uses Wrangler migration table separately |
