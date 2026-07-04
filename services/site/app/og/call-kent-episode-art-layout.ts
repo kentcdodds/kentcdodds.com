@@ -2,6 +2,11 @@ import { stripEmoji } from './assets.server.ts'
 
 export const CALL_KENT_EPISODE_ART_DESIGN_SIZE = 3000
 export const CALL_KENT_EPISODE_ART_GRID_DIVISIONS = 12
+export const CALL_KENT_EPISODE_ART_TITLE_MAX_CHARS = 50
+export const CALL_KENT_EPISODE_ART_TITLE_MAX_LINES = 3
+
+// Measured from kentcdodds.com/illustrations/mic.png (956×1898).
+export const CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT = 956 / 1898
 
 export type CallKentEpisodeArtElementBox = {
 	left: number
@@ -26,7 +31,18 @@ function scaleFontSize(designFontSize: number, canvasSize: number) {
 }
 
 export function countCallKentEpisodeArtTitleLines(title: string) {
-	return Math.ceil(Math.min(stripEmoji(title).length, 50) / 18)
+	return Math.ceil(
+		Math.min(stripEmoji(title).length, CALL_KENT_EPISODE_ART_TITLE_MAX_CHARS) /
+			18,
+	)
+}
+
+export function formatCallKentEpisodeArtTitle(title: string) {
+	const stripped = stripEmoji(title)
+	if (stripped.length <= CALL_KENT_EPISODE_ART_TITLE_MAX_CHARS) {
+		return stripped
+	}
+	return `${stripped.slice(0, CALL_KENT_EPISODE_ART_TITLE_MAX_CHARS - 3).trimEnd()}...`
 }
 
 export function computeCallKentEpisodeArtLayout(
@@ -35,7 +51,8 @@ export function computeCallKentEpisodeArtLayout(
 ): CallKentEpisodeArtLayout {
 	const g = canvasSize / CALL_KENT_EPISODE_ART_GRID_DIVISIONS
 	const textLines = countCallKentEpisodeArtTitleLines(title)
-	const micSize = 11 * g
+	const micHeight = 11 * g
+	const micWidth = micHeight * CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT
 
 	return {
 		canvasSize,
@@ -55,11 +72,11 @@ export function computeCallKentEpisodeArtLayout(
 			height: 5.5 * g,
 		},
 		mic: {
-			left: canvasSize - g - micSize,
-			top: (canvasSize - micSize) / 2,
+			left: canvasSize - g - micWidth,
+			top: (canvasSize - micHeight) / 2,
 			right: g,
-			width: micSize,
-			height: micSize,
+			width: micWidth,
+			height: micHeight,
 		},
 		url: {
 			left: 0.8 * g,

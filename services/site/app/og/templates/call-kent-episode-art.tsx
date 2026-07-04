@@ -1,4 +1,7 @@
-import { computeCallKentEpisodeArtLayout } from '../call-kent-episode-art-layout.ts'
+import {
+	computeCallKentEpisodeArtLayout,
+	formatCallKentEpisodeArtTitle,
+} from '../call-kent-episode-art-layout.ts'
 import { OG_COLORS } from '../constants.ts'
 import { stripEmoji } from '../assets.server.ts'
 
@@ -24,6 +27,7 @@ export function CallKentEpisodeArt({
 	size = 1400,
 }: CallKentEpisodeArtProps) {
 	const layout = computeCallKentEpisodeArtLayout(size, title)
+	const displayTitle = formatCallKentEpisodeArtTitle(title)
 
 	return (
 		<div
@@ -48,18 +52,6 @@ export function CallKentEpisodeArt({
 					objectFit: 'cover',
 				}}
 			/>
-			<img
-				src={mic}
-				alt=""
-				style={{
-					position: 'absolute',
-					top: layout.mic.top,
-					right: layout.mic.right,
-					width: layout.mic.width,
-					height: layout.mic.height,
-					objectFit: 'contain',
-				}}
-			/>
 			<div
 				style={{
 					position: 'absolute',
@@ -67,14 +59,17 @@ export function CallKentEpisodeArt({
 					top: layout.title.top,
 					width: layout.title.width,
 					height: layout.title.height,
-					display: 'flex',
+					display: '-webkit-box',
+					WebkitBoxOrient: 'vertical',
+					WebkitLineClamp: 3,
+					overflow: 'hidden',
 					color: OG_COLORS.white,
 					fontSize: layout.title.fontSize,
 					fontWeight: 500,
 					lineHeight: 1.1,
 				}}
 			>
-				{stripEmoji(title)}
+				{displayTitle}
 			</div>
 			<img
 				src={avatar}
@@ -123,6 +118,18 @@ export function CallKentEpisodeArt({
 			>
 				{stripEmoji(url)}
 			</div>
+			<img
+				src={mic}
+				alt=""
+				style={{
+					position: 'absolute',
+					top: layout.mic.top,
+					right: layout.mic.right,
+					width: layout.mic.width,
+					height: layout.mic.height,
+					objectFit: 'contain',
+				}}
+			/>
 		</div>
 	)
 }

@@ -2,8 +2,10 @@ import { describe, expect, test } from 'vitest'
 import {
 	CALL_KENT_EPISODE_ART_DESIGN_SIZE,
 	CALL_KENT_EPISODE_ART_GRID_DIVISIONS,
+	CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT,
 	computeCallKentEpisodeArtLayout,
 	countCallKentEpisodeArtTitleLines,
+	formatCallKentEpisodeArtTitle,
 } from '../call-kent-episode-art-layout.ts'
 
 const CANVAS = 1400
@@ -25,11 +27,22 @@ describe('computeCallKentEpisodeArtLayout', () => {
 		expect(layout.name.fontSize).toBeCloseTo((140 / CALL_KENT_EPISODE_ART_DESIGN_SIZE) * CANVAS)
 	})
 
+	test('clamps long titles to 50 characters with ellipsis', () => {
+		const title =
+			'How do I convince my team to adopt testing best practices without slowing down delivery?'
+		expect(formatCallKentEpisodeArtTitle(title)).toBe(
+			'How do I convince my team to adopt testing best...',
+		)
+		expect(countCallKentEpisodeArtTitleLines(title)).toBe(3)
+	})
+
 	test('positions short-title sample elements on the grid', () => {
 		const title = 'Podcast breaks'
 		const g = CANVAS / 12
 		const textLines = countCallKentEpisodeArtTitleLines(title)
 		const layout = computeCallKentEpisodeArtLayout(CANVAS, title)
+		const micHeight = 11 * g
+		const micWidth = micHeight * CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT
 
 		expect(textLines).toBe(1)
 		expect(layout.title).toMatchObject({
@@ -46,23 +59,27 @@ describe('computeCallKentEpisodeArtLayout', () => {
 		})
 		expect(layout.mic).toMatchObject({
 			right: g,
-			width: 11 * g,
-			height: 11 * g,
-			top: (CANVAS - 11 * g) / 2,
+			width: micWidth,
+			height: micHeight,
+			top: (CANVAS - micHeight) / 2,
 		})
+		expect(layout.mic.width / CANVAS).toBeGreaterThan(0.44)
+		expect(layout.mic.width / CANVAS).toBeLessThan(0.52)
 		expect(layout.url.bottom).toBeCloseTo(0.8 * g)
 		expect(layout.name.bottom).toBeCloseTo((-textLines + 5.2) * g)
 	})
 
-	test('positions long-title sample elements on the grid', () => {
+	test('positions long-title sample elements on the grid without avatar overlap', () => {
 		const title =
 			'How do I convince my team to adopt testing best practices without slowing down delivery?'
 		const g = CANVAS / 12
 		const textLines = countCallKentEpisodeArtTitleLines(title)
 		const layout = computeCallKentEpisodeArtLayout(CANVAS, title)
+		const titleBottom = layout.title.top + layout.title.height
 
 		expect(textLines).toBe(3)
 		expect(layout.avatar.top).toBeCloseTo((textLines + 0.6) * g)
+		expect(layout.avatar.top).toBeGreaterThanOrEqual(titleBottom)
 		expect(layout.name.bottom).toBeCloseTo((-textLines + 5.2) * g)
 		expect(layout.name.bottom).toBeGreaterThan(layout.url.bottom)
 	})

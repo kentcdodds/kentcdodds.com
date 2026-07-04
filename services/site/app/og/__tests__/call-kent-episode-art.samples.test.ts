@@ -7,7 +7,7 @@ import {
 	layoutBoxesForDump,
 } from '../call-kent-episode-art-layout.ts'
 
-const OUTPUT_DIR = '/tmp/og-iter'
+const OUTPUT_DIR = '/tmp/og-iter2'
 
 const roundAvatarDataUri =
 	'data:image/svg+xml;base64,' +
@@ -35,6 +35,18 @@ const samples = [
 				'How do I convince my team to adopt testing best practices without slowing down delivery?',
 			name: '- Alexander',
 			url: 'kentcdodds.com/calls/05/13',
+			avatarKind: 'fetch' as const,
+			avatarSource: roundAvatarDataUri,
+			avatarIsRound: true,
+			size: 1400,
+		},
+	},
+	{
+		filename: 'medium-title.png',
+		params: {
+			title: 'Podcast breaks and lessons learned',
+			name: '- Jamie',
+			url: 'kentcdodds.com/calls/05/14',
 			avatarKind: 'fetch' as const,
 			avatarSource: roundAvatarDataUri,
 			avatarIsRound: true,
@@ -69,9 +81,12 @@ describe('call-kent-episode-art sample renders', () => {
 			avatar: { top: 3.6 * g },
 			name: { bottom: 2.2 * g },
 		})
+		expect(longLayout.avatar.top).toBeGreaterThanOrEqual(
+			longLayout.title.top + longLayout.title.height,
+		)
 	})
 
-	test('render script writes 1400x1400 PNGs to /tmp/og-iter', () => {
+	test('render script writes 1400x1400 PNGs to /tmp/og-iter2', () => {
 		execSync('node scripts/render-og-call-kent-episode-art.mjs', {
 			cwd: join(process.cwd()),
 			stdio: 'pipe',

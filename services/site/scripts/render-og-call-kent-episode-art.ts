@@ -15,7 +15,7 @@ import {
 	resolveSocialBackgroundDataUri,
 } from '../app/og/assets.server.ts'
 
-const OUTPUT_DIR = '/tmp/og-iter'
+const OUTPUT_DIR = '/tmp/og-iter2'
 const require = createRequire(import.meta.url)
 
 const roundAvatarDataUri =
@@ -44,6 +44,18 @@ const samples = [
 				'How do I convince my team to adopt testing best practices without slowing down delivery?',
 			name: '- Alexander',
 			url: 'kentcdodds.com/calls/05/13',
+			avatarKind: 'fetch' as const,
+			avatarSource: roundAvatarDataUri,
+			avatarIsRound: true,
+			size: 1400,
+		},
+	},
+	{
+		filename: 'medium-title.png',
+		params: {
+			title: 'Podcast breaks and lessons learned',
+			name: '- Jamie',
+			url: 'kentcdodds.com/calls/05/14',
 			avatarKind: 'fetch' as const,
 			avatarSource: roundAvatarDataUri,
 			avatarIsRound: true,
