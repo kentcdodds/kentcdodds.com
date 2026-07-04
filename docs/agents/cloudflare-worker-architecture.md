@@ -253,6 +253,82 @@ Configured in `services/site-worker/wrangler.jsonc`:
   low-traffic previews still see the cold tail on a fraction of requests;
   sustained traffic keeps the pool warm.
 
+## Anonymous page cache (parent worker)
+
+The parent worker (`services/site-worker/src/page-cache.ts`) caches anonymous
+document responses in `SITE_CACHE_KV` so repeat traffic avoids the dynamic
+isolate cold-start tail (~1.4–2.5s). After fill, cached pages typically serve
+in ~0.1–0.2s TTFB regardless of dynamic isolate state.
+
+### Key layout
+
+```
+page-cache:{generation}:{host}:{pathname}{?sortedSearch}:{theme}:{md}
+```
+
+- `generation` — counter in `CONTENT_KV` key `page-cache:generation` (read
+  through a ~15s parent-memory cache). Bumping generation invalidates all prior
+  keys; old entries expire naturally via KV `expirationTtl` (~26h).
+- `theme` — `light`, `dark`, or `none` from the `en_theme` cookie.
+- `md` — `1` when `Accept` prefers `text/markdown` (same negotiation as the
+  dynamic bootstrap), else `0`.
+
+KV reads use `{ cacheTtl: 30 }`. Entries are JSON:
+`{ body, status, headers: [[k,v]], nonce, storedAt }`.
+
+### TTLs
+
+- **Fresh:** 300s (`PAGE_CACHE_FRESH_TTL_SEC`) — served as `X-Edge-Cache: HIT`.
+- **Stale-while-revalidate:** after fresh TTL, serve immediately as
+  `X-Edge-Cache: STALE` and `ctx.waitUntil(revalidate())` through the dynamic
+  worker (in-flight revalidation deduped in parent memory).
+- **KV expiration:** ~26h per entry.
+
+### Serve eligibility
+
+`GET`/`HEAD` only; no `Authorization` header; `PAGE_CACHE_DISABLED=true`
+kill-switch. Cookie header must not contain session (`KCD_root_session`), login
+flash (`KCD_login`), or webauthn (`webauthn-challenge`). Only `en_theme` and
+`KCD_client_id` are allowed besides absence of cookies. Pathname must not match
+bypass prefixes (`/me*`, `/login`, `/action/*`, `/resources/*`, `/oauth*`,
+`/mcp*`, `/discord*`, `/contact`, `/.well-known/*`, admin/record routes, etc.).
+Static assets are handled by `ASSETS` before the page cache runs.
+
+### Store eligibility
+
+Status 200; no `Set-Cookie` on the fill response (stripped before store when
+fill is cookieless). Content types: `text/html`, `text/markdown`,
+`application/rss+xml`, `application/xml`, or `application/json` on known public
+feeds (`/blog.json`, `/refresh-commit-sha.json`, `/sitemap.xml`,
+`/blog/rss.xml`).
+
+**Fill strategy:** anonymous HTML does not embed `KCD_client_id`; cache fill
+forwards a synthetic request with cookies stripped except `en_theme`. If the
+fill response sets `KCD_client_id`, `Set-Cookie` is stripped before storing.
+Real visitors receive client cookies from uncached dynamic responses (e.g. first
+`MISS` or `POST /action/mark-as-read`).
+
+### Nonce rewrite
+
+Cached HTML includes a per-response CSP nonce. The nonce at fill time is stored
+in the entry. On every `HIT`/`STALE`, the parent generates a fresh nonce,
+`replaceAll`s it through the body and `Content-Security-Policy` header (including
+`data-evt-` → `nonce="..."` transforms from `entry.server.tsx`).
+
+### Invalidation
+
+`page-cache:generation` is bumped to `Date.now().toString()` in:
+
+1. `POST /resources/mdx-artifacts` (`handlePublishArtifacts`)
+2. `POST /action/refresh-cache` (parent intercept before dynamic forward)
+
+The parent in-memory generation cache is cleared on bump.
+
+### Observability
+
+`X-Edge-Cache`: `HIT`, `STALE`, `MISS`, or `BYPASS`. Cached responses include
+`Age`. Existing timing/isolate headers are omitted from stored entries.
+
 ## Local development
 
 Nothing changes for `npm run dev` (Node + Express + MSW). The worker path is
