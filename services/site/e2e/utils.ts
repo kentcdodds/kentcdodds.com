@@ -1,13 +1,11 @@
 import path from 'path'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
-import {
-	PrismaClient,
-	type User,
-} from '#app/utils/prisma-generated.server/client.ts'
+import { inList } from '@remix-run/data-table'
+import { db } from '#app/utils/db.server.ts'
+import { userTable, type User } from '#app/utils/db/schema.server.ts'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
 
@@ -39,8 +37,7 @@ export async function readEmail(
 			const mswOutput = fsExtra.readJsonSync(
 				path.join(process.cwd(), './mocks/msw.local.json'),
 			) as unknown as MSWData
-			const emails = Object.values(mswOutput.email).reverse() // reverse so we get the most recent email first
-			// TODO: add validation
+			const emails = Object.values(mswOutput.email).reverse()
 			let email: Email | undefined
 			if (typeof recipientOrFilter === 'string') {
 				email = emails.find((email: Email) => email.to === recipientOrFilter)
@@ -50,7 +47,6 @@ export async function readEmail(
 			if (email) {
 				return email
 			}
-			// Email not found yet, retry after a delay
 			if (attempt < maxRetries - 1) {
 				await sleep(retryDelay)
 			}
@@ -76,28 +72,19 @@ export function extractUrl(text: string) {
 const users = new Set<User>()
 
 export async function insertNewUser(userOverrides?: Partial<User>) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
-
-	const user = await prisma.user.create({
-		data: { ...createUser(), ...userOverrides },
-	})
-	await prisma.$disconnect()
-	users.add(user)
-	return user
+	const user = await db.create(
+		userTable,
+		{ ...createUser(), ...userOverrides },
+		{ returnRow: true },
+	)
+	users.add(user as User)
+	return user as User
 }
 
 export async function deleteUserByEmail(email: string) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
-	await prisma.user.delete({ where: { email } })
-	await prisma.$disconnect()
+	const user = await db.findOne(userTable, { where: { email } })
+	if (!user) return
+	await db.delete(userTable, user.id)
 }
 
 export const test = base.extend<{
@@ -137,13 +124,9 @@ export const test = base.extend<{
 export const { expect } = test
 
 test.afterEach(async () => {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
+	const ids = [...users].map((user) => user.id)
+	if (ids.length === 0) return
+	await db.deleteMany(userTable, {
+		where: inList('id', ids),
 	})
-	await prisma.user.deleteMany({
-		where: { id: { in: [...users].map((u) => u.id) } },
-	})
-	await prisma.$disconnect()
 })
