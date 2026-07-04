@@ -1,13 +1,57 @@
 import path from 'path'
+import BetterSqlite3 from 'better-sqlite3'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
+import {
+	createDatabase,
+	type Database,
+} from '@remix-run/data-table'
 import { inList } from '@remix-run/data-table'
-import { db } from '#app/utils/db.server.ts'
+import { createSqliteExecutorDataTableAdapter } from '#app/utils/db/d1-data-table-adapter.server.ts'
+import { createBetterSqliteExecutor } from '#app/utils/db/better-sqlite-executor.server.ts'
 import { userTable, type User } from '#app/utils/db/schema.server.ts'
 import { getSession } from '../app/utils/session.server.ts'
 import { createUser } from '../prisma/seed-utils.ts'
+
+const e2eDir = path.dirname(fileURLToPath(import.meta.url))
+const siteDir = path.join(e2eDir, '..')
+
+function getLocalD1SqlitePath() {
+	const result = spawnSync(
+		'node',
+		[path.join(siteDir, 'scripts/find-local-d1-sqlite.mjs')],
+		{
+			cwd: siteDir,
+			encoding: 'utf8',
+		},
+	)
+	if (result.status !== 0) {
+		throw new Error(
+			`Failed to locate local D1 sqlite file:\n${result.stdout}\n${result.stderr}`,
+		)
+	}
+	const sqlitePath = result.stdout.trim().split('\n').at(-1)?.trim()
+	invariant(sqlitePath, 'local D1 sqlite path is required for e2e helpers')
+	return sqlitePath
+}
+
+let e2eDatabase: Database | undefined
+
+function getE2eDatabase() {
+	if (!e2eDatabase) {
+		const sqlite = new BetterSqlite3(getLocalD1SqlitePath())
+		sqlite.pragma('foreign_keys = ON')
+		const adapter = createSqliteExecutorDataTableAdapter(
+			createBetterSqliteExecutor(sqlite),
+		)
+		e2eDatabase = createDatabase(adapter, { now: () => new Date() })
+	}
+	return e2eDatabase
+}
 
 type MSWData = {
 	email: Record<string, Email>
@@ -35,7 +79,7 @@ export async function readEmail(
 	for (let attempt = 0; attempt < maxRetries; attempt++) {
 		try {
 			const mswOutput = fsExtra.readJsonSync(
-				path.join(process.cwd(), './mocks/msw.local.json'),
+				path.join(siteDir, './mocks/msw.local.json'),
 			) as unknown as MSWData
 			const emails = Object.values(mswOutput.email).reverse()
 			let email: Email | undefined
@@ -72,6 +116,7 @@ export function extractUrl(text: string) {
 const users = new Set<User>()
 
 export async function insertNewUser(userOverrides?: Partial<User>) {
+	const db = getE2eDatabase()
 	const user = await db.create(
 		userTable,
 		{ ...createUser(), ...userOverrides },
@@ -82,6 +127,7 @@ export async function insertNewUser(userOverrides?: Partial<User>) {
 }
 
 export async function deleteUserByEmail(email: string) {
+	const db = getE2eDatabase()
 	const user = await db.findOne(userTable, { where: { email } })
 	if (!user) return
 	await db.delete(userTable, user.id)
@@ -124,6 +170,7 @@ export const test = base.extend<{
 export const { expect } = test
 
 test.afterEach(async () => {
+	const db = getE2eDatabase()
 	const ids = [...users].map((user) => user.id)
 	if (ids.length === 0) return
 	await db.deleteMany(userTable, {
