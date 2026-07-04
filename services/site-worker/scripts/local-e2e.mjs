@@ -40,7 +40,6 @@ async function ensureAssetsDirectory() {
 
 const localDevSecrets = {
 	NODE_ENV: 'production',
-	PORT: String(port),
 	MOCKS: 'true',
 	DATABASE_URL: 'file:./prisma/sqlite.db',
 	CALL_KENT_PODCAST_ID: 'call-kent',

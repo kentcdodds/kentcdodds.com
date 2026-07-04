@@ -22,7 +22,6 @@ function createRuntimeEnvSource(
 
 test('getEnv reads from process.env by default', () => {
 	using _env = setEnv({
-		PORT: '3100',
 		DATABASE_URL: 'file:/tmp/process-env.sqlite',
 		DATABASE_PATH: undefined,
 		MOCKS: 'false',
@@ -30,20 +29,17 @@ test('getEnv reads from process.env by default', () => {
 
 	const env = getEnv()
 
-	expect(env.PORT).toBe(3100)
 	expect(env.DATABASE_PATH).toBe('/tmp/process-env.sqlite')
 	expect(env.MOCKS).toBe(false)
 })
 
 test('getEnv reads from the configured runtime env source', () => {
 	using _env = setEnv({
-		PORT: '3100',
 		DATABASE_URL: 'file:/tmp/process-env.sqlite',
 		DATABASE_PATH: undefined,
 	})
 	setRuntimeEnvSource(
 		createRuntimeEnvSource({
-			PORT: '4200',
 			DATABASE_URL: 'file:/tmp/runtime-env-source.sqlite',
 			DATABASE_PATH: undefined,
 			MOCKS: 'true',
@@ -53,7 +49,6 @@ test('getEnv reads from the configured runtime env source', () => {
 
 	const env = getEnv()
 
-	expect(env.PORT).toBe(4200)
 	expect(env.DATABASE_PATH).toBe('/tmp/runtime-env-source.sqlite')
 	expect(env.MOCKS).toBe(true)
 	expect(env.allowedActionOrigins).toEqual([
@@ -64,7 +59,6 @@ test('getEnv reads from the configured runtime env source', () => {
 
 test('getEnv reads from the global runtime env source', () => {
 	using _env = setEnv({
-		PORT: '3100',
 		DATABASE_URL: 'file:/tmp/process-env.sqlite',
 		DATABASE_PATH: undefined,
 	})
@@ -72,7 +66,6 @@ test('getEnv reads from the global runtime env source', () => {
 	const globalStore = globalThis as typeof globalThis &
 		Record<symbol, RuntimeEnvSource | undefined>
 	globalStore[key] = createRuntimeEnvSource({
-		PORT: '4300',
 		DATABASE_URL: 'file:/tmp/global-runtime-env-source.sqlite',
 		DATABASE_PATH: undefined,
 		MOCKS: 'true',
@@ -81,8 +74,7 @@ test('getEnv reads from the global runtime env source', () => {
 	try {
 		const env = getEnv()
 
-		expect(env.PORT).toBe(4300)
-		expect(env.DATABASE_PATH).toBe('/tmp/global-runtime-env-source.sqlite')
+			expect(env.DATABASE_PATH).toBe('/tmp/global-runtime-env-source.sqlite')
 		expect(env.MOCKS).toBe(true)
 	} finally {
 		delete globalStore[key]
@@ -91,22 +83,19 @@ test('getEnv reads from the global runtime env source', () => {
 
 test('clearRuntimeEnvSource restores process.env reads', () => {
 	using _env = setEnv({
-		PORT: '3100',
 		DATABASE_URL: 'file:/tmp/process-env.sqlite',
 		DATABASE_PATH: undefined,
 	})
 	setRuntimeEnvSource(
 		createRuntimeEnvSource({
-			PORT: '4200',
 			DATABASE_URL: 'file:/tmp/runtime-env-source.sqlite',
 			DATABASE_PATH: undefined,
 		}),
 	)
-	expect(getEnv().PORT).toBe(4200)
+	expect(getEnv().DATABASE_PATH).toBe('/tmp/runtime-env-source.sqlite')
 
 	clearRuntimeEnvSource()
 
-	expect(getEnv().PORT).toBe(3100)
 	expect(getEnv().DATABASE_PATH).toBe('/tmp/process-env.sqlite')
 })
 

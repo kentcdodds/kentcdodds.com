@@ -12,7 +12,7 @@ import {
 } from '#app/utils/password.server.ts'
 import { db } from '#app/utils/db.server.ts'
 import { passwordTable } from '#app/utils/db/schema.server.ts'
-import { upsertPasswordAndDeleteSessions } from '#app/utils/prisma-write-flows.server.ts'
+import { upsertPasswordAndDeleteSessions } from '#app/utils/auth-write-flows.server.ts'
 import { getSession, requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.password'
 

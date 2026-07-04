@@ -20,7 +20,7 @@ import {
 	userTable,
 } from '#app/utils/db/schema.server.ts'
 import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
-import { upsertPasswordAndDeleteSessions } from '#app/utils/prisma-write-flows.server.ts'
+import { upsertPasswordAndDeleteSessions } from '#app/utils/auth-write-flows.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import {
 	consumeVerification,

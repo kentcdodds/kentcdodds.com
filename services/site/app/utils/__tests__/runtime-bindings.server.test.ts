@@ -30,14 +30,12 @@ test('getRuntimeBinding reads from getEnv when no binding source is configured',
 		createRuntimeEnvSource({
 			DATABASE_URL: 'file:/tmp/runtime-binding.sqlite',
 			DATABASE_PATH: undefined,
-			PORT: '4500',
 			SEARCH_WORKER_TOKEN: 'env-search-token',
 		}),
 	)
 
 	expect(getRuntimeBinding('DATABASE_PATH')).toBe('/tmp/runtime-binding.sqlite')
 	expect(getRuntimeBinding('SEARCH_WORKER_TOKEN')).toBe('env-search-token')
-	expect(getRuntimeBinding('PORT')).toBe(4500)
 })
 
 test('getRuntimeBinding prefers the configured binding source', () => {

@@ -11,7 +11,6 @@
 	"vars": {
 		"NODE_ENV": "development",
 		"MOCKS": "true",
-		"PORT": "3000",
 		"OG_IMAGE_SECRET": "really_whatever_og"
 	},
 	"d1_databases": [

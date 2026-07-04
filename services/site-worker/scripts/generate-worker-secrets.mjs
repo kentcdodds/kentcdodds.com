@@ -39,7 +39,6 @@ async function main() {
 	const secretPrefix = `${target}:`
 	const secrets = {
 		NODE_ENV: 'production',
-		PORT: '8788',
 		MOCKS: 'false',
 		DATABASE_URL: 'file:./preview.db',
 		R2_BUCKET: deriveOrEnv(

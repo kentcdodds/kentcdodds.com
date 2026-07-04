@@ -37,7 +37,7 @@ import {
 import {
 	recordPublishedCallKentEpisode,
 	replaceCallKentEpisodeDraft,
-} from '#app/utils/prisma-write-flows.server.ts'
+} from '#app/utils/auth-write-flows.server.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
 import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
 import { teamEmoji } from '#app/utils/team-provider.tsx'

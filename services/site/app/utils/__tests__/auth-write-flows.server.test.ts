@@ -13,7 +13,7 @@ async function loadWriteFlows() {
 		create: vi.fn(),
 	}
 	vi.doMock('../db.server.ts', () => ({ db }))
-	const mod = await import('../prisma-write-flows.server.ts')
+	const mod = await import('../auth-write-flows.server.ts')
 	return { db, ...mod }
 }
 

@@ -15,7 +15,6 @@ const absoluteHttpUrlString = z
 
 const schemaBase = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
-	PORT: nonEmptyString,
 	MOCKS: z.enum(['true', 'false']).optional(),
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
@@ -140,15 +139,6 @@ const schema = schemaBase.superRefine((values, ctx) => {
 			path: ['SENTRY_PROJECT_ID'],
 		})
 	}
-
-	const port = Number(values.PORT)
-	if (!Number.isFinite(port) || port <= 0) {
-		ctx.addIssue({
-			code: 'custom',
-			message: 'PORT must be a positive number',
-			path: ['PORT'],
-		})
-	}
 })
 
 type BaseEnv = z.infer<typeof schemaBase>
@@ -158,12 +148,10 @@ const runtimeEnvSourceKey = Symbol.for('kentcdodds.runtimeEnvSource')
 
 export type Env = Omit<
 	BaseEnv,
-	| 'PORT'
 	| 'MOCKS'
 	| 'DATABASE_PATH'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
-	PORT: number
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
@@ -265,7 +253,6 @@ export function getEnv(): Env {
 			: 'https://api.cloudflare.com/client/v4'
 	const env: Env = {
 		...values,
-		PORT: Number(values.PORT),
 		MOCKS: values.MOCKS === 'true',
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
