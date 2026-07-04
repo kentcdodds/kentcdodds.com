@@ -27,6 +27,7 @@ if (!PORT) {
  */
 export default defineConfig({
 	testDir: './e2e',
+	globalSetup: process.env.CI ? './e2e/global-setup.ts' : undefined,
 	/* Maximum time one test can run for. */
 	timeout: 30 * 1000,
 	expect: {

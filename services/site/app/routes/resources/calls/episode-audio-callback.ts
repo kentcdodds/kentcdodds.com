@@ -4,6 +4,7 @@ import {
 	verifyCallKentAudioProcessorCallbackSignature,
 } from '#app/utils/call-kent-audio-processor-callback.server.ts'
 
+// Header names are mirrored in sendCallKentAudioProcessorCallback.
 const callbackTimestampHeader = 'x-call-kent-audio-timestamp'
 const callbackSignatureHeader = 'x-call-kent-audio-signature'
 

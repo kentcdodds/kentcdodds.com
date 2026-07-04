@@ -1,5 +1,8 @@
 import { randomUUID } from 'node:crypto'
-import { handleCallKentAudioProcessorEvent } from './call-kent-audio-processor-callback.server.ts'
+import {
+	handleCallKentAudioProcessorEvent,
+	type CallKentAudioProcessorEvent,
+} from './call-kent-audio-processor-callback.server.ts'
 import {
 	getAudioBuffer,
 	putEpisodeDraftAudioFromBuffer,
@@ -23,6 +26,17 @@ function getBearerToken(request: Request) {
 function shouldMockCloudflare(request: Request) {
 	const token = getBearerToken(request)
 	return Boolean(token && token.startsWith('MOCK'))
+}
+
+function concatUint8Arrays(parts: Uint8Array[]) {
+	const total = parts.reduce((sum, part) => sum + part.length, 0)
+	const out = new Uint8Array(total)
+	let offset = 0
+	for (const part of parts) {
+		out.set(part, offset)
+		offset += part.length
+	}
+	return out
 }
 
 function modelFromWorkersAiGatewayPathname(pathname: string) {
@@ -71,6 +85,14 @@ function makePcm16SineWaveWav({
 	return new Uint8Array(buffer)
 }
 
+async function dispatchCallKentAudioProcessorEvent(
+	event: CallKentAudioProcessorEvent,
+) {
+	// Dev workerd cannot await nested localhost callback POSTs during queue enqueue
+	// (same-isolate deadlock). Mirror MSW by dispatching in-process instead.
+	await handleCallKentAudioProcessorEvent(event)
+}
+
 async function processCallKentAudioQueueMessage({
 	draftId,
 	callAudioKey,
@@ -81,7 +103,7 @@ async function processCallKentAudioQueueMessage({
 	responseAudioKey: string
 }) {
 	try {
-		await handleCallKentAudioProcessorEvent({
+		await dispatchCallKentAudioProcessorEvent({
 			type: 'audio_generation_started',
 			draftId,
 			attempt: 1,
@@ -90,7 +112,7 @@ async function processCallKentAudioQueueMessage({
 			getAudioBuffer({ key: callAudioKey }),
 			getAudioBuffer({ key: responseAudioKey }),
 		])
-		const episodeAudio = Buffer.concat([callAudio, responseAudio])
+		const episodeAudio = concatUint8Arrays([callAudio, responseAudio])
 		const [episodeStored, callerStored, responseStored] = await Promise.all([
 			putEpisodeDraftAudioFromBuffer({ draftId, mp3: episodeAudio }),
 			putEpisodeDraftCallerSegmentAudioFromBuffer({ draftId, mp3: callAudio }),
@@ -99,7 +121,7 @@ async function processCallKentAudioQueueMessage({
 				mp3: responseAudio,
 			}),
 		])
-		await handleCallKentAudioProcessorEvent({
+		await dispatchCallKentAudioProcessorEvent({
 			type: 'audio_generation_completed',
 			draftId,
 			episodeAudioKey: episodeStored.key,
@@ -111,7 +133,7 @@ async function processCallKentAudioQueueMessage({
 		})
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : String(error)
-		await handleCallKentAudioProcessorEvent({
+		await dispatchCallKentAudioProcessorEvent({
 			type: 'audio_generation_failed',
 			draftId,
 			errorMessage: message,
@@ -281,10 +303,10 @@ async function handleCloudflareQueue(request: Request, url: URL) {
 		)
 	}
 
-	void processCallKentAudioQueueMessage({
-		draftId: message.draftId,
-		callAudioKey: message.callAudioKey,
-		responseAudioKey: message.responseAudioKey,
+	await processCallKentAudioQueueMessage({
+		draftId: message.draftId!,
+		callAudioKey: message.callAudioKey!,
+		responseAudioKey: message.responseAudioKey!,
 	})
 
 	return json({ success: true, result: { message_id: randomUUID() } })

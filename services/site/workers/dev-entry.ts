@@ -13,6 +13,9 @@ import {
 } from '#app/utils/cache-request-stats.server.ts'
 import { installDevMockFetch } from '#app/utils/dev-outbound-fetch.server.ts'
 import {
+	setDevWaitUntil,
+} from '#app/utils/dev-wait-until.server.ts'
+import {
 	setRuntimeEnvSource,
 	getEnv,
 } from '#app/utils/env.server.ts'
@@ -433,6 +436,7 @@ async function handleSiteRequest(
 ): Promise<Response> {
 	const startedAt = Date.now()
 	const cacheStats = beginCacheRequestStats()
+	setDevWaitUntil(ctx.waitUntil.bind(ctx))
 	try {
 		await ensureRuntimeBridges(env)
 
@@ -510,6 +514,7 @@ async function handleSiteRequest(
 		logRequest(request, finalResponse, startedAt)
 		return finalResponse
 	} finally {
+		setDevWaitUntil(null)
 		endCacheRequestStats()
 	}
 }

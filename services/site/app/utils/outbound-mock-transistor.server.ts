@@ -76,6 +76,32 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 	if (url.hostname !== 'api.transistor.fm') return null
 
 	if (
+		request.method === 'GET' &&
+		url.pathname === '/v1/episodes/authorize_upload'
+	) {
+		requiredHeader(request.headers, 'x-api-key')
+		const filename = url.searchParams.get('filename')
+		if (!filename) {
+			return json({ errors: [{ title: 'filename is required' }] }, { status: 400 })
+		}
+		const bucketId = randomUUID()
+		const fileId = filename.replace(/[^a-zA-Z0-9._-]/g, '_')
+		const uploadUrl = `https://transistorupload.s3.amazonaws.com/uploads/api/${bucketId}/${fileId}`
+		return json({
+			data: {
+				id: randomUUID(),
+				type: 'upload_authorization',
+				attributes: {
+					upload_url: uploadUrl,
+					audio_url: uploadUrl,
+					content_type: 'audio/mpeg',
+					expires_in: 3600,
+				},
+			},
+		})
+	}
+
+	if (
 		request.method === 'POST' &&
 		url.pathname === '/v1/episodes/authorize_upload'
 	) {
@@ -110,6 +136,11 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 				audio_url?: string
 			}
 		}
+		const nextNumber =
+			[...episodes.values()].reduce(
+				(max, episode) => Math.max(max, episode.attributes.number ?? 0),
+				0,
+			) + 1
 		const episode = makeEpisode({
 			attributes: {
 				title: body.episode?.title ?? 'Mock Transistor Episode',
@@ -117,7 +148,7 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 				description: body.episode?.description ?? 'Mock description',
 				keywords: body.episode?.keywords ?? 'mock,podcast',
 				season: body.episode?.season ?? 1,
-				number: body.episode?.number ?? 1,
+				number: body.episode?.number ?? nextNumber,
 				media_url: body.episode?.audio_url ?? 'https://media.transistor.fm/mock/mock.mp3',
 			},
 		})
@@ -128,8 +159,26 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 	const publishMatch = /^\/v1\/episodes\/(?<episodeId>[^/]+)\/publish$/.exec(
 		url.pathname,
 	)
-	if (request.method === 'POST' && publishMatch?.groups?.episodeId) {
+	if (
+		(request.method === 'PATCH' || request.method === 'POST') &&
+		publishMatch?.groups?.episodeId
+	) {
 		requiredHeader(request.headers, 'x-api-key')
+		const body = (await request.json()) as {
+			episode?: { status?: string }
+		}
+		if (body.episode?.status && body.episode.status !== 'published') {
+			return json(
+				{
+					errors: [
+						{
+							title: `req.body.episode.status must be published. Was "${body.episode.status}"`,
+						},
+					],
+				},
+				{ status: 400 },
+			)
+		}
 		const episode = episodes.get(publishMatch.groups.episodeId)
 		if (!episode) {
 			return json({ errors: [{ title: 'Not found' }] }, { status: 404 })
@@ -140,6 +189,21 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 	}
 
 	const episodeMatch = /^\/v1\/episodes\/(?<episodeId>[^/]+)$/.exec(url.pathname)
+	if (request.method === 'PATCH' && episodeMatch?.groups?.episodeId) {
+		requiredHeader(request.headers, 'x-api-key')
+		const body = (await request.json()) as {
+			episode?: Partial<TransistorEpisode['attributes']>
+		}
+		const episode = episodes.get(episodeMatch.groups.episodeId)
+		if (!episode) {
+			return json({ errors: [{ title: 'Not found' }] }, { status: 404 })
+		}
+		if (body.episode) {
+			Object.assign(episode.attributes, body.episode)
+		}
+		return json({ data: episode })
+	}
+
 	if (request.method === 'GET' && episodeMatch?.groups?.episodeId) {
 		requiredHeader(request.headers, 'x-api-key')
 		const episode = episodes.get(episodeMatch.groups.episodeId)

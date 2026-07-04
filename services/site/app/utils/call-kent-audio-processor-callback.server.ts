@@ -40,6 +40,9 @@ export type CallKentAudioProcessorEvent = z.infer<
 	typeof callKentAudioProcessorEventSchema
 >
 
+const callbackTimestampHeader = 'x-call-kent-audio-timestamp'
+const callbackSignatureHeader = 'x-call-kent-audio-signature'
+
 function createCallKentAudioProcessorSignature({
 	secret,
 	timestamp,
@@ -52,6 +55,39 @@ function createCallKentAudioProcessorSignature({
 	return createHmac('sha256', secret)
 		.update(`${timestamp}.${rawBody}`, 'utf8')
 		.digest('hex')
+}
+
+export async function sendCallKentAudioProcessorCallback({
+	callbackUrl,
+	event,
+}: {
+	callbackUrl: string
+	event: CallKentAudioProcessorEvent
+}) {
+	const secret = getEnv().CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET
+	const body = JSON.stringify(callKentAudioProcessorEventSchema.parse(event))
+	const timestamp = Math.floor(Date.now() / 1000).toString()
+	const signature = createCallKentAudioProcessorSignature({
+		secret,
+		timestamp,
+		rawBody: body,
+	})
+	const response = await fetch(callbackUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			[callbackTimestampHeader]: timestamp,
+			[callbackSignatureHeader]: signature,
+		},
+		body,
+		signal: AbortSignal.timeout(10_000),
+	})
+	if (!response.ok) {
+		const text = await response.text().catch(() => '')
+		throw new Error(
+			`Callback failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`,
+		)
+	}
 }
 
 function safeEqualHex(a: string, b: string) {
@@ -137,7 +173,7 @@ export async function handleCallKentAudioProcessorEvent(
 				},
 			)
 			if (updated.affectedRows !== 1) return
-			void startCallKentEpisodeDraftProcessing(event.draftId)
+			await startCallKentEpisodeDraftProcessing(event.draftId)
 			return
 		}
 		case 'audio_generation_failed': {
