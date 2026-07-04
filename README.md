@@ -4,7 +4,7 @@
 [![GPL 3.0 License][license-badge]][license]
 
 This repository contains the source code for
-[kentcdodds.com](https://kentcdodds.com/), built with Remix, React, TypeScript,
+[kentcdodds.com](https://kentcdodds.com/), built with React Router v7, React, TypeScript,
 Vite, and an Express server.
 
 ## Tech stack

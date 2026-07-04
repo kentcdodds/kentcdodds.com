@@ -13,6 +13,7 @@ and stable.
 ## Agent docs (source of truth)
 
 - `docs/agents/project-context.md` (setup, commands, project-specific caveats)
+- `docs/agents/cloudflare-worker-architecture.md` (site worker migration contract)
 - `docs/agents/code-style.md`
 - `docs/agents/bugfix-workflow.md`
 - `docs/agents/testing-principles.md`

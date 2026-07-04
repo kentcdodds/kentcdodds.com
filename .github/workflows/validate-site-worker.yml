@@ -5,9 +5,13 @@ on:
     paths:
       - .github/workflows/validate-site-worker.yml
       - docs/agents/cloudflare-staging-d1.md
+      - other/build-server.ts
       - package-lock.json
       - package.json
+      - services/site/app/**
+      - services/site/other/mdx-artifacts/**
       - services/site/prisma/migrations/**
+      - services/site/vite.config.ts
       - services/site-worker/**
   workflow_dispatch:
 

@@ -1,5 +1,11 @@
 # D1 Prisma transaction audit
 
+> **Historical / implemented.** This audit guided D1-safe write-path refactors
+> that are now in place. See the implementations in
+> `services/site/app/utils/prisma-write-flows.server.ts` and
+> `services/site/app/utils/homework-completion-migration.server.ts` (with tests
+> under `services/site/app/utils/__tests__/`).
+
 This audit lists every `prisma.$transaction` usage found under `services/site`
 with `rg '\$transaction' services/site`. Use it when preparing the D1 phase of
 the Cloudflare migration.
@@ -40,6 +46,8 @@ Recommended D1 behavior:
   upserts and delete in one ordered unit; otherwise rely on idempotency so a
   retry can safely resume.
 
+**Status:** ✅ Implemented in `homework-completion-migration.server.ts`.
+
 ### `app/routes/resources/calls/save.tsx` publish cleanup
 
 Current behavior:
@@ -59,6 +67,8 @@ Recommended D1 behavior:
 - Do not put the Transistor publish call inside any database transaction or
   batch.
 
+**Status:** ✅ Implemented in `prisma-write-flows.server.ts`.
+
 ### `app/routes/resources/calls/save.tsx` draft replacement
 
 Current behavior:
@@ -77,6 +87,8 @@ Recommended D1 behavior:
   straightforward.
 - Keep blob cleanup best-effort and outside the database batch.
 
+**Status:** ✅ Implemented in `prisma-write-flows.server.ts`.
+
 ### `app/routes/reset-password.tsx`
 
 Current behavior:
@@ -92,6 +104,8 @@ Recommended D1 behavior:
 - If the final D1 path cannot batch this atomically, run the password upsert and
   session delete sequentially and retry the session delete on failure.
 - Both operations are naturally idempotent and safe to retry.
+
+**Status:** ✅ Implemented in `prisma-write-flows.server.ts`.
 
 ### `app/routes/me_.password.tsx`
 
@@ -110,19 +124,21 @@ Recommended D1 behavior:
   the session delete.
 - Both operations are naturally idempotent and safe to retry.
 
+**Status:** ✅ Implemented in `prisma-write-flows.server.ts`.
+
 ## GitHub issue checklist
 
-- [ ] Confirm the final Prisma+D1 adapter behavior for array-form
+- [x] Confirm the final Prisma+D1 adapter behavior for array-form
       `$transaction`.
-- [ ] Confirm whether interactive Prisma transactions are supported and safe for
-      the deployed Worker shape.
-- [ ] Replace `migrateHomeworkCompletionsToUser` with a D1-safe sequential or
+- [x] Confirm whether interactive Prisma transactions are supported and safe for
+      the deployed Worker shape (replaced with sequential/idempotent flows).
+- [x] Replace `migrateHomeworkCompletionsToUser` with a D1-safe sequential or
       batched migration flow.
-- [ ] Make Call Kent publish cleanup retry-safe after Transistor publish, likely
+- [x] Make Call Kent publish cleanup retry-safe after Transistor publish, likely
       with an upsert keyed by `transistorEpisodeId`.
-- [ ] Decide whether Call Kent draft replacement must be atomic on D1 or can rely
-      on admin retry.
-- [ ] Preserve atomic or retry-safe password update plus session invalidation for
+- [x] Decide whether Call Kent draft replacement must be atomic on D1 or can rely
+      on admin retry (sequential fallback with idempotency).
+- [x] Preserve atomic or retry-safe password update plus session invalidation for
       both reset-password and change-password routes.
 - [ ] Add D1/staging tests or manual verification notes for each updated write
       path before production cutover.

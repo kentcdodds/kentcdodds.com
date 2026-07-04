@@ -60,9 +60,9 @@ instructions:
 
 ### System Requirements
 
-- [Node.js](https://nodejs.org/) >= 16.0.0
+- [Node.js](https://nodejs.org/) 26
 - [git](https://git-scm.com/) >= 2.7.0
-- [Docker](https://www.docker.com/)
+- [Docker](https://www.docker.com/) (optional; needed for Call Kent sandbox work)
 
 ### Setup steps
 
@@ -142,11 +142,11 @@ it here just so you know if it doesn't work.
 
 ## Running automated tests
 
-We have two kinds of tests, unit and component tests with Jest and E2E tests
+We have two kinds of tests, unit and component tests with Vitest and E2E tests
 with Playwright.
 
 ```sh
-# run the unit and component tests with jest via:
+# run the unit and component tests with vitest via:
 npm run test
 
 # run the Playwright tests in dev mode:

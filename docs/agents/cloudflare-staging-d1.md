@@ -5,30 +5,25 @@ replace the production Fly deploy, cut over DNS, or change production secrets.
 Production stays on the current single-machine Fly app with direct SQLite until
 the cutover phase is planned separately.
 
-## Binding
+**Canonical architecture:** see
+[cloudflare-worker-architecture.md](./cloudflare-worker-architecture.md) for
+the full worker topology, bindings, crons, and preview runbooks.
 
-`services/site-worker/wrangler.jsonc` declares:
+## Bindings
 
-- `APP_DB`: staging D1 database for the future React Router Worker runtime.
+`services/site-worker/wrangler.jsonc` declares the staging preview stack:
 
-The Worker does not wire the React Router request handler yet. Do not add
-production routes or production secrets while validating this database setup.
+- `APP_DB` — staging D1 database (`kentcdodds-com-staging-app-db`)
+- `SITE_CACHE_KV`, `CONTENT_KV` — KV namespaces for cachified + MDX manifest
+- `MDX_ARTIFACTS` — R2 bucket (`kcd-site-cf-preview-artifacts`)
+- `LOADER` — Worker Loader for the dynamic app isolate
+- `ASSETS` — static client build from `services/site/build/client`
+- `OAUTH_WORKER`, `SEARCH_WORKER` — service bindings to production workers
 
-An `ASSETS` binding is intentionally not configured yet because the site-worker
-does not build or serve the React Router client bundle. When the RR handler is
-wired, add the asset binding to the actual client build output in the same PR
-that serves those assets.
-
-## Create the staging D1 database
-
-Use a non-production Cloudflare account/environment:
-
-```sh
-npm exec --workspace site-worker wrangler -- d1 create kentcdodds-com-staging-app-db
-```
-
-Copy the returned `database_id` into the `APP_DB` binding in
-`services/site-worker/wrangler.jsonc`.
+The worker serves the **full React Router app** (not a health-only shell).
+Resource IDs are committed in `wrangler.jsonc`; `npm run provision:preview
+--workspace site-worker` stamps `generated-wrangler.jsonc` without Cloudflare
+API calls when IDs are already present.
 
 ## Apply existing site migrations
 
@@ -70,14 +65,14 @@ npm run d1:migrations:prepare --workspace site-worker
 
 ## Local worker development
 
-After local migrations are applied, start the staging worker shell:
+After local migrations are applied, start the staging worker:
 
 ```sh
 npm run dev --workspace site-worker
 ```
 
-The worker listens on `http://127.0.0.1:8788` and currently exposes only
-`GET /health`. Future RR wiring can read the D1 binding as `env.APP_DB`.
+The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
+(plain text `OK`) plus the full site routes through the dynamic app worker.
 
 ## CI validation
 
@@ -88,4 +83,5 @@ The worker listens on `http://127.0.0.1:8788` and currently exposes only
 - `wrangler deploy --dry-run` to validate the worker bundle and Wrangler config
 
 This validation intentionally avoids remote staging deploys and production Fly
-deploys.
+deploys. Remote preview deploys run from `.github/workflows/cf-preview-deploy.yml`
+on the migration branch only.

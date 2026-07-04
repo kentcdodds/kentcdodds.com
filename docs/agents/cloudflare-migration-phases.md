@@ -1,5 +1,13 @@
 # Cloudflare migration phases
 
+## Migration status
+
+| Phase | Status |
+| ----- | ------ |
+| Phase 1 — Worker-shaped app on Fly | ✅ Complete |
+| Phase 2 — Staging Worker | ✅ Complete on `cursor/cloudflare-site-worker-2309` — see [cloudflare-worker-architecture.md](./cloudflare-worker-architecture.md) |
+| Phase 3 — Production cutover | ⏳ Pending (DNS + D1 cutover) |
+
 This is a documentation-only planning outline for moving `services/site` from
 the current Fly-hosted React Router app to Cloudflare. Production is currently a
 single Fly machine using direct SQLite on the attached volume; LiteFS is bypassed
