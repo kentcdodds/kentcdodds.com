@@ -5,7 +5,10 @@ import bcrypt from 'bcryptjs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const workerDir = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	'..',
+)
 
 function getConfigPath() {
 	const index = process.argv.indexOf('--config')
@@ -50,10 +53,27 @@ function runWranglerExecute(sql, { local }) {
 async function main() {
 	const local = process.argv.includes('--local')
 	const adminEmail = 'me@kentcdodds.com'
-	const checkSql = `SELECT id FROM User WHERE email = ${sqlString(adminEmail)} LIMIT 1;`
+	// COUNT with an aliased column so the guard checks the actual row count
+	// instead of pattern-matching column names in wrangler's output (which can
+	// contain "id" even for empty result sets).
+	const checkSql = `SELECT COUNT(*) AS admin_count FROM User WHERE email = ${sqlString(adminEmail)};`
 	const checkOutput = runWranglerExecute(checkSql, { local })
 
-	if (checkOutput.includes(adminEmail) || /"id"/.test(checkOutput)) {
+	const countMatch = checkOutput.match(/"admin_count":\s*(\d+)/)
+	const adminCount = countMatch
+		? Number(countMatch[1])
+		: (() => {
+				// Table output fallback: a row like `│ 1 │` under the header.
+				const tableMatch = checkOutput.match(/admin_count[\s\S]*?([0-9]+)/)
+				return tableMatch ? Number(tableMatch[1]) : null
+			})()
+
+	if (adminCount === null) {
+		throw new Error(
+			`Could not determine existing admin count from wrangler output:\n${checkOutput}`,
+		)
+	}
+	if (adminCount > 0) {
 		console.log('Seed admin already exists; skipping')
 		return
 	}

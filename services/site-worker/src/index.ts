@@ -1,5 +1,6 @@
 import {
 	cacheArtifactBundle,
+	fetchArtifactBundle,
 	clearArtifactBundleCache,
 	getCachedArtifactBundle,
 	getCachedModuleMap,
@@ -41,10 +42,10 @@ function getCachedWorkerStub(
 	if (cached) return cached
 	const stub = env.LOADER.get(workerId, async () => createConfig())
 	workerStubCache.set(workerId, stub)
-		for (const key of workerStubCache.keys()) {
-			if (workerStubCache.size <= 4) break
-			if (key !== workerId) workerStubCache.delete(key)
-		}
+	for (const key of workerStubCache.keys()) {
+		if (workerStubCache.size <= 4) break
+		if (key !== workerId) workerStubCache.delete(key)
+	}
 	return stub
 }
 import { serveStaticAsset } from './static-assets.ts'
@@ -125,42 +126,6 @@ function unprovisionedResponse(details: Record<string, unknown>) {
 	)
 }
 
-async function fetchArtifactBundle(
-	env: ParentWorkerEnv,
-	r2Key: string,
-): Promise<MdxArtifactBundle | null> {
-	// KV mirror first: with cacheTtl the read is served from the local edge
-	// cache (~10-30ms) instead of R2 (~300ms), which matters because parent
-	// isolates rotate and each cold parent needs the bundle.
-	try {
-		const mirrored = await env.CONTENT_KV.get(`mdx-bundle:${r2Key}`, {
-			type: 'json',
-			cacheTtl: 300,
-		})
-		if (mirrored) return mirrored as MdxArtifactBundle
-	} catch {
-		// fall through to R2
-	}
-
-	const object = await env.MDX_ARTIFACTS.get(r2Key)
-	if (!object) return null
-
-	let bundle: MdxArtifactBundle
-	try {
-		bundle = (await object.json()) as MdxArtifactBundle
-	} catch {
-		return null
-	}
-
-	try {
-		await env.CONTENT_KV.put(`mdx-bundle:${r2Key}`, JSON.stringify(bundle))
-	} catch {
-		// KV values cap at 25 MiB; if the bundle ever outgrows that we still
-		// serve from R2.
-	}
-	return bundle
-}
-
 const WARMUP_CRON = '*/2 * * * *'
 
 // Keeps the parent artifact cache and a few dynamic isolates warm so real
@@ -237,31 +202,27 @@ async function handleDynamicRequest(
 	const stringEnv = getStringEnvBindings(env)
 
 	let loaderCallbackMs = 0
-	const worker = getCachedWorkerStub(
-		workerId,
-		env,
-		() => {
-			const loaderCallbackStartedAt = performance.now()
-			const workerConfig = {
-				compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
-				compatibilityFlags: [
-					'nodejs_compat',
-					'no_handle_cross_request_promise_resolution',
-				],
-				mainModule: 'app-worker.js',
-				modules,
-				env: {
-					...stringEnv,
-					PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
-					CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
-					CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),
-				},
-				globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
-			}
-			loaderCallbackMs = performance.now() - loaderCallbackStartedAt
-			return workerConfig
-		},
-	)
+	const worker = getCachedWorkerStub(workerId, env, () => {
+		const loaderCallbackStartedAt = performance.now()
+		const workerConfig = {
+			compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
+			compatibilityFlags: [
+				'nodejs_compat',
+				'no_handle_cross_request_promise_resolution',
+			],
+			mainModule: 'app-worker.js',
+			modules,
+			env: {
+				...stringEnv,
+				PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
+				CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
+				CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),
+			},
+			globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
+		}
+		loaderCallbackMs = performance.now() - loaderCallbackStartedAt
+		return workerConfig
+	})
 
 	const beforeFetchAt = performance.now()
 	const response = await worker.getEntrypoint().fetch(request)
