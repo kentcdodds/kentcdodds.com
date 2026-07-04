@@ -57,18 +57,17 @@ reference:
   recorder UI and keep the fake-audio setup in Playwright/helpers rather than
   adding app runtime shortcuts.
 - SQLite is file-based: the database file lives at `services/site/prisma/sqlite.db`. No
-  external database server is required.
-- Production runs as a single Fly Machine in `dfw` with one attached SQLite
-  volume. Do not add regions, clone machines, or use `fly scale count` above
-  `1` unless the database architecture changes to support replication again.
-  Historical blog content and disabled LiteFS compatibility code are not the
-  current production topology.
+  external database server is required for local dev or e2e.
+- **Production** runs on the Cloudflare Worker `kentcdodds-com` (D1 + KV + R2).
+  **Local dev and Playwright e2e** use the Node/Express server in `services/site`.
 - If Playwright E2E tests fail with SQLite "table does not exist" errors, run
   the DB reset + seed command from the table above to apply migrations and seed
   data.
 - Production schema changes must follow widen-then-narrow rollouts:
   deploy backward-compatible "widen" changes first, then ship narrowing
-  constraints/removals in a follow-up deploy.
+  constraints/removals in a follow-up deploy. Apply D1 migrations with
+  `npm run d1:migrations:apply:production --workspace site-worker` (remote) or
+  the staging equivalent for preview.
 - When shipping a widen migration, create a linked follow-up issue for the
   narrow step before merging so the cleanup pass does not get forgotten.
 - Cache database: a separate SQLite cache DB is created at `services/site/other/cache.db`.

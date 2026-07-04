@@ -232,35 +232,15 @@ seed script which will populate the database with some example data.
 
 ## Maintenance Tips
 
-### Fly production topology
+### Production topology
 
-The production site intentionally runs as a single Fly Machine in `dfw` with one
-attached SQLite volume. Do not scale the app above one machine, add app regions,
-or clone machines unless the database architecture changes to support
-replication again.
+Production runs on the Cloudflare Worker `kentcdodds-com` (see
+`docs/agents/cloudflare-worker-architecture.md`). Local development and CI/e2e
+still use the Node server in `services/site`.
 
-Before changing Fly machines or volumes, verify the current topology:
-
-```sh
-fly machines list -a kcd
-fly volumes list -a kcd
-```
-
-If cleanup leaves any machines in a non-started state, inspect them before
-destroying them:
-
-```sh
-fly machines list -a kcd
-```
-
-After confirming a volume is unattached and no longer needed, destroy it by ID:
-
-```sh
-fly volumes list -a kcd
-fly volumes destroy <VOL_ID> -a kcd
-```
-
-Do not delete volumes attached to active machines.
+Schema changes: widen-then-narrow migrations; apply remote D1 migrations via
+`npm run d1:migrations:apply:production --workspace site-worker` after merging
+widen steps.
 
 ## Help needed
 

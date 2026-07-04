@@ -1,9 +1,7 @@
 # Cloudflare staging D1
 
-This is Phase 2 staging infrastructure for `services/site-worker`. It does not
-replace the production Fly deploy, cut over DNS, or change production secrets.
-Production stays on the current single-machine Fly app with direct SQLite until
-the cutover phase is planned separately.
+This is Phase 2 staging infrastructure for `services/site-worker`. Production
+deploys to `kentcdodds-com` on `main`; this doc covers the staging preview only.
 
 **Canonical architecture:** see
 [cloudflare-worker-architecture.md](./cloudflare-worker-architecture.md) for

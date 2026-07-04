@@ -2,9 +2,9 @@
 
 This documents the architecture for running the full kentcdodds.com site on
 Cloudflare Workers with user-facing feature parity, no Fly.io dependency, and
-content updates that do not require a redeploy. **Production remains on Fly
-until DNS cutover** (Phase 3); this doc is the shared contract for the pieces
-in `services/site-worker` and the MDX artifact pipeline on the migration branch.
+content updates that do not require a redeploy. **Production deploys exclusively
+to Cloudflare Workers** (`kentcdodds-com`); local dev and CI/e2e still use the
+Node/Express server in `services/site`.
 
 ## Overview
 
@@ -245,7 +245,7 @@ Configured in `services/site-worker/wrangler.jsonc`:
 ## Performance profile (measured July 2026)
 
 - Warm dynamic isolates serve pages in ~0.10-0.30s TTFB (measured from a US
-  VM; production Fly is ~0.15-0.20s), so warm traffic is at parity or faster.
+  VM), so warm traffic is at parity or faster than the former Fly deployment.
 - Cold dynamic isolates cost ~1.4-2.5s: ~0.9s isolate creation + module-map
   transfer + app bundle eval, plus first-request work. Mitigations in place:
   minified app bundle (9.4 → 4.1MB), per-document `code` served via
@@ -339,7 +339,7 @@ Nothing changes for `npm run dev` (Node + Express + MSW). The worker path is
 exercised via `services/site-worker` scripts (miniflare/wrangler dev) and the
 preview deployment.
 
-## Preview deployment (this branch)
+## Preview deployment (migration branch)
 
 - Worker: `kentcdodds-com-staging` (`kentcdodds-com-staging.kentcdodds.workers.dev`)
 - D1: `kentcdodds-com-staging-app-db` (`01a8ba77-2a63-4a14-898d-6023942a480f`)
@@ -348,18 +348,31 @@ preview deployment.
 - R2: `kcd-site-cf-preview-artifacts`
 - Service bindings: `kcd-oauth-provider`, `kcd-search-worker` (production workers)
 - Deploys from `.github/workflows/cf-preview-deploy.yml` on pushes to the
-  migration branch. Production site resources are never touched.
+  migration branch (`cursor/cloudflare-site-worker-2309` until merge).
+
+## Production deployment (main)
+
+- Worker: `kentcdodds-com` (`kentcdodds-com.kentcdodds.workers.dev`; custom
+  domain attached manually at DNS cutover — not configured in wrangler yet)
+- D1: `kentcdodds-com-db` (`af33bd8b-c9b2-484a-afa5-43ee322ff49c`)
+- KV: `SITE_CACHE_KV`=`9430f933f2ff4bc5881385851869b02e`,
+  `CONTENT_KV`=`e9ec6e92d8034f3db76343162f2b3a26`
+- R2: `kentcdodds-com-artifacts`
+- Service bindings: same production oauth/search workers
+- Deploys from `.github/workflows/deployment.yml` → `deploy-site.yml` on pushes
+  to `main` (`npm run provision:production`, `generate-worker-secrets.mjs
+  --target=production`, artifact publish via endpoint, D1 migrations, smoke).
 
 ### Resource naming
 
-Preview resources use two naming conventions from incremental provisioning:
+| Target | Worker + D1 | KV + R2 |
+| ------ | ----------- | ------- |
+| Staging (branch preview) | `kentcdodds-com-staging*` | `kcd-site-cf-preview-*` |
+| Production (main) | `kentcdodds-com*` | `kentcdodds-com-*` |
 
-- **Worker + D1** — `kentcdodds-com-staging*` (worker script, D1 database).
-- **KV + R2** — `kcd-site-cf-preview-*` (cache/content KV namespaces, artifact
-  bucket).
-
-Unify naming at production cutover when provisioning fresh production
-bindings.
+`wrangler.jsonc` uses `env.production` overrides for production bindings; the
+default top-level config is staging. `provision-preview.mjs --target=staging|production`
+writes `generated-wrangler.jsonc` with the resolved target + `BUILD_SHA`.
 
 ### CI token limitations
 
@@ -367,8 +380,8 @@ The repo `CLOUDFLARE_API_TOKEN` can deploy worker scripts and upload secrets
 but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 
 - Resource IDs are committed in `services/site-worker/wrangler.jsonc`; `npm run
-  provision:preview` skips Cloudflare API calls when IDs are present (use
-  `--force-ensure` for fresh environments with a privileged token).
+  provision:preview` / `provision:production` skips Cloudflare API calls when IDs
+  are present (use `--force-ensure` for fresh environments with a privileged token).
 - D1 migrations and seed steps in CI are **non-fatal** with a loud warning.
 - Artifact publish in CI uses `POST /resources/mdx-artifacts` (no R2/KV API
   needed).
