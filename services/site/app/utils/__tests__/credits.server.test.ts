@@ -23,13 +23,12 @@ vi.mock('../cache.server.ts', () => ({
 	shouldForceFresh: vi.fn(async () => false),
 }))
 
-vi.mock('../github.server.ts', () => ({
-	downloadFile: vi.fn(async () => ''),
+vi.mock('../content-data.server.ts', () => ({
+	getContentDataFile: vi.fn(async () => ''),
 }))
 
-import { getGitHubContentPath } from '../github-content-paths.server.ts'
 import { getPeople } from '../credits.server.ts'
-import { downloadFile } from '../github.server.ts'
+import { getContentDataFile } from '../content-data.server.ts'
 
 test('getPeople normalizes stale cached people with missing id values', async () => {
 	const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -50,7 +49,7 @@ test('getPeople normalizes stale cached people with missing id values', async ()
 test('getPeople checkValue rejects missing ids and revalidates via getFreshValue', async () => {
 	const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 	try {
-		vi.mocked(downloadFile).mockResolvedValueOnce('- name: Fresh Person')
+		vi.mocked(getContentDataFile).mockResolvedValueOnce('- name: Fresh Person')
 		vi.mocked(cachified).mockImplementationOnce(async (...args) => {
 			const options = args[0] as {
 				checkValue?: (
@@ -77,9 +76,7 @@ test('getPeople checkValue rejects missing ids and revalidates via getFreshValue
 			id: 'fresh-person',
 			name: 'Fresh Person',
 		})
-		expect(downloadFile).toHaveBeenCalledWith(
-			getGitHubContentPath('data/credits.yml'),
-		)
+		expect(getContentDataFile).toHaveBeenCalledWith('data/credits.yml')
 	} finally {
 		warnSpy.mockRestore()
 	}

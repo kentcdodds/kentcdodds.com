@@ -1,9 +1,7 @@
 import * as YAML from 'yaml'
 import { z } from 'zod'
 import { cache, cachified } from '#app/utils/cache.server.ts'
-import { getArtifactDataFile, isWorkerContentMode } from '#app/utils/content-artifacts.server.ts'
-import { downloadFile } from '#app/utils/github.server.ts'
-import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
+import { getContentDataFile } from '#app/utils/content-data.server.ts'
 import { type Timings } from '#app/utils/timing.server.ts'
 
 const resumeLinkSchema = z.object({
@@ -76,9 +74,7 @@ async function getResumeData({
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 			forceFresh,
 			getFreshValue: async () => {
-				const resumeString = isWorkerContentMode()
-					? getArtifactDataFile('data/resume.yml')
-					: await downloadFile(getGitHubContentPath('data/resume.yml'))
+				const resumeString = await getContentDataFile('data/resume.yml')
 				if (!resumeString) {
 					throw new Error('resume.yml is unavailable')
 				}

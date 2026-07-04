@@ -2,9 +2,7 @@ import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { pick } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
-import { getArtifactDataFile, isWorkerContentMode } from './content-artifacts.server.ts'
-import { downloadFile } from './github.server.ts'
-import { getGitHubContentPath } from './github-content-paths.server.ts'
+import { getContentDataFile } from './content-data.server.ts'
 import { markdownToHtml } from './markdown.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.ts'
 import { type Timings } from './timing.server.ts'
@@ -214,11 +212,7 @@ async function getAllTestimonials({
 			ttl: 1000 * 60 * 60 * 24,
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 			getFreshValue: async (): Promise<Array<TestimonialWithMetadata>> => {
-				const talksString = isWorkerContentMode()
-					? getArtifactDataFile('data/testimonials.yml')
-					: await downloadFile(
-							getGitHubContentPath('data/testimonials.yml'),
-						)
+				const talksString = await getContentDataFile('data/testimonials.yml')
 				if (!talksString) {
 					throw new Error('testimonials.yml is unavailable')
 				}
