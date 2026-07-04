@@ -128,12 +128,10 @@ test('getEnv accepts Worker-shaped config without file cache paths', () => {
 		createRuntimeEnvSource({
 			DATABASE_URL: 'd1://app-db',
 			DATABASE_PATH: undefined,
-			CACHE_DATABASE_PATH: undefined,
 		}),
 	)
 
 	const env = getEnv()
 
 	expect(env.DATABASE_PATH).toBe('')
-	expect(env.CACHE_DATABASE_PATH).toBeUndefined()
 })

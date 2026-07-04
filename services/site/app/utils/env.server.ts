@@ -17,8 +17,6 @@ const schemaBase = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
 	PORT: nonEmptyString,
 	MOCKS: z.enum(['true', 'false']).optional(),
-	STARTUP_SHORTCUTS: z.enum(['true', 'false']).optional(),
-	EXPIRED_SESSIONS_CLEANUP_DISABLED: z.enum(['true', 'false']).optional(),
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
@@ -26,9 +24,7 @@ const schemaBase = z.object({
 	// `DATABASE_URL` when using SQLite `file:` URLs.
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
-	CACHE_DATABASE_PATH: z.string().trim().optional(),
 
-	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,
 	CHATS_WITH_KENT_PODCAST_ID: nonEmptyString,
 	KIT_API_KEY: nonEmptyString,
@@ -128,7 +124,6 @@ const schemaBase = z.object({
 		.optional()
 		.default('manifests/ignore-list.json'),
 
-	GITHUB_REF: z.string().trim().optional().default('main'),
 
 	// Optional: /youtube route + indexing scripts.
 	YOUTUBE_PLAYLIST_ID: z
@@ -166,14 +161,12 @@ export type Env = Omit<
 	| 'PORT'
 	| 'MOCKS'
 	| 'DATABASE_PATH'
-	| 'CACHE_DATABASE_PATH'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
 	PORT: number
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
-	CACHE_DATABASE_PATH?: string
 	/**
 	 * Defaults to `CLOUDFLARE_AI_TEXT_MODEL` when not explicitly set.
 	 * This keeps Call Kent metadata generation aligned with the site's configured

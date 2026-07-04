@@ -59,92 +59,6 @@ function usesPersistentKvCache() {
 	return Boolean(getCacheRpcBinding() || getDirectKvBinding())
 }
 
-type DatabaseSync = import('node:sqlite').DatabaseSync
-type StatementSync = ReturnType<DatabaseSync['prepare']>
-
-type SqliteCacheState = {
-	db: DatabaseSync
-	preparedGet: StatementSync
-	preparedSet: StatementSync
-	preparedDelete: StatementSync
-	preparedAllKeys: StatementSync
-	preparedKeySearch: StatementSync
-}
-
-const sqliteCacheStates = remember(
-	'sqlite-cache-states',
-	() => new Map<string, Promise<SqliteCacheState>>(),
-)
-
-function getCacheDatabasePath() {
-	const cacheDatabasePath = getRuntimeBinding<string>(
-		'CACHE_DATABASE_PATH',
-	)?.trim()
-	if (cacheDatabasePath) return cacheDatabasePath
-	throw new Error(
-		'CACHE_DATABASE_PATH is required for the SQLite cache backend',
-	)
-}
-
-async function createDatabase(
-	cacheDatabasePath: string,
-	tryAgain = true,
-): Promise<DatabaseSync> {
-	const fs = await import('node:fs')
-	const path = await import('node:path')
-	const { DatabaseSync } = await import('node:sqlite')
-	const parentDir = path.dirname(cacheDatabasePath)
-	fs.mkdirSync(parentDir, { recursive: true })
-	const db = new DatabaseSync(cacheDatabasePath)
-
-	try {
-		// create cache table with metadata JSON column and value JSON column if it does not exist already
-		db.exec(`
-      CREATE TABLE IF NOT EXISTS cache (
-        key TEXT PRIMARY KEY,
-        metadata TEXT,
-        value TEXT
-      )
-    `)
-	} catch (error: unknown) {
-		fs.unlinkSync(cacheDatabasePath)
-		if (tryAgain) {
-			console.error(
-				`Error creating cache database, deleting the file at "${cacheDatabasePath}" and trying again...`,
-			)
-			return createDatabase(cacheDatabasePath, false)
-		}
-		throw error
-	}
-	return db
-}
-
-function getSqliteCacheState() {
-	const cacheDatabasePath = getCacheDatabasePath()
-	let state = sqliteCacheStates.get(cacheDatabasePath)
-	if (!state) {
-		state = createSqliteCacheState(cacheDatabasePath)
-		sqliteCacheStates.set(cacheDatabasePath, state)
-	}
-	return state
-}
-
-async function createSqliteCacheState(cacheDatabasePath: string) {
-	const db = await createDatabase(cacheDatabasePath)
-	return {
-		db,
-		preparedGet: db.prepare('SELECT value, metadata FROM cache WHERE key = ?'),
-		preparedSet: db.prepare(
-			'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (?, ?, ?)',
-		),
-		preparedDelete: db.prepare('DELETE FROM cache WHERE key = ?'),
-		preparedAllKeys: db.prepare('SELECT key FROM cache LIMIT ?'),
-		preparedKeySearch: db.prepare(
-			'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
-		),
-	}
-}
-
 const LRU_MAX_ENTRIES = 500
 
 const lruInstance = remember(
@@ -159,21 +73,12 @@ export {
 	formatCacheRequestStatsHeader,
 } from '#app/utils/cache-request-stats.server.ts'
 
-export function isRpcCacheAvailable() {
-	return Boolean(getCacheRpcBinding() || getDirectKvBinding())
-}
-
-export function isFileCacheAvailable() {
-	return !usesPersistentKvCache()
-}
-
 export function isCacheAdminAvailable() {
-	return isFileCacheAvailable() || usesPersistentKvCache()
+	return usesPersistentKvCache()
 }
 
 export function getPersistentCacheLabel() {
-	if (getCacheRpcBinding() || getDirectKvBinding()) return 'KV'
-	return 'SQLite'
+	return 'KV'
 }
 
 export const lruCache = {
@@ -191,37 +96,6 @@ export const lruCache = {
 		return lruInstance.delete(key)
 	},
 } satisfies Cache
-
-const getBuffer = () => (globalThis as { Buffer?: typeof Buffer }).Buffer
-
-const isBuffer = (obj: unknown) =>
-	getBuffer()?.isBuffer(obj) || obj instanceof Uint8Array
-
-function bufferReplacer(_key: string, value: unknown) {
-	if (isBuffer(value)) {
-		const BufferConstructor = getBuffer()
-		if (!BufferConstructor) return value
-		return {
-			__isBuffer: true,
-			data: BufferConstructor.from(value).toString('base64'),
-		}
-	}
-	return value
-}
-
-function bufferReviver(_key: string, value: unknown) {
-	if (
-		value &&
-		typeof value === 'object' &&
-		'__isBuffer' in value &&
-		(value as any).data
-	) {
-		const BufferConstructor = getBuffer()
-		if (!BufferConstructor) return value
-		return BufferConstructor.from((value as any).data, 'base64')
-	}
-	return value
-}
 
 async function getDirectKvCacheEntry(key: string) {
 	const kv = getDirectKvBinding()
@@ -281,13 +155,7 @@ export const cache: CachifiedCache = {
 			if (entry) lruCache.set(key, entry)
 			return entry
 		}
-		const { preparedGet } = await getSqliteCacheState()
-		const result = preparedGet.get(key) as any
-		if (!result) return null
-		return {
-			metadata: JSON.parse(result.metadata),
-			value: JSON.parse(result.value, bufferReviver),
-		}
+		return null
 	},
 	async set(key, entry) {
 		const rpc = getCacheRpcBinding()
@@ -299,14 +167,7 @@ export const cache: CachifiedCache = {
 		if (getDirectKvBinding()) {
 			lruCache.set(key, entry)
 			await setDirectKvCacheEntry(key, entry)
-			return
 		}
-		const { preparedSet } = await getSqliteCacheState()
-		preparedSet.run(
-			key,
-			JSON.stringify(entry.value, bufferReplacer),
-			JSON.stringify(entry.metadata),
-		)
 	},
 	async delete(key) {
 		const rpc = getCacheRpcBinding()
@@ -318,10 +179,7 @@ export const cache: CachifiedCache = {
 		if (getDirectKvBinding()) {
 			lruCache.delete(key)
 			await deleteDirectKvCacheEntry(key)
-			return
 		}
-		const { preparedDelete } = await getSqliteCacheState()
-		preparedDelete.run(key)
 	},
 }
 
@@ -340,11 +198,8 @@ export async function getAllCacheKeys(limit: number) {
 			lru: [...lruInstance.keys()],
 		}
 	}
-	const sqlite = (await getSqliteCacheState()).preparedAllKeys
-			.all(limit)
-			.map((row) => (row as { key: string }).key)
 	return {
-		sqlite,
+		sqlite: [],
 		lru: [...lruInstance.keys()],
 	}
 }
@@ -366,11 +221,8 @@ export async function searchCacheKeys(search: string, limit: number) {
 			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 		}
 	}
-	const sqlite = (await getSqliteCacheState()).preparedKeySearch
-			.all(`%${search}%`, limit)
-			.map((row) => (row as { key: string }).key)
 	return {
-		sqlite,
+		sqlite: [],
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 	}
 }
