@@ -38,10 +38,10 @@ import {
 	createRateLimitedResponse,
 	getAgentSearchHintHeaders,
 } from './rate-limiting.ts'
+import { getLegacyGenericSocialImageUrl } from '../../../site/app/og/meta.server.ts'
 import {
 	getRickRollHtml,
 	matchRedirect,
-	oldImgSocialUrl,
 	parseRedirectsString,
 } from '../../../site/app/utils/redirects-core.server.ts'
 import redirectsText from '../../../site/other/_redirects.txt'
@@ -282,7 +282,13 @@ async function runPreRouterPipeline(
 	const proto = request.headers.get('X-Forwarded-Proto') ?? 'https'
 
 	if (url.pathname === '/img/social' && request.method === 'GET') {
-		return { response: redirectResponse(oldImgSocialUrl, 302), rateLimit: null }
+		return {
+			response: redirectResponse(
+				getLegacyGenericSocialImageUrl(`${proto}://${host}`),
+				302,
+			),
+			rateLimit: null,
+		}
 	}
 
 	if (isBogusCrawlerPath(url.pathname)) {

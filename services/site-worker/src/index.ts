@@ -33,6 +33,9 @@ import {
 	handlePageCacheRequest,
 } from './page-cache.ts'
 import { serveStaticAsset } from './static-assets.ts'
+import { handleOgImageRequest } from '../../site/app/og/handler.server.ts'
+
+const OG_IMAGE_PATH = '/resources/og-image'
 
 type ParentExecutionContext = ExecutionContext & {
 	exports: {
@@ -277,6 +280,10 @@ export default {
 				})
 			}
 			return handleMetaRequest(env)
+		}
+
+		if (url.pathname === OG_IMAGE_PATH) {
+			return handleOgImageRequest(request, env)
 		}
 
 		if (url.pathname === ARTIFACT_PUBLISH_PATH && request.method === 'POST') {

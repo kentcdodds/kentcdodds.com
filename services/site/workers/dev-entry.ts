@@ -23,10 +23,11 @@ import {
 	setRuntimeBindingSource,
 	type RuntimeBindingSource,
 } from '#app/utils/runtime-bindings.server.ts'
+import { getLegacyGenericSocialImageUrl } from '#app/og/meta.server.ts'
+import { handleOgImageRequest } from '#app/og/handler.server.ts'
 import {
 	getRickRollHtml,
 	matchRedirect,
-	oldImgSocialUrl,
 	parseRedirectsString,
 } from '#app/utils/redirects-core.server.ts'
 import { type MdxDevManifestModule } from '../other/vite-plugins/mdx-dev-manifest.ts'
@@ -278,8 +279,16 @@ async function runPreRouterPipeline(
 	const host = getHost(request)
 	const proto = request.headers.get('X-Forwarded-Proto') ?? 'https'
 
+	if (url.pathname === '/resources/og-image') {
+		const response = await handleOgImageRequest(request, env)
+		return { response, rateLimit: null }
+	}
+
 	if (url.pathname === '/img/social' && request.method === 'GET') {
-		return { response: redirectResponse(oldImgSocialUrl, 302), rateLimit: null }
+		return {
+			response: redirectResponse(getLegacyGenericSocialImageUrl(`${proto}://${host}`), 302),
+			rateLimit: null,
+		}
 	}
 
 	if (isBogusCrawlerPath(url.pathname)) {

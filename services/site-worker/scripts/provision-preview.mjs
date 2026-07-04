@@ -85,7 +85,9 @@ async function pathExists(filePath) {
 }
 
 function stripJsoncComments(source) {
-	return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+	// Only strip line comments. Block-comment regex must not run on this config:
+	// globs like "**/*.wasm" contain `/*` and would be corrupted.
+	return source.replace(/^\s*\/\/.*$/gm, '')
 }
 
 async function readBaseConfig() {

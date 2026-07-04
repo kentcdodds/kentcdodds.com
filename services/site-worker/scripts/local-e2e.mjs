@@ -69,6 +69,7 @@ const localDevSecrets = {
 	MAILGUN_DOMAIN: 'example.com',
 	MAILGUN_SENDING_KEY: 'mailgun-key',
 	REFRESH_CACHE_SECRET: 'refresh-cache-secret',
+	OG_IMAGE_SECRET: 'refresh-cache-secret-derived-og',
 	SESSION_SECRET: 'session-secret',
 	SIMPLECAST_KEY: 'simplecast-key',
 	TRANSISTOR_API_SECRET: 'transistor-secret',

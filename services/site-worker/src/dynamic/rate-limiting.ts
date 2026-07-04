@@ -53,6 +53,8 @@ const strongestGetPaths = [
 	'/reset-password',
 ]
 
+const strongGetPaths = ['/resources/og-image']
+
 const searchGetPaths = ['/search', '/resources/search']
 
 const contentIndexGetPaths = [
@@ -141,6 +143,10 @@ function getTier({
 
 	if (strongestGetPaths.some((p) => pathname.includes(p))) {
 		return 'strongest'
+	}
+
+	if (strongGetPaths.some((p) => pathname === p)) {
+		return 'strong'
 	}
 
 	if (requestPrefersMarkdown(acceptHeader)) {
