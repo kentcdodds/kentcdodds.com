@@ -20,10 +20,6 @@ const jsxRuntimeExports = Object.keys(require('react/jsx-runtime')).sort()
 const stubAliases = {
 	bcrypt: path.join(stubsDir, 'bcrypt.ts'),
 	'better-sqlite3': path.join(stubsDir, 'better-sqlite3.ts'),
-	'@prisma/adapter-better-sqlite3': path.join(
-		stubsDir,
-		'prisma-adapter-better-sqlite3.ts',
-	),
 	esbuild: path.join(stubsDir, 'esbuild.ts'),
 	'@esbuild-plugins/node-resolve': path.join(
 		stubsDir,
@@ -35,16 +31,6 @@ const stubAliases = {
 		'mdx-bundler-client.ts',
 	),
 	'mdx-bundler': path.join(stubsDir, 'mdx-bundler.ts'),
-	'@prisma/client/runtime/client': path.join(
-		stubsDir,
-		'prisma-client-runtime.ts',
-	),
-	'@prisma/client/runtime/query_compiler_fast_bg.sqlite.mjs': path.join(
-		stubsDir,
-		'prisma-query-compiler.ts',
-	),
-	'@prisma/client/runtime/query_compiler_fast_bg.sqlite.wasm-base64.mjs':
-		path.join(stubsDir, 'prisma-query-compiler-wasm-base64.ts'),
 	'reading-time': path.join(stubsDir, 'reading-time.ts'),
 }
 

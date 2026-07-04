@@ -25,7 +25,6 @@ import { CacheRpc } from './rpc/cache-rpc.ts'
 import { ContentRpc } from './rpc/content-rpc.ts'
 import { D1Rpc } from './rpc/d1-rpc.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
-import { PrismaRpc } from './rpc/prisma-rpc.ts'
 import type { DynamicWorkerConfig, ParentWorkerEnv } from './rpc/types.ts'
 
 import {
@@ -37,7 +36,6 @@ import { serveStaticAsset } from './static-assets.ts'
 
 type ParentExecutionContext = ExecutionContext & {
 	exports: {
-		PrismaRpc: (options: { props: Record<string, never> }) => unknown
 		D1Rpc: (options: { props: Record<string, never> }) => unknown
 		CacheRpc: (options: { props: Record<string, never> }) => unknown
 		ContentRpc: (options: { props: Record<string, never> }) => unknown
@@ -45,7 +43,7 @@ type ParentExecutionContext = ExecutionContext & {
 	}
 }
 
-export { CacheRpc, ContentRpc, D1Rpc, OutboundProxy, PrismaRpc }
+export { CacheRpc, ContentRpc, D1Rpc, OutboundProxy }
 
 function getStringEnvBindings(env: ParentWorkerEnv) {
 	return Object.fromEntries(
@@ -215,7 +213,6 @@ async function handleDynamicRequest(
 			modules,
 			env: {
 				...stringEnv,
-				PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
 				D1_RPC: ctx.exports.D1Rpc({ props: {} }),
 				CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
 				CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),

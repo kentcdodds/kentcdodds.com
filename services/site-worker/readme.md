@@ -9,7 +9,7 @@ Cloudflare parent worker for the kentcdodds.com migration. See
 - Static assets via `ASSETS` with Express-parity cache headers
 - Dynamic requests via `worker_loaders` (`LOADER` binding) using MDX artifacts
   from R2 + `CONTENT_KV`
-- RPC entrypoints: `PrismaRpc` (D1), `CacheRpc` (KV), `ContentRpc` (MDX
+- RPC entrypoints: `D1Rpc` (D1 SQL), `CacheRpc` (KV), `ContentRpc` (MDX
   artifacts), `OutboundProxy` (preview mocks)
 - Scheduled jobs:
   - `0 3 * * *` — daily cleanup for expired `Session` / `Verification` rows
@@ -27,27 +27,12 @@ Cloudflare parent worker for the kentcdodds.com migration. See
 Wrangler `rules: [{ type: "Text", globs: ["**/*.txt"] }]` inlines these as
 strings in the parent worker bundle.
 
-## Prisma on workerd
+## D1 database access
 
-1. `services/site/prisma/schema.prisma` includes a second generator:
-
-   ```prisma
-   generator site_worker_client {
-     provider = "prisma-client"
-     output   = "../../site-worker/generated/prisma-client"
-     runtime  = "cloudflare"
-   }
-   ```
-
-2. `npm run prisma:generate --workspace site-worker` (also runs on
-   `postinstall`) emits the worker client into `generated/prisma-client/`.
-
-3. `PrismaRpc` uses `@prisma/adapter-d1` with `env.APP_DB`. The
-   `runtime = "cloudflare"` generator setting avoids runtime WASM compilation
-   (blocked in workerd). `nodejs_compat` remains enabled in `wrangler.jsonc`.
-
-4. No extra `CompiledWasm` wrangler rules were required for Prisma 7.8 with the
-   cloudflare runtime generator on this scaffold.
+The parent worker exposes `D1Rpc` (`services/site-worker/src/rpc/d1-rpc.ts`)
+for SQL-level access to `APP_DB`. The dynamic app worker calls it via the
+`D1_RPC` loopback stub; `services/site/app/utils/db.server.ts` adapts it through
+`SqliteExecutorDataTableAdapter`.
 
 ## Local development
 
