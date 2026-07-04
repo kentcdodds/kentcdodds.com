@@ -20,6 +20,7 @@ type TransistorEpisode = {
 		embed_html: string
 		embed_html_dark: string
 		published_at: string | null
+		updated_at: string
 		status: string
 	}
 }
@@ -55,6 +56,7 @@ function makeEpisode(overrides: {
 			embed_html_dark:
 				'<iframe src="https://share.transistor.fm/e/mock/dark" width="100%" height="180"></iframe>',
 			published_at: null,
+			updated_at: new Date().toISOString(),
 			status: 'draft',
 			...overrides.attributes,
 		},
@@ -185,6 +187,7 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 		}
 		episode.attributes.status = 'published'
 		episode.attributes.published_at = new Date().toISOString()
+		episode.attributes.updated_at = new Date().toISOString()
 		return json({ data: episode })
 	}
 
@@ -200,6 +203,7 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 		}
 		if (body.episode) {
 			Object.assign(episode.attributes, body.episode)
+			episode.attributes.updated_at = new Date().toISOString()
 		}
 		return json({ data: episode })
 	}
