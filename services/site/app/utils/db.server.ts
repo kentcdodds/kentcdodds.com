@@ -13,9 +13,12 @@ import { createSqliteExecutorDataTableAdapter } from './db/d1-data-table-adapter
 import { createBetterSqliteExecutor } from './db/better-sqlite-executor.server.ts'
 import { getD1RpcBinding } from './db/d1-rpc-client.server.ts'
 import {
+	createDirectD1Executor,
 	createRpcD1Executor,
+	type D1DatabaseLike,
 	type D1SqlExecutor,
 } from './db/d1-sql-executor.server.ts'
+import { getRuntimeBinding } from './runtime-bindings.server.ts'
 
 export {
 	isNotFoundError,
@@ -93,6 +96,27 @@ function createRpcDatabase(executor: D1SqlExecutor): Database {
 	return createDatabase(adapter, { now: databaseNow })
 }
 
+function isDirectD1Database(value: unknown): value is D1DatabaseLike {
+	if (!value || typeof value !== 'object') return false
+	const database = value as Record<string, unknown>
+	return (
+		typeof database.prepare === 'function' &&
+		typeof database.batch === 'function'
+	)
+}
+
+function getDirectD1Binding(): D1DatabaseLike | undefined {
+	const binding = getRuntimeBinding('APP_DB')
+	return isDirectD1Database(binding) ? binding : undefined
+}
+
+function createDirectDatabase(executor: D1SqlExecutor): Database {
+	const adapter = createLoggingAdapter(
+		createSqliteExecutorDataTableAdapter(executor),
+	)
+	return createDatabase(adapter, { now: databaseNow })
+}
+
 function getDatabaseClient(): Database {
 	const rpc = getD1RpcBinding()
 	if (rpc) {
@@ -100,6 +124,14 @@ function getDatabaseClient(): Database {
 			createRpcDatabase(createRpcD1Executor(rpc)),
 		)
 	}
+
+	const directD1 = getDirectD1Binding()
+	if (directD1) {
+		return remember('data-table-direct-d1', () =>
+			createDirectDatabase(createDirectD1Executor(directD1)),
+		)
+	}
+
 	return remember('data-table-node', createNodeDatabase)
 }
 

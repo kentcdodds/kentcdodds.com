@@ -10,12 +10,15 @@ import { siteCacheReporter } from '#app/utils/cache-reporter.server.ts'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
 import {
+	decodeCacheEntry,
+	encodeCacheEntry,
+	getKvExpirationTtl,
+} from '#app/utils/cache-encoding.server.ts'
+import {
 	recordCacheLruHit,
 	recordCacheRpcCall,
 } from '#app/utils/cache-request-stats.server.ts'
-import {
-	getRuntimeBinding,
-} from '#app/utils/runtime-bindings.server.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
@@ -30,6 +33,30 @@ function getCacheRpcBinding(): CacheRpcBinding | undefined {
 	const binding = getRuntimeBinding<CacheRpcBinding>('CACHE_RPC')
 	if (!binding || typeof binding.get !== 'function') return undefined
 	return binding
+}
+
+type DirectKvNamespace = {
+	get(key: string): Promise<string | null>
+	put(
+		key: string,
+		value: string,
+		options?: { expirationTtl?: number },
+	): Promise<void>
+	delete(key: string): Promise<void>
+	list(options?: {
+		prefix?: string
+		limit?: number
+	}): Promise<{ keys: Array<{ name: string }> }>
+}
+
+function getDirectKvBinding(): DirectKvNamespace | undefined {
+	const binding = getRuntimeBinding<DirectKvNamespace>('SITE_CACHE_KV')
+	if (!binding || typeof binding.get !== 'function') return undefined
+	return binding
+}
+
+function usesPersistentKvCache() {
+	return Boolean(getCacheRpcBinding() || getDirectKvBinding())
 }
 
 type DatabaseSync = import('node:sqlite').DatabaseSync
@@ -133,19 +160,20 @@ export {
 } from '#app/utils/cache-request-stats.server.ts'
 
 export function isRpcCacheAvailable() {
-	return Boolean(getCacheRpcBinding())
+	return Boolean(getCacheRpcBinding() || getDirectKvBinding())
 }
 
 export function isFileCacheAvailable() {
-	return !isRpcCacheAvailable()
+	return !usesPersistentKvCache()
 }
 
 export function isCacheAdminAvailable() {
-	return isFileCacheAvailable() || isRpcCacheAvailable()
+	return isFileCacheAvailable() || usesPersistentKvCache()
 }
 
 export function getPersistentCacheLabel() {
-	return isRpcCacheAvailable() ? 'KV' : 'SQLite'
+	if (getCacheRpcBinding() || getDirectKvBinding()) return 'KV'
+	return 'SQLite'
 }
 
 export const lruCache = {
@@ -195,6 +223,35 @@ function bufferReviver(_key: string, value: unknown) {
 	return value
 }
 
+async function getDirectKvCacheEntry(key: string) {
+	const kv = getDirectKvBinding()
+	if (!kv) return null
+	const stored = await kv.get(key)
+	if (!stored) return null
+	return decodeCacheEntry(JSON.parse(stored))
+}
+
+async function setDirectKvCacheEntry(key: string, entry: CacheEntry<unknown>) {
+	const kv = getDirectKvBinding()
+	if (!kv) return
+	const encoded = encodeCacheEntry(entry)
+	const expirationTtl = getKvExpirationTtl(entry)
+	await kv.put(key, JSON.stringify(encoded), expirationTtl ? { expirationTtl } : undefined)
+}
+
+async function deleteDirectKvCacheEntry(key: string) {
+	const kv = getDirectKvBinding()
+	if (!kv) return
+	await kv.delete(key)
+}
+
+async function listDirectKvCacheKeys(prefix: string | undefined, limit: number) {
+	const kv = getDirectKvBinding()
+	if (!kv) return []
+	const listed = await kv.list({ prefix, limit })
+	return listed.keys.map((entry) => entry.name)
+}
+
 export const cache: CachifiedCache = {
 	name: 'Application cache',
 	async get(key) {
@@ -208,6 +265,19 @@ export const cache: CachifiedCache = {
 			const rpcStart = performance.now()
 			const entry = await rpc.get(key)
 			recordCacheRpcCall(performance.now() - rpcStart)
+			if (entry) lruCache.set(key, entry)
+			return entry
+		}
+		const directKv = getDirectKvBinding()
+		if (directKv) {
+			const lruHit = lruCache.get(key)
+			if (lruHit) {
+				recordCacheLruHit()
+				return lruHit
+			}
+			const kvStart = performance.now()
+			const entry = await getDirectKvCacheEntry(key)
+			recordCacheRpcCall(performance.now() - kvStart)
 			if (entry) lruCache.set(key, entry)
 			return entry
 		}
@@ -226,6 +296,11 @@ export const cache: CachifiedCache = {
 			await rpc.set(key, entry)
 			return
 		}
+		if (getDirectKvBinding()) {
+			lruCache.set(key, entry)
+			await setDirectKvCacheEntry(key, entry)
+			return
+		}
 		const { preparedSet } = await getSqliteCacheState()
 		preparedSet.run(
 			key,
@@ -240,6 +315,11 @@ export const cache: CachifiedCache = {
 			await rpc.delete(key)
 			return
 		}
+		if (getDirectKvBinding()) {
+			lruCache.delete(key)
+			await deleteDirectKvCacheEntry(key)
+			return
+		}
 		const { preparedDelete } = await getSqliteCacheState()
 		preparedDelete.run(key)
 	},
@@ -250,6 +330,13 @@ export async function getAllCacheKeys(limit: number) {
 	if (rpc) {
 		return {
 			sqlite: await rpc.keys(undefined, limit),
+			lru: [...lruInstance.keys()],
+		}
+	}
+	const directKv = getDirectKvBinding()
+	if (directKv) {
+		return {
+			sqlite: await listDirectKvCacheKeys(undefined, limit),
 			lru: [...lruInstance.keys()],
 		}
 	}
@@ -266,6 +353,14 @@ export async function searchCacheKeys(search: string, limit: number) {
 	const rpc = getCacheRpcBinding()
 	if (rpc) {
 		const keys = await rpc.keys(search, limit)
+		return {
+			sqlite: keys,
+			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
+		}
+	}
+	const directKv = getDirectKvBinding()
+	if (directKv) {
+		const keys = await listDirectKvCacheKeys(search, limit)
 		return {
 			sqlite: keys,
 			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),

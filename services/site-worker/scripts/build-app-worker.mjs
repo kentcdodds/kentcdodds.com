@@ -181,7 +181,7 @@ async function buildAppWorkerBundle() {
 				name: 'redirects-text',
 				setup(build) {
 					const redirectsContentsPromise = readFile(
-						path.join(siteRoot, 'server/_redirects.txt'),
+						path.join(siteRoot, 'other/_redirects.txt'),
 						'utf8',
 					)
 					build.onResolve({ filter: /_redirects\.txt$/ }, (args) => ({

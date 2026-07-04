@@ -44,7 +44,7 @@ import {
 	oldImgSocialUrl,
 	parseRedirectsString,
 } from '../../../site/app/utils/redirects-core.server.ts'
-import redirectsText from '../../../site/server/_redirects.txt'
+import redirectsText from '../../../site/other/_redirects.txt'
 
 let isolateId: string | undefined
 
@@ -78,13 +78,14 @@ function requestPrefersMarkdown(acceptHeader: string | null): boolean {
 }
 
 type MarkdownNegotiation =
-	typeof import('../../../site/server/markdown-negotiation.ts')
+	typeof import('../../../site/app/utils/markdown-negotiation.server.ts')
 let markdownNegotiationPromise: Promise<MarkdownNegotiation> | undefined
 
 function getMarkdownNegotiation() {
 	if (!markdownNegotiationPromise) {
-		markdownNegotiationPromise =
-			import('../../../site/server/markdown-negotiation.ts')
+		markdownNegotiationPromise = import(
+			'../../../site/app/utils/markdown-negotiation.server.ts'
+		)
 	}
 	return markdownNegotiationPromise
 }
