@@ -23,6 +23,11 @@ import { OutboundProxy } from './rpc/outbound-proxy.ts'
 import { getParentPrismaClient, PrismaRpc } from './rpc/prisma-rpc.ts'
 import type { DynamicWorkerConfig, ParentWorkerEnv } from './rpc/types.ts'
 
+import {
+	bumpPageCacheGeneration,
+	clearPageCacheGenerationCache,
+	handlePageCacheRequest,
+} from './page-cache.ts'
 import { serveStaticAsset } from './static-assets.ts'
 
 type ParentExecutionContext = ExecutionContext & {
@@ -87,6 +92,7 @@ async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	await env.CONTENT_KV.put('mdx-manifest:current', manifest)
 	clearManifestCache()
 	clearArtifactBundleCache()
+	await bumpPageCacheGeneration(env.CONTENT_KV)
 
 	return Response.json({ ok: true, version: bundle.version, r2Key })
 }
@@ -277,7 +283,21 @@ export default {
 			if (assetResponse) return assetResponse
 		}
 
-		return handleDynamicRequest(request, env, ctx as ParentExecutionContext)
+		if (
+			url.pathname === '/action/refresh-cache' &&
+			request.method === 'POST'
+		) {
+			await bumpPageCacheGeneration(env.CONTENT_KV)
+			clearPageCacheGenerationCache()
+		}
+
+		return handlePageCacheRequest(request, env, ctx, (dynamicRequest) =>
+			handleDynamicRequest(
+				dynamicRequest,
+				env,
+				ctx as ParentExecutionContext,
+			),
+		)
 	},
 
 	async scheduled(
