@@ -31,7 +31,7 @@ async function main() {
 		FLY_REGION: 'cf',
 		FLY_MACHINE_ID: 'preview',
 		DATABASE_URL: 'file:./preview.db',
-		GITHUB_REF: process.env.GITHUB_REF ?? 'cursor/cloudflare-site-worker-2309',
+		GITHUB_REF: process.env.GITHUB_REF ?? 'refs/heads/main',
 		R2_BUCKET: deriveOrEnv('R2_BUCKET', 'preview:R2_BUCKET', refreshCacheSecret),
 		R2_ENDPOINT: `https://${accountId}.r2.cloudflarestorage.com`,
 		CALL_KENT_R2_BUCKET: deriveOrEnv(
@@ -45,14 +45,6 @@ async function main() {
 			refreshCacheSecret,
 		),
 		SESSION_SECRET: deriveSecret('preview:SESSION_SECRET', refreshCacheSecret),
-		MAGIC_LINK_SECRET: deriveSecret(
-			'preview:MAGIC_LINK_SECRET',
-			refreshCacheSecret,
-		),
-		INTERNAL_COMMAND_TOKEN: deriveSecret(
-			'preview:INTERNAL_COMMAND_TOKEN',
-			refreshCacheSecret,
-		),
 		CF_INTERNAL_SECRET: deriveSecret(
 			'preview:CF_INTERNAL_SECRET',
 			refreshCacheSecret,
