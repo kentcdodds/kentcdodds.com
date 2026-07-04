@@ -20,6 +20,8 @@ import {
 	parseEpisodeFavoriteContentId,
 	type FavoriteContentType,
 } from '#app/utils/favorites.ts'
+import { db } from '#app/utils/db.server.ts'
+import { favoriteTable } from '#app/utils/db/schema.server.ts'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { useOptionalUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/favorite'
@@ -195,11 +197,8 @@ export function FavoriteToggle({
 }
 
 async function getFavoritesServerServices() {
-	const [{ prisma }, { getUser }] = await Promise.all([
-		import('#app/utils/prisma.server.ts'),
-		import('#app/utils/session.server.ts'),
-	])
-	return { prisma, getUser }
+	const { getUser } = await import('#app/utils/session.server.ts')
+	return { db, getUser }
 }
 
 const FavoriteFormSchema = z.object({
@@ -209,7 +208,7 @@ const FavoriteFormSchema = z.object({
 })
 
 export async function action({ request }: Route.ActionArgs) {
-	const { prisma, getUser } = await getFavoritesServerServices()
+	const { getUser } = await getFavoritesServerServices()
 
 	const user = await getUser(request)
 	if (!user) {
@@ -243,15 +242,14 @@ export async function action({ request }: Route.ActionArgs) {
 	const where = { userId: user.id, contentType, contentId }
 
 	if (intent === 'add') {
-		await prisma.favorite.upsert({
-			where: { userId_contentType_contentId: where },
-			create: where,
-			update: {},
-		})
+		const existing = await db.findOne(favoriteTable, { where })
+		if (!existing) {
+			await db.create(favoriteTable, where)
+		}
 		return json({ isFavorite: true } as const)
 	}
 
-	await prisma.favorite.deleteMany({ where })
+	await db.deleteMany(favoriteTable, { where })
 	return json({ isFavorite: false } as const)
 }
 
@@ -265,7 +263,7 @@ const FavoriteListQuerySchema = z.object({
 })
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const { prisma, getUser } = await getFavoritesServerServices()
+	const { getUser } = await getFavoritesServerServices()
 	const headers = {
 		'Cache-Control': 'private, max-age=0, must-revalidate',
 		Vary: 'Cookie',
@@ -307,15 +305,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 			})
 		}
 
-		const favorite = await prisma.favorite.findUnique({
+		const favorite = await db.findOne(favoriteTable, {
 			where: {
-				userId_contentType_contentId: {
-					userId: user.id,
-					contentType: parsed.contentType,
-					contentId: parsed.contentId,
-				},
+				userId: user.id,
+				contentType: parsed.contentType,
+				contentId: parsed.contentId,
 			},
-			select: { id: true },
 		})
 
 		return json(
@@ -336,10 +331,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (!user) {
 		return json({ contentIds: [] } as const, { headers })
 	}
-	const favorites = await prisma.favorite.findMany({
+	const favorites = await db.findMany(favoriteTable, {
 		where: { userId: user.id, contentType: listSubmission.data.contentType },
-		select: { contentId: true },
-		orderBy: { createdAt: 'desc' },
+		orderBy: [['createdAt', 'desc']],
 	})
 	return json({ contentIds: favorites.map((f) => f.contentId) } as const, {
 		headers,

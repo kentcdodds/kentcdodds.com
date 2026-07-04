@@ -1,5 +1,5 @@
 import { remember } from '@epic-web/remember'
-import { and, eq, gt, lt, query } from '@remix-run/data-table'
+import { lt } from '@remix-run/data-table'
 import chalk from 'chalk'
 import pProps from 'p-props'
 import { type Session, type User } from '#app/types.ts'
@@ -8,14 +8,16 @@ import {
 	callKentCallerEpisodeTable,
 	callTable,
 	favoriteTable,
-	homeworkCompletionTable,
 	postReadTable,
 	sessionTable,
 	userTable,
 	verificationTable,
 } from '#app/utils/db/schema.server.ts'
-import { getEpisodeHomeworkContentId } from '#app/utils/favorites.ts'
-import { migrateHomeworkCompletionsToUserRecords } from './homework-completion-migration.server.ts'
+import {
+	getEpisodeHomeworkCompletions,
+	migrateHomeworkCompletionsToUser,
+	setEpisodeHomeworkCompletion,
+} from './homework-completion-migration.server.ts'
 import { getPrismaAdapter } from './prisma-adapter.server.ts'
 import {
 	createPrismaRpcClient,
@@ -185,198 +187,7 @@ async function getAllUserData(userId: string) {
 	})
 }
 
-async function addPostRead({
-	slug,
-	userId,
-	clientId,
-}: { slug: string } & (
-	| { userId: string; clientId?: undefined }
-	| { userId?: undefined; clientId: string }
-)) {
-	const ownerWhere = userId ? { userId } : { clientId }
-	const readInLastWeek = await db.findOne(postReadTable, {
-		where: and(
-			...(userId
-				? [eq('userId', userId)]
-				: [eq('clientId', clientId as string)]),
-			eq('postSlug', slug),
-			gt('createdAt', new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)),
-		),
-	})
-	if (readInLastWeek) {
-		return null
-	}
-
-	const postRead = await db.create(
-		postReadTable,
-		{ postSlug: slug, ...ownerWhere },
-		{ returnRow: true },
-	)
-	return { id: postRead.id }
-}
-
-async function getEpisodeHomeworkCompletions({
-	seasonNumber,
-	episodeNumber,
-	userId,
-	clientId,
-}: {
-	seasonNumber: number
-	episodeNumber: number
-} & (
-	| { userId: string; clientId?: undefined | null }
-	| { userId?: undefined | null; clientId: string }
-	| { userId?: undefined | null; clientId?: undefined | null }
-)) {
-	const ownerWhere = userId ? { userId } : clientId ? { clientId } : null
-	if (!ownerWhere) return new Set<string>()
-	const completions = await db.findMany(homeworkCompletionTable, {
-		where: {
-			...ownerWhere,
-			seasonNumber,
-			episodeNumber,
-		},
-	})
-	return new Set(
-		completions.map((completion) =>
-			getEpisodeHomeworkContentId({
-				seasonNumber,
-				episodeNumber,
-				itemIndex: completion.itemIndex,
-			}),
-		),
-	)
-}
-
-async function setEpisodeHomeworkCompletion({
-	seasonNumber,
-	episodeNumber,
-	itemIndex,
-	userId,
-	clientId,
-	completed,
-}: {
-	seasonNumber: number
-	episodeNumber: number
-	itemIndex: number
-	completed: boolean
-} & (
-	| { userId: string; clientId?: undefined | null }
-	| { userId?: undefined | null; clientId: string }
-)) {
-	if (userId) {
-		if (completed) {
-			await db.exec(
-				query(homeworkCompletionTable).upsert(
-					{ userId, seasonNumber, episodeNumber, itemIndex },
-					{
-						conflictTarget: [
-							'userId',
-							'seasonNumber',
-							'episodeNumber',
-							'itemIndex',
-						],
-						update: {},
-						touch: true,
-					},
-				),
-			)
-			return true
-		}
-
-		await db.deleteMany(homeworkCompletionTable, {
-			where: { userId, seasonNumber, episodeNumber, itemIndex },
-		})
-		return false
-	}
-
-	const anonymousClientId = clientId
-	if (!anonymousClientId) {
-		throw new Error('clientId is required when userId is absent')
-	}
-
-	if (completed) {
-		await db.exec(
-			query(homeworkCompletionTable).upsert(
-				{
-					clientId: anonymousClientId,
-					seasonNumber,
-					episodeNumber,
-					itemIndex,
-				},
-				{
-					conflictTarget: [
-						'clientId',
-						'seasonNumber',
-						'episodeNumber',
-						'itemIndex',
-					],
-					update: {},
-					touch: true,
-				},
-			),
-		)
-		return true
-	}
-
-	await db.deleteMany(homeworkCompletionTable, {
-		where: {
-			clientId: anonymousClientId,
-			seasonNumber,
-			episodeNumber,
-			itemIndex,
-		},
-	})
-	return false
-}
-
-async function migrateHomeworkCompletionsToUser({
-	userId,
-	clientId,
-}: {
-	userId: string
-	clientId: string
-}) {
-	return migrateHomeworkCompletionsToUserRecords({
-		userId,
-		clientId,
-		homeworkCompletion: {
-			findMany: async ({ where }) => {
-				const rows = await db.findMany(homeworkCompletionTable, { where })
-				return rows.map((row) => ({
-					seasonNumber: row.seasonNumber,
-					episodeNumber: row.episodeNumber,
-					itemIndex: row.itemIndex,
-				}))
-			},
-			upsert: async ({ where, create, update }) => {
-				const composite = where.userId_seasonNumber_episodeNumber_itemIndex
-				await db.exec(
-					query(homeworkCompletionTable).upsert(
-						{ ...create, ...composite },
-						{
-							conflictTarget: [
-								'userId',
-								'seasonNumber',
-								'episodeNumber',
-								'itemIndex',
-							],
-							update: update ?? {},
-							touch: true,
-						},
-					),
-				)
-			},
-			deleteMany: async ({ where }) => {
-				await db.deleteMany(homeworkCompletionTable, { where })
-			},
-		},
-		isUniqueConstraintError,
-	})
-}
-
 export {
-	addPostRead,
 	createSession,
 	deleteExpiredSessions,
 	deleteExpiredVerifications,

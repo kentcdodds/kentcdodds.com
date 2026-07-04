@@ -16,7 +16,7 @@ const prismaServerMocks = vi.hoisted(() => ({
 
 vi.mock('#app/utils/session.server.ts', () => sessionServerMocks)
 vi.mock('#app/utils/client.server.ts', () => clientServerMocks)
-vi.mock('#app/utils/prisma.server.ts', () => prismaServerMocks)
+vi.mock('#app/utils/homework-completion-migration.server.ts', () => prismaServerMocks)
 
 import { action, loader } from '../homework-completion.tsx'
 

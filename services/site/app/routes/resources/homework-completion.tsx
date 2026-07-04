@@ -131,7 +131,7 @@ async function getHomeworkCompletionServerServices() {
 	] = await Promise.all([
 		import('#app/utils/session.server.ts'),
 		import('#app/utils/client.server.ts'),
-		import('#app/utils/prisma.server.ts'),
+		import('#app/utils/homework-completion-migration.server.ts'),
 	])
 	return {
 		getUser,
