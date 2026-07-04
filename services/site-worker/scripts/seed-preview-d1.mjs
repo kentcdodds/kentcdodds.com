@@ -18,6 +18,12 @@ function getConfigPath() {
 	return process.argv[index + 1]
 }
 
+function getPersistToPath() {
+	const index = process.argv.indexOf('--persist-to')
+	if (index === -1) return undefined
+	return process.argv[index + 1]
+}
+
 function sqlString(value) {
 	return `'${String(value).replaceAll("'", "''")}'`
 }
@@ -32,8 +38,13 @@ function runWranglerExecute(sql, { local }) {
 		'--config',
 		getConfigPath(),
 	]
-	if (local) args.push('--local')
-	else args.push('--remote')
+	if (local) {
+		args.push('--local')
+		const persistTo = getPersistToPath()
+		if (persistTo) args.push('--persist-to', persistTo)
+	} else {
+		args.push('--remote')
+	}
 
 	const result = spawnSync('npm', ['exec', 'wrangler', '--', ...args], {
 		cwd: workerDir,

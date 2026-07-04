@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
+import { publishViaEndpoint } from './publish-artifacts-lib.mjs'
 
 const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -42,61 +43,6 @@ function stripJsoncComments(source) {
 async function readConfig(configPath) {
 	const raw = await fs.readFile(configPath, 'utf8')
 	return JSON.parse(stripJsoncComments(raw))
-}
-
-async function publishViaEndpoint(bundlePath, endpointUrl) {
-	const secret = process.env.REFRESH_CACHE_SECRET
-	if (!secret) {
-		throw new Error('REFRESH_CACHE_SECRET is required for --via-endpoint')
-	}
-
-	const bundleRaw = await fs.readFile(bundlePath, 'utf8')
-	const bundle = JSON.parse(bundleRaw)
-	if (!bundle.version || typeof bundle.version !== 'string') {
-		throw new Error('Bundle JSON must include a string "version" field')
-	}
-
-	// Worker secret uploads propagate asynchronously; a publish immediately
-	// after `wrangler secret bulk` can hit a version that still has the old
-	// REFRESH_CACHE_SECRET (the endpoint answers 404 on auth mismatch). Retry
-	// with backoff to ride out propagation.
-	let response
-	for (let attempt = 1; attempt <= 8; attempt++) {
-		response = await fetch(endpointUrl, {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json',
-				auth: secret,
-			},
-			body: bundleRaw,
-		})
-		if (response.ok) break
-		if (attempt < 8) {
-			console.warn(
-				`Publish attempt ${attempt} failed (${response.status}); retrying in 15s...`,
-			)
-			await new Promise((resolve) => setTimeout(resolve, 15_000))
-		}
-	}
-
-	const responseText = await response.text()
-	if (!response.ok) {
-		throw new Error(
-			`Artifact publish endpoint failed (${response.status}): ${responseText}`,
-		)
-	}
-
-	let payload
-	try {
-		payload = JSON.parse(responseText)
-	} catch {
-		payload = responseText
-	}
-
-	console.log(
-		`Published via ${endpointUrl} (version ${bundle.version})`,
-		payload,
-	)
 }
 
 async function publishViaWrangler(bundlePath, configPath, local) {
@@ -165,7 +111,8 @@ async function main() {
 
 	const viaEndpoint = getArgValue('--via-endpoint')
 	if (viaEndpoint) {
-		await publishViaEndpoint(bundlePath, viaEndpoint)
+		const { version, payload } = await publishViaEndpoint(bundlePath, viaEndpoint)
+		console.log(`Published via ${viaEndpoint} (version ${version})`, payload)
 		return
 	}
 

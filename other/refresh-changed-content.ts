@@ -1,7 +1,7 @@
 // try to keep this dep-free so we don't have to install deps
 import { spawnSync } from "node:child_process";
-import fs from "node:fs/promises";
 import { pathToFileURL } from "node:url";
+import { publishViaEndpoint as publishViaEndpointImpl } from "../services/site-worker/scripts/publish-artifacts-lib.mjs";
 import { getChangedFiles, fetchJson } from "./get-changed-files.js";
 import { postRefreshCache } from "./utils.js";
 
@@ -110,46 +110,14 @@ function compileMdxArtifacts(bundlePath: string) {
   }
 }
 
-async function publishArtifacts(bundlePath: string, workerUrl: string) {
-  const secret = process.env.REFRESH_CACHE_SECRET;
-  if (!secret) {
-    throw new Error("REFRESH_CACHE_SECRET is required to publish artifacts");
-  }
-
-  const bundleRaw = await fs.readFile(bundlePath, "utf8");
-  const bundle = JSON.parse(bundleRaw);
-  if (!bundle.version || typeof bundle.version !== "string") {
-    throw new Error('Bundle JSON must include a string "version" field');
-  }
-
+async function publishArtifacts(
+  bundlePath: string,
+  workerUrl: string,
+  publishViaEndpoint = publishViaEndpointImpl,
+) {
   const endpointUrl = `${workerUrl}/resources/mdx-artifacts`;
-  let response: Response | undefined;
-  for (let attempt = 1; attempt <= 8; attempt++) {
-    response = await fetch(endpointUrl, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        auth: secret,
-      },
-      body: bundleRaw,
-    });
-    if (response.ok) break;
-    if (attempt < 8) {
-      console.warn(
-        `Publish attempt ${attempt} failed (${response.status}); retrying in 15s...`,
-      );
-      await sleep(15_000);
-    }
-  }
-
-  const responseText = await response!.text();
-  if (!response.ok) {
-    throw new Error(
-      `Artifact publish endpoint failed (${response.status}): ${responseText}`,
-    );
-  }
-
-  return { version: bundle.version, responseText };
+  const { version } = await publishViaEndpoint(bundlePath, endpointUrl);
+  return { version };
 }
 
 export async function refreshChangedContent({
@@ -160,6 +128,7 @@ export async function refreshChangedContent({
   fetchJsonImpl = fetchJson,
   getChangedFilesImpl = getChangedFiles,
   postRefreshCacheImpl = postRefreshCache,
+  publishArtifactsImpl = publishArtifacts,
   log = console,
   maxRefreshAttempts = defaultRefreshRetryOptions.maxAttempts,
   retryDelayMs = defaultRefreshRetryOptions.baseDelayMs,
@@ -172,6 +141,7 @@ export async function refreshChangedContent({
   fetchJsonImpl?: typeof fetchJson;
   getChangedFilesImpl?: typeof getChangedFiles;
   postRefreshCacheImpl?: typeof postRefreshCache;
+  publishArtifactsImpl?: typeof publishArtifacts;
   log?: Pick<typeof console, "log" | "warn" | "error">;
   maxRefreshAttempts?: number;
   retryDelayMs?: number;
@@ -216,7 +186,7 @@ export async function refreshChangedContent({
 
   if (!skipPublish) {
     compileMdxArtifacts(bundlePath);
-    const publishResult = await publishArtifacts(bundlePath, workerUrl);
+    const publishResult = await publishArtifactsImpl(bundlePath, workerUrl);
     log.log(`Published artifact bundle version ${publishResult.version}`);
   }
 

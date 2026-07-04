@@ -2,16 +2,20 @@
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+	localD1PersistPath,
+	siteDir,
+	wranglerDevConfigPath,
+} from './local-d1-state.mjs'
 
-const siteDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const workerDir = path.resolve(siteDir, '../site-worker')
-const configPath = path.join(siteDir, 'wrangler.dev.jsonc')
+const repoRoot = path.resolve(siteDir, '../..')
 
 function run(command, args, options = {}) {
 	const result = spawnSync(command, args, {
 		cwd: options.cwd ?? siteDir,
 		encoding: 'utf8',
 		env: process.env,
+		stdio: options.stdio ?? 'pipe',
 	})
 	if (result.status !== 0) {
 		throw new Error(
@@ -23,10 +27,23 @@ function run(command, args, options = {}) {
 
 function main() {
 	run('npm', ['run', 'd1:migrations:prepare', '--workspace', 'site-worker'], {
-		cwd: path.resolve(siteDir, '..'),
+		cwd: repoRoot,
 	})
-	run('npm', ['exec', 'wrangler', '--', 'd1', 'migrations', 'apply', 'APP_DB', '--local', '--config', configPath])
-	console.log('Applied local D1 migrations for dev worker')
+	run('npm', [
+		'exec',
+		'wrangler',
+		'--',
+		'd1',
+		'migrations',
+		'apply',
+		'APP_DB',
+		'--local',
+		'--config',
+		wranglerDevConfigPath,
+		'--persist-to',
+		localD1PersistPath,
+	])
+	console.log(`Applied local D1 migrations at ${localD1PersistPath}`)
 }
 
 main()

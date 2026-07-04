@@ -63,7 +63,9 @@ reference:
   adding app runtime shortcuts.
 - SQLite is file-based for **unit tests** (`services/site/prisma/sqlite.db` via
   `DATABASE_URL`). **Local dev and Playwright e2e** use Miniflare's persistent
-  local D1 (`.wrangler/state/v3/d1/...` relative to `services/site`).
+  local D1 (`services/site/.wrangler/state/v3/d1/...`). Migrations, seed, the
+  Vite plugin, and e2e helpers share the path from
+  `services/site/scripts/local-d1-state.mjs` (`--persist-to` / `persistState`).
 - **Production** runs on the Cloudflare Worker `kentcdodds-com` (D1 + KV + R2).
   **Local dev and Playwright e2e** run the app in real workerd via
   `@cloudflare/vite-plugin` (single-worker model for HMR; see

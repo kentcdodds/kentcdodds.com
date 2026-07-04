@@ -10,6 +10,7 @@ import { envOnlyMacros } from 'vite-env-only'
 import { cjsInterop } from 'vite-plugin-cjs-interop'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { mdxDevManifestPlugin } from './other/vite-plugins/mdx-dev-manifest.ts'
+import { localD1PersistPath } from './scripts/local-d1-state.mjs'
 
 const MODE = process.env.NODE_ENV
 const SENTRY_UPLOAD =
@@ -52,7 +53,7 @@ export default defineConfig(async ({ command }) => {
 				? cloudflare({
 						configPath: './wrangler.dev.jsonc',
 						viteEnvironment: { name: 'ssr' },
-						persistState: { path: '.wrangler/state' },
+						persistState: { path: localD1PersistPath },
 					})
 				: null,
 			isDevServer ? mdxDevManifestPlugin() : null,

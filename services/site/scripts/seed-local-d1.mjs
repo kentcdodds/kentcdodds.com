@@ -2,15 +2,20 @@
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+	localD1PersistPath,
+	siteDir,
+	wranglerDevConfigPath,
+} from './local-d1-state.mjs'
 
-const siteDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const configPath = path.join(siteDir, 'wrangler.dev.jsonc')
+const workerDir = path.resolve(siteDir, '../site-worker')
 
 function run(command, args, options = {}) {
 	const result = spawnSync(command, args, {
 		cwd: options.cwd ?? siteDir,
 		encoding: 'utf8',
 		env: process.env,
+		stdio: options.stdio ?? 'pipe',
 	})
 	if (result.status !== 0) {
 		throw new Error(
@@ -22,11 +27,13 @@ function run(command, args, options = {}) {
 
 function main() {
 	run('node', [
-		path.join(siteDir, '../site-worker/scripts/seed-preview-d1.mjs'),
+		path.join(workerDir, 'scripts/seed-preview-d1.mjs'),
 		'--local',
 		'--config',
-		configPath,
-	])
+		wranglerDevConfigPath,
+		'--persist-to',
+		localD1PersistPath,
+	], { stdio: 'inherit' })
 }
 
 main()
