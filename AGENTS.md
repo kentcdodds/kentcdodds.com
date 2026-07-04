@@ -13,7 +13,9 @@ and stable.
 ## Agent docs (source of truth)
 
 - `docs/agents/project-context.md` (setup, commands, project-specific caveats)
-- `docs/agents/cloudflare-worker-architecture.md` (site worker migration contract)
+- `docs/agents/cloudflare-worker-architecture.md` (worker topology, deploy, D1)
+- `docs/agents/cutover-runbook.md` (production cutover procedure)
+- `docs/agents/data-table-conventions.md` (runtime DB access patterns)
 - `docs/agents/code-style.md`
 - `docs/agents/bugfix-workflow.md`
 - `docs/agents/testing-principles.md`

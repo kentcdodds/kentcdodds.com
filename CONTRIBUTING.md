@@ -201,39 +201,33 @@ Vite plugin in `services/site/vite.config.ts`.
 
 ## Database
 
-We've got SQLite and Prisma set up. Learn about the schema and learn more about
-what commands you can run in `./services/site/prisma/schema.prisma`.
+**Prisma** (`services/site/prisma/schema.prisma`) is schema and migration tooling
+only — `prisma migrate`, `prisma migrate reset` for the file-based test DB.
 
-### Production schema changes (widen, then narrow)
+| Environment | Database |
+| --- | --- |
+| Unit tests (Node) | File SQLite at `services/site/prisma/sqlite.db` (`DATABASE_URL`) |
+| Local dev + Playwright e2e | Miniflare D1 (`.wrangler/state/v3/d1/…`) |
+| Staging / production | Cloudflare D1 via `services/site-worker` |
 
-When changing the production schema, use an expand/contract rollout:
-
-1. **Widen** first: add nullable columns, add columns with safe defaults, or add
-   new tables/indexes in a backward-compatible way.
-2. Deploy the widen migration and app code that can operate in both states
-   (before and after backfill).
-3. Backfill data if needed.
-4. **Narrow** later: remove old columns/paths, add stricter constraints, or make
-   fields required only after widen has been safely running in production.
-
-Before merging the widen PR, create a follow-up issue for the narrow step and
-link it in the PR description. This prevents "temporary" compatibility code from
-becoming permanent and helps avoid schema/code rollout mismatches.
-
-One common command you might need to run is to re-seed the database:
+Reset local dev D1 + seed:
 
 ```sh
 npm run db:reset --workspace kentcdodds.com
 ```
 
-This applies Prisma migrations to the local Miniflare D1 database and runs the
-seed script (admin user `me@kentcdodds.com` / `iliketwix`).
+This applies migrations to the local Miniflare D1 database and runs the seed
+script (admin user `me@kentcdodds.com` / `iliketwix`).
 
-For unit tests only, you can still reset the file-based SQLite test DB:
+Reset the file-based SQLite test DB only:
 
 ```sh
 npm exec --workspace kentcdodds.com prisma migrate reset --force
 ```
+
+Remote D1 migrations: `npm run d1:migrations:apply:production --workspace site-worker`
+(after widen steps land on `main`). See
+`docs/agents/cloudflare-worker-architecture.md` for the full command table.
 
 ## Maintenance Tips
 
