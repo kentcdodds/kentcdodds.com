@@ -79,31 +79,20 @@ export type D1RpcSessionBinding = {
 }
 
 export type D1RpcBinding = {
-	query(
-		sql: string,
-		params?: readonly unknown[],
-	): Promise<D1StatementResult>
-	run(sql: string, params?: readonly unknown[]): Promise<D1StatementResult>
-	batch(
-		statements: ReadonlyArray<{ sql: string; params?: readonly unknown[] }>,
-	): Promise<D1StatementResult[]>
-	sessionQuery?(
+	sessionQuery(
 		bookmark: string,
 		sql: string,
 		params?: readonly unknown[],
 	): Promise<D1StatementResult>
-	sessionRun?(
+	sessionRun(
 		bookmark: string,
 		sql: string,
 		params?: readonly unknown[],
 	): Promise<D1StatementResult>
-	sessionBatch?(
+	sessionBatch(
 		bookmark: string,
 		statements: ReadonlyArray<{ sql: string; params?: readonly unknown[] }>,
 	): Promise<D1StatementResult[]>
-	createSession?(
-		bookmark?: string,
-	): D1RpcSessionBinding | Promise<D1RpcSessionBinding>
 }
 
 function mapStatementResult(result: {
@@ -210,15 +199,12 @@ export function createRpcD1Executor(
 					meta: result.meta,
 				}
 			}
-			const bookmark = getRequestD1Bookmark()
-			const result =
-				bookmark && typeof rpc.sessionQuery === 'function'
-					? await rpc.sessionQuery(
-							bookmark,
-							sql,
-							serializeSqlParams(params),
-						)
-					: await rpc.query(sql, serializeSqlParams(params))
+			const bookmark = getRequestD1Bookmark() ?? 'first-unconstrained'
+			const result = await rpc.sessionQuery(
+				bookmark,
+				sql,
+				serializeSqlParams(params),
+			)
 			if (result.bookmark) setRequestD1Bookmark(result.bookmark)
 			return {
 				results: deserializeSqlRows(result.results ?? []),
@@ -235,11 +221,12 @@ export function createRpcD1Executor(
 					meta: result.meta,
 				}
 			}
-			const bookmark = getRequestD1Bookmark()
-			const result =
-				bookmark && typeof rpc.sessionRun === 'function'
-					? await rpc.sessionRun(bookmark, sql, serializeSqlParams(params))
-					: await rpc.run(sql, serializeSqlParams(params))
+			const bookmark = getRequestD1Bookmark() ?? 'first-unconstrained'
+			const result = await rpc.sessionRun(
+				bookmark,
+				sql,
+				serializeSqlParams(params),
+			)
 			if (result.bookmark) setRequestD1Bookmark(result.bookmark)
 			return {
 				results: deserializeSqlRows(result.results ?? []),
@@ -252,11 +239,8 @@ export function createRpcD1Executor(
 				await session.run(sql)
 				return
 			}
-			const bookmark = getRequestD1Bookmark()
-			const result =
-				bookmark && typeof rpc.sessionRun === 'function'
-					? await rpc.sessionRun(bookmark, sql)
-					: await rpc.run(sql)
+			const bookmark = getRequestD1Bookmark() ?? 'first-unconstrained'
+			const result = await rpc.sessionRun(bookmark, sql)
 			if (result.bookmark) setRequestD1Bookmark(result.bookmark)
 		},
 	}

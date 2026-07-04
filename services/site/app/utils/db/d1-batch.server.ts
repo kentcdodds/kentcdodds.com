@@ -43,11 +43,8 @@ export async function batchExecRawSql(
 
 	const rpc = getD1RpcBinding()
 	if (rpc) {
-		const bookmark = getRequestD1Bookmark()
-		const results =
-			bookmark && typeof rpc.sessionBatch === 'function'
-				? await rpc.sessionBatch(bookmark, normalized)
-				: await rpc.batch(normalized)
+		const bookmark = getRequestD1Bookmark() ?? 'first-unconstrained'
+		const results = await rpc.sessionBatch(bookmark, normalized)
 		const lastBookmark = results.at(-1)?.bookmark
 		if (lastBookmark) setRequestD1Bookmark(lastBookmark)
 		for (const result of results) {

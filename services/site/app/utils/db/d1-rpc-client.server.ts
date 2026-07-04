@@ -5,9 +5,9 @@ function isD1RpcBinding(value: unknown): value is D1RpcBinding {
 	if (!value || typeof value !== 'object') return false
 	const binding = value as Record<string, unknown>
 	return (
-		typeof binding.query === 'function' &&
-		typeof binding.run === 'function' &&
-		typeof binding.batch === 'function'
+		typeof binding.sessionQuery === 'function' &&
+		typeof binding.sessionRun === 'function' &&
+		typeof binding.sessionBatch === 'function'
 	)
 }
 

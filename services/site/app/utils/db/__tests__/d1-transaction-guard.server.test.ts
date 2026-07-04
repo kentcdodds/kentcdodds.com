@@ -23,9 +23,9 @@ test('D1 executors disable SQL transactions in the data-table adapter', async ()
 
 	const rpcAdapter = createSqliteExecutorDataTableAdapter(
 		createRpcD1Executor({
-			query: async () => ({ results: [] }),
-			run: async () => ({ results: [] }),
-			batch: async () => [],
+			sessionQuery: async () => ({ results: [] }),
+			sessionRun: async () => ({ results: [] }),
+			sessionBatch: async () => [],
 		} satisfies D1RpcBinding),
 	)
 	const rpcToken = await rpcAdapter.beginTransaction()
