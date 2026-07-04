@@ -1,8 +1,8 @@
 # Project context
 
 This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
-with Express, SQLite (via Prisma), and extensive MSW mocks for all external
-APIs.
+with Express, SQLite (via `@remix-run/data-table` on Node; Prisma schema tooling
+for migrations), and extensive MSW mocks for all external APIs.
 
 ## Prerequisites
 
@@ -63,10 +63,10 @@ reference:
   `1` unless the database architecture changes to support replication again.
   Historical blog content and disabled LiteFS compatibility code are not the
   current production topology.
-- If Playwright E2E tests fail with Prisma "table does not exist" errors, run
+- If Playwright E2E tests fail with SQLite "table does not exist" errors, run
   the DB reset + seed command from the table above to apply migrations and seed
   data.
-- Production Prisma schema changes must follow widen-then-narrow rollouts:
+- Production schema changes must follow widen-then-narrow rollouts:
   deploy backward-compatible "widen" changes first, then ship narrowing
   constraints/removals in a follow-up deploy.
 - When shipping a widen migration, create a linked follow-up issue for the

@@ -16,7 +16,7 @@ in `services/site-worker` and the MDX artifact pipeline on the migration branch.
                         │  - POST /resources/mdx-artifacts         │
                         │  - loads + routes to the dynamic app     │
                         │  - hosts RPC entrypoints:                │
-                        │      PrismaRpc  (Prisma client on D1)    │
+                        │      D1Rpc      (SQL executor on D1)     │
                         │      CacheRpc   (KV-backed cachified)    │
                         │      ContentRpc (per-doc client code)    │
                         │      OutboundProxy (outbound fetch)        │
@@ -45,7 +45,7 @@ in `services/site-worker` and the MDX artifact pipeline on the migration branch.
                         │   - site-content-data.json (metadata +   │
                         │     blogList, dirLists, dataFiles; no    │
                         │     per-doc code/esm — see CONTENT_RPC)  │
-                        │  env: string vars + PRISMA_RPC stub +    │
+                        │  env: string vars + D1_RPC stub +        │
                         │    CACHE_RPC + CONTENT_RPC loopback stubs│
                         └──────────────────────────────────────────┘
 ```
@@ -159,16 +159,10 @@ keep working).
 
 ## RPC error contract
 
-`PrismaRpc.query(model, operation, args)` returns
-`{ ok: true, result }` or
-`{ ok: false, error: { name, code, message, meta, clientVersion } }` (never
-throws for Prisma errors). The app-side proxy rethrows an `Error` with
-`name`/`code`/`meta` attached so existing error handling (e.g. unique
-constraint checks) behaves the same.
-
-`PrismaRpc.raw(method, query, values?)` supports `$queryRaw`, `$executeRaw`,
-`$queryRawUnsafe`, and `$executeRawUnsafe` with the same ok/error envelope.
-Used by app code paths that need raw SQL against D1.
+`D1Rpc` exposes `query(sql, params?)`, `run(sql, params?)`, and
+`batch(statements)` for SQL-level access to `APP_DB`. Params and row values
+cross the JSRPC boundary via `row-serialization.server.ts` (Dates → ISO strings,
+bigint → number, byte views → ArrayBuffer).
 
 `CacheRpc` methods: `get(key)` → cache entry or `null`; `set(key, entry)`;
 `delete(key)`; `keys(prefix?, limit?)` → `string[]`. Entries are the same
@@ -201,10 +195,9 @@ runtime in the worker).
 
 - All string values from the parent worker env (vars + secrets) are passed
   through as plain strings.
-- `PRISMA_RPC`: loopback entrypoint with `query(model, operation, args)` and
-  `raw(method, query, values?)` hitting the parent's PrismaClient (D1 adapter).
-  The app's `prisma.server.ts` returns a Proxy client when `PRISMA_RPC` is
-  present.
+- `D1_RPC`: loopback entrypoint with `query(sql, params?)`, `run(sql, params?)`,
+  and `batch(statements)` over the parent's `APP_DB` D1 binding. The app's
+  `db.server.ts` uses `SqliteExecutorDataTableAdapter` over this RPC when present.
 - `CACHE_RPC`: loopback entrypoint with `get(key)`, `set(key, entry)`,
   `delete(key)`, `keys(prefix?)` over `SITE_CACHE_KV`. `cache.server.ts` uses
   it as the cachified store when present (LRU stays in-isolate).
@@ -385,7 +378,7 @@ but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 1. Apply migrations manually with a token that has D1 write access:
    `npm run d1:migrations:apply:staging --workspace site-worker`
 2. Re-seed if needed: `npm run seed:preview-d1 --workspace site-worker`
-3. Redeploy the worker (schema is in the worker bundle via Prisma client).
+3. Redeploy the worker (schema is applied via D1 migrations, not a generated client).
 
 ### Runbook: fresh environment provisioning
 
