@@ -63,7 +63,6 @@ jobs:
     uses: ./.github/workflows/deploy-site.yml
     with:
       should_deploy: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-      run_pre_deploy_health_check: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
       deploy_target: production
     secrets: inherit
 

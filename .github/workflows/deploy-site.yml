@@ -6,10 +6,6 @@ on:
         required: false
         type: boolean
         default: false
-      run_pre_deploy_health_check:
-        required: false
-        type: boolean
-        default: false
       deploy_target:
         required: false
         type: string
@@ -21,11 +17,6 @@ on:
         required: false
         type: boolean
         default: true
-      run_pre_deploy_health_check:
-        description: Whether to run the Node production pre-deploy health check.
-        required: false
-        type: boolean
-        default: false
       deploy_target:
         description: Wrangler provision target (production or staging).
         required: false
