@@ -178,8 +178,22 @@ export function isPageCacheServeEligible(
 	const pathname = new URL(request.url).pathname
 	if (shouldBypassPageCachePath(pathname)) return false
 	if (!areCookiesAllowedForPageCache(request)) return false
+	if (isClientPersonalizedPath(request, pathname)) return false
 
 	return true
+}
+
+/**
+ * Chats with Kent episode pages render per-client homework completion state
+ * for anonymous visitors (keyed by the KCD_client_id cookie), so a visitor
+ * carrying a client id must not be served (or fill) the shared anonymous
+ * cache for those pages.
+ */
+function isClientPersonalizedPath(request: Request, pathname: string) {
+	if (!pathname.startsWith('/chats')) return false
+	const cookieHeader = request.headers.get('Cookie')
+	if (!cookieHeader) return false
+	return CLIENT_ID_COOKIE_NAME in parseCookieHeader(cookieHeader)
 }
 
 function normalizeContentType(contentType: string | null) {
@@ -314,7 +328,10 @@ export function buildPageCacheFillRequest(request: Request) {
 	headers.delete('CF-Connecting-IP')
 	headers.delete('Fly-Client-Ip')
 	return new Request(request.url, {
-		method: request.method,
+		// Always fill with GET: HEAD shares the cache key with GET, and a
+		// HEAD-shaped fill would store an empty body that later GETs would be
+		// served.
+		method: 'GET',
 		headers,
 		redirect: 'manual',
 	})
@@ -515,19 +532,22 @@ export async function handlePageCacheRequest(
 	// Reuse the visitor's own response for the cache fill (a single dynamic
 	// fetch, a single rate-limit increment). Anonymous bodies contain no
 	// per-visitor data — the client-id lives only in Set-Cookie, which the
-	// store path strips — so the clone is safe to share.
+	// store path strips — so the clone is safe to share. HEAD responses are
+	// never stored: they share the cache key with GET but have empty bodies.
 	const response = await fetchDynamic(request)
-	const responseForStore = response.clone()
-	ctx.waitUntil(
-		storePageCacheFromFillResponse(
-			key,
-			responseForStore,
-			env.SITE_CACHE_KV,
-			pathname,
-		).catch((error: unknown) => {
-			console.warn('page-cache fill failed', key, error)
-		}),
-	)
+	if (request.method === 'GET') {
+		const responseForStore = response.clone()
+		ctx.waitUntil(
+			storePageCacheFromFillResponse(
+				key,
+				responseForStore,
+				env.SITE_CACHE_KV,
+				pathname,
+			).catch((error: unknown) => {
+				console.warn('page-cache fill failed', key, error)
+			}),
+		)
+	}
 
 	return withEdgeCacheHeader(response, 'MISS')
 }

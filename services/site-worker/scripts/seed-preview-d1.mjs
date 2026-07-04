@@ -73,11 +73,10 @@ async function main() {
 			`Could not determine existing admin count from wrangler output:\n${checkOutput}`,
 		)
 	}
-	if (adminCount > 0) {
-		console.log('Seed admin already exists; skipping')
-		return
-	}
 
+	// Statements are individually idempotent (INSERT OR IGNORE keyed on unique
+	// emails / userId) so a partially-failed earlier run is repaired on retry
+	// instead of being skipped.
 	const passwordHash = await bcrypt.hash('iliketwix', 10)
 	const kentId = randomUUID()
 	const hannahId = randomUUID()
@@ -86,18 +85,22 @@ async function main() {
 	const now = new Date().toISOString()
 
 	const statements = [
-		`INSERT INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(kentId)}, ${sqlString(now)}, ${sqlString(now)}, ${sqlString(adminEmail)}, 'Kent', 'BLUE', 'ADMIN');`,
-		`INSERT INTO Password (hash, createdAt, updatedAt, userId) VALUES (${sqlString(passwordHash)}, ${sqlString(now)}, ${sqlString(now)}, ${sqlString(kentId)});`,
-		`INSERT INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(hannahId)}, ${sqlString(now)}, ${sqlString(now)}, 'me+hannah@kentcdodds.com', 'Hannah', 'RED', 'MEMBER');`,
-		`INSERT INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(kodyId)}, ${sqlString(now)}, ${sqlString(now)}, 'me+kody@kentcdodds.com', 'Kody', 'YELLOW', 'MEMBER');`,
-		`INSERT INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(peterId)}, ${sqlString(now)}, ${sqlString(now)}, 'me+peter@kentcdodds.com', 'Peter', 'YELLOW', 'MEMBER');`,
+		`INSERT OR IGNORE INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(kentId)}, ${sqlString(now)}, ${sqlString(now)}, ${sqlString(adminEmail)}, 'Kent', 'BLUE', 'ADMIN');`,
+		`INSERT OR IGNORE INTO Password (hash, createdAt, updatedAt, userId) SELECT ${sqlString(passwordHash)}, ${sqlString(now)}, ${sqlString(now)}, id FROM User WHERE email = ${sqlString(adminEmail)};`,
+		`INSERT OR IGNORE INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(hannahId)}, ${sqlString(now)}, ${sqlString(now)}, 'me+hannah@kentcdodds.com', 'Hannah', 'RED', 'MEMBER');`,
+		`INSERT OR IGNORE INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(kodyId)}, ${sqlString(now)}, ${sqlString(now)}, 'me+kody@kentcdodds.com', 'Kody', 'YELLOW', 'MEMBER');`,
+		`INSERT OR IGNORE INTO User (id, createdAt, updatedAt, email, firstName, team, role) VALUES (${sqlString(peterId)}, ${sqlString(now)}, ${sqlString(now)}, 'me+peter@kentcdodds.com', 'Peter', 'YELLOW', 'MEMBER');`,
 	]
 
 	for (const sql of statements) {
 		runWranglerExecute(sql, { local })
 	}
 
-	console.log('Seeded preview D1 admin user and sample users')
+	console.log(
+		adminCount > 0
+			? 'Seed data verified/repaired (admin already existed)'
+			: 'Seeded preview D1 admin user and sample users',
+	)
 }
 
 main().catch((error) => {

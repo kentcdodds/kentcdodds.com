@@ -8,7 +8,7 @@ in `services/site-worker` and the MDX artifact pipeline on the migration branch.
 
 ## Overview
 
-```
+```text
                         ┌──────────────────────────────────────────┐
  request ──────────────▶│ parent worker (services/site-worker)     │
                         │  - static assets (ASSETS binding)        │
@@ -266,7 +266,7 @@ in ~0.1–0.2s TTFB regardless of dynamic isolate state.
 
 ### Key layout
 
-```
+```text
 page-cache:{generation}:{host}:{pathname}{?sortedSearch}:{theme}:{md}
 ```
 

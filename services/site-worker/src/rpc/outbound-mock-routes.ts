@@ -20,6 +20,9 @@ export const mockRoutes: OutboundMockRoute[] = [
 	},
 	{
 		host: 'api.kit.com',
+		// GET-only: this is the subscriber lookup; subscribe writes go to the
+		// POST forms/tags routes below.
+		method: 'GET',
 		match(url) {
 			return url.pathname === '/v3/subscribers'
 		},
