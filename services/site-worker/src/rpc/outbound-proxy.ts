@@ -1,9 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers'
-import { handleOutboundMockRoute } from '../../../site/app/utils/outbound-mock-handler.server.ts'
-import {
-	findOutboundMockRoute,
-	PASSTHROUGH_HOSTS,
-} from './outbound-mock-routes.ts'
+import { maybeHandleOutboundMockFetch } from '../../../site/app/utils/outbound-mock-handler.server.ts'
+import { PASSTHROUGH_HOSTS } from './outbound-mock-routes.ts'
 import type { ParentWorkerEnv } from './types.ts'
 import { getServiceBindingForHost } from './worker-service-routing.ts'
 
@@ -20,19 +17,25 @@ export class OutboundProxy extends WorkerEntrypoint<ParentWorkerEnv> {
 			return fetch(request)
 		}
 
-		const mockRoute = findOutboundMockRoute(request, url)
-		if (mockRoute) {
-			return handleOutboundMockRoute(request, url, mockRoute, {
-				onMailgunEmail: async (body) => {
-					if (body.to) {
-						await this.env.SITE_CACHE_KV.put(
-							`preview:last-email:${body.to}`,
-							JSON.stringify(body),
-						)
-					}
-				},
-			})
-		}
+		const mocked = await maybeHandleOutboundMockFetch(request, {
+			onMailgunEmail: async (body) => {
+				if (body.to) {
+					await this.env.SITE_CACHE_KV.put(
+						`preview:last-email:${body.to}`,
+						JSON.stringify(body),
+					)
+				}
+			},
+			searchWorkerUrl:
+				typeof this.env.SEARCH_WORKER_URL === 'string'
+					? this.env.SEARCH_WORKER_URL
+					: undefined,
+			searchWorkerToken:
+				typeof this.env.SEARCH_WORKER_TOKEN === 'string'
+					? this.env.SEARCH_WORKER_TOKEN
+					: undefined,
+		})
+		if (mocked) return mocked
 
 		return fetch(request)
 	}

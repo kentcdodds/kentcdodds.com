@@ -149,26 +149,35 @@ export class SqliteExecutorDataTableAdapter implements DatabaseAdapter {
 	async beginTransaction(
 		options?: TransactionOptions,
 	): Promise<TransactionToken> {
+		this.#transactionCounter += 1
+		const token = { id: 'tx_' + String(this.#transactionCounter) }
+		this.#transactions.add(token.id)
+
+		if (this.#executor.supportsSqlTransactions === false) {
+			return token
+		}
+
 		if (options?.isolationLevel === 'read uncommitted') {
 			await this.#executor.exec('PRAGMA read_uncommitted = true')
 		}
 
 		await this.#executor.exec('BEGIN')
-		this.#transactionCounter += 1
-		const token = { id: 'tx_' + String(this.#transactionCounter) }
-		this.#transactions.add(token.id)
 		return token
 	}
 
 	async commitTransaction(token: TransactionToken): Promise<void> {
 		this.#assertTransaction(token)
-		await this.#executor.exec('COMMIT')
+		if (this.#executor.supportsSqlTransactions !== false) {
+			await this.#executor.exec('COMMIT')
+		}
 		this.#transactions.delete(token.id)
 	}
 
 	async rollbackTransaction(token: TransactionToken): Promise<void> {
 		this.#assertTransaction(token)
-		await this.#executor.exec('ROLLBACK')
+		if (this.#executor.supportsSqlTransactions !== false) {
+			await this.#executor.exec('ROLLBACK')
+		}
 		this.#transactions.delete(token.id)
 	}
 

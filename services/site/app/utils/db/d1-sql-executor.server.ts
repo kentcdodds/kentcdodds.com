@@ -41,6 +41,11 @@ export type D1SqlExecutor = {
 	query(sql: string, params?: readonly unknown[]): Promise<D1StatementResult>
 	run(sql: string, params?: readonly unknown[]): Promise<D1StatementResult>
 	exec(sql: string): Promise<void>
+	/**
+	 * D1 forbids SQL `BEGIN`/`COMMIT`. When false, the data-table adapter runs
+	 * statements immediately without wrapping them in SQL transactions.
+	 */
+	supportsSqlTransactions?: boolean
 }
 
 export type D1RpcBinding = {
@@ -56,6 +61,7 @@ export type D1RpcBinding = {
 
 export function createDirectD1Executor(database: D1DatabaseLike): D1SqlExecutor {
 	return {
+		supportsSqlTransactions: false,
 		async query(sql, params = []) {
 			const bound = database.prepare(sql).bind(...serializeSqlParams(params))
 			const result = await bound.all<Record<string, unknown>>()
@@ -80,6 +86,7 @@ export function createDirectD1Executor(database: D1DatabaseLike): D1SqlExecutor 
 
 export function createRpcD1Executor(rpc: D1RpcBinding): D1SqlExecutor {
 	return {
+		supportsSqlTransactions: false,
 		async query(sql, params = []) {
 			const result = await rpc.query(sql, serializeSqlParams(params))
 			return {

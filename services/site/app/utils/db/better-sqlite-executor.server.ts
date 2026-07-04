@@ -6,6 +6,7 @@ export function createBetterSqliteExecutor(
 	database: BetterSqlite3.Database,
 ): D1SqlExecutor {
 	return {
+		supportsSqlTransactions: true,
 		async query(sql, params = []) {
 			const results = database
 				.prepare(sql)
