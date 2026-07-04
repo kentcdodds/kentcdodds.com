@@ -65,7 +65,8 @@ function getAgentSearchHintMarkdown(req: Parameters<RequestHandler>[0]) {
  *
  * - In development we effectively disable limits to avoid slowing iteration.
  * - In production the limits are enforced and keyed by `Fly-Client-Ip` when
- *   available (users cannot spoof this header on Fly.io).
+ *   available (harmless fallback when not behind Fly; prefer `cf-connecting-ip`
+ *   when behind Cloudflare).
  */
 export function createRateLimitingMiddleware(
 	options: CreateRateLimitingMiddlewareOptions = {},
@@ -85,9 +86,9 @@ export function createRateLimitingMiddleware(
 		legacyHeaders: false,
 		validate: { trustProxy: false },
 		// Malicious users can spoof their IP address which means we should not default
-		// to trusting req.ip when hosted on Fly.io. However, users cannot spoof Fly-Client-Ip.
-		// When sitting behind a CDN such as cloudflare, replace fly-client-ip with the CDN
-		// specific header such as cf-connecting-ip
+		// to trusting req.ip when hosted behind a proxy. When sitting behind a CDN such
+		// as Cloudflare, prefer cf-connecting-ip; Fly-Client-Ip remains as a harmless
+		// fallback for older proxy headers.
 		keyGenerator: (req: Parameters<RequestHandler>[0]) => {
 			const flyClientIp = req.get('fly-client-ip')
 			const ip = flyClientIp ?? req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0'

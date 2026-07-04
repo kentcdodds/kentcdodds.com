@@ -123,15 +123,12 @@ test('getEnv cache distinguishes unset values from empty strings', () => {
 	expect(getEnv().SENTRY_DSN).toBe('')
 })
 
-test('getEnv accepts Worker-shaped config without LiteFS or file cache paths', () => {
+test('getEnv accepts Worker-shaped config without file cache paths', () => {
 	setRuntimeEnvSource(
 		createRuntimeEnvSource({
 			DATABASE_URL: 'd1://app-db',
 			DATABASE_PATH: undefined,
 			CACHE_DATABASE_PATH: undefined,
-			FLY_APP_NAME: undefined,
-			FLY_REGION: undefined,
-			FLY_MACHINE_ID: undefined,
 		}),
 	)
 
@@ -139,7 +136,4 @@ test('getEnv accepts Worker-shaped config without LiteFS or file cache paths', (
 
 	expect(env.DATABASE_PATH).toBe('')
 	expect(env.CACHE_DATABASE_PATH).toBeUndefined()
-	expect(env.FLY_APP_NAME).toBe('')
-	expect(env.FLY_REGION).toBe('unknown')
-	expect(env.FLY_MACHINE_ID).toBe('unknown')
 })

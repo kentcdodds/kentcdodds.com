@@ -22,11 +22,7 @@ const schemaBase = z.object({
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
-	FLY_APP_NAME: z.string().trim().optional(),
-	FLY_REGION: z.string().trim().optional(),
-	FLY_MACHINE_ID: z.string().trim().optional(),
-
-	// Used by local/Fly SQLite tooling. Optional because it can be derived from
+	// Used by local SQLite tooling. Optional because it can be derived from
 	// `DATABASE_URL` when using SQLite `file:` URLs.
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
@@ -169,9 +165,6 @@ export type Env = Omit<
 	| 'PORT'
 	| 'MOCKS'
 	| 'DATABASE_PATH'
-	| 'FLY_APP_NAME'
-	| 'FLY_REGION'
-	| 'FLY_MACHINE_ID'
 	| 'CACHE_DATABASE_PATH'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
@@ -179,10 +172,6 @@ export type Env = Omit<
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
-	FLY_APP_NAME: string
-	FLY_REGION: string
-	/** Instance identifier; fallback for startup race when env may not be injected yet. */
-	FLY_MACHINE_ID: string
 	CACHE_DATABASE_PATH?: string
 	/**
 	 * Defaults to `CLOUDFLARE_AI_TEXT_MODEL` when not explicitly set.
@@ -222,10 +211,6 @@ function computeAllowedActionOrigins(values: BaseEnv) {
 	if (values.NODE_ENV !== 'production') return ['**']
 
 	const productionOrigins = ['kentcdodds.com', '*.kentcdodds.com']
-	// Fly.io app name is required by schema; keep the old behavior anyway.
-	if (values.FLY_APP_NAME) {
-		productionOrigins.push(`${values.FLY_APP_NAME}.fly.dev`)
-	}
 	return productionOrigins
 }
 
@@ -290,9 +275,6 @@ export function getEnv(): Env {
 		MOCKS: values.MOCKS === 'true',
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
-		FLY_APP_NAME: values.FLY_APP_NAME ?? '',
-		FLY_REGION: values.FLY_REGION ?? 'unknown',
-		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
 		CALL_KENT_AUDIO_CF_API_BASE_URL: callKentAudioCfApiBaseUrl,
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:

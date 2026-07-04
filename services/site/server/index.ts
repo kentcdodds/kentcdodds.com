@@ -5,7 +5,6 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import {
 	init as sentryInit,
-	setContext as sentrySetContext,
 } from '@sentry/react-router'
 import { ip as ipAddress } from 'address'
 import chalk from 'chalk'
@@ -22,7 +21,6 @@ import serverTiming from 'server-timing'
 import sourceMapSupport from 'source-map-support'
 import { type WebSocketServer } from 'ws'
 import { getEnv } from '../app/utils/env.server.ts'
-import { getInstanceInfoSync } from '../app/utils/instance-info.server.ts'
 
 sourceMapSupport.install()
 
@@ -141,14 +139,9 @@ if (SHOULD_INIT_SENTRY) {
 		tracesSampleRate: 0.3,
 		environment: env.NODE_ENV,
 	})
-	sentrySetContext('fly', {
-		region: env.FLY_REGION,
-		machineId: env.FLY_MACHINE_ID,
-	})
 }
 
 const app = express()
-// fly is our proxy
 app.set('trust proxy', true)
 app.use(serverTiming())
 
@@ -208,14 +201,7 @@ app.use((req, res, next) => {
 })
 
 app.use((req, res, next) => {
-	const metricName = 'middleware-get-instance-info'
-	startServerMetric(res, metricName, 'populate fly response headers')
-	const { currentInstance, primaryInstance } = getInstanceInfoSync()
 	res.set('X-Powered-By', 'Kody the Koala')
-	res.set('X-Fly-Region', env.FLY_REGION)
-	res.set('X-Fly-App', env.FLY_APP_NAME)
-	res.set('X-Fly-Instance', currentInstance)
-	res.set('X-Fly-Primary-Instance', primaryInstance)
 	res.set('X-Frame-Options', 'SAMEORIGIN')
 	const proto = req.get('X-Forwarded-Proto') ?? req.protocol
 
@@ -230,7 +216,6 @@ app.use((req, res, next) => {
 		'Strict-Transport-Security',
 		`max-age=${60 * 60 * 24 * 365 * 100}`,
 	)
-	endServerMetric(res, metricName)
 	next()
 })
 

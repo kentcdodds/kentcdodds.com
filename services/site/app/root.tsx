@@ -19,7 +19,6 @@ import {
 } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { type KCDHandle } from '#app/types.ts'
-import { getInstanceInfoSync } from '#app/utils/instance-info.server.ts'
 import {
 	useCapturedRouteError,
 	getDisplayUrl,
@@ -125,12 +124,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const loaderStart = performance.now()
 	const requestPath = new URL(request.url).pathname
 	const session = await getSession(request)
-	const [user, clientSession, loginInfoSession, primaryInstance] =
-		await Promise.all([
+	const [user, clientSession, loginInfoSession] = await Promise.all([
 			session.getUser({ timings }),
 			getClientSession(request, session.getUser({ timings })),
 			getLoginInfoSession(request),
-			Promise.resolve(getInstanceInfoSync().primaryInstance),
 		])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
@@ -148,7 +145,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 			hints: getHints(request),
 			origin: getDomainUrl(request),
 			path: requestPath,
-			flyPrimaryInstance: primaryInstance,
 			userPrefs: {
 				theme: getTheme(request),
 			},

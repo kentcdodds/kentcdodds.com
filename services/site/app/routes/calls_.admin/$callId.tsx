@@ -28,7 +28,7 @@ import {
 } from '#app/utils/db/schema.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
-import { useRootData, useUser } from '#app/utils/use-root-data.ts'
+import { useUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/$callId'
 
 export const handle: KCDHandle = {
@@ -360,8 +360,6 @@ function ResponseAudioDraftForm({
 	const navigate = useNavigate()
 	const location = useLocation()
 	const revalidator = useRevalidator()
-	const { requestInfo } = useRootData()
-	const flyPrimaryInstance = requestInfo.flyPrimaryInstance
 	const audioURL = React.useMemo(() => URL.createObjectURL(audio), [audio])
 	const abortControllerRef = React.useRef<AbortController | null>(null)
 	const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -391,9 +389,6 @@ function ResponseAudioDraftForm({
 		body.set('notes', notesValue)
 
 		const headers = new Headers()
-		if (flyPrimaryInstance) {
-			headers.set('fly-force-instance-id', flyPrimaryInstance)
-		}
 
 		abortControllerRef.current?.abort()
 		const abortController = new AbortController()

@@ -1,5 +1,4 @@
 import { getEnv } from '../app/utils/env.server.ts'
-import { getInstanceInfo } from '../app/utils/instance-info.server.ts'
 import {
 	deleteExpiredSessions,
 	deleteExpiredVerifications,
@@ -55,17 +54,11 @@ export function scheduleExpiredDataCleanup({
 		if (stopped) return
 		runningPromise = (async () => {
 			try {
-				const { currentInstance, primaryInstance } = await getInstanceInfo()
-
 				const deletedSessionsCount = await deleteExpiredSessions()
 				const deletedVerificationsCount = await deleteExpiredVerifications()
 				if (deletedSessionsCount > 0 || deletedVerificationsCount > 0) {
 					console.info(
 						`expired-data-cleanup: deleted ${deletedSessionsCount} expired sessions and ${deletedVerificationsCount} expired verifications (${reason})`,
-						{
-							currentInstance,
-							primaryInstance,
-						},
 					)
 				}
 			} catch (error: unknown) {
