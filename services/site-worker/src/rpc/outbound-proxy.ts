@@ -216,5 +216,3 @@ export class OutboundProxy extends WorkerEntrypoint<ParentWorkerEnv> {
 		return fetch(request)
 	}
 }
-
-export { PASSTHROUGH_HOSTS } from './outbound-mock-routes.ts'
