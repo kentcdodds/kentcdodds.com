@@ -99,6 +99,15 @@ async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 		httpMetadata: { contentType: 'application/json' },
 	})
 
+	// Overwrite the KV mirror too: fetchArtifactBundle prefers the mirror, so
+	// a republish with an unchanged version/r2Key must not keep serving the
+	// previously mirrored artifact JSON.
+	try {
+		await env.CONTENT_KV.put(`mdx-bundle:${r2Key}`, bodyText)
+	} catch {
+		// KV values cap at 25 MiB; R2 remains the source of truth.
+	}
+
 	const manifest = JSON.stringify({ version: bundle.version, r2Key })
 	await env.CONTENT_KV.put('mdx-manifest:current', manifest)
 	clearManifestCache()

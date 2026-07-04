@@ -100,24 +100,39 @@ jobs:
           fi
 
       - name: ✅ Smoke check deployed preview
+        # Every assertion retries: requests right after a deploy can land on
+        # cold isolates mid-propagation and see transient errors.
         run: |
-          curl --fail --silent --show-error "$WORKER_URL/healthcheck" | grep -Fx 'OK'
+          check_with_retries() {
+            local label="$1"
+            shift
+            for attempt in 1 2 3 4; do
+              if "$@"; then
+                echo "$label passed on attempt $attempt"
+                return 0
+              fi
+              if [ "$attempt" -eq 4 ]; then
+                echo "$label failed after 4 attempts"
+                return 1
+              fi
+              echo "$label attempt $attempt failed; retrying in 10s..."
+              sleep 10
+            done
+          }
 
-          for attempt in 1 2 3; do
-            home_code="$(curl --silent --output /dev/null --write-out '%{http_code}' "$WORKER_URL/")"
-            blog_code="$(curl --silent --output /dev/null --write-out '%{http_code}' "$WORKER_URL/blog")"
-            if echo "$home_code" | grep -E '^(200|302)$' && echo "$blog_code" | grep -E '^(200|302)$'; then
-              echo "Smoke check passed on attempt $attempt (home=$home_code blog=$blog_code)"
-              break
-            fi
-            if [ "$attempt" -eq 3 ]; then
-              echo "Smoke check failed after 3 attempts (home=$home_code blog=$blog_code)"
-              exit 1
-            fi
-            echo "Attempt $attempt failed (home=$home_code blog=$blog_code); retrying in 10s..."
-            sleep 10
-          done
+          check_healthcheck() {
+            curl --silent "$WORKER_URL/healthcheck" | grep -Fx 'OK'
+          }
+          check_page() {
+            local path="$1"
+            curl --silent --output /dev/null --write-out '%{http_code}' "$WORKER_URL$path" | grep -E '^(200|302)$'
+          }
+          check_oauth_metadata() {
+            curl --silent "$WORKER_URL/.well-known/oauth-authorization-server" | grep -q '"issuer"'
+          }
 
-          curl --fail --silent --show-error --output /dev/null --write-out '%{http_code}\n' "$WORKER_URL/blog/super-simple-start-to-remix" | grep -E '^(200|302)$'
-
-          curl --fail --silent --show-error "$WORKER_URL/.well-known/oauth-authorization-server" | grep -q '"issuer"'
+          check_with_retries "healthcheck" check_healthcheck
+          check_with_retries "home" check_page /
+          check_with_retries "blog" check_page /blog
+          check_with_retries "blog post" check_page /blog/super-simple-start-to-remix
+          check_with_retries "oauth metadata" check_oauth_metadata
