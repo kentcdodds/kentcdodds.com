@@ -124,7 +124,11 @@ async function compileDocument(document: MdxDocumentRef) {
 	const compiled = await compileMdxArtifactDocument(document)
 	const moduleFileName = getModuleFileName(document.slug, compiled)
 	await writeModuleFile(document.contentDir, moduleFileName, compiled.esm)
-	return [document.key, compiled, `${document.contentDir}/${moduleFileName}`] as const
+	return [
+		document.key,
+		compiled,
+		`${document.contentDir}/${moduleFileName}`,
+	] as const
 }
 
 async function compileAllDocuments({
@@ -194,7 +198,9 @@ async function recompileDocumentKey(key: string) {
 
 	const currentManifest = JSON.parse(
 		await fs.readFile(MANIFEST_PATH, 'utf8'),
-	) as MdxArtifactBundle & { documents: Record<string, ManifestDocument & { moduleFile?: string }> }
+	) as MdxArtifactBundle & {
+		documents: Record<string, ManifestDocument & { moduleFile?: string }>
+	}
 	const documents: Record<string, ManifestDocument> = {}
 	const moduleFiles: Record<string, string> = {}
 	for (const [docKey, doc] of Object.entries(currentManifest.documents)) {
@@ -246,19 +252,30 @@ async function startSidecarServer() {
 		}
 
 		if (req.method === 'GET' && url.pathname === '/manifest') {
-			try {
-				const manifest = JSON.parse(await fs.readFile(MANIFEST_PATH, 'utf8'))
-				res.writeHead(200, {
-					'content-type': 'application/json',
-					'cache-control': 'no-store',
-				})
-				res.end(JSON.stringify(manifest))
-			} catch (error: unknown) {
-				const message = error instanceof Error ? error.message : String(error)
-				res.writeHead(503, { 'content-type': 'application/json' })
-				res.end(JSON.stringify({ error: message }))
+			// Hold the request until the initial compile finishes so the dev
+			// worker's first page loads block (slow but correct) instead of
+			// erroring with a 500 while content is still compiling.
+			const deadline = Date.now() + 5 * 60_000
+			for (;;) {
+				try {
+					const manifest = JSON.parse(await fs.readFile(MANIFEST_PATH, 'utf8'))
+					res.writeHead(200, {
+						'content-type': 'application/json',
+						'cache-control': 'no-store',
+					})
+					res.end(JSON.stringify(manifest))
+					return
+				} catch (error: unknown) {
+					if (Date.now() > deadline) {
+						const message =
+							error instanceof Error ? error.message : String(error)
+						res.writeHead(503, { 'content-type': 'application/json' })
+						res.end(JSON.stringify({ error: message }))
+						return
+					}
+					await new Promise((resolve) => setTimeout(resolve, 500))
+				}
 			}
-			return
 		}
 
 		if (req.method === 'POST' && url.pathname === '/__dev/capture-email') {
