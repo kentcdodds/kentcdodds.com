@@ -21,33 +21,8 @@ import { CacheRpc } from './rpc/cache-rpc.ts'
 import { ContentRpc } from './rpc/content-rpc.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
 import { getParentPrismaClient, PrismaRpc } from './rpc/prisma-rpc.ts'
-import type {
-	DynamicWorkerConfig,
-	DynamicWorkerStub,
-	ParentWorkerEnv,
-} from './rpc/types.ts'
+import type { DynamicWorkerConfig, ParentWorkerEnv } from './rpc/types.ts'
 
-// Reusing the same WorkerStub across requests keeps traffic pinned to warm
-// dynamic isolates instead of letting each `LOADER.get` call pick (or spawn)
-// a different isolate. Old build/content versions are never requested again,
-// so a tiny cache is enough.
-const workerStubCache = new Map<string, DynamicWorkerStub>()
-
-function getCachedWorkerStub(
-	workerId: string,
-	env: ParentWorkerEnv,
-	createConfig: () => DynamicWorkerConfig,
-) {
-	const cached = workerStubCache.get(workerId)
-	if (cached) return cached
-	const stub = env.LOADER.get(workerId, async () => createConfig())
-	workerStubCache.set(workerId, stub)
-	for (const key of workerStubCache.keys()) {
-		if (workerStubCache.size <= 4) break
-		if (key !== workerId) workerStubCache.delete(key)
-	}
-	return stub
-}
 import { serveStaticAsset } from './static-assets.ts'
 
 type ParentExecutionContext = ExecutionContext & {
@@ -211,7 +186,11 @@ async function handleDynamicRequest(
 	const stringEnv = getStringEnvBindings(env)
 
 	let loaderCallbackMs = 0
-	const worker = getCachedWorkerStub(workerId, env, () => {
+	// Note: WorkerStubs are I/O objects tied to the creating request context
+	// and must NOT be cached across requests ("Cannot perform I/O on behalf of
+	// a different request"). LOADER.get is cheap; isolate reuse is keyed by
+	// workerId on the platform side.
+	const worker = env.LOADER.get(workerId, async () => {
 		const loaderCallbackStartedAt = performance.now()
 		const workerConfig = {
 			compatibilityDate: env.COMPATIBILITY_DATE ?? '2026-03-17',
