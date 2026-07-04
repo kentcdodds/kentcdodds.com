@@ -1,6 +1,6 @@
 /**
  * Worker-mode accessors for MDX artifact globals set by the dynamic app worker
- * bootstrap. Returns null in Node so dev/Express paths keep working.
+ * bootstrap. Returns null in Node when artifact globals are not set.
  */
 
 import { type ComponentType } from 'react'

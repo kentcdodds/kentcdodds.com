@@ -1,4 +1,3 @@
-import { lt } from '@remix-run/data-table'
 import pProps from 'p-props'
 import { type Session, type User } from '#app/types.ts'
 import { db } from '#app/utils/db.server.ts'
@@ -10,7 +9,6 @@ import {
 	sessionTable,
 	sessionUser,
 	userTable,
-	verificationTable,
 } from '#app/utils/db/schema.server.ts'
 import {
 	getEpisodeHomeworkCompletions,
@@ -32,24 +30,6 @@ async function createSession(
 		},
 		{ returnRow: true },
 	)
-}
-
-async function deleteExpiredSessions({
-	now = new Date(),
-}: { now?: Date } = {}) {
-	const result = await db.deleteMany(sessionTable, {
-		where: lt('expirationDate', now),
-	})
-	return result.affectedRows
-}
-
-async function deleteExpiredVerifications({
-	now = new Date(),
-}: { now?: Date } = {}) {
-	const result = await db.deleteMany(verificationTable, {
-		where: lt('expiresAt', now),
-	})
-	return result.affectedRows
 }
 
 const inflightSessionUsers = new Map<
@@ -137,8 +117,6 @@ async function getAllUserData(userId: string) {
 
 export {
 	createSession,
-	deleteExpiredSessions,
-	deleteExpiredVerifications,
 	getAllUserData,
 	getEpisodeHomeworkCompletions,
 	getUserFromSessionId,

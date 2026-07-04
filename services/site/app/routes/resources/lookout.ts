@@ -5,9 +5,7 @@ import { type Route } from './+types/lookout'
 
 export async function action({ request }: Route.ActionArgs) {
 	const env = getEnv()
-	// `start:mocks` (used in CI + local e2e) runs with `NODE_ENV=production` and
-	// `MOCKS=true`. In that mode we don't want/need to proxy Sentry envelopes to
-	// the real upstream ingest API.
+	// `MOCKS=true` skips proxying Sentry envelopes to the real upstream ingest API.
 	if (env.MOCKS) {
 		// Drain the body to avoid hanging the underlying connection.
 		await request.text().catch(() => '')

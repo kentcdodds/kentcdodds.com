@@ -42,7 +42,6 @@ async function main() {
 		PORT: '8788',
 		MOCKS: 'false',
 		DATABASE_URL: 'file:./preview.db',
-		GITHUB_REF: process.env.GITHUB_REF ?? 'refs/heads/main',
 		R2_BUCKET: deriveOrEnv(
 			'R2_BUCKET',
 			`${secretPrefix}R2_BUCKET`,
@@ -156,12 +155,6 @@ async function main() {
 		OG_IMAGE_SECRET: deriveSecret(
 			`${secretPrefix}OG_IMAGE_SECRET`,
 			refreshCacheSecret,
-		),
-		BOT_GITHUB_TOKEN: deriveOrEnv(
-			'BOT_GITHUB_TOKEN',
-			`${secretPrefix}BOT_GITHUB_TOKEN`,
-			refreshCacheSecret,
-			derivedFallbacks,
 		),
 		CLOUDFLARE_ACCOUNT_ID: accountId,
 		CLOUDFLARE_API_TOKEN: deriveOrEnv(
