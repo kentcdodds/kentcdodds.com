@@ -43,7 +43,6 @@ const localDevSecrets = {
 	PORT: String(port),
 	MOCKS: 'true',
 	DATABASE_URL: 'file:./prisma/sqlite.db',
-	BOT_GITHUB_TOKEN: 'token',
 	CALL_KENT_PODCAST_ID: 'call-kent',
 	CHATS_WITH_KENT_PODCAST_ID: 'chats-with-kent',
 	KIT_API_KEY: 'kit-key',

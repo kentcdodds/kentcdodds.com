@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - .github/workflows/validate-site-worker.yml
-      - docs/agents/cloudflare-staging-d1.md
       - package-lock.json
       - package.json
       - services/site/app/**
