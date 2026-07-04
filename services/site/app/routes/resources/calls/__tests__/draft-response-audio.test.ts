@@ -9,11 +9,9 @@ vi.mock('#app/utils/call-kent-audio-storage.server.ts', () => ({
 	parseHttpByteRangeHeader: vi.fn(),
 }))
 
-vi.mock('#app/utils/prisma.server.ts', () => ({
-	prisma: {
-		callKentEpisodeDraft: {
-			findUnique: vi.fn(),
-		},
+vi.mock('#app/utils/db.server.ts', () => ({
+	db: {
+		findOne: vi.fn(),
 	},
 }))
 
@@ -25,12 +23,12 @@ import {
 	getAudioBuffer,
 	getAudioStream,
 } from '#app/utils/call-kent-audio-storage.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
 import { loader } from '../draft-response-audio.ts'
 
 test('draft-response-audio streams saved response audio for admins', async () => {
 	vi.clearAllMocks()
-	vi.mocked(prisma.callKentEpisodeDraft.findUnique).mockResolvedValue({
+	vi.mocked(db.findOne).mockResolvedValue({
 		responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
 		responseAudioContentType: 'audio/webm',
 		responseAudioSize: 5,
@@ -58,7 +56,7 @@ test('draft-response-audio streams saved response audio for admins', async () =>
 
 test('draft-response-audio falls back to buffered reads when size is missing', async () => {
 	vi.clearAllMocks()
-	vi.mocked(prisma.callKentEpisodeDraft.findUnique).mockResolvedValue({
+	vi.mocked(db.findOne).mockResolvedValue({
 		responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
 		responseAudioContentType: 'audio/webm',
 		responseAudioSize: null,

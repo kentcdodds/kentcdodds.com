@@ -20,7 +20,12 @@ import { Spinner } from '#app/components/spinner.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { formatDate, useDoubleCheck } from '#app/utils/misc-react.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callEpisodeDraft,
+	callTable,
+	callUser,
+} from '#app/utils/db/schema.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { useRootData, useUser } from '#app/utils/use-root-data.ts'
@@ -39,35 +44,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const error = url.searchParams.get('error')
 
-	const call = await prisma.call.findFirst({
+	const call = await db.findOne(callTable, {
 		where: { id: params.callId },
-		select: {
-			createdAt: true,
-			notes: true,
-			title: true,
-			id: true,
-			isAnonymous: true,
-			callerTranscript: true,
-			callerTranscriptStatus: true,
-			callerTranscriptErrorMessage: true,
-			episodeDraft: {
-				select: {
-					id: true,
-					status: true,
-					step: true,
-					errorMessage: true,
-					episodeAudioKey: true,
-					responseAudioKey: true,
-					transcript: true,
-					title: true,
-					description: true,
-					keywords: true,
-				},
-			},
-			user: {
-				select: { firstName: true, email: true, team: true, discordId: true },
-			},
-		},
+		with: { episodeDraft: callEpisodeDraft, user: callUser },
 	})
 	if (!call) {
 		console.error(`No call found at ${params.callId}`)
@@ -75,6 +54,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		searchParams.set('message', 'Call not found')
 		return redirect(`/calls/admin?${searchParams.toString()}`)
 	}
+	if (!call.user) {
+		throw new Error(`Call ${params.callId} is missing its user relation`)
+	}
+	const callUserRecord = call.user
 	const episodeDraft = call.episodeDraft
 	const hasEpisodeAudio = Boolean(episodeDraft?.episodeAudioKey)
 	const hasResponseAudio = Boolean(episodeDraft?.responseAudioKey)
@@ -84,7 +67,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	return json({
 		call: {
 			...call,
-			formattedCreatedAt: formatDate(call.createdAt),
+			user: callUserRecord,
+			formattedCreatedAt: formatDate(call.createdAt as Date),
 			episodeDraft: episodeDraft
 				? {
 						...episodeDraft,

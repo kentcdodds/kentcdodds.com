@@ -1,34 +1,26 @@
 import { expect, test, vi } from 'vitest'
+import {
+	callKentEpisodeDraftTable,
+	callTable,
+	sessionTable,
+} from '../db/schema.server.ts'
 
 async function loadWriteFlows() {
 	vi.resetModules()
-	const prisma = {
-		callKentCallerEpisode: {
-			upsert: vi.fn(),
-		},
-		call: {
-			deleteMany: vi.fn(),
-		},
-		callKentEpisodeDraft: {
-			deleteMany: vi.fn(),
-			create: vi.fn(),
-		},
-		password: {
-			upsert: vi.fn(),
-		},
-		session: {
-			deleteMany: vi.fn(),
-		},
+	const db = {
+		exec: vi.fn(),
+		deleteMany: vi.fn(),
+		create: vi.fn(),
 	}
-	vi.doMock('../prisma.server.ts', () => ({ prisma }))
+	vi.doMock('../db.server.ts', () => ({ db }))
 	const mod = await import('../prisma-write-flows.server.ts')
-	return { prisma, ...mod }
+	return { db, ...mod }
 }
 
 test('recordPublishedCallKentEpisode upserts the caller episode before deleting the raw call', async () => {
-	const { prisma, recordPublishedCallKentEpisode } = await loadWriteFlows()
-	prisma.callKentCallerEpisode.upsert.mockResolvedValue({})
-	prisma.call.deleteMany.mockResolvedValue({ count: 1 })
+	const { db, recordPublishedCallKentEpisode } = await loadWriteFlows()
+	db.exec.mockResolvedValue({ affectedRows: 1 })
+	db.deleteMany.mockResolvedValue({ affectedRows: 1 })
 
 	await recordPublishedCallKentEpisode({
 		userId: 'user-1',
@@ -39,78 +31,59 @@ test('recordPublishedCallKentEpisode upserts the caller episode before deleting 
 		transistorEpisodeId: 'episode-1',
 	})
 
-	expect(prisma.callKentCallerEpisode.upsert).toHaveBeenCalledWith({
-		where: { transistorEpisodeId: 'episode-1' },
-		create: {
-			userId: 'user-1',
-			callTitle: 'Call title',
-			callNotes: 'Call notes',
-			isAnonymous: false,
-			transistorEpisodeId: 'episode-1',
-		},
-		update: {
-			userId: 'user-1',
-			callTitle: 'Call title',
-			callNotes: 'Call notes',
-			isAnonymous: false,
-		},
-	})
-	expect(prisma.call.deleteMany).toHaveBeenCalledWith({
+	expect(db.exec).toHaveBeenCalledTimes(1)
+	expect(db.deleteMany).toHaveBeenCalledWith(callTable, {
 		where: { id: 'call-1' },
 	})
-	expect(
-		prisma.callKentCallerEpisode.upsert.mock.invocationCallOrder[0],
-	).toBeLessThan(prisma.call.deleteMany.mock.invocationCallOrder[0]!)
+	expect(db.exec.mock.invocationCallOrder[0]).toBeLessThan(
+		db.deleteMany.mock.invocationCallOrder[0]!,
+	)
 })
 
 test('replaceCallKentEpisodeDraft deletes any old draft before creating a new one', async () => {
-	const { prisma, replaceCallKentEpisodeDraft } = await loadWriteFlows()
+	const { db, replaceCallKentEpisodeDraft } = await loadWriteFlows()
 	const draft = { id: 'draft-1', callId: 'call-1' }
-	prisma.callKentEpisodeDraft.deleteMany.mockResolvedValue({ count: 1 })
-	prisma.callKentEpisodeDraft.create.mockResolvedValue(draft)
+	db.deleteMany.mockResolvedValue({ affectedRows: 1 })
+	db.create.mockResolvedValue(draft)
 
 	await expect(replaceCallKentEpisodeDraft({ callId: 'call-1' })).resolves.toBe(
 		draft,
 	)
 
-	expect(prisma.callKentEpisodeDraft.deleteMany).toHaveBeenCalledWith({
+	expect(db.deleteMany).toHaveBeenCalledWith(callKentEpisodeDraftTable, {
 		where: { callId: 'call-1' },
 	})
-	expect(prisma.callKentEpisodeDraft.create).toHaveBeenCalledWith({
-		data: { callId: 'call-1' },
-	})
-	expect(
-		prisma.callKentEpisodeDraft.deleteMany.mock.invocationCallOrder[0],
-	).toBeLessThan(
-		prisma.callKentEpisodeDraft.create.mock.invocationCallOrder[0]!,
+	expect(db.create).toHaveBeenCalledWith(
+		callKentEpisodeDraftTable,
+		{ callId: 'call-1' },
+		{ returnRow: true },
+	)
+	expect(db.deleteMany.mock.invocationCallOrder[0]).toBeLessThan(
+		db.create.mock.invocationCallOrder[0]!,
 	)
 })
 
 test('upsertPasswordAndDeleteSessions retries session invalidation after saving the password', async () => {
-	const { prisma, upsertPasswordAndDeleteSessions } = await loadWriteFlows()
-	prisma.password.upsert.mockResolvedValue({})
-	prisma.session.deleteMany
+	const { db, upsertPasswordAndDeleteSessions } = await loadWriteFlows()
+	db.exec.mockResolvedValue({ affectedRows: 1 })
+	db.deleteMany
 		.mockRejectedValueOnce(new Error('temporary D1 failure'))
-		.mockResolvedValueOnce({ count: 2 })
+		.mockResolvedValueOnce({ affectedRows: 2 })
 
 	await upsertPasswordAndDeleteSessions({
 		userId: 'user-1',
 		passwordHash: 'hash-1',
 	})
 
-	expect(prisma.password.upsert).toHaveBeenCalledWith({
-		where: { userId: 'user-1' },
-		update: { hash: 'hash-1' },
-		create: { userId: 'user-1', hash: 'hash-1' },
-	})
-	expect(prisma.session.deleteMany).toHaveBeenCalledTimes(2)
-	expect(prisma.session.deleteMany).toHaveBeenNthCalledWith(1, {
+	expect(db.exec).toHaveBeenCalledTimes(1)
+	expect(db.deleteMany).toHaveBeenCalledTimes(2)
+	expect(db.deleteMany).toHaveBeenNthCalledWith(1, sessionTable, {
 		where: { userId: 'user-1' },
 	})
-	expect(prisma.session.deleteMany).toHaveBeenNthCalledWith(2, {
+	expect(db.deleteMany).toHaveBeenNthCalledWith(2, sessionTable, {
 		where: { userId: 'user-1' },
 	})
-	expect(prisma.password.upsert.mock.invocationCallOrder[0]).toBeLessThan(
-		prisma.session.deleteMany.mock.invocationCallOrder[0]!,
+	expect(db.exec.mock.invocationCallOrder[0]).toBeLessThan(
+		db.deleteMany.mock.invocationCallOrder[0]!,
 	)
 })

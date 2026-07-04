@@ -1,4 +1,12 @@
-import { prisma } from './prisma.server.ts'
+import { query } from '@remix-run/data-table'
+import { db } from './db.server.ts'
+import {
+	callKentCallerEpisodeTable,
+	callKentEpisodeDraftTable,
+	callTable,
+	passwordTable,
+	sessionTable,
+} from './db/schema.server.ts'
 
 async function recordPublishedCallKentEpisode({
 	userId,
@@ -15,32 +23,36 @@ async function recordPublishedCallKentEpisode({
 	isAnonymous: boolean
 	transistorEpisodeId: string
 }) {
-	await prisma.callKentCallerEpisode.upsert({
-		where: { transistorEpisodeId },
-		create: {
-			userId,
-			callTitle,
-			callNotes,
-			isAnonymous,
-			transistorEpisodeId,
-		},
-		update: {
-			userId,
-			callTitle,
-			callNotes,
-			isAnonymous,
-		},
-	})
-	await prisma.call.deleteMany({ where: { id: callId } })
+	await db.exec(
+		query(callKentCallerEpisodeTable).upsert(
+			{
+				userId,
+				callTitle,
+				callNotes,
+				isAnonymous,
+				transistorEpisodeId,
+			},
+			{
+				conflictTarget: ['transistorEpisodeId'],
+				update: {
+					userId,
+					callTitle,
+					callNotes,
+					isAnonymous,
+				},
+			},
+		),
+	)
+	await db.deleteMany(callTable, { where: { id: callId } })
 }
 
 async function replaceCallKentEpisodeDraft({ callId }: { callId: string }) {
-	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
-	return prisma.callKentEpisodeDraft.create({
-		data: {
-			callId,
-		},
-	})
+	await db.deleteMany(callKentEpisodeDraftTable, { where: { callId } })
+	return db.create(
+		callKentEpisodeDraftTable,
+		{ callId },
+		{ returnRow: true },
+	)
 }
 
 async function upsertPasswordAndDeleteSessions({
@@ -50,15 +62,20 @@ async function upsertPasswordAndDeleteSessions({
 	userId: string
 	passwordHash: string
 }) {
-	await prisma.password.upsert({
-		where: { userId },
-		update: { hash: passwordHash },
-		create: { userId, hash: passwordHash },
-	})
+	await db.exec(
+		query(passwordTable).upsert(
+			{ userId, hash: passwordHash },
+			{
+				conflictTarget: ['userId'],
+				update: { hash: passwordHash },
+				touch: true,
+			},
+		),
+	)
 	try {
-		await prisma.session.deleteMany({ where: { userId } })
+		await db.deleteMany(sessionTable, { where: { userId } })
 	} catch {
-		await prisma.session.deleteMany({ where: { userId } })
+		await db.deleteMany(sessionTable, { where: { userId } })
 	}
 }
 

@@ -1,8 +1,10 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { and, eq, inList } from '@remix-run/data-table'
 import { z } from 'zod'
 import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { callKentEpisodeDraftTable } from '#app/utils/db/schema.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
 
 const audioGenerationStartedEventSchema = z.object({
 	type: z.literal('audio_generation_started'),
@@ -101,24 +103,23 @@ export async function handleCallKentAudioProcessorEvent(
 ) {
 	switch (event.type) {
 		case 'audio_generation_started': {
-			await prisma.callKentEpisodeDraft.updateMany({
-				where: {
-					id: event.draftId,
-					status: 'PROCESSING',
-					step: { in: ['STARTED', 'GENERATING_AUDIO'] },
+			await db.updateMany(
+				callKentEpisodeDraftTable,
+				{ step: 'GENERATING_AUDIO', errorMessage: null },
+				{
+					where: and(
+						eq('id', event.draftId),
+						eq('status', 'PROCESSING'),
+						inList('step', ['STARTED', 'GENERATING_AUDIO']),
+					),
 				},
-				data: { step: 'GENERATING_AUDIO', errorMessage: null },
-			})
+			)
 			return
 		}
 		case 'audio_generation_completed': {
-			const updated = await prisma.callKentEpisodeDraft.updateMany({
-				where: {
-					id: event.draftId,
-					status: 'PROCESSING',
-					step: { in: ['STARTED', 'GENERATING_AUDIO'] },
-				},
-				data: {
+			const updated = await db.updateMany(
+				callKentEpisodeDraftTable,
+				{
 					episodeAudioKey: event.episodeAudioKey,
 					episodeAudioContentType: event.episodeAudioContentType,
 					episodeAudioSize: event.episodeAudioSize,
@@ -127,21 +128,33 @@ export async function handleCallKentAudioProcessorEvent(
 					step: 'TRANSCRIBING',
 					errorMessage: null,
 				},
-			})
-			if (updated.count !== 1) return
+				{
+					where: and(
+						eq('id', event.draftId),
+						eq('status', 'PROCESSING'),
+						inList('step', ['STARTED', 'GENERATING_AUDIO']),
+					),
+				},
+			)
+			if (updated.affectedRows !== 1) return
 			void startCallKentEpisodeDraftProcessing(event.draftId)
 			return
 		}
 		case 'audio_generation_failed': {
-			await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: event.draftId, status: 'PROCESSING' },
-				data: {
+			await db.updateMany(
+				callKentEpisodeDraftTable,
+				{
 					status: 'ERROR',
 					step: 'DONE',
 					errorMessage: event.errorMessage,
 				},
-			})
+				{ where: { id: event.draftId, status: 'PROCESSING' } },
+			)
 			return
+		}
+		default: {
+			const _exhaustive: never = event
+			throw new Error(`Unhandled event type: ${(_exhaustive as { type: string }).type}`)
 		}
 	}
 }

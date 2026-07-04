@@ -257,6 +257,10 @@ export const passwordUser = belongsTo(passwordTable, userTable)
 export const sessionUser = belongsTo(sessionTable, userTable)
 export const callUser = belongsTo(callTable, userTable)
 export const callEpisodeDraft = hasOne(callTable, callKentEpisodeDraftTable)
+export const callKentEpisodeDraftCall = belongsTo(
+	callKentEpisodeDraftTable,
+	callTable,
+)
 export const callKentCallerEpisodeUser = belongsTo(
 	callKentCallerEpisodeTable,
 	userTable,

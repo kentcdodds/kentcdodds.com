@@ -11,7 +11,8 @@ import { ButtonLink } from '#app/components/button.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { H2, Paragraph } from '#app/components/typography.tsx'
 import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { callTable } from '#app/utils/db/schema.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/_layout'
@@ -19,9 +20,8 @@ import { type Route } from './+types/_layout'
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await getUser(request)
 	const calls = user
-		? await prisma.call.findMany({
+		? await db.findMany(callTable, {
 				where: { userId: user.id },
-				select: { id: true, title: true },
 			})
 		: []
 	return json(

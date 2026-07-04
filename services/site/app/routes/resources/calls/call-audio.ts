@@ -6,7 +6,8 @@ import {
 	headAudioObject,
 	parseHttpByteRangeHeader,
 } from '#app/utils/call-kent-audio-storage.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { callTable } from '#app/utils/db/schema.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/call-audio'
 
@@ -17,13 +18,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (!callId) throw new Response('callId is required', { status: 400 })
 
 	const isAdmin = user.role === 'ADMIN'
-	const call = await prisma.call.findFirst({
+	const call = await db.findOne(callTable, {
 		where: isAdmin ? { id: callId } : { id: callId, userId: user.id },
-		select: {
-			audioKey: true,
-			audioContentType: true,
-			audioSize: true,
-		},
 	})
 	if (!call) throw new Response('Not found', { status: 404 })
 	if (!call.audioKey) throw new Response('Not found', { status: 404 })

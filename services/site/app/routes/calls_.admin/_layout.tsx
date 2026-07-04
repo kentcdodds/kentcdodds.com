@@ -5,7 +5,12 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { formatDate, getAvatarForUser } from '#app/utils/misc-react.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callEpisodeDraft,
+	callTable,
+	callUser,
+} from '#app/utils/db/schema.server.ts'
 import { requireAdminUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/_layout'
@@ -17,17 +22,12 @@ export const handle: KCDHandle = {
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireAdminUser(request)
 
-	const calls = await prisma.call.findMany({
-		select: {
-			id: true,
-			title: true,
-			notes: true,
-			updatedAt: true,
-			isAnonymous: true,
-			user: { select: { firstName: true, team: true, email: true } },
-			episodeDraft: { select: { status: true, step: true } },
+	const calls = await db.findMany(callTable, {
+		orderBy: ['updatedAt', 'desc'],
+		with: {
+			user: callUser,
+			episodeDraft: callEpisodeDraft,
 		},
-		orderBy: { updatedAt: 'desc' },
 	})
 
 	return json({ calls })
@@ -60,6 +60,7 @@ export default function CallListScreen({
 						<nav aria-label="Call list">
 							<ul className="flex flex-col gap-4">
 								{data.calls.map((call) => {
+									if (!call.user) return null
 									const avatar = getAvatarForUser(call.user, {
 										origin: requestInfo.origin,
 									})
@@ -100,7 +101,11 @@ export default function CallListScreen({
 															{call.notes ?? ''}
 														</p>
 														<p className="mt-2 text-xs text-gray-400 dark:text-slate-600">
-															{formatDate(call.updatedAt)}
+															{formatDate(
+																new Date(
+																	String(call.updatedAt ?? call.createdAt),
+																),
+															)}
 														</p>
 													</div>
 												</div>
