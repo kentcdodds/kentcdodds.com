@@ -192,11 +192,7 @@ export async function refreshChangedContent({
 
   const refreshResult = await postRefreshCacheWithRetry({
     postRefreshCacheImpl,
-    // The refresh-cache route requires `contentPaths` (or `keys`): it purges
-    // the cachified entries derived from these paths and records the commit
-    // SHA for future change detection.
     postData: {
-      contentPaths,
       commitSha: currentCommitSha,
     },
     log,

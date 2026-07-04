@@ -116,8 +116,7 @@ describe("refreshChangedContent", () => {
     expect(postRefreshCacheImpl).toHaveBeenLastCalledWith({
       http: undefined,
       postData: {
-        contentPaths: ["blog/some-post.mdx"],
-        commitSha: "current-sha",
+        commitSha: 'current-sha',
       },
     });
     expect(log.warn).toHaveBeenCalledTimes(1);
