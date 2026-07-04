@@ -51,6 +51,11 @@ jobs:
       - name: 🏄 Copy test env vars
         run: cp services/site/.env.example services/site/.env
 
+      - name: 🗄️ Migrate and seed local D1
+        # The JSX-page indexer boots the workerd dev stack, which reads from
+        # the local Miniflare D1 database.
+        run: npm run db:reset --workspace kentcdodds.com
+
       - name: 🔎 Index changed content
         run: |
           set -euo pipefail
