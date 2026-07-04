@@ -153,6 +153,10 @@ async function main() {
 			refreshCacheSecret,
 		),
 		REFRESH_CACHE_SECRET: refreshCacheSecret,
+		OG_IMAGE_SECRET: deriveSecret(
+			`${secretPrefix}OG_IMAGE_SECRET`,
+			refreshCacheSecret,
+		),
 		BOT_GITHUB_TOKEN: deriveOrEnv(
 			'BOT_GITHUB_TOKEN',
 			`${secretPrefix}BOT_GITHUB_TOKEN`,

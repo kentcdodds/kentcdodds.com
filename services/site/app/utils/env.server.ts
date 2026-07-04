@@ -52,6 +52,7 @@ const schemaBase = z.object({
 	MAILGUN_DOMAIN: nonEmptyString,
 	MAILGUN_SENDING_KEY: nonEmptyString,
 	REFRESH_CACHE_SECRET: nonEmptyString,
+	OG_IMAGE_SECRET: nonEmptyString,
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
 	// Sentry is optional; validate required combos in `superRefine`.
 	SENTRY_DSN: z.string().trim().optional(),
