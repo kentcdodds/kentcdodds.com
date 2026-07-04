@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@epic-web/config": "^2.0.0",
+    "get-port": "^7.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "nx": "^22.5.4",
