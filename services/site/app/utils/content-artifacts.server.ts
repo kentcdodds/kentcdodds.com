@@ -1,40 +1,21 @@
 /**
  * Worker-mode accessors for MDX artifact globals set by the dynamic app worker
  * bootstrap. Returns null in Node so dev/Express paths keep working.
- *
- * Types will be reconciled with `types/mdx-artifacts.d.ts` from the MDX pipeline
- * agent; names follow `docs/agents/cloudflare-worker-architecture.md`.
  */
 
 import { type ComponentType } from 'react'
-import { type MdxListItem } from '#app/types.ts'
+import {
+	type MdxArtifactBundle,
+	type MdxArtifactDocument,
+	type MdxDirListEntry,
+} from '../../types/mdx-artifacts.ts'
 import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 
 const contentDataKey = Symbol.for('kentcdodds.contentData')
 const loadMdxModuleKey = Symbol.for('kentcdodds.loadMdxModule')
 
-/** Minimal local contract until `types/mdx-artifacts.d.ts` lands. */
-export type ContentArtifactDocument = {
-	contentDir: string
-	slug: string
-	code?: string
-	githubResolvable?: boolean
-	frontmatter: Record<string, unknown>
-	readTime?: { text: string; minutes: number; time: number; words: number }
-	dateDisplay?: string
-	bannerBlurDataUrl?: string
-	bannerCredit?: string
-}
-
-export type ContentArtifactData = {
-	schemaVersion: number
-	version: string
-	generatedAt: string
-	documents: Record<string, ContentArtifactDocument>
-	blogList: Array<MdxListItem>
-	dirLists: Record<string, Array<{ name: string; slug: string }>>
-	dataFiles: Record<string, string>
-}
+export type ContentArtifactDocument = MdxArtifactDocument
+export type ContentArtifactData = MdxArtifactBundle
 
 export type MdxModule = {
 	default: ComponentType<Record<string, unknown>>
@@ -64,6 +45,15 @@ function getArtifactStore() {
 		[contentDataKey]?: ContentArtifactData | null
 		[loadMdxModuleKey]?: LoadMdxModuleFn | null
 	}
+}
+
+export function getArtifactDirList(
+	contentData: ContentArtifactData,
+	contentDir: string,
+): Array<MdxDirListEntry> {
+	if (contentDir === 'blog') return contentData.dirLists.blog
+	if (contentDir === 'pages') return contentData.dirLists.pages
+	return []
 }
 
 export function getContentData(): ContentArtifactData | null {

@@ -16,6 +16,7 @@ import {
 import { formatDate, typedBoolean } from '#app/utils/misc.ts'
 import { cache, cachified } from './cache.server.ts'
 import {
+	getArtifactDirList,
 	getContentData,
 	getDocumentCode,
 	getLoadMdxModule,
@@ -313,7 +314,7 @@ export async function getMdxPagesInDirectory(
 	if (isWorkerContentMode()) {
 		const contentData = getContentData()
 		if (!contentData) return []
-		const dirList = contentData.dirLists[contentDir] ?? []
+		const dirList = getArtifactDirList(contentData, contentDir)
 		const pages = await Promise.all(
 			dirList.map(({ slug }) =>
 				getWorkerMdxPage({ contentDir, slug }),
@@ -349,7 +350,8 @@ export async function getMdxDirList(
 	options?: CachifiedOptions,
 ) {
 	if (isWorkerContentMode()) {
-		return getContentData()?.dirLists[contentDir] ?? []
+		const contentData = getContentData()
+		return contentData ? getArtifactDirList(contentData, contentDir) : []
 	}
 
 	const { forceFresh, ttl = defaultTTL, request, timings } = options ?? {}
