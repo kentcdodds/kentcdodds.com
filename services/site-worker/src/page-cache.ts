@@ -54,10 +54,7 @@ const STOREABLE_CONTENT_TYPES = new Set([
 	'application/json',
 ])
 
-const CACHEABLE_JSON_PATHS = new Set([
-	'/blog.json',
-	'/refresh-commit-sha.json',
-])
+const CACHEABLE_JSON_PATHS = new Set(['/blog.json', '/refresh-commit-sha.json'])
 
 const CACHEABLE_XML_PATHS = new Set(['/sitemap.xml', '/blog/rss.xml'])
 
@@ -214,7 +211,9 @@ export function isPageCacheStoreEligible(
 
 export function sortSearchForCacheKey(search: string): string {
 	if (!search) return ''
-	const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
+	const params = new URLSearchParams(
+		search.startsWith('?') ? search.slice(1) : search,
+	)
 	const sorted = [...params.entries()].sort(([a], [b]) => a.localeCompare(b))
 	const serialized = new URLSearchParams(sorted).toString()
 	return serialized ? `?${serialized}` : ''
@@ -231,9 +230,9 @@ export function buildPageCacheKey(
 	return `page-cache:${generation}:${url.host}:${url.pathname}${search}:${theme}:${md}`
 }
 
-export async function getPageCacheGeneration(
-	contentKv: { get(key: string): Promise<string | null> },
-): Promise<string> {
+export async function getPageCacheGeneration(contentKv: {
+	get(key: string): Promise<string | null>
+}): Promise<string> {
 	const now = Date.now()
 	if (
 		generationCache &&
@@ -248,9 +247,9 @@ export async function getPageCacheGeneration(
 	return value
 }
 
-export async function bumpPageCacheGeneration(
-	contentKv: { put(key: string, value: string): Promise<unknown> },
-) {
+export async function bumpPageCacheGeneration(contentKv: {
+	put(key: string, value: string): Promise<unknown>
+}) {
 	const value = Date.now().toString()
 	await contentKv.put(PAGE_CACHE_GENERATION_KEY, value)
 	generationCache = { value, fetchedAt: Date.now() }
@@ -309,6 +308,11 @@ export function buildPageCacheFillRequest(request: Request) {
 	if (themeCookie) {
 		headers.set('Cookie', themeCookie)
 	}
+	// Background revalidations are not attributable to the triggering visitor:
+	// drop client-IP headers so they rate-limit against a shared internal
+	// bucket instead of consuming the visitor's quota.
+	headers.delete('CF-Connecting-IP')
+	headers.delete('Fly-Client-Ip')
 	return new Request(request.url, {
 		method: request.method,
 		headers,
@@ -335,11 +339,7 @@ function encodePageCacheEntry(
 		([name]) => name.toLowerCase() === 'content-security-policy',
 	)?.[1]
 	const nonce = extractNonceFromCsp(csp)
-	if (
-		contentType === 'text/html' &&
-		nonce &&
-		!body.includes(nonce)
-	) {
+	if (contentType === 'text/html' && nonce && !body.includes(nonce)) {
 		return null
 	}
 
@@ -353,7 +353,9 @@ function encodePageCacheEntry(
 }
 
 export async function readPageCacheEntry(
-	kv: { get(key: string, options?: { cacheTtl?: number }): Promise<string | null> },
+	kv: {
+		get(key: string, options?: { cacheTtl?: number }): Promise<string | null>
+	},
 	key: string,
 ): Promise<PageCacheEntry | null> {
 	const raw = await kv.get(key, { cacheTtl: PAGE_CACHE_KV_READ_CACHE_TTL_SEC })
@@ -510,18 +512,19 @@ export async function handlePageCacheRequest(
 		return buildCachedResponse(request, entry, 'STALE')
 	}
 
+	// Reuse the visitor's own response for the cache fill (a single dynamic
+	// fetch, a single rate-limit increment). Anonymous bodies contain no
+	// per-visitor data — the client-id lives only in Set-Cookie, which the
+	// store path strips — so the clone is safe to share.
 	const response = await fetchDynamic(request)
+	const responseForStore = response.clone()
 	ctx.waitUntil(
-		(async () => {
-			const fillRequest = buildPageCacheFillRequest(request)
-			const fillResponse = await fetchDynamic(fillRequest)
-			await storePageCacheFromFillResponse(
-				key,
-				fillResponse,
-				env.SITE_CACHE_KV,
-				pathname,
-			)
-		})().catch((error: unknown) => {
+		storePageCacheFromFillResponse(
+			key,
+			responseForStore,
+			env.SITE_CACHE_KV,
+			pathname,
+		).catch((error: unknown) => {
 			console.warn('page-cache fill failed', key, error)
 		}),
 	)
