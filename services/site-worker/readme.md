@@ -9,9 +9,12 @@ Cloudflare parent worker for the kentcdodds.com migration. See
 - Static assets via `ASSETS` with Express-parity cache headers
 - Dynamic requests via `worker_loaders` (`LOADER` binding) using MDX artifacts
   from R2 + `CONTENT_KV`
-- RPC entrypoints: `PrismaRpc` (D1), `CacheRpc` (KV), `OutboundProxy` (preview
-  mocks)
-- Daily cron cleanup for expired `Session` / `Verification` rows
+- RPC entrypoints: `PrismaRpc` (D1), `CacheRpc` (KV), `ContentRpc` (MDX
+  artifacts), `OutboundProxy` (preview mocks)
+- Scheduled jobs:
+  - `0 3 * * *` — daily cleanup for expired `Session` / `Verification` rows
+  - `*/2 * * * *` — warmup requests to keep parent artifact cache and dynamic
+    isolates warm
 
 ## Dist build (`dist/*.txt`)
 
@@ -66,10 +69,10 @@ deployed preview worker.
 
 ```sh
 CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... npm run provision:preview --workspace site-worker
-WRANGLER_CONFIG=.wrangler/generated-wrangler.jsonc npm run d1:migrations:apply:staging --workspace site-worker
+WRANGLER_CONFIG=generated-wrangler.jsonc npm run d1:migrations:apply:staging --workspace site-worker
 npm run publish:artifacts --workspace site-worker -- /path/to/bundle.json
 REFRESH_CACHE_SECRET=... node services/site-worker/scripts/generate-preview-secrets.mjs
-npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/.wrangler/generated-wrangler.jsonc
+npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/generated-wrangler.jsonc
 npm run seed:preview-d1 --workspace site-worker
 BUILD_SHA=$(git rev-parse HEAD) npm run deploy --workspace site-worker
 ```
@@ -86,4 +89,4 @@ CI runs the same flow from `.github/workflows/cf-preview-deploy.yml`.
 | `test:local-e2e`    | Local migrations, seed, artifact publish, `.dev.vars` setup                      |
 
 D1 migration scripts accept `WRANGLER_CONFIG` (defaults to `wrangler.jsonc`
-locally and `.wrangler/generated-wrangler.jsonc` for remote).
+locally and `generated-wrangler.jsonc` for remote).
