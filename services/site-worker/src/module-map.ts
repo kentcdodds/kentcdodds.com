@@ -2,28 +2,12 @@ import appWorkerSource from '../dist/app-worker.js.txt'
 import reactJsxRuntimeShimSource from '../dist/react-jsx-runtime-shim.js.txt'
 import reactShimSource from '../dist/react-shim.js.txt'
 
-export type MdxArtifactDocument = {
-	contentDir: string
-	slug: string
-	esm: string
-	code?: string
-	githubResolvable?: boolean
-	frontmatter?: unknown
-	readTime?: unknown
-	dateDisplay?: string
-	bannerBlurDataUrl?: string
-	bannerCredit?: string
-}
+export type {
+	MdxArtifactBundle,
+	MdxArtifactDocument,
+} from '../../site/types/mdx-artifacts.ts'
 
-export type MdxArtifactBundle = {
-	schemaVersion: number
-	version: string
-	generatedAt: string
-	documents: Record<string, MdxArtifactDocument>
-	blogList: unknown[]
-	dirLists: Record<string, unknown[]>
-	dataFiles: Record<string, string>
-}
+import type { MdxArtifactBundle } from '../../site/types/mdx-artifacts.ts'
 
 type WorkerLoaderModule =
 	| string
@@ -87,12 +71,6 @@ export function buildDynamicWorkerModuleMap(
 	return modules
 }
 
-export function getDynamicWorkerId(
-	buildSha: string,
-	contentVersion: string,
-	freshIsolateNonce?: string,
-) {
-	const base = `app:${buildSha}:content:${contentVersion}`
-	if (!freshIsolateNonce?.trim()) return base
-	return `${base}:fresh:${freshIsolateNonce.trim()}`
+export function getDynamicWorkerId(buildSha: string, contentVersion: string) {
+	return `app:${buildSha}:content:${contentVersion}`
 }

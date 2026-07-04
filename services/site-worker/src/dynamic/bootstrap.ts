@@ -6,8 +6,6 @@ import {
 	type ServerBuild,
 } from 'react-router'
 
-export { sharedReact, sharedJsxRuntime }
-
 const sharedReactGlobalKey = Symbol.for('kentcdodds.sharedReact')
 const sharedJsxRuntimeGlobalKey = Symbol.for('kentcdodds.sharedJsxRuntime')
 
@@ -477,18 +475,6 @@ export default {
 			return await handleSiteRequest(request, env, ctx)
 		} catch (error: unknown) {
 			console.error('app-worker fetch failed', error)
-			const debugNonce = request.headers.get('x-debug-fresh-isolate')
-			if (debugNonce) {
-				const message =
-					error instanceof Error
-						? `${error.name}: ${error.message}`
-						: String(error)
-				const stack = error instanceof Error ? error.stack : undefined
-				return new Response(
-					`Internal Server Error\n${message}${stack ? `\n${stack}` : ''}`,
-					{ status: 500, headers: { 'content-type': 'text/plain; charset=utf-8' } },
-				)
-			}
 			return new Response('Internal Server Error', { status: 500 })
 		}
 	},

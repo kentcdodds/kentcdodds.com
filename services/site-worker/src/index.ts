@@ -36,18 +36,15 @@ function getCachedWorkerStub(
 	workerId: string,
 	env: ParentWorkerEnv,
 	createConfig: () => DynamicWorkerConfig,
-	{ cacheable = true }: { cacheable?: boolean } = {},
 ) {
-	const cached = cacheable ? workerStubCache.get(workerId) : undefined
+	const cached = workerStubCache.get(workerId)
 	if (cached) return cached
 	const stub = env.LOADER.get(workerId, async () => createConfig())
-	if (cacheable) {
-		workerStubCache.set(workerId, stub)
+	workerStubCache.set(workerId, stub)
 		for (const key of workerStubCache.keys()) {
 			if (workerStubCache.size <= 4) break
 			if (key !== workerId) workerStubCache.delete(key)
 		}
-	}
 	return stub
 }
 import { serveStaticAsset } from './static-assets.ts'
@@ -236,12 +233,7 @@ async function handleDynamicRequest(
 	const moduleMapMs = performance.now() - moduleMapStartedAt
 
 	const buildSha = env.BUILD_SHA?.trim() || 'local-dev'
-	const freshIsolateNonce = request.headers.get('x-debug-fresh-isolate')
-	const workerId = getDynamicWorkerId(
-		buildSha,
-		manifest.version,
-		freshIsolateNonce ?? undefined,
-	)
+	const workerId = getDynamicWorkerId(buildSha, manifest.version)
 	const stringEnv = getStringEnvBindings(env)
 
 	let loaderCallbackMs = 0
@@ -263,14 +255,12 @@ async function handleDynamicRequest(
 					PRISMA_RPC: ctx.exports.PrismaRpc({ props: {} }),
 					CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
 					CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),
-					MDX_MODULES_AVAILABLE: 'true',
 				},
 				globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
 			}
 			loaderCallbackMs = performance.now() - loaderCallbackStartedAt
 			return workerConfig
 		},
-		{ cacheable: !freshIsolateNonce },
 	)
 
 	const beforeFetchAt = performance.now()
