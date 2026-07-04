@@ -134,7 +134,7 @@ function getHost(request: Request) {
 	)
 }
 
-function isBogusCrawlerPath(pathname: string) {
+export function isBogusCrawlerPath(pathname: string) {
 	if (pathname.includes('/node_modules/')) return true
 	if (!pathname.startsWith('/calls/')) return false
 	const lastSegment = pathname.slice(pathname.lastIndexOf('/') + 1)
