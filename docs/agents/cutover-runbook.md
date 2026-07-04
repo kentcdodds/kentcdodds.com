@@ -28,8 +28,16 @@ Ordered procedure for hard cutover of **kentcdodds.com** from the Fly.io app (`k
 
 ### DNS
 
-- [ ] `kentcdodds.com` zone is on Cloudflare (required for Workers custom domains).
-- [ ] Lower TTL on apex/`www` A/AAAA or CNAME records to **60–300s** (do this ≥1h before flip so stale caches expire quickly).
+- [ ] `kentcdodds.com` zone is on Cloudflare (zone id
+      `1579e53e9728df7df20518f403fca1d4`) — required for Workers custom
+      domains.
+- [ ] **No TTL lowering is needed.** Verified 2026-07-04: the apex A/AAAA
+      records pointing at Fly are **proxied** (orange-cloud, TTL Auto), so
+      public DNS resolves to Cloudflare edge IPs that don't change at
+      cutover. Attaching the Workers custom domain swaps the origin at the
+      Cloudflare edge and takes effect globally in seconds — there is no
+      client-side propagation window. (Tracking issue with the post-cutover
+      DNS checklist: kentcdodds.com#814.)
 
 ### Fly standby
 
@@ -201,14 +209,21 @@ npm exec wrangler -- tail kentcdodds-com --format pretty
 ```
 
 - Cloudflare zone **Analytics** → HTTP traffic spike on worker.
-- Fly logs should taper as DNS caches expire (TTL-dependent, typically 5–15 min with lowered TTL).
+- Fly traffic should stop almost immediately: the apex records are proxied,
+  so the custom-domain attach switches the origin at the Cloudflare edge
+  within seconds. Any residual Fly requests come from direct-IP clients or
+  in-flight requests, not DNS caches.
 - Spot-check: login, session cookie, mark-as-read, webauthn (if applicable).
 
 ---
 
 ## 6. Incremental backfill (writes during cutover window)
 
-After DNS has mostly propagated (~5–15 min), copy rows created/updated on Fly **after** `SNAPSHOT_TIME`.
+The edge flip is near-instant, so the backfill window is small: it covers
+writes that landed on Fly between `SNAPSHOT_TIME` and the custom-domain
+attach (plus any in-flight requests). Wait ~5 minutes after the flip for Fly
+traffic to hit zero, then copy rows created/updated on Fly **after**
+`SNAPSHOT_TIME`.
 
 If Fly still received writes post-snapshot, take a **second** `.backup` or run backfill against a fresher snapshot; the `--since` path assumes the **same** source file plus new rows applied locally OR a new snapshot that still contains old rows (INSERT OR REPLACE overwrites).
 
@@ -272,7 +287,7 @@ Keep Fly idle (not destroyed) until the confidence window ends.
 
 - [ ] Scale down / **destroy Fly app `kcd`** and `data_machines` volume (irreversible — only after D1 verified).
 - [ ] Delete staging preview resources when no longer needed (`kentcdodds-com-staging`, preview KV/R2).
-- [ ] Restore DNS TTL to normal (e.g. 3600s).
+- [ ] Re-check zone DNS records per issue kentcdodds.com#814 (proxied records stay TTL Auto; remove the Fly ACME record once Fly is decommissioned).
 - [ ] Delete temporary VM Cloudflare API token (`2ad2cb7de2ef6cb0208fe61d8e1f71f4`).
 - [ ] Remove local snapshot files (contain PII).
 
