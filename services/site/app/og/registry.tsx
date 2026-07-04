@@ -40,7 +40,7 @@ export const ogTemplateRegistry = {
 	},
 	'call-kent-episode-art': {
 		schema: callKentEpisodeArtParamsSchema,
-		version: 4,
+		version: 5,
 		size: { width: 1400, height: 1400 },
 		component: (params: Record<string, unknown>) => (
 			<CallKentEpisodeArt

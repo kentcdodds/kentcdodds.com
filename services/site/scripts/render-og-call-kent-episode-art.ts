@@ -5,10 +5,14 @@ import { createElement } from 'react'
 import satori, { init as initSatori } from 'satori/standalone'
 import { Resvg, initWasm as initResvgWasm } from '@resvg/resvg-wasm'
 import {
-	CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT,
 	computeCallKentEpisodeArtLayout,
+	formatCallKentEpisodeArtTitle,
 	layoutBoxesForDump,
 } from '../app/og/call-kent-episode-art-layout.ts'
+import {
+	countSatoriSvgEmbeddedFontLines,
+	countSatoriSvgTitleLinesInRegion,
+} from '../app/og/call-kent-episode-art-svg.ts'
 import { CallKentEpisodeArt } from '../app/og/templates/call-kent-episode-art.tsx'
 import {
 	resolveAvatarDataUri,
@@ -16,7 +20,7 @@ import {
 	resolveSocialBackgroundDataUri,
 } from '../app/og/assets.server.ts'
 
-const OUTPUT_DIR = '/tmp/og-iter3'
+const OUTPUT_DIR = '/tmp/og-iter4'
 const CANVAS = 1400
 const require = createRequire(import.meta.url)
 
@@ -71,13 +75,6 @@ function readPngDimensions(pngPath: string) {
 	return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) }
 }
 
-function readDataUriPngDimensions(dataUri: string) {
-	const base64 = dataUri.split(',')[1]
-	if (!base64) throw new Error('Invalid data URI')
-	const buf = Buffer.from(base64, 'base64')
-	return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) }
-}
-
 async function loadFonts() {
 	const [regular, medium] = await Promise.all([
 		fetch('https://kentcdodds.com/fonts/Matter-Regular.woff'),
@@ -104,17 +101,44 @@ async function loadFonts() {
 	]
 }
 
-async function renderPng(
+async function renderSvg(
 	element: ReturnType<typeof createElement>,
 	width: number,
 	height: number,
 	fonts: Awaited<ReturnType<typeof loadFonts>>,
 ) {
-	const svg = await satori(element, { width, height, fonts })
+	return satori(element, { width, height, fonts })
+}
+
+async function renderPngFromSvg(svg: string, width: number) {
 	const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: width } })
 	const png = resvg.render().asPng()
 	resvg.free()
 	return png
+}
+
+function createTitleOnlyElement(
+	layout: ReturnType<typeof computeCallKentEpisodeArtLayout>,
+	displayTitle: string,
+) {
+	return createElement(
+		'div',
+		{
+			style: {
+				width: layout.title.width,
+				height: layout.title.minHeight,
+				display: 'flex',
+				fontFamily: 'Matter',
+				fontSize: layout.title.fontSize,
+				fontWeight: 500,
+				lineHeight: 1.1,
+				lineClamp: 3,
+				color: '#ffffff',
+				backgroundColor: '#1f2028',
+			},
+		},
+		displayTitle,
+	)
 }
 
 async function main() {
@@ -131,53 +155,10 @@ async function main() {
 		resolveMicIllustrationDataUri(),
 	])
 
-	const micAssetDims = readDataUriPngDimensions(mic)
-	console.log(
-		`Mic asset data URI IHDR: ${micAssetDims.width}x${micAssetDims.height} (ratio ${(micAssetDims.width / micAssetDims.height).toFixed(4)})`,
-	)
-
 	mkdirSync(OUTPUT_DIR, { recursive: true })
 
-	const g = CANVAS / 12
-	const micHeight = 11 * g
-	const micWidth = micHeight * CALL_KENT_MIC_ILLUSTRATION_WIDTH_TO_HEIGHT
-	const micOnlyPng = await renderPng(
-		createElement(
-			'div',
-			{
-				style: {
-					width: CANVAS,
-					height: CANVAS,
-					display: 'flex',
-					position: 'relative',
-					backgroundColor: '#1f2028',
-				},
-			},
-			createElement('img', {
-				src: mic,
-				width: micWidth,
-				height: micHeight,
-				style: {
-					position: 'absolute',
-					top: (CANVAS - micHeight) / 2,
-					right: g,
-					width: micWidth,
-					height: micHeight,
-				},
-			}),
-		),
-		CANVAS,
-		CANVAS,
-		fonts,
-	)
-	writeFileSync(join(OUTPUT_DIR, 'mic-only.png'), micOnlyPng)
-	console.log(
-		`Wrote ${join(OUTPUT_DIR, 'mic-only.png')} (container ${micWidth.toFixed(1)}x${micHeight.toFixed(1)})`,
-	)
-
 	const layoutDump: Record<string, unknown> = {
-		micAsset: micAssetDims,
-		micContainer: { width: micWidth, height: micHeight },
+		svgLineCounts: {} as Record<string, { titleOnly: number; full: number }>,
 	}
 
 	for (const sample of samples) {
@@ -185,7 +166,26 @@ async function main() {
 			sample.params.size,
 			sample.params.title,
 		)
-		layoutDump[sample.filename] = layoutBoxesForDump(layout)
+		const displayTitle = formatCallKentEpisodeArtTitle(sample.params.title)
+		const sampleDump = layoutBoxesForDump(layout)
+		const titleOnlySvg = await renderSvg(
+			createTitleOnlyElement(layout, displayTitle),
+			layout.title.width,
+			layout.title.minHeight,
+			fonts,
+		)
+		const titleOnlyLines = countSatoriSvgEmbeddedFontLines(titleOnlySvg, {
+			fontSize: layout.title.fontSize,
+		})
+
+		if (sample.filename === 'long-title.png') {
+			writeFileSync(join(OUTPUT_DIR, 'long-title-text-only.svg'), titleOnlySvg)
+			const titleOnlyPng = await renderPngFromSvg(
+				titleOnlySvg,
+				Math.round(layout.title.width),
+			)
+			writeFileSync(join(OUTPUT_DIR, 'long-title-text-only.png'), titleOnlyPng)
+		}
 
 		const avatar = await resolveAvatarDataUri({
 			avatarKind: sample.params.avatarKind,
@@ -193,7 +193,7 @@ async function main() {
 			size: 700,
 		})
 
-		const png = await renderPng(
+		const fullSvg = await renderSvg(
 			createElement(CallKentEpisodeArt, {
 				...sample.params,
 				background,
@@ -204,7 +204,19 @@ async function main() {
 			sample.params.size,
 			fonts,
 		)
+		const fullTitleLines = countSatoriSvgTitleLinesInRegion(fullSvg, {
+			top: layout.title.top,
+			height: layout.title.minHeight,
+			fontSize: layout.title.fontSize,
+		})
 
+		;(layoutDump.svgLineCounts as Record<string, unknown>)[sample.filename] = {
+			titleOnly: titleOnlyLines,
+			full: fullTitleLines,
+		}
+		layoutDump[sample.filename] = sampleDump
+
+		const png = await renderPngFromSvg(fullSvg, sample.params.size)
 		if (png[0] !== 0x89 || png[1] !== 0x50 || png[2] !== 0x4e || png[3] !== 0x47) {
 			throw new Error(`Invalid PNG for ${sample.filename}`)
 		}
@@ -212,8 +224,14 @@ async function main() {
 		writeFileSync(join(OUTPUT_DIR, sample.filename), png)
 		const dims = readPngDimensions(join(OUTPUT_DIR, sample.filename))
 		console.log(
-			`Wrote ${join(OUTPUT_DIR, sample.filename)} (${dims.width}x${dims.height})`,
+			`${sample.filename}: font=${layout.title.fontSize.toFixed(1)} estimated=${layout.title.estimatedLines} svgLines(titleOnly=${titleOnlyLines}, full=${fullTitleLines}) -> ${dims.width}x${dims.height}`,
 		)
+
+		if (titleOnlyLines > 3 || fullTitleLines > 3) {
+			throw new Error(
+				`${sample.filename} rendered ${Math.max(titleOnlyLines, fullTitleLines)} title lines (max 3)`,
+			)
+		}
 	}
 
 	writeFileSync(

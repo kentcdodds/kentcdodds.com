@@ -7,7 +7,7 @@ import {
 	layoutBoxesForDump,
 } from '../call-kent-episode-art-layout.ts'
 
-const OUTPUT_DIR = '/tmp/og-iter3'
+const OUTPUT_DIR = '/tmp/og-iter4'
 
 const roundAvatarDataUri =
 	'data:image/svg+xml;base64,' +
@@ -57,7 +57,6 @@ const samples = [
 
 describe('call-kent-episode-art sample renders', () => {
 	test('layout boxes match grid math for sample inputs', () => {
-		const g = 1400 / 12
 		const shortSample = samples[0]!
 		const longSample = samples[1]!
 		const shortLayout = computeCallKentEpisodeArtLayout(
@@ -71,22 +70,23 @@ describe('call-kent-episode-art sample renders', () => {
 
 		expect(layoutBoxesForDump(shortLayout)).toMatchObject({
 			layoutTitleLines: 1,
-			title: { left: 0.8 * g, top: 0.8 * g, width: 6 * g },
-			avatar: { top: 1.6 * g, width: 5.5 * g },
-			name: { bottom: 4.2 * g },
-			url: { bottom: 0.8 * g },
+			title: { left: 0.8 * (1400 / 12), top: 0.8 * (1400 / 12), width: 6 * (1400 / 12) },
+			avatar: { top: 1.6 * (1400 / 12), width: 5.5 * (1400 / 12) },
+			name: { bottom: 4.2 * (1400 / 12) },
+			url: { bottom: 0.8 * (1400 / 12) },
 		})
 		expect(layoutBoxesForDump(longLayout)).toMatchObject({
 			layoutTitleLines: 3,
-			avatar: { top: 3.6 * g },
-			name: { bottom: 2.2 * g },
+			avatar: { top: 3.6 * (1400 / 12) },
+			name: { bottom: 2.2 * (1400 / 12) },
 		})
+		expect(longLayout.title.fontSize).toBeLessThan(84)
 		expect(longLayout.avatar.top).toBeGreaterThanOrEqual(
 			longLayout.title.top + longLayout.title.minHeight,
 		)
 	})
 
-	test('render script writes 1400x1400 PNGs to /tmp/og-iter3', () => {
+	test('render script writes 1400x1400 PNGs to /tmp/og-iter4 with svg line evidence', () => {
 		execSync('node scripts/render-og-call-kent-episode-art.mjs', {
 			cwd: join(process.cwd()),
 			stdio: 'pipe',
@@ -103,7 +103,18 @@ describe('call-kent-episode-art sample renders', () => {
 			expect(png[3]).toBe(0x47)
 		}
 
-		expect(existsSync(join(OUTPUT_DIR, 'mic-only.png'))).toBe(true)
+		const layout = JSON.parse(
+			readFileSync(join(OUTPUT_DIR, 'layout.json'), 'utf8'),
+		) as {
+			svgLineCounts: Record<string, { titleOnly: number; full: number }>
+		}
+
+		const svgLineCounts = layout.svgLineCounts
+		expect(svgLineCounts['short-title.png']!.titleOnly).toBeLessThanOrEqual(3)
+		expect(svgLineCounts['medium-title.png']!.titleOnly).toBeLessThanOrEqual(3)
+		expect(svgLineCounts['long-title.png']!.titleOnly).toBeLessThanOrEqual(3)
+		expect(svgLineCounts['long-title.png']!.full).toBeLessThanOrEqual(3)
+		expect(existsSync(join(OUTPUT_DIR, 'long-title-text-only.png'))).toBe(true)
 		expect(existsSync(join(OUTPUT_DIR, 'layout.json'))).toBe(true)
 	}, 120_000)
 })
