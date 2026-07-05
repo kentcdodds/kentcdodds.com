@@ -381,13 +381,6 @@ function App({
 					/>
 				)}
 				<Scripts nonce={nonce} />
-				{ENV.MODE === 'development' ? (
-					<script
-						nonce={nonce}
-						suppressHydrationWarning
-						dangerouslySetInnerHTML={{ __html: getWebsocketJS() }}
-					/>
-				) : null}
 			</body>
 		</html>
 	)
@@ -480,54 +473,6 @@ export function ErrorBoundary() {
 			/>
 		</ErrorDoc>
 	)
-}
-
-function kcdLiveReloadConnect(config?: { onOpen: () => void }) {
-	const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-	const host = location.hostname
-	const port = location.port
-	const socketPath = `${protocol}//${host}:${port}/__ws`
-	const ws = new WebSocket(socketPath)
-	ws.onmessage = (message) => {
-		const event = JSON.parse(message.data)
-		if (
-			event.type === 'kentcdodds.com:file-change' &&
-			event.data.relativePath === location.pathname
-		) {
-			window.location.reload()
-		}
-	}
-	ws.onopen = () => {
-		if (config && typeof config.onOpen === 'function') {
-			config.onOpen()
-		}
-	}
-	ws.onclose = (event) => {
-		if (event.code === 1006) {
-			console.log(
-				'kentcdodds.com dev server web socket closed. Reconnecting...',
-			)
-			setTimeout(
-				() =>
-					kcdLiveReloadConnect({
-						onOpen: () => window.location.reload(),
-					}),
-				1000,
-			)
-		}
-	}
-	ws.onerror = (error) => {
-		console.log('kentcdodds.com dev server web socket error:')
-		console.error(error)
-	}
-}
-
-function getWebsocketJS() {
-	const js = /* javascript */ `
-  ${kcdLiveReloadConnect.toString()}
-  kcdLiveReloadConnect();
-  `
-	return js
 }
 
 /*
