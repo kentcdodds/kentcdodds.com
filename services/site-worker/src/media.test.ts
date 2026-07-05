@@ -170,6 +170,17 @@ describe('handleMediaRequest', () => {
 	})
 })
 
+describe('svg passthrough', () => {
+	test('detects svg by magic bytes', () => {
+		const svg = new TextEncoder().encode('<svg width="214"')
+		const xml = new TextEncoder().encode('<?xml version="1"')
+		const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0])
+		expect(sniffImageContentType(svg)).toBe('image/svg+xml')
+		expect(sniffImageContentType(xml)).toBe('image/svg+xml')
+		expect(sniffImageContentType(jpeg)).toBe('image/jpeg')
+	})
+})
+
 describe('getMediaCacheKey', () => {
 	// The Workers Cache API ignores Vary, so the Accept class must be
 	// encoded into the cache-key URL for format-negotiated transforms.

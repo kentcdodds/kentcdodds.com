@@ -9,7 +9,11 @@
  *
  * Usage:
  *   CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... \
- *     node scripts/migrate-cloudinary-to-r2.mjs [--dry-run] [--verify]
+ *     node scripts/migrate-cloudinary-to-r2.mjs [--dry-run] [--verify] [--normalize-oversized]
+ *
+ * `--normalize-oversized` re-encodes image masters larger than ~19.5 MB down
+ * to a 4096px-limited version (the Workers Images binding rejects inputs over
+ * ~20 MiB with "Network connection lost"). Videos are left untouched.
  *
  * The required-asset list is derived from the repo itself: the image registry
  * (`app/images.tsx`), `bannerCloudinaryId` frontmatter, `cloudinaryId` fields
@@ -37,6 +41,11 @@ if (!accountId || !apiToken) {
 
 const dryRun = process.argv.includes('--dry-run')
 const verify = process.argv.includes('--verify')
+const normalizeOversized = process.argv.includes('--normalize-oversized')
+
+// The Workers Images binding fails on inputs over ~20 MiB.
+const OVERSIZED_BYTES = 19_500_000
+const NORMALIZED_MAX_DIMENSION = 4096
 
 // IDs referenced directly in app code (outside the images.tsx registry).
 const HARDCODED_IDS = [
@@ -195,7 +204,70 @@ async function putR2Object(key, bytes, contentType) {
 	}
 }
 
+async function normalizeOversizedImages() {
+	const existing = await listAllR2Keys()
+	const oversized = [...existing.entries()].filter(
+		([key, size]) =>
+			size > OVERSIZED_BYTES &&
+			!VIDEO_ID_PATTERN.test(key) &&
+			!/\.(mp4|webm|mov)$/i.test(key),
+	)
+	console.log(`${oversized.length} oversized image masters (> ${OVERSIZED_BYTES} bytes)`)
+
+	const failed = []
+	for (const [key, size] of oversized) {
+		if (dryRun) {
+			console.log(`[dry-run] would normalize ${key} (${size} bytes)`)
+			continue
+		}
+		// Cloudinary re-encodes the master at a bounded size; this runs once
+		// during migration while the Cloudinary account is still live.
+		const cloudinaryIds = [
+			key,
+			`kentcdodds.com/content/${key}`,
+			`kentcdodds.com/${key}`,
+		]
+		let normalized = null
+		for (const id of cloudinaryIds) {
+			const url = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_${NORMALIZED_MAX_DIMENSION},h_${NORMALIZED_MAX_DIMENSION},c_limit,q_90/${encodeURI(id)}`
+			const response = await fetch(url)
+			if (response.ok) {
+				normalized = {
+					bytes: new Uint8Array(await response.arrayBuffer()),
+					contentType:
+						response.headers.get('content-type') ?? 'image/jpeg',
+				}
+				break
+			}
+		}
+		if (!normalized) {
+			failed.push(key)
+			console.warn(`could not fetch normalized version for ${key}`)
+			continue
+		}
+		if (normalized.bytes.length > OVERSIZED_BYTES) {
+			failed.push(key)
+			console.warn(
+				`normalized version still too large for ${key}: ${normalized.bytes.length}`,
+			)
+			continue
+		}
+		await putR2Object(key, normalized.bytes, normalized.contentType)
+		console.log(
+			`normalized ${key}: ${size} -> ${normalized.bytes.length} bytes`,
+		)
+	}
+	if (failed.length > 0) {
+		console.error(`Failed to normalize: ${failed.join(', ')}`)
+		process.exit(1)
+	}
+}
+
 async function main() {
+	if (normalizeOversized) {
+		await normalizeOversizedImages()
+		return
+	}
 	const ids = collectRequiredIds()
 	console.log(`Collected ${ids.length} required asset IDs from the repo`)
 

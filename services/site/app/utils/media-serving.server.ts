@@ -114,7 +114,29 @@ export function sniffImageContentType(bytes: Uint8Array): string | null {
 	) {
 		return 'image/webp'
 	}
+	if (isSvgMagic(bytes)) {
+		return 'image/svg+xml'
+	}
 	return null
+}
+
+/** SVG sources start with `<svg` or an XML prolog (`<?xml`). */
+export function isSvgMagic(bytes: Uint8Array) {
+	if (bytes.length < 5) return false
+	const head = String.fromCharCode(...bytes.slice(0, 5)).toLowerCase()
+	return head.startsWith('<svg') || head.startsWith('<?xml')
+}
+
+export function isSvgContent({
+	contentType,
+	magic,
+}: {
+	contentType?: string
+	magic?: Uint8Array
+}) {
+	if (contentType?.toLowerCase().includes('image/svg')) return true
+	if (magic && isSvgMagic(magic)) return true
+	return false
 }
 
 export function sniffImageOutputFormat(
@@ -455,6 +477,12 @@ export async function serveMediaObject({
 
 	if (video) {
 		return serveVideoResponse({ source, request })
+	}
+
+	// SVG sources scale losslessly in the browser and the Images binding
+	// cannot rasterize them; serve the original regardless of transform.
+	if (isSvgContent({ contentType: source.contentType, magic })) {
+		return serveOriginalImageResponse({ source, request, magic })
 	}
 
 	if (!hasTransformValues(transform)) {
