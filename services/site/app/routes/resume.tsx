@@ -10,6 +10,7 @@ import { Grid } from '#app/components/grid.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
 import resumeStyles from '#app/styles/resume.css?url'
 import { externalLinks } from '#app/external-links.tsx'
+import { buildMediaUrl } from '#app/utils/media.ts'
 import { getResumeData, type ResumeData } from '#app/utils/resume.server.ts'
 import { type Route } from './+types/resume'
 
@@ -197,7 +198,11 @@ export default function ResumePage({
 					<div className="resume-header__identity">
 						<img
 							className="resume-photo"
-							src="https://res.cloudinary.com/kentcdodds-com/image/upload/f_auto,q_auto,dpr_2.0,h_200,ar_1:1,c_fill/kent/profile"
+							src={buildMediaUrl('kent/profile', {
+								height: 200,
+								aspectRatio: '1:1',
+								fit: 'cover',
+							})}
 							alt="Photo of Kent C. Dodds"
 						/>
 						<div>

@@ -37,8 +37,7 @@ const epicProductEngineerUrl =
 	'https://www.epicproduct.engineer/become-an-epic-product-engineer-podcast'
 
 // The Better with Kent show artwork (the original Transistor upload, which the
-// podcast feed's <itunes:image> imgproxy URL points at). Cloudinary fetches and
-// caches it for the social image.
+// podcast feed's <itunes:image> imgproxy URL points at).
 const betterWithKentArtworkUrl =
 	'https://img-upload-production.transistor.fm/cfe9ede66d04d8e7e3d1f8f824dbe2b1.jpg'
 
@@ -226,10 +225,8 @@ export default function BetterRoute({
 										'630px',
 									],
 									transformations: {
-										resize: {
-											type: 'fill',
-											aspectRatio: '4:3',
-										},
+										fit: 'cover',
+										aspectRatio: '4:3',
 									},
 								})}
 							/>
@@ -356,10 +353,8 @@ export default function BetterRoute({
 										'650px',
 									],
 									transformations: {
-										resize: {
-											type: 'fill',
-											aspectRatio: '3:4',
-										},
+										fit: 'cover',
+										aspectRatio: '3:4',
 									},
 								})}
 							/>

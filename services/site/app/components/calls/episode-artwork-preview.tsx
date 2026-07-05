@@ -56,7 +56,7 @@ function useSignedEpisodeArtworkUrl({
 					title,
 					url: `${host}/calls/00/00`,
 					name: isAnonymous ? '- Anonymous' : `- ${firstName}`,
-					avatarKind: avatar.kind === 'public' ? 'cloudinary' : 'fetch',
+					avatarKind: avatar.kind === 'public' ? 'media' : 'fetch',
 					avatarSource: avatar.kind === 'public' ? avatar.publicId : avatar.url,
 					avatarIsRound,
 					size: 520,

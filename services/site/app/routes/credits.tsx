@@ -104,12 +104,8 @@ function ProfileCard({ person }: { person: Person }) {
 							'410px',
 						],
 						transformations: {
-							resize: {
-								aspectRatio: '1:1',
-								type: 'fill_pad',
-							},
-							gravity: 'auto',
-							background: 'auto',
+							fit: 'pad',
+							aspectRatio: '1:1',
 						},
 					})}
 				/>
@@ -162,11 +158,9 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 						{...getHeroImageProps(images.kentCodingOnCouch, {
 							className: 'rounded-lg',
 							transformations: {
-								resize: {
-									aspectRatio: '3:4',
-									type: 'crop',
-								},
-								gravity: 'face',
+								fit: 'cover',
+								aspectRatio: '3:4',
+								gravity: 'auto',
 							},
 						})}
 					/>

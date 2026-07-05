@@ -71,10 +71,10 @@ function buildThumbFromCloudinaryId({
 }) {
 	const builder = getImageBuilder(cloudinaryId, alt)
 	return builder({
-		quality: 'auto',
-		format: 'auto',
-		background: 'rgb:e6e9ee',
-		resize: { type: 'fill', width: size, height: size },
+		background: 'e6e9ee',
+		fit: 'cover',
+		width: size,
+		height: size,
 	})
 }
 

@@ -15,17 +15,23 @@ import {
 } from 'react-router'
 import { type OptionalTeam, type User } from '#app/types.ts'
 import { images } from '../images.tsx'
+import { buildMediaUrl } from './media.ts'
 import { getOptionalTeam } from './misc.ts'
 
 export * from './misc.ts'
 
+const PRODUCTION_MEDIA_ORIGIN = 'https://kentcdodds.com'
 const defaultAvatarSize = 128
 
 export function getAvatar(
 	email: string,
 	{
 		size = defaultAvatarSize,
-		fallback = images.kodyProfileGray({ resize: { width: size } }),
+		fallback = buildMediaUrl(
+			images.kodyProfileGray.id,
+			{ width: size },
+			{ origin: PRODUCTION_MEDIA_ORIGIN },
+		),
 		origin,
 	}: { size?: number } & (
 		| { fallback?: null; origin?: null }
@@ -45,10 +51,30 @@ export function getAvatar(
 }
 
 const avatarFallbacks: Record<OptionalTeam, (width: number) => string> = {
-	BLUE: (width: number) => images.kodyProfileBlue({ resize: { width } }),
-	RED: (width: number) => images.kodyProfileRed({ resize: { width } }),
-	YELLOW: (width: number) => images.kodyProfileYellow({ resize: { width } }),
-	UNKNOWN: (width: number) => images.kodyProfileGray({ resize: { width } }),
+	BLUE: (width: number) =>
+		buildMediaUrl(
+			images.kodyProfileBlue.id,
+			{ width },
+			{ origin: PRODUCTION_MEDIA_ORIGIN },
+		),
+	RED: (width: number) =>
+		buildMediaUrl(
+			images.kodyProfileRed.id,
+			{ width },
+			{ origin: PRODUCTION_MEDIA_ORIGIN },
+		),
+	YELLOW: (width: number) =>
+		buildMediaUrl(
+			images.kodyProfileYellow.id,
+			{ width },
+			{ origin: PRODUCTION_MEDIA_ORIGIN },
+		),
+	UNKNOWN: (width: number) =>
+		buildMediaUrl(
+			images.kodyProfileGray.id,
+			{ width },
+			{ origin: PRODUCTION_MEDIA_ORIGIN },
+		),
 }
 
 export function getAvatarForUser(

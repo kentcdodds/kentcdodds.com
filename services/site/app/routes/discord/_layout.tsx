@@ -189,10 +189,8 @@ export default function Discord({ loaderData: data }: Route.ComponentProps) {
 										'630px',
 									],
 									transformations: {
-										resize: {
-											type: 'fill',
-											aspectRatio: '3:4',
-										},
+										fit: 'cover',
+										aspectRatio: '3:4',
 									},
 								})}
 							/>

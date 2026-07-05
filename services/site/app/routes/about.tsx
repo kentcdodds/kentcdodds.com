@@ -222,11 +222,9 @@ function AboutIndex({ loaderData }: Route.ComponentProps) {
 									'650px',
 								],
 								transformations: {
-									gravity: 'faces',
-									resize: {
-										type: 'fill',
-										aspectRatio: '3:4',
-									},
+									gravity: 'auto',
+									fit: 'cover',
+									aspectRatio: '3:4',
 								},
 							})}
 						/>
@@ -320,10 +318,8 @@ function AboutIndex({ loaderData }: Route.ComponentProps) {
 									'650px',
 								],
 								transformations: {
-									resize: {
-										type: 'fill',
-										aspectRatio: '3:4',
-									},
+									fit: 'cover',
+									aspectRatio: '3:4',
 								},
 							})}
 						/>

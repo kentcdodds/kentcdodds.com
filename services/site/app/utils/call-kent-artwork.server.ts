@@ -29,7 +29,7 @@ export function getCallKentEpisodeArtworkUrl({
 			title,
 			url,
 			name,
-			avatarKind: avatar.kind === 'public' ? 'cloudinary' : 'fetch',
+			avatarKind: avatar.kind === 'public' ? 'media' : 'fetch',
 			avatarSource: avatar.kind === 'public' ? avatar.publicId : avatar.url,
 			avatarIsRound,
 			size,

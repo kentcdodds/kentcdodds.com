@@ -1,4 +1,4 @@
-import { type TransformerOption } from '@cld-apis/types'
+import { type MediaTransform } from '#app/utils/media.ts'
 import { clsx } from 'clsx'
 import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion'
 import { getImgProps, type ImageBuilder } from '#app/images.tsx'
@@ -39,7 +39,7 @@ export type HeroSectionProps = {
 			imageSize?: 'medium' | 'large' | 'giant'
 			image?: never
 			imageBuilder: ImageBuilder
-			imageTransformations?: TransformerOption
+			imageTransformations?: MediaTransform
 	  }
 ) &
 	(
@@ -177,7 +177,7 @@ function getHeroImageProps(
 		style,
 		className,
 	}: {
-		transformations?: TransformerOption
+		transformations?: MediaTransform
 		style?: React.CSSProperties
 		className?: string
 	} = {},

@@ -69,10 +69,6 @@ export default async function handleDocumentRequest(...args: DocRequestArgs) {
 		responseHeaders.append('Document-Policy', 'js-profiling')
 	}
 
-	responseHeaders.append(
-		'Link',
-		'<https://res.cloudinary.com>; rel="preconnect"',
-	)
 	if (shouldAppendAgentDiscoveryHeaders(request)) {
 		appendAgentDiscoveryHeaders(responseHeaders)
 	}

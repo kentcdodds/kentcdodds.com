@@ -857,10 +857,8 @@ export default function NewAccount({
 										'650px',
 									],
 									transformations: {
-										resize: {
-											type: 'fill',
-											aspectRatio: '3:4',
-										},
+										fit: 'cover',
+										aspectRatio: '3:4',
 									},
 								})}
 							/>

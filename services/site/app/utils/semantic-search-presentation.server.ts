@@ -70,10 +70,10 @@ function buildThumbFromCloudinaryId({
 }) {
 	const builder = getImageBuilder(cloudinaryId, alt)
 	return builder({
-		quality: 'auto',
-		format: 'auto',
-		background: 'rgb:e6e9ee',
-		resize: { type: 'fill', width: size, height: size },
+		background: 'e6e9ee',
+		fit: 'cover',
+		width: size,
+		height: size,
 	})
 }
 
@@ -83,9 +83,9 @@ function getFallbackPresentation(
 	if (type === 'ck') {
 		return {
 			imageUrl: images.microphone({
-				quality: 'auto',
-				format: 'auto',
-				resize: { type: 'pad', width: 96, height: 96 },
+				fit: 'pad',
+				width: 96,
+				height: 96,
 			}),
 			imageAlt: images.microphone.alt,
 		}
@@ -93,9 +93,9 @@ function getFallbackPresentation(
 	if (type === 'cwk') {
 		return {
 			imageUrl: images.kayak({
-				quality: 'auto',
-				format: 'auto',
-				resize: { type: 'pad', width: 96, height: 96 },
+				fit: 'pad',
+				width: 96,
+				height: 96,
 			}),
 			imageAlt: images.kayak.alt,
 		}
@@ -103,9 +103,9 @@ function getFallbackPresentation(
 	if (type === 'youtube') {
 		return {
 			imageUrl: images.microphoneWithHands({
-				quality: 'auto',
-				format: 'auto',
-				resize: { type: 'fill', width: 96, height: 96 },
+				fit: 'cover',
+				width: 96,
+				height: 96,
 			}),
 			imageAlt: images.microphoneWithHands.alt,
 		}
@@ -113,9 +113,9 @@ function getFallbackPresentation(
 	if (type === 'podcast') {
 		return {
 			imageUrl: images.microphone({
-				quality: 'auto',
-				format: 'auto',
-				resize: { type: 'pad', width: 96, height: 96 },
+				fit: 'pad',
+				width: 96,
+				height: 96,
 			}),
 			imageAlt: images.microphone.alt,
 		}
@@ -123,9 +123,9 @@ function getFallbackPresentation(
 	if (type === 'talk') {
 		return {
 			imageUrl: images.kentSpeakingAllThingsOpen({
-				quality: 'auto',
-				format: 'auto',
-				resize: { type: 'fill', width: 96, height: 96 },
+				fit: 'cover',
+				width: 96,
+				height: 96,
 			}),
 			imageAlt: images.kentSpeakingAllThingsOpen.alt,
 		}
@@ -133,9 +133,9 @@ function getFallbackPresentation(
 	if (type === 'resume') {
 		return {
 			imageUrl: images.kentProfile({
-				quality: 'auto',
-				format: 'auto',
-				resize: { type: 'fill', width: 96, height: 96 },
+				fit: 'cover',
+				width: 96,
+				height: 96,
 			}),
 			imageAlt: images.kentProfile.alt,
 		}
@@ -143,9 +143,9 @@ function getFallbackPresentation(
 	// Default fallback: a neutral Kody.
 	return {
 		imageUrl: images.kodyProfileGray({
-			quality: 'auto',
-			format: 'auto',
-			resize: { type: 'pad', width: 96, height: 96 },
+			fit: 'pad',
+			width: 96,
+			height: 96,
 		}),
 		imageAlt: images.kodyProfileGray.alt,
 	}

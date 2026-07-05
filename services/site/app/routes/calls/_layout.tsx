@@ -73,11 +73,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 			kind: 'generic-social',
 			words: 'Listen to the Call Kent Podcast and make your own call.',
 			featuredImage: images.microphone({
-				resize: {
-					type: 'pad',
-					width: 1200,
-					height: 1200,
-				},
+				fit: 'pad',
+				width: 1200,
+				height: 1200,
 			}),
 		},
 	})
@@ -188,10 +186,8 @@ export default function CallHomeScreen({
 									'630px',
 								],
 								transformations: {
-									resize: {
-										type: 'fill',
-										aspectRatio: '4:3',
-									},
+									fit: 'cover',
+									aspectRatio: '4:3',
 								},
 							},
 						)}

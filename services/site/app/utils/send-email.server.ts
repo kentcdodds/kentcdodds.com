@@ -1,4 +1,5 @@
 import { getRandomFlyingKody } from '#app/images.tsx'
+import { buildMediaUrl } from '#app/utils/media.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { markdownToHtmlDocument } from './markdown.server.ts'
 import { getOptionalTeam } from './misc.ts'
@@ -101,7 +102,7 @@ This code expires soon. If you did not request this email, you can safely ignore
 
       <br />
 
-      <center><img src="https://res.cloudinary.com/kentcdodds-com/image/upload/w_800,q_auto,f_auto/${randomSportyKody.id}" style="max-width: 80%;${
+      <center><img src="${buildMediaUrl(randomSportyKody.id, { width: 800 }, { origin: 'https://kentcdodds.com' })}" style="max-width: 80%;${
 				randomSportyKody.style?.aspectRatio
 					? `aspect-ratio: ${randomSportyKody.style.aspectRatio};`
 					: ''

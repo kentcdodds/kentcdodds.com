@@ -22,7 +22,7 @@ describe('getCallKentEpisodeArtworkUrl', () => {
 		expect(url).toContain('sig=')
 	})
 
-	test('maps public avatars to cloudinary kind', () => {
+	test('maps public avatars to media kind', () => {
 		const url = getCallKentEpisodeArtworkUrl({
 			title: 'Test',
 			url: 'kentcdodds.com/calls/00/00',

@@ -23,7 +23,7 @@ type FeaturedSectionProps = {
 	  }
 	| {
 			imageBuilder?: never
-			/** use the imageBuilder if possible. imageUrl is for things we don't have in cloudinary */
+			/** use the imageBuilder if possible. imageUrl is for assets not in our media library */
 			imageUrl?: string
 			imageAlt?: string
 	  }
@@ -54,7 +54,7 @@ function FeaturedSection({
 					'(min-width:1024px) and (max-width:1620px) 25vw',
 					'410px',
 				],
-				transformations: { background: 'rgb:e6e9ee' },
+				transformations: { background: 'e6e9ee' },
 			})}
 		/>
 	) : (

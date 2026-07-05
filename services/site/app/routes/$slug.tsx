@@ -193,7 +193,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 												'1100px',
 											],
 											transformations: {
-												background: 'rgb:e6e9ee',
+												background: 'e6e9ee',
 											},
 										},
 									)}

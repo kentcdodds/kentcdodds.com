@@ -98,11 +98,9 @@ async function getDirectAvatarForUser(
 		return {
 			hasGravatar,
 			avatar: getImageBuilder(imageProfileIds[getOptionalTeam(team)])({
-				resize: {
-					type: 'pad',
-					width: size,
-					height: size,
-				},
+				fit: 'pad',
+				width: size,
+				height: size,
 			}),
 		}
 	}

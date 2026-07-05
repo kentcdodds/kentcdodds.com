@@ -69,11 +69,9 @@ export default function Testimonials({
 						{...getHeroImageProps(images.kentHoldingOutCody, {
 							className: 'rounded-lg',
 							transformations: {
-								resize: {
-									aspectRatio: '3:4',
-									type: 'crop',
-								},
-								gravity: 'face',
+								fit: 'cover',
+								aspectRatio: '3:4',
+								gravity: 'auto',
 							},
 						})}
 					/>

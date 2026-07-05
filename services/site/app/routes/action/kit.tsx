@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { CloudinaryVideo } from '#app/components/cloudinary-video'
+import { CloudinaryVideo } from '#app/components/media-video.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
