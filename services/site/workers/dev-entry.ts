@@ -291,9 +291,10 @@ async function handleDevMediaRequest(
 	env: WorkerEnv,
 	ctx: ExecutionContext,
 ) {
-	return handleMediaRequest(request, env as never, ctx, {
-		fallbackOrigin: PRODUCTION_MEDIA_ORIGIN,
-	})
+	const fallbackOrigin =
+		(env as { MEDIA_FALLBACK_ORIGIN?: string }).MEDIA_FALLBACK_ORIGIN ??
+		PRODUCTION_MEDIA_ORIGIN
+	return handleMediaRequest(request, env as never, ctx, { fallbackOrigin })
 }
 
 async function runPreRouterPipeline(

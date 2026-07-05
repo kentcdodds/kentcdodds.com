@@ -41,6 +41,10 @@ jobs:
 
       - name: 📦 Compile MDX artifacts
         run: npm run mdx:compile --workspace kentcdodds.com -- --out /tmp/mdx-bundle.json
+        env:
+          # Blur placeholders are generated against the staging /media
+          # endpoint until the production worker serves it post-merge.
+          MEDIA_ORIGIN: https://kentcdodds-com-staging.kentcdodds.workers.dev
 
       - name: 🧩 Build app-worker bundle
         run: npm run build:worker --workspace site-worker

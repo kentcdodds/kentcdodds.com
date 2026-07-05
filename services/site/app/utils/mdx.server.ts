@@ -405,6 +405,9 @@ async function getBlurDataUrl(cloudinaryId: string) {
 
 async function getDataUrlForImage(imageUrl: string) {
 	const res = await fetch(imageUrl)
+	if (!res.ok) {
+		throw new Error(`Failed to fetch blur image (${res.status}): ${imageUrl}`)
+	}
 	const arrayBuffer = await res.arrayBuffer()
 	const base64 = Buffer.from(arrayBuffer).toString('base64')
 	const mime = res.headers.get('Content-Type') ?? 'image/webp'
