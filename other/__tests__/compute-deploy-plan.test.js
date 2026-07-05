@@ -777,7 +777,7 @@ test('failed deploy stays deployable across unrelated push', async () => {
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })
 
-test('isolates site-staging from site-production', async () => {
+test('non-main refs have no site deployment environment', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -788,17 +788,10 @@ test('isolates site-staging from site-production', async () => {
 		return null
 	})
 	const fetchImpl = createMockDeploymentFetch({
-		'site-staging': 'staging-deployed-sha',
 		'site-production': 'production-deployed-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'staging-deployed-sha') {
-				return [{ changeType: 'modified', filename: 'services/site/app/routes/index.tsx' }]
-			}
-			if (compareCommitSha === 'production-deployed-sha') {
-				return []
-			}
 			if (compareCommitSha === 'refresh-sha') {
 				return []
 			}
@@ -822,7 +815,10 @@ test('isolates site-staging from site-production', async () => {
 		log,
 	})
 
+	// Without a deployment environment for the ref, unknown diffs default to
+	// deployable, but the deploy jobs themselves only run on main.
 	expect(deployPlan.deploySite).toBe(true)
+	expect(deployPlan.refreshContent).toBe(false)
 })
 
 test('GitHub API failure defaults to deploy', async () => {

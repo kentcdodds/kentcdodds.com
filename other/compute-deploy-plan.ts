@@ -52,12 +52,7 @@ const oauthWorkerFiles = new Set(['.github/workflows/deploy-oauth-worker.yml'])
  */
 const DEPLOY_ENVIRONMENTS: Record<string, (refName: string) => string | null> =
 	{
-		deploySite: (refName) =>
-			refName === 'main'
-				? 'site-production'
-				: refName === 'dev'
-					? 'site-staging'
-					: null,
+		deploySite: (refName) => (refName === 'main' ? 'site-production' : null),
 		deployOauthWorker: (refName) =>
 			refName === 'main' ? 'oauth-production' : null,
 		deployCallKentAudioWorker: (refName) =>
