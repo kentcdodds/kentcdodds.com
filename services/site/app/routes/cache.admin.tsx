@@ -83,8 +83,8 @@ export async function action({ request }: Route.ActionArgs) {
 	if (intent === deleteAllMatchingIntent) {
 		const query = searchParams.get('query')
 		const limit = Number(searchParams.get('limit') ?? 100)
-		const { sqlite, lru } = await getMatchingCacheKeys({ query, limit })
-		for (const cacheKey of sqlite) {
+		const { kv, lru } = await getMatchingCacheKeys({ query, limit })
+		for (const cacheKey of kv) {
 			await cache.delete(cacheKey)
 		}
 		for (const cacheKey of lru) {
@@ -100,7 +100,6 @@ export async function action({ request }: Route.ActionArgs) {
 	invariantResponse(typeof type === 'string', 'type must be a string')
 
 	switch (type) {
-		case 'sqlite':
 		case 'kv': {
 			await cache.delete(key)
 			break
@@ -123,9 +122,8 @@ export default function CacheAdminRoute({
 	const submit = useSubmit()
 	const query = searchParams.get('query') ?? ''
 	const limit = searchParams.get('limit') ?? '100'
-	const persistentCacheType = data.persistentCacheLabel === 'KV' ? 'kv' : 'sqlite'
 	const matchingCacheValuesCount =
-		data.cacheKeys.sqlite.length + data.cacheKeys.lru.length
+		data.cacheKeys.kv.length + data.cacheKeys.lru.length
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
 		void submit(form)
@@ -194,12 +192,12 @@ export default function CacheAdminRoute({
 			<Spacer size="3xs" />
 			<div className="flex flex-col gap-4">
 				<H3>{data.persistentCacheLabel} Cache:</H3>
-				{data.cacheKeys.sqlite.map((key) => (
+				{data.cacheKeys.kv.map((key) => (
 					<CacheKeyRow
 						key={key}
 						cacheKey={key}
-						deleteType={persistentCacheType}
-						resourceType="sqlite"
+						deleteType="kv"
+						resourceType="kv"
 					/>
 				))}
 			</div>

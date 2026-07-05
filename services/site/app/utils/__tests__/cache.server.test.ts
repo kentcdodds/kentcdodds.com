@@ -60,7 +60,7 @@ test('lists kv keys from CACHE_RPC in getAllCacheKeys', async () => {
 	const { getAllCacheKeys } = await import('../cache.server.ts')
 
 	await expect(getAllCacheKeys(50)).resolves.toMatchObject({
-		sqlite: rpcKeys,
+		kv: rpcKeys,
 		lru: expect.any(Array),
 	})
 	expect(cacheRpc.keys).toHaveBeenCalledWith(undefined, 50)
@@ -78,7 +78,7 @@ test('searches kv keys from CACHE_RPC in searchCacheKeys', async () => {
 	const { searchCacheKeys } = await import('../cache.server.ts')
 
 	await expect(searchCacheKeys('search', 25)).resolves.toMatchObject({
-		sqlite: rpcKeys,
+		kv: rpcKeys,
 		lru: expect.any(Array),
 	})
 	expect(cacheRpc.keys).toHaveBeenCalledWith('search', 25)

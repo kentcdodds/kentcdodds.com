@@ -187,19 +187,19 @@ export async function getAllCacheKeys(limit: number) {
 	const rpc = getCacheRpcBinding()
 	if (rpc) {
 		return {
-			sqlite: await rpc.keys(undefined, limit),
+			kv: await rpc.keys(undefined, limit),
 			lru: [...lruInstance.keys()],
 		}
 	}
 	const directKv = getDirectKvBinding()
 	if (directKv) {
 		return {
-			sqlite: await listDirectKvCacheKeys(undefined, limit),
+			kv: await listDirectKvCacheKeys(undefined, limit),
 			lru: [...lruInstance.keys()],
 		}
 	}
 	return {
-		sqlite: [],
+		kv: [],
 		lru: [...lruInstance.keys()],
 	}
 }
@@ -209,7 +209,7 @@ export async function searchCacheKeys(search: string, limit: number) {
 	if (rpc) {
 		const keys = await rpc.keys(search, limit)
 		return {
-			sqlite: keys,
+			kv: keys,
 			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 		}
 	}
@@ -217,12 +217,12 @@ export async function searchCacheKeys(search: string, limit: number) {
 	if (directKv) {
 		const keys = await listDirectKvCacheKeys(search, limit)
 		return {
-			sqlite: keys,
+			kv: keys,
 			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 		}
 	}
 	return {
-		sqlite: [],
+		kv: [],
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 	}
 }
