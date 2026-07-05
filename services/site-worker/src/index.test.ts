@@ -247,21 +247,21 @@ describe('worker service routing', () => {
 		expect(getServiceBindingForHost(SEARCH_WORKER_HOST, env)).toBe(
 			searchBinding,
 		)
-		expect(getServiceBindingForHost('api.mailgun.net', env)).toBeUndefined()
+		expect(getServiceBindingForHost('api.cloudflare.com', env)).toBeUndefined()
 	})
 })
 
 describe('outbound proxy routing', () => {
 	test('marks public hosts as passthrough', () => {
 		expect(PASSTHROUGH_HOSTS.has('api.twitter.com')).toBe(true)
-		expect(PASSTHROUGH_HOSTS.has('api.mailgun.net')).toBe(false)
+		expect(PASSTHROUGH_HOSTS.has('api.cloudflare.com')).toBe(false)
 	})
 
-	test('includes mailgun, kit, discord, and verifier mocks', () => {
+	test('includes email, kit, discord, and verifier mocks', () => {
 		const hosts = new Set(mockRoutes.map((route) => route.host))
 		expect(hosts).toEqual(
 			new Set([
-				'api.mailgun.net',
+				'api.cloudflare.com',
 				'api.kit.com',
 				'discord.com',
 				'verifyright.co',

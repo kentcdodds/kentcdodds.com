@@ -27,7 +27,7 @@ function deriveOrEnv(key, label, refreshCacheSecret, derivedFallbacks) {
 }
 
 /**
- * Real-integration secrets (Fly-parity values like Discord/Mailgun keys and
+ * Real-integration secrets (Fly-parity values like Discord keys and
  * SESSION_SECRET). On staging a derived placeholder keeps the worker booting.
  * On production we NEVER emit a derived fallback: these are set directly on
  * the worker (see the cutover runbook), and emitting a fallback here would
@@ -74,8 +74,7 @@ const INTEGRATION_SECRET_KEYS = [
 	'DISCORD_RED_ROLE',
 	'DISCORD_YELLOW_CHANNEL',
 	'DISCORD_YELLOW_ROLE',
-	'MAILGUN_SENDING_KEY',
-	'MAILGUN_DOMAIN',
+	'CLOUDFLARE_EMAIL_TOKEN',
 	'KIT_API_KEY',
 	'KIT_API_SECRET',
 	'TWITTER_BEARER_TOKEN',
@@ -83,9 +82,7 @@ const INTEGRATION_SECRET_KEYS = [
 	'OG_IMAGE_SECRET',
 ]
 
-const STATIC_STAGING_VALUES = {
-	MAILGUN_DOMAIN: 'preview.example.com',
-}
+const STATIC_STAGING_VALUES = {}
 
 async function main() {
 	const target = parseTarget()
