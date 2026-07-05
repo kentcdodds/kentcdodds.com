@@ -80,6 +80,11 @@ const INTEGRATION_SECRET_KEYS = [
 	'TWITTER_BEARER_TOKEN',
 	'VERIFIER_API_KEY',
 	'OG_IMAGE_SECRET',
+	// Config values CI does not have as GitHub secrets: copied from Fly during
+	// cutover, so production bulk uploads must never overwrite them.
+	'R2_BUCKET',
+	'CALL_KENT_R2_BUCKET',
+	'CALL_KENT_AUDIO_CF_QUEUE_ID',
 ]
 
 const STATIC_STAGING_VALUES = {}
@@ -114,25 +119,7 @@ async function main() {
 		NODE_ENV: 'production',
 		MOCKS: 'false',
 		DATABASE_URL: 'file:./preview.db',
-		R2_BUCKET: deriveOrEnv(
-			'R2_BUCKET',
-			`${secretPrefix}R2_BUCKET`,
-			refreshCacheSecret,
-			derivedFallbacks,
-		),
 		R2_ENDPOINT: `https://${accountId}.r2.cloudflarestorage.com`,
-		CALL_KENT_R2_BUCKET: deriveOrEnv(
-			'CALL_KENT_R2_BUCKET',
-			`${secretPrefix}CALL_KENT_R2_BUCKET`,
-			refreshCacheSecret,
-			derivedFallbacks,
-		),
-		CALL_KENT_AUDIO_CF_QUEUE_ID: deriveOrEnv(
-			'CALL_KENT_AUDIO_CF_QUEUE_ID',
-			`${secretPrefix}CALL_KENT_AUDIO_CF_QUEUE_ID`,
-			refreshCacheSecret,
-			derivedFallbacks,
-		),
 		DISCORD_SCOPES: 'identify email',
 		REFRESH_CACHE_SECRET: refreshCacheSecret,
 		CLOUDFLARE_ACCOUNT_ID: accountId,
