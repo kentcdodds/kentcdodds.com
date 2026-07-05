@@ -29,6 +29,7 @@ import {
 	type MdxArtifactBundle,
 } from './module-map.ts'
 import { mockRoutes, PASSTHROUGH_HOSTS } from './rpc/outbound-mock-routes.ts'
+import { OutboundProxy } from './rpc/outbound-proxy.ts'
 import type { ParentWorkerEnv } from './rpc/types.ts'
 import {
 	getServiceBindingForHost,
@@ -268,5 +269,51 @@ describe('outbound proxy routing', () => {
 				'www.gravatar.com',
 			]),
 		)
+	})
+
+	test('production (OUTBOUND_MOCKS unset) passes third-party hosts through', async () => {
+		const realFetch = globalThis.fetch
+		const fetchSpy = vi.fn(async () => new Response('real-api'))
+		globalThis.fetch = fetchSpy as unknown as typeof fetch
+		try {
+			const proxy = new OutboundProxy(
+				{} as never,
+				{ BUILD_SHA: 'test', COMPATIBILITY_DATE: 'test' } as never,
+			)
+			const response = await proxy.fetch(
+				new Request('https://api.transistor.fm/v1/episodes', {
+					headers: { 'x-api-key': 'real-key' },
+				}),
+			)
+			expect(fetchSpy).toHaveBeenCalledTimes(1)
+			expect(await response.text()).toBe('real-api')
+		} finally {
+			globalThis.fetch = realFetch
+		}
+	})
+
+	test('staging (OUTBOUND_MOCKS=true) serves mocks instead of fetching', async () => {
+		const realFetch = globalThis.fetch
+		const fetchSpy = vi.fn(async () => new Response('real-api'))
+		globalThis.fetch = fetchSpy as unknown as typeof fetch
+		try {
+			const proxy = new OutboundProxy(
+				{} as never,
+				{
+					BUILD_SHA: 'test',
+					COMPATIBILITY_DATE: 'test',
+					OUTBOUND_MOCKS: 'true',
+				} as never,
+			)
+			const response = await proxy.fetch(
+				new Request('https://api.transistor.fm/v1/episodes', {
+					headers: { 'x-api-key': 'mock-key' },
+				}),
+			)
+			expect(fetchSpy).not.toHaveBeenCalled()
+			expect(response.status).toBe(200)
+		} finally {
+			globalThis.fetch = realFetch
+		}
 	})
 })

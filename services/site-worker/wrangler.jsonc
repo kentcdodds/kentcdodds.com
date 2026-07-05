@@ -8,7 +8,9 @@
 	"workers_dev": true,
 	"vars": {
 		"BUILD_SHA": "local-dev",
-		"COMPATIBILITY_DATE": "2026-03-17"
+		"COMPATIBILITY_DATE": "2026-03-17",
+		// Local wrangler dev of the parent worker mocks third-party APIs.
+		"OUTBOUND_MOCKS": "true"
 	},
 	"worker_loaders": [
 		{

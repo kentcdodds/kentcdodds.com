@@ -242,6 +242,9 @@ async function writeGeneratedConfig({ config, buildSha, target }) {
 		vars: {
 			...config.vars,
 			BUILD_SHA: buildSha,
+			// Staging/preview mock third-party APIs in the OutboundProxy;
+			// production always reaches the real services.
+			OUTBOUND_MOCKS: target === 'production' ? 'false' : 'true',
 		},
 	}
 

@@ -13,6 +13,14 @@ export class OutboundProxy extends WorkerEntrypoint<ParentWorkerEnv> {
 			return serviceBinding.fetch(request)
 		}
 
+		// Only staging/preview mocks third-party APIs (Transistor, Kit,
+		// Discord, email sending, verifier, ...). Production must reach the
+		// real services. OUTBOUND_MOCKS is a var written into the generated
+		// wrangler config per deploy target.
+		if (this.env.OUTBOUND_MOCKS !== 'true') {
+			return fetch(request)
+		}
+
 		if (PASSTHROUGH_HOSTS.has(url.hostname)) {
 			return fetch(request)
 		}
