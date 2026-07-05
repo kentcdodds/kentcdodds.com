@@ -42,19 +42,28 @@ the flip.
   const account = "a41d50ecaf0ae0f86dd1824ef6729cb2"
   const script = "kentcdodds-com"
   const names = [
+    // Auth/session parity — SESSION_SECRET must match Fly exactly.
     "SESSION_SECRET", "CF_INTERNAL_SECRET",
+    // Discord integration
     "DISCORD_ADMIN_USER_ID", "DISCORD_BLUE_CHANNEL", "DISCORD_BLUE_ROLE",
     "DISCORD_BOT_TOKEN", "DISCORD_CALL_KENT_CHANNEL", "DISCORD_CLIENT_ID",
     "DISCORD_CLIENT_SECRET", "DISCORD_GUILD_ID", "DISCORD_LEADERBOARD_CHANNEL",
     "DISCORD_MEMBER_ROLE", "DISCORD_PRIVATE_BOT_CHANNEL", "DISCORD_RED_CHANNEL",
     "DISCORD_RED_ROLE", "DISCORD_YELLOW_CHANNEL", "DISCORD_YELLOW_ROLE",
-    "CLOUDFLARE_EMAIL_TOKEN",
+    // Other integrations
     "KIT_API_KEY", "KIT_API_SECRET",
     "TWITTER_BEARER_TOKEN", "VERIFIER_API_KEY",
+    // Config values CI does not know (currently derived placeholders on the
+    // worker): R2 bucket names + FFmpeg offload queue id.
+    "R2_BUCKET", "CALL_KENT_R2_BUCKET", "CALL_KENT_AUDIO_CF_QUEUE_ID",
+    // Optional observability (skip warnings are fine if unset on Fly)
+    "SENTRY_DSN", "SENTRY_PROJECT_ID",
   ]
   const values = Object.fromEntries(names.map((n) => [n, process.env[n]]))
-  // OG_IMAGE_SECRET is new (not on Fly): generate a fresh random value.
-  values.OG_IMAGE_SECRET = require("crypto").randomBytes(32).toString("hex")
+  // NOT copied from Fly: OG_IMAGE_SECRET (already set, random),
+  // CLOUDFLARE_EMAIL_TOKEN (new dedicated token — see the Email section),
+  // MAILGUN_* (retired), MAGIC_LINK_SECRET / INTERNAL_COMMAND_TOKEN (dead in
+  // the worker codebase).
   ;(async () => {
     for (const [name, text] of Object.entries(values)) {
       if (!text) { console.error("MISSING: " + name); continue }
