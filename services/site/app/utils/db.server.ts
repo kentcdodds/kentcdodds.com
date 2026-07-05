@@ -1,5 +1,7 @@
 import { remember } from '@epic-web/remember'
 import BetterSqlite3 from 'better-sqlite3'
+import fs from 'node:fs'
+import path from 'node:path'
 import {
 	createDatabase,
 	type Database,
@@ -98,7 +100,9 @@ function getSqliteFilePath(databaseUrl: string) {
 function getNodeSqliteDatabase() {
 	const databaseUrl = getEnv().DATABASE_URL
 	return remember('better-sqlite3-db', () => {
-		const sqlite = new BetterSqlite3(getSqliteFilePath(databaseUrl))
+		const filePath = getSqliteFilePath(databaseUrl)
+		fs.mkdirSync(path.dirname(filePath), { recursive: true })
+		const sqlite = new BetterSqlite3(filePath)
 		sqlite.pragma('foreign_keys = ON')
 		return sqlite
 	})

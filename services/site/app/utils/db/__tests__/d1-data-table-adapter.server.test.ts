@@ -5,7 +5,7 @@ import { createSqliteExecutorDataTableAdapter } from '../d1-data-table-adapter.s
 import { userTable } from '../schema.server.ts'
 import { createMigratedMemoryDatabase, createBetterSqliteExecutor } from '../test-helpers.server.ts'
 
-test('sqlite executor adapter reads and writes against real prisma migrations', async () => {
+test('sqlite executor adapter reads and writes against real sql migrations', async () => {
 	const sqlite = createMigratedMemoryDatabase(BetterSqlite3)
 	const db = createDatabase(
 		createSqliteExecutorDataTableAdapter(createBetterSqliteExecutor(sqlite)),

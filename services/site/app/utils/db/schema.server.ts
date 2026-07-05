@@ -8,7 +8,7 @@ import {
 } from '@remix-run/data-table'
 import {
 	defaultBeforeWrite,
-	prismaTimestamps,
+	timestampColumns,
 	reviveDateColumns,
 } from './schema-helpers.server.ts'
 import {
@@ -44,7 +44,7 @@ export const userTable = table({
 		team: c.text(),
 	},
 	primaryKey: 'id',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	beforeWrite: defaultBeforeWrite({ uuid: true }),
 	afterRead: reviveDateColumns(dateColumns.user),
 })
@@ -58,7 +58,7 @@ export const passwordTable = table({
 		userId: c.uuid(),
 	},
 	primaryKey: 'userId',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	afterRead: reviveDateColumns(dateColumns.password),
 })
 
@@ -108,7 +108,7 @@ export const callTable = table({
 		audioSize: c.integer().nullable(),
 	},
 	primaryKey: 'id',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	beforeWrite: defaultBeforeWrite({ uuid: true }),
 	afterRead: reviveDateColumns(dateColumns.call),
 })
@@ -137,7 +137,7 @@ export const callKentEpisodeDraftTable = table({
 		callId: c.uuid(),
 	},
 	primaryKey: 'id',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	beforeWrite: defaultBeforeWrite({ uuid: true }),
 	afterRead: reviveDateColumns(dateColumns.callKentEpisodeDraft),
 })
@@ -155,7 +155,7 @@ export const callKentCallerEpisodeTable = table({
 		transistorEpisodeId: c.text(),
 	},
 	primaryKey: 'id',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	beforeWrite: defaultBeforeWrite({ uuid: true }),
 	afterRead: reviveDateColumns(dateColumns.callKentCallerEpisode),
 })
@@ -190,7 +190,7 @@ export const passkeyTable = table({
 		transports: c.text().nullable(),
 	},
 	primaryKey: 'id',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	afterRead: (context) => {
 		const revived = reviveDateColumns(dateColumns.passkey)(context)
 		if (!('value' in revived)) return revived
@@ -215,7 +215,7 @@ export const favoriteTable = table({
 		contentId: c.text(),
 	},
 	primaryKey: 'id',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	beforeWrite: defaultBeforeWrite({ uuid: true }),
 	afterRead: reviveDateColumns(dateColumns.favorite),
 })
@@ -233,7 +233,7 @@ export const homeworkCompletionTable = table({
 		itemIndex: c.integer(),
 	},
 	primaryKey: 'id',
-	timestamps: prismaTimestamps,
+	timestamps: timestampColumns,
 	beforeWrite: defaultBeforeWrite({ uuid: true }),
 	afterRead: reviveDateColumns(dateColumns.homeworkCompletion),
 })

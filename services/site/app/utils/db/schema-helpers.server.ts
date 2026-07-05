@@ -1,6 +1,6 @@
 import type { TableAfterRead, TableBeforeWrite } from '@remix-run/data-table'
 
-export const prismaTimestamps = {
+export const timestampColumns = {
 	createdAt: 'createdAt',
 	updatedAt: 'updatedAt',
 } as const

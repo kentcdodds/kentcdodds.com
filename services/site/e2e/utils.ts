@@ -18,7 +18,7 @@ import { sessionTable, userTable, type User } from '#app/utils/db/schema.server.
 import { getEnv } from '#app/utils/env.server.ts'
 import { sessionExpirationTime } from '#app/utils/user-data.server.ts'
 import { localD1StateDir } from '../scripts/local-d1-state.mjs'
-import { createUser } from '../prisma/seed-utils.ts'
+import { createUser } from '../tests/fixtures/user.ts'
 
 const e2eDir = path.dirname(fileURLToPath(import.meta.url))
 const siteDir = path.join(e2eDir, '..')

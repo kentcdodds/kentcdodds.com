@@ -11,8 +11,8 @@ node_modules/
 /coverage
 tsconfig.tsbuildinfo
 *.tsbuildinfo
-/services/site/prisma/sqlite.db
-/services/site/prisma/sqlite.db-journal
+/services/site/.data/sqlite.db
+/services/site/.data/sqlite.db-journal
 *.local.*
 
 .env
