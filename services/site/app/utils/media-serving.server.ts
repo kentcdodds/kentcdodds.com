@@ -64,6 +64,11 @@ export const MEDIA_CACHE_CONTROL_NOT_FOUND = 'public, max-age=60' as const
 
 export const PRODUCTION_MEDIA_ORIGIN =
 	'https://kentcdodds-com.kentcdodds.workers.dev'
+// The staging fallback matters only until the production worker (with the
+// /media route) is deployed from main; it can be dropped with the staging
+// decommission (issue #815).
+export const STAGING_MEDIA_ORIGIN =
+	'https://kentcdodds-com-staging.kentcdodds.workers.dev'
 
 const MAX_DIMENSION = 4096
 const MAX_BLUR = 250
@@ -552,7 +557,8 @@ export function getMediaCacheKey(request: Request, transform: MediaTransform | u
 }
 
 export type ServeMediaRequestOptions = {
-	fallbackOrigin?: string
+	/** Tried in order until one returns the asset (dev-only proxying). */
+	fallbackOrigins?: Array<string>
 }
 
 export async function serveMediaRequest(
@@ -603,9 +609,9 @@ export async function serveMediaRequest(
 		})
 	}
 
-	if (options.fallbackOrigin) {
+	for (const fallbackOrigin of options.fallbackOrigins ?? []) {
 		const fallbackUrl = buildMediaUrl(parsed.id, undefined, {
-			origin: options.fallbackOrigin,
+			origin: fallbackOrigin,
 		})
 		const fallbackResponse = await fetch(fallbackUrl, {
 			headers: request.headers.get('Range')
@@ -613,7 +619,7 @@ export async function serveMediaRequest(
 				: undefined,
 		})
 		if (!fallbackResponse.ok || !fallbackResponse.body) {
-			return notFoundMediaResponse()
+			continue
 		}
 
 		const source: MediaObjectSource = {
@@ -635,7 +641,7 @@ export async function serveMediaRequest(
 				const transformedUrl = buildMediaUrl(
 					parsed.id,
 					parsed.transform,
-					{ origin: options.fallbackOrigin },
+					{ origin: fallbackOrigin },
 				)
 				const transformedResponse = await fetch(transformedUrl, {
 					headers: request.headers.get('Accept')

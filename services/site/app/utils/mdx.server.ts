@@ -390,17 +390,30 @@ export async function getLocalMdxDirList(contentDir: 'blog' | 'pages') {
 		}))
 }
 
-const MEDIA_ORIGIN =
-	process.env.MEDIA_ORIGIN ?? 'https://kentcdodds-com.kentcdodds.workers.dev'
+// Staging fallback matters only until the production worker serves /media
+// (first main deploy); drop with the staging decommission (issue #815).
+const MEDIA_ORIGINS = process.env.MEDIA_ORIGIN
+	? [process.env.MEDIA_ORIGIN]
+	: [
+			'https://kentcdodds-com.kentcdodds.workers.dev',
+			'https://kentcdodds-com-staging.kentcdodds.workers.dev',
+		]
 
 async function getBlurDataUrl(cloudinaryId: string) {
-	const imageURL = buildMediaUrl(
-		cloudinaryId,
-		{ width: 100, blur: 100, format: 'webp' },
-		{ origin: MEDIA_ORIGIN },
-	)
-	const dataUrl = await getDataUrlForImage(imageURL)
-	return dataUrl
+	let lastError: unknown
+	for (const origin of MEDIA_ORIGINS) {
+		const imageURL = buildMediaUrl(
+			cloudinaryId,
+			{ width: 100, blur: 100, format: 'webp' },
+			{ origin },
+		)
+		try {
+			return await getDataUrlForImage(imageURL)
+		} catch (error) {
+			lastError = error
+		}
+	}
+	throw lastError
 }
 
 async function getDataUrlForImage(imageUrl: string) {

@@ -54,7 +54,10 @@ import {
 	getAgentSearchHintHeaders,
 } from '../../site-worker/src/dynamic/rate-limiting.ts'
 import { handleMediaRequest } from '../../site-worker/src/media.ts'
-import { PRODUCTION_MEDIA_ORIGIN } from '#app/utils/media-serving.server.ts'
+import {
+	PRODUCTION_MEDIA_ORIGIN,
+	STAGING_MEDIA_ORIGIN,
+} from '#app/utils/media-serving.server.ts'
 
 if (import.meta.hot) {
 	import.meta.hot.accept()
@@ -291,10 +294,12 @@ async function handleDevMediaRequest(
 	env: WorkerEnv,
 	ctx: ExecutionContext,
 ) {
-	const fallbackOrigin =
-		(env as { MEDIA_FALLBACK_ORIGIN?: string }).MEDIA_FALLBACK_ORIGIN ??
-		PRODUCTION_MEDIA_ORIGIN
-	return handleMediaRequest(request, env as never, ctx, { fallbackOrigin })
+	const override = (env as { MEDIA_FALLBACK_ORIGIN?: string })
+		.MEDIA_FALLBACK_ORIGIN
+	const fallbackOrigins = override
+		? [override]
+		: [PRODUCTION_MEDIA_ORIGIN, STAGING_MEDIA_ORIGIN]
+	return handleMediaRequest(request, env as never, ctx, { fallbackOrigins })
 }
 
 async function runPreRouterPipeline(
