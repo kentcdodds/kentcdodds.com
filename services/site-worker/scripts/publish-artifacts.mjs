@@ -100,6 +100,24 @@ async function publishViaWrangler(bundlePath, configPath, local) {
 	}
 	runWrangler(kvArgs)
 
+	// Invalidate the anonymous page cache like the endpoint path does —
+	// cached documents embed URLs/content from the previous artifact bundle.
+	const generationArgs = [
+		'kv',
+		'key',
+		'put',
+		'page-cache:generation',
+		Date.now().toString(),
+		'--config',
+		configPath,
+	]
+	if (local) {
+		generationArgs.push('--binding', 'CONTENT_KV', '--local')
+	} else {
+		generationArgs.push('--namespace-id', contentKv.id, '--remote')
+	}
+	runWrangler(generationArgs)
+
 	console.log(
 		`Published ${r2Key} and updated mdx-manifest:current (${local ? 'local' : 'remote'})`,
 	)
