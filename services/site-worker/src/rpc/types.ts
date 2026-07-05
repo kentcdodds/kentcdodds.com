@@ -1,3 +1,5 @@
+import type { MediaServingEnv } from '../../../site/app/utils/media-serving.server.ts'
+
 export type AssetsBinding = {
 	fetch(request: Request): Response | Promise<Response>
 }
@@ -29,7 +31,7 @@ export type ServiceWorkerBinding = {
 	fetch(request: Request): Response | Promise<Response>
 }
 
-export type ParentWorkerEnv = {
+export type ParentWorkerEnv = MediaServingEnv & {
 	ASSETS?: AssetsBinding
 	APP_DB: D1Database
 	SITE_CACHE_KV: KVNamespace

@@ -29,8 +29,15 @@
 		{
 			"binding": "MDX_ARTIFACTS",
 			"bucket_name": "kcd-site-cf-preview-artifacts"
+		},
+		{
+			"binding": "MEDIA_BUCKET",
+			"bucket_name": "kentcdodds-com"
 		}
 	],
+	"images": {
+		"binding": "IMAGES"
+	},
 	"d1_databases": [
 		{
 			"binding": "APP_DB",
@@ -89,8 +96,15 @@
 				{
 					"binding": "MDX_ARTIFACTS",
 					"bucket_name": "kentcdodds-com-artifacts"
+				},
+				{
+					"binding": "MEDIA_BUCKET",
+					"bucket_name": "kentcdodds-com"
 				}
 			],
+			"images": {
+				"binding": "IMAGES"
+			},
 			"d1_databases": [
 				{
 					"binding": "APP_DB",

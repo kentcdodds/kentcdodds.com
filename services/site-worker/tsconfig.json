@@ -9,6 +9,8 @@
 		"generated/**/*.ts",
 		"../site/app/og/**/*.ts",
 		"../site/app/og/**/*.tsx",
-		"../site/app/og/wasm.d.ts"
+		"../site/app/og/wasm.d.ts",
+		"../site/app/utils/media.ts",
+		"../site/app/utils/media-serving.server.ts"
 	]
 }

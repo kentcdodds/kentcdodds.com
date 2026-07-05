@@ -34,7 +34,6 @@ export function buildContentSecurityPolicy({
 		'img-src': [
 			"'self'",
 			'data:',
-			'res.cloudinary.com',
 			'www.gravatar.com',
 			'cdn.usefathom.com',
 			'pbs.twimg.com',
@@ -54,7 +53,6 @@ export function buildContentSecurityPolicy({
 		],
 		'media-src': [
 			"'self'",
-			'res.cloudinary.com',
 			'data:',
 			'blob:',
 			'www.dropbox.com',

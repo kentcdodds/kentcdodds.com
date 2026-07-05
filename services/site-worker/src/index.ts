@@ -33,6 +33,7 @@ import {
 	handlePageCacheRequest,
 } from './page-cache.ts'
 import { serveStaticAsset } from './static-assets.ts'
+import { handleMediaRequest } from './media.ts'
 import { handleOgImageRequest } from '../../site/app/og/handler.server.ts'
 
 const OG_IMAGE_PATH = '/resources/og-image'
@@ -280,6 +281,10 @@ export default {
 				})
 			}
 			return handleMetaRequest(env)
+		}
+
+		if (url.pathname.startsWith('/media/')) {
+			return handleMediaRequest(request, env, ctx)
 		}
 
 		if (url.pathname === OG_IMAGE_PATH) {
