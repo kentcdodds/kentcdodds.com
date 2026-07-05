@@ -21,7 +21,7 @@ import {
 // One-off handlers that don't warrant their own files.
 const miscHandlers: Array<HttpHandler> = [
 	http.get(
-		'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
+		'https://kentcdodds.com/media/:transforms/unsplash/:photoId',
 		async () => {
 			if (
 				process.env.NODE_ENV !== 'test' &&
@@ -36,7 +36,16 @@ const miscHandlers: Array<HttpHandler> = [
 			return HttpResponse.json(buffer)
 		},
 	),
-	http.get(/res.cloudinary.com\/kentcdodds-com\//, () => {
+	http.get(/\/media\/[^/]+\/unsplash\//, () => {
+		if (process.env.NODE_ENV === 'test') {
+			return new HttpResponse(new Uint8Array(), {
+				status: 200,
+				headers: { 'Content-Type': 'image/webp' },
+			})
+		}
+		return passthrough()
+	}),
+	http.get(/\/media\//, () => {
 		if (process.env.NODE_ENV === 'test') {
 			return new HttpResponse(new Uint8Array(), {
 				status: 200,

@@ -24,14 +24,16 @@ import { requiredHeader } from './utils.ts'
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
 
-function getBearerToken(request: Request) {
+type MockableRequest = Pick<Request, 'headers'>
+
+function getBearerToken(request: MockableRequest) {
 	const raw = request.headers.get('authorization') ?? ''
 	const match = /^\s*bearer\s+(?<token>.+?)\s*$/iu.exec(raw)
 	const token = match?.groups?.token?.trim()
 	return token || null
 }
 
-function shouldMockCloudflare(request: Request) {
+function shouldMockCloudflare(request: MockableRequest) {
 	// Align with other mocks: only intercept when the token explicitly opts in.
 	// This makes it possible to run with `MOCKS=true` while still using real CF
 	// credentials by setting a non-MOCK token.
@@ -694,7 +696,12 @@ async function ensureSeededIndex(accountId: string, indexName: string) {
 	return seedPromise
 }
 
-async function parseVectorizeNdjsonVectors(request: Request) {
+type VectorizeNdjsonRequest = Pick<Request, 'headers'> & {
+	text(): Promise<string>
+	arrayBuffer(): Promise<ArrayBuffer>
+}
+
+async function parseVectorizeNdjsonVectors(request: VectorizeNdjsonRequest) {
 	const contentType = request.headers.get('content-type') ?? ''
 	const lower = contentType.toLowerCase()
 
@@ -799,7 +806,7 @@ function modelFromWorkersAiGatewayPathname(pathname: string) {
 }
 
 type VectorizeHandlerArgs = {
-	request: Request
+	request: VectorizeNdjsonRequest & { json(): Promise<unknown> }
 	params: { accountId: string; indexName: string } & Record<string, string>
 }
 

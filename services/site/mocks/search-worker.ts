@@ -38,7 +38,7 @@ export function resetSearchWorkerMockState() {
 	resetSharedSearchWorkerMockState()
 }
 
-function isAuthorized(request: Request) {
+function isAuthorized(request: Pick<Request, 'headers'>) {
 	return (
 		request.headers.get('Authorization') === `Bearer ${searchWorkerMockToken}`
 	)
