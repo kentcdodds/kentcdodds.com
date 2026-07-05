@@ -134,7 +134,7 @@ Generate a production wrangler config (or use `generated-wrangler.jsonc` after p
   "binding": "APP_DB",
   "database_name": "kentcdodds-com-db",
   "database_id": "af33bd8b-c9b2-484a-afa5-43ee322ff49c",
-  "migrations_dir": ".wrangler/site-prisma-migrations"
+  "migrations_dir": "../site/migrations"
 }]
 ```
 
@@ -145,7 +145,6 @@ export CLOUDFLARE_API_TOKEN=…   # privileged; never commit
 export CLOUDFLARE_ACCOUNT_ID=a41d50ecaf0ae0f86dd1824ef6729cb2
 
 cd services/site-worker
-npm run d1:migrations:prepare
 
 npm run migrate:sqlite-to-d1 -- \
   --source /path/to/migrate-snapshot-*.db \

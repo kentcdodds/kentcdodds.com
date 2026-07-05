@@ -201,16 +201,23 @@ Vite plugin in `services/site/vite.config.ts`.
 
 ## Database
 
-**Prisma** (`services/site/prisma/schema.prisma`) is schema and migration tooling
-only — `prisma migrate`, `prisma migrate reset` for the file-based test DB.
+Schema and migrations live in `services/site/migrations/` as flat `.sql` files.
+`app/utils/db/schema.server.ts` (`@remix-run/data-table`) is the runtime schema
+source of truth.
 
 | Environment | Database |
 | --- | --- |
-| Unit tests (Node) | File SQLite at `services/site/prisma/sqlite.db` (`DATABASE_URL`) |
+| Unit tests (Node) | In-memory SQLite via test helpers, or file at `services/site/.data/sqlite.db` (`DATABASE_URL`) |
 | Local dev + Playwright e2e | Miniflare D1 (`.wrangler/state/v3/d1/…`) |
 | Staging / production | Cloudflare D1 via `services/site-worker` |
 
-Reset local dev D1 + seed:
+Create a migration:
+
+```sh
+npm run db:migration:new --workspace kentcdodds.com -- add_my_column
+```
+
+Edit the generated SQL, then reset local dev D1 + seed:
 
 ```sh
 npm run db:reset --workspace kentcdodds.com
@@ -218,12 +225,6 @@ npm run db:reset --workspace kentcdodds.com
 
 This applies migrations to the local Miniflare D1 database and runs the seed
 script (admin user `me@kentcdodds.com` / `iliketwix`).
-
-Reset the file-based SQLite test DB only:
-
-```sh
-npm exec --workspace kentcdodds.com prisma migrate reset --force
-```
 
 Remote D1 migrations: `npm run d1:migrations:apply:production --workspace site-worker`
 (after widen steps land on `main`). See

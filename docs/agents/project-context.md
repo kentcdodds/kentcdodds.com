@@ -61,7 +61,7 @@ reference:
   plus `tests/sample.wav`. If an e2e needs recorded audio, drive the real
   recorder UI and keep the fake-audio setup in Playwright/helpers rather than
   adding app runtime shortcuts.
-- SQLite is file-based for **unit tests** (`services/site/prisma/sqlite.db` via
+- SQLite is file-based for **unit tests** (`services/site/.data/sqlite.db` via
   `DATABASE_URL`). **Local dev and Playwright e2e** use Miniflare's persistent
   local D1 (`services/site/.wrangler/state/v3/d1/...`). Migrations, seed, the
   Vite plugin, and e2e helpers share the path from
@@ -97,11 +97,8 @@ reference:
   (Vite + `@cloudflare/vite-plugin`). Do not wrap in an outer `node --watch`.
   React Router dev rewrites `.react-router/types` on startup, which can trigger
   an infinite restart loop in headless/CI environments.
-- Playwright/Prisma caveat: `services/site/playwright.config.ts` sets
-  `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` so e2e runs can reset the local
-  D1 database (`npm run db:reset`) without tripping Cursor's destructive-action
-  guard. This is only for Playwright's dev/test DB reset path, not a general
-  exemption for Prisma commands.
+- Playwright caveat: `services/site/playwright.config.ts` runs `npm run db:reset`
+  before e2e in CI so tests start from a migrated + seeded local D1 database.
 - Oxlint config caveat: prefer package-export extends
   (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
   extends into `node_modules` can fail to inherit the shared env/rules.
@@ -122,7 +119,7 @@ user against the local Miniflare D1 database: `me@kentcdodds.com` / `iliketwix`
 (role ADMIN, Blue Team).
 
 After `npm run db:reset --workspace kentcdodds.com`, verify the seed ran.
-Unit tests still use `prisma/seed.ts` against the file-based SQLite test DB.
+Unit tests apply committed SQL migrations via `app/utils/db/test-helpers.server.ts`.
 
 ## Cloud / headless manual testing
 

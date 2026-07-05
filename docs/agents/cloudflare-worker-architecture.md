@@ -493,17 +493,15 @@ but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 
 ### D1 migrations
 
-The site-worker migration scripts generate Wrangler-compatible flat SQL files in
-`services/site-worker/.wrangler/site-prisma-migrations` from the committed
-`services/site/prisma/migrations/*/migration.sql` files before running
-`wrangler d1 migrations`. Do not commit or hand-edit the generated files.
+Committed flat SQL files live in `services/site/migrations/`. Wrangler applies
+them in filename order and journals each applied filename in the `d1_migrations`
+table. Do not rename migration files after deploy.
 
-The generated copy normalizes `CREATE TEMP TABLE` to `CREATE TABLE` because D1
-rejects temporary tables in migrations.
+D1 rejects `CREATE TEMP TABLE` in migrations — use a regular guard table and
+drop it in the same migration when needed.
 
 | Command | Target |
 | --- | --- |
-| `npm run d1:migrations:prepare --workspace site-worker` | Regenerate migration files (no D1 contact) |
 | `npm run d1:migrations:list:local --workspace site-worker` | List pending local Miniflare D1 |
 | `npm run d1:migrations:apply:local --workspace site-worker` | Apply to local Miniflare D1 |
 | `npm run d1:migrations:list:staging --workspace site-worker` | List pending remote staging D1 |

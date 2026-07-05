@@ -8,7 +8,7 @@ on:
       - package.json
       - services/site/app/**
       - services/site/other/mdx-artifacts/**
-      - services/site/prisma/migrations/**
+      - services/site/migrations/**
       - services/site/vite.config.ts
       - services/site-worker/**
   workflow_dispatch:

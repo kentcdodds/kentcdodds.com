@@ -1,8 +1,8 @@
 # data-table conventions
 
-Runtime DB access uses `@remix-run/data-table`. Prisma remains for schema
-management only (`prisma/schema.prisma`, migrations). User/session helpers live
-in `app/utils/user-data.server.ts`.
+Runtime DB access uses `@remix-run/data-table`. SQL migrations live in
+`services/site/migrations/`. User/session helpers live in
+`app/utils/user-data.server.ts`.
 
 Do **not** import the `remix` umbrella package; use `@remix-run/data-table` and
 `@remix-run/data-table-sqlite` directly.
