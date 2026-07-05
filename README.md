@@ -45,7 +45,7 @@ Start the development server (MDX watcher sidecar + workerd via Vite):
 - `npm run dev`
 
 Then open `http://localhost:3000`. External APIs are mocked by default
-(`MOCKS=true`). Signup verification codes are written to
+(`MOCKS=true`). Transactional emails are written to
 `services/site/mocks/msw.local.json`.
 
 ## Git hooks

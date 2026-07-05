@@ -194,8 +194,8 @@ The dynamic worker is created with `globalOutbound` pointing at the parent's
    `kcd-search-worker.kentcdodds.workers.dev`) are dispatched via
    `OAUTH_WORKER.fetch()` / `SEARCH_WORKER.fetch()` instead of global `fetch`
    (avoids CF error 1042 on worker-to-worker `*.workers.dev` calls).
-2. **Mocks** — Mailgun, Discord, Kit, Verifier get inline mock responses (same
-   shapes as MSW mocks in `services/site/mocks/`).
+2. **Mocks** — Cloudflare Email Sending, Discord, Kit, Verifier get inline mock
+   responses (same shapes as MSW mocks in `services/site/mocks/`).
 3. **Passthrough** — everything else (GitHub raw, Transistor,
    Simplecast, oEmbed providers, Twitter/X API hosts) uses global `fetch`.
 
@@ -385,7 +385,7 @@ The parent in-memory generation cache is cleared on bump.
 1. **MDX dev-watcher sidecar** (`other/mdx-artifacts/dev-watcher.ts`) — compiles
    all local MDX on startup (cached under `node_modules/.cache/mdx-dev/`), watches
    `content/` for changes, and exposes `POST /__dev/capture-email` (port 3099)
-   for Mailgun mock email capture.
+   for Cloudflare Email Sending mock capture.
 2. **Vite + React Router dev** with `@cloudflare/vite-plugin` — serves the app
    in real workerd with local D1/KV bindings from `wrangler.dev.jsonc`.
 

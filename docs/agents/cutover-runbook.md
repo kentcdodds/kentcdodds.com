@@ -48,7 +48,7 @@ the flip.
     "DISCORD_CLIENT_SECRET", "DISCORD_GUILD_ID", "DISCORD_LEADERBOARD_CHANNEL",
     "DISCORD_MEMBER_ROLE", "DISCORD_PRIVATE_BOT_CHANNEL", "DISCORD_RED_CHANNEL",
     "DISCORD_RED_ROLE", "DISCORD_YELLOW_CHANNEL", "DISCORD_YELLOW_ROLE",
-    "MAILGUN_SENDING_KEY", "MAILGUN_DOMAIN",
+    "CLOUDFLARE_EMAIL_TOKEN",
     "KIT_API_KEY", "KIT_API_SECRET",
     "TWITTER_BEARER_TOKEN", "VERIFIER_API_KEY",
   ]
@@ -88,6 +88,35 @@ minted per-render). **The full app env schema is validated on every dynamic
 request** — a missing required secret 500s the entire site, so after any
 schema change to `env.server.ts`, cross-check `wrangler secret list` against
 the required keys before/after deploying.
+
+### Email (Cloudflare Email Service)
+
+Transactional email (signup verification, password reset, contact form, call
+notifications) uses the [Cloudflare Email Sending REST API](https://developers.cloudflare.com/email-service/api/send-emails/rest-api/).
+The app reads `CLOUDFLARE_EMAIL_TOKEN` — a **dedicated** API token with only
+**Email Sending: Edit** permission. Do **not** reuse `CLOUDFLARE_API_TOKEN`.
+
+1. **Onboard the domain** — Cloudflare dash → **Compute** → **Email Service** →
+   **Email Sending** → **Onboard Domain** → `kentcdodds.com`. This adds
+   SPF/DKIM/DMARC records on the `cf-bounce` subdomain. On Cloudflare DNS the
+   records usually propagate within minutes.
+2. **Create the email token** — My Profile → API Tokens → Create Custom Token
+   with only **Email Sending: Edit** on the account. Set on the worker:
+   ```bash
+   npm exec wrangler -- secret put CLOUDFLARE_EMAIL_TOKEN --name kentcdodds-com
+   ```
+   Repeat for `kentcdodds-com-staging` if staging should send real mail (staging
+   normally mocks outbound email via `OutboundProxy`; a placeholder secret is
+   enough for boot).
+3. **Pre-flip verification** — Before domain onboarding completes you can still
+   send to **verified destination addresses** for free. Add
+   `me@kentcdodds.com` as a verified destination, deploy the worker, and
+   trigger a password-reset email from the production `*.workers.dev` URL.
+   Confirm delivery before flipping DNS.
+4. **Deliverability** — New Email Sending accounts start with conservative
+   daily quotas that ramp with reputation. Volume here is low (auth codes,
+   contact form, call notifications), so expect at most a brief warm-up period.
+   Monitor via dash **Email Sending** analytics and bounce notifications.
 
 ### DNS
 

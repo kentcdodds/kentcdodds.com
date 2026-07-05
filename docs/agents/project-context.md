@@ -37,11 +37,11 @@ reference:
 
 - All external APIs are mocked when `MOCKS=true` (the default in dev). The dev
   worker wraps outbound `fetch` with the same mock routes as production's
-  `OutboundProxy` (no MSW in workerd). Signup verification emails are captured
-  to `services/site/mocks/msw.local.json` via the MDX dev-watcher sidecar
-  (`POST /__dev/capture-email` on port 3099) and logged to the dev worker
-  console. No real API keys are needed for local development; `services/site/.env.example`
-  values are sufficient.
+  `OutboundProxy` (no MSW in workerd). Transactional emails (Cloudflare Email
+  Sending) are captured to `services/site/mocks/msw.local.json` via the MDX
+  dev-watcher sidecar (`POST /__dev/capture-email` on port 3099) and logged to
+  the dev worker console. No real API keys are needed for local development;
+  `services/site/.env.example` values are sufficient.
 - This repo uses npm workspaces. Install dependencies from the repository root,
   and run worker/package scripts with `npm run <script> --workspace <name>`.
 - `npm install` runs `prepare`, which installs Husky hooks. Pre-commit formats

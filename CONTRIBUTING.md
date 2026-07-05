@@ -129,8 +129,8 @@ The local D1 database runs via Miniflare; all third party endpoints are mocked
 via the dev worker's outbound fetch wrapper (same routes as production's
 `OutboundProxy`). Unit tests still use MSW in Node via `msw/node`.
 
-Signup verification emails are captured to `services/site/mocks/msw.local.json`
-and logged to the dev worker console.
+Transactional emails (Cloudflare Email Sending) are captured to
+`services/site/mocks/msw.local.json` and logged to the dev worker console.
 
 ## Caching
 
