@@ -185,7 +185,8 @@ describe('handleMediaRequest', () => {
 						: videoBytes
 					return {
 						body: new Blob([slice]).stream(),
-						size: slice.length,
+						// R2 reports the full object size even on ranged reads.
+						size: videoBytes.length,
 						httpMetadata: { contentType: 'video/mp4' },
 						etag: 'etag',
 						arrayBuffer: async () => slice.buffer,
