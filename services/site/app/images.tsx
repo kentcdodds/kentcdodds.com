@@ -1,15 +1,13 @@
-import { type TransformerOption } from '@cld-apis/types'
-import { buildImageUrl, setConfig } from 'cloudinary-build-url'
 import clsx from 'clsx'
 import { type CSSProperties } from 'react'
+import {
+	buildMediaUrl,
+	type MediaTransform,
+} from '#app/utils/media.ts'
 import { optionalTeams, type OptionalTeam } from './utils/misc.ts'
 
-setConfig({
-	cloudName: 'kentcdodds-com',
-})
-
 type ImageBuilder = {
-	(transformations?: TransformerOption): string
+	(transform?: MediaTransform): string
 	alt: string
 	id: string
 	className?: string
@@ -35,8 +33,8 @@ function getImageBuilder(
 	alt: string = '',
 	{ className, style }: { className?: string; style?: CSSProperties } = {},
 ): ImageBuilder {
-	function imageBuilder(transformations?: TransformerOption) {
-		return buildImageUrl(id, { transformations })
+	function imageBuilder(transform?: MediaTransform) {
+		return buildMediaUrl(id, transform)
 	}
 	imageBuilder.alt = alt
 	imageBuilder.id = id
@@ -534,25 +532,33 @@ const images = createImages({
 const kodyProfiles: Record<OptionalTeam, { src: string; alt: string }> = {
 	RED: {
 		src: images.kodyProfileRed({
-			resize: { width: 80, type: 'pad', aspectRatio: '1/1' },
+			width: 80,
+			fit: 'pad',
+			aspectRatio: '1:1',
 		}),
 		alt: images.kodyProfileRed.alt,
 	},
 	BLUE: {
 		src: images.kodyProfileBlue({
-			resize: { width: 80, height: 80, type: 'pad' },
+			width: 80,
+			height: 80,
+			fit: 'pad',
 		}),
 		alt: images.kodyProfileBlue.alt,
 	},
 	YELLOW: {
 		src: images.kodyProfileYellow({
-			resize: { width: 80, height: 80, type: 'pad' },
+			width: 80,
+			height: 80,
+			fit: 'pad',
 		}),
 		alt: images.kodyProfileYellow.alt,
 	},
 	UNKNOWN: {
 		src: images.kodyProfileGray({
-			resize: { width: 80, height: 80, type: 'pad' },
+			width: 80,
+			height: 80,
+			fit: 'pad',
 		}),
 		alt: images.kodyProfileGray.alt,
 	},
@@ -694,16 +700,16 @@ function getImgProps(
 	}: {
 		widths: Array<number>
 		sizes: Array<string>
-		transformations?: TransformerOption
+		transformations?: MediaTransform
 		className?: string
 		style?: CSSProperties
 	},
 ) {
 	const averageSize = Math.ceil(widths.reduce((a, s) => a + s) / widths.length)
-	const aspectRatio = transformations?.resize?.aspectRatio
-		? transformations.resize.aspectRatio.replace(':', '/')
-		: transformations?.resize?.height && transformations.resize.width
-			? `${transformations.resize.width}/${transformations.resize.height}`
+	const aspectRatio = transformations?.aspectRatio
+		? transformations.aspectRatio.replace(':', '/')
+		: transformations?.height && transformations.width
+			? `${transformations.width}/${transformations.height}`
 			: imageBuilder.style?.aspectRatio
 
 	return {
@@ -715,19 +721,15 @@ function getImgProps(
 		className: clsx(imageBuilder.className, className),
 		alt: imageBuilder.alt,
 		src: imageBuilder({
-			quality: 'auto',
-			format: 'auto',
 			...transformations,
-			resize: { width: averageSize, ...transformations?.resize },
+			width: averageSize,
 		}),
 		srcSet: widths
 			.map((width) =>
 				[
 					imageBuilder({
-						quality: 'auto',
-						format: 'auto',
 						...transformations,
-						resize: { width, ...transformations?.resize },
+						width,
 					}),
 					`${width}w`,
 				].join(' '),
@@ -738,7 +740,6 @@ function getImgProps(
 	} as const
 }
 
-// cloudinary needs double-encoding (legacy)
 const kodyImages = {
 	profile: kodyProfileImages,
 	snowboarding: kodySnowboardingImages,
