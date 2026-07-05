@@ -196,7 +196,7 @@ The dynamic worker is created with `globalOutbound` pointing at the parent's
    (avoids CF error 1042 on worker-to-worker `*.workers.dev` calls).
 2. **Mocks** — Mailgun, Discord, Kit, Verifier get inline mock responses (same
    shapes as MSW mocks in `services/site/mocks/`).
-3. **Passthrough** — everything else (Cloudinary, GitHub raw, Transistor,
+3. **Passthrough** — everything else (GitHub raw, Transistor,
    Simplecast, oEmbed providers, Twitter/X API hosts) uses global `fetch`.
 
 `mermaid-to-svg.kentcdodds.workers.dev` is compile-time only (not fetched at
@@ -243,6 +243,40 @@ Without those scripts, `HydratedRouter` never finishes decoding state,
 `fetcher.Form` submit handlers never attach, and forms like the theme toggle
 fall through to native full-page POSTs. Verify with curl: HTML must contain
 `streamController.enqueue` (7 inline scripts on the homepage).
+
+## Media serving (Cloudinary replaced)
+
+All photos/illustrations/video live in the pre-existing `kentcdodds-com` R2
+bucket, keyed by their legacy Cloudinary public IDs (some hand-copied assets
+use prefix-stripped keys; `mediaKeyCandidates` in
+`services/site/app/utils/media.ts` tries both). The parent worker serves them
+at `/media/<transform-segment>/<id>` (`services/site-worker/src/media.ts` +
+shared `services/site/app/utils/media-serving.server.ts`):
+
+- **Transforms** run through the Workers `images` binding (`IMAGES`):
+  width/height/aspect-ratio, `fit` (cover/contain/pad/scale-down), `gravity`
+  (`auto` saliency — the binding has **no face gravity**; legacy Cloudinary
+  face crops map to `auto`), background fill, blur (LQIP), quality.
+- **Format negotiation**: `f_auto` (default) serves AVIF/WebP by `Accept`
+  header. The Workers Cache API ignores `Vary`, so the Accept class
+  (avif/webp/base) is baked into the edge-cache key (`__accept` param).
+- **SVG masters pass through untouched** (binding cannot rasterize SVG).
+- **Video** (mp4 detected by content type/extension/magic) streams original
+  bytes with `Range` support; transforms are ignored.
+- **Input limit**: the binding fails on inputs over ~20 MiB
+  ("Network connection lost"); `migrate-cloudinary-to-r2.mjs
+  --normalize-oversized` re-encoded such masters to ≤4096px.
+- **Edge cache**: `caches.default`, 1-year immutable; media is excluded from
+  dynamic rate limiting (asset tier).
+- URL building in the app goes exclusively through `buildMediaUrl` /
+  `getImgProps` (`app/images.tsx`); `bannerCloudinaryId` frontmatter and
+  `cloudinaryId` YAML/MDX prop names are retained as content contracts.
+- OG rendering resolves R2 assets directly via the `MEDIA_BUCKET` + `IMAGES`
+  bindings (no HTTP hop); Node scripts and dev fall back to the deployed
+  `/media` endpoint (production → staging until first main deploy).
+- In dev, missing local objects proxy from the deployed endpoint; transformed
+  variants are proxied whole because the local miniflare images binding is
+  low-fidelity (letterboxes instead of cover-cropping).
 
 ## Scheduled tasks (crons)
 
