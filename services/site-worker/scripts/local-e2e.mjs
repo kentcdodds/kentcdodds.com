@@ -41,7 +41,7 @@ async function ensureAssetsDirectory() {
 const localDevSecrets = {
 	NODE_ENV: 'production',
 	MOCKS: 'true',
-	DATABASE_URL: 'file:./prisma/sqlite.db',
+	DATABASE_URL: 'file:./.data/sqlite.db',
 	CALL_KENT_PODCAST_ID: 'call-kent',
 	CHATS_WITH_KENT_PODCAST_ID: 'chats-with-kent',
 	KIT_API_KEY: 'kit-key',

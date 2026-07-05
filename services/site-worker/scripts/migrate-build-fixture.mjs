@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 /**
  * Inflates a seeded local SQLite DB with realistic volume for migration testing.
- * Run after `prisma migrate reset --force` in services/site.
+ * Run after applying SQL migrations to a fresh SQLite database.
  */
 import { randomBytes, randomUUID } from 'node:crypto'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import BetterSqlite3 from 'better-sqlite3'
-
-const scriptDir = path.dirname(fileURLToPath(import.meta.url))
-const defaultDbPath = path.resolve(scriptDir, '../../site/prisma/sqlite.db')
+import { getDefaultSqliteDbPath } from '../../site/scripts/lib/apply-sql-migrations.mjs'
 
 const TARGET_USERS = 500
 const TARGET_SESSIONS = 200
@@ -18,6 +15,8 @@ const TARGET_FAVORITES = 800
 const TARGET_HOMEWORK = 400
 const TARGET_CALLS = 12
 const TARGET_VERIFICATIONS = 30
+
+const defaultDbPath = getDefaultSqliteDbPath()
 
 function parseArgs(argv) {
 	const options = { dbPath: defaultDbPath }

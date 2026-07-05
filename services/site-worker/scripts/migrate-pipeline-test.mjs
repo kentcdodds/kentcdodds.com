@@ -10,12 +10,13 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import BetterSqlite3 from 'better-sqlite3'
+import { getDefaultSqliteDbPath } from '../../site/scripts/lib/apply-sql-migrations.mjs'
+import { resetSqliteDatabase } from './reset-sqlite-db.mjs'
 
 const workerDir = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
 	'..',
 )
-const siteDir = path.resolve(workerDir, '../site')
 const SCRATCH_DB_NAME = 'kcd-migration-test-db'
 const BINDING = 'APP_DB'
 
@@ -87,7 +88,7 @@ function run(command, args, { cwd = workerDir, env = process.env } = {}) {
 }
 
 async function writeScratchWranglerConfig(databaseId, configPath) {
-	const migrationsDir = path.join(workerDir, '.wrangler/site-prisma-migrations')
+	const migrationsDir = path.resolve(workerDir, '../site/migrations')
 	const config = {
 		$schema: path.join(workerDir, 'node_modules/wrangler/config-schema.json'),
 		name: 'kcd-migration-test',
@@ -178,23 +179,10 @@ async function main() {
 		throw new Error('CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are required')
 	}
 
-	const sqlitePath = path.join(siteDir, 'prisma/sqlite.db')
-	const configDir = await mkdtemp(path.join(os.tmpdir(), 'kcd-migrate-config-'))
-	const configPath = path.join(configDir, 'wrangler.json')
+	const sqlitePath = getDefaultSqliteDbPath()
 
-	console.log('=== Step 1: Reset + seed local SQLite ===')
-	run(
-		'npx',
-		['prisma', 'migrate', 'reset', '--force'],
-		{
-			cwd: siteDir,
-			env: {
-				...process.env,
-				PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION:
-					'Yes, run migration pipeline test even if it triggers prisma reset',
-			},
-		},
-	)
+	console.log('=== Step 1: Reset local SQLite with SQL migrations ===')
+	resetSqliteDatabase(sqlitePath)
 
 	console.log('=== Step 2: Inflate fixture ===')
 	run('node', ['./scripts/migrate-build-fixture.mjs', '--db', sqlitePath])
@@ -207,11 +195,13 @@ async function main() {
 	const snapshotTime = isoNow()
 	console.log(`Snapshot time (for --since): ${snapshotTime}`)
 
+	const configDir = await mkdtemp(path.join(os.tmpdir(), 'kcd-migrate-config-'))
+	const configPath = path.join(configDir, 'wrangler.json')
+
 	console.log('=== Step 3: Create scratch D1 + apply migrations ===')
 	const databaseId = await ensureScratchDatabase()
 	await writeScratchWranglerConfig(databaseId, configPath)
 
-	run('node', ['./scripts/prepare-d1-migrations.mjs'])
 	run('npm', [
 		'exec',
 		'wrangler',
