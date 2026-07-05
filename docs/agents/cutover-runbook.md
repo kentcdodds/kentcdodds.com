@@ -82,6 +82,13 @@ the flip.
       is expected) and `wrangler secret list` on `kentcdodds-com` shows all the
       names above.
 
+Notes (2026-07-05): `OG_IMAGE_SECRET` is already set on `kentcdodds-com` (a
+random value; the one-liner regenerates it, which is fine — signed OG URLs are
+minted per-render). **The full app env schema is validated on every dynamic
+request** — a missing required secret 500s the entire site, so after any
+schema change to `env.server.ts`, cross-check `wrangler secret list` against
+the required keys before/after deploying.
+
 ### DNS
 
 - [ ] `kentcdodds.com` zone is on Cloudflare (zone id
