@@ -4,44 +4,74 @@ import { getEnv } from '#app/utils/env.server.ts'
 import { markdownToHtmlDocument } from './markdown.server.ts'
 import { getOptionalTeam } from './misc.ts'
 
-const {
-	MAILGUN_DOMAIN: mailgunDomain,
-	MAILGUN_SENDING_KEY: mailgunSendingKey,
-} = getEnv()
-
-type MailgunMessage = {
+type EmailMessage = {
 	to: string
 	from: string
 	subject: string
 	text: string
 	html?: string | null
+	/**
+	 * Where replies should go when it differs from `from`. Cloudflare Email
+	 * Sending enforces that `from` is on the onboarded domain, so e.g. the
+	 * contact form sends from our own address with the visitor in `replyTo`.
+	 */
+	replyTo?: string
 }
 
-async function sendEmail({ to, from, subject, text, html }: MailgunMessage) {
-	const auth = `${Buffer.from(`api:${mailgunSendingKey}`).toString('base64')}`
+/**
+ * Sends via Cloudflare Email Service (Email Sending REST API).
+ * https://developers.cloudflare.com/email-service/api/send-emails/rest-api/
+ */
+async function sendEmail({
+	to,
+	from,
+	subject,
+	text,
+	html,
+	replyTo,
+}: EmailMessage) {
+	const { CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_EMAIL_TOKEN } = getEnv()
 
-	// if they didn't specify it and it's not
 	if (html === undefined) {
 		html = await markdownToHtmlDocument(text)
 	} else if (html === null) {
 		html = text
 	}
 
-	const body = new URLSearchParams({
-		to,
-		from,
-		subject,
-		text,
-		html,
-	})
-
-	await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
-		method: 'POST',
-		body,
-		headers: {
-			Authorization: `Basic ${auth}`,
+	const response = await fetch(
+		`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/email/sending/send`,
+		{
+			method: 'POST',
+			headers: {
+				authorization: `Bearer ${CLOUDFLARE_EMAIL_TOKEN}`,
+				'content-type': 'application/json',
+			},
+			body: JSON.stringify({
+				to,
+				from,
+				subject,
+				text,
+				html,
+				...(replyTo ? { reply_to: replyTo } : {}),
+			}),
 		},
-	})
+	)
+
+	if (!response.ok) {
+		const body = await response.text().catch(() => '<unreadable>')
+		console.error(
+			`Email send failed (${response.status}) to=${to} subject=${JSON.stringify(subject)}: ${body.slice(0, 500)}`,
+		)
+		throw new Error(`Email send failed with status ${response.status}`)
+	}
+
+	const result = (await response.json().catch(() => null)) as {
+		result?: { permanent_bounces?: Array<string> }
+	} | null
+	const bounces = result?.result?.permanent_bounces ?? []
+	if (bounces.length > 0) {
+		console.warn(`Email permanently bounced for: ${bounces.join(', ')}`)
+	}
 }
 
 async function sendVerificationCodeEmail({

@@ -44,8 +44,6 @@ const schemaBase = z.object({
 	DISCORD_SCOPES: nonEmptyString,
 	DISCORD_YELLOW_CHANNEL: nonEmptyString,
 	DISCORD_YELLOW_ROLE: nonEmptyString,
-	MAILGUN_DOMAIN: nonEmptyString,
-	MAILGUN_SENDING_KEY: nonEmptyString,
 	REFRESH_CACHE_SECRET: nonEmptyString,
 	OG_IMAGE_SECRET: nonEmptyString,
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
@@ -67,6 +65,8 @@ const schemaBase = z.object({
 
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
 	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,
+	/** Dedicated token with only Email Sending Edit (not CLOUDFLARE_API_TOKEN). */
+	CLOUDFLARE_EMAIL_TOKEN: nonEmptyString,
 	CLOUDFLARE_API_TOKEN: nonEmptyString,
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,

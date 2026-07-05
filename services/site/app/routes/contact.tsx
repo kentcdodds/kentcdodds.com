@@ -62,17 +62,18 @@ export async function action({ request }: Route.ActionArgs) {
 		handleFormValues: async (fields) => {
 			const { subject, body } = fields
 
-			const sender = `"${user.firstName}" <${user.email}>`
-
 			// this bit is included so I can have a filter that ensures
 			// messages sent from the contact form never end up in spam.
 			const noSpamMessage = '- Sent via the KCD Contact Form'
 
+			// Cloudflare Email Sending requires `from` to be on our domain, so
+			// the visitor's address goes in replyTo (replying still works).
 			await sendEmail({
-				from: sender,
+				from: `"${user.firstName} (via KCD contact form)" <contact@kentcdodds.com>`,
+				replyTo: `"${user.firstName}" <${user.email}>`,
 				to: `"Kent C. Dodds" <me@kentcdodds.com>`,
 				subject,
-				text: `${body}\n\n${noSpamMessage}`,
+				text: `${body}\n\nFrom: ${user.firstName} <${user.email}>\n${noSpamMessage}`,
 			})
 
 			const actionData: ActionData = { fields, status: 'success', errors: {} }
