@@ -626,7 +626,9 @@ export async function serveMediaRequest(
 			// Proxy the fully-transformed asset. The local (miniflare) Images
 			// binding is a low-fidelity simulator (e.g. `fit: cover` letterboxes
 			// instead of cropping), so remote transforms keep dev output
-			// faithful to production.
+			// faithful to production. Buffer the body: streaming a remote
+			// response through workerd can abort mid-flight under parallel
+			// image load, which surfaces as a dev-server "fetch failed" 500.
 			await fallbackResponse.body.cancel()
 			const transformedUrl = buildMediaUrl(parsed.id, parsed.transform, {
 				origin: fallbackOrigin,
@@ -637,38 +639,57 @@ export async function serveMediaRequest(
 					: undefined,
 			})
 			if (!transformedResponse.ok) return notFoundMediaResponse()
-			const headers = new Headers(transformedResponse.headers)
-			headers.set('cache-control', MEDIA_CACHE_CONTROL_IMMUTABLE)
+			const bytes = await transformedResponse.arrayBuffer()
+			const headers = new Headers({
+				'content-type':
+					transformedResponse.headers.get('content-type') ??
+					'application/octet-stream',
+				'content-length': String(bytes.byteLength),
+				'cache-control': MEDIA_CACHE_CONTROL_IMMUTABLE,
+			})
+			const vary = transformedResponse.headers.get('vary')
+			if (vary) headers.set('vary', vary)
+			if (request.method === 'HEAD') {
+				return new Response(null, { status: 200, headers })
+			}
+			return new Response(bytes, { status: 200, headers })
+		}
+
+		const contentType =
+			fallbackResponse.headers.get('content-type') ?? undefined
+		const isVideo = isVideoContent({ contentType, id: parsed.id })
+		if (isVideo) {
+			// Stream video (potentially large) but drop upstream framing
+			// headers; the runtime re-frames the proxied stream itself.
+			const headers = new Headers({
+				'cache-control': MEDIA_CACHE_CONTROL_IMMUTABLE,
+				'accept-ranges': 'bytes',
+			})
+			if (contentType) headers.set('content-type', contentType)
+			const contentRange = fallbackResponse.headers.get('content-range')
+			if (contentRange) headers.set('content-range', contentRange)
 			if (request.method === 'HEAD') {
 				return new Response(null, {
-					status: transformedResponse.status,
+					status: fallbackResponse.status,
 					headers,
 				})
 			}
-			return new Response(transformedResponse.body, {
-				status: transformedResponse.status,
-				headers,
-			})
-		}
-
-		const source: MediaObjectSource = {
-			body: fallbackResponse.body,
-			size: Number(fallbackResponse.headers.get('content-length') ?? 0) || undefined,
-			contentType: fallbackResponse.headers.get('content-type') ?? undefined,
-		}
-
-		const headers = new Headers(fallbackResponse.headers)
-		headers.set('cache-control', MEDIA_CACHE_CONTROL_IMMUTABLE)
-		if (request.method === 'HEAD') {
-			return new Response(null, {
+			return new Response(fallbackResponse.body, {
 				status: fallbackResponse.status,
 				headers,
 			})
 		}
-		return new Response(fallbackResponse.body, {
-			status: fallbackResponse.status,
-			headers,
+
+		const bytes = await fallbackResponse.arrayBuffer()
+		const headers = new Headers({
+			'content-type': contentType ?? 'application/octet-stream',
+			'content-length': String(bytes.byteLength),
+			'cache-control': MEDIA_CACHE_CONTROL_IMMUTABLE,
 		})
+		if (request.method === 'HEAD') {
+			return new Response(null, { status: 200, headers })
+		}
+		return new Response(bytes, { status: 200, headers })
 	}
 
 	return notFoundMediaResponse()
