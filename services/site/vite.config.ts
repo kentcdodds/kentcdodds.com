@@ -121,6 +121,11 @@ export default defineConfig(async ({ command }) => {
 						'downshift',
 						'date-fns',
 						'@reach/dialog',
+						'@reach/tabs',
+						'@reach/checkbox',
+						'@radix-ui/react-tooltip',
+						'react-lite-youtube-embed',
+						'match-sorter',
 						'@epic-web/invariant',
 					],
 				}
