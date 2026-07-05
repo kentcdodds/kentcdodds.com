@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
 import {
 	buildImageTransformOptions,
+	getMediaCacheKey,
 	isMp4Magic,
 	isVideoContent,
 	mapMediaGravity,
@@ -166,5 +167,37 @@ describe('handleMediaRequest', () => {
 			{ waitUntil: vi.fn() } as unknown as ExecutionContext,
 		)
 		expect(response.status).toBe(400)
+	})
+})
+
+describe('getMediaCacheKey', () => {
+	// The Workers Cache API ignores Vary, so the Accept class must be
+	// encoded into the cache-key URL for format-negotiated transforms.
+	test('separates avif, webp, and base Accept classes', () => {
+		const transform = { width: 800 }
+		const keyFor = (accept?: string) =>
+			getMediaCacheKey(
+				new Request('https://example.com/media/w_800/kent/profile', {
+					headers: accept ? { Accept: accept } : undefined,
+				}),
+				transform,
+			).url
+		const avif = keyFor('image/avif,image/webp,*/*')
+		const webp = keyFor('image/webp,*/*')
+		const base = keyFor('*/*')
+		expect(avif).toContain('__accept=avif')
+		expect(webp).toContain('__accept=webp')
+		expect(base).toContain('__accept=base')
+		expect(new Set([avif, webp, base]).size).toBe(3)
+	})
+
+	test('does not vary the key when format is explicit', () => {
+		const key = getMediaCacheKey(
+			new Request('https://example.com/media/w_100,f_webp/kent/profile', {
+				headers: { Accept: 'image/avif' },
+			}),
+			{ width: 100, format: 'webp' },
+		)
+		expect(key.url).not.toContain('__accept')
 	})
 })

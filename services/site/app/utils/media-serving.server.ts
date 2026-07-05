@@ -500,14 +500,27 @@ export function needsFormatNegotiation(transform: MediaTransform | undefined) {
 	return !format || format === 'auto'
 }
 
+/**
+ * The Workers Cache API does not honor `Vary: Accept`, so the negotiated
+ * format class must be part of the cache-key URL itself. All clients within
+ * the same Accept class (avif > webp > base) share one cached variant.
+ */
+export function getMediaAcceptClass(acceptHeader: string | null) {
+	if (acceptPrefers(acceptHeader, 'image/avif')) return 'avif'
+	if (acceptPrefers(acceptHeader, 'image/webp')) return 'webp'
+	return 'base'
+}
+
 export function getMediaCacheKey(request: Request, transform: MediaTransform | undefined) {
-	if (!needsFormatNegotiation(transform)) return request
-	const accept = request.headers.get('Accept')
-	if (!accept) return request
-	return new Request(request.url, {
-		method: 'GET',
-		headers: { Accept: accept },
-	})
+	if (!needsFormatNegotiation(transform)) {
+		return new Request(request.url, { method: 'GET' })
+	}
+	const url = new URL(request.url)
+	url.searchParams.set(
+		'__accept',
+		getMediaAcceptClass(request.headers.get('Accept')),
+	)
+	return new Request(url.toString(), { method: 'GET' })
 }
 
 export type ServeMediaRequestOptions = {
