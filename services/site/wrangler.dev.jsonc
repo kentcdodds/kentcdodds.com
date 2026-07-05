@@ -31,6 +31,16 @@
 			"id": "local-dev-content-kv"
 		}
 	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA_BUCKET",
+			"bucket_name": "kentcdodds-com-dev-media",
+			"preview_bucket_name": "kentcdodds-com-dev-media"
+		}
+	],
+	"images": {
+		"binding": "IMAGES"
+	},
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "./public"

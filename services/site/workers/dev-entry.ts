@@ -53,6 +53,8 @@ import {
 	createRateLimitedResponse,
 	getAgentSearchHintHeaders,
 } from '../../site-worker/src/dynamic/rate-limiting.ts'
+import { handleMediaRequest } from '../../site-worker/src/media.ts'
+import { PRODUCTION_MEDIA_ORIGIN } from '#app/utils/media-serving.server.ts'
 
 if (import.meta.hot) {
 	import.meta.hot.accept()
@@ -284,13 +286,29 @@ type PreRouterResult = {
 	rateLimit: RateLimitResult | null
 }
 
+async function handleDevMediaRequest(
+	request: Request,
+	env: WorkerEnv,
+	ctx: ExecutionContext,
+) {
+	return handleMediaRequest(request, env as never, ctx, {
+		fallbackOrigin: PRODUCTION_MEDIA_ORIGIN,
+	})
+}
+
 async function runPreRouterPipeline(
 	request: Request,
 	env: WorkerEnv,
+	ctx: ExecutionContext,
 ): Promise<PreRouterResult> {
 	const url = new URL(request.url)
 	const host = getHost(request)
 	const proto = request.headers.get('X-Forwarded-Proto') ?? 'https'
+
+	if (url.pathname.startsWith('/media/')) {
+		const response = await handleDevMediaRequest(request, env, ctx)
+		return { response, rateLimit: null }
+	}
 
 	if (url.pathname === '/resources/og-image') {
 		const response = await handleOgImageRequest(request, env)
@@ -464,7 +482,7 @@ async function handleSiteRequest(
 	try {
 		await ensureRuntimeBridges(env)
 		return await runWithD1RequestContext(request, async () => {
-			const preRouter = await runPreRouterPipeline(request, env)
+			const preRouter = await runPreRouterPipeline(request, env, ctx)
 			const preRouterResponse = preRouter.response
 			if (preRouterResponse) {
 				const headers = new Headers(preRouterResponse.headers)
