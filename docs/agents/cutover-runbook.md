@@ -13,7 +13,7 @@ Ordered procedure for hard cutover of **kentcdodds.com** from the Fly.io app (`k
 ### Infrastructure
 
 - [ ] Production worker deployed and healthy (`kentcdodds-com` on `*.kentcdodds.workers.dev`).
-- [ ] D1 `kentcdodds-com-db` (`af33bd8b-c9b2-484a-afa5-43ee322ff49c`) has all Prisma migrations applied:
+- [ ] D1 `kentcdodds-com-db` (`af33bd8b-c9b2-484a-afa5-43ee322ff49c`) has all SQL migrations applied (CI applies them on every deploy; manual command:)
   ```bash
   npm run d1:migrations:apply:production --workspace site-worker
   ```
@@ -23,8 +23,64 @@ Ordered procedure for hard cutover of **kentcdodds.com** from the Fly.io app (`k
 
 ### Secrets
 
-- [ ] All production secrets uploaded to the worker (not derived fallbacks). The deploy pipeline warns when fallbacks are in use — resolve every warning before cutover.
-- [ ] `REFRESH_CACHE_SECRET`, OAuth, search, Mailgun, etc. match Fly production values.
+The deploy pipeline provides infra secrets (R2 keys, AI gateway, search worker,
+Transistor/Simplecast, podcast IDs, `REFRESH_CACHE_SECRET`) from GitHub Actions
+secrets on every deploy. The **integration secrets** below are intentionally
+NOT emitted by CI for the production target (so `wrangler secret bulk` never
+clobbers them) and must be set directly on the worker **once**, copied from
+Fly. `SESSION_SECRET` must match Fly exactly or all sessions/magic-links die at
+the flip.
+
+- [ ] Create a Cloudflare API token with the single permission
+      **Account → Workers Scripts → Edit** (dash → My Profile → API Tokens →
+      Create Custom Token).
+- [ ] From a Fly SSH session (`fly ssh console -a kcd`), where all the values
+      are already in the environment, run:
+
+  ```bash
+  CF_TOKEN=<paste-token> node -e '
+  const account = "a41d50ecaf0ae0f86dd1824ef6729cb2"
+  const script = "kentcdodds-com"
+  const names = [
+    "SESSION_SECRET", "CF_INTERNAL_SECRET",
+    "DISCORD_ADMIN_USER_ID", "DISCORD_BLUE_CHANNEL", "DISCORD_BLUE_ROLE",
+    "DISCORD_BOT_TOKEN", "DISCORD_CALL_KENT_CHANNEL", "DISCORD_CLIENT_ID",
+    "DISCORD_CLIENT_SECRET", "DISCORD_GUILD_ID", "DISCORD_LEADERBOARD_CHANNEL",
+    "DISCORD_MEMBER_ROLE", "DISCORD_PRIVATE_BOT_CHANNEL", "DISCORD_RED_CHANNEL",
+    "DISCORD_RED_ROLE", "DISCORD_YELLOW_CHANNEL", "DISCORD_YELLOW_ROLE",
+    "MAILGUN_SENDING_KEY", "MAILGUN_DOMAIN",
+    "KIT_API_KEY", "KIT_API_SECRET",
+    "TWITTER_BEARER_TOKEN", "VERIFIER_API_KEY",
+  ]
+  const values = Object.fromEntries(names.map((n) => [n, process.env[n]]))
+  // OG_IMAGE_SECRET is new (not on Fly): generate a fresh random value.
+  values.OG_IMAGE_SECRET = require("crypto").randomBytes(32).toString("hex")
+  ;(async () => {
+    for (const [name, text] of Object.entries(values)) {
+      if (!text) { console.error("MISSING: " + name); continue }
+      const res = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${account}/workers/scripts/${script}/secrets`,
+        {
+          method: "PUT",
+          headers: {
+            authorization: `Bearer ${process.env.CF_TOKEN}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ name, text, type: "secret_text" }),
+        },
+      )
+      const json = await res.json()
+      console.log(name, json.success ? "ok" : JSON.stringify(json.errors))
+    }
+  })()'
+  ```
+
+- [ ] Every line prints `ok` (any `MISSING:` line means that var is not in the
+      Fly env under that name — copy it manually).
+- [ ] Revoke the token afterwards.
+- [ ] Verify: the next production deploy prints the omitted-keys notice (that
+      is expected) and `wrangler secret list` on `kentcdodds-com` shows all the
+      names above.
 
 ### DNS
 
@@ -150,8 +206,14 @@ npm run migrate:sqlite-to-d1 -- \
   --source /path/to/migrate-snapshot-*.db \
   --database APP_DB \
   --config ./generated-wrangler.jsonc \
+  --reset \
   --verify
 ```
+
+**`--reset` wipes all rows from the app tables first** (child-first, FK-safe)
+so seeded/test data — including the seeded admin with a known password — does
+not survive into production. With `--reset`, `--verify`'s count comparison is
+an exact-equality proof. Never combine with `--since` (the script refuses).
 
 **Idempotence:** uses `INSERT … ON CONFLICT … DO UPDATE` (not `INSERT OR REPLACE`) so parent-row updates do not CASCADE-delete children. Re-runs converge safely.
 

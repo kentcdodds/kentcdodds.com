@@ -176,12 +176,9 @@ jobs:
       - name: 🗄️ Apply D1 migrations (remote)
         run: |
           if [ "$DEPLOY_TARGET" = "production" ]; then
-            MIGRATE_CMD="npm run d1:migrations:apply:production --workspace site-worker"
+            npm run d1:migrations:apply:production --workspace site-worker
           else
-            MIGRATE_CMD="npm run d1:migrations:apply:staging --workspace site-worker"
-          fi
-          if ! $MIGRATE_CMD; then
-            echo "::warning::D1 migrations failed — the CI token likely lacks D1 permissions. Apply migrations manually with a privileged token (see docs/agents/cloudflare-worker-architecture.md)."
+            npm run d1:migrations:apply:staging --workspace site-worker
           fi
 
       - name: 🚀 Deploy worker

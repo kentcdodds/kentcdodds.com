@@ -28,6 +28,10 @@ Options:
   --config <path>       Wrangler config (default: generated-wrangler.jsonc)
   --local               Target local Miniflare D1 instead of remote
   --since <ISO-8601>    Incremental backfill: rows created/updated after timestamp
+  --reset               Delete ALL rows from the selected tables in D1 before
+                        importing (FK-safe child-first order). Use for the
+                        one-shot cutover so seeded/test data does not survive.
+                        Refused together with --since.
   --tables <csv>        Comma-separated subset of tables (default: all 11 app tables)
   --where <sql>         Extra AND clause applied to every selected table
   --table-where <t=sql> Per-table extra WHERE (repeatable), e.g. --table-where User="role='ADMIN'"
@@ -85,6 +89,9 @@ function parseArgs(argv) {
 				options.tableWhere.set(table, clause)
 				break
 			}
+			case '--reset':
+				options.reset = true
+				break
 			case '--verify':
 				options.verify = true
 				break
@@ -321,6 +328,12 @@ async function main() {
 	options.rowsPerStatement ??= 500
 	options.statementsPerFile ??= 50
 
+	if (options.reset && options.since) {
+		throw new Error(
+			'--reset and --since are mutually exclusive (a backfill must not wipe rows)',
+		)
+	}
+
 	const sourcePath = path.resolve(options.source)
 	const db = new BetterSqlite3(sourcePath, { readonly: true })
 
@@ -343,6 +356,23 @@ async function main() {
 	console.log(`Chunk dir: ${chunkDir}`)
 
 	try {
+		if (options.reset && !options.dryRun) {
+			// Child-first (reverse FK-safe insert order) so deletes never trip
+			// foreign keys; removes seeded/test rows so only source data remains.
+			const deleteOrder = [...MIGRATION_TABLES]
+				.reverse()
+				.filter((tableName) => options.tables.includes(tableName))
+			console.log(`\nResetting D1 tables: ${deleteOrder.join(', ')}`)
+			const resetSql = deleteOrder
+				.map((tableName) => `DELETE FROM "${tableName}";`)
+				.join('\n')
+			runWranglerExecute(resetSql, {
+				database: options.database,
+				config: options.config,
+				local: options.local,
+			})
+		}
+
 		for (const tableName of options.tables) {
 			await migrateTable({ db, tableName, options, stats, chunkDir })
 		}

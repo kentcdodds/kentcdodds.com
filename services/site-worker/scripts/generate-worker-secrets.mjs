@@ -26,9 +26,71 @@ function deriveOrEnv(key, label, refreshCacheSecret, derivedFallbacks) {
 	return deriveSecret(label, refreshCacheSecret)
 }
 
+/**
+ * Real-integration secrets (Fly-parity values like Discord/Mailgun keys and
+ * SESSION_SECRET). On staging a derived placeholder keeps the worker booting.
+ * On production we NEVER emit a derived fallback: these are set directly on
+ * the worker (see the cutover runbook), and emitting a fallback here would
+ * make every deploy's `wrangler secret bulk` clobber the real values.
+ */
+function integrationSecret({
+	key,
+	target,
+	secretPrefix,
+	refreshCacheSecret,
+	omittedForProduction,
+	staticStagingValue,
+}) {
+	const fromEnv = process.env[key]
+	if (typeof fromEnv === 'string' && fromEnv.trim()) return fromEnv.trim()
+	if (target === 'production') {
+		omittedForProduction.push(key)
+		return undefined
+	}
+	if (staticStagingValue !== undefined) return staticStagingValue
+	return deriveSecret(`${secretPrefix}${key}`, refreshCacheSecret)
+}
+
+/**
+ * Secrets that must hold real Fly-parity integration values in production.
+ * `SESSION_SECRET` in particular must match Fly's value so sessions survive
+ * the cutover.
+ */
+const INTEGRATION_SECRET_KEYS = [
+	'SESSION_SECRET',
+	'CF_INTERNAL_SECRET',
+	'DISCORD_ADMIN_USER_ID',
+	'DISCORD_BLUE_CHANNEL',
+	'DISCORD_BLUE_ROLE',
+	'DISCORD_BOT_TOKEN',
+	'DISCORD_CALL_KENT_CHANNEL',
+	'DISCORD_CLIENT_ID',
+	'DISCORD_CLIENT_SECRET',
+	'DISCORD_GUILD_ID',
+	'DISCORD_LEADERBOARD_CHANNEL',
+	'DISCORD_MEMBER_ROLE',
+	'DISCORD_PRIVATE_BOT_CHANNEL',
+	'DISCORD_RED_CHANNEL',
+	'DISCORD_RED_ROLE',
+	'DISCORD_YELLOW_CHANNEL',
+	'DISCORD_YELLOW_ROLE',
+	'MAILGUN_SENDING_KEY',
+	'MAILGUN_DOMAIN',
+	'KIT_API_KEY',
+	'KIT_API_SECRET',
+	'TWITTER_BEARER_TOKEN',
+	'VERIFIER_API_KEY',
+	'OG_IMAGE_SECRET',
+]
+
+const STATIC_STAGING_VALUES = {
+	MAILGUN_DOMAIN: 'preview.example.com',
+}
+
 async function main() {
 	const target = parseTarget()
 	const derivedFallbacks = []
+	const omittedForProduction = []
 
 	const refreshCacheSecret = process.env.REFRESH_CACHE_SECRET
 	if (!refreshCacheSecret) {
@@ -37,7 +99,21 @@ async function main() {
 
 	const accountId = process.env.CLOUDFLARE_ACCOUNT_ID ?? 'preview-account'
 	const secretPrefix = `${target}:`
+	const integrationSecrets = {}
+	for (const key of INTEGRATION_SECRET_KEYS) {
+		const value = integrationSecret({
+			key,
+			target,
+			secretPrefix,
+			refreshCacheSecret,
+			omittedForProduction,
+			staticStagingValue: STATIC_STAGING_VALUES[key],
+		})
+		if (value !== undefined) integrationSecrets[key] = value
+	}
+
 	const secrets = {
+		...integrationSecrets,
 		NODE_ENV: 'production',
 		MOCKS: 'false',
 		DATABASE_URL: 'file:./preview.db',
@@ -60,101 +136,8 @@ async function main() {
 			refreshCacheSecret,
 			derivedFallbacks,
 		),
-		SESSION_SECRET: deriveSecret(
-			`${secretPrefix}SESSION_SECRET`,
-			refreshCacheSecret,
-		),
-		CF_INTERNAL_SECRET: deriveSecret(
-			`${secretPrefix}CF_INTERNAL_SECRET`,
-			refreshCacheSecret,
-		),
-		DISCORD_ADMIN_USER_ID: deriveSecret(
-			`${secretPrefix}DISCORD_ADMIN_USER_ID`,
-			refreshCacheSecret,
-		),
-		DISCORD_BLUE_CHANNEL: deriveSecret(
-			`${secretPrefix}DISCORD_BLUE_CHANNEL`,
-			refreshCacheSecret,
-		),
-		DISCORD_BLUE_ROLE: deriveSecret(
-			`${secretPrefix}DISCORD_BLUE_ROLE`,
-			refreshCacheSecret,
-		),
-		DISCORD_BOT_TOKEN: deriveSecret(
-			`${secretPrefix}DISCORD_BOT_TOKEN`,
-			refreshCacheSecret,
-		),
-		DISCORD_CALL_KENT_CHANNEL: deriveSecret(
-			`${secretPrefix}DISCORD_CALL_KENT_CHANNEL`,
-			refreshCacheSecret,
-		),
-		DISCORD_CLIENT_ID: deriveSecret(
-			`${secretPrefix}DISCORD_CLIENT_ID`,
-			refreshCacheSecret,
-		),
-		DISCORD_CLIENT_SECRET: deriveSecret(
-			`${secretPrefix}DISCORD_CLIENT_SECRET`,
-			refreshCacheSecret,
-		),
-		DISCORD_GUILD_ID: deriveSecret(
-			`${secretPrefix}DISCORD_GUILD_ID`,
-			refreshCacheSecret,
-		),
-		DISCORD_LEADERBOARD_CHANNEL: deriveSecret(
-			`${secretPrefix}DISCORD_LEADERBOARD_CHANNEL`,
-			refreshCacheSecret,
-		),
-		DISCORD_MEMBER_ROLE: deriveSecret(
-			`${secretPrefix}DISCORD_MEMBER_ROLE`,
-			refreshCacheSecret,
-		),
-		DISCORD_PRIVATE_BOT_CHANNEL: deriveSecret(
-			`${secretPrefix}DISCORD_PRIVATE_BOT_CHANNEL`,
-			refreshCacheSecret,
-		),
-		DISCORD_RED_CHANNEL: deriveSecret(
-			`${secretPrefix}DISCORD_RED_CHANNEL`,
-			refreshCacheSecret,
-		),
-		DISCORD_RED_ROLE: deriveSecret(
-			`${secretPrefix}DISCORD_RED_ROLE`,
-			refreshCacheSecret,
-		),
 		DISCORD_SCOPES: 'identify email',
-		DISCORD_YELLOW_CHANNEL: deriveSecret(
-			`${secretPrefix}DISCORD_YELLOW_CHANNEL`,
-			refreshCacheSecret,
-		),
-		DISCORD_YELLOW_ROLE: deriveSecret(
-			`${secretPrefix}DISCORD_YELLOW_ROLE`,
-			refreshCacheSecret,
-		),
-		MAILGUN_DOMAIN: 'preview.example.com',
-		MAILGUN_SENDING_KEY: deriveSecret(
-			`${secretPrefix}MAILGUN_SENDING_KEY`,
-			refreshCacheSecret,
-		),
-		KIT_API_KEY: deriveSecret(
-			`${secretPrefix}KIT_API_KEY`,
-			refreshCacheSecret,
-		),
-		KIT_API_SECRET: deriveSecret(
-			`${secretPrefix}KIT_API_SECRET`,
-			refreshCacheSecret,
-		),
-		TWITTER_BEARER_TOKEN: deriveSecret(
-			`${secretPrefix}TWITTER_BEARER_TOKEN`,
-			refreshCacheSecret,
-		),
-		VERIFIER_API_KEY: deriveSecret(
-			`${secretPrefix}VERIFIER_API_KEY`,
-			refreshCacheSecret,
-		),
 		REFRESH_CACHE_SECRET: refreshCacheSecret,
-		OG_IMAGE_SECRET: deriveSecret(
-			`${secretPrefix}OG_IMAGE_SECRET`,
-			refreshCacheSecret,
-		),
 		CLOUDFLARE_ACCOUNT_ID: accountId,
 		CLOUDFLARE_API_TOKEN: deriveOrEnv(
 			'CLOUDFLARE_API_TOKEN',
@@ -254,6 +237,19 @@ async function main() {
 		if (process.env.GITHUB_ACTIONS === 'true') {
 			console.warn(`::warning title=Derived worker secrets::${derivedFallbacks.join(', ')}`)
 		}
+	}
+
+	if (omittedForProduction.length > 0) {
+		console.log(
+			[
+				'',
+				'The following integration secrets are not in the CI env and were',
+				'omitted from the bulk upload (existing values on the worker are',
+				'preserved; set them directly per docs/agents/cutover-runbook.md):',
+				...omittedForProduction.map((key) => `  - ${key}`),
+				'',
+			].join('\n'),
+		)
 	}
 }
 

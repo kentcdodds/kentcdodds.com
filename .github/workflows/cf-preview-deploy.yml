@@ -53,10 +53,7 @@ jobs:
         run: npm run provision:preview --workspace site-worker
 
       - name: 🗄️ Apply D1 migrations (remote)
-        run: |
-          if ! npm run d1:migrations:apply:staging --workspace site-worker; then
-            echo "::warning::D1 migrations failed — the CI token likely lacks D1 permissions. The standing preview DB is already migrated; schema changes require manual apply with a privileged token (see docs/agents/cloudflare-worker-architecture.md)."
-          fi
+        run: npm run d1:migrations:apply:staging --workspace site-worker
 
       - name: 🚀 Deploy site preview worker
         run: npm run deploy --workspace site-worker 2>&1 | tee deploy-output.txt
