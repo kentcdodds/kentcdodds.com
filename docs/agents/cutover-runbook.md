@@ -113,14 +113,21 @@ radius if that token ever leaks — it can send email as the domain).
    records usually propagate within minutes. Until this is done, sends to
    arbitrary recipients fail; sends to verified destination addresses work.
 2. **Token permission** — `CLOUDFLARE_API_TOKEN` must include
-   **Email Sending: Edit** (added 2026-07-05). The same token value must be
-   present on the worker (`wrangler secret list --name kentcdodds-com`) — CI
-   re-uploads it from the GitHub `CLOUDFLARE_API_TOKEN` secret on every
-   deploy, so the GitHub secret and the dashboard token must stay in sync.
-3. **Pre-flip verification** — trigger a password-reset email for
-   `me@kentcdodds.com` from the production `*.workers.dev` URL and confirm
-   delivery (works pre-onboarding because it is a verified destination
-   address).
+   **Email Sending: Edit**. CI re-uploads the GitHub `CLOUDFLARE_API_TOKEN`
+   secret to the worker on every production deploy, so the GitHub secret and
+   the dashboard token must stay in sync.
+
+   **Verified 2026-07-05:** the GitHub-secret token sends successfully
+   (probed from the staging worker: HTTP 200 + message id, domain onboarded).
+   The production worker currently holds **Fly's** token value (from the
+   cutover bulk upload), which gets 401 from the Email Sending API — this
+   self-heals on the **first `main` deploy** (CI re-uploads the GitHub value).
+   To make production email work before merge, run
+   `wrangler secret put CLOUDFLARE_API_TOKEN --name kentcdodds-com` with the
+   updated token's value.
+3. **Post-merge verification** — after the first `main` deploy, trigger a
+   signup-verification email for `me@kentcdodds.com` from the production
+   `*.workers.dev` URL and confirm delivery.
 4. **Deliverability** — New Email Sending accounts start with conservative
    daily quotas that ramp with reputation. Volume here is low (auth codes,
    contact form, call notifications), so expect at most a brief warm-up period.
