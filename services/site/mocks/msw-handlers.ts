@@ -55,24 +55,56 @@ const miscHandlers: Array<HttpHandler> = [
 		return passthrough()
 	}),
 	http.post(
-		'https://api.mailgun.net/v3/:domain/messages',
-		async ({ request, params }) => {
-			const reqBody = await request.text()
-			const body = Object.fromEntries(new URLSearchParams(reqBody))
+		'https://api.cloudflare.com/client/v4/accounts/:accountId/email/sending/send',
+		async ({ request }) => {
+			const body = (await request.json()) as {
+				to?: string | Array<string>
+				from?: string
+				subject?: string
+				text?: string
+				html?: string | null
+			}
+			const toRaw = body.to
+			const to =
+				typeof toRaw === 'string'
+					? toRaw
+					: Array.isArray(toRaw)
+						? toRaw[0]
+						: undefined
 			console.info('🔶 mocked email contents:', body)
 
-			if (body.text && body.to) {
+			if (to && body.text) {
 				const fixture = await readFixture()
+				const captured = {
+					to,
+					...(body.from ? { from: body.from } : {}),
+					...(body.subject ? { subject: body.subject } : {}),
+					...(body.text ? { text: body.text } : {}),
+					...(typeof body.html === 'string' ? { html: body.html } : {}),
+				}
 				await updateFixture({
 					email: {
 						...fixture.email,
-						[body.to]: body,
+						[to]: captured,
 					},
 				})
 			}
-			const randomId = '20210321210543.1.E01B8B612C44B41B'
-			const id = `<${randomId}>@${params.domain}`
-			return HttpResponse.json({ id, message: 'Queued. Thank you.' })
+			const delivered =
+				typeof body.to === 'string'
+					? [body.to]
+					: Array.isArray(body.to)
+						? body.to
+						: []
+			return HttpResponse.json({
+				success: true,
+				errors: [],
+				messages: [],
+				result: {
+					delivered,
+					permanent_bounces: [],
+					queued: [],
+				},
+			})
 		},
 	),
 	http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {

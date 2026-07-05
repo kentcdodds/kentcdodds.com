@@ -32,12 +32,12 @@ export function createDevMockFetch({
 	mocksEnabled,
 	searchWorkerUrl,
 	searchWorkerToken,
-	onMailgunEmail = captureEmailViaSidecar,
+	onOutboundEmail = captureEmailViaSidecar,
 }: {
 	mocksEnabled: boolean
 	searchWorkerUrl?: string
 	searchWorkerToken?: string
-	onMailgunEmail?: OutboundMockHandlerOptions['onMailgunEmail']
+	onOutboundEmail?: OutboundMockHandlerOptions['onOutboundEmail']
 }) {
 	const nativeFetch = globalThis.fetch.bind(globalThis)
 
@@ -61,7 +61,7 @@ export function createDevMockFetch({
 		}
 
 		const mocked = await maybeHandleOutboundMockFetch(request, {
-			onMailgunEmail,
+			onOutboundEmail,
 			searchWorkerUrl,
 			searchWorkerToken,
 		})

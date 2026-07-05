@@ -12,10 +12,12 @@ export const PASSTHROUGH_HOSTS = new Set([
 
 export const mockRoutes: Array<OutboundMockRoute> = [
 	{
-		host: 'api.mailgun.net',
+		host: 'api.cloudflare.com',
 		method: 'POST',
 		match(url) {
-			return /^\/v3\/[^/]+\/messages$/.test(url.pathname)
+			return /^\/client\/v4\/accounts\/[^/]+\/email\/sending\/send$/.test(
+				url.pathname,
+			)
 		},
 	},
 	{

@@ -28,9 +28,38 @@ function requiredParam(params: URLSearchParams, name: string) {
 }
 
 export type OutboundMockHandlerOptions = {
-	onMailgunEmail?: (body: Record<string, string>) => void | Promise<void>
+	onOutboundEmail?: (body: Record<string, string>) => void | Promise<void>
 	searchWorkerUrl?: string
 	searchWorkerToken?: string
+}
+
+type EmailSendingRequestBody = {
+	to?: string | Array<string>
+	from?: string
+	subject?: string
+	text?: string
+	html?: string | null
+	reply_to?: string
+}
+
+function emailBodyToFixture(
+	body: EmailSendingRequestBody,
+): Record<string, string> | null {
+	const toRaw = body.to
+	const to =
+		typeof toRaw === 'string'
+			? toRaw
+			: Array.isArray(toRaw)
+				? toRaw[0]
+				: undefined
+	if (!to) return null
+
+	const fixture: Record<string, string> = { to }
+	if (body.from) fixture.from = body.from
+	if (body.subject) fixture.subject = body.subject
+	if (body.text) fixture.text = body.text
+	if (typeof body.html === 'string') fixture.html = body.html
+	return fixture
 }
 
 export async function handleOutboundMockRoute(
@@ -39,17 +68,30 @@ export async function handleOutboundMockRoute(
 	route: OutboundMockRoute,
 	options: OutboundMockHandlerOptions = {},
 ) {
-	if (route.host === 'api.mailgun.net') {
-		const bodyText = await request.text()
-		const body = Object.fromEntries(new URLSearchParams(bodyText))
-		if (body.to) {
-			await options.onMailgunEmail?.(body)
+	if (
+		route.host === 'api.cloudflare.com' &&
+		/^\/client\/v4\/accounts\/[^/]+\/email\/sending\/send$/.test(url.pathname)
+	) {
+		const body = (await request.json()) as EmailSendingRequestBody
+		const fixture = emailBodyToFixture(body)
+		if (fixture?.to) {
+			await options.onOutboundEmail?.(fixture)
 		}
-		const domain = url.pathname.split('/')[2] ?? 'example.com'
-		const randomId = '20210321210543.1.E01B8B612C44B41B'
+		const delivered =
+			typeof body.to === 'string'
+				? [body.to]
+				: Array.isArray(body.to)
+					? body.to
+					: []
 		return json({
-			id: `<${randomId}>@${domain}`,
-			message: 'Queued. Thank you.',
+			success: true,
+			errors: [],
+			messages: [],
+			result: {
+				delivered,
+				permanent_bounces: [],
+				queued: [],
+			},
 		})
 	}
 

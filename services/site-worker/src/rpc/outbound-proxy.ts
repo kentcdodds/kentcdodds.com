@@ -18,7 +18,7 @@ export class OutboundProxy extends WorkerEntrypoint<ParentWorkerEnv> {
 		}
 
 		const mocked = await maybeHandleOutboundMockFetch(request, {
-			onMailgunEmail: async (body) => {
+			onOutboundEmail: async (body) => {
 				if (body.to) {
 					await this.env.SITE_CACHE_KV.put(
 						`preview:last-email:${body.to}`,
