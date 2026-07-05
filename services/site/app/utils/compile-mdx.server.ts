@@ -19,6 +19,7 @@ import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
 import { v4 as uuid } from 'uuid'
 import { type GitHubFile } from '#app/types.ts'
+import { buildMediaUrl } from '#app/utils/media.ts'
 import * as x from './x.server.ts'
 
 const MDX_ESM_EXTERNALS = [
@@ -164,10 +165,56 @@ function trimCodeBlocks() {
 }
 
 // yes, I did write this myself 😬
-const cloudinaryUrlRegex =
-	/^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
+const CLOUDINARY_MEDIA_ORIGIN = 'https://kentcdodds.com'
 
-function optimizeCloudinaryImages() {
+const cloudinaryUploadPathRegex =
+	/^https?:\/\/res\.cloudinary\.com\/[^/]+\/(?<resourceType>image|video)\/upload\/(?<rest>.+)$/i
+
+const cloudinaryTransformSegmentRegex =
+	/^[a-z][a-z0-9]*_[^/]+(?:,[a-z][a-z0-9]*_[^/]+)*$/i
+
+function parseCloudinaryPublicId(urlString: string) {
+	const match = urlString.match(cloudinaryUploadPathRegex)
+	if (!match?.groups) return null
+	const resourceType = match.groups.resourceType as 'image' | 'video'
+	const rest = match.groups.rest
+	if (!rest) return null
+	const segments = rest.split('/')
+	while (segments.length > 0) {
+		const segment = segments[0] ?? ''
+		if (/^v\d+$/.test(segment)) {
+			segments.shift()
+			continue
+		}
+		if (cloudinaryTransformSegmentRegex.test(segment)) {
+			segments.shift()
+			continue
+		}
+		break
+	}
+	const publicId = segments.join('/')
+	if (!publicId) return null
+	return { resourceType, publicId }
+}
+
+function rewriteCloudinaryMediaUrl(urlString: string) {
+	const parsed = parseCloudinaryPublicId(urlString)
+	if (!parsed) return
+	const { resourceType, publicId } = parsed
+	if (resourceType === 'video') {
+		return buildMediaUrl(publicId, undefined, {
+			origin: CLOUDINARY_MEDIA_ORIGIN,
+		})
+	}
+	const isGif = publicId.toLowerCase().endsWith('.gif')
+	return buildMediaUrl(
+		publicId,
+		isGif ? undefined : { width: 1600 },
+		{ origin: CLOUDINARY_MEDIA_ORIGIN },
+	)
+}
+
+function rewriteCloudinaryMediaUrls() {
 	return async function transformer(tree: H.Root) {
 		// `unist-util-visit` types can differ between mdast/hast; this tree is hast
 		// but can still contain MDX nodes. Use `any` to avoid type churn.
@@ -181,60 +228,30 @@ function optimizeCloudinaryImages() {
 				console.error('image without url?', node)
 				return
 			}
-			const newUrl = handleImageUrl(urlString)
+			const newUrl = rewriteCloudinaryMediaUrl(urlString)
 			if (newUrl) {
 				srcAttr.value = newUrl
 			}
 		})
 
 		visit(tree, 'element', function visitor(node: H.Element) {
-			if (node.tagName !== 'img') return
+			if (node.tagName !== 'img' && node.tagName !== 'video') return
 			const urlString = node.properties?.src
 				? String(node.properties.src)
 				: null
 			if (!node.properties?.src || !urlString) {
-				console.error('image without url?', node)
+				console.error(`${node.tagName} without url?`, node)
 				return
 			}
-			const newUrl = handleImageUrl(urlString)
+			const newUrl = rewriteCloudinaryMediaUrl(urlString)
 			if (newUrl) {
 				node.properties.src = newUrl
 			}
 		})
 	}
-
-	function handleImageUrl(urlString: string) {
-		const match = urlString.match(cloudinaryUrlRegex)
-		const groups = match?.groups
-		if (groups) {
-			const { cloudName, transforms, version, publicId } = groups as {
-				cloudName: string
-				transforms?: string
-				version?: string
-				publicId: string
-			}
-			// don't add transforms if they're already included
-			if (transforms) return
-			const defaultTransforms = [
-				'f_auto',
-				'q_auto',
-				// gifs can't do dpr transforms
-				publicId.endsWith('.gif') ? '' : 'dpr_2.0',
-				'w_1600',
-			]
-				.filter(Boolean)
-				.join(',')
-			return [
-				`https://res.cloudinary.com/${cloudName}/image/upload`,
-				defaultTransforms,
-				version,
-				publicId,
-			]
-				.filter(Boolean)
-				.join('/')
-		}
-	}
 }
+
+export { parseCloudinaryPublicId, rewriteCloudinaryMediaUrl }
 
 const twitterTransformer = {
 	shouldTransform: x.isXUrl,
@@ -441,7 +458,7 @@ function getMdxCustomRemarkPlugins(): U.PluggableList {
 }
 
 const mdxCustomRehypePlugins: U.PluggableList = [
-	optimizeCloudinaryImages,
+	rewriteCloudinaryMediaUrls,
 	trimCodeBlocks,
 	rehypeCodeBlocksShiki,
 	removePreContainerDivs,

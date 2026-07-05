@@ -2,11 +2,11 @@ import { type Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { type ComponentType } from 'react'
-import { buildImageUrl } from 'cloudinary-build-url'
 import pLimit from 'p-limit'
 import calculateReadingTime from 'reading-time'
 import * as YAML from 'yaml'
 import { type MdxPage } from '#app/types.ts'
+import { buildMediaUrl } from '#app/utils/media.ts'
 import {
 	getArtifactDirList,
 	getContentData,
@@ -390,18 +390,15 @@ export async function getLocalMdxDirList(contentDir: 'blog' | 'pages') {
 		}))
 }
 
+const MEDIA_ORIGIN =
+	process.env.MEDIA_ORIGIN ?? 'https://kentcdodds-com.kentcdodds.workers.dev'
+
 async function getBlurDataUrl(cloudinaryId: string) {
-	const imageURL = buildImageUrl(cloudinaryId, {
-		transformations: {
-			resize: { width: 100 },
-			quality: 'auto',
-			format: 'webp',
-			effect: {
-				name: 'blur',
-				value: '1000',
-			},
-		},
-	})
+	const imageURL = buildMediaUrl(
+		cloudinaryId,
+		{ width: 100, blur: 100, format: 'webp' },
+		{ origin: MEDIA_ORIGIN },
+	)
 	const dataUrl = await getDataUrlForImage(imageURL)
 	return dataUrl
 }

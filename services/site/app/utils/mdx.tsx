@@ -2,7 +2,7 @@ import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { type ComponentType } from 'react'
-import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
+import { CloudinaryVideo } from '#app/components/media-video.tsx'
 import { MermaidDiagram } from '#app/components/mermaid.tsx'
 import {
 	getImageBuilder,
@@ -145,7 +145,7 @@ function BlogImage({
 					'850px',
 				],
 				transformations: {
-					background: transparentBackground ? undefined : 'rgb:e6e9ee',
+					background: transparentBackground ? undefined : 'e6e9ee',
 				},
 			})}
 			{...imgProps}
