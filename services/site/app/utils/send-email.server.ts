@@ -21,6 +21,8 @@ type EmailMessage = {
 /**
  * Sends via Cloudflare Email Service (Email Sending REST API).
  * https://developers.cloudflare.com/email-service/api/send-emails/rest-api/
+ * Uses the shared CLOUDFLARE_API_TOKEN, which has the Email Sending Edit
+ * permission alongside its other scopes.
  */
 async function sendEmail({
 	to,
@@ -30,7 +32,7 @@ async function sendEmail({
 	html,
 	replyTo,
 }: EmailMessage) {
-	const { CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_EMAIL_TOKEN } = getEnv()
+	const { CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN } = getEnv()
 
 	if (html === undefined) {
 		html = await markdownToHtmlDocument(text)
@@ -43,7 +45,7 @@ async function sendEmail({
 		{
 			method: 'POST',
 			headers: {
-				authorization: `Bearer ${CLOUDFLARE_EMAIL_TOKEN}`,
+				authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
 				'content-type': 'application/json',
 			},
 			body: JSON.stringify({

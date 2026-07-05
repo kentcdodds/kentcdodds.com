@@ -61,9 +61,9 @@ the flip.
   ]
   const values = Object.fromEntries(names.map((n) => [n, process.env[n]]))
   // NOT copied from Fly: OG_IMAGE_SECRET (already set, random),
-  // CLOUDFLARE_EMAIL_TOKEN (new dedicated token — see the Email section),
   // MAILGUN_* (retired), MAGIC_LINK_SECRET / INTERNAL_COMMAND_TOKEN (dead in
-  // the worker codebase).
+  // the worker codebase). Email sends reuse CLOUDFLARE_API_TOKEN (see the
+  // Email section).
   ;(async () => {
     for (const [name, text] of Object.entries(values)) {
       if (!text) { console.error("MISSING: " + name); continue }
@@ -102,26 +102,25 @@ the required keys before/after deploying.
 
 Transactional email (signup verification, password reset, contact form, call
 notifications) uses the [Cloudflare Email Sending REST API](https://developers.cloudflare.com/email-service/api/send-emails/rest-api/).
-The app reads `CLOUDFLARE_EMAIL_TOKEN` — a **dedicated** API token with only
-**Email Sending: Edit** permission. Do **not** reuse `CLOUDFLARE_API_TOKEN`.
+The app authenticates with the shared `CLOUDFLARE_API_TOKEN`, which carries
+**Email Sending: Edit** alongside its other permissions (decision 2026-07-05:
+one token instead of a dedicated email token; the trade-off is a broader blast
+radius if that token ever leaks — it can send email as the domain).
 
 1. **Onboard the domain** — Cloudflare dash → **Compute** → **Email Service** →
    **Email Sending** → **Onboard Domain** → `kentcdodds.com`. This adds
    SPF/DKIM/DMARC records on the `cf-bounce` subdomain. On Cloudflare DNS the
-   records usually propagate within minutes.
-2. **Create the email token** — My Profile → API Tokens → Create Custom Token
-   with only **Email Sending: Edit** on the account. Set on the worker:
-   ```bash
-   npm exec wrangler -- secret put CLOUDFLARE_EMAIL_TOKEN --name kentcdodds-com
-   ```
-   Repeat for `kentcdodds-com-staging` if staging should send real mail (staging
-   normally mocks outbound email via `OutboundProxy`; a placeholder secret is
-   enough for boot).
-3. **Pre-flip verification** — Before domain onboarding completes you can still
-   send to **verified destination addresses** for free. Add
-   `me@kentcdodds.com` as a verified destination, deploy the worker, and
-   trigger a password-reset email from the production `*.workers.dev` URL.
-   Confirm delivery before flipping DNS.
+   records usually propagate within minutes. Until this is done, sends to
+   arbitrary recipients fail; sends to verified destination addresses work.
+2. **Token permission** — `CLOUDFLARE_API_TOKEN` must include
+   **Email Sending: Edit** (added 2026-07-05). The same token value must be
+   present on the worker (`wrangler secret list --name kentcdodds-com`) — CI
+   re-uploads it from the GitHub `CLOUDFLARE_API_TOKEN` secret on every
+   deploy, so the GitHub secret and the dashboard token must stay in sync.
+3. **Pre-flip verification** — trigger a password-reset email for
+   `me@kentcdodds.com` from the production `*.workers.dev` URL and confirm
+   delivery (works pre-onboarding because it is a verified destination
+   address).
 4. **Deliverability** — New Email Sending accounts start with conservative
    daily quotas that ramp with reputation. Volume here is low (auth codes,
    contact form, call notifications), so expect at most a brief warm-up period.

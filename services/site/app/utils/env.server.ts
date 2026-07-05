@@ -66,7 +66,6 @@ const schemaBase = z.object({
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
 	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,
 	/** Dedicated token with only Email Sending Edit (not CLOUDFLARE_API_TOKEN). */
-	CLOUDFLARE_EMAIL_TOKEN: nonEmptyString,
 	CLOUDFLARE_API_TOKEN: nonEmptyString,
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,

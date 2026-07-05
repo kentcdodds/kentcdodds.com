@@ -64,7 +64,6 @@ const localDevSecrets = {
 	DISCORD_YELLOW_ROLE: 'discord-yellow-role',
 	INTERNAL_COMMAND_TOKEN: 'internal-command-token',
 	MAGIC_LINK_SECRET: 'magic-link-secret',
-	CLOUDFLARE_EMAIL_TOKEN: 'email-token',
 	REFRESH_CACHE_SECRET: 'refresh-cache-secret',
 	OG_IMAGE_SECRET: 'refresh-cache-secret-derived-og',
 	SESSION_SECRET: 'session-secret',
