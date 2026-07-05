@@ -168,6 +168,51 @@ describe('handleMediaRequest', () => {
 		)
 		expect(response.status).toBe(400)
 	})
+
+	test('ranged video requests bypass the edge cache and return 206', async () => {
+		const videoBytes = new Uint8Array(1000)
+		videoBytes.set([0, 0, 0, 0x20, 0x66, 0x74, 0x79, 0x70], 0)
+		const bucket = {
+			head: vi.fn(async () => ({
+				size: videoBytes.length,
+				httpMetadata: { contentType: 'video/mp4' },
+			})),
+			get: vi.fn(
+				async (_key: string, options?: { range?: { offset: number; length: number } }) => {
+					const range = options?.range
+					const slice = range
+						? videoBytes.slice(range.offset, range.offset + range.length)
+						: videoBytes
+					return {
+						body: new Blob([slice]).stream(),
+						size: slice.length,
+						httpMetadata: { contentType: 'video/mp4' },
+						etag: 'etag',
+						arrayBuffer: async () => slice.buffer,
+					}
+				},
+			),
+		} as unknown as R2Bucket
+		const cacheMatch = vi.fn(async () => new Response('cached-full-body'))
+		const cachesStub = { default: { match: cacheMatch, put: vi.fn() } }
+		const originalCaches = (globalThis as { caches?: unknown }).caches
+		;(globalThis as { caches?: unknown }).caches = cachesStub
+		try {
+			const response = await handleMediaRequest(
+				new Request('https://example.com/media/kentcdodds.com/misc/facepalm', {
+					headers: { Range: 'bytes=0-99' },
+				}),
+				{ MEDIA_BUCKET: bucket, IMAGES: {} as never },
+				{ waitUntil: vi.fn() } as unknown as ExecutionContext,
+			)
+			expect(cacheMatch).not.toHaveBeenCalled()
+			expect(response.status).toBe(206)
+			expect(response.headers.get('content-range')).toBe('bytes 0-99/1000')
+			expect(response.headers.get('content-length')).toBe('100')
+		} finally {
+			;(globalThis as { caches?: unknown }).caches = originalCaches
+		}
+	})
 })
 
 describe('svg passthrough', () => {

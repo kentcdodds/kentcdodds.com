@@ -96,6 +96,35 @@ export default defineConfig(async ({ command }) => {
 			port: Number(process.env.PORT || 3000),
 			strictPort: true,
 		},
+		// Pre-bundle client deps that are only imported from lazily-visited
+		// routes. Without this, the first visit to e.g. /blog triggers a Vite
+		// re-optimization that restarts the workerd runtime mid-request and
+		// surfaces as a one-off 500 in dev.
+		optimizeDeps: isDevServer
+			? {
+					include: [
+						'buffer',
+						'@tanstack/react-hotkeys',
+						'clsx',
+						'framer-motion',
+						'spin-delay',
+						'error-stack-parser',
+						'@sentry/react-router',
+						'md5-hash',
+						'lru-cache',
+						'mdx-bundler/client/index.js',
+						'@epic-web/client-hints',
+						'@epic-web/client-hints/color-scheme',
+						'@epic-web/client-hints/time-zone',
+						'@conform-to/zod/v4',
+						'zod',
+						'downshift',
+						'date-fns',
+						'@reach/dialog',
+						'@epic-web/invariant',
+					],
+				}
+			: undefined,
 		define: isDevServer
 			? {
 					__MDX_DEV_CACHE_ROOT__: JSON.stringify(

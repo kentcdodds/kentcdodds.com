@@ -27,7 +27,12 @@ export async function handleMediaRequest(
 	const cache = (globalThis as unknown as { caches?: { default: Cache } })
 		.caches?.default
 	const cacheKey = getMediaCacheKey(request, parsed.transform)
-	const cached = cache ? await cache.match(cacheKey) : undefined
+	// Ranged requests (video seeks) bypass the edge cache: the cache key
+	// drops the Range header, so a cached full 200 would be returned with the
+	// whole body instead of the requested 206 slice. R2 serves ranges
+	// directly instead.
+	const rangeHeader = request.headers.get('Range')
+	const cached = cache && !rangeHeader ? await cache.match(cacheKey) : undefined
 	if (cached) {
 		if (request.method === 'HEAD') {
 			return new Response(null, {
