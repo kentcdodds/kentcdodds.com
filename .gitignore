@@ -31,6 +31,7 @@ tsconfig.tsbuildinfo
 *.db-journal
 .wrangler
 /services/site-worker/.dev.vars
+/services/site/.dev.vars
 /services/site-worker/generated/
 other/wrangler-logs/
 .react-router/
