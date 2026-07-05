@@ -49,7 +49,7 @@ describe('og url signing', () => {
 			title: 'Episode',
 			url: 'kentcdodds.com/calls/01/01',
 			name: '- Kent',
-			avatarKind: 'cloudinary' as const,
+			avatarKind: 'media' as const,
 			avatarSource: 'kentcdodds.com/illustrations/kody/kody_profile_gray',
 			avatarIsRound: false,
 		}

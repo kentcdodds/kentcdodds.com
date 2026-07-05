@@ -3,6 +3,7 @@ import { decodePngFromKv, encodePngForKv } from './kv-cache.server.ts'
 import { renderOgTemplatePng } from './render.server.ts'
 import { verifyOgImageRequest } from './url.server.ts'
 import type { OgTemplateName } from './registry.tsx'
+import type { OgAssetEnv } from './assets.server.ts'
 
 function readPngDimensions(png: Uint8Array) {
 	if (png.length < 24) return { width: 0, height: 0 }
@@ -24,7 +25,7 @@ type OgKvNamespace = {
 	): Promise<void>
 }
 
-type OgHandlerEnv = {
+export type OgHandlerEnv = OgAssetEnv & {
 	SITE_CACHE_KV?: OgKvNamespace
 	OG_IMAGE_SECRET?: string
 	ASSETS?: { fetch(request: Request): Response | Promise<Response> }
@@ -103,6 +104,7 @@ export async function handleOgImageRequest(
 	const { png, width, height } = await renderOgTemplatePng(
 		verified.template as OgTemplateName,
 		verified.params,
+		env,
 		env.ASSETS,
 		request,
 	)

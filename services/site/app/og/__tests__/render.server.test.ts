@@ -54,7 +54,7 @@ describe('renderOgTemplatePng', () => {
 			words: 'Test social image',
 			url: 'kentcdodds.com',
 			featuredImage: tinyPng,
-		})
+		}, undefined)
 
 		expect(width).toBe(1200)
 		expect(height).toBe(630)

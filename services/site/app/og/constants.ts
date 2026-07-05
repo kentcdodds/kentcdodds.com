@@ -7,5 +7,3 @@ export const OG_COLORS = {
 	muted: '#a9adc1',
 	white: '#ffffff',
 } as const
-
-export const CLOUDINARY_CLOUD_NAME = 'kentcdodds-com'

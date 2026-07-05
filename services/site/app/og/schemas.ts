@@ -22,7 +22,7 @@ export const callKentEpisodeArtParamsSchema = z.object({
 	title: shortText,
 	url: mediumText,
 	name: z.string().trim().min(1).max(100),
-	avatarKind: z.enum(['fetch', 'cloudinary']),
+	avatarKind: z.enum(['fetch', 'media']),
 	avatarSource: imageRef,
 	avatarIsRound: z.boolean(),
 	size: z.number().int().min(400).max(2048).optional(),

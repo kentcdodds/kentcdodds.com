@@ -11,6 +11,7 @@ import {
 	resolveKentProfileDataUri,
 	resolveMicIllustrationDataUri,
 	resolveSocialBackgroundDataUri,
+	type OgAssetEnv,
 } from './assets.server.ts'
 import type {
 	CallKentEpisodeArtParams,
@@ -57,8 +58,9 @@ async function ensureRenderRuntime() {
 async function resolveTemplateAssets(
 	template: OgTemplateName,
 	params: SocialPreviewParams | GenericSocialParams | CallKentEpisodeArtParams,
+	env?: OgAssetEnv,
 ) {
-	const background = await resolveSocialBackgroundDataUri()
+	const background = await resolveSocialBackgroundDataUri(env)
 
 	if (template === 'call-kent-episode-art') {
 		const episodeParams = params as CallKentEpisodeArtParams
@@ -68,16 +70,18 @@ async function resolveTemplateAssets(
 				avatarKind: episodeParams.avatarKind,
 				avatarSource: episodeParams.avatarSource,
 				size: avatarSize,
+				env,
 			}),
-			resolveMicIllustrationDataUri(),
+			resolveMicIllustrationDataUri(env),
 		])
 		return { background, avatar, mic }
 	}
 
 	const [kentProfile, featuredImage] = await Promise.all([
-		resolveKentProfileDataUri(),
+		resolveKentProfileDataUri(env),
 		resolveFeaturedImageDataUri(
 			(params as SocialPreviewParams | GenericSocialParams).featuredImage,
+			env,
 		),
 	])
 	return { background, kentProfile, featuredImage }
@@ -86,12 +90,13 @@ async function resolveTemplateAssets(
 export async function renderOgTemplatePng(
 	templateName: OgTemplateName,
 	params: SocialPreviewParams | GenericSocialParams | CallKentEpisodeArtParams,
+	env?: OgAssetEnv,
 	assets?: { fetch(request: Request): Response | Promise<Response> },
 	request?: Request,
 ) {
 	await ensureRenderRuntime()
 	const template = getOgTemplate(templateName)
-	const assetsResolved = await resolveTemplateAssets(templateName, params)
+	const assetsResolved = await resolveTemplateAssets(templateName, params, env)
 	const fonts = await getOgFonts(
 		assets,
 		request ? new URL(request.url).origin : undefined,

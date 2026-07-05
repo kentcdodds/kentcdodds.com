@@ -37,7 +37,7 @@ const samples = [
 			title: 'Podcast breaks',
 			name: '- Sarah',
 			url: 'kentcdodds.com/calls/05/12',
-			avatarKind: 'cloudinary' as const,
+			avatarKind: 'media' as const,
 			avatarSource: 'kentcdodds.com/illustrations/kody/kody_profile_blue',
 			avatarIsRound: false,
 			size: CANVAS,
