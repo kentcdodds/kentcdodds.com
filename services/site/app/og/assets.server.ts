@@ -8,6 +8,7 @@ import {
 	findR2ObjectHead,
 	PRODUCTION_MEDIA_ORIGIN,
 	readR2MagicBytes,
+	STAGING_MEDIA_ORIGIN,
 	type MediaServingEnv,
 	sniffImageContentType,
 } from '#app/utils/media-serving.server.ts'
@@ -45,11 +46,11 @@ async function resolveMediaDataUri(
 	id: string,
 	transform?: MediaTransform,
 ) {
-	if (env?.MEDIA_BUCKET && env.IMAGES) {
-		const headResult = await findR2ObjectHead(env.MEDIA_BUCKET, id)
-		if (!headResult) {
-			throw new Error(`Media asset not found in R2: ${id}`)
-		}
+	const headResult =
+		env?.MEDIA_BUCKET && env.IMAGES
+			? await findR2ObjectHead(env.MEDIA_BUCKET, id)
+			: null
+	if (env?.MEDIA_BUCKET && env.IMAGES && headResult) {
 		const { key } = headResult
 		const magic = await readR2MagicBytes(env.MEDIA_BUCKET, key)
 		const segment = transform ? serializeMediaTransform(transform) : undefined
@@ -97,8 +98,17 @@ async function resolveMediaDataUri(
 		return bytesToDataUri(bytes, result.contentType())
 	}
 
-	const url = buildMediaUrl(id, transform, { origin: PRODUCTION_MEDIA_ORIGIN })
-	return fetchAsDataUri(url)
+	// No bindings (Node preview script) or object missing locally (dev with an
+	// empty local R2): fetch through the deployed /media endpoint instead.
+	let lastError: unknown
+	for (const origin of [PRODUCTION_MEDIA_ORIGIN, STAGING_MEDIA_ORIGIN]) {
+		try {
+			return await fetchAsDataUri(buildMediaUrl(id, transform, { origin }))
+		} catch (error) {
+			lastError = error
+		}
+	}
+	throw lastError
 }
 
 export function stripEmoji(value: string) {

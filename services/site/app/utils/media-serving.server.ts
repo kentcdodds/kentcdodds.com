@@ -622,46 +622,39 @@ export async function serveMediaRequest(
 			continue
 		}
 
-		const source: MediaObjectSource = {
-			body: fallbackResponse.body,
-			size: Number(fallbackResponse.headers.get('content-length') ?? 0) || undefined,
-			contentType: fallbackResponse.headers.get('content-type') ?? undefined,
-		}
-
 		if (hasTransformValues(parsed.transform)) {
-			try {
-				return await serveMediaObject({
-					env,
-					source,
-					id: parsed.id,
-					transform: parsed.transform,
-					request,
-				})
-			} catch {
-				const transformedUrl = buildMediaUrl(
-					parsed.id,
-					parsed.transform,
-					{ origin: fallbackOrigin },
-				)
-				const transformedResponse = await fetch(transformedUrl, {
-					headers: request.headers.get('Accept')
-						? { Accept: request.headers.get('Accept')! }
-						: undefined,
-				})
-				if (!transformedResponse.ok) return notFoundMediaResponse()
-				const headers = new Headers(transformedResponse.headers)
-				headers.set('cache-control', MEDIA_CACHE_CONTROL_IMMUTABLE)
-				if (request.method === 'HEAD') {
-					return new Response(null, {
-						status: transformedResponse.status,
-						headers,
-					})
-				}
-				return new Response(transformedResponse.body, {
+			// Proxy the fully-transformed asset. The local (miniflare) Images
+			// binding is a low-fidelity simulator (e.g. `fit: cover` letterboxes
+			// instead of cropping), so remote transforms keep dev output
+			// faithful to production.
+			await fallbackResponse.body.cancel()
+			const transformedUrl = buildMediaUrl(parsed.id, parsed.transform, {
+				origin: fallbackOrigin,
+			})
+			const transformedResponse = await fetch(transformedUrl, {
+				headers: request.headers.get('Accept')
+					? { Accept: request.headers.get('Accept')! }
+					: undefined,
+			})
+			if (!transformedResponse.ok) return notFoundMediaResponse()
+			const headers = new Headers(transformedResponse.headers)
+			headers.set('cache-control', MEDIA_CACHE_CONTROL_IMMUTABLE)
+			if (request.method === 'HEAD') {
+				return new Response(null, {
 					status: transformedResponse.status,
 					headers,
 				})
 			}
+			return new Response(transformedResponse.body, {
+				status: transformedResponse.status,
+				headers,
+			})
+		}
+
+		const source: MediaObjectSource = {
+			body: fallbackResponse.body,
+			size: Number(fallbackResponse.headers.get('content-length') ?? 0) || undefined,
+			contentType: fallbackResponse.headers.get('content-type') ?? undefined,
 		}
 
 		const headers = new Headers(fallbackResponse.headers)
