@@ -197,11 +197,16 @@ function parseCloudinaryPublicId(urlString: string) {
 	return { resourceType, publicId }
 }
 
-function rewriteCloudinaryMediaUrl(urlString: string) {
+function rewriteCloudinaryMediaUrl(
+	urlString: string,
+	{ original = false }: { original?: boolean } = {},
+) {
 	const parsed = parseCloudinaryPublicId(urlString)
 	if (!parsed) return
 	const { resourceType, publicId } = parsed
-	if (resourceType === 'video') {
+	// mp4s are sometimes referenced via the legacy image/upload path.
+	const isVideo = resourceType === 'video' || /\.(mp4|webm)$/i.test(publicId)
+	if (isVideo || original) {
 		return buildMediaUrl(publicId, undefined, {
 			origin: CLOUDINARY_MEDIA_ORIGIN,
 		})
@@ -214,38 +219,92 @@ function rewriteCloudinaryMediaUrl(urlString: string) {
 	)
 }
 
+const MEDIA_URL_ATTRIBUTES = ['src', 'href', 'poster']
+
+/**
+ * JSX nested inside MDX expression attributes (e.g. the elements passed to
+ * `<Themed dark={...} light={...}/>`) lives in an embedded estree AST that
+ * `unist-util-visit` does not traverse. Walk it looking for
+ * `JSXAttribute` string literals on src/href/poster and rewrite in place.
+ */
+function rewriteCloudinaryUrlsInEstree(node: unknown) {
+	if (!node || typeof node !== 'object') return
+	if (Array.isArray(node)) {
+		for (const item of node) rewriteCloudinaryUrlsInEstree(item)
+		return
+	}
+	const record = node as Record<string, any>
+	if (
+		record.type === 'JSXAttribute' &&
+		MEDIA_URL_ATTRIBUTES.includes(record.name?.name) &&
+		record.value?.type === 'Literal' &&
+		typeof record.value.value === 'string'
+	) {
+		const newUrl = rewriteCloudinaryMediaUrl(record.value.value, {
+			original: record.name.name === 'href',
+		})
+		if (newUrl) {
+			record.value.value = newUrl
+			record.value.raw = JSON.stringify(newUrl)
+		}
+	}
+	for (const [key, value] of Object.entries(record)) {
+		// `position`/`loc` subtrees are large and never contain JSX attributes.
+		if (key === 'position' || key === 'loc') continue
+		rewriteCloudinaryUrlsInEstree(value)
+	}
+}
+
 function rewriteCloudinaryMediaUrls() {
 	return async function transformer(tree: H.Root) {
 		// `unist-util-visit` types can differ between mdast/hast; this tree is hast
 		// but can still contain MDX nodes. Use `any` to avoid type churn.
-		visit(tree as any, 'mdxJsxFlowElement' as any, function visitor(node: any) {
-			if (node?.name !== 'img') return
-			const srcAttr = node.attributes?.find(
-				(attr: any) => attr?.type === 'mdxJsxAttribute' && attr?.name === 'src',
-			)
-			const urlString = srcAttr?.value ? String(srcAttr.value) : null
-			if (!srcAttr || !urlString) {
-				console.error('image without url?', node)
-				return
-			}
-			const newUrl = rewriteCloudinaryMediaUrl(urlString)
-			if (newUrl) {
-				srcAttr.value = newUrl
-			}
-		})
+		visit(
+			tree as any,
+			['mdxJsxFlowElement', 'mdxJsxTextElement'] as any,
+			function visitor(node: any) {
+				// Rewrite media-bearing attributes on ANY JSX element: <img src>,
+				// <video src>, <source src>, <a href> (lightbox links around
+				// themed diagrams), <ThemedBlogImage darkCloudinaryId> stays an ID
+				// (not a URL) so it is unaffected.
+				for (const attr of node.attributes ?? []) {
+					if (attr?.type !== 'mdxJsxAttribute') continue
+					if (
+						MEDIA_URL_ATTRIBUTES.includes(attr.name) &&
+						typeof attr.value === 'string'
+					) {
+						const newUrl = rewriteCloudinaryMediaUrl(attr.value, {
+							// Links open the full-resolution original.
+							original: attr.name === 'href',
+						})
+						if (newUrl) attr.value = newUrl
+					}
+					// Expression attribute values (e.g. dark={<a href="...">...}) carry
+					// an embedded estree program.
+					if (attr.value && typeof attr.value === 'object') {
+						rewriteCloudinaryUrlsInEstree(attr.value.data?.estree)
+					}
+				}
+			},
+		)
+
+		visit(
+			tree as any,
+			['mdxFlowExpression', 'mdxTextExpression'] as any,
+			function visitor(node: any) {
+				rewriteCloudinaryUrlsInEstree(node.data?.estree)
+			},
+		)
 
 		visit(tree, 'element', function visitor(node: H.Element) {
-			if (node.tagName !== 'img' && node.tagName !== 'video') return
-			const urlString = node.properties?.src
-				? String(node.properties.src)
-				: null
-			if (!node.properties?.src || !urlString) {
-				console.error(`${node.tagName} without url?`, node)
-				return
-			}
-			const newUrl = rewriteCloudinaryMediaUrl(urlString)
-			if (newUrl) {
-				node.properties.src = newUrl
+			const properties = node.properties ?? {}
+			for (const key of ['src', 'href', 'poster'] as const) {
+				const value = properties[key]
+				if (typeof value !== 'string') continue
+				const newUrl = rewriteCloudinaryMediaUrl(value, {
+					original: key === 'href',
+				})
+				if (newUrl) properties[key] = newUrl
 			}
 		})
 	}
