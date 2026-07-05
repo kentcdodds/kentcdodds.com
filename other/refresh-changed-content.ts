@@ -44,12 +44,14 @@ const sleep = (durationMs: number) =>
 async function postRefreshCacheWithRetry({
   postRefreshCacheImpl,
   postData,
+  hostname,
   log,
   maxAttempts = defaultRefreshRetryOptions.maxAttempts,
   baseDelayMs = defaultRefreshRetryOptions.baseDelayMs,
 }: {
   postRefreshCacheImpl: typeof postRefreshCache;
   postData: { commitSha?: string; keys?: Array<string> };
+  hostname: string;
   log: Pick<typeof console, "warn">;
   maxAttempts?: number;
   baseDelayMs?: number;
@@ -60,6 +62,7 @@ async function postRefreshCacheWithRetry({
       const response = await postRefreshCacheImpl({
         http: undefined,
         postData,
+        options: { hostname },
       });
       return { ok: true, attempts: attempt, response };
     } catch (error) {
@@ -190,11 +193,13 @@ export async function refreshChangedContent({
     log.log(`Published artifact bundle version ${publishResult.version}`);
   }
 
+  // Refresh the same host the artifacts were published to.
   const refreshResult = await postRefreshCacheWithRetry({
     postRefreshCacheImpl,
     postData: {
       commitSha: currentCommitSha,
     },
+    hostname: new URL(workerUrl).hostname,
     log,
     maxAttempts: maxRefreshAttempts,
     baseDelayMs: retryDelayMs,

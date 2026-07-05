@@ -118,6 +118,7 @@ describe("refreshChangedContent", () => {
       postData: {
         commitSha: 'current-sha',
       },
+      options: { hostname: "kentcdodds-com.kentcdodds.workers.dev" },
     });
     expect(log.warn).toHaveBeenCalledTimes(1);
   });
