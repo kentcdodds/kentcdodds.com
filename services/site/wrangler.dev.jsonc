@@ -18,7 +18,7 @@
 			"binding": "APP_DB",
 			"database_name": "kentcdodds-com-dev",
 			"database_id": "local-dev-placeholder",
-			"migrations_dir": "../site-worker/.wrangler/site-prisma-migrations"
+			"migrations_dir": "migrations"
 		}
 	],
 	"kv_namespaces": [

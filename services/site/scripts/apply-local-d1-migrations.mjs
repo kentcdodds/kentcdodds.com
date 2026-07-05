@@ -1,14 +1,10 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import {
 	localD1PersistPath,
 	siteDir,
 	wranglerDevConfigPath,
 } from './local-d1-state.mjs'
-
-const repoRoot = path.resolve(siteDir, '../..')
 
 function run(command, args, options = {}) {
 	const result = spawnSync(command, args, {
@@ -26,9 +22,6 @@ function run(command, args, options = {}) {
 }
 
 function main() {
-	run('npm', ['run', 'd1:migrations:prepare', '--workspace', 'site-worker'], {
-		cwd: repoRoot,
-	})
 	run('npm', [
 		'exec',
 		'wrangler',

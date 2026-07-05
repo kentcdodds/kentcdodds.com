@@ -43,7 +43,7 @@
 			"binding": "APP_DB",
 			"database_name": "kentcdodds-com-staging-app-db",
 			"database_id": "01a8ba77-2a63-4a14-898d-6023942a480f",
-			"migrations_dir": ".wrangler/site-prisma-migrations"
+			"migrations_dir": "../site/migrations"
 		}
 	],
 	"services": [
@@ -110,7 +110,7 @@
 					"binding": "APP_DB",
 					"database_name": "kentcdodds-com-db",
 					"database_id": "af33bd8b-c9b2-484a-afa5-43ee322ff49c",
-					"migrations_dir": ".wrangler/site-prisma-migrations"
+					"migrations_dir": "../site/migrations"
 				}
 			]
 		}
