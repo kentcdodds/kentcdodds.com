@@ -63,6 +63,7 @@ const miscHandlers: Array<HttpHandler> = [
 				subject?: string
 				text?: string
 				html?: string | null
+				reply_to?: string
 			}
 			const toRaw = body.to
 			const to =
@@ -78,6 +79,7 @@ const miscHandlers: Array<HttpHandler> = [
 				const captured = {
 					to,
 					...(body.from ? { from: body.from } : {}),
+					...(body.reply_to ? { replyTo: body.reply_to } : {}),
 					...(body.subject ? { subject: body.subject } : {}),
 					...(body.text ? { text: body.text } : {}),
 					...(typeof body.html === 'string' ? { html: body.html } : {}),

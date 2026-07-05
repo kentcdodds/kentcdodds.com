@@ -56,6 +56,7 @@ function emailBodyToFixture(
 
 	const fixture: Record<string, string> = { to }
 	if (body.from) fixture.from = body.from
+	if (body.reply_to) fixture.replyTo = body.reply_to
 	if (body.subject) fixture.subject = body.subject
 	if (body.text) fixture.text = body.text
 	if (typeof body.html === 'string') fixture.html = body.html

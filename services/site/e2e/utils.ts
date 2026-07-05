@@ -75,6 +75,7 @@ type MSWData = {
 type Email = {
 	to: string
 	from: string
+	replyTo?: string
 	subject: string
 	text: string
 	html: string
