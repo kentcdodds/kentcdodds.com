@@ -117,17 +117,13 @@ radius if that token ever leaks — it can send email as the domain).
    secret to the worker on every production deploy, so the GitHub secret and
    the dashboard token must stay in sync.
 
-   **Verified 2026-07-05:** the GitHub-secret token sends successfully
-   (probed from the staging worker: HTTP 200 + message id, domain onboarded).
-   The production worker currently holds **Fly's** token value (from the
-   cutover bulk upload), which gets 401 from the Email Sending API — this
-   self-heals on the **first `main` deploy** (CI re-uploads the GitHub value).
-   To make production email work before merge, run
-   `wrangler secret put CLOUDFLARE_API_TOKEN --name kentcdodds-com` with the
-   updated token's value.
-3. **Post-merge verification** — after the first `main` deploy, trigger a
-   signup-verification email for `me@kentcdodds.com` from the production
-   `*.workers.dev` URL and confirm delivery.
+   **Verified 2026-07-06:** the production worker holds the GitHub-secret
+   token value (synced from staging on 2026-07-06; CI keeps it in sync on
+   every deploy). That token probes 200 for queues, vectorize, Workers AI,
+   and D1, and a real signup-verification email sent successfully from the
+   production worker (`Verification code sent to me@kentcdodds.com`, row
+   persisted, delivery confirmed). Fly's separate token is no longer used
+   anywhere on the worker.
 4. **Deliverability** — New Email Sending accounts start with conservative
    daily quotas that ramp with reputation. Volume here is low (auth codes,
    contact form, call notifications), so expect at most a brief warm-up period.
