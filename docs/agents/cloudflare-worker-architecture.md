@@ -287,6 +287,32 @@ Configured in `services/site-worker/wrangler.jsonc`:
 - `*/2 * * * *` — warmup cron hitting `/`, `/blog`, and `/healthcheck` to keep
   the parent artifact cache and a few dynamic isolates warm.
 
+## Call Kent audio pipeline (queue + callbacks)
+
+Episode audio generation runs in the separate `kcd-call-kent-audio-worker`
+(queue consumer + ffmpeg sandbox container). Flow:
+
+1. The save action enqueues a job to the `kcd-call-kent-audio` Cloudflare
+   Queue via REST, including a per-job `callbackUrl` built from the request
+   origin (`getDomainUrl`). This is what routes callbacks to the right
+   deployment (workers.dev preview vs custom domain); the audio worker only
+   honors https URLs on site-owned hosts and otherwise falls back to its
+   static `CALL_KENT_AUDIO_CALLBACK_URL` env var.
+2. The audio worker sends HMAC-signed `started` / `completed` / `failed`
+   callbacks to `/resources/calls/episode-audio-callback` with a **10s fetch
+   timeout**. The callback handler must therefore respond fast: the heavy
+   post-completion pipeline (R2 downloads, Whisper transcription, metadata
+   generation) runs via `runBackgroundTask`, never awaited in the handler.
+   Awaiting it caused the audio worker to abort after 10s and send a
+   `failed` event that flipped READY-bound drafts to ERROR.
+3. Errors are recorded on the `CallKentEpisodeDraft` row (`status: 'ERROR'`,
+   `errorMessage`); recovery = reset the row to
+   `status='PROCESSING', step='GENERATING_AUDIO'` and re-enqueue the job.
+
+Deploying the audio worker from a VM without docker: `wrangler deploy
+--containers-rollout=none` updates the worker JS without rebuilding the
+sandbox container image (fine when only the consumer logic changed).
+
 ## Performance profile (measured July 2026)
 
 - Warm dynamic isolates serve pages in ~0.10-0.30s TTFB (measured from a US
