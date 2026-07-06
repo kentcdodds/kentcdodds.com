@@ -55,4 +55,11 @@ describe('compile-mdx cloudinary media rewriting', () => {
 			'/media/kentcdodds.com/content/blog/my-car-accident/all-good-here.mp4',
 		)
 	})
+
+	test('leaves layered composite Cloudinary URLs untouched', () => {
+		const layeredUrl =
+			'https://res.cloudinary.com/kentcdodds-com/image/upload/l_kentcdodds.com:illustrations/kody,kent/profile,fl_layer_apply,w_1200,h_630,c_fill/v1623175021/kentcdodds.com/blog/2010s-decade-in-review/social-preview.png'
+		expect(parseCloudinaryPublicId(layeredUrl)).toBeNull()
+		expect(rewriteCloudinaryMediaUrl(layeredUrl)).toBeUndefined()
+	})
 })

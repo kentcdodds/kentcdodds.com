@@ -172,6 +172,16 @@ const cloudinaryUploadPathRegex =
 const cloudinaryTransformSegmentRegex =
 	/^[a-z][a-z0-9]*_[^/]+(?:,[a-z][a-z0-9]*_[^/]+)*$/i
 
+function isCloudinaryLayerTransform(segment: string) {
+	return (
+		segment.startsWith('l_') ||
+		segment.includes(',l_') ||
+		segment.includes('l_fetch:') ||
+		segment.includes('/fl_layer_apply') ||
+		segment.includes('fl_layer_apply')
+	)
+}
+
 function parseCloudinaryPublicId(urlString: string) {
 	const match = urlString.match(cloudinaryUploadPathRegex)
 	if (!match?.groups) return null
@@ -186,6 +196,7 @@ function parseCloudinaryPublicId(urlString: string) {
 			continue
 		}
 		if (cloudinaryTransformSegmentRegex.test(segment)) {
+			if (isCloudinaryLayerTransform(segment)) return null
 			segments.shift()
 			continue
 		}
