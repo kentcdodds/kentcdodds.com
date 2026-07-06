@@ -44,7 +44,10 @@ export async function gravatarExistsForEmail({
 		getFreshValue: async (context) => {
 			const gravatarUrl = getAvatar(email, { fallback: '404' })
 			try {
-				const timeoutMs = context.background || forceFresh ? 1000 * 10 : 100
+				// The old Node runtime got away with 100ms foreground checks;
+				// in workerd the outbound hop (RPC proxy + TLS to gravatar)
+				// regularly needs more, and a timeout caches a false negative.
+				const timeoutMs = context.background || forceFresh ? 1000 * 10 : 750
 				const avatarResponse = await fetchWithTimeout(
 					gravatarUrl,
 					{ method: 'HEAD' },
