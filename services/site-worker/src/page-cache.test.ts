@@ -301,6 +301,49 @@ describe('SWR state machine', () => {
 		const fill = buildPageCacheFillRequest(request)
 		expect(fill.headers.get('Cookie')).toBe('en_theme=dark')
 	})
+
+	test('stored entries omit fill-time observability headers', async () => {
+		const kvPut = vi.fn().mockResolvedValue(undefined)
+		const env = makeEnv({
+			SITE_CACHE_KV: {
+				get: vi.fn().mockResolvedValue(null),
+				put: kvPut,
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+		})
+		const fetchDynamic = vi.fn().mockResolvedValue(
+			new Response('<html><script nonce="abc123"></script></html>', {
+				status: 200,
+				headers: {
+					'content-type': 'text/html; charset=utf-8',
+					'content-security-policy': "script-src 'nonce-abc123'",
+					'x-cache-stats': 'kv:1',
+					'x-d1-stats': 'queries:2',
+					'referrer-policy': 'no-referrer',
+				},
+			}),
+		)
+		const waitUntilPromises: Promise<unknown>[] = []
+		const ctx = {
+			waitUntil: vi.fn((promise: Promise<unknown>) => {
+				waitUntilPromises.push(promise)
+			}),
+		} as unknown as ExecutionContext
+
+		await handlePageCacheRequest(
+			new Request('https://example.com/blog'),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		await Promise.all(waitUntilPromises)
+
+		expect(kvPut).toHaveBeenCalledTimes(1)
+		const stored = JSON.parse(String(kvPut.mock.calls[0]?.[1])) as PageCacheEntry
+		const storedHeaderNames = stored.headers.map(([name]) => name.toLowerCase())
+		expect(storedHeaderNames).not.toContain('x-cache-stats')
+		expect(storedHeaderNames).not.toContain('x-d1-stats')
+		expect(storedHeaderNames).toContain('referrer-policy')
+	})
 })
 
 describe('kv entry helpers', () => {

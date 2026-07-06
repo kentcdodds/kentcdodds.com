@@ -63,6 +63,7 @@ const STRIPPED_STORE_HEADERS = new Set([
 	'x-isolate-id',
 	'x-cold-start-timing',
 	'x-cache-stats',
+	'x-d1-stats',
 	'server-timing',
 	'x-edge-cache',
 	'age',
