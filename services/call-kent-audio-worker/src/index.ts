@@ -12,7 +12,40 @@ const queueMessageSchema = z.object({
 	draftId: z.string().trim().min(1),
 	callAudioKey: z.string().trim().min(1),
 	responseAudioKey: z.string().trim().min(1),
+	callbackUrl: z.string().trim().url().optional(),
 })
+
+const ALLOWED_CALLBACK_HOST_SUFFIXES = [
+	'kentcdodds.com',
+	'.kentcdodds.com',
+	'.kentcdodds.workers.dev',
+]
+
+/**
+ * Jobs may carry the enqueuing deployment's own callback URL (workers.dev
+ * preview vs custom domain). Only site-owned hosts are honored; anything
+ * else falls back to the statically configured URL.
+ */
+function resolveCallbackUrl(env: Env, requested: string | undefined) {
+	if (!requested) return env.CALL_KENT_AUDIO_CALLBACK_URL
+	try {
+		const { hostname, protocol } = new URL(requested)
+		const allowed =
+			protocol === 'https:' &&
+			ALLOWED_CALLBACK_HOST_SUFFIXES.some(
+				(suffix) =>
+					hostname === suffix ||
+					(suffix.startsWith('.') && hostname.endsWith(suffix)),
+			)
+		if (allowed) return requested
+	} catch {
+		// fall through to the static URL
+	}
+	console.warn('Ignoring disallowed callbackUrl from queue message', {
+		requested,
+	})
+	return env.CALL_KENT_AUDIO_CALLBACK_URL
+}
 
 type QueueMessage = {
 	body: unknown
@@ -58,16 +91,18 @@ export async function processMessage({
 }) {
 	const attempt = getAttempt(message)
 	let draftId = getDraftIdFromMessageBody(message.body)
+	let callbackUrl = env.CALL_KENT_AUDIO_CALLBACK_URL
 
 	try {
 		const parsed = queueMessageSchema.parse(message.body)
 		draftId = parsed.draftId
+		callbackUrl = resolveCallbackUrl(env, parsed.callbackUrl)
 		console.info('Call Kent audio queue message dequeued', {
 			draftId: parsed.draftId,
 			attempt,
 		})
 		await sendCallback({
-			callbackUrl: env.CALL_KENT_AUDIO_CALLBACK_URL,
+			callbackUrl,
 			callbackSecret: env.CALL_KENT_AUDIO_CALLBACK_SECRET,
 			event: {
 				type: 'audio_generation_started',
@@ -95,7 +130,7 @@ export async function processMessage({
 			},
 		})
 		await sendCallback({
-			callbackUrl: env.CALL_KENT_AUDIO_CALLBACK_URL,
+			callbackUrl,
 			callbackSecret: env.CALL_KENT_AUDIO_CALLBACK_SECRET,
 			event: {
 				type: 'audio_generation_completed',
@@ -118,7 +153,7 @@ export async function processMessage({
 		const errorMessage = error instanceof Error ? error.message : String(error)
 		if (draftId) {
 			await sendCallback({
-				callbackUrl: env.CALL_KENT_AUDIO_CALLBACK_URL,
+				callbackUrl,
 				callbackSecret: env.CALL_KENT_AUDIO_CALLBACK_SECRET,
 				event: {
 					type: 'audio_generation_failed',

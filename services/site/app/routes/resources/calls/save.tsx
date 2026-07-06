@@ -524,6 +524,7 @@ async function createEpisodeDraft({
 			draftId: draft.id,
 			callAudioKey: call.audioKey,
 			responseAudioKey: storedResponseAudio.key,
+			callbackUrl: `${getDomainUrl(request)}/resources/calls/episode-audio-callback`,
 		})
 	} catch (error: unknown) {
 		await db.updateMany(
