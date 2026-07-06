@@ -1,6 +1,7 @@
 import emojiRegex from 'emoji-regex'
 import {
 	buildMediaUrl,
+	parseMediaPath,
 	type MediaTransform,
 	serializeMediaTransform,
 } from '#app/utils/media.ts'
@@ -129,6 +130,13 @@ export async function resolveFeaturedImageDataUri(
 	}
 	if (featuredImage.startsWith('http://') || featuredImage.startsWith('https://')) {
 		return fetchAsDataUri(featuredImage)
+	}
+	if (featuredImage.startsWith('/media/')) {
+		const parsed = parseMediaPath(featuredImage)
+		if (!parsed) {
+			throw new Error(`Invalid media path: ${featuredImage}`)
+		}
+		return resolveMediaDataUri(env, parsed.id, parsed.transform)
 	}
 	return resolveMediaDataUri(env, featuredImage, { width: 900 })
 }
