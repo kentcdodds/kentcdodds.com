@@ -134,7 +134,7 @@ This code expires soon. If you did not request this email, you can safely ignore
 
       <br />
 
-      <center><img src="${buildMediaUrl(randomSportyKody.id, { width: 800 }, { origin: 'https://kentcdodds.com' })}" style="max-width: 80%;${
+      <center><img src="${buildMediaUrl(randomSportyKody.id, { width: 800 }, { origin: domainUrl })}" style="max-width: 80%;${
 				randomSportyKody.style?.aspectRatio
 					? `aspect-ratio: ${randomSportyKody.style.aspectRatio};`
 					: ''

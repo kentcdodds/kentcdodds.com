@@ -11,8 +11,10 @@ import { type ContentInputFile } from './local-content.ts'
  *
  * v3: Cloudinary body URLs rewritten to /media (Cloudflare-hosted assets),
  * including JSX expression attributes and link/poster/source attributes.
+ * v4: body /media URLs are host-relative (work on the workers.dev preview
+ * pre-flip and on kentcdodds.com post-flip).
  */
-export const ARTIFACT_COMPILER_VERSION = 3
+export const ARTIFACT_COMPILER_VERSION = 4
 
 export function computeContentVersion(inputs: Array<ContentInputFile>) {
 	const hash = createHash('sha256')

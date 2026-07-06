@@ -26,13 +26,13 @@ describe('compile-mdx cloudinary media rewriting', () => {
 		)
 	})
 
-	test('rewrites images to absolute /media URLs with default width', () => {
+	test('rewrites images to host-relative /media URLs with default width', () => {
 		expect(
 			rewriteCloudinaryMediaUrl(
 				'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033305/kentcdodds.com/content/blog/reacts-new-context-api/0.png',
 			),
 		).toBe(
-			'https://kentcdodds.com/media/w_1600/kentcdodds.com/content/blog/reacts-new-context-api/0.png',
+			'/media/w_1600/kentcdodds.com/content/blog/reacts-new-context-api/0.png',
 		)
 	})
 
@@ -42,7 +42,7 @@ describe('compile-mdx cloudinary media rewriting', () => {
 				'https://res.cloudinary.com/kentcdodds-com/image/upload/v1625033311/kentcdodds.com/content/blog/rendering-a-function-with-react/0.gif',
 			),
 		).toBe(
-			'https://kentcdodds.com/media/kentcdodds.com/content/blog/rendering-a-function-with-react/0.gif',
+			'/media/kentcdodds.com/content/blog/rendering-a-function-with-react/0.gif',
 		)
 	})
 
@@ -52,7 +52,7 @@ describe('compile-mdx cloudinary media rewriting', () => {
 				'https://res.cloudinary.com/kentcdodds-com/video/upload/v1672334947/kentcdodds.com/content/blog/my-car-accident/all-good-here.mp4',
 			),
 		).toBe(
-			'https://kentcdodds.com/media/kentcdodds.com/content/blog/my-car-accident/all-good-here.mp4',
+			'/media/kentcdodds.com/content/blog/my-car-accident/all-good-here.mp4',
 		)
 	})
 })

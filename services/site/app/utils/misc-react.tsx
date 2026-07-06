@@ -20,6 +20,10 @@ import { getOptionalTeam } from './misc.ts'
 
 export * from './misc.ts'
 
+// Gravatar's `default=` fallback must be an absolute URL (Gravatar redirects
+// the browser to it). When callers thread the request origin we use it so the
+// fallback works on any host (workers.dev preview pre-flip, custom domain
+// after); otherwise we fall back to the production domain.
 const PRODUCTION_MEDIA_ORIGIN = 'https://kentcdodds.com'
 const defaultAvatarSize = 128
 
@@ -27,11 +31,7 @@ export function getAvatar(
 	email: string,
 	{
 		size = defaultAvatarSize,
-		fallback = buildMediaUrl(
-			images.kodyProfileGray.id,
-			{ width: size },
-			{ origin: PRODUCTION_MEDIA_ORIGIN },
-		),
+		fallback = buildMediaUrl(images.kodyProfileGray.id, { width: size }),
 		origin,
 	}: { size?: number } & (
 		| { fallback?: null; origin?: null }
@@ -42,8 +42,8 @@ export function getAvatar(
 	const url = new URL(`https://www.gravatar.com/avatar/${hash}`)
 	url.searchParams.set('size', String(size))
 	if (fallback) {
-		if (origin && fallback.startsWith('/')) {
-			fallback = `${origin}${fallback}`
+		if (fallback.startsWith('/')) {
+			fallback = `${origin ?? PRODUCTION_MEDIA_ORIGIN}${fallback}`
 		}
 		url.searchParams.set('default', fallback)
 	}
@@ -51,30 +51,12 @@ export function getAvatar(
 }
 
 const avatarFallbacks: Record<OptionalTeam, (width: number) => string> = {
-	BLUE: (width: number) =>
-		buildMediaUrl(
-			images.kodyProfileBlue.id,
-			{ width },
-			{ origin: PRODUCTION_MEDIA_ORIGIN },
-		),
-	RED: (width: number) =>
-		buildMediaUrl(
-			images.kodyProfileRed.id,
-			{ width },
-			{ origin: PRODUCTION_MEDIA_ORIGIN },
-		),
+	BLUE: (width: number) => buildMediaUrl(images.kodyProfileBlue.id, { width }),
+	RED: (width: number) => buildMediaUrl(images.kodyProfileRed.id, { width }),
 	YELLOW: (width: number) =>
-		buildMediaUrl(
-			images.kodyProfileYellow.id,
-			{ width },
-			{ origin: PRODUCTION_MEDIA_ORIGIN },
-		),
+		buildMediaUrl(images.kodyProfileYellow.id, { width }),
 	UNKNOWN: (width: number) =>
-		buildMediaUrl(
-			images.kodyProfileGray.id,
-			{ width },
-			{ origin: PRODUCTION_MEDIA_ORIGIN },
-		),
+		buildMediaUrl(images.kodyProfileGray.id, { width }),
 }
 
 export function getAvatarForUser(

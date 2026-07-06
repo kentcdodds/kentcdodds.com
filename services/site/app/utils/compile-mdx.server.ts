@@ -165,7 +165,6 @@ function trimCodeBlocks() {
 }
 
 // yes, I did write this myself 😬
-const CLOUDINARY_MEDIA_ORIGIN = 'https://kentcdodds.com'
 
 const cloudinaryUploadPathRegex =
 	/^https?:\/\/res\.cloudinary\.com\/[^/]+\/(?<resourceType>image|video)\/upload\/(?<rest>.+)$/i
@@ -204,19 +203,16 @@ function rewriteCloudinaryMediaUrl(
 	const parsed = parseCloudinaryPublicId(urlString)
 	if (!parsed) return
 	const { resourceType, publicId } = parsed
+	// Relative URLs adapt to whichever host serves the page (workers.dev
+	// preview today, kentcdodds.com after the DNS flip). Compiled bodies never
+	// leave the site: the RSS feed embeds only frontmatter descriptions.
 	// mp4s are sometimes referenced via the legacy image/upload path.
 	const isVideo = resourceType === 'video' || /\.(mp4|webm)$/i.test(publicId)
 	if (isVideo || original) {
-		return buildMediaUrl(publicId, undefined, {
-			origin: CLOUDINARY_MEDIA_ORIGIN,
-		})
+		return buildMediaUrl(publicId)
 	}
 	const isGif = publicId.toLowerCase().endsWith('.gif')
-	return buildMediaUrl(
-		publicId,
-		isGif ? undefined : { width: 1600 },
-		{ origin: CLOUDINARY_MEDIA_ORIGIN },
-	)
+	return buildMediaUrl(publicId, isGif ? undefined : { width: 1600 })
 }
 
 const MEDIA_URL_ATTRIBUTES = ['src', 'href', 'poster']
