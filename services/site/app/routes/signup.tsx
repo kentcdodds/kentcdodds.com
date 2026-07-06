@@ -32,6 +32,7 @@ import {
 	verificationTable,
 } from '#app/utils/db/schema.server.ts'
 import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
+import { runBackgroundTask } from '#app/utils/background-task.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
@@ -295,17 +296,19 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 
 		// Best-effort: don't block account creation on mailing-list issues.
-		void tagKCDSiteSubscriber({
-			email: signupEmail,
-			firstName: safeFirstName,
-			fields: { kcd_team: safeTeam, kcd_site_id: user.id },
-		})
-			.then(async (sub) => {
-				await db.update(userTable, user.id, { kitId: String(sub.id) })
+		runBackgroundTask(() =>
+			tagKCDSiteSubscriber({
+				email: signupEmail,
+				firstName: safeFirstName,
+				fields: { kcd_team: safeTeam, kcd_site_id: user.id },
 			})
-			.catch((error) => {
-				console.error('Failed to tag subscriber on signup', error)
-			})
+				.then(async (sub) => {
+					await db.update(userTable, user.id, { kitId: String(sub.id) })
+				})
+				.catch((error) => {
+					console.error('Failed to tag subscriber on signup', error)
+				}),
+		)
 
 		let session: Awaited<ReturnType<typeof getSession>>
 		try {

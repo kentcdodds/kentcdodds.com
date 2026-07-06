@@ -25,9 +25,7 @@ import {
 	runWithD1RequestContext,
 } from '#app/utils/db/d1-session-request.server.ts'
 import { installDevMockFetch } from '#app/utils/dev-outbound-fetch.server.ts'
-import {
-	setDevWaitUntil,
-} from '#app/utils/dev-wait-until.server.ts'
+import { setRequestWaitUntil } from '#app/utils/background-task.server.ts'
 import {
 	setRuntimeEnvSource,
 	getEnv,
@@ -484,7 +482,7 @@ async function handleSiteRequest(
 	const cacheStats = beginCacheRequestStats()
 	const d1Stats = beginD1RequestStats()
 	const inboundBookmark = getD1BookmarkFromRequest(request)
-	setDevWaitUntil(ctx.waitUntil.bind(ctx))
+	setRequestWaitUntil(ctx.waitUntil.bind(ctx))
 	try {
 		await ensureRuntimeBridges(env)
 		return await runWithD1RequestContext(request, async () => {
@@ -574,7 +572,7 @@ async function handleSiteRequest(
 			return finalResponse
 		})
 	} finally {
-		setDevWaitUntil(null)
+		setRequestWaitUntil(null)
 		endCacheRequestStats()
 		endD1RequestStats()
 	}

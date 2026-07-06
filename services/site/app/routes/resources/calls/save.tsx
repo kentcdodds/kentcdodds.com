@@ -10,6 +10,7 @@ import {
 	putCallAudioFromDataUrl,
 	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
+import { runBackgroundTask } from '#app/utils/background-task.server.ts'
 import { startCallKentCallerTranscriptProcessing } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { requestCallKentEpisodeAudioGeneration } from '#app/utils/call-kent-audio-processor.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
@@ -163,7 +164,9 @@ async function createCall({
 			throw error
 		}
 
-		void startCallKentCallerTranscriptProcessing(createdCall.id)
+		runBackgroundTask(() =>
+			startCallKentCallerTranscriptProcessing(createdCall.id),
+		)
 
 		try {
 			const env = getEnv()
@@ -194,7 +197,7 @@ async function createCall({
 					message = `${baseMessage}${notesHeader}${truncatedNotes}\n\n${callAdminUrl}`
 				}
 			}
-			void sendMessageFromDiscordBot(channelId, message)
+			runBackgroundTask(() => sendMessageFromDiscordBot(channelId, message))
 		} catch (error: unknown) {
 			console.error('Problem sending a call message', error)
 			// ignore
@@ -349,19 +352,22 @@ async function publishCall({
 
 		if (published.episodeUrl) {
 			try {
+				const callUser = call.user
 				const email = getPublishedCallKentEpisodeEmail({
-					firstName: call.user.firstName,
+					firstName: callUser.firstName,
 					episodeTitle: title,
 					episodeUrl: published.episodeUrl,
 					imageUrl: published.imageUrl,
 				})
-				void sendEmail({
-					to: call.user.email,
-					from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
-					subject: `Your "Call Kent" episode has been published`,
-					text: email.text,
-					html: email.html,
-				})
+				runBackgroundTask(() =>
+					sendEmail({
+						to: callUser.email,
+						from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
+						subject: `Your "Call Kent" episode has been published`,
+						text: email.text,
+						html: email.html,
+					}),
+				)
 			} catch (error: unknown) {
 				console.error(
 					`Problem sending email about a call: ${published.episodeUrl}`,
@@ -562,7 +568,9 @@ async function generateCallerTranscript({
 		callerTranscriptErrorMessage: null,
 	})
 
-	void startCallKentCallerTranscriptProcessing(callId, { force: true })
+	runBackgroundTask(() =>
+		startCallKentCallerTranscriptProcessing(callId, { force: true }),
+	)
 	return redirect(`/calls/admin/${callId}`)
 }
 

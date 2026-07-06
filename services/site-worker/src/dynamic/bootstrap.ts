@@ -16,6 +16,7 @@ function publishSharedReactGlobals() {
 }
 
 publishSharedReactGlobals()
+import { setRequestWaitUntil } from '../../../site/app/utils/background-task.server.ts'
 import {
 	beginCacheRequestStats,
 	endCacheRequestStats,
@@ -433,6 +434,7 @@ async function handleSiteRequest(
 	const cacheStats = beginCacheRequestStats()
 	const d1Stats = beginD1RequestStats()
 	const inboundBookmark = getD1BookmarkFromRequest(request)
+	setRequestWaitUntil(ctx.waitUntil.bind(ctx))
 	try {
 		await ensureRuntimeBridges(env)
 		return await runWithD1RequestContext(request, async () => {
@@ -548,6 +550,7 @@ async function handleSiteRequest(
 	} finally {
 		endCacheRequestStats()
 		endD1RequestStats()
+		setRequestWaitUntil(null)
 	}
 }
 

@@ -1,3 +1,4 @@
+import { runBackgroundTask } from './background-task.server.ts'
 import {
 	type Cache,
 	cachified as baseCachified,
@@ -260,6 +261,10 @@ export async function cachified<Value>({
 	let cachifiedResolved = false
 	const cachifiedPromise = baseCachified(
 		{
+			// Thread the request's waitUntil so stale-while-revalidate background
+			// refreshes survive past the response in workerd. Without it, the
+			// runtime cancels the refresh promise when the request ends.
+			waitUntil: (promise) => runBackgroundTask(() => promise),
 			...options,
 			forceFresh: await shouldForceFresh({
 				forceFresh: options.forceFresh,
