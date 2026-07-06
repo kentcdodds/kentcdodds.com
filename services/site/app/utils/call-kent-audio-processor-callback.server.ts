@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { and, eq, inList } from '@remix-run/data-table'
 import { z } from 'zod'
+import { runBackgroundTask } from '#app/utils/background-task.server.ts'
 import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
 import { db } from '#app/utils/db.server.ts'
 import { callKentEpisodeDraftTable } from '#app/utils/db/schema.server.ts'
@@ -173,7 +174,10 @@ export async function handleCallKentAudioProcessorEvent(
 				},
 			)
 			if (updated.affectedRows !== 1) return
-			await startCallKentEpisodeDraftProcessing(event.draftId)
+			// The audio worker aborts its callback fetch after 10s; the pipeline
+			// (transcription, metadata) takes far longer, so it must not block
+			// the callback response. Errors are recorded on the draft row.
+			runBackgroundTask(() => startCallKentEpisodeDraftProcessing(event.draftId))
 			return
 		}
 		case 'audio_generation_failed': {
