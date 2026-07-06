@@ -16,7 +16,7 @@ import { type ContentInputFile } from './local-content.ts'
  * v5: layered Cloudinary composite URLs (l_, fl_layer_apply, etc.) are left
  * untouched instead of being rewritten to broken /media IDs.
  */
-export const ARTIFACT_COMPILER_VERSION = 7
+export const ARTIFACT_COMPILER_VERSION = 8
 
 export function computeContentVersion(inputs: Array<ContentInputFile>) {
 	const hash = createHash('sha256')

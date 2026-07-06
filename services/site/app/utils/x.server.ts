@@ -122,7 +122,46 @@ async function getMetadata(url: string): Promise<Metadata> {
 			}
 		}
 	}
+	// External og:images only render if our CSP img-src allows their host;
+	// otherwise drop the image and let the preview card render without one.
+	if (metadata.image && !metadata.image.startsWith('/')) {
+		if (!isCspAllowedImageHost(metadata.image)) {
+			metadata.image = undefined
+		}
+	}
 	return metadata
+}
+
+/**
+ * Mirrors the img-src allowlist in services/site-worker/src/dynamic/csp.ts.
+ * Link-preview images from hosts outside this list would be blocked by the
+ * browser anyway, so we omit them at compile time.
+ */
+const CSP_IMAGE_HOSTS = [
+	'www.gravatar.com',
+	'pbs.twimg.com',
+	'i.ytimg.com',
+	'image.simplecastcdn.com',
+	'images.transistor.fm',
+	'img.transistor.fm',
+	'img.transistorcdn.com',
+	'lh4.googleusercontent.com',
+	'i2.wp.com',
+	'i1.wp.com',
+	'og-image-react-egghead.now.sh',
+	'og-image-react-egghead.vercel.app',
+	'www.epicweb.dev',
+]
+
+function isCspAllowedImageHost(urlString: string) {
+	try {
+		const { hostname } = new URL(urlString)
+		return CSP_IMAGE_HOSTS.some(
+			(host) => hostname === host || hostname.endsWith('.githubusercontent.com'),
+		)
+	} catch {
+		return false
+	}
 }
 
 async function unshorten(urlString: string, maxFollows = 10): Promise<string> {
