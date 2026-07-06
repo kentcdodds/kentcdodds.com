@@ -30,21 +30,24 @@ export const meta: MetaFunction<typeof loader> = ({ data }) =>
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
+	const testimonials = await getTestimonials({ request, timings })
+	const testimonialCount = testimonials.length > 0 ? `${testimonials.length} ` : ''
+	const title = `${testimonialCount}testimonials about Kent C. Dodds`
 	const socialMetas = (
 		await import('#app/og/page-meta.server.ts')
 	).buildPageSocialMetasForRequest(request, {
-		title: 'Kent C. Dodds Testimonials',
-		description: 'Read what people are saying about Kent C. Dodds',
+		title,
+		description: `Check out ${testimonialCount}testimonials about Kent C. Dodds and how the things he's done has helped people in their goals.`,
 		socialImage: {
 			kind: 'generic-social',
-			words: 'Curious to read what people are saying about Kent?',
-			featuredImage: images.microphone.id,
+			words: title,
+			featuredImage: images.kentHoldingOutCody.id,
 		},
 	})
 
 	return json(
 		{
-			testimonials: await getTestimonials({ request, timings }),
+			testimonials,
 			socialMetas,
 		},
 		{
