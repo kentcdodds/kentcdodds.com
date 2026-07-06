@@ -41,14 +41,6 @@ if (!accountId || !apiToken) {
 
 const dryRun = process.argv.includes('--dry-run')
 const verify = process.argv.includes('--verify')
-/**
- * `--composites <bundle.json>`: upload snapshotted Cloudinary composite
- * renders (layered/text-overlay recipes) referenced by the compiled MDX
- * bundle. The bundle's `compositeAssets` maps R2 key → source URL.
- */
-const compositesIndex = process.argv.indexOf('--composites')
-const compositesBundlePath =
-	compositesIndex === -1 ? null : process.argv[compositesIndex + 1]
 const normalizeOversized = process.argv.includes('--normalize-oversized')
 
 // The Workers Images binding fails on inputs over ~20 MiB.
@@ -271,42 +263,7 @@ async function normalizeOversizedImages() {
 	}
 }
 
-async function uploadComposites(bundlePath) {
-	const bundle = JSON.parse(readFileSync(bundlePath, 'utf8'))
-	const compositeAssets = bundle.compositeAssets ?? {}
-	const entries = Object.entries(compositeAssets)
-	console.log(`${entries.length} composite assets in bundle`)
-	const existing = await listAllR2Keys()
-	let uploaded = 0
-	const failed = []
-	for (const [key, sourceUrl] of entries) {
-		if (existing.has(key)) continue
-		if (dryRun) {
-			console.log(`[dry-run] would snapshot ${key} <- ${sourceUrl.slice(0, 80)}`)
-			continue
-		}
-		const response = await fetch(sourceUrl)
-		if (!response.ok) {
-			failed.push({ key, sourceUrl, status: response.status })
-			console.warn(`FAILED (${response.status}): ${sourceUrl.slice(0, 100)}`)
-			continue
-		}
-		const bytes = new Uint8Array(await response.arrayBuffer())
-		const contentType =
-			response.headers.get('content-type') ?? 'application/octet-stream'
-		await putR2Object(key, bytes, contentType)
-		uploaded += 1
-		console.log(`snapshot ${key} (${contentType}, ${bytes.length} bytes)`)
-	}
-	console.log(`\nComposites done. Uploaded ${uploaded}, failed ${failed.length}.`)
-	if (failed.length > 0) process.exit(1)
-}
-
 async function main() {
-	if (compositesBundlePath) {
-		await uploadComposites(compositesBundlePath)
-		return
-	}
 	if (normalizeOversized) {
 		await normalizeOversizedImages()
 		return

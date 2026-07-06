@@ -25,7 +25,7 @@ describe('computeCallKentEpisodeArtLayout', () => {
 		expect(layout.canvasSize).toBe(CANVAS)
 	})
 
-	test('matches Cloudinary font scaling at 1400px for short titles', () => {
+	test('matches the original artwork font scaling at 1400px for short titles', () => {
 		const layout = computeCallKentEpisodeArtLayout(CANVAS, 'Podcast breaks')
 
 		expect(layout.title.fontSize).toBeCloseTo((180 / CALL_KENT_EPISODE_ART_DESIGN_SIZE) * CANVAS)

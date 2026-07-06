@@ -5,7 +5,6 @@ import path from 'node:path'
 import pLimit from 'p-limit'
 import {
 	configureMdxCompileOptions,
-	drainCollectedCompositeAssets,
 	getEmbedFallbackCount,
 } from '#app/utils/compile-mdx.server.ts'
 import {
@@ -154,7 +153,6 @@ async function main() {
 			pages: pagesDirList,
 		},
 		dataFiles,
-		compositeAssets: drainCollectedCompositeAssets(),
 	}
 
 	await fs.mkdir(path.dirname(path.resolve(options.out)), { recursive: true })

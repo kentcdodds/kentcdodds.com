@@ -2,7 +2,7 @@
  * Media URL contract for Cloudflare-hosted images and video.
  *
  * Assets live in the `kentcdodds-com` R2 bucket keyed by their (legacy)
- * Cloudinary public IDs. They are served through the site worker at:
+ * public IDs from the previous image CDN. They are served through the site worker at:
  *
  *   /media/<transform-segment>/<asset-id>   (transformed image)
  *   /media/<asset-id>                       (original bytes; used for video)
@@ -184,7 +184,7 @@ export function parseMediaPath(pathname: string): ParsedMediaRequest | null {
 /**
  * The R2 bucket contains a mix of key styles: assets copied by hand live
  * under prefix-stripped keys, while script-migrated assets use the exact
- * Cloudinary public ID. Try candidates in order.
+ * full public ID. Try candidates in order.
  */
 export function mediaKeyCandidates(id: string): Array<string> {
 	const candidates = [id]

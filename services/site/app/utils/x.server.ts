@@ -76,13 +76,53 @@ export function getMetadataFromHtml(html: string, url: string): Metadata {
 	}
 }
 
+/**
+ * Until the DNS flip, kentcdodds.com is served by the legacy host whose
+ * metadata (og:image etc.) points at retired infrastructure. Fetch our own
+ * pages' metadata from the current deployment instead so embedded link
+ * previews always reference assets we serve. After the flip this is an
+ * identity mapping.
+ */
+const SITE_METADATA_ORIGIN =
+	process.env.SITE_METADATA_ORIGIN ??
+	'https://kentcdodds-com.kentcdodds.workers.dev'
+
+function resolveMetadataFetchUrl(url: string) {
+	try {
+		const parsed = new URL(url)
+		if (parsed.hostname === 'kentcdodds.com') {
+			return new URL(
+				`${parsed.pathname}${parsed.search}`,
+				SITE_METADATA_ORIGIN,
+			).toString()
+		}
+	} catch {
+		// fall through to the original URL
+	}
+	return url
+}
+
 async function getMetadata(url: string): Promise<Metadata> {
 	// In mocks mode we don't want to make arbitrary external HTTP requests for
 	// link metadata (it can hang CI / e2e test runs and adds nondeterminism).
 	if (getEnv().MOCKS) return {}
 
-	const html = await fetchWithTimeout(url, {}, 2_000).then((res) => res.text())
-	return getMetadataFromHtml(html, url)
+	const fetchUrl = resolveMetadataFetchUrl(url)
+	const html = await fetchWithTimeout(fetchUrl, {}, 2_000).then((res) =>
+		res.text(),
+	)
+	const metadata = getMetadataFromHtml(html, url)
+	// Self-hosted images embed as host-relative URLs so compiled content
+	// works on any host (preview and custom domain alike).
+	if (metadata.image) {
+		for (const origin of [SITE_METADATA_ORIGIN, 'https://kentcdodds.com']) {
+			if (metadata.image.startsWith(`${origin}/`)) {
+				metadata.image = metadata.image.slice(origin.length)
+				break
+			}
+		}
+	}
+	return metadata
 }
 
 async function unshorten(urlString: string, maxFollows = 10): Promise<string> {

@@ -7,7 +7,7 @@ export const CALL_KENT_EPISODE_ART_TITLE_MAX_LINES = 3
 export const CALL_KENT_EPISODE_ART_TITLE_LINE_HEIGHT = 1.1
 export const CALL_KENT_EPISODE_ART_TITLE_CHAR_WIDTH_FACTOR = 0.62
 
-// Cloudinary c_fit steps for Matter-Medium title (design px at 3000 canvas).
+// Original artwork c_fit font steps for Matter-Medium title (design px at 3000 canvas).
 export const CALL_KENT_EPISODE_ART_TITLE_FONT_DESIGN_STEPS = [
 	180, 154, 137, 120, 108, 96,
 ] as const
