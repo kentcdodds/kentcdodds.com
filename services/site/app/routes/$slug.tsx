@@ -1,5 +1,10 @@
 import * as React from 'react'
-import { data as json, type HeadersFunction, type MetaFunction } from 'react-router'
+import {
+	data as json,
+	isRouteErrorResponse,
+	type HeadersFunction,
+	type MetaFunction,
+} from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -117,7 +122,10 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, error }) => {
+	if (isRouteErrorResponse(error) && error.status === 404) {
+		return [{ title: 'Not found' }]
+	}
 	if (
 		data != null &&
 		typeof data === 'object' &&

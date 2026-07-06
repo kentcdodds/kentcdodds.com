@@ -397,12 +397,18 @@ function AppWithProviders({ loaderData }: Route.ComponentProps) {
 }
 export default AppWithProviders
 
-function ErrorDoc({ children }: { children: React.ReactNode }) {
+function ErrorDoc({
+	children,
+	title = 'Oh no...',
+}: {
+	children: React.ReactNode
+	title?: string
+}) {
 	const nonce = useNonce()
 	return (
 		<html lang="en" className="dark">
 			<head>
-				<title>Oh no...</title>
+				<title>{title}</title>
 				<script
 					nonce={nonce}
 					suppressHydrationWarning
@@ -431,7 +437,7 @@ export function ErrorBoundary() {
 		console.error('CatchBoundary', error)
 		if (error.status === 404) {
 			return (
-				<ErrorDoc>
+				<ErrorDoc title="Not found">
 					<FourOhFour pathname={location.pathname} />
 				</ErrorDoc>
 			)
