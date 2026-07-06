@@ -122,7 +122,21 @@ export function sniffImageContentType(bytes: Uint8Array): string | null {
 	if (isSvgMagic(bytes)) {
 		return 'image/svg+xml'
 	}
+	if (isIcoMagic(bytes)) {
+		return 'image/vnd.microsoft.icon'
+	}
 	return null
+}
+
+/** ICO sources start with 00 00 01 00. */
+export function isIcoMagic(bytes: Uint8Array) {
+	return (
+		bytes.length >= 4 &&
+		bytes[0] === 0x00 &&
+		bytes[1] === 0x00 &&
+		bytes[2] === 0x01 &&
+		bytes[3] === 0x00
+	)
 }
 
 /** SVG sources start with `<svg` or an XML prolog (`<?xml`). */
@@ -141,6 +155,21 @@ export function isSvgContent({
 }) {
 	if (contentType?.toLowerCase().includes('image/svg')) return true
 	if (magic && isSvgMagic(magic)) return true
+	return false
+}
+
+export function isIcoContent({
+	contentType,
+	magic,
+}: {
+	contentType?: string
+	magic?: Uint8Array
+}) {
+	if (contentType?.toLowerCase().includes('image/vnd.microsoft.icon')) {
+		return true
+	}
+	if (contentType?.toLowerCase().includes('image/x-icon')) return true
+	if (magic && isIcoMagic(magic)) return true
 	return false
 }
 
@@ -251,14 +280,17 @@ export function resolveOutputFormat({
 		}
 	}
 
+	// Animated GIFs must stay GIF — the Images binding drops animation when
+	// negotiating to WebP/AVIF.
+	if (isGif) {
+		return { format: 'image/gif', negotiated: false }
+	}
+
 	if (acceptPrefers(acceptHeader, 'image/avif')) {
 		return { format: 'image/avif', negotiated: true }
 	}
 	if (acceptPrefers(acceptHeader, 'image/webp')) {
 		return { format: 'image/webp', negotiated: true }
-	}
-	if (isGif) {
-		return { format: 'image/gif', negotiated: false }
 	}
 	return { format: originalFormat, negotiated: false }
 }
@@ -487,6 +519,11 @@ export async function serveMediaObject({
 	// SVG sources scale losslessly in the browser and the Images binding
 	// cannot rasterize them; serve the original regardless of transform.
 	if (isSvgContent({ contentType: source.contentType, magic })) {
+		return serveOriginalImageResponse({ source, request, magic })
+	}
+
+	// ICO sources cannot be decoded by the Images binding; serve originals.
+	if (isIcoContent({ contentType: source.contentType, magic })) {
 		return serveOriginalImageResponse({ source, request, magic })
 	}
 

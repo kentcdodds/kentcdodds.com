@@ -2,11 +2,13 @@ import { describe, expect, test, vi } from 'vitest'
 import {
 	buildImageTransformOptions,
 	getMediaCacheKey,
+	isIcoMagic,
 	isMp4Magic,
 	isVideoContent,
 	mapMediaGravity,
 	normalizeBackgroundColor,
 	resolveOutputFormat,
+	serveMediaObject,
 	sniffImageContentType,
 	validateMediaTransform,
 } from '../../site/app/utils/media-serving.server.ts'
@@ -82,10 +84,21 @@ describe('media helpers', () => {
 			resolveOutputFormat({
 				transform: undefined,
 				acceptHeader: 'image/webp,*/*',
+				isGif: false,
+				originalFormat: 'image/jpeg',
+			}),
+		).toEqual({ format: 'image/webp', negotiated: true })
+	})
+
+	test('keeps gif when webp is accepted', () => {
+		expect(
+			resolveOutputFormat({
+				transform: { format: 'auto' },
+				acceptHeader: 'image/webp,*/*',
 				isGif: true,
 				originalFormat: 'image/gif',
 			}),
-		).toEqual({ format: 'image/webp', negotiated: true })
+		).toEqual({ format: 'image/gif', negotiated: false })
 	})
 
 	test('keeps gif when webp is not accepted', () => {
@@ -224,6 +237,43 @@ describe('svg passthrough', () => {
 		expect(sniffImageContentType(svg)).toBe('image/svg+xml')
 		expect(sniffImageContentType(xml)).toBe('image/svg+xml')
 		expect(sniffImageContentType(jpeg)).toBe('image/jpeg')
+	})
+})
+
+describe('ico passthrough', () => {
+	test('detects ico by magic bytes', () => {
+		const ico = new Uint8Array([0x00, 0x00, 0x01, 0x00, 0x01, 0x00])
+		expect(isIcoMagic(ico)).toBe(true)
+		expect(sniffImageContentType(ico)).toBe('image/vnd.microsoft.icon')
+	})
+
+	test('serves ico originals even when a transform is requested', async () => {
+		const icoBytes = new Uint8Array([0x00, 0x00, 0x01, 0x00, 0x01, 0x00])
+		const images = {
+			input: vi.fn(() => {
+				throw new Error('Images binding should not be called for ICO')
+			}),
+		}
+		const response = await serveMediaObject({
+			env: { MEDIA_BUCKET: {} as R2Bucket, IMAGES: images },
+			source: {
+				body: new Blob([icoBytes]).stream(),
+				contentType: 'image/vnd.microsoft.icon',
+				size: icoBytes.length,
+			},
+			id: 'kentcdodds.com/blog/super-simple-start-to-remix/favicon_vsvcsr.ico',
+			transform: { width: 1600 },
+			request: new Request('https://example.com/media/w_1600/kentcdodds.com/blog/super-simple-start-to-remix/favicon_vsvcsr.ico'),
+			magic: icoBytes,
+		})
+
+		expect(images.input).not.toHaveBeenCalled()
+		expect(response.status).toBe(200)
+		expect(response.headers.get('content-type')).toBe(
+			'image/vnd.microsoft.icon',
+		)
+		const body = new Uint8Array(await response.arrayBuffer())
+		expect(body).toEqual(icoBytes)
 	})
 })
 
