@@ -35,7 +35,7 @@ it's loaded. Here's a video to demonstrate that experience:
 	controls={true}
 	loop={true}
 	muted={true}
-	src="https://res.cloudinary.com/kentcdodds-com/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4"
+	src="/media/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-image-load_zzqqnt.mp4"
 />
 
 I want to walk you through some of the things I had to do for this to work, and
@@ -220,7 +220,7 @@ does.
 	controls={true}
 	loop={true}
 	muted={true}
-	src="https://res.cloudinary.com/kentcdodds-com/video/upload/f_auto:video,q_auto/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4"
+	src="/media/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/unsplash-loading_l2ekrr.mp4"
 />
 
 When you land on an unsplash image, there are three things that can happen in
@@ -256,7 +256,7 @@ a nice looking blur of a full image: `LGFFaXYk^6#M@-5c,1J5@[or[Q6.`:
 
 ![blurhash website showing an image being
 converted into a hash and the canvas representation of
-that](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurhash)
+that](/media/w_1600/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurhash)
 
 Honestly, it's so cool. Magical 🧙
 
@@ -282,7 +282,7 @@ This is really easy since I'm using [Cloudinary](https://cloudinary.com) for all
 my images. Additionally, cloudinary has the ability to apply transforms like
 blur on the image. This means that I could easily reduce the amount of data to
 represent in my base64 string. So I generate a cloudinary URL
-[like this](https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop):
+[like this](/media/w_100/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop):
 
 ```
 https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/kentcdodds.com/content/blog/how-i-built-a-modern-website-in-2021/banner_iplhop
@@ -316,7 +316,7 @@ image.
 
 Unfortunately, upscaling it like this made it look really pixelated.
 
-![Pixelated blog post placeholder](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/pixelated-placeholder)
+![Pixelated blog post placeholder](/media/w_1600/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/pixelated-placeholder)
 
 The platform to the rescue! I just slapped this in the DOM after my base64 image
 and we were in business:
@@ -333,7 +333,7 @@ backdrop-filter: blur(24px);
 
 And we get the nice blur effect:
 
-![Blurred blog post placeholder](https://res.cloudinary.com/kentcdodds-com/image/upload/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-placeholder)
+![Blurred blog post placeholder](/media/w_1600/kentcdodds.com/content/blog/building-an-awesome-image-loading-experience/blurred-placeholder)
 
 Sweet!
 
