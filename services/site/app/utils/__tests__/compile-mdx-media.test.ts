@@ -62,4 +62,13 @@ describe('compile-mdx cloudinary media rewriting', () => {
 		expect(parseCloudinaryPublicId(layeredUrl)).toBeNull()
 		expect(rewriteCloudinaryMediaUrl(layeredUrl)).toBeUndefined()
 	})
+
+	test('leaves percent-encoded variable composite URLs untouched', () => {
+		// Real shape from year-in-review posts: variable definitions ($th/$tw)
+		// and l_text overlays, percent-encoded in the MDX source.
+		const encodedComposite =
+			'https://res.cloudinary.com/kentcdodds-com/image/upload/%24th_1256%2C%24tw_2400%2C%24gw_%24tw_div_24%2C%24gh_%24th_div_12/co_rgb%3Aa9adc1%2Cc_fit%2Cl_text%3Akentcdodds.com%3AMatter-Regular.woff2_50%3ACheck%2520this/c_fill%2Cw_%24tw%2Ch_%24th/kentcdodds.com/social-background.png'
+		expect(parseCloudinaryPublicId(encodedComposite)).toBeNull()
+		expect(rewriteCloudinaryMediaUrl(encodedComposite)).toBeUndefined()
+	})
 })

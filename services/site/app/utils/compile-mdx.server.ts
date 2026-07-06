@@ -191,12 +191,25 @@ function parseCloudinaryPublicId(urlString: string) {
 	const segments = rest.split('/')
 	while (segments.length > 0) {
 		const segment = segments[0] ?? ''
-		if (/^v\d+$/.test(segment)) {
+		// Transform segments may be percent-encoded in MDX sources
+		// (`%24w_...` for `$w_...` variables, `%2C` for commas) — classify on
+		// the decoded form.
+		let decoded = segment
+		try {
+			decoded = decodeURIComponent(segment)
+		} catch {
+			// leave as-is; treated as part of the public id
+		}
+		if (/^v\d+$/.test(decoded)) {
 			segments.shift()
 			continue
 		}
-		if (cloudinaryTransformSegmentRegex.test(segment)) {
-			if (isCloudinaryLayerTransform(segment)) return null
+		// Variable definitions ($w_100) and layered/text/fetch overlays are
+		// composite recipes we cannot reproduce on /media — leave the whole
+		// URL untouched.
+		if (/^\$[a-z]/i.test(decoded)) return null
+		if (cloudinaryTransformSegmentRegex.test(decoded)) {
+			if (isCloudinaryLayerTransform(decoded)) return null
 			segments.shift()
 			continue
 		}
