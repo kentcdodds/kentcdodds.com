@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+	drainCollectedCompositeAssets,
 	parseCloudinaryPublicId,
 	rewriteCloudinaryMediaUrl,
 } from '../compile-mdx.server.ts'
@@ -56,19 +57,31 @@ describe('compile-mdx cloudinary media rewriting', () => {
 		)
 	})
 
-	test('leaves layered composite Cloudinary URLs untouched', () => {
+	test('rewrites layered composite Cloudinary URLs to snapshotted media keys', () => {
 		const layeredUrl =
 			'https://res.cloudinary.com/kentcdodds-com/image/upload/l_kentcdodds.com:illustrations/kody,kent/profile,fl_layer_apply,w_1200,h_630,c_fill/v1623175021/kentcdodds.com/blog/2010s-decade-in-review/social-preview.png'
 		expect(parseCloudinaryPublicId(layeredUrl)).toBeNull()
-		expect(rewriteCloudinaryMediaUrl(layeredUrl)).toBeUndefined()
+		const rewritten = rewriteCloudinaryMediaUrl(layeredUrl)
+		expect(rewritten).toMatch(/^\/media\/composites\/[0-9a-f]{16}$/)
 	})
 
-	test('leaves percent-encoded variable composite URLs untouched', () => {
+	test('rewrites percent-encoded variable composites deterministically', () => {
 		// Real shape from year-in-review posts: variable definitions ($th/$tw)
 		// and l_text overlays, percent-encoded in the MDX source.
 		const encodedComposite =
 			'https://res.cloudinary.com/kentcdodds-com/image/upload/%24th_1256%2C%24tw_2400%2C%24gw_%24tw_div_24%2C%24gh_%24th_div_12/co_rgb%3Aa9adc1%2Cc_fit%2Cl_text%3Akentcdodds.com%3AMatter-Regular.woff2_50%3ACheck%2520this/c_fill%2Cw_%24tw%2Ch_%24th/kentcdodds.com/social-background.png'
 		expect(parseCloudinaryPublicId(encodedComposite)).toBeNull()
-		expect(rewriteCloudinaryMediaUrl(encodedComposite)).toBeUndefined()
+		const first = rewriteCloudinaryMediaUrl(encodedComposite)
+		expect(first).toMatch(/^\/media\/composites\/[0-9a-f]{16}$/)
+		// Deterministic: same URL always maps to the same key, and the
+		// decoded form maps to the same key as the encoded form.
+		expect(rewriteCloudinaryMediaUrl(encodedComposite)).toBe(first)
+		const decoded = decodeURIComponent(encodedComposite)
+		expect(rewriteCloudinaryMediaUrl(decoded)).toBe(first)
+		// Collected for the snapshot uploader.
+		const collected = drainCollectedCompositeAssets()
+		expect(Object.keys(collected)).toContain(
+			(first ?? '').replace('/media/', ''),
+		)
 	})
 })

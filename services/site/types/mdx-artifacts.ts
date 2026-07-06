@@ -31,4 +31,11 @@ export type MdxArtifactBundle = {
 		pages: Array<MdxDirListEntry>
 	}
 	dataFiles: Record<string, string>
+	/**
+	 * Snapshotted Cloudinary composite assets referenced by compiled bodies:
+	 * R2 key → source Cloudinary URL. Consumed by
+	 * `migrate-cloudinary-to-r2.mjs --composites` to upload the rendered
+	 * bytes once; the compiled code references `/media/<key>`.
+	 */
+	compositeAssets?: Record<string, string>
 }

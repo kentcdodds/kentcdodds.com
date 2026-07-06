@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { NodeResolvePlugin } from '@esbuild-plugins/node-resolve'
 import { rehypeCodeBlocksShiki } from '@kentcdodds/md-temp'
@@ -205,8 +206,8 @@ function parseCloudinaryPublicId(urlString: string) {
 			continue
 		}
 		// Variable definitions ($w_100) and layered/text/fetch overlays are
-		// composite recipes we cannot reproduce on /media — leave the whole
-		// URL untouched.
+		// composite recipes the /media transform pipeline cannot reproduce —
+		// callers snapshot the rendered output instead.
 		if (/^\$[a-z]/i.test(decoded)) return null
 		if (cloudinaryTransformSegmentRegex.test(decoded)) {
 			if (isCloudinaryLayerTransform(decoded)) return null
@@ -220,12 +221,60 @@ function parseCloudinaryPublicId(urlString: string) {
 	return { resourceType, publicId }
 }
 
+function stableDecode(value: string) {
+	let decoded = value
+	for (let i = 0; i < 3; i++) {
+		try {
+			const next = decodeURIComponent(decoded)
+			if (next === decoded) break
+			decoded = next
+		} catch {
+			break
+		}
+	}
+	return decoded
+}
+
+/**
+ * R2 key for a snapshotted Cloudinary composite (layered/variable transform
+ * recipes we cannot reproduce with the /media pipeline). The rendered bytes
+ * are uploaded once by `migrate-cloudinary-to-r2.mjs --composites`; the key
+ * is a stable hash of the (decoded) source URL so compiles are deterministic
+ * and offline.
+ */
+export function getCompositeMediaKey(urlString: string) {
+	const hash = createHash('sha256').update(stableDecode(urlString)).digest('hex')
+	return `composites/${hash.slice(0, 16)}`
+}
+
+/**
+ * Composite URLs encountered during the current compile run, keyed by their
+ * R2 key. The artifact pipeline embeds this mapping in the bundle so the
+ * one-shot uploader knows what to snapshot.
+ */
+const collectedCompositeAssets = new Map<string, string>()
+
+export function drainCollectedCompositeAssets() {
+	const entries = Object.fromEntries(collectedCompositeAssets)
+	collectedCompositeAssets.clear()
+	return entries
+}
+
 function rewriteCloudinaryMediaUrl(
 	urlString: string,
 	{ original = false }: { original?: boolean } = {},
 ) {
 	const parsed = parseCloudinaryPublicId(urlString)
-	if (!parsed) return
+	if (!parsed) {
+		// Composite recipe: rewrite to the snapshotted copy in R2 and record
+		// the source URL so the uploader can fetch the rendered bytes.
+		if (cloudinaryUploadPathRegex.test(urlString)) {
+			const key = getCompositeMediaKey(urlString)
+			collectedCompositeAssets.set(key, urlString)
+			return buildMediaUrl(key)
+		}
+		return
+	}
 	const { resourceType, publicId } = parsed
 	// Relative URLs adapt to whichever host serves the page (workers.dev
 	// preview today, kentcdodds.com after the DNS flip). Compiled bodies never

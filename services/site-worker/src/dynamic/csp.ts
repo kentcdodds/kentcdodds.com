@@ -35,9 +35,6 @@ export function buildContentSecurityPolicy({
 		'img-src': [
 			"'self'",
 			'data:',
-			// Legacy composite images in old posts (layered text overlays we
-			// can't reproduce on /media) still load from Cloudinary.
-			'res.cloudinary.com',
 			'www.gravatar.com',
 			'cdn.usefathom.com',
 			'pbs.twimg.com',
