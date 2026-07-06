@@ -20,4 +20,10 @@ describe('security headers', () => {
 			"style-src 'self' https: 'unsafe-inline'",
 		)
 	})
+
+	test('allows Fathom analytics beacons in connect-src', () => {
+		expect(buildContentSecurityPolicy({ nonce: 'test-nonce' })).toContain(
+			"connect-src 'self' cdn.usefathom.com",
+		)
+	})
 })

@@ -43,7 +43,8 @@ import {
 } from '#app/utils/redirects-core.server.ts'
 import { type MdxDevManifestModule } from '../other/vite-plugins/mdx-dev-manifest.ts'
 import redirectsText from '../other/_redirects.txt'
-import { applySecurityHeaders } from '../../site-worker/src/dynamic/csp.ts'
+import { applySecurityHeaders as applyHelmetSecurityHeaders } from '#app/utils/security-headers.server.ts'
+import { applySecurityHeaders as applyCspHeaders } from '../../site-worker/src/dynamic/csp.ts'
 import {
 	type RateLimitResult,
 	applyRateLimitHeaders,
@@ -395,7 +396,8 @@ async function runPreRouterPipeline(
 		const headers = new Headers({
 			'content-type': 'text/html; charset=utf-8',
 		})
-		applySecurityHeaders({ headers, request, cspNonce })
+		applyHelmetSecurityHeaders(headers)
+		applyCspHeaders({ headers, request, cspNonce })
 		applyRateLimitHeaders(headers, rateLimit)
 		return {
 			response: new Response(getRickRollHtml(cspNonce), { headers }),
@@ -524,7 +526,8 @@ async function handleSiteRequest(
 			}
 
 			const headers = new Headers(response.headers)
-			applySecurityHeaders({
+			applyHelmetSecurityHeaders(headers)
+			applyCspHeaders({
 				headers,
 				request,
 				cspNonce,

@@ -10,6 +10,7 @@ export function buildContentSecurityPolicy({
 	const connectSrc = [
 		...(mode === 'development' ? ['ws:'] : []),
 		"'self'",
+		'cdn.usefathom.com',
 	].filter(Boolean)
 
 	const directives: Record<string, Array<string> | null> = {

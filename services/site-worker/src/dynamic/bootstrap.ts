@@ -43,7 +43,8 @@ import {
 	setRuntimeBindingSource,
 	type RuntimeBindingSource,
 } from '../../../site/app/utils/runtime-bindings.server.ts'
-import { applySecurityHeaders } from './csp.ts'
+import { applySecurityHeaders as applyHelmetSecurityHeaders } from '../../../site/app/utils/security-headers.server.ts'
+import { applySecurityHeaders as applyCspHeaders } from './csp.ts'
 import { formatColdStartTiming } from '../cold-start-timing.ts'
 import {
 	type RateLimitResult,
@@ -374,7 +375,8 @@ async function runPreRouterPipeline(
 		const headers = new Headers({
 			'content-type': 'text/html; charset=utf-8',
 		})
-		applySecurityHeaders({ headers, request, cspNonce })
+		applyHelmetSecurityHeaders(headers)
+		applyCspHeaders({ headers, request, cspNonce })
 		applyRateLimitHeaders(headers, rateLimit)
 		return {
 			response: new Response(getRickRollHtml(cspNonce), { headers }),
@@ -490,7 +492,8 @@ async function handleSiteRequest(
 			}
 
 			const headers = new Headers(response.headers)
-			applySecurityHeaders({ headers, request, cspNonce })
+			applyHelmetSecurityHeaders(headers)
+			applyCspHeaders({ headers, request, cspNonce })
 			// Reuse the pre-router rate-limit result so a request only consumes one
 			// quota unit (checkRateLimit increments the window on every call).
 			const mocks = getStringEnvBindings(env).MOCKS === 'true'
