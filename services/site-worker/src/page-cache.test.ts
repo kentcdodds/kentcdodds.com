@@ -292,6 +292,125 @@ describe('SWR state machine', () => {
 		expect(fetchDynamic).toHaveBeenCalled()
 	})
 
+	test('client-id request on /blog bypasses the shared cache entirely', async () => {
+		const kvGet = vi.fn().mockResolvedValue(
+			JSON.stringify({
+				body: '<html>someone elses reads</html>',
+				status: 200,
+				headers: [['content-type', 'text/html']],
+				nonce: '',
+				storedAt: Date.now(),
+			} satisfies PageCacheEntry),
+		)
+		const env = makeEnv({
+			SITE_CACHE_KV: {
+				get: kvGet,
+				put: vi.fn(),
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+		})
+		const fetchDynamic = vi.fn().mockResolvedValue(
+			new Response('<html>my own reads</html>', {
+				status: 200,
+				headers: { 'content-type': 'text/html' },
+			}),
+		)
+		const ctx = { waitUntil: vi.fn() } as unknown as ExecutionContext
+
+		const response = await handlePageCacheRequest(
+			new Request('https://example.com/blog', {
+				headers: { cookie: 'KCD_client_id=client-1' },
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		expect(response.headers.get('X-Edge-Cache')).toBe('BYPASS')
+		expect(await response.text()).toBe('<html>my own reads</html>')
+		expect(kvGet).not.toHaveBeenCalled()
+	})
+
+	test('client-id MISS on a non-personalized path never stores the visitor response', async () => {
+		const kvPut = vi.fn().mockResolvedValue(undefined)
+		const env = makeEnv({
+			SITE_CACHE_KV: {
+				get: vi.fn().mockResolvedValue(null),
+				put: kvPut,
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+		})
+		const personalizedBody = '<html>visitor-specific body</html>'
+		const cleanBody = '<html>anonymous body</html>'
+		const fetchDynamic = vi.fn(async (request: Request) => {
+			const hasClientId = (request.headers.get('Cookie') ?? '').includes(
+				'KCD_client_id',
+			)
+			return new Response(hasClientId ? personalizedBody : cleanBody, {
+				status: 200,
+				headers: { 'content-type': 'text/html' },
+			})
+		})
+		const waitUntilPromises: Promise<unknown>[] = []
+		const ctx = {
+			waitUntil: vi.fn((promise: Promise<unknown>) => {
+				waitUntilPromises.push(promise)
+			}),
+		} as unknown as ExecutionContext
+
+		const response = await handlePageCacheRequest(
+			new Request('https://example.com/about', {
+				headers: { cookie: 'KCD_client_id=client-1; en_theme=dark' },
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		expect(response.headers.get('X-Edge-Cache')).toBe('MISS')
+		expect(await response.text()).toBe(personalizedBody)
+		await Promise.all(waitUntilPromises)
+
+		// Cache is filled from a cookie-stripped background fetch, so the
+		// stored body must be the anonymous variant, never the visitor's own.
+		expect(fetchDynamic).toHaveBeenCalledTimes(2)
+		expect(kvPut).toHaveBeenCalledTimes(1)
+		const stored = JSON.parse(
+			String(kvPut.mock.calls[0]?.[1]),
+		) as PageCacheEntry
+		expect(stored.body).toBe(cleanBody)
+	})
+
+	test('cookieless MISS still reuses the visitor response for the fill', async () => {
+		const kvPut = vi.fn().mockResolvedValue(undefined)
+		const env = makeEnv({
+			SITE_CACHE_KV: {
+				get: vi.fn().mockResolvedValue(null),
+				put: kvPut,
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+		})
+		const fetchDynamic = vi.fn().mockResolvedValue(
+			new Response('<html>shared</html>', {
+				status: 200,
+				headers: { 'content-type': 'text/html' },
+			}),
+		)
+		const waitUntilPromises: Promise<unknown>[] = []
+		const ctx = {
+			waitUntil: vi.fn((promise: Promise<unknown>) => {
+				waitUntilPromises.push(promise)
+			}),
+		} as unknown as ExecutionContext
+
+		await handlePageCacheRequest(
+			new Request('https://example.com/blog', {
+				headers: { cookie: 'en_theme=dark' },
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		await Promise.all(waitUntilPromises)
+		expect(fetchDynamic).toHaveBeenCalledTimes(1)
+		expect(kvPut).toHaveBeenCalledTimes(1)
+	})
+
 	test('fill request strips cookies except theme', async () => {
 		const request = new Request('https://example.com/blog', {
 			headers: {

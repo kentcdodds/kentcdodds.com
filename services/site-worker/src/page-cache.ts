@@ -185,16 +185,42 @@ export function isPageCacheServeEligible(
 }
 
 /**
- * Chats with Kent episode pages render per-client homework completion state
- * for anonymous visitors (keyed by the KCD_client_id cookie), so a visitor
- * carrying a client id must not be served (or fill) the shared anonymous
- * cache for those pages.
+ * Pages whose loaders render per-client state for anonymous visitors (keyed
+ * by the KCD_client_id cookie): a visitor carrying a client id must not be
+ * served the shared anonymous cache for these pages.
+ *
+ * - `/chats` episode pages: homework completion state.
+ * - `/blog` index (and its `.data` request): `userReads` read-marks from
+ *   `getSlugReadsByUser`.
+ *
+ * When adding a loader that resolves data via the client id, add its path
+ * here or the page cache will serve one visitor's personalization to others.
  */
 function isClientPersonalizedPath(request: Request, pathname: string) {
-	if (!pathname.startsWith('/chats')) return false
+	const personalized =
+		pathname.startsWith('/chats') ||
+		pathname === '/blog' ||
+		pathname === '/blog.data'
+	if (!personalized) return false
 	const cookieHeader = request.headers.get('Cookie')
 	if (!cookieHeader) return false
 	return CLIENT_ID_COOKIE_NAME in parseCookieHeader(cookieHeader)
+}
+
+/**
+ * A visitor's own response may only be reused as the shared cache fill when
+ * the request carried no cookies beyond the theme cookie. Any other cookie
+ * (in practice KCD_client_id) can influence the rendered body — e.g. /blog
+ * read-marks — and storing it would leak one visitor's personalization to
+ * everyone. Such requests fill the cache via a cookie-stripped background
+ * fetch instead.
+ */
+function canStoreOwnResponse(request: Request) {
+	const cookieHeader = request.headers.get('Cookie')
+	if (!cookieHeader) return true
+	return Object.keys(parseCookieHeader(cookieHeader)).every(
+		(name) => name === THEME_COOKIE_NAME,
+	)
 }
 
 function normalizeContentType(contentType: string | null) {
@@ -530,24 +556,36 @@ export async function handlePageCacheRequest(
 		return buildCachedResponse(request, entry, 'STALE')
 	}
 
-	// Reuse the visitor's own response for the cache fill (a single dynamic
-	// fetch, a single rate-limit increment). Anonymous bodies contain no
-	// per-visitor data — the client-id lives only in Set-Cookie, which the
-	// store path strips — so the clone is safe to share. HEAD responses are
-	// never stored: they share the cache key with GET but have empty bodies.
+	// On a miss, fill the cache. When the request carried no cookies beyond
+	// theme, the visitor's own response is safe to reuse as the shared fill
+	// (a single dynamic fetch, a single rate-limit increment). Otherwise the
+	// body may embed per-client personalization, so fill via a cookie-stripped
+	// background fetch and never store the visitor's own response. HEAD
+	// responses are never stored: they share the cache key with GET but have
+	// empty bodies.
 	const response = await fetchDynamic(request)
 	if (request.method === 'GET') {
-		const responseForStore = response.clone()
-		ctx.waitUntil(
-			storePageCacheFromFillResponse(
-				key,
-				responseForStore,
-				env.SITE_CACHE_KV,
-				pathname,
-			).catch((error: unknown) => {
-				console.warn('page-cache fill failed', key, error)
-			}),
-		)
+		if (canStoreOwnResponse(request)) {
+			const responseForStore = response.clone()
+			ctx.waitUntil(
+				storePageCacheFromFillResponse(
+					key,
+					responseForStore,
+					env.SITE_CACHE_KV,
+					pathname,
+				).catch((error: unknown) => {
+					console.warn('page-cache fill failed', key, error)
+				}),
+			)
+		} else {
+			ctx.waitUntil(
+				revalidatePageCacheEntry(key, request, env, fetchDynamic).catch(
+					(error: unknown) => {
+						console.warn('page-cache fill failed', key, error)
+					},
+				),
+			)
+		}
 	}
 
 	return withEdgeCacheHeader(response, 'MISS')
