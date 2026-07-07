@@ -1,4 +1,8 @@
 import { type D1Meta } from './d1-sql-executor.server.ts'
+import {
+	getRequestContextValue,
+	setRequestContextValue,
+} from '../request-context.server.ts'
 
 export type D1RequestStats = {
 	queries: number
@@ -14,11 +18,7 @@ type ActiveD1StatsState = {
 }
 
 function getActiveStatsState(): ActiveD1StatsState | null {
-	return (
-		(globalThis as Record<symbol, ActiveD1StatsState | undefined>)[
-			activeStatsKey
-		] ?? null
-	)
+	return getRequestContextValue<ActiveD1StatsState>(activeStatsKey) ?? null
 }
 
 export function beginD1RequestStats(): D1RequestStats {
@@ -28,14 +28,8 @@ export function beginD1RequestStats(): D1RequestStats {
 		replicaServed: 0,
 		regions: {},
 	}
-	;(globalThis as Record<symbol, ActiveD1StatsState>)[activeStatsKey] = {
-		stats,
-	}
+	setRequestContextValue(activeStatsKey, { stats })
 	return stats
-}
-
-export function endD1RequestStats() {
-	delete (globalThis as Record<symbol, unknown>)[activeStatsKey]
 }
 
 export function recordD1QueryMeta(meta?: D1Meta) {

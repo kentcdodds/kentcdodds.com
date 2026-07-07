@@ -70,7 +70,6 @@ const lruInstance = remember(
 export type { CacheRequestStats } from '#app/utils/cache-request-stats.server.ts'
 export {
 	beginCacheRequestStats,
-	endCacheRequestStats,
 	formatCacheRequestStatsHeader,
 } from '#app/utils/cache-request-stats.server.ts'
 

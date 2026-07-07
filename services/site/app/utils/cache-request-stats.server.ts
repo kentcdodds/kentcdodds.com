@@ -1,3 +1,8 @@
+import {
+	getRequestContextValue,
+	setRequestContextValue,
+} from './request-context.server.ts'
+
 export type CacheRequestStats = {
 	lruHits: number
 	rpcCalls: number
@@ -11,23 +16,13 @@ type ActiveCacheStatsState = {
 }
 
 function getActiveStatsState(): ActiveCacheStatsState | null {
-	return (
-		(globalThis as Record<symbol, ActiveCacheStatsState | undefined>)[
-			activeStatsKey
-		] ?? null
-	)
+	return getRequestContextValue<ActiveCacheStatsState>(activeStatsKey) ?? null
 }
 
 export function beginCacheRequestStats(): CacheRequestStats {
 	const stats = { lruHits: 0, rpcCalls: 0, rpcMs: 0 }
-	;(globalThis as Record<symbol, ActiveCacheStatsState>)[activeStatsKey] = {
-		stats,
-	}
+	setRequestContextValue(activeStatsKey, { stats })
 	return stats
-}
-
-export function endCacheRequestStats() {
-	delete (globalThis as Record<symbol, unknown>)[activeStatsKey]
 }
 
 export function recordCacheLruHit() {

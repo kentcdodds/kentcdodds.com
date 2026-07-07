@@ -23,12 +23,11 @@ test('uses the lru cache before CACHE_RPC on worker cache hits', async () => {
 			keys: vi.fn(),
 		},
 	})
-	const {
-		beginCacheRequestStats,
-		cache,
-		endCacheRequestStats,
-		formatCacheRequestStatsHeader,
-	} = await import('../cache.server.ts')
+	const { beginCacheRequestStats, cache, formatCacheRequestStatsHeader } =
+		await import('../cache.server.ts')
+	const { runWithRequestContext } = await import(
+		'../request-context.server.ts'
+	)
 	const key = `worker-cache:${randomUUID()}`
 	const entry = {
 		value: { ok: true },
@@ -40,9 +39,11 @@ test('uses the lru cache before CACHE_RPC on worker cache hits', async () => {
 	}
 
 	await cache.set(key, entry)
-	const stats = beginCacheRequestStats()
-	await expect(cache.get(key)).resolves.toEqual(entry)
-	endCacheRequestStats()
+	const stats = await runWithRequestContext(async () => {
+		const requestStats = beginCacheRequestStats()
+		await expect(cache.get(key)).resolves.toEqual(entry)
+		return requestStats
+	})
 
 	expect(rpcGet).not.toHaveBeenCalled()
 	expect(formatCacheRequestStatsHeader(stats)).toBe('lru_hits=1,rpc_calls=0,rpc_ms=0.0')

@@ -8,12 +8,10 @@ import {
 } from 'react-router'
 import {
 	beginCacheRequestStats,
-	endCacheRequestStats,
 	formatCacheRequestStatsHeader,
 } from '#app/utils/cache-request-stats.server.ts'
 import {
 	beginD1RequestStats,
-	endD1RequestStats,
 	formatD1RequestStatsHeader,
 } from '#app/utils/db/d1-request-stats.server.ts'
 import {
@@ -26,6 +24,7 @@ import {
 } from '#app/utils/db/d1-session-request.server.ts'
 import { installDevMockFetch } from '#app/utils/dev-outbound-fetch.server.ts'
 import { setRequestWaitUntil } from '#app/utils/background-task.server.ts'
+import { runWithRequestContext } from '#app/utils/request-context.server.ts'
 import {
 	setRuntimeEnvSource,
 	getEnv,
@@ -480,14 +479,17 @@ async function handleSiteRequest(
 	env: WorkerEnv,
 	ctx: ExecutionContext,
 ): Promise<Response> {
-	const startedAt = Date.now()
-	const cacheStats = beginCacheRequestStats()
-	const d1Stats = beginD1RequestStats()
-	const inboundBookmark = getD1BookmarkFromRequest(request)
-	setRequestWaitUntil(ctx.waitUntil.bind(ctx))
-	try {
+	// All per-request state (stats, waitUntil bridge, D1 session) lives in an
+	// AsyncLocalStorage context so overlapping requests in this isolate can
+	// never observe or clobber each other's state.
+	return runWithRequestContext(async () => {
+		const startedAt = Date.now()
+		const cacheStats = beginCacheRequestStats()
+		const d1Stats = beginD1RequestStats()
+		const inboundBookmark = getD1BookmarkFromRequest(request)
+		setRequestWaitUntil(ctx.waitUntil.bind(ctx))
 		await ensureRuntimeBridges(env)
-		return await runWithD1RequestContext(request, async () => {
+		return runWithD1RequestContext(request, async () => {
 			const preRouter = await runPreRouterPipeline(request, env, ctx)
 			const preRouterResponse = preRouter.response
 			if (preRouterResponse) {
@@ -574,11 +576,7 @@ async function handleSiteRequest(
 			logRequest(request, finalResponse, startedAt)
 			return finalResponse
 		})
-	} finally {
-		setRequestWaitUntil(null)
-		endCacheRequestStats()
-		endD1RequestStats()
-	}
+	})
 }
 
 export default {

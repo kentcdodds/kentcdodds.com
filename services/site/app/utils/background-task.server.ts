@@ -1,3 +1,8 @@
+import {
+	getRequestContextValue,
+	setRequestContextValue,
+} from './request-context.server.ts'
+
 /**
  * Bridges the Workers ExecutionContext's `waitUntil` into app code so
  * fire-and-forget work (transcript generation, notifications, cache refresh)
@@ -5,18 +10,20 @@
  * promises when the request ends — silently, mid-flight.
  *
  * Both runtimes (the dev worker and the production dynamic worker) register
- * the current request's `waitUntil` at request start.
+ * the current request's `waitUntil` at request start, inside the request's
+ * AsyncLocalStorage context so overlapping requests never see each other's
+ * ExecutionContext.
  */
 const waitUntilKey = Symbol.for('kentcdodds.waitUntil')
 
 type WaitUntilFn = (promise: Promise<unknown>) => void
 
-export function setRequestWaitUntil(waitUntil: WaitUntilFn | null) {
-	;(globalThis as Record<symbol, WaitUntilFn | null>)[waitUntilKey] = waitUntil
+export function setRequestWaitUntil(waitUntil: WaitUntilFn) {
+	setRequestContextValue(waitUntilKey, waitUntil)
 }
 
 function getRequestWaitUntil() {
-	return (globalThis as Record<symbol, WaitUntilFn | null>)[waitUntilKey]
+	return getRequestContextValue<WaitUntilFn>(waitUntilKey)
 }
 
 export function runBackgroundTask(task: () => Promise<unknown> | unknown) {

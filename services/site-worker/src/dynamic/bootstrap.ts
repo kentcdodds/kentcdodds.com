@@ -19,12 +19,10 @@ publishSharedReactGlobals()
 import { setRequestWaitUntil } from '../../../site/app/utils/background-task.server.ts'
 import {
 	beginCacheRequestStats,
-	endCacheRequestStats,
 	formatCacheRequestStatsHeader,
 } from '../../../site/app/utils/cache-request-stats.server.ts'
 import {
 	beginD1RequestStats,
-	endD1RequestStats,
 	formatD1RequestStatsHeader,
 } from '../../../site/app/utils/db/d1-request-stats.server.ts'
 import {
@@ -35,6 +33,7 @@ import {
 	getOutboundD1Bookmark,
 	runWithD1RequestContext,
 } from '../../../site/app/utils/db/d1-session-request.server.ts'
+import { runWithRequestContext } from '../../../site/app/utils/request-context.server.ts'
 import {
 	setRuntimeEnvSource,
 	getEnv,
@@ -431,15 +430,18 @@ async function handleSiteRequest(
 	env: WorkerEnv,
 	ctx: ExecutionContext,
 ): Promise<Response> {
-	const startedAt = Date.now()
-	const requestStartedAt = performance.now()
-	const cacheStats = beginCacheRequestStats()
-	const d1Stats = beginD1RequestStats()
-	const inboundBookmark = getD1BookmarkFromRequest(request)
-	setRequestWaitUntil(ctx.waitUntil.bind(ctx))
-	try {
+	// All per-request state (stats, waitUntil bridge, D1 session) lives in an
+	// AsyncLocalStorage context so overlapping requests in this isolate can
+	// never observe or clobber each other's state.
+	return runWithRequestContext(async () => {
+		const startedAt = Date.now()
+		const requestStartedAt = performance.now()
+		const cacheStats = beginCacheRequestStats()
+		const d1Stats = beginD1RequestStats()
+		const inboundBookmark = getD1BookmarkFromRequest(request)
+		setRequestWaitUntil(ctx.waitUntil.bind(ctx))
 		await ensureRuntimeBridges(env)
-		return await runWithD1RequestContext(request, async () => {
+		return runWithD1RequestContext(request, async () => {
 			const preRouter = await runPreRouterPipeline(request, env)
 			const preRouterResponse = preRouter.response
 			if (preRouterResponse) {
@@ -550,11 +552,7 @@ async function handleSiteRequest(
 			logRequest(request, finalResponse, startedAt)
 			return finalResponse
 		})
-	} finally {
-		endCacheRequestStats()
-		endD1RequestStats()
-		setRequestWaitUntil(null)
-	}
+	})
 }
 
 export default {

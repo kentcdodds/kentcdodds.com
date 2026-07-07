@@ -5,6 +5,10 @@ import {
 	type D1DatabaseSessionLike,
 	type D1RpcSessionBinding,
 } from './d1-sql-executor.server.ts'
+import {
+	getRequestContextValue,
+	setRequestContextValue,
+} from '../request-context.server.ts'
 import { getRuntimeBinding } from '../runtime-bindings.server.ts'
 
 type D1DatabaseWithSession = {
@@ -20,11 +24,7 @@ type D1RequestStore = {
 const activeD1RequestKey = Symbol.for('kentcdodds.activeD1RequestStore')
 
 function getActiveD1RequestStore(): D1RequestStore | null {
-	return (
-		(globalThis as Record<symbol, D1RequestStore | undefined>)[
-			activeD1RequestKey
-		] ?? null
-	)
+	return getRequestContextValue<D1RequestStore>(activeD1RequestKey) ?? null
 }
 
 function isDirectD1WithSession(value: unknown): value is D1DatabaseWithSession {
@@ -78,12 +78,11 @@ export async function runWithD1RequestContext<T>(
 		}
 	}
 
-	;(globalThis as Record<symbol, D1RequestStore>)[activeD1RequestKey] = store
-	try {
-		return await fn()
-	} finally {
-		delete (globalThis as Record<symbol, unknown>)[activeD1RequestKey]
-	}
+	// Scoped to the surrounding AsyncLocalStorage request context, so
+	// concurrent requests each see their own store. No cleanup needed: the
+	// context (and this store with it) dies with the request.
+	setRequestContextValue(activeD1RequestKey, store)
+	return fn()
 }
 
 export async function getOutboundD1Bookmark(): Promise<string | null> {
