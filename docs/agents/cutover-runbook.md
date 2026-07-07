@@ -10,6 +10,21 @@ Ordered procedure for hard cutover of **kentcdodds.com** from the Fly.io app (`k
 
 ## 0. Pre-cutover checklist (T−24h … T−1h)
 
+### Optional pre-merge de-risk
+
+- [ ] The production deploy path in CI (`deploy-site.yml` with
+      `deploy_target=production`: bulk secrets, D1 migrations, deploy, smoke
+      checks) has only been exercised manually from a VM. To validate it
+      before the merge-triggered run, dispatch **🚀 Deploy Site** from the PR
+      branch in the Actions tab with `should_deploy=true`,
+      `deploy_target=production`. Idempotent: it deploys the same worker the
+      branch has already been deploying.
+- [ ] Pre-create the write-freeze WAF rule from section 2 in a disabled
+      state, so T−0 is a single toggle.
+- [ ] Configure the zone rate-limiting rules from section 6.5 ahead of time —
+      the zone already proxies Fly, so they protect the current site too
+      (use generous thresholds until worker traffic patterns are known).
+
 ### Infrastructure
 
 - [ ] Production worker deployed and healthy (`kentcdodds-com` on `*.kentcdodds.workers.dev`).
@@ -235,10 +250,30 @@ Save `SNAPSHOT_TIME` — required for the post-DNS backfill (`--since`).
 
 ---
 
-## 2. T−0: maintenance (optional)
+## 2. T−0: write freeze (recommended) 
 
-- Post site banner / tweet if desired.
-- Optionally enable Fly maintenance mode (only if you accept complete write outage on Fly during migration). Minimum path: proceed with snapshot + DNS flip; Fly serves stale traffic until DNS moves.
+A short write freeze turns the cutover into a zero-data-loss operation: no
+backfill window, no lost form submissions. Because kentcdodds.com is already
+proxied through the Cloudflare zone, this needs **no code on Fly**:
+
+1. Dashboard → kentcdodds.com zone → Security → WAF → Custom rules → create
+   (or pre-create disabled, then enable at T−0):
+   - Expression: `(http.host eq "kentcdodds.com" and not http.request.method in {"GET" "HEAD" "OPTIONS"} and not http.request.uri.path eq "/healthcheck")`
+   - Action: **Block** (custom response, status 503, short JSON/text body
+     like `{"error":"brief maintenance, retry in a few minutes"}`)
+2. Verify: `curl -X POST https://kentcdodds.com/login -o /dev/null -w '%{http_code}'` → 503, while GET pages still serve.
+3. Take the final snapshot + run the `--reset` import (section 3).
+4. Flip DNS (section 4), then **disable the rule**. Total write outage is the
+   freeze duration (~5–10 min). Section 6's backfill becomes a safety check
+   rather than a required step.
+
+Notes: reads keep serving from Fly the whole time; external callbacks that
+POST during the freeze (audio worker queue retries) are retried or would have
+been lost-writes anyway. Post site banner / tweet if desired.
+
+Fallback (no freeze): proceed with snapshot + DNS flip and run section 6's
+backfill for the gap; accepts losing in-flight writes between the final
+backfill snapshot and the flip.
 
 ---
 
