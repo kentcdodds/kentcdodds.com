@@ -25,11 +25,15 @@ Ordered procedure for hard cutover of **kentcdodds.com** from the Fly.io app (`k
 
 The deploy pipeline provides infra secrets (R2 keys, AI gateway, search worker,
 Transistor/Simplecast, podcast IDs, `REFRESH_CACHE_SECRET`) from GitHub Actions
-secrets on every deploy. The **integration secrets** below are intentionally
-NOT emitted by CI for the production target (so `wrangler secret bulk` never
-clobbers them) and must be set directly on the worker **once**, copied from
+secrets on every deploy. The **integration secrets** below (including
+`CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET`, which must match the value set on
+`kcd-call-kent-audio-worker`) are ALWAYS omitted from the production bulk
+upload — even when a CI env copy exists — so `wrangler secret bulk` never
+clobbers them. They must be set directly on the worker **once**, copied from
 Fly. `SESSION_SECRET` must match Fly exactly or all sessions/magic-links die at
-the flip.
+the flip. The generator also hard-fails a production run if any derive-group
+secret is missing from the CI env, so a deleted GitHub secret cannot silently
+overwrite a real value with a placeholder.
 
 - [ ] Create a Cloudflare API token with the single permission
       **Account → Workers Scripts → Edit** (dash → My Profile → API Tokens →
@@ -56,6 +60,9 @@ the flip.
     // Config values CI does not know (currently derived placeholders on the
     // worker): R2 bucket names + FFmpeg offload queue id.
     "R2_BUCKET", "CALL_KENT_R2_BUCKET", "CALL_KENT_AUDIO_CF_QUEUE_ID",
+    // Must match kcd-call-kent-audio-worker's copy (Fly's value is the
+    // canonical one; the GitHub copy may have drifted).
+    "CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET",
     // Optional observability (skip warnings are fine if unset on Fly)
     "SENTRY_DSN", "SENTRY_PROJECT_ID",
   ]
