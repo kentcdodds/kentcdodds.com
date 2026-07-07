@@ -145,10 +145,10 @@ export default defineConfig(async ({ command }) => {
 							replacement: path.join(siteDir, 'other/stubs/bcrypt.ts'),
 						},
 						{
-							find: 'better-sqlite3',
+							find: 'node:sqlite',
 							replacement: path.join(
 								siteDir,
-								'other/stubs/better-sqlite3-stub.ts',
+								'other/stubs/node-sqlite-stub.ts',
 							),
 						},
 						{

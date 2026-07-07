@@ -1,4 +1,4 @@
-import BetterSqlite3 from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import { expect, test } from 'vitest'
 import { createSqliteExecutorDataTableAdapter } from '../d1-data-table-adapter.server.ts'
 import {
@@ -6,7 +6,7 @@ import {
 	createRpcD1Executor,
 	type D1RpcBinding,
 } from '../d1-sql-executor.server.ts'
-import { createBetterSqliteExecutor } from '../test-helpers.server.ts'
+import { createNodeSqliteExecutor } from '../test-helpers.server.ts'
 
 test('D1 executors disable SQL transactions in the data-table adapter', async () => {
 	const directAdapter = createSqliteExecutorDataTableAdapter(
@@ -32,11 +32,11 @@ test('D1 executors disable SQL transactions in the data-table adapter', async ()
 	await rpcAdapter.commitTransaction(rpcToken)
 })
 
-test('better-sqlite3 executor keeps real SQL transactions', async () => {
-	const sqlite = new BetterSqlite3(':memory:')
+test('node:sqlite executor keeps real SQL transactions', async () => {
+	const sqlite = new DatabaseSync(':memory:')
 	sqlite.exec('create table items (id integer primary key, value text)')
 	const adapter = createSqliteExecutorDataTableAdapter(
-		createBetterSqliteExecutor(sqlite),
+		createNodeSqliteExecutor(sqlite),
 	)
 	const token = await adapter.beginTransaction()
 	sqlite.prepare('insert into items (value) values (?)').run('inside-tx')

@@ -15,8 +15,9 @@ Do **not** import the `remix` umbrella package; use `@remix-run/data-table` and
    `SqliteExecutorDataTableAdapter` over an RPC executor (parent worker hits D1).
 2. **Local dev worker** — when `APP_DB` is a real `D1Database` binding (`.prepare`/`.batch`),
    `db` uses a direct-D1 executor (`createDirectD1Executor`).
-3. **Node unit tests** — otherwise `createSqliteDatabaseAdapter(better-sqlite3)`
-   against `DATABASE_URL`.
+3. **Node unit tests** — otherwise a `node:sqlite` (`DatabaseSync`) executor
+   against `DATABASE_URL`. No native module: Node's built-in SQLite avoids
+   NODE_MODULE_VERSION rebuild churn across Node upgrades.
 
 ## Executor / adapter design
 

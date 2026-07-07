@@ -1,4 +1,3 @@
-import BetterSqlite3 from 'better-sqlite3'
 import { getTableColumns, getTableName } from '@remix-run/data-table'
 import { expect, test } from 'vitest'
 import {
@@ -31,7 +30,7 @@ const appTables = [
 ] as const
 
 test('migrated sqlite schema matches data-table definitions', () => {
-	const sqlite = createMigratedMemoryDatabase(BetterSqlite3)
+	const sqlite = createMigratedMemoryDatabase()
 
 	for (const table of appTables) {
 		const tableName = getTableName(table)

@@ -5,7 +5,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import BetterSqlite3 from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import {
 	chunkRowsForInsert,
 	extractScalarFromWranglerOutput,
@@ -335,7 +335,7 @@ async function main() {
 	}
 
 	const sourcePath = path.resolve(options.source)
-	const db = new BetterSqlite3(sourcePath, { readonly: true })
+	const db = new DatabaseSync(sourcePath, { readOnly: true })
 
 	const stats = {
 		tables: {},

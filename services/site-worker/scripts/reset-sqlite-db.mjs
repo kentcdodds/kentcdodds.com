@@ -5,7 +5,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import BetterSqlite3 from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import {
 	applySqlMigrations,
 	getDefaultSqliteDbPath,
@@ -16,8 +16,8 @@ export function resetSqliteDatabase(dbPath = getDefaultSqliteDbPath()) {
 	if (fs.existsSync(dbPath)) {
 		fs.unlinkSync(dbPath)
 	}
-	const db = new BetterSqlite3(dbPath)
-	db.pragma('foreign_keys = ON')
+	const db = new DatabaseSync(dbPath)
+	db.exec('PRAGMA foreign_keys = ON')
 	applySqlMigrations(db)
 	db.close()
 	return dbPath

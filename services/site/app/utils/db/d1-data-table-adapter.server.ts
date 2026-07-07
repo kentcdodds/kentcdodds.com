@@ -4,7 +4,7 @@
 //
 // Transaction invariant: D1 executors set `supportsSqlTransactions: false` so
 // beginTransaction/commit/rollback become no-ops (D1 forbids SQL BEGIN/COMMIT).
-// Node better-sqlite3 keeps `supportsSqlTransactions: true` for real transactions.
+// Node node:sqlite keeps `supportsSqlTransactions: true` for real transactions.
 import {
 	getTableName,
 	getTablePrimaryKey,

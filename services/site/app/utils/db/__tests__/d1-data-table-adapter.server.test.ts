@@ -1,14 +1,13 @@
-import BetterSqlite3 from 'better-sqlite3'
 import { createDatabase } from '@remix-run/data-table'
 import { expect, test } from 'vitest'
 import { createSqliteExecutorDataTableAdapter } from '../d1-data-table-adapter.server.ts'
 import { userTable } from '../schema.server.ts'
-import { createMigratedMemoryDatabase, createBetterSqliteExecutor } from '../test-helpers.server.ts'
+import { createMigratedMemoryDatabase, createNodeSqliteExecutor } from '../test-helpers.server.ts'
 
 test('sqlite executor adapter reads and writes against real sql migrations', async () => {
-	const sqlite = createMigratedMemoryDatabase(BetterSqlite3)
+	const sqlite = createMigratedMemoryDatabase()
 	const db = createDatabase(
-		createSqliteExecutorDataTableAdapter(createBetterSqliteExecutor(sqlite)),
+		createSqliteExecutorDataTableAdapter(createNodeSqliteExecutor(sqlite)),
 		{ now: () => new Date('2026-07-04T00:00:00.000Z') },
 	)
 

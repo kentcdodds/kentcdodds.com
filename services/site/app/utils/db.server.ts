@@ -1,7 +1,7 @@
 import { remember } from '@epic-web/remember'
-import BetterSqlite3 from 'better-sqlite3'
 import fs from 'node:fs'
 import path from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import {
 	createDatabase,
 	type Database,
@@ -12,7 +12,7 @@ import {
 import chalk from 'chalk'
 import { getEnv } from '#app/utils/env.server.ts'
 import { createSqliteExecutorDataTableAdapter } from './db/d1-data-table-adapter.server.ts'
-import { createBetterSqliteExecutor } from './db/better-sqlite-executor.server.ts'
+import { createNodeSqliteExecutor } from './db/node-sqlite-executor.server.ts'
 import { recordD1QueryMeta } from './db/d1-request-stats.server.ts'
 import { getD1RpcBinding } from './db/d1-rpc-client.server.ts'
 import { getRequestD1Session } from './db/d1-session-request.server.ts'
@@ -99,11 +99,11 @@ function getSqliteFilePath(databaseUrl: string) {
 
 function getNodeSqliteDatabase() {
 	const databaseUrl = getEnv().DATABASE_URL
-	return remember('better-sqlite3-db', () => {
+	return remember('node-sqlite-db', () => {
 		const filePath = getSqliteFilePath(databaseUrl)
 		fs.mkdirSync(path.dirname(filePath), { recursive: true })
-		const sqlite = new BetterSqlite3(filePath)
-		sqlite.pragma('foreign_keys = ON')
+		const sqlite = new DatabaseSync(filePath)
+		sqlite.exec('PRAGMA foreign_keys = ON')
 		return sqlite
 	})
 }
@@ -111,7 +111,7 @@ function getNodeSqliteDatabase() {
 function createNodeDatabase(): Database {
 	const adapter = createLoggingAdapter(
 		createSqliteExecutorDataTableAdapter(
-			createBetterSqliteExecutor(getNodeSqliteDatabase()),
+			createNodeSqliteExecutor(getNodeSqliteDatabase()),
 		),
 	)
 	return createDatabase(adapter, { now: databaseNow })

@@ -1,4 +1,3 @@
-import BetterSqlite3 from 'better-sqlite3'
 import { addDays, startOfDay, subDays } from 'date-fns'
 import { eq, gt, gte, like, or, sql } from '@remix-run/data-table'
 import { createDatabase } from '@remix-run/data-table'
@@ -12,8 +11,8 @@ import {
 	userTable,
 } from '#app/utils/db/schema.server.ts'
 import {
-	createBetterSqliteExecutor,
 	createMigratedMemoryDatabase,
+	createNodeSqliteExecutor,
 } from '#app/utils/db/test-helpers.server.ts'
 import { clearRuntimeBindingSource } from '#app/utils/runtime-bindings.server.ts'
 
@@ -22,9 +21,9 @@ afterEach(() => {
 })
 
 test('admin dashboard queries return user list, counts, and trend aggregates', async () => {
-	const sqlite = createMigratedMemoryDatabase(BetterSqlite3)
+	const sqlite = createMigratedMemoryDatabase()
 	const db = createDatabase(
-		createSqliteExecutorDataTableAdapter(createBetterSqliteExecutor(sqlite)),
+		createSqliteExecutorDataTableAdapter(createNodeSqliteExecutor(sqlite)),
 		{ now: () => new Date() },
 	)
 

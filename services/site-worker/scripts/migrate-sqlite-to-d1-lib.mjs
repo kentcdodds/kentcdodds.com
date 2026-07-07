@@ -293,10 +293,13 @@ export function getTableColumns(db, tableName) {
 export function readTableRows(db, tableName, { sinceIso, where } = {}) {
 	const sql = buildSelectSql(tableName, sinceIso, where)
 	const statement = db.prepare(sql)
-	return {
-		columns: getTableColumns(db, tableName),
-		rows: statement.raw().all(),
-	}
+	const columns = getTableColumns(db, tableName)
+	// node:sqlite has no raw() array mode; project object rows into
+	// column-ordered arrays to keep the row/values contract.
+	const rows = statement
+		.all()
+		.map((row) => columns.map((column) => row[column.name]))
+	return { columns, rows }
 }
 
 export function rowToValues(row, columns) {

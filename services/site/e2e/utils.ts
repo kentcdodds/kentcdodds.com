@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'path'
-import BetterSqlite3 from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import { fileURLToPath } from 'node:url'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
@@ -13,7 +13,7 @@ import {
 } from '@remix-run/data-table'
 import { inList } from '@remix-run/data-table'
 import { createSqliteExecutorDataTableAdapter } from '#app/utils/db/d1-data-table-adapter.server.ts'
-import { createBetterSqliteExecutor } from '#app/utils/db/better-sqlite-executor.server.ts'
+import { createNodeSqliteExecutor } from '#app/utils/db/node-sqlite-executor.server.ts'
 import { sessionTable, userTable, type User } from '#app/utils/db/schema.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { sessionExpirationTime } from '#app/utils/user-data.server.ts'
@@ -58,10 +58,10 @@ let e2eDatabase: Database | undefined
 
 function getE2eDatabase() {
 	if (!e2eDatabase) {
-		const sqlite = new BetterSqlite3(getLocalD1SqlitePath())
-		sqlite.pragma('foreign_keys = ON')
+		const sqlite = new DatabaseSync(getLocalD1SqlitePath())
+		sqlite.exec('PRAGMA foreign_keys = ON')
 		const adapter = createSqliteExecutorDataTableAdapter(
-			createBetterSqliteExecutor(sqlite),
+			createNodeSqliteExecutor(sqlite),
 		)
 		e2eDatabase = createDatabase(adapter, { now: () => new Date() })
 	}

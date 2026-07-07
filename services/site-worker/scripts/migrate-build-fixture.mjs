@@ -5,7 +5,7 @@
  */
 import { randomBytes, randomUUID } from 'node:crypto'
 import path from 'node:path'
-import BetterSqlite3 from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import { getDefaultSqliteDbPath } from '../../site/scripts/lib/apply-sql-migrations.mjs'
 
 const TARGET_USERS = 500
@@ -37,10 +37,14 @@ function isoNow(offsetMs = 0) {
 
 function insertMany(db, sql, rows) {
 	const statement = db.prepare(sql)
-	const insert = db.transaction((batch) => {
-		for (const row of batch) statement.run(...row)
-	})
-	insert(rows)
+	db.exec('BEGIN')
+	try {
+		for (const row of rows) statement.run(...row)
+		db.exec('COMMIT')
+	} catch (error) {
+		db.exec('ROLLBACK')
+		throw error
+	}
 }
 
 function main() {
@@ -50,8 +54,8 @@ function main() {
 		return
 	}
 
-	const db = new BetterSqlite3(options.dbPath)
-	db.pragma('journal_mode = WAL')
+	const db = new DatabaseSync(options.dbPath)
+	db.exec('PRAGMA journal_mode = WAL')
 
 	const existingUsers = db.prepare('SELECT COUNT(*) AS c FROM "User"').get().c
 	const usersToAdd = Math.max(0, TARGET_USERS - existingUsers)

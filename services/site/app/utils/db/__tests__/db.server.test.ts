@@ -6,7 +6,7 @@ afterEach(() => {
 	clearRuntimeBindingSource()
 })
 
-test('getDatabaseClient uses better-sqlite3 when no D1 RPC binding is present', () => {
+test('getDatabaseClient uses node:sqlite when no D1 RPC binding is present', () => {
 	const client = getDatabaseClient()
 	expect(client.adapter.dialect).toBe('sqlite')
 })

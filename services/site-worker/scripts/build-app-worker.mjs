@@ -19,7 +19,7 @@ const jsxRuntimeExports = Object.keys(require('react/jsx-runtime')).sort()
 
 const stubAliases = {
 	bcrypt: path.join(stubsDir, 'bcrypt.ts'),
-	'better-sqlite3': path.join(stubsDir, 'better-sqlite3.ts'),
+	'node:sqlite': path.join(stubsDir, 'node-sqlite.ts'),
 	esbuild: path.join(stubsDir, 'esbuild.ts'),
 	'@esbuild-plugins/node-resolve': path.join(
 		stubsDir,

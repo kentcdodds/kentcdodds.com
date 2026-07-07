@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import BetterSqlite3 from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import {
 	buildInsertStatement,
 	buildSinceWhereClause,
@@ -122,7 +122,7 @@ describe('buildSinceWhereClause', () => {
 })
 
 describe('readTableRows --since filtering', () => {
-	const db = new BetterSqlite3(':memory:')
+	const db = new DatabaseSync(':memory:')
 	db.exec(`
 		CREATE TABLE "User" (
 			id TEXT PRIMARY KEY,

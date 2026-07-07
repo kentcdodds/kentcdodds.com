@@ -9,7 +9,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import BetterSqlite3 from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import { getDefaultSqliteDbPath } from '../../site/scripts/lib/apply-sql-migrations.mjs'
 import { resetSqliteDatabase } from './reset-sqlite-db.mjs'
 
@@ -147,10 +147,14 @@ function simulateCutoverWindow(db, snapshotTime) {
 	const insertPostRead = db.prepare(
 		`INSERT INTO "PostRead" (id, createdAt, userId, clientId, postSlug) VALUES (?, ?, ?, ?, ?)`,
 	)
-	const tx = db.transaction((rows) => {
-		for (const row of rows) insertPostRead.run(...row)
-	})
-	tx(newPostReads)
+	db.exec('BEGIN')
+	try {
+		for (const row of newPostReads) insertPostRead.run(...row)
+		db.exec('COMMIT')
+	} catch (error) {
+		db.exec('ROLLBACK')
+		throw error
+	}
 
 	for (let index = 0; index < 20; index += 1) {
 		db.prepare(
@@ -187,7 +191,7 @@ async function main() {
 	console.log('=== Step 2: Inflate fixture ===')
 	run('node', ['./scripts/migrate-build-fixture.mjs', '--db', sqlitePath])
 
-	const sourceDb = new BetterSqlite3(sqlitePath, { readonly: true })
+	const sourceDb = new DatabaseSync(sqlitePath, { readOnly: true })
 	const beforeCounts = getTableCounts(sourceDb)
 	console.log('Source counts before cutover simulation:', beforeCounts)
 	sourceDb.close()
@@ -229,7 +233,7 @@ async function main() {
 	console.log(migrateOutput)
 
 	console.log('=== Step 5: Simulate cutover window on source SQLite ===')
-	const writableDb = new BetterSqlite3(sqlitePath)
+	const writableDb = new DatabaseSync(sqlitePath)
 	simulateCutoverWindow(writableDb, snapshotTime)
 	const afterWindowCounts = getTableCounts(writableDb)
 	console.log('Source counts after cutover simulation:', afterWindowCounts)
