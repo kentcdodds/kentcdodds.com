@@ -15,6 +15,11 @@ import {
 } from '../schema.server.ts'
 import { createMigratedMemoryDatabase } from '../test-helpers.server.ts'
 
+// Known limitation: this guard only checks table/column EXISTENCE, not
+// column types, nullability, defaults, or indexes — weaker than the Prisma
+// schema validation it replaced. Type/nullability drift between
+// schema.server.ts and the SQL migrations will not be caught here; review
+// both sides when changing either.
 const appTables = [
 	userTable,
 	passwordTable,

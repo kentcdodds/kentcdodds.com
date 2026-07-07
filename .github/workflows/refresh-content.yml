@@ -24,6 +24,15 @@ jobs:
       SITE_URL: https://kentcdodds-com.kentcdodds.workers.dev
       WORKER_URL: https://kentcdodds-com.kentcdodds.workers.dev
     steps:
+      # WORKER_URL is hardcoded to production: a manual dispatch from a
+      # non-main ref would publish that ref's MDX artifacts to the production
+      # worker (same hazard as the dev-branch push bug fixed earlier).
+      - name: 🛑 Refuse non-main manual dispatch
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Refresh Content publishes to production; dispatch it from main only (got ${{ github.ref }})."
+          exit 1
+
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
         with:

@@ -404,6 +404,26 @@ The parent in-memory generation cache is cleared on bump.
 `X-Edge-Cache`: `HIT`, `STALE`, `MISS`, or `BYPASS`. Cached responses include
 `Age`. Existing timing/isolate headers are omitted from stored entries.
 
+### Privacy invariant (client-id personalization)
+
+Some loaders render per-client state for anonymous visitors keyed by the
+`KCD_client_id` cookie (`/blog` read-marks, `/chats` homework completion).
+Two protections in `page-cache.ts` keep that data out of the shared cache:
+
+- `isClientPersonalizedPath` bypasses serve entirely for those paths when the
+  request carries a client id. **Add new clientId-personalized paths here.**
+- The visitor's own response is only reused as the shared cache fill when the
+  request carried no cookies beyond theme; otherwise the fill happens via a
+  cookie-stripped background fetch (`buildPageCacheFillRequest`).
+
+### Rate limiting interaction (accepted trade-off)
+
+Responses served from the parent page cache (`HIT`/`STALE`) do not pass
+through the dynamic worker, so they bypass app-level rate limiting entirely,
+and the dynamic-isolate rate limiter is per-isolate (not global). Abuse
+control for cached anonymous traffic therefore relies on Cloudflare-level
+tools (WAF rules, rate limiting rules, Bot Fight Mode) rather than app code.
+
 ## Local development
 
 `npm run dev` (in `services/site`) runs two processes concurrently:

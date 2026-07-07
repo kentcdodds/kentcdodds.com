@@ -162,4 +162,23 @@ describe('MIGRATION_TABLES', () => {
 		expect(MIGRATION_TABLES[0]).toBe('User')
 		expect(MIGRATION_TABLES.at(-1)).toBe('HomeworkCompletion')
 	})
+
+	it('covers every table created by the SQL migrations', async () => {
+		// Drift guard: a table added to the migrations but not to
+		// MIGRATION_TABLES would be silently skipped during cutover import.
+		const { applySqlMigrations } = await import(
+			'../../../site/scripts/lib/apply-sql-migrations.mjs'
+		)
+		const db = new DatabaseSync(':memory:')
+		applySqlMigrations(db)
+		const migratedTables = db
+			.prepare(
+				`SELECT name FROM sqlite_master WHERE type = 'table'
+				 AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '\\_%' ESCAPE '\\'`,
+			)
+			.all()
+			.map((row) => row.name)
+			.sort()
+		expect([...MIGRATION_TABLES].sort()).toEqual(migratedTables)
+	})
 })
