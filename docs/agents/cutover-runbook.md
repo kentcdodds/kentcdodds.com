@@ -400,6 +400,18 @@ Keep Fly idle (not destroyed) until the confidence window ends.
 
 ## 9. Post-cutover cleanup (after confidence window)
 
+- [ ] **Before cancelling the Cloudinary account** (irreversible asset loss
+      otherwise): confirm original masters are archived in R2. The
+      `--normalize-oversized` migration mode overwrote some R2 masters in
+      place with re-encoded versions, so the pre-normalization originals only
+      existed on Cloudinary. Archived on 2026-07-07: all 15 masters whose
+      bytes differ from the Cloudinary original now live under `originals/`
+      in the `kentcdodds-com` bucket (verified by size comparison across all
+      670 masters). To re-verify or catch new drift:
+  ```bash
+  node scripts/migrate-cloudinary-to-r2.mjs --archive-originals --dry-run   # report only
+  node scripts/migrate-cloudinary-to-r2.mjs --archive-originals             # archive
+  ```
 - [ ] Scale down / **destroy Fly app `kcd`** and `data_machines` volume (irreversible — only after D1 verified).
 - [ ] Delete staging preview resources when no longer needed (`kentcdodds-com-staging`, preview KV/R2).
 - [ ] Re-check zone DNS records per issue kentcdodds.com#814 (proxied records stay TTL Auto; remove the Fly ACME record once Fly is decommissioned).

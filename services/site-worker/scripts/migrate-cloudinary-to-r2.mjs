@@ -9,7 +9,7 @@
  *
  * Usage:
  *   CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... \
- *     node scripts/migrate-cloudinary-to-r2.mjs [--dry-run] [--verify] [--normalize-oversized]
+ *     node scripts/migrate-cloudinary-to-r2.mjs [--dry-run] [--verify] [--normalize-oversized] [--archive-originals]
  *
  * `--normalize-oversized` re-encodes image masters larger than ~19.5 MB down
  * to a 4096px-limited version (the Workers Images binding rejects inputs over
@@ -42,6 +42,9 @@ if (!accountId || !apiToken) {
 const dryRun = process.argv.includes('--dry-run')
 const verify = process.argv.includes('--verify')
 const normalizeOversized = process.argv.includes('--normalize-oversized')
+const archiveOriginals = process.argv.includes('--archive-originals')
+
+const ORIGINALS_PREFIX = 'originals/'
 
 // The Workers Images binding fails on inputs over ~20 MiB.
 const OVERSIZED_BYTES = 19_500_000
@@ -263,9 +266,84 @@ async function normalizeOversizedImages() {
 	}
 }
 
+/**
+ * `--normalize-oversized` overwrites R2 masters in place with re-encoded
+ * versions, so the pre-normalization originals only exist on Cloudinary.
+ * This mode archives any Cloudinary original whose bytes differ from the R2
+ * master under `originals/<key>` so nothing is lost when the Cloudinary
+ * account is cancelled. Run it (to completion, zero failures) BEFORE
+ * cancelling Cloudinary — see docs/agents/cutover-runbook.md.
+ */
+async function archiveCloudinaryOriginals() {
+	const existing = await listAllR2Keys()
+	const masters = [...existing.entries()].filter(
+		([key]) => !key.startsWith(ORIGINALS_PREFIX),
+	)
+	console.log(`${masters.length} R2 masters to check against Cloudinary`)
+
+	let archived = 0
+	let skippedSame = 0
+	let alreadyArchived = 0
+	const missingFromCloudinary = []
+	for (const [key, size] of masters) {
+		if (existing.has(`${ORIGINALS_PREFIX}${key}`)) {
+			alreadyArchived++
+			continue
+		}
+		let original = null
+		for (const id of candidateCloudinaryIds(key)) {
+			original = await fetchCloudinaryOriginal(id)
+			if (original) break
+		}
+		if (!original) {
+			// Assets that never lived on Cloudinary (post-migration uploads)
+			// have nothing to archive.
+			missingFromCloudinary.push(key)
+			continue
+		}
+		if (original.bytes.length === size) {
+			skippedSame++
+			continue
+		}
+		if (dryRun) {
+			console.log(
+				`[dry-run] would archive ${key} (master ${size} bytes, original ${original.bytes.length} bytes)`,
+			)
+			archived++
+			continue
+		}
+		await putR2Object(
+			`${ORIGINALS_PREFIX}${key}`,
+			original.bytes,
+			original.contentType,
+		)
+		archived++
+		console.log(
+			`archived ${key}: original ${original.bytes.length} bytes (master ${size})`,
+		)
+	}
+	console.log(
+		`archive summary: ${archived} archived, ${skippedSame} identical to master, ` +
+			`${alreadyArchived} already archived, ${missingFromCloudinary.length} not on Cloudinary`,
+	)
+	if (missingFromCloudinary.length > 0) {
+		console.log(
+			`not on Cloudinary (nothing to archive): ${missingFromCloudinary.join(', ')}`,
+		)
+	}
+}
+
+function candidateCloudinaryIds(key) {
+	return [key, `kentcdodds.com/content/${key}`, `kentcdodds.com/${key}`]
+}
+
 async function main() {
 	if (normalizeOversized) {
 		await normalizeOversizedImages()
+		return
+	}
+	if (archiveOriginals) {
+		await archiveCloudinaryOriginals()
 		return
 	}
 	const ids = collectRequiredIds()
