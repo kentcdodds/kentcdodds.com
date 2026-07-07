@@ -46,6 +46,9 @@ const schemaBase = z.object({
 	DISCORD_YELLOW_ROLE: nonEmptyString,
 	REFRESH_CACHE_SECRET: nonEmptyString,
 	OG_IMAGE_SECRET: nonEmptyString,
+	// Comma-separated retired OG secrets still accepted for verification, so
+	// rotating OG_IMAGE_SECRET keeps externally cached signed URLs working.
+	OG_IMAGE_PREVIOUS_SECRETS: z.string().trim().optional(),
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
 	// Sentry is optional; validate required combos in `superRefine`.
 	SENTRY_DSN: z.string().trim().optional(),

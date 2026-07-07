@@ -28,6 +28,11 @@ type OgKvNamespace = {
 export type OgHandlerEnv = OgAssetEnv & {
 	SITE_CACHE_KV?: OgKvNamespace
 	OG_IMAGE_SECRET?: string
+	/**
+	 * Comma-separated previous secrets, accepted for verification only so
+	 * rotating OG_IMAGE_SECRET does not 404 externally cached signed URLs.
+	 */
+	OG_IMAGE_PREVIOUS_SECRETS?: string
 	ASSETS?: { fetch(request: Request): Response | Promise<Response> }
 }
 
@@ -71,9 +76,16 @@ export async function handleOgImageRequest(
 	if (!secret) {
 		return new Response(null, { status: 404 })
 	}
+	const previousSecrets = (env.OG_IMAGE_PREVIOUS_SECRETS ?? '')
+		.split(',')
+		.map((candidate) => candidate.trim())
+		.filter(Boolean)
 
 	const url = new URL(request.url)
-	const verified = await verifyOgImageRequest(url.searchParams, secret)
+	const verified = await verifyOgImageRequest(url.searchParams, [
+		secret,
+		...previousSecrets,
+	])
 	if (!verified) {
 		return new Response(null, { status: 404 })
 	}

@@ -51,10 +51,20 @@ export function buildOgImageUrl(
 	return url.toString()
 }
 
+/**
+ * Signed og-image URLs are cached externally (social scrapers, 1-year
+ * immutable cache-control), so rotation must not 404 previously shared
+ * links. Verification accepts the current secret plus any previous secrets;
+ * signing (buildOgImageUrl) always uses the current secret only.
+ */
 export function verifyOgImageRequest(
 	searchParams: URLSearchParams,
-	secret: string,
+	secretOrSecrets: string | readonly string[],
 ) {
+	const secrets = (
+		typeof secretOrSecrets === 'string' ? [secretOrSecrets] : secretOrSecrets
+	).filter((candidate) => candidate.trim().length > 0)
+	if (secrets.length === 0) return null
 	const template = searchParams.get('tpl')
 	const paramsEncoded = searchParams.get('params')
 	const versionRaw = searchParams.get('v')
@@ -89,8 +99,10 @@ export function verifyOgImageRequest(
 		version,
 		paramsEncoded,
 	})
-	const expectedSig = signOgPayloadSync(secret, canonical)
-	if (!constantTimeEqualHex(sig, expectedSig)) {
+	const signatureMatches = secrets.some((candidate) =>
+		constantTimeEqualHex(sig, signOgPayloadSync(candidate, canonical)),
+	)
+	if (!signatureMatches) {
 		return null
 	}
 

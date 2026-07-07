@@ -105,6 +105,13 @@ request** — a missing required secret 500s the entire site, so after any
 schema change to `env.server.ts`, cross-check `wrangler secret list` against
 the required keys before/after deploying.
 
+Rotating `OG_IMAGE_SECRET` later: signed og-image URLs are cached by social
+scrapers with a 1-year immutable cache-control, so a bare rotation would 404
+every previously shared link. Move the old value into the optional
+comma-separated `OG_IMAGE_PREVIOUS_SECRETS` secret (verification-only) when
+setting a new `OG_IMAGE_SECRET`, and drop it after the old links have aged
+out.
+
 ### Email (Cloudflare Email Service)
 
 Transactional email (signup verification, password reset, contact form, call

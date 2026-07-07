@@ -27,6 +27,31 @@ describe('og url signing', () => {
 		expect(verified?.params).toMatchObject({ words: 'Hello world' })
 	})
 
+	test('verifies against previous secrets after rotation', () => {
+		const url = buildOgImageUrl(
+			'https://kentcdodds.com',
+			'generic-social',
+			{
+				words: 'Signed before rotation',
+				url: 'kentcdodds.com',
+				featuredImage: 'kentcdodds.com/illustrations/mic',
+			},
+			secret,
+		)
+		const parsed = new URL(url)
+		// URL signed with the old secret still verifies when the old secret is
+		// in the accepted list (externally cached og:image links keep working).
+		const rotated = verifyOgImageRequest(parsed.searchParams, [
+			'new-og-secret',
+			secret,
+		])
+		expect(rotated?.template).toBe('generic-social')
+		// ...and fails once the old secret is dropped entirely.
+		expect(
+			verifyOgImageRequest(parsed.searchParams, ['new-og-secret']),
+		).toBeNull()
+	})
+
 	test('rejects tampered signatures', () => {
 		const url = buildOgImageUrl(
 			'https://kentcdodds.com',
