@@ -370,6 +370,24 @@ npm run migrate:sqlite-to-d1 -- \
 
 ---
 
+## 6.5 Zone rate-limiting rules (T+0 … T+24h)
+
+App-level rate limits are per-isolate memory only (effective limit scales
+with isolate count) and parent-served routes (`/media/*`,
+`/resources/og-image`) have only blunt per-isolate caps. Once traffic flows
+through the zone, configure shared protection in the Cloudflare dashboard
+(Security → WAF → Rate limiting rules):
+
+- [ ] Auth endpoints (`/login`, `/signup`, `/forgot-password`,
+      `/reset-password`, `/resources/webauthn*`): ~10 req/min per IP.
+- [ ] Search + markdown negotiation (`/search`, `Accept: text/markdown`
+      heavy agents): ~60 req/min per IP.
+- [ ] `/media/*` and `/resources/og-image`: generous per-IP cap (these
+      consume Images transformations + R2 reads per request; watch spend in
+      the first week).
+- [ ] Confirm Bot Fight Mode / Super Bot Fight Mode setting matches what the
+      Fly-era zone used.
+
 ## 7. Final verification
 
 ```bash

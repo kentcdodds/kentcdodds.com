@@ -52,4 +52,33 @@ describe('resolveFeaturedImageDataUri', () => {
 		expect(images.input).toHaveBeenCalled()
 		expect(dataUri).toMatch(/^data:image\/png;base64,/)
 	})
+
+	test('rejects external featuredImage hosts outside the allowlist', async () => {
+		const { resolveFeaturedImageDataUri } = await import('../assets.server.ts')
+		await expect(
+			resolveFeaturedImageDataUri('https://attacker.example/steal.png'),
+		).rejects.toThrow(/host not allowed/)
+		await expect(
+			resolveFeaturedImageDataUri('http://www.gravatar.com/avatar/abc'),
+		).rejects.toThrow(/must be https/)
+		expect(fetch).not.toHaveBeenCalled()
+	})
+
+	test('allows gravatar avatar fetches and rejects other hosts', async () => {
+		const { resolveAvatarDataUri } = await import('../assets.server.ts')
+		const dataUri = await resolveAvatarDataUri({
+			avatarKind: 'fetch',
+			avatarSource: 'https://www.gravatar.com/avatar/abc?size=400',
+			size: 400,
+		})
+		expect(dataUri).toMatch(/^data:image\/png;base64,/)
+
+		await expect(
+			resolveAvatarDataUri({
+				avatarKind: 'fetch',
+				avatarSource: 'https://internal.service.local/metadata',
+				size: 400,
+			}),
+		).rejects.toThrow(/host not allowed/)
+	})
 })

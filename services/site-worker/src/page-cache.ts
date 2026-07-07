@@ -12,10 +12,15 @@ const SESSION_COOKIE_NAME = 'KCD_root_session'
 const CLIENT_ID_COOKIE_NAME = 'KCD_client_id'
 const LOGIN_COOKIE_NAME = 'KCD_login'
 const WEBAUTHN_COOKIE_NAME = 'webauthn-challenge'
+// D1 read-replication bookmark: routing/consistency metadata only, never
+// rendered into HTML. Without allowlisting it, every D1-touching anonymous
+// request would set it and BYPASS the page cache for its 10-minute lifetime.
+const D1_BOOKMARK_COOKIE_NAME = 'kcd_d1_bookmark'
 
 const ALLOWED_CACHE_COOKIES = new Set([
 	THEME_COOKIE_NAME,
 	CLIENT_ID_COOKIE_NAME,
+	D1_BOOKMARK_COOKIE_NAME,
 ])
 const BYPASS_CACHE_COOKIES = new Set([
 	SESSION_COOKIE_NAME,
@@ -209,17 +214,23 @@ function isClientPersonalizedPath(request: Request, pathname: string) {
 
 /**
  * A visitor's own response may only be reused as the shared cache fill when
- * the request carried no cookies beyond the theme cookie. Any other cookie
- * (in practice KCD_client_id) can influence the rendered body — e.g. /blog
+ * the request carried no body-influencing cookies. Any other cookie (in
+ * practice KCD_client_id) can influence the rendered body — e.g. /blog
  * read-marks — and storing it would leak one visitor's personalization to
  * everyone. Such requests fill the cache via a cookie-stripped background
- * fetch instead.
+ * fetch instead. The theme cookie is part of the cache key and the D1
+ * bookmark only affects replica routing, so both are store-safe.
  */
+const STORE_SAFE_COOKIES = new Set([
+	THEME_COOKIE_NAME,
+	D1_BOOKMARK_COOKIE_NAME,
+])
+
 function canStoreOwnResponse(request: Request) {
 	const cookieHeader = request.headers.get('Cookie')
 	if (!cookieHeader) return true
-	return Object.keys(parseCookieHeader(cookieHeader)).every(
-		(name) => name === THEME_COOKIE_NAME,
+	return Object.keys(parseCookieHeader(cookieHeader)).every((name) =>
+		STORE_SAFE_COOKIES.has(name),
 	)
 }
 

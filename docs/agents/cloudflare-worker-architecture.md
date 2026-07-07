@@ -163,15 +163,19 @@ keep working).
 
 ## RPC error contract
 
-`D1Rpc` exposes session-scoped SQL over `APP_DB`: `createSession(bookmark?)`,
-`sessionQuery(bookmark, sql, params?)`, `sessionRun(...)`, and
-`sessionBatch(...)`. Params and row values cross the JSRPC boundary via
-`row-serialization.server.ts` (Dates → ISO strings, bigint → number, byte views
-→ ArrayBuffer).
+`D1Rpc` exposes session-scoped SQL over `APP_DB`: `sessionQuery(bookmark,
+sql, params?)`, `sessionRun(...)`, and `sessionBatch(...)` — each call opens
+`APP_DB.withSession(bookmark)` and returns the resulting bookmark (there is
+no persistent server-side session object). Params and row values cross the
+JSRPC boundary via `row-serialization.server.ts` (Dates → ISO strings, bigint
+→ number, byte views → ArrayBuffer).
 
-The dynamic worker keeps the active D1 session bookmark in a per-request global
-store (`kcd_d1_bookmark` cookie, HttpOnly, 600s max-age) so reads can use
-regional replicas while preserving read-your-writes. Responses include
+The dynamic worker keeps the active D1 session bookmark in a per-request
+AsyncLocalStorage store (`kcd_d1_bookmark` cookie, HttpOnly, 600s max-age) so
+reads can use regional replicas while preserving read-your-writes. The
+bookmark cookie is allowlisted in the parent page cache (routing metadata,
+not personalization) — without that, every D1-touching anonymous request
+would bypass the page cache for the cookie's lifetime. Responses include
 `X-D1-Stats` (`queries`, `primary`, `replica`, `regions=…`) with D1
 `meta.served_by_*` aggregates. See [D1 read replication](#d1-read-replication)
 below.
@@ -420,9 +424,20 @@ Two protections in `page-cache.ts` keep that data out of the shared cache:
 
 Responses served from the parent page cache (`HIT`/`STALE`) do not pass
 through the dynamic worker, so they bypass app-level rate limiting entirely,
-and the dynamic-isolate rate limiter is per-isolate (not global). Abuse
-control for cached anonymous traffic therefore relies on Cloudflare-level
-tools (WAF rules, rate limiting rules, Bot Fight Mode) rather than app code.
+and the dynamic-isolate rate limiter is per-isolate (not global): the
+effective limit is roughly `limit × active isolates`, so **the in-memory
+maps must not be treated as production abuse control**. Parent-served routes
+(`/media/*`, `/resources/og-image`) additionally have blunt per-isolate
+per-IP caps in `parent-rate-limit.ts` (600/min and 60/min respectively) as
+an anti-burn guard.
+
+Real shared abuse control must come from Cloudflare zone-level tools (WAF
+custom rules, Rate Limiting rules, Bot Fight Mode) once DNS points at the
+worker — the cutover runbook includes configuring rules for the sensitive
+tiers (auth endpoints, search, OG/media) as a post-flip step. `/media` and
+OG rendering consume Images transformations and R2 reads per request; if
+spend becomes noticeable, add zone rate-limiting rules scoped to those
+paths.
 
 ## Local development
 

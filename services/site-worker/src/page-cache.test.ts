@@ -414,11 +414,87 @@ describe('SWR state machine', () => {
 	test('fill request strips cookies except theme', async () => {
 		const request = new Request('https://example.com/blog', {
 			headers: {
-				cookie: 'KCD_client_id=abc; en_theme=dark; other=1',
+				cookie: 'KCD_client_id=abc; en_theme=dark; kcd_d1_bookmark=v1-abc; other=1',
 			},
 		})
 		const fill = buildPageCacheFillRequest(request)
 		expect(fill.headers.get('Cookie')).toBe('en_theme=dark')
+	})
+
+	test('d1 bookmark cookie stays cache-eligible', async () => {
+		// The bookmark is replica-routing metadata set after any D1-touching
+		// request; treating it as personalization would BYPASS the page cache
+		// for 10 minutes for effectively every anonymous visitor.
+		expect(
+			areCookiesAllowedForPageCache(
+				new Request('https://example.com/blog', {
+					headers: { cookie: 'kcd_d1_bookmark=v1-abc; en_theme=dark' },
+				}),
+			),
+		).toBe(true)
+
+		const kvGet = vi.fn().mockResolvedValue(
+			JSON.stringify({
+				body: '<html>cached</html>',
+				status: 200,
+				headers: [['content-type', 'text/html']],
+				nonce: '',
+				storedAt: Date.now(),
+			} satisfies PageCacheEntry),
+		)
+		const env = makeEnv({
+			SITE_CACHE_KV: {
+				get: kvGet,
+				put: vi.fn(),
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+		})
+		const fetchDynamic = vi.fn()
+		const ctx = { waitUntil: vi.fn() } as unknown as ExecutionContext
+		const response = await handlePageCacheRequest(
+			new Request('https://example.com/blog', {
+				headers: { cookie: 'kcd_d1_bookmark=v1-abc' },
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		expect(response.headers.get('X-Edge-Cache')).toBe('HIT')
+		expect(fetchDynamic).not.toHaveBeenCalled()
+	})
+
+	test('bookmark-only MISS reuses the visitor response for the fill', async () => {
+		const kvPut = vi.fn().mockResolvedValue(undefined)
+		const env = makeEnv({
+			SITE_CACHE_KV: {
+				get: vi.fn().mockResolvedValue(null),
+				put: kvPut,
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+		})
+		const fetchDynamic = vi.fn().mockResolvedValue(
+			new Response('<html>shared</html>', {
+				status: 200,
+				headers: { 'content-type': 'text/html' },
+			}),
+		)
+		const waitUntilPromises: Promise<unknown>[] = []
+		const ctx = {
+			waitUntil: vi.fn((promise: Promise<unknown>) => {
+				waitUntilPromises.push(promise)
+			}),
+		} as unknown as ExecutionContext
+
+		await handlePageCacheRequest(
+			new Request('https://example.com/about', {
+				headers: { cookie: 'kcd_d1_bookmark=v1-abc; en_theme=light' },
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		await Promise.all(waitUntilPromises)
+		// Bookmark does not personalize the body, so no second fetch needed.
+		expect(fetchDynamic).toHaveBeenCalledTimes(1)
+		expect(kvPut).toHaveBeenCalledTimes(1)
 	})
 
 	test('stored entries omit fill-time observability headers', async () => {

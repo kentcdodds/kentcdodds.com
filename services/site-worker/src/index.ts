@@ -34,6 +34,13 @@ import {
 } from './page-cache.ts'
 import { serveStaticAsset } from './static-assets.ts'
 import { handleMediaRequest } from './media.ts'
+import {
+	checkParentRateLimit,
+	isParentSecretAuthorized,
+	MEDIA_RATE_LIMIT_PER_MINUTE,
+	OG_IMAGE_RATE_LIMIT_PER_MINUTE,
+	rateLimitedResponse,
+} from './parent-rate-limit.ts'
 import { handleOgImageRequest } from '../../site/app/og/handler.server.ts'
 
 const OG_IMAGE_PATH = '/resources/og-image'
@@ -60,7 +67,15 @@ function getStringEnvBindings(env: ParentWorkerEnv) {
 const ARTIFACT_PUBLISH_PATH = '/resources/mdx-artifacts'
 
 async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
-	if (request.headers.get('auth') !== env.REFRESH_CACHE_SECRET) {
+	// Publishing MDX artifacts is effectively a code deploy (the bundles run
+	// in Worker Loader isolates with full bindings), so the auth check is
+	// constant-time to avoid leaking the secret via timing.
+	if (
+		!isParentSecretAuthorized(
+			request.headers.get('auth'),
+			env.REFRESH_CACHE_SECRET,
+		)
+	) {
 		return new Response(null, { status: 404 })
 	}
 
@@ -78,6 +93,15 @@ async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	if (!bundle.version || typeof bundle.version !== 'string') {
 		return Response.json(
 			{ ok: false, error: 'Bundle JSON must include a string "version" field' },
+			{ status: 400 },
+		)
+	}
+
+	// The runtime loader only understands schemaVersion 1; accepting anything
+	// else would poison the manifest with a bundle isolates cannot load.
+	if (bundle.schemaVersion !== 1) {
+		return Response.json(
+			{ ok: false, error: 'Unsupported bundle schemaVersion (expected 1)' },
 			{ status: 400 },
 		)
 	}
@@ -284,10 +308,24 @@ export default {
 		}
 
 		if (url.pathname.startsWith('/media/')) {
+			const rateLimit = checkParentRateLimit(request, {
+				bucket: 'media',
+				limit: MEDIA_RATE_LIMIT_PER_MINUTE,
+			})
+			if (!rateLimit.allowed) {
+				return rateLimitedResponse(rateLimit.retryAfterSec)
+			}
 			return handleMediaRequest(request, env, ctx)
 		}
 
 		if (url.pathname === OG_IMAGE_PATH) {
+			const rateLimit = checkParentRateLimit(request, {
+				bucket: 'og-image',
+				limit: OG_IMAGE_RATE_LIMIT_PER_MINUTE,
+			})
+			if (!rateLimit.allowed) {
+				return rateLimitedResponse(rateLimit.retryAfterSec)
+			}
 			return handleOgImageRequest(request, env)
 		}
 
@@ -305,7 +343,10 @@ export default {
 			request.method === 'POST' &&
 			// The app route re-validates too, but the generation bump must not be
 			// reachable without the secret or anyone could bust the page cache.
-			request.headers.get('auth') === env.REFRESH_CACHE_SECRET
+			isParentSecretAuthorized(
+				request.headers.get('auth'),
+				env.REFRESH_CACHE_SECRET,
+			)
 		) {
 			await bumpPageCacheGeneration(env.CONTENT_KV)
 			clearPageCacheGenerationCache()

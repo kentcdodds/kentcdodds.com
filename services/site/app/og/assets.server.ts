@@ -29,6 +29,34 @@ function bytesToDataUri(bytes: Uint8Array, contentType: string) {
 	return `data:${contentType};base64,${btoa(binary)}`
 }
 
+/**
+ * Hosts external OG asset URLs may fetch from. Signed OG URLs can be minted
+ * by any logged-in user (episode artwork preview), so the render path must
+ * never fetch arbitrary attacker-chosen URLs (SSRF / resource burn). The
+ * only legitimate external source is Gravatar avatars; everything else
+ * resolves from R2 media ids.
+ */
+const ALLOWED_EXTERNAL_FETCH_HOSTS = new Set([
+	'www.gravatar.com',
+	'secure.gravatar.com',
+	'gravatar.com',
+])
+
+function assertAllowedExternalUrl(url: string) {
+	let parsed: URL
+	try {
+		parsed = new URL(url)
+	} catch {
+		throw new Error(`Invalid external image URL: ${url}`)
+	}
+	if (parsed.protocol !== 'https:') {
+		throw new Error(`External image URLs must be https: ${url}`)
+	}
+	if (!ALLOWED_EXTERNAL_FETCH_HOSTS.has(parsed.hostname)) {
+		throw new Error(`External image host not allowed: ${parsed.hostname}`)
+	}
+}
+
 async function fetchAsDataUri(url: string, maxBytes = 5_000_000) {
 	const response = await fetch(url)
 	if (!response.ok) {
@@ -129,6 +157,7 @@ export async function resolveFeaturedImageDataUri(
 		return featuredImage
 	}
 	if (featuredImage.startsWith('http://') || featuredImage.startsWith('https://')) {
+		assertAllowedExternalUrl(featuredImage)
 		return fetchAsDataUri(featuredImage)
 	}
 	if (featuredImage.startsWith('/media/')) {
@@ -167,6 +196,7 @@ export async function resolveAvatarDataUri({
 	env?: OgAssetEnv
 }) {
 	if (avatarKind === 'fetch') {
+		assertAllowedExternalUrl(avatarSource)
 		return fetchAsDataUri(avatarSource)
 	}
 	return resolveMediaDataUri(env, avatarSource, {
