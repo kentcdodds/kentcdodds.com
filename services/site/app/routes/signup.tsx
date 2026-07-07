@@ -264,23 +264,38 @@ export async function action({ request }: Route.ActionArgs) {
 		const passwordHash = await getPasswordHash(safePassword)
 		let user: { id: string }
 		try {
-			user = await db.transaction(async (tx) => {
-				const createdUser = await tx.create(
-					userTable,
-					{
-						email: signupEmail,
-						firstName: safeFirstName,
-						team: safeTeam,
-						role: 'MEMBER',
-					},
-					{ returnRow: true },
-				)
-				await tx.create(passwordTable, {
+			// No db.transaction here: D1 has no interactive transactions, so a
+			// rollback would be a silent no-op. Compensate instead — if the
+			// password insert fails, delete the just-created user so the email
+			// isn't left claimed by a password-less account.
+			const createdUser = await db.create(
+				userTable,
+				{
+					email: signupEmail,
+					firstName: safeFirstName,
+					team: safeTeam,
+					role: 'MEMBER',
+				},
+				{ returnRow: true },
+			)
+			try {
+				await db.create(passwordTable, {
 					userId: createdUser.id,
 					hash: passwordHash,
 				})
-				return { id: createdUser.id }
-			})
+			} catch (error: unknown) {
+				await db
+					.deleteMany(userTable, { where: { id: createdUser.id } })
+					.catch((cleanupError: unknown) => {
+						console.error(
+							'Signup compensation failed: user row left without password',
+							{ userId: createdUser.id },
+							cleanupError,
+						)
+					})
+				throw error
+			}
+			user = { id: createdUser.id }
 		} catch (error: unknown) {
 			// If the account was created in another concurrent attempt, send the user to login.
 			if (isUniqueConstraintError(error)) {

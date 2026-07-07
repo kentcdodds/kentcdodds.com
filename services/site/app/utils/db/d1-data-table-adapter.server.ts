@@ -2,9 +2,11 @@
 // parameterized over a thin SQL executor so the same adapter works for direct
 // D1 (parent worker) and D1_RPC loopback (dynamic app worker).
 //
-// Transaction invariant: D1 executors set `supportsSqlTransactions: false` so
-// beginTransaction/commit/rollback become no-ops (D1 forbids SQL BEGIN/COMMIT).
-// Node node:sqlite keeps `supportsSqlTransactions: true` for real transactions.
+// Transaction invariant: D1 executors set `supportsSqlTransactions: false`
+// and beginTransaction THROWS (D1 forbids SQL BEGIN/COMMIT, so a "no-op
+// transaction" would silently lose atomicity — rollback would do nothing).
+// Use atomic batches or compensating writes instead. Node node:sqlite keeps
+// `supportsSqlTransactions: true` for real transactions.
 import {
 	getTableName,
 	getTablePrimaryKey,
@@ -153,13 +155,17 @@ export class SqliteExecutorDataTableAdapter implements DatabaseAdapter {
 	async beginTransaction(
 		options?: TransactionOptions,
 	): Promise<TransactionToken> {
+		if (this.#executor.supportsSqlTransactions === false) {
+			throw new Error(
+				'db.transaction is not supported on D1: BEGIN/COMMIT are forbidden ' +
+					'and rollback would be a silent no-op. Use an atomic batch ' +
+					'(batchExecRawSql) or a compensating write instead.',
+			)
+		}
+
 		this.#transactionCounter += 1
 		const token = { id: 'tx_' + String(this.#transactionCounter) }
 		this.#transactions.add(token.id)
-
-		if (this.#executor.supportsSqlTransactions === false) {
-			return token
-		}
 
 		if (options?.isolationLevel === 'read uncommitted') {
 			await this.#executor.exec('PRAGMA read_uncommitted = true')

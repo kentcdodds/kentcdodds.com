@@ -8,7 +8,9 @@ import {
 } from '../d1-sql-executor.server.ts'
 import { createNodeSqliteExecutor } from '../test-helpers.server.ts'
 
-test('D1 executors disable SQL transactions in the data-table adapter', async () => {
+test('D1 executors reject SQL transactions in the data-table adapter', async () => {
+	// A silent no-op transaction would lose atomicity (rollback does nothing
+	// on D1), so beginTransaction must fail loudly instead.
 	const directAdapter = createSqliteExecutorDataTableAdapter(
 		createDirectD1Executor({
 			prepare: () => {
@@ -18,8 +20,9 @@ test('D1 executors disable SQL transactions in the data-table adapter', async ()
 			batch: async () => [],
 		}),
 	)
-	const directToken = await directAdapter.beginTransaction()
-	await directAdapter.commitTransaction(directToken)
+	await expect(directAdapter.beginTransaction()).rejects.toThrow(
+		/db\.transaction is not supported on D1/,
+	)
 
 	const rpcAdapter = createSqliteExecutorDataTableAdapter(
 		createRpcD1Executor({
@@ -28,8 +31,9 @@ test('D1 executors disable SQL transactions in the data-table adapter', async ()
 			sessionBatch: async () => [],
 		} satisfies D1RpcBinding),
 	)
-	const rpcToken = await rpcAdapter.beginTransaction()
-	await rpcAdapter.commitTransaction(rpcToken)
+	await expect(rpcAdapter.beginTransaction()).rejects.toThrow(
+		/db\.transaction is not supported on D1/,
+	)
 })
 
 test('node:sqlite executor keeps real SQL transactions', async () => {
