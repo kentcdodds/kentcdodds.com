@@ -253,7 +253,11 @@ jobs:
             curl --silent --output /dev/null --write-out '%{http_code}' "$WORKER_URL$path" | grep -E '^(200|302)$'
           }
           check_rss_items() {
-            curl --silent "$WORKER_URL/blog/rss.xml" | grep -c '<item>' | grep -E '^213$'
+            # Floor assertion: catches an empty/broken feed without failing
+            # whenever a post is published or removed.
+            local count
+            count="$(curl --silent "$WORKER_URL/blog/rss.xml" | grep -c '<item>')"
+            [ "$count" -ge 200 ]
           }
 
           check_with_retries "healthcheck" check_healthcheck

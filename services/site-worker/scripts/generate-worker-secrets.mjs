@@ -41,12 +41,17 @@ function integrationSecret({
 	omittedForProduction,
 	staticStagingValue,
 }) {
-	const fromEnv = process.env[key]
-	if (typeof fromEnv === 'string' && fromEnv.trim()) return fromEnv.trim()
 	if (target === 'production') {
+		// Production values for integration secrets live on the worker itself
+		// (synced from Fly; see docs/agents/cutover-runbook.md). Never upload a
+		// CI-env copy: it may be stale or diverge from paired services (e.g. the
+		// audio worker's callback secret), and bulk upload would clobber the
+		// working value.
 		omittedForProduction.push(key)
 		return undefined
 	}
+	const fromEnv = process.env[key]
+	if (typeof fromEnv === 'string' && fromEnv.trim()) return fromEnv.trim()
 	if (staticStagingValue !== undefined) return staticStagingValue
 	return deriveSecret(`${secretPrefix}${key}`, refreshCacheSecret)
 }
@@ -84,6 +89,9 @@ const INTEGRATION_SECRET_KEYS = [
 	'R2_BUCKET',
 	'CALL_KENT_R2_BUCKET',
 	'CALL_KENT_AUDIO_CF_QUEUE_ID',
+	// Must match the secret set manually on kcd-call-kent-audio-worker; the
+	// production value was synced from Fly and may not equal the GitHub copy.
+	'CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET',
 ]
 
 const STATIC_STAGING_VALUES = {}
@@ -191,12 +199,6 @@ async function main() {
 			refreshCacheSecret,
 			derivedFallbacks,
 		),
-		CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: deriveOrEnv(
-			'CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET',
-			`${secretPrefix}CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET`,
-			refreshCacheSecret,
-			derivedFallbacks,
-		),
 	}
 
 	const defaultOutputName =
@@ -219,6 +221,14 @@ async function main() {
 		console.warn(banner)
 		if (process.env.GITHUB_ACTIONS === 'true') {
 			console.warn(`::warning title=Derived worker secrets::${derivedFallbacks.join(', ')}`)
+		}
+		if (target === 'production') {
+			// A derived placeholder uploaded via `wrangler secret bulk` would
+			// overwrite a real production value. Refuse rather than clobber.
+			console.error(
+				'Refusing to emit derived fallbacks for production secrets.',
+			)
+			process.exit(1)
 		}
 	}
 
