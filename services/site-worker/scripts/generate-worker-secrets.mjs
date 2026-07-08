@@ -89,6 +89,11 @@ const INTEGRATION_SECRET_KEYS = [
 	'R2_BUCKET',
 	'CALL_KENT_R2_BUCKET',
 	'CALL_KENT_AUDIO_CF_QUEUE_ID',
+	// R2 access keys were synced from Fly directly onto the worker and are not
+	// GitHub CI secrets, so production must preserve the existing worker values
+	// rather than derive placeholders.
+	'R2_ACCESS_KEY_ID',
+	'R2_SECRET_ACCESS_KEY',
 	// Must match the secret set manually on kcd-call-kent-audio-worker; the
 	// production value was synced from Fly and may not equal the GitHub copy.
 	'CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET',
@@ -184,18 +189,6 @@ async function main() {
 		CHATS_WITH_KENT_PODCAST_ID: deriveOrEnv(
 			'CHATS_WITH_KENT_PODCAST_ID',
 			`${secretPrefix}CHATS_WITH_KENT_PODCAST_ID`,
-			refreshCacheSecret,
-			derivedFallbacks,
-		),
-		R2_ACCESS_KEY_ID: deriveOrEnv(
-			'R2_ACCESS_KEY_ID',
-			`${secretPrefix}R2_ACCESS_KEY_ID`,
-			refreshCacheSecret,
-			derivedFallbacks,
-		),
-		R2_SECRET_ACCESS_KEY: deriveOrEnv(
-			'R2_SECRET_ACCESS_KEY',
-			`${secretPrefix}R2_SECRET_ACCESS_KEY`,
 			refreshCacheSecret,
 			derivedFallbacks,
 		),
