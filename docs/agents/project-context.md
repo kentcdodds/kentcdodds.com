@@ -123,8 +123,11 @@ Unit tests apply committed SQL migrations via `app/utils/db/test-helpers.server.
 
 ## Cloud / headless manual testing
 
-- The Cursor Cloud VM snapshot ships with Node 24 via nvm, so run
-  `nvm install 26 && nvm use 26` before installing dependencies or testing.
+- The Cursor Cloud VM snapshot's default nvm Node is older than the required
+  Node 26 (it has shipped Node 22/24 in different snapshots), so run
+  `nvm install 26 && nvm use 26` before installing dependencies or testing. The
+  startup update script already selects Node 26 via nvm, but interactive shells
+  do not inherit that, so switch again in your shell.
   If the shell still resolves `/exec-daemon/node`, prepend nvm after switching:
   `export PATH="$NVM_BIN:$PATH"`.
   Chrome is configured to
@@ -135,6 +138,22 @@ Unit tests apply committed SQL migrations via `app/utils/db/test-helpers.server.
   `PATH="$(dirname "$(nvm which 26)"):$PATH"` when testing.
 - The first request after starting the dev server may compile all MDX blog posts
   via the sidecar watcher and can take ~30 s; subsequent loads are fast.
+- Playwright browsers (needed for `npm run test:browser` and `test:e2e:*`) are
+  pre-installed in the VM snapshot under `~/.cache/ms-playwright`, so you should
+  not normally need to reinstall them. On Node 26, `npm run test:e2e:install`
+  (i.e. `npx playwright install`) hangs during archive extraction (the download
+  reaches 100% but never finishes unpacking). If a browser is missing or its
+  revision changed, install it manually instead: `curl` the build zips from
+  `https://cdn.playwright.dev/builds/...` and unzip them into the matching
+  `~/.cache/ms-playwright/<name>-<revision>/` directory, then `touch` an
+  `INSTALLATION_COMPLETE` marker in each so Playwright treats them as installed.
+  Both `chrome-linux64` (chromium) and `chrome-headless-shell-linux64`
+  (chromium-headless-shell) come from the `builds/cft/<version>/linux64/` path;
+  ffmpeg comes from `builds/ffmpeg/<rev>/ffmpeg-linux.zip`.
+- Run the Playwright e2e suite with `npm run test:e2e:run` (CI mode, its own
+  server on port 8811). It fails to start if a dev server is already bound to
+  port 3000/3099 (the MDX sidecar), so stop `npm run dev` first, or set
+  `PW_REUSE_EXISTING_SERVER=true` to reuse a running dev server.
 - In cloud VMs, Chrome may block camera/microphone access by default. Visiting
   `/calls/record/new` can hit the route ErrorBoundary unless `localhost` is
   allowed mic/camera access in site settings (even if you intend to use the
