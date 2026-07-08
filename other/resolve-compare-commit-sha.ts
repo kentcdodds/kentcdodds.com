@@ -25,7 +25,7 @@ export async function resolveCompareCommitSha({
   const shaInfo = await fetchJsonImpl(`${baseUrl}/refresh-commit-sha.json`, {
     timeoutTime,
   });
-  if (typeof shaInfo?.sha === "string") {
+  if (typeof shaInfo?.sha === "string" && shaInfo.sha.length > 0) {
     return shaInfo.sha;
   }
 
