@@ -256,12 +256,16 @@ A short write freeze turns the cutover into a zero-data-loss operation: no
 backfill window, no lost form submissions. Because kentcdodds.com is already
 proxied through the Cloudflare zone, this needs **no code on Fly**:
 
-1. Dashboard → kentcdodds.com zone → Security → WAF → Custom rules → create
-   (or pre-create disabled, then enable at T−0):
-   - Expression: `(http.host eq "kentcdodds.com" and not http.request.method in {"GET" "HEAD" "OPTIONS"} and not http.request.uri.path eq "/healthcheck")`
-   - Action: **Block** (custom response, status 503, short JSON/text body
-     like `{"error":"brief maintenance, retry in a few minutes"}`)
-2. Verify: `curl -X POST https://kentcdodds.com/login -o /dev/null -w '%{http_code}'` → 503, while GET pages still serve.
+1. **Pre-created 2026-07-08 (disabled)**: rule
+   `e0e8dad5be9f4860bcacfc966e0d5365` in the zone's custom-rules ruleset
+   (`d50deae8d062403384dac8daa3737db0`), description "Cutover write freeze".
+   Enable it at T−0 from Security → WAF → Custom rules (or via the rulesets
+   API). Expression:
+   `(http.host eq "kentcdodds.com" and not http.request.method in {"GET" "HEAD" "OPTIONS"} and not http.request.uri.path eq "/healthcheck")`
+   Action is plain **Block** (the plan doesn't allow custom block responses,
+   so writes get Cloudflare's 403 block page during the freeze — acceptable
+   for the ~10 minute window).
+2. Verify: `curl -X POST https://kentcdodds.com/login -o /dev/null -w '%{http_code}'` → 403 (block), while GET pages still serve.
 3. Take the final snapshot + run the `--reset` import (section 3).
 4. Flip DNS (section 4), then **disable the rule**. Total write outage is the
    freeze duration (~5–10 min). Section 6's backfill becomes a safety check
