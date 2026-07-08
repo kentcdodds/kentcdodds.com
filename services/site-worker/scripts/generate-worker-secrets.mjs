@@ -177,15 +177,6 @@ async function main() {
 		),
 	}
 
-	const defaultOutputName = 'production-secrets.json'
-	const outputPath =
-		process.argv.find(
-			(arg) => !arg.startsWith('--') && arg.endsWith('.json'),
-		) ?? path.join(workerDir, '.wrangler', defaultOutputName)
-	await fs.mkdir(path.dirname(outputPath), { recursive: true })
-	await fs.writeFile(outputPath, `${JSON.stringify(secrets, null, 2)}\n`)
-	console.log(`Wrote ${outputPath}`)
-
 	if (derivedFallbacks.length > 0) {
 		const banner = [
 			'',
@@ -209,6 +200,15 @@ async function main() {
 			process.exit(1)
 		}
 	}
+
+	const defaultOutputName = 'production-secrets.json'
+	const outputPath =
+		process.argv.find(
+			(arg) => !arg.startsWith('--') && arg.endsWith('.json'),
+		) ?? path.join(workerDir, '.wrangler', defaultOutputName)
+	await fs.mkdir(path.dirname(outputPath), { recursive: true })
+	await fs.writeFile(outputPath, `${JSON.stringify(secrets, null, 2)}\n`)
+	console.log(`Wrote ${outputPath}`)
 
 	if (omittedForProduction.length > 0) {
 		console.log(

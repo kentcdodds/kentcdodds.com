@@ -21,7 +21,7 @@
     "provision:production": "node ./scripts/generate-worker-config.mjs",
     "secrets:generate": "node ./scripts/generate-worker-secrets.mjs",
     "publish:artifacts": "node ./scripts/publish-artifacts.mjs",
-    "seed:local-d1": "node ./scripts/seed-local-d1.mjs",
+    "seed:local-d1": "node ./scripts/seed-local-d1.mjs --local",
     "test:local-e2e": "node ./scripts/local-e2e.mjs",
     "cf-typegen": "wrangler types"
   },
