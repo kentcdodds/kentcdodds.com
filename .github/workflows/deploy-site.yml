@@ -129,7 +129,8 @@ jobs:
           retention-days: 30
 
   deploy:
-    name: 🚀 Deploy ${{ inputs.deploy_target == 'production' && 'Production' || 'Staging' }} Worker
+    # Static name: GitHub does not evaluate job.name expressions for skipped jobs.
+    name: 🚀 Deploy Site Worker
     runs-on: ubuntu-latest
     needs: [verify]
     if: ${{ inputs.should_deploy && github.ref == 'refs/heads/main' }}
