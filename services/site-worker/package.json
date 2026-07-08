@@ -25,9 +25,6 @@
     "secrets:generate": "node ./scripts/generate-worker-secrets.mjs",
     "publish:artifacts": "node ./scripts/publish-artifacts.mjs",
     "seed:preview-d1": "node ./scripts/seed-preview-d1.mjs",
-    "migrate:sqlite-to-d1": "node ./scripts/migrate-sqlite-to-d1.mjs",
-    "migrate:build-fixture": "node ./scripts/migrate-build-fixture.mjs",
-    "migrate:pipeline-test": "node ./scripts/migrate-pipeline-test.mjs",
     "test:local-e2e": "node ./scripts/local-e2e.mjs",
     "cf-typegen": "wrangler types"
   },
