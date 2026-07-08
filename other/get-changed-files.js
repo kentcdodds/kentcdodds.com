@@ -17,6 +17,23 @@ export function fetchJson(url, { timeoutTime, timoutTime } = {}) {
   }
 
   return new Promise((resolve, reject) => {
+    let settled = false;
+    let timer = null;
+
+    function clearTimer() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    }
+
+    function settle(callback) {
+      if (settled) return;
+      settled = true;
+      clearTimer();
+      callback();
+    }
+
     const request = https
       .get(url, (res) => {
         let data = "";
@@ -27,36 +44,43 @@ export function fetchJson(url, { timeoutTime, timoutTime } = {}) {
         res.on("end", () => {
           const statusCode = res.statusCode ?? 0;
           if (statusCode < 200 || statusCode >= 300) {
-            reject(
-              new Error(
-                `Request to ${url} failed with status ${statusCode}: ${data.slice(0, 200)}`,
+            settle(() =>
+              reject(
+                new Error(
+                  `Request to ${url} failed with status ${statusCode}: ${data.slice(0, 200)}`,
+                ),
               ),
             );
             return;
           }
 
           if (!data) {
-            resolve(null);
+            settle(() => resolve(null));
             return;
           }
 
           try {
-            resolve(JSON.parse(data));
+            const parsed = JSON.parse(data);
+            settle(() => resolve(parsed));
           } catch (error) {
             const message =
               error instanceof Error ? error.message : String(error);
-            reject(
-              new Error(`Request to ${url} returned non-JSON body: ${message}`),
+            settle(() =>
+              reject(
+                new Error(
+                  `Request to ${url} returned non-JSON body: ${message}`,
+                ),
+              ),
             );
           }
         });
       })
       .on("error", (e) => {
-        reject(e);
+        settle(() => reject(e));
       });
     const effectiveTimeoutTime = timeoutTime ?? timoutTime;
     if (effectiveTimeoutTime) {
-      setTimeout(() => {
+      timer = setTimeout(() => {
         request.destroy(new Error("Request timed out"));
       }, effectiveTimeoutTime);
     }
