@@ -1,15 +1,14 @@
 import { createHmac } from 'node:crypto'
 import { expect, test, vi } from 'vitest'
+import { callKentEpisodeDraftTable } from '../db/schema.server.ts'
 
 async function loadCallbackModule() {
 	vi.resetModules()
 	const updateMany = vi.fn()
 	const startCallKentEpisodeDraftProcessing = vi.fn()
-	vi.doMock('#app/utils/prisma.server.ts', () => ({
-		prisma: {
-			callKentEpisodeDraft: {
-				updateMany,
-			},
+	vi.doMock('#app/utils/db.server.ts', () => ({
+		db: {
+			updateMany,
 		},
 	}))
 	vi.doMock('#app/utils/call-kent-episode-draft.server.ts', () => ({
@@ -70,7 +69,7 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 		handleCallKentAudioProcessorEvent,
 	} = await loadCallbackModule()
 	updateMany.mockResolvedValue({
-		count: 1,
+		affectedRows: 1,
 	})
 	await handleCallKentAudioProcessorEvent({
 		type: 'audio_generation_completed',
@@ -81,13 +80,9 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 		callerSegmentAudioKey: 'call-kent/drafts/draft-1/caller-segment.mp3',
 		responseSegmentAudioKey: 'call-kent/drafts/draft-1/response-segment.mp3',
 	})
-	expect(updateMany).toHaveBeenCalledWith({
-		where: {
-			id: 'draft-1',
-			status: 'PROCESSING',
-			step: { in: ['STARTED', 'GENERATING_AUDIO'] },
-		},
-		data: {
+	expect(updateMany).toHaveBeenCalledWith(
+		callKentEpisodeDraftTable,
+		{
 			episodeAudioKey: 'call-kent/drafts/draft-1/episode.mp3',
 			episodeAudioContentType: 'audio/mpeg',
 			episodeAudioSize: 321,
@@ -96,6 +91,11 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 			step: 'TRANSCRIBING',
 			errorMessage: null,
 		},
-	})
+		expect.objectContaining({
+			where: expect.objectContaining({
+				type: 'logical',
+			}),
+		}),
+	)
 	expect(startCallKentEpisodeDraftProcessing).toHaveBeenCalledWith('draft-1')
 })

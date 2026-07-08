@@ -8,19 +8,18 @@ import {
 } from '#app/components/calls/recording-form.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { Grimmacing } from '#app/components/kifs.tsx'
+import { CallKentTextToSpeech } from '#app/components/calls/call-kent-text-to-speech.tsx'
 import { H4, Paragraph } from '#app/components/typography.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
-import { CallKentTextToSpeech } from '#app/routes/resources/calls/text-to-speech.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { formatCallKentTextToSpeechNotes } from '#app/utils/call-kent-text-to-speech.ts'
-import { type SerializeFrom } from '#app/utils/serialize-from.ts'
+import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/new'
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export default function RecordScreen({ matches }: Route.ComponentProps) {
+export default function RecordScreen() {
 	const routeTopRef = React.useRef<HTMLDivElement | null>(null)
 	const [audio, setAudio] = React.useState<Blob | null>(null)
 	const [prefill, setPrefill] = React.useState<RecordingFormData | undefined>(
@@ -28,11 +27,8 @@ export default function RecordScreen({ matches }: Route.ComponentProps) {
 	)
 	const [mode, setMode] = React.useState<'record' | 'text'>('record')
 
-	const rootMatch = matches.find((m) => m?.id === 'root')
-	const rootData = rootMatch?.data as SerializeFrom<RootLoaderType> | undefined
-	const { user, userInfo } = rootData ?? {}
-	// should be impossible...
-	if (!user || !userInfo) throw new Error('user and userInfo required')
+	const { user, userInfo } = useRootData()
+	if (!user || !userInfo) return null
 
 	function scrollToRouteTop() {
 		requestAnimationFrame(() => {

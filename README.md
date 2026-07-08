@@ -4,15 +4,15 @@
 [![GPL 3.0 License][license-badge]][license]
 
 This repository contains the source code for
-[kentcdodds.com](https://kentcdodds.com/), built with Remix, React, TypeScript,
-Vite, and an Express server.
+[kentcdodds.com](https://kentcdodds.com/), built with React Router v7, React,
+TypeScript, Vite, and Cloudflare Workers.
 
 ## Tech stack
 
 - React Router + React + TypeScript
-- Vite build pipeline
-- Express runtime server
-- Prisma + SQLite
+- Vite build pipeline + `@cloudflare/vite-plugin` (local dev in workerd)
+- Cloudflare Workers (production) with D1 + KV + R2
+- Prisma (schema/migrations only) + `@remix-run/data-table` (runtime DB)
 - Tailwind CSS
 - Vitest and Playwright for testing
 
@@ -30,9 +30,8 @@ Vite, and an Express server.
 3. Run the full setup script:
    - `npm run setup -s`
 
-The setup script installs dependencies, resets the local database, validates the
-project, primes local cache data, installs Playwright browsers, and runs
-end-to-end tests.
+The setup script installs dependencies, resets the local D1 database (Miniflare),
+validates the project, installs Playwright browsers, and runs end-to-end tests.
 
 This repo now uses npm workspaces. Install dependencies from the repository root
 so the site and worker packages share one lockfile and one `node_modules` tree.
@@ -41,11 +40,13 @@ forward to that workspace for convenience.
 
 ## Local development
 
-Start the development server:
+Start the development server (MDX watcher sidecar + workerd via Vite):
 
 - `npm run dev`
 
-Then open `http://localhost:3000`.
+Then open `http://localhost:3000`. External APIs are mocked by default
+(`MOCKS=true`). Transactional emails are written to
+`services/site/mocks/msw.local.json`.
 
 ## Git hooks
 

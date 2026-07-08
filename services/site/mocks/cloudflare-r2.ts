@@ -259,7 +259,7 @@ function accessKeyFromAwsV4AuthorizationHeader(raw: string | null) {
 	return accessKey || null
 }
 
-function shouldMockR2(request: Request) {
+function shouldMockR2(request: Pick<Request, 'headers'>) {
 	// Align with other mocks: only intercept when the request explicitly opts in.
 	// For AWS SDK v3, access key id appears in the SigV4 Authorization header.
 	const accessKey = accessKeyFromAwsV4AuthorizationHeader(

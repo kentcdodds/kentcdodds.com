@@ -1,15 +1,72 @@
+import fs from 'node:fs'
 import path from 'path'
+import { DatabaseSync } from 'node:sqlite'
+import { fileURLToPath } from 'node:url'
 import { invariant } from '@epic-web/invariant'
 import { test as base } from '@playwright/test'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
+import { createCookieSessionStorage } from 'react-router'
 import {
-	PrismaClient,
-	type User,
-} from '#app/utils/prisma-generated.server/client.ts'
-import { getSession } from '../app/utils/session.server.ts'
-import { createUser } from '../prisma/seed-utils.ts'
+	createDatabase,
+	type Database,
+} from '@remix-run/data-table'
+import { inList } from '@remix-run/data-table'
+import { createSqliteExecutorDataTableAdapter } from '#app/utils/db/d1-data-table-adapter.server.ts'
+import { createNodeSqliteExecutor } from '#app/utils/db/node-sqlite-executor.server.ts'
+import { sessionTable, userTable, type User } from '#app/utils/db/schema.server.ts'
+import { getEnv } from '#app/utils/env.server.ts'
+import { sessionExpirationTime } from '#app/utils/user-data.server.ts'
+import { localD1StateDir } from '../scripts/local-d1-state.mjs'
+import { createUser } from '../tests/fixtures/user.ts'
+
+const e2eDir = path.dirname(fileURLToPath(import.meta.url))
+const siteDir = path.join(e2eDir, '..')
+const sessionIdKey = '__session_id__' as const
+
+function findLocalD1SqliteFile() {
+	if (!fs.existsSync(localD1StateDir)) return null
+	const stack = [localD1StateDir]
+	while (stack.length > 0) {
+		const current = stack.pop()
+		if (!current) continue
+		for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+			const fullPath = path.join(current, entry.name)
+			if (entry.isDirectory()) {
+				stack.push(fullPath)
+				continue
+			}
+			if (entry.isFile() && entry.name.endsWith('.sqlite')) {
+				return fullPath
+			}
+		}
+	}
+	return null
+}
+
+function getLocalD1SqlitePath() {
+	const sqlitePath = findLocalD1SqliteFile()
+	if (!sqlitePath) {
+		throw new Error(
+			`Could not find local D1 sqlite under ${localD1StateDir}. Run npm run db:reset --workspace kentcdodds.com or start the dev worker once.`,
+		)
+	}
+	return sqlitePath
+}
+
+let e2eDatabase: Database | undefined
+
+function getE2eDatabase() {
+	if (!e2eDatabase) {
+		const sqlite = new DatabaseSync(getLocalD1SqlitePath())
+		sqlite.exec('PRAGMA foreign_keys = ON')
+		const adapter = createSqliteExecutorDataTableAdapter(
+			createNodeSqliteExecutor(sqlite),
+		)
+		e2eDatabase = createDatabase(adapter, { now: () => new Date() })
+	}
+	return e2eDatabase
+}
 
 type MSWData = {
 	email: Record<string, Email>
@@ -18,6 +75,7 @@ type MSWData = {
 type Email = {
 	to: string
 	from: string
+	replyTo?: string
 	subject: string
 	text: string
 	html: string
@@ -37,10 +95,9 @@ export async function readEmail(
 	for (let attempt = 0; attempt < maxRetries; attempt++) {
 		try {
 			const mswOutput = fsExtra.readJsonSync(
-				path.join(process.cwd(), './mocks/msw.local.json'),
+				path.join(siteDir, './mocks/msw.local.json'),
 			) as unknown as MSWData
-			const emails = Object.values(mswOutput.email).reverse() // reverse so we get the most recent email first
-			// TODO: add validation
+			const emails = Object.values(mswOutput.email).reverse()
 			let email: Email | undefined
 			if (typeof recipientOrFilter === 'string') {
 				email = emails.find((email: Email) => email.to === recipientOrFilter)
@@ -50,7 +107,6 @@ export async function readEmail(
 			if (email) {
 				return email
 			}
-			// Email not found yet, retry after a delay
 			if (attempt < maxRetries - 1) {
 				await sleep(retryDelay)
 			}
@@ -76,28 +132,47 @@ export function extractUrl(text: string) {
 const users = new Set<User>()
 
 export async function insertNewUser(userOverrides?: Partial<User>) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
-	})
-
-	const user = await prisma.user.create({
-		data: { ...createUser(), ...userOverrides },
-	})
-	await prisma.$disconnect()
-	users.add(user)
-	return user
+	const db = getE2eDatabase()
+	const user = await db.create(
+		userTable,
+		{ ...createUser(), ...userOverrides },
+		{ returnRow: true },
+	)
+	users.add(user as User)
+	return user as User
 }
 
 export async function deleteUserByEmail(email: string) {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
+	const db = getE2eDatabase()
+	const user = await db.findOne(userTable, { where: { email } })
+	if (!user) return
+	await db.delete(userTable, user.id)
+}
+
+async function createE2eSessionCookie(userId: string) {
+	const db = getE2eDatabase()
+	const userSession = await db.create(
+		sessionTable,
+		{
+			userId,
+			expirationDate: new Date(Date.now() + sessionExpirationTime),
+		},
+		{ returnRow: true },
+	)
+	const storage = createCookieSessionStorage({
+		cookie: {
+			name: 'KCD_root_session',
+			secure: getEnv().NODE_ENV === 'production' && !getEnv().MOCKS,
+			secrets: [getEnv().SESSION_SECRET],
+			sameSite: 'lax',
+			path: '/',
+			maxAge: sessionExpirationTime / 1000,
+			httpOnly: true,
+		},
 	})
-	await prisma.user.delete({ where: { email } })
-	await prisma.$disconnect()
+	const session = await storage.getSession()
+	session.set(sessionIdKey, userSession.id)
+	return storage.commitSession(session)
 }
 
 export const test = base.extend<{
@@ -108,9 +183,7 @@ export const test = base.extend<{
 			invariant(baseURL, 'baseURL is required playwright config')
 			return use(async (userOverrides) => {
 				const user = await insertNewUser(userOverrides)
-				const session = await getSession(new Request(baseURL))
-				await session.signIn(user)
-				const cookieValue = await session.commit()
+				const cookieValue = await createE2eSessionCookie(user.id)
 				invariant(
 					cookieValue,
 					'Something weird happened creating a session for a new user. No cookie value given from session.commit()',
@@ -137,13 +210,10 @@ export const test = base.extend<{
 export const { expect } = test
 
 test.afterEach(async () => {
-	const url = process.env.DATABASE_URL
-	invariant(url, 'DATABASE_URL is required')
-	const prisma = new PrismaClient({
-		adapter: new PrismaBetterSqlite3({ url }),
+	const db = getE2eDatabase()
+	const ids = [...users].map((user) => user.id)
+	if (ids.length === 0) return
+	await db.deleteMany(userTable, {
+		where: inList('id', ids),
 	})
-	await prisma.user.deleteMany({
-		where: { id: { in: [...users].map((u) => u.id) } },
-	})
-	await prisma.$disconnect()
 })

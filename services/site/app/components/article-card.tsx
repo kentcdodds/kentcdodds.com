@@ -65,11 +65,9 @@ function ArticleCard({
 											'420px',
 										],
 										transformations: {
-											background: 'rgb:e6e9ee',
-											resize: {
-												type: 'fill',
-												aspectRatio: '3:4',
-											},
+											background: 'e6e9ee',
+											fit: 'cover',
+											aspectRatio: '3:4',
 										},
 									},
 								)}

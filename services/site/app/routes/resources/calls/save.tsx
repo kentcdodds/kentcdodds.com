@@ -10,6 +10,7 @@ import {
 	putCallAudioFromDataUrl,
 	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
+import { runBackgroundTask } from '#app/utils/background-task.server.ts'
 import { startCallKentCallerTranscriptProcessing } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { requestCallKentEpisodeAudioGeneration } from '#app/utils/call-kent-audio-processor.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
@@ -27,7 +28,17 @@ import {
 	getOptionalTeam,
 	getStringFormValue,
 } from '#app/utils/misc.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callEpisodeDraft,
+	callKentEpisodeDraftTable,
+	callTable,
+	callUser,
+} from '#app/utils/db/schema.server.ts'
+import {
+	recordPublishedCallKentEpisode,
+	replaceCallKentEpisodeDraft,
+} from '#app/utils/auth-write-flows.server.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
 import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
 import { teamEmoji } from '#app/utils/team-provider.tsx'
@@ -133,8 +144,9 @@ async function createCall({
 		const stored = await putCallAudioFromFormValue({ callId, audio })
 		let createdCall: { id: string }
 		try {
-			createdCall = await prisma.call.create({
-				data: {
+			createdCall = await db.create(
+				callTable,
+				{
 					id: callId,
 					title,
 					notes: notes?.trim() || null,
@@ -144,15 +156,17 @@ async function createCall({
 					audioContentType: stored.contentType,
 					audioSize: stored.size,
 				},
-				select: { id: true },
-			})
+				{ returnRow: true },
+			)
 		} catch (error: unknown) {
 			// Best-effort cleanup so we don't orphan R2 objects.
 			await deleteAudioObject({ key: stored.key }).catch(() => {})
 			throw error
 		}
 
-		void startCallKentCallerTranscriptProcessing(createdCall.id)
+		runBackgroundTask(() =>
+			startCallKentCallerTranscriptProcessing(createdCall.id),
+		)
 
 		try {
 			const env = getEnv()
@@ -183,7 +197,7 @@ async function createCall({
 					message = `${baseMessage}${notesHeader}${truncatedNotes}\n\n${callAdminUrl}`
 				}
 			}
-			void sendMessageFromDiscordBot(channelId, message)
+			runBackgroundTask(() => sendMessageFromDiscordBot(channelId, message))
 		} catch (error: unknown) {
 			console.error('Problem sending a call message', error)
 			// ignore
@@ -211,12 +225,15 @@ async function publishCall({
 		const formCallTitle = getStringFormValue(formData, 'callTitle')
 		const formNotes = getStringFormValue(formData, 'notes')
 
-		const call = await prisma.call.findFirst({
+		const call = await db.findOne(callTable, {
 			where: { id: callId },
-			include: { user: true, episodeDraft: true },
+			with: { episodeDraft: callEpisodeDraft, user: callUser },
 		})
 		if (!call) {
 			return redirectCallNotFound()
+		}
+		if (!call.user) {
+			throw new Error(`Call ${callId} is missing its user relation`)
 		}
 
 		// Allow overriding call title from the admin UI submit.
@@ -229,10 +246,7 @@ async function publishCall({
 				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 			}
 			callTitle = nextTitle
-			await prisma.call.update({
-				where: { id: callId },
-				data: { title: callTitle },
-			})
+			await db.update(callTable, callId, { title: callTitle })
 		}
 
 		// Allow overriding call notes from the admin UI submit.
@@ -243,10 +257,7 @@ async function publishCall({
 					: null
 				: call.notes
 		if (formNotes !== null) {
-			await prisma.call.update({
-				where: { id: callId },
-				data: { notes: callNotes },
-			})
+			await db.update(callTable, callId, { notes: callNotes })
 		}
 
 		const draft = call.episodeDraft
@@ -289,9 +300,8 @@ async function publishCall({
 			if (nextTranscript) updateData.transcript = nextTranscript
 
 			if (Object.keys(updateData).length) {
-				await prisma.callKentEpisodeDraft.update({
+				await db.updateMany(callKentEpisodeDraftTable, updateData, {
 					where: { callId },
-					data: updateData,
 				})
 			}
 		}
@@ -331,7 +341,7 @@ async function publishCall({
 			request,
 			audio: episodeAudio,
 			title,
-			summary: `${summaryName} asked this on ${format(call.createdAt, 'yyyy-MM-dd')}`,
+			summary: `${summaryName} asked this on ${format(call.createdAt as Date, 'yyyy-MM-dd')}`,
 			description: await markdownToHtml(description),
 			user: call.user,
 			keywords,
@@ -342,19 +352,22 @@ async function publishCall({
 
 		if (published.episodeUrl) {
 			try {
+				const callUser = call.user
 				const email = getPublishedCallKentEpisodeEmail({
-					firstName: call.user.firstName,
+					firstName: callUser.firstName,
 					episodeTitle: title,
 					episodeUrl: published.episodeUrl,
 					imageUrl: published.imageUrl,
 				})
-				void sendEmail({
-					to: call.user.email,
-					from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
-					subject: `Your "Call Kent" episode has been published`,
-					text: email.text,
-					html: email.html,
-				})
+				runBackgroundTask(() =>
+					sendEmail({
+						to: callUser.email,
+						from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
+						subject: `Your "Call Kent" episode has been published`,
+						text: email.text,
+						html: email.html,
+					}),
+				)
 			} catch (error: unknown) {
 				console.error(
 					`Problem sending email about a call: ${published.episodeUrl}`,
@@ -366,18 +379,14 @@ async function publishCall({
 		// Persist a per-caller record so users can see their episodes on /me even
 		// after the raw call record is removed.
 		try {
-			await prisma.$transaction([
-				prisma.callKentCallerEpisode.create({
-					data: {
-						userId: call.userId,
-						callTitle,
-						callNotes,
-						isAnonymous: call.isAnonymous,
-						transistorEpisodeId: published.transistorEpisodeId,
-					},
-				}),
-				prisma.call.delete({ where: { id: call.id } }),
-			])
+			await recordPublishedCallKentEpisode({
+				userId: call.userId,
+				callId: call.id,
+				callTitle,
+				callNotes,
+				isAnonymous: call.isAnonymous,
+				transistorEpisodeId: published.transistorEpisodeId,
+			})
 		} catch (error: unknown) {
 			console.error(
 				'Transistor episode already created but DB cleanup failed.',
@@ -445,7 +454,7 @@ async function createEpisodeDraft({
 
 	await requireAdminUser(request)
 
-	const call = await prisma.call.findFirst({ where: { id: callId } })
+	const call = await db.findOne(callTable, { where: { id: callId } })
 	if (!call) return redirectCallNotFound()
 
 	// Allow overriding call title from the admin UI submit.
@@ -456,30 +465,20 @@ async function createEpisodeDraft({
 			searchParams.set('error', 'Call title is required.')
 			return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 		}
-		await prisma.call.update({
-			where: { id: callId },
-			data: { title: nextTitle },
-		})
+		await db.update(callTable, callId, { title: nextTitle })
 	}
 
 	// Allow overriding call notes from the admin UI submit.
 	if (formNotes !== null) {
 		const nextNotes = formNotes.trim()
-		await prisma.call.update({
-			where: { id: callId },
-			data: { notes: nextNotes ? nextNotes : null },
+		await db.update(callTable, callId, {
+			notes: nextNotes ? nextNotes : null,
 		})
 	}
 
 	// If we're replacing a draft, clean up the old stored audio blob.
-	const existingDraft = await prisma.callKentEpisodeDraft.findFirst({
+	const existingDraft = await db.findOne(callKentEpisodeDraftTable, {
 		where: { callId },
-		select: {
-			episodeAudioKey: true,
-			responseAudioKey: true,
-			callerSegmentAudioKey: true,
-			responseSegmentAudioKey: true,
-		},
 	})
 	const existingKeysToDelete = [
 		existingDraft?.episodeAudioKey,
@@ -496,14 +495,7 @@ async function createEpisodeDraft({
 	}
 
 	// Replace any existing draft so "re-record response" is safe and predictable.
-	const [, draft] = await prisma.$transaction([
-		prisma.callKentEpisodeDraft.deleteMany({ where: { callId } }),
-		prisma.callKentEpisodeDraft.create({
-			data: {
-				callId,
-			},
-		}),
-	])
+	const draft = await replaceCallKentEpisodeDraft({ callId })
 
 	try {
 		if (!call.audioKey) {
@@ -517,30 +509,33 @@ async function createEpisodeDraft({
 			audio: parsedResponseAudio.buffer,
 			contentType: parsedResponseAudio.contentType,
 		})
-		await prisma.callKentEpisodeDraft.updateMany({
-			where: { id: draft.id, status: 'PROCESSING' },
-			data: {
+		await db.updateMany(
+			callKentEpisodeDraftTable,
+			{
 				responseAudioKey: storedResponseAudio.key,
 				responseAudioContentType: storedResponseAudio.contentType,
 				responseAudioSize: storedResponseAudio.size,
 				step: 'GENERATING_AUDIO',
 				errorMessage: null,
 			},
-		})
+			{ where: { id: draft.id, status: 'PROCESSING' } },
+		)
 		await requestCallKentEpisodeAudioGeneration({
 			draftId: draft.id,
 			callAudioKey: call.audioKey,
 			responseAudioKey: storedResponseAudio.key,
+			callbackUrl: `${getDomainUrl(request)}/resources/calls/episode-audio-callback`,
 		})
 	} catch (error: unknown) {
-		await prisma.callKentEpisodeDraft.updateMany({
-			where: { id: draft.id, status: 'PROCESSING' },
-			data: {
+		await db.updateMany(
+			callKentEpisodeDraftTable,
+			{
 				status: 'ERROR',
 				errorMessage: getErrorMessage(error),
 				step: 'DONE',
 			},
-		})
+			{ where: { id: draft.id, status: 'PROCESSING' } },
+		)
 		const searchParams = new URLSearchParams()
 		searchParams.set(
 			'error',
@@ -564,21 +559,19 @@ async function generateCallerTranscript({
 
 	await requireAdminUser(request)
 
-	const call = await prisma.call.findFirst({
+	const call = await db.findOne(callTable, {
 		where: { id: callId },
-		select: { id: true },
 	})
 	if (!call) return redirectCallNotFound()
 
-	await prisma.call.update({
-		where: { id: callId },
-		data: {
-			callerTranscriptStatus: 'PROCESSING',
-			callerTranscriptErrorMessage: null,
-		},
+	await db.update(callTable, callId, {
+		callerTranscriptStatus: 'PROCESSING',
+		callerTranscriptErrorMessage: null,
 	})
 
-	void startCallKentCallerTranscriptProcessing(callId, { force: true })
+	runBackgroundTask(() =>
+		startCallKentCallerTranscriptProcessing(callId, { force: true }),
+	)
 	return redirect(`/calls/admin/${callId}`)
 }
 
@@ -594,9 +587,8 @@ async function updateCallerTranscript({
 
 	await requireAdminUser(request)
 
-	const call = await prisma.call.findFirst({
+	const call = await db.findOne(callTable, {
 		where: { id: callId },
-		select: { id: true },
 	})
 	if (!call) return redirectCallNotFound()
 
@@ -604,22 +596,16 @@ async function updateCallerTranscript({
 	const nextTranscript = transcriptText?.trim() ?? ''
 
 	if (!nextTranscript) {
-		await prisma.call.update({
-			where: { id: callId },
-			data: {
-				callerTranscript: null,
-				callerTranscriptStatus: 'NOT_STARTED',
-				callerTranscriptErrorMessage: null,
-			},
+		await db.update(callTable, callId, {
+			callerTranscript: null,
+			callerTranscriptStatus: 'NOT_STARTED',
+			callerTranscriptErrorMessage: null,
 		})
 	} else {
-		await prisma.call.update({
-			where: { id: callId },
-			data: {
-				callerTranscript: nextTranscript,
-				callerTranscriptStatus: 'READY',
-				callerTranscriptErrorMessage: null,
-			},
+		await db.update(callTable, callId, {
+			callerTranscript: nextTranscript,
+			callerTranscriptStatus: 'READY',
+			callerTranscriptErrorMessage: null,
 		})
 	}
 
@@ -638,14 +624,8 @@ async function undoEpisodeDraft({
 
 	await requireAdminUser(request)
 
-	const drafts = await prisma.callKentEpisodeDraft.findMany({
+	const drafts = await db.findMany(callKentEpisodeDraftTable, {
 		where: { callId },
-		select: {
-			episodeAudioKey: true,
-			responseAudioKey: true,
-			callerSegmentAudioKey: true,
-			responseSegmentAudioKey: true,
-		},
 	})
 	const keysToDelete = drafts
 		.flatMap((draft) => [
@@ -662,7 +642,7 @@ async function undoEpisodeDraft({
 			),
 		)
 	}
-	await prisma.callKentEpisodeDraft.deleteMany({ where: { callId } })
+	await db.deleteMany(callKentEpisodeDraftTable, { where: { callId } })
 	return redirect(`/calls/admin/${callId}`)
 }
 
@@ -694,18 +674,14 @@ async function updateEpisodeDraft({
 				searchParams.set('error', 'Call title is required.')
 				return redirect(`/calls/admin/${callId}?${searchParams.toString()}`)
 			}
-			await prisma.call.update({
-				where: { id: callId },
-				data: { title: nextTitle },
-			})
+			await db.update(callTable, callId, { title: nextTitle })
 		}
 
 		// Allow overriding call notes from the admin UI submit.
 		if (notes !== null) {
 			const nextNotes = notes.trim()
-			await prisma.call.update({
-				where: { id: callId },
-				data: { notes: nextNotes ? nextNotes : null },
+			await db.update(callTable, callId, {
+				notes: nextNotes ? nextNotes : null,
 			})
 		}
 
@@ -726,9 +702,8 @@ async function updateEpisodeDraft({
 		if (nextTranscript) updateData.transcript = nextTranscript
 
 		if (Object.keys(updateData).length) {
-			await prisma.callKentEpisodeDraft.update({
+			await db.updateMany(callKentEpisodeDraftTable, updateData, {
 				where: { callId },
-				data: updateData,
 			})
 		}
 		return redirect(`/calls/admin/${callId}`)
@@ -752,25 +727,14 @@ async function deleteCall({
 	}
 
 	await requireAdminUser(request)
-	const call = await prisma.call.findFirst({
+	const call = await db.findOne(callTable, {
 		where: { id: callId },
-		select: {
-			id: true,
-			audioKey: true,
-			episodeDraft: {
-				select: {
-					episodeAudioKey: true,
-					responseAudioKey: true,
-					callerSegmentAudioKey: true,
-					responseSegmentAudioKey: true,
-				},
-			},
-		},
+		with: { episodeDraft: callEpisodeDraft },
 	})
 	if (!call) {
 		return redirectCallNotFound()
 	}
-	await prisma.call.delete({ where: { id: callId } })
+	await db.delete(callTable, callId)
 
 	const keysToDelete = [
 		call.audioKey,

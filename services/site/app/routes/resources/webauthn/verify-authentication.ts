@@ -4,8 +4,9 @@ import {
 } from '@simplewebauthn/server'
 import { data as json } from 'react-router'
 import { z } from 'zod'
+import { db } from '#app/utils/db.server.ts'
+import { passkeyTable, userTable } from '#app/utils/db/schema.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
 import { getWebAuthnConfig, passkeyCookie } from '#app/utils/webauthn.server.ts'
 import { type Route } from './+types/verify-authentication'
@@ -46,11 +47,9 @@ export async function action({ request }: Route.ActionArgs) {
 			throw new Error('Invalid authentication response')
 		}
 
-		const passkey = await prisma.passkey.findUnique({
-			where: { id: result.data.id },
-			include: { user: true },
-		})
-		if (!passkey) {
+		const passkey = await db.find(passkeyTable, result.data.id)
+		const user = passkey ? await db.find(userTable, passkey.userId) : null
+		if (!passkey || !user) {
 			throw new Error('Passkey not found')
 		}
 
@@ -63,8 +62,8 @@ export async function action({ request }: Route.ActionArgs) {
 			expectedRPID: config.rpID,
 			credential: {
 				id: result.data.id,
-				publicKey: passkey.publicKey,
-				counter: Number(passkey.counter),
+				publicKey: new Uint8Array(passkey.publicKey as Uint8Array),
+				counter: passkey.counter as number,
 			},
 		})
 
@@ -73,13 +72,12 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 
 		// Update the authenticator's counter in the DB to the newest count
-		await prisma.passkey.update({
-			where: { id: passkey.id },
-			data: { counter: BigInt(verification.authenticationInfo.newCounter) },
+		await db.update(passkeyTable, passkey.id, {
+			counter: verification.authenticationInfo.newCounter,
 		})
 
 		const session = await getSession(request)
-		await session.signIn(passkey.user)
+		await session.signIn(user)
 
 		const headers = new Headers({ 'Set-Cookie': deletePasskeyCookie })
 

@@ -4,7 +4,8 @@ import { data as json, Form, useRevalidator } from 'react-router'
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { passkeyTable, type Passkey } from '#app/utils/db/schema.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.passkeys'
 
@@ -14,16 +15,12 @@ export const handle: KCDHandle = {
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
-	const passkeys = await prisma.passkey.findMany({
+	const passkeys = (await db.findMany(passkeyTable, {
 		where: { userId: user.id },
-		orderBy: { createdAt: 'desc' },
-		select: {
-			id: true,
-			createdAt: true,
-			deviceType: true,
-			transports: true,
-		},
-	})
+		orderBy: ['createdAt', 'desc'],
+	})) as Array<
+		Pick<Passkey, 'id' | 'createdAt' | 'deviceType' | 'transports'>
+	>
 
 	return json({ passkeys })
 }
@@ -36,19 +33,14 @@ export async function action({ request }: Route.ActionArgs) {
 
 	if (intent === 'delete' && typeof passkeyId === 'string') {
 		// First verify the passkey exists and belongs to the user
-		const passkey = await prisma.passkey.findUnique({
-			where: { id: passkeyId },
-			select: { userId: true },
-		})
+		const passkey = await db.find(passkeyTable, passkeyId)
 
 		if (!passkey || passkey.userId !== user.id) {
 			throw new Response('Passkey not found', { status: 404 })
 		}
 
 		// Delete using only the unique identifier
-		await prisma.passkey.delete({
-			where: { id: passkeyId },
-		})
+		await db.delete(passkeyTable, passkeyId)
 	}
 
 	return json({ success: true })

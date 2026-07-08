@@ -8,7 +8,8 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { createAndSendPasswordResetVerificationEmail } from '#app/utils/password-reset.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { userTable } from '#app/utils/db/schema.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/forgot-password'
 
@@ -66,9 +67,8 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
-	const user = await prisma.user.findUnique({
+	const user = await db.findOne(userTable, {
 		where: { email },
-		select: { id: true, team: true },
 	})
 
 	if (user) {

@@ -4,6 +4,10 @@ import path from 'node:path'
 import { matchSorter, rankings as matchSorterRankings } from 'match-sorter'
 import * as YAML from 'yaml'
 import { getImageBuilder } from '#app/images.tsx'
+import {
+	getContentData,
+	isWorkerContentMode,
+} from './content-artifacts.server.ts'
 import { sortNotFoundMatches, type NotFoundMatch } from './not-found-matches.ts'
 import { notFoundQueryFromPathname } from './not-found-query.ts'
 
@@ -67,10 +71,10 @@ function buildThumbFromCloudinaryId({
 }) {
 	const builder = getImageBuilder(cloudinaryId, alt)
 	return builder({
-		quality: 'auto',
-		format: 'auto',
-		background: 'rgb:e6e9ee',
-		resize: { type: 'fill', width: size, height: size },
+		background: 'e6e9ee',
+		fit: 'cover',
+		width: size,
+		height: size,
 	})
 }
 
@@ -290,9 +294,47 @@ let cachedIndex: Array<NotFoundDeterministicIndexItem> | null = null
 let cachedIndexPromise: Promise<Array<NotFoundDeterministicIndexItem>> | null =
 	null
 
+async function getArtifactIndexItems(): Promise<
+	Array<NotFoundDeterministicIndexItem>
+> {
+	const contentData = getContentData()
+	if (!contentData) return []
+
+	const items: Array<NotFoundDeterministicIndexItem> = [
+		...getStaticIndexItems(),
+	]
+
+	for (const entry of contentData.blogList ?? []) {
+		items.push({
+			url: `/blog/${entry.slug}`,
+			type: 'blog',
+			title: entry.frontmatter.title ?? humanizeSlug(entry.slug) ?? entry.slug,
+			slug: entry.slug,
+		})
+	}
+
+	for (const entry of contentData.dirLists.pages ?? []) {
+		items.push({
+			url: `/${entry.slug}`,
+			type: 'page',
+			title: humanizeSlug(entry.slug) || entry.slug,
+			slug: entry.slug,
+		})
+	}
+
+	return items
+}
+
 async function getNotFoundDeterministicIndex(): Promise<
 	Array<NotFoundDeterministicIndexItem>
 > {
+	if (isWorkerContentMode()) {
+		if (!cachedIndex) {
+			cachedIndex = await getArtifactIndexItems()
+		}
+		return cachedIndex
+	}
+
 	if (cachedIndex) return cachedIndex
 	if (cachedIndexPromise) return cachedIndexPromise
 

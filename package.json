@@ -17,14 +17,9 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace kentcdodds.com",
-    "start": "npm run start --workspace kentcdodds.com",
-    "start:mocks": "npm run start:mocks --workspace kentcdodds.com",
     "prepare": "husky",
     "build": "npm run build --workspace kentcdodds.com",
     "build:all": "nx run-many -t build",
-    "predeploy:healthcheck": "npm run predeploy:healthcheck --workspace kentcdodds.com",
-    "prime-cache:prod": "npm run prime-cache:prod --workspace kentcdodds.com",
-    "prime-cache:mocks": "npm run prime-cache:mocks --workspace kentcdodds.com",
     "test": "npm run test --workspace kentcdodds.com",
     "test:all": "nx run-many -t test",
     "test:backend": "npm run test:backend --workspace kentcdodds.com",
@@ -48,6 +43,7 @@
   },
   "devDependencies": {
     "@epic-web/config": "^2.0.0",
+    "get-port": "^7.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "nx": "^22.5.4",

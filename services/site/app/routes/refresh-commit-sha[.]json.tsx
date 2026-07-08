@@ -20,7 +20,7 @@ export async function loader() {
 		}
 	} catch (error: unknown) {
 		console.error(`Error parsing commit sha from cache: ${error}`)
-		cache.delete(refreshCacheCommitShaKey)
+		await cache.delete(refreshCacheCommitShaKey)
 		return json(null)
 	}
 

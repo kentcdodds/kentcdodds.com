@@ -159,10 +159,8 @@ function Footer({ image }: { image: ImageBuilder }) {
 					widths: [300, 800],
 					sizes: ['(max-width: 639px) 80vw', '400px'],
 					transformations: {
-						resize: {
-							aspectRatio: '4:3',
-							type: 'fit',
-						},
+						fit: 'contain',
+						aspectRatio: '4:3',
 					},
 				})}
 			/>

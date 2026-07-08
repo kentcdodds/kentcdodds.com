@@ -23,11 +23,9 @@ const sessionServerMocks = vi.hoisted(() => ({
 // requiring DATABASE_URL and an actual SQLite DB in unit tests.
 vi.mock('#app/utils/session.server.ts', () => sessionServerMocks)
 
-vi.mock('#app/utils/prisma.server.ts', () => ({
-	prisma: {
-		favorite: {
-			findUnique: vi.fn().mockResolvedValue(null),
-		},
+vi.mock('#app/utils/db.server.ts', () => ({
+	db: {
+		findOne: vi.fn().mockResolvedValue(null),
 	},
 }))
 
@@ -149,7 +147,9 @@ describe('/blog/:slug loader cache behavior', () => {
 		blogServerMocks.getBlogReadRankings.mockResolvedValueOnce([])
 		blogServerMocks.getTotalPostReads.mockResolvedValueOnce(0)
 
-		const request = new Request('http://localhost/blog/my-post')
+		const request = new Request('http://localhost/blog/my-post', {
+			headers: { host: 'localhost' },
+		})
 		const params = { slug: 'my-post' }
 
 		const result = (await loader({ request, params } as any)) as any

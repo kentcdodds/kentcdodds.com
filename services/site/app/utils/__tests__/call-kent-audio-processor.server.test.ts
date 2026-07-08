@@ -17,6 +17,7 @@ test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', 
 		draftId: 'draft-1',
 		callAudioKey: 'call-kent/calls/call-1/call.webm',
 		responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callbackUrl: 'https://kentcdodds.com/resources/calls/episode-audio-callback',
 	})
 	expect(fetchSpy).toHaveBeenCalledWith(
 		'https://api.cloudflare.com/client/v4/accounts/acct-123/queues/queue-123/messages',
@@ -35,6 +36,7 @@ test('requestCallKentEpisodeAudioGeneration enqueues cloudflare queue message', 
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callbackUrl: 'https://kentcdodds.com/resources/calls/episode-audio-callback',
 		},
 	})
 })
@@ -54,6 +56,7 @@ test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue errors', 
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callbackUrl: 'https://kentcdodds.com/resources/calls/episode-audio-callback',
 		}),
 	).rejects.toThrow(/Cloudflare queue enqueue failed/i)
 })
@@ -73,6 +76,7 @@ test('requestCallKentEpisodeAudioGeneration throws on cloudflare queue timeout',
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callbackUrl: 'https://kentcdodds.com/resources/calls/episode-audio-callback',
 		}),
 	).rejects.toThrow(/timed out/i)
 })
@@ -90,6 +94,7 @@ test('requestCallKentEpisodeAudioGeneration throws on empty cloudflare queue res
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callbackUrl: 'https://kentcdodds.com/resources/calls/episode-audio-callback',
 		}),
 	).rejects.toThrow(/empty response/i)
 })
@@ -109,6 +114,7 @@ test('requestCallKentEpisodeAudioGeneration rejects cloudflare responses without
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callbackUrl: 'https://kentcdodds.com/resources/calls/episode-audio-callback',
 		}),
 	).rejects.toThrow(/success=true/i)
 })
@@ -131,6 +137,7 @@ test('requestCallKentEpisodeAudioGeneration surfaces response body read failures
 			draftId: 'draft-1',
 			callAudioKey: 'call-kent/calls/call-1/call.webm',
 			responseAudioKey: 'call-kent/drafts/draft-1/response.webm',
+		callbackUrl: 'https://kentcdodds.com/resources/calls/episode-audio-callback',
 		}),
 	).rejects.toThrow(/unable to read response body/i)
 })

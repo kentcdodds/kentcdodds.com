@@ -27,28 +27,36 @@ import { H2, H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
-	getSocialImageWithPreTitle,
 	images,
 } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import { externalLinks } from '#app/external-links.tsx'
 import {
-	getDisplayUrl,
 	getOrigin,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/credits'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const people = await getPeople({ request })
+	const domain = new URL(getOrigin({ origin: new URL(request.url).origin, path: '' })).host
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: `Who built ${domain}`,
+		description: `It took a team of people to create ${domain}. This page will tell you a little bit about them.`,
+		socialImage: {
+			kind: 'social-preview',
+			preTitle: 'Check out these people',
+			title: `The fantastic people who built ${domain}`,
+			featuredImage: images.kentCodingOnCouch.id,
+		},
+	})
 
 	return json(
-		{ people: shuffle(people) },
+		{ people: shuffle(people), socialMetas },
 		{
 			headers: {
 				'Cache-Control': 'public, max-age=3600',
@@ -60,23 +68,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const domain = new URL(getOrigin(requestInfo)).host
-	return getSocialMetas({
-		title: `Who built ${domain}`,
-		description: `It took a team of people to create ${domain}. This page will tell you a little bit about them.`,
-		url: getUrl(requestInfo),
-		image: getSocialImageWithPreTitle({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.kentCodingOnCouch.id,
-			title: `The fantastic people who built ${domain}`,
-			preTitle: 'Check out these people',
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 type Person = SerializeFrom<typeof loader>['people'][number]
 type Socials = keyof Omit<
@@ -111,12 +104,8 @@ function ProfileCard({ person }: { person: Person }) {
 							'410px',
 						],
 						transformations: {
-							resize: {
-								aspectRatio: '1:1',
-								type: 'fill_pad',
-							},
-							gravity: 'auto',
-							background: 'auto',
+							fit: 'pad',
+							aspectRatio: '1:1',
 						},
 					})}
 				/>
@@ -169,11 +158,9 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 						{...getHeroImageProps(images.kentCodingOnCouch, {
 							className: 'rounded-lg',
 							transformations: {
-								resize: {
-									aspectRatio: '3:4',
-									type: 'crop',
-								},
-								gravity: 'face',
+								fit: 'cover',
+								aspectRatio: '3:4',
+								gravity: 'auto',
 							},
 						})}
 					/>

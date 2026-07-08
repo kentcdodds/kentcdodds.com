@@ -4,29 +4,28 @@ import { assembleCallKentTranscript } from '#app/utils/call-kent-transcript-temp
 import { generateCallKentEpisodeMetadataWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-metadata.server.ts'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
 import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcription.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callKentEpisodeDraftCall,
+	callKentEpisodeDraftTable,
+	callUser,
+} from '#app/utils/db/schema.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
 
 export async function startCallKentEpisodeDraftProcessing(draftId: string) {
 	// Fire-and-forget background work; errors are recorded on the draft row.
 	try {
-		const draft = await prisma.callKentEpisodeDraft.findUnique({
+		const draft = await db.findOne(callKentEpisodeDraftTable, {
 			where: { id: draftId },
-			include: {
-				call: {
-					select: {
-						id: true,
-						title: true,
-						notes: true,
-						isAnonymous: true,
-						callerTranscript: true,
-						user: { select: { firstName: true } },
-					},
-				},
+			with: {
+				call: callKentEpisodeDraftCall.with({ user: callUser }),
 			},
 		})
 		if (!draft) return
 		if (draft.status !== 'PROCESSING') return
+		if (!draft.call) return
+		const call = draft.call
+		if (!call.user) return
 
 		// Step 1: episode audio (stitch + persist) if needed
 		let episodeMp3: Buffer
@@ -45,18 +44,17 @@ export async function startCallKentEpisodeDraftProcessing(draftId: string) {
 		let callerTranscriptForMetadata: string | null = null
 		let responderTranscriptForMetadata: string | null = null
 		if (!transcript) {
-			const stepTranscribe = await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING' },
-				data: { step: 'TRANSCRIBING', errorMessage: null },
-			})
-			if (stepTranscribe.count !== 1) return
-			const callerName = draft.call.isAnonymous
-				? undefined
-				: draft.call.user.firstName
-			const callTitle = draft.call.title
-			const callerNotes = draft.call.notes ?? undefined
+			const stepTranscribe = await db.updateMany(
+				callKentEpisodeDraftTable,
+				{ step: 'TRANSCRIBING', errorMessage: null },
+				{ where: { id: draftId, status: 'PROCESSING' } },
+			)
+			if (stepTranscribe.affectedRows !== 1) return
+			const callerName = call.isAnonymous ? undefined : call.user.firstName
+			const callTitle = call.title
+			const callerNotes = call.notes ?? undefined
 			const savedCallerTranscript = normalizeCallerTranscriptForEpisode({
-				callerTranscript: draft.call.callerTranscript,
+				callerTranscript: call.callerTranscript,
 				callerName,
 			})
 
@@ -133,11 +131,12 @@ export async function startCallKentEpisodeDraftProcessing(draftId: string) {
 				throw new Error('Transcript formatting returned an empty transcript.')
 			}
 
-			const step3 = await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING' },
-				data: { transcript, step: 'GENERATING_METADATA' },
-			})
-			if (step3.count !== 1) return
+			const step3 = await db.updateMany(
+				callKentEpisodeDraftTable,
+				{ transcript, step: 'GENERATING_METADATA' },
+				{ where: { id: draftId, status: 'PROCESSING' } },
+			)
+			if (step3.affectedRows !== 1) return
 		}
 
 		if (!transcript) {
@@ -146,11 +145,12 @@ export async function startCallKentEpisodeDraftProcessing(draftId: string) {
 
 		// Step 3: AI metadata (title/description/keywords) if not already present
 		if (!draft.title || !draft.description || !draft.keywords) {
-			const stepMetadata = await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING' },
-				data: { step: 'GENERATING_METADATA', errorMessage: null },
-			})
-			if (stepMetadata.count !== 1) return
+			const stepMetadata = await db.updateMany(
+				callKentEpisodeDraftTable,
+				{ step: 'GENERATING_METADATA', errorMessage: null },
+				{ where: { id: draftId, status: 'PROCESSING' } },
+			)
+			if (stepMetadata.affectedRows !== 1) return
 
 			const metadata = await generateCallKentEpisodeMetadataWithWorkersAi({
 				// Prefer segment transcripts (caller + Kent) for metadata when available.
@@ -160,8 +160,8 @@ export async function startCallKentEpisodeDraftProcessing(draftId: string) {
 							responderTranscript: responderTranscriptForMetadata,
 						}
 					: { transcript: transcriptForMetadata ?? transcript }),
-				callTitle: draft.call.title,
-				callerNotes: draft.call.notes,
+				callTitle: call.title,
+				callerNotes: call.notes,
 			})
 
 			const existingTitle = draft.title?.trim()
@@ -171,28 +171,31 @@ export async function startCallKentEpisodeDraftProcessing(draftId: string) {
 			const nextDescription = existingDescription || metadata.description.trim()
 			const nextKeywords = existingKeywords || metadata.keywords.trim()
 
-			await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING' },
-				data: {
+			await db.updateMany(
+				callKentEpisodeDraftTable,
+				{
 					title: nextTitle,
 					description: nextDescription,
 					keywords: nextKeywords,
 					status: 'READY',
 					step: 'DONE',
 				},
-			})
+				{ where: { id: draftId, status: 'PROCESSING' } },
+			)
 		} else {
-			await prisma.callKentEpisodeDraft.updateMany({
-				where: { id: draftId, status: 'PROCESSING' },
-				data: { status: 'READY', step: 'DONE' },
-			})
+			await db.updateMany(
+				callKentEpisodeDraftTable,
+				{ status: 'READY', step: 'DONE' },
+				{ where: { id: draftId, status: 'PROCESSING' } },
+			)
 		}
 	} catch (error: unknown) {
 		const message = getErrorMessage(error)
 		// Only record the error if the draft still exists and is in progress.
-		await prisma.callKentEpisodeDraft.updateMany({
-			where: { id: draftId, status: 'PROCESSING' },
-			data: { status: 'ERROR', errorMessage: message, step: 'DONE' },
-		})
+		await db.updateMany(
+			callKentEpisodeDraftTable,
+			{ status: 'ERROR', errorMessage: message, step: 'DONE' },
+			{ where: { id: draftId, status: 'PROCESSING' } },
+		)
 	}
 }

@@ -18,8 +18,9 @@ import {
 import { cache, cachified, shouldForceFresh } from './cache.server.ts'
 import {
 	getCallKentEpisodeArtworkAvatar,
-	getCallKentEpisodeArtworkUrl,
 } from './call-kent-artwork.ts'
+import { getCallKentEpisodeArtworkUrl } from './call-kent-artwork.server.ts'
+import { getOgImageSecret } from '#app/og/secrets.server.ts'
 import { getEpisodePath } from './call-kent.ts'
 import { getEnv } from './env.server.ts'
 import { stripHtml } from './markdown.server.ts'
@@ -295,6 +296,8 @@ async function createEpisode({
 		name: isAnonymous ? '- Anonymous' : `- ${user.firstName}`,
 		avatar,
 		avatarIsRound: hasGravatar,
+		origin: domainUrl,
+		secret: getOgImageSecret(),
 	})
 
 	const episodeUrl = `${domainUrl}${episodePath}`

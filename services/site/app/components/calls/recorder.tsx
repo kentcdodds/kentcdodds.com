@@ -78,7 +78,13 @@ const recorderMachine = setup({
 	},
 	actors: {
 		getDevices: fromPromise(async () => {
-			const devices = await navigator.mediaDevices.enumerateDevices()
+			const enumerate = navigator.mediaDevices.enumerateDevices()
+			const devices = await Promise.race([
+				enumerate,
+				new Promise<Array<MediaDeviceInfo>>((_, reject) => {
+					setTimeout(() => reject(new Error('enumerateDevices timeout')), 5_000)
+				}),
+			]).catch(() => [] as Array<MediaDeviceInfo>)
 			return devices.filter(({ kind }) => kind === 'audioinput')
 		}),
 		mediaRecorder: fromCallback(

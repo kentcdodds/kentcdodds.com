@@ -1,19 +1,92 @@
+import path from 'node:path'
+import { NodeResolvePlugin } from '@esbuild-plugins/node-resolve'
 import { rehypeCodeBlocksShiki } from '@kentcdodds/md-temp'
-import remarkEmbedder, { type TransformerInfo } from '@remark-embedder/core'
-import oembedTransformer from '@remark-embedder/transformer-oembed'
+import remarkEmbedderImport, {
+	type TransformerInfo,
+} from '@remark-embedder/core'
+import oembedTransformerImport from '@remark-embedder/transformer-oembed'
+import esbuild from 'esbuild'
+import grayMatter from 'gray-matter'
 import type * as H from 'hast'
 import lz from 'lz-string'
 import type * as M from 'mdast'
 import { bundleMDX } from 'mdx-bundler'
-import PQueue from 'p-queue'
 import calculateReadingTime from 'reading-time'
 import remarkAutolinkHeadings from 'remark-autolink-headings'
 import gfm from 'remark-gfm'
 import remarkSlug from 'remark-slug'
 import type * as U from 'unified'
 import { visit } from 'unist-util-visit'
+import { v4 as uuid } from 'uuid'
 import { type GitHubFile } from '#app/types.ts'
+import { buildMediaUrl } from '#app/utils/media.ts'
 import * as x from './x.server.ts'
+
+const MDX_ESM_EXTERNALS = [
+	'react',
+	'react/jsx-runtime',
+	'react/jsx-dev-runtime',
+	'react-dom',
+] as const
+
+function interopDefault<T>(imported: T): T {
+	if (
+		imported &&
+		typeof imported === 'object' &&
+		'default' in imported &&
+		(imported as { default?: T }).default != null
+	) {
+		return (imported as { default: T }).default
+	}
+	return imported
+}
+
+const remarkEmbedder = interopDefault(remarkEmbedderImport)
+const oembedTransformer = interopDefault(oembedTransformerImport)
+
+type EmbedTransformer = {
+	shouldTransform: (url: string, ...args: Array<unknown>) => boolean
+	getHTML: (url: string, ...args: Array<unknown>) => unknown
+}
+
+let allowEmbedFallback = false
+let embedFallbackCount = 0
+
+export function configureMdxCompileOptions(options: {
+	allowEmbedFallback?: boolean
+}) {
+	allowEmbedFallback = options.allowEmbedFallback ?? false
+	embedFallbackCount = 0
+}
+
+export function getEmbedFallbackCount() {
+	return embedFallbackCount
+}
+
+function recordEmbedFallback(url: string, reason: string) {
+	embedFallbackCount++
+	console.warn(`[mdx:embed-fallback] ${url} (${reason})`)
+}
+
+function wrapEmbedTransformer<T extends EmbedTransformer>(transformer: T): T {
+	if (!allowEmbedFallback) return transformer
+
+	const { getHTML } = transformer
+	return {
+		...transformer,
+		getHTML: async (url: string, ...rest: Array<unknown>) => {
+			try {
+				return await getHTML(url, ...rest)
+			} catch (error: unknown) {
+				recordEmbedFallback(
+					url,
+					error instanceof Error ? error.message : String(error),
+				)
+				return null
+			}
+		},
+	}
+}
 
 // Minimal local types so we don't need to depend on `mdast-util-mdx-jsx` directly.
 type MdxJsxAttribute = {
@@ -30,6 +103,9 @@ type MdxJsxFlowElement = {
 }
 
 function handleEmbedderError({ url }: { url: string }) {
+	if (allowEmbedFallback) {
+		recordEmbedFallback(url, 'remark-embedder handleError')
+	}
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`
 }
 
@@ -88,78 +164,6 @@ function trimCodeBlocks() {
 	}
 }
 
-// yes, I did write this myself 😬
-const cloudinaryUrlRegex =
-	/^https?:\/\/res\.cloudinary\.com\/(?<cloudName>.+?)\/image\/upload\/((?<transforms>(.+?_.+?)+?)\/)?(\/?(?<version>v\d+)\/)?(?<publicId>.+$)/
-
-function optimizeCloudinaryImages() {
-	return async function transformer(tree: H.Root) {
-		// `unist-util-visit` types can differ between mdast/hast; this tree is hast
-		// but can still contain MDX nodes. Use `any` to avoid type churn.
-		visit(tree as any, 'mdxJsxFlowElement' as any, function visitor(node: any) {
-			if (node?.name !== 'img') return
-			const srcAttr = node.attributes?.find(
-				(attr: any) => attr?.type === 'mdxJsxAttribute' && attr?.name === 'src',
-			)
-			const urlString = srcAttr?.value ? String(srcAttr.value) : null
-			if (!srcAttr || !urlString) {
-				console.error('image without url?', node)
-				return
-			}
-			const newUrl = handleImageUrl(urlString)
-			if (newUrl) {
-				srcAttr.value = newUrl
-			}
-		})
-
-		visit(tree, 'element', function visitor(node: H.Element) {
-			if (node.tagName !== 'img') return
-			const urlString = node.properties?.src
-				? String(node.properties.src)
-				: null
-			if (!node.properties?.src || !urlString) {
-				console.error('image without url?', node)
-				return
-			}
-			const newUrl = handleImageUrl(urlString)
-			if (newUrl) {
-				node.properties.src = newUrl
-			}
-		})
-	}
-
-	function handleImageUrl(urlString: string) {
-		const match = urlString.match(cloudinaryUrlRegex)
-		const groups = match?.groups
-		if (groups) {
-			const { cloudName, transforms, version, publicId } = groups as {
-				cloudName: string
-				transforms?: string
-				version?: string
-				publicId: string
-			}
-			// don't add transforms if they're already included
-			if (transforms) return
-			const defaultTransforms = [
-				'f_auto',
-				'q_auto',
-				// gifs can't do dpr transforms
-				publicId.endsWith('.gif') ? '' : 'dpr_2.0',
-				'w_1600',
-			]
-				.filter(Boolean)
-				.join(',')
-			return [
-				`https://res.cloudinary.com/${cloudName}/image/upload`,
-				defaultTransforms,
-				version,
-				publicId,
-			]
-				.filter(Boolean)
-				.join('/')
-		}
-	}
-}
 
 const twitterTransformer = {
 	shouldTransform: x.isXUrl,
@@ -196,6 +200,14 @@ const eggheadTransformer = {
 			'egghead',
 		)
 	},
+}
+
+function getMdxEmbedTransformers(): Array<EmbedTransformer> {
+	return [
+		wrapEmbedTransformer(twitterTransformer),
+		wrapEmbedTransformer(eggheadTransformer),
+		wrapEmbedTransformer(oembedTransformer as EmbedTransformer),
+	]
 }
 
 function autoAffiliates() {
@@ -342,63 +354,179 @@ function remarkMermaidCodeToThemedSvg() {
 	}
 }
 
-const remarkPlugins: U.PluggableList = [
-	remarkMermaidCodeToThemedSvg,
-	[
-		remarkEmbedder,
-		{
-			handleError: handleEmbedderError,
-			handleHTML: handleEmbedderHtml,
-			transformers: [twitterTransformer, eggheadTransformer, oembedTransformer],
-		},
-	],
-	autoAffiliates,
-]
+function getMdxCustomRemarkPlugins(): U.PluggableList {
+	return [
+		remarkMermaidCodeToThemedSvg,
+		[
+			remarkEmbedder,
+			{
+				handleError: handleEmbedderError,
+				handleHTML: handleEmbedderHtml,
+				transformers: getMdxEmbedTransformers(),
+			},
+		],
+		autoAffiliates,
+	]
+}
 
-const rehypePlugins: U.PluggableList = [
-	optimizeCloudinaryImages,
+const mdxCustomRehypePlugins: U.PluggableList = [
 	trimCodeBlocks,
 	rehypeCodeBlocksShiki,
 	removePreContainerDivs,
 ]
 
-async function compileMdx<FrontmatterType extends Record<string, unknown>>(
+function applyMdxBundlerPluginOptions(
+	options: {
+		remarkPlugins?: U.PluggableList
+		rehypePlugins?: U.PluggableList
+		jsxImportSource?: string
+	},
+	_frontmatter?: Record<string, unknown>,
+) {
+	options.remarkPlugins = [
+		...(options.remarkPlugins ?? []),
+		remarkSlug,
+		[remarkAutolinkHeadings, { behavior: 'wrap' }],
+		gfm,
+		...getMdxCustomRemarkPlugins(),
+	] as U.PluggableList
+	options.rehypePlugins = [
+		...(options.rehypePlugins ?? []),
+		...mdxCustomRehypePlugins,
+	] as U.PluggableList
+	return options
+}
+
+type PreparedMdxBundle = {
+	indexFile: GitHubFile
+	files: Record<string, string>
+	entryPath: string
+	cwd: string
+	absoluteFiles: Record<string, string>
+}
+
+function prepareMdxBundleInputs(
 	slug: string,
 	githubFiles: Array<GitHubFile>,
-) {
+): PreparedMdxBundle | null {
 	const indexRegex = new RegExp(`${slug}\\/index.mdx?$`)
-	const indexFile = githubFiles.find(({ path }) => indexRegex.test(path))
+	const indexFile = githubFiles.find(({ path: filePath }) =>
+		indexRegex.test(filePath),
+	)
 	if (!indexFile) return null
 
 	const rootDir = indexFile.path.replace(/index.mdx?$/, '')
 	const relativeFiles: Array<GitHubFile> = githubFiles.map(
-		({ path, content }) => ({
-			path: path.replace(rootDir, './'),
+		({ path: filePath, content }) => ({
+			path: filePath.replace(rootDir, './'),
 			content,
 		}),
 	)
 	const files = arrayToObj(relativeFiles, {
 		keyName: 'path',
 		valueName: 'content',
-	})
+	}) as Record<string, string>
+
+	const cwd = path.join(process.cwd(), '__mdx_bundler_fake_dir__')
+	const entryPath = path.join(cwd, `./_mdx_bundler_entry_point-${uuid()}.mdx`)
+	const absoluteFiles: Record<string, string> = {
+		[entryPath]: indexFile.content,
+	}
+	for (const [filePath, fileCode] of Object.entries(files)) {
+		absoluteFiles[path.join(cwd, filePath)] = fileCode
+	}
+
+	return { indexFile, files, entryPath, cwd, absoluteFiles }
+}
+
+function createMdxExternalReactEsbuildPlugin(): esbuild.Plugin {
+	return {
+		name: 'mdx-external-react',
+		setup(build) {
+			build.onResolve({ filter: /^react(?:\/|$)/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}))
+			build.onResolve({ filter: /^react-dom(?:\/|$)/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}))
+		},
+	}
+}
+
+function createMdxInMemoryEsbuildPlugin(
+	entryPath: string,
+	absoluteFiles: Record<string, string>,
+): esbuild.Plugin {
+	return {
+		name: 'inMemory',
+		setup(build) {
+			build.onResolve({ filter: /.*/ }, ({ path: filePath, importer }) => {
+				if (filePath === entryPath) {
+					return {
+						path: filePath,
+						pluginData: {
+							inMemory: true,
+							contents: absoluteFiles[filePath],
+						},
+					}
+				}
+				const modulePath = path.resolve(path.dirname(importer), filePath)
+				if (modulePath in absoluteFiles) {
+					return {
+						path: modulePath,
+						pluginData: {
+							inMemory: true,
+							contents: absoluteFiles[modulePath],
+						},
+					}
+				}
+				for (const ext of ['.js', '.ts', '.jsx', '.tsx', '.json', '.mdx']) {
+					const fullModulePath = `${modulePath}${ext}`
+					if (fullModulePath in absoluteFiles) {
+						return {
+							path: fullModulePath,
+							pluginData: {
+								inMemory: true,
+								contents: absoluteFiles[fullModulePath],
+							},
+						}
+					}
+				}
+				return null
+			})
+			build.onLoad({ filter: /.*/ }, async ({ path: filePath, pluginData }) => {
+				if (pluginData === undefined || !pluginData.inMemory) {
+					return null
+				}
+				const fileType = (path.extname(filePath) || '.jsx').slice(1)
+				const contents = absoluteFiles[filePath]
+				if (fileType === 'mdx') return null
+
+				const loader: esbuild.Loader =
+					build.initialOptions.loader?.[`.${fileType}`] ??
+					(fileType as esbuild.Loader)
+				return { contents, loader }
+			})
+		},
+	}
+}
+
+async function compileMdx<FrontmatterType extends Record<string, unknown>>(
+	slug: string,
+	githubFiles: Array<GitHubFile>,
+) {
+	const prepared = prepareMdxBundleInputs(slug, githubFiles)
+	if (!prepared) return null
+	const { indexFile, files } = prepared
 
 	try {
 		const { frontmatter, code } = await bundleMDX({
 			source: indexFile.content,
 			files,
 			mdxOptions(options) {
-				options.remarkPlugins = [
-					...(options.remarkPlugins ?? []),
-					remarkSlug,
-					[remarkAutolinkHeadings, { behavior: 'wrap' }],
-					gfm,
-					...remarkPlugins,
-				]
-				options.rehypePlugins = [
-					...(options.rehypePlugins ?? []),
-					...rehypePlugins,
-				]
-				return options
+				return applyMdxBundlerPluginOptions(options)
 			},
 		})
 		const readTime = calculateReadingTime(indexFile.content)
@@ -410,6 +538,87 @@ async function compileMdx<FrontmatterType extends Record<string, unknown>>(
 		}
 	} catch (error: unknown) {
 		console.error(`Compilation error for slug: `, slug)
+		throw error
+	}
+}
+
+async function compileMdxEsm<FrontmatterType extends Record<string, unknown>>(
+	slug: string,
+	githubFiles: Array<GitHubFile>,
+) {
+	const prepared = prepareMdxBundleInputs(slug, githubFiles)
+	if (!prepared) return null
+	const { indexFile, entryPath, cwd, absoluteFiles } = prepared
+
+	try {
+		const [
+			{ default: mdxESBuild },
+			{ default: remarkFrontmatter },
+			{ default: remarkMdxFrontmatter },
+		] = await Promise.all([
+			import('@mdx-js/esbuild'),
+			import('remark-frontmatter'),
+			import('remark-mdx-frontmatter'),
+		])
+
+		const matter = grayMatter(indexFile.content)
+
+		const bundled = await esbuild.build({
+			entryPoints: [entryPath],
+			write: false,
+			absWorkingDir: cwd,
+			define: {
+				'process.env.NODE_ENV': JSON.stringify(
+					process.env.NODE_ENV ?? 'production',
+				),
+			},
+			jsx: 'automatic',
+			jsxImportSource: 'react',
+			mainFields: ['module', 'browser', 'main'],
+			conditions: ['module', 'import', 'default'],
+			plugins: [
+				createMdxExternalReactEsbuildPlugin(),
+				createMdxInMemoryEsbuildPlugin(entryPath, absoluteFiles),
+				NodeResolvePlugin({
+					extensions: ['.js', '.ts', '.jsx', '.tsx'],
+					mainFields: ['module', 'browser', 'main'],
+					resolveOptions: {
+						basedir: cwd,
+					},
+				}),
+				mdxESBuild(
+					applyMdxBundlerPluginOptions(
+						{
+							remarkPlugins: [
+								remarkFrontmatter,
+								[remarkMdxFrontmatter, { name: 'frontmatter' }],
+							],
+							jsxImportSource: 'react',
+						},
+						matter.data,
+					),
+				),
+			],
+			bundle: true,
+			format: 'esm',
+			external: [...MDX_ESM_EXTERNALS],
+			minify: true,
+		})
+
+		if (!bundled.outputFiles?.[0]) {
+			throw new Error(`esbuild produced no output for slug: ${slug}`)
+		}
+
+		const code = new TextDecoder().decode(bundled.outputFiles[0].contents)
+		const readTime = calculateReadingTime(indexFile.content)
+
+		return {
+			code,
+			readTime,
+			frontmatter: matter.data as FrontmatterType,
+		}
+	} catch (error: unknown) {
+		console.error(`ESM compilation error for slug: `, slug)
 		throw error
 	}
 }
@@ -433,28 +642,11 @@ function arrayToObj<ItemType extends Record<string, unknown>>(
 	return obj
 }
 
-let _queue: PQueue | null = null
-async function getQueue() {
-	if (_queue) return _queue
-
-	_queue = new PQueue({
-		concurrency: 1,
-		timeout: MDX_COMPILE_QUEUE_TIMEOUT_MS,
-	})
-	return _queue
+export {
+	applyMdxBundlerPluginOptions,
+	compileMdx,
+	compileMdxEsm,
+	mdxCustomRehypePlugins,
+	getMdxCustomRemarkPlugins as mdxCustomRemarkPlugins,
+	MDX_ESM_EXTERNALS,
 }
-
-/** Align with p-queue: allow large posts (Shiki, Mermaid, embeds) without false timeouts. */
-const MDX_COMPILE_QUEUE_TIMEOUT_MS = 1000 * 90
-
-// We have to use a queue because we can't run more than one of these at a time
-// or we'll hit an out of memory error because esbuild uses a lot of memory...
-async function queuedCompileMdx<
-	FrontmatterType extends Record<string, unknown>,
->(...args: Parameters<typeof compileMdx>) {
-	const queue = await getQueue()
-	const result = await queue.add(() => compileMdx<FrontmatterType>(...args))
-	return result
-}
-
-export { queuedCompileMdx as compileMdx }

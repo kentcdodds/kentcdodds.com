@@ -48,7 +48,7 @@ production fall over.
 The Fly.io instance running kentcdodds.com hit extreme CPU saturation. The
 metrics tell the story clearly:
 
-![Fly.io instance metrics from March 6, 2026. Load average spikes to 400–500%. CPU Utilization is saturated. The CPU Quota Balance and Throttling graph shows the machine hitting its CPU quota ceiling.](https://res.cloudinary.com/kentcdodds-com/image/upload/v1773089500/kentcdodds.com/content/blog/offloading-ffmpeg-with-cloudflare/fly-metrics-march-6-problematic-cpu)
+![Fly.io instance metrics from March 6, 2026. Load average spikes to 400–500%. CPU Utilization is saturated. The CPU Quota Balance and Throttling graph shows the machine hitting its CPU quota ceiling.](/media/w_1600/kentcdodds.com/content/blog/offloading-ffmpeg-with-cloudflare/fly-metrics-march-6-problematic-cpu)
 
 Load average climbed to **400–500%** and stayed there for the entire FFmpeg
 run. The CPU quota balance graph showed the machine being throttled, having
@@ -186,7 +186,7 @@ timing-safe comparison to avoid leaking information through response time.
 Here is what today's run looked like on the same primary Fly.io machine, after
 the offload was in place:
 
-![Fly.io instance metrics from March 9, 2026 during the new offloaded FFmpeg run. Load average peaks around 60–80%. Memory is stable. No CPU throttling visible.](https://res.cloudinary.com/kentcdodds-com/image/upload/v1773089500/kentcdodds.com/content/blog/offloading-ffmpeg-with-cloudflare/fly-metrics-march-9-offloaded-cpu)
+![Fly.io instance metrics from March 9, 2026 during the new offloaded FFmpeg run. Load average peaks around 60–80%. Memory is stable. No CPU throttling visible.](/media/w_1600/kentcdodds.com/content/blog/offloading-ffmpeg-with-cloudflare/fly-metrics-march-9-offloaded-cpu)
 
 Load average peaked around **60–80%** during the episode processing window.
 There was no CPU throttling event. Memory was stable. The primary machine

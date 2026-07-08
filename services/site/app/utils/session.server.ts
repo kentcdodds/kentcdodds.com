@@ -1,38 +1,53 @@
+import { and, eq, ne } from '@remix-run/data-table'
 import { createCookieSessionStorage, redirect } from 'react-router'
 import { z } from 'zod'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
-import { type User } from '#app/utils/prisma-generated.server/client.ts'
+import { type User } from '#app/types.ts'
+import { db } from '#app/utils/db.server.ts'
+import { sessionTable, userTable } from '#app/utils/db/schema.server.ts'
 import { getEnv } from './env.server.ts'
 import {
 	createSession,
 	getUserFromSessionId,
-	prisma,
 	sessionExpirationTime,
-} from './prisma.server.ts'
+} from './user-data.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
-const sessionIdKey = '__session_id__'
+const sessionIdKey = '__session_id__' as const
 
-const sessionStorage = createCookieSessionStorage({
-	cookie: {
-		name: 'KCD_root_session',
-		secure: true,
-		secrets: [getEnv().SESSION_SECRET],
-		sameSite: 'lax',
-		path: '/',
-		maxAge: sessionExpirationTime / 1000,
-		httpOnly: true,
-	},
-})
+type RootSessionData = {
+	[sessionIdKey]: string
+}
+
+let sessionStorage:
+	| ReturnType<typeof createCookieSessionStorage<RootSessionData>>
+	| undefined
+
+function getSessionStorage() {
+	if (!sessionStorage) {
+		sessionStorage = createCookieSessionStorage<RootSessionData>({
+			cookie: {
+				name: 'KCD_root_session',
+				secure: getEnv().NODE_ENV === 'production' && !getEnv().MOCKS,
+				secrets: [getEnv().SESSION_SECRET],
+				sameSite: 'lax',
+				path: '/',
+				maxAge: sessionExpirationTime / 1000,
+				httpOnly: true,
+			},
+		})
+	}
+	return sessionStorage
+}
 
 async function getSession(request: Request) {
-	const session = await sessionStorage.getSession(request.headers.get('Cookie'))
-	const initialValue = await sessionStorage.commitSession(session)
+	const storage = getSessionStorage()
+	const session = await storage.getSession(request.headers.get('Cookie'))
+	const initialValue = await storage.commitSession(session)
 	const getSessionId = () => session.get(sessionIdKey) as string | undefined
 	const unsetSessionId = () => session.unset(sessionIdKey)
 
 	const commit = async () => {
-		const currentValue = await sessionStorage.commitSession(session)
+		const currentValue = await storage.commitSession(session)
 		return currentValue === initialValue ? null : currentValue
 	}
 	return {
@@ -58,22 +73,10 @@ async function getSession(request: Request) {
 		signOut: async () => {
 			const sessionId = getSessionId()
 			if (sessionId) {
-				await ensurePrimary()
 				unsetSessionId()
-				prisma.session
-					.delete({ where: { id: sessionId } })
-					.catch((error: unknown) => {
-						// It's possible the session was already deleted (ex: user deleted).
-						if (
-							error &&
-							typeof error === 'object' &&
-							'code' in error &&
-							error.code === 'P2025'
-						) {
-							return
-						}
-						console.error(`Failure deleting user session: `, error)
-					})
+				void db.delete(sessionTable, sessionId).catch((error: unknown) => {
+					console.error(`Failure deleting user session: `, error)
+				})
 			}
 		},
 		commit,
@@ -108,9 +111,8 @@ async function deleteOtherSessions(request: Request) {
 		return
 	}
 	const user = await getUserFromSessionId(token)
-	await ensurePrimary()
-	await prisma.session.deleteMany({
-		where: { userId: user.id, NOT: { id: token } },
+	await db.deleteMany(sessionTable, {
+		where: and(eq('userId', user.id), ne('id', token)),
 	})
 }
 
@@ -153,7 +155,7 @@ async function getUser(
 		type: 'getAuthInfoFromOAuthFromRequest',
 	})
 	if (authInfo?.extra.userId) {
-		return prisma.user.findUnique({ where: { id: authInfo.extra.userId } })
+		return db.find(userTable, authInfo.extra.userId) as Promise<User | null>
 	}
 	const { session } = await getSession(request)
 

@@ -19,12 +19,10 @@ function AboutSection() {
 									'(min-width:1024px) and (max-width:1620px) 40vw',
 									'630px',
 								],
-								transformations: {
-									resize: {
-										type: 'fill',
-										aspectRatio: '3:4',
-									},
-								},
+							transformations: {
+								fit: 'cover',
+								aspectRatio: '3:4',
+							},
 							})}
 						/>
 					</div>

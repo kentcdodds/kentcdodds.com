@@ -6,23 +6,22 @@ import { fetchJson, getChangedFiles } from './get-changed-files.js'
 const GITHUB_API_BASE = 'https://api.github.com'
 
 const defaultBaseUrl =
-	process.env.GITHUB_REF_NAME === 'dev'
-		? 'https://kcd-staging.fly.dev'
-		: 'https://kentcdodds.com'
+	process.env.SITE_URL ?? 'https://kentcdodds-com.kentcdodds.workers.dev'
 
 const defaultFetchTimeoutMs = 10_000
 
-const nonFlyDeployablePathPrefixes = [
+const nonSiteDeployablePathPrefixes = [
 	'services/site/content/',
 	'services/call-kent-audio-worker/',
 	'services/search-worker/',
 	'services/oauth/',
 ]
 
-const nonFlyDeployableFiles = new Set([
+const nonSiteDeployableFiles = new Set([
 	'.github/workflows/deploy-call-kent-audio-worker.yml',
 	'.github/workflows/deploy-search-worker.yml',
 	'.github/workflows/deploy-oauth-worker.yml',
+	'.github/workflows/cf-preview-deploy.yml',
 ])
 
 const semanticContentPathPrefixes = [
@@ -53,12 +52,7 @@ const oauthWorkerFiles = new Set(['.github/workflows/deploy-oauth-worker.yml'])
  */
 const DEPLOY_ENVIRONMENTS: Record<string, (refName: string) => string | null> =
 	{
-		deploySite: (refName) =>
-			refName === 'main'
-				? 'site-production'
-				: refName === 'dev'
-					? 'site-staging'
-					: null,
+		deploySite: (refName) => (refName === 'main' ? 'site-production' : null),
 		deployOauthWorker: (refName) =>
 			refName === 'main' ? 'oauth-production' : null,
 		deployCallKentAudioWorker: (refName) =>
@@ -231,18 +225,18 @@ function hasChangedExactFile(
 	return hasChangedPath(changedFiles, (filename) => files.has(filename))
 }
 
-function isFlyDeployablePath(filename: string) {
+function isSiteDeployablePath(filename: string) {
 	return (
-		!nonFlyDeployablePathPrefixes.some((prefix) =>
+		!nonSiteDeployablePathPrefixes.some((prefix) =>
 			filename.startsWith(prefix),
-		) && !nonFlyDeployableFiles.has(filename)
+		) && !nonSiteDeployableFiles.has(filename)
 	)
 }
 
 function shouldDeploySite(changedFiles: null | Array<ChangedFile>) {
 	if (changedFiles === null) return true
 	if (changedFiles.length === 0) return false
-	return changedFiles.some((file) => isFlyDeployablePath(file.filename))
+	return changedFiles.some((file) => isSiteDeployablePath(file.filename))
 }
 
 function shouldRunPathTarget({
@@ -468,13 +462,18 @@ export async function computeDeployPlan({
 		changedFiles: refreshChangedFiles,
 	} = refreshResult
 
+	const deploySite = shouldDeploySite(siteChangedFiles)
+	const refreshContent = deploySite
+		? false
+		: shouldRunPathTarget({
+				changedFiles: refreshChangedFiles,
+				pathPrefixes: ['services/site/content/'],
+				runWhenUnknown: isPushEvent,
+			})
+
 	const deployPlan = {
-		deploySite: shouldDeploySite(siteChangedFiles),
-		refreshContent: shouldRunPathTarget({
-			changedFiles: refreshChangedFiles,
-			pathPrefixes: ['services/site/content/'],
-			runWhenUnknown: isPushEvent,
-		}),
+		deploySite,
+		refreshContent,
 		indexSemanticContent: shouldRunPathTarget({
 			changedFiles: pushChangedFiles,
 			pathPrefixes: semanticContentPathPrefixes,

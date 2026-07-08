@@ -25,27 +25,25 @@ import { Grid } from '#app/components/grid.tsx'
 import { PasskeyIcon } from '#app/components/icons.js'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { images } from '#app/images.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import {
-	getDisplayUrl,
 	getOrigin,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
 import {
 	DUMMY_PASSWORD_HASH,
 	verifyPassword,
 } from '#app/utils/password.server.ts'
+import { db } from '#app/utils/db.server.ts'
 import {
-	migrateHomeworkCompletionsToUser,
-	prisma,
-} from '#app/utils/prisma.server.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
+	passwordTable,
+	postReadTable,
+	userTable,
+} from '#app/utils/db/schema.server.ts'
+import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/login'
 
@@ -64,12 +62,25 @@ export async function loader({ request }: Route.LoaderArgs) {
 		Vary: 'Cookie',
 	})
 	await loginSession.getHeaders(headers)
+	const domain = new URL(getOrigin({ origin: new URL(request.url).origin, path: '' })).host
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: `Login to ${domain}`,
+		description: `Sign up or login to ${domain} to join a team and learn together.`,
+		socialImage: {
+			kind: 'generic-social',
+			words: `Login to your account on ${domain}`,
+			featuredImage: images.skis.id,
+		},
+	})
 
 	return json(
 		{
 			email: loginSession.getEmail(),
 			error: loginSession.getError(),
 			message: loginSession.getMessage(),
+			socialMetas,
 		},
 		{ headers },
 	)
@@ -77,22 +88,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const domain = new URL(getOrigin(requestInfo)).host
-	return getSocialMetas({
-		title: `Login to ${domain}`,
-		description: `Sign up or login to ${domain} to join a team and learn together.`,
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.skis.id,
-			words: `Login to your account on ${domain}`,
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()
@@ -135,21 +132,18 @@ export async function action({ request }: Route.ActionArgs) {
 		})
 	}
 
-	const userWithPassword = await prisma.user.findUnique({
+	const user = await db.findOne(userTable, {
 		where: { email },
-		select: {
-			id: true,
-			password: { select: { hash: true } },
-		},
 	})
+	const passwordRecord = user ? await db.find(passwordTable, user.id) : null
 
-	const passwordHash = userWithPassword?.password?.hash ?? DUMMY_PASSWORD_HASH
+	const passwordHash = passwordRecord?.hash ?? DUMMY_PASSWORD_HASH
 	const isValid = await verifyPassword({
 		password,
 		hash: passwordHash,
 	})
 
-	if (!userWithPassword?.password || !isValid) {
+	if (!user || !passwordRecord || !isValid) {
 		loginSession.flashError(
 			'Invalid email or password. If you do not have a password yet, use "Reset password" to set one.',
 		)
@@ -159,7 +153,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	const session = await getSession(request)
-	await session.signIn({ id: userWithPassword.id })
+	await session.signIn({ id: user.id })
 
 	const headers = new Headers()
 	loginSession.clean()
@@ -170,13 +164,13 @@ export async function action({ request }: Route.ActionArgs) {
 		try {
 			const clientId = clientSession.getClientId()
 			if (clientId) {
-				await ensurePrimary()
-				await prisma.postRead.updateMany({
-					data: { userId: userWithPassword.id, clientId: null },
-					where: { clientId },
-				})
+				await db.updateMany(
+					postReadTable,
+					{ userId: user.id, clientId: null },
+					{ where: { clientId } },
+				)
 				await migrateHomeworkCompletionsToUser({
-					userId: userWithPassword.id,
+					userId: user.id,
 					clientId,
 				})
 			}

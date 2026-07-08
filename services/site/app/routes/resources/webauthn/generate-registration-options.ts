@@ -1,19 +1,19 @@
 import { generateRegistrationOptions } from '@simplewebauthn/server'
 import { data as json } from 'react-router'
-import { prisma } from '#app/utils/prisma.server.js'
-import { requireUser } from '#app/utils/session.server.js'
+import { db } from '#app/utils/db.server.ts'
+import { passkeyTable } from '#app/utils/db/schema.server.ts'
+import { requireUser } from '#app/utils/session.server.ts'
 import {
 	PasskeyCookieSchema,
 	passkeyCookie,
 	getWebAuthnConfig,
-} from '#app/utils/webauthn.server.js'
+} from '#app/utils/webauthn.server.ts'
 import { type Route } from './+types/generate-registration-options'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
-	const passkeys = await prisma.passkey.findMany({
+	const passkeys = await db.findMany(passkeyTable, {
 		where: { userId: user.id },
-		select: { id: true },
 	})
 
 	const config = getWebAuthnConfig(request)
@@ -24,7 +24,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		userID: new TextEncoder().encode(user.id),
 		userDisplayName: user.firstName,
 		attestationType: 'none',
-		excludeCredentials: passkeys,
+		excludeCredentials: passkeys.map((passkey) => ({ id: passkey.id })),
 		authenticatorSelection: config.authenticatorSelection,
 	})
 

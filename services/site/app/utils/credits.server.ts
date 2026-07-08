@@ -2,8 +2,7 @@ import { cachified, verboseReporter } from '@epic-web/cachified'
 import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { cache, shouldForceFresh } from './cache.server.ts'
-import { downloadFile } from './github.server.ts'
-import { getGitHubContentPath } from './github-content-paths.server.ts'
+import { getContentDataFile } from './content-data.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.ts'
 
 export type Person = {
@@ -149,9 +148,10 @@ async function getPeople({
 				ttl: 1000 * 60 * 60 * 24 * 30,
 				staleWhileRevalidate: 1000 * 60 * 60 * 24,
 				getFreshValue: async () => {
-					const creditsString = await downloadFile(
-						getGitHubContentPath('data/credits.yml'),
-					)
+					const creditsString = await getContentDataFile('data/credits.yml')
+					if (!creditsString) {
+						throw new Error('credits.yml is unavailable')
+					}
 					const rawCredits = YAML.parse(creditsString)
 					if (!Array.isArray(rawCredits)) {
 						console.error('Credits is not an array', rawCredits)
@@ -166,7 +166,6 @@ async function getPeople({
 			verboseReporter(),
 		)
 		// We normalize after `cachified` too because `checkValue` can reject stale data,
-		// `getFreshValue` can fail (for example if GitHub is unavailable), and
 		// `cachified` may still return fallbackToCache data under forceFresh semantics.
 		return normalizePeople(allPeople)
 	} catch (error: unknown) {

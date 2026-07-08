@@ -12,7 +12,11 @@ import {
 	reuseUsefulLoaderHeaders,
 	useDoubleCheck,
 } from '#app/utils/misc-react.tsx'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callEpisodeDraft,
+	callTable,
+} from '#app/utils/db/schema.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/$callId'
 
@@ -29,15 +33,9 @@ export async function action({ params, request }: Route.ActionArgs) {
 		throw new Error('params.callId is not defined')
 	}
 	const user = await requireUser(request)
-	const call = await prisma.call.findFirst({
-		// NOTE: this is how we ensure the user is the owner of the call
-		// and is therefore authorized to delete it.
+	const call = await db.findOne(callTable, {
 		where: { userId: user.id, id: params.callId },
-		select: {
-			id: true,
-			audioKey: true,
-			episodeDraft: { select: { episodeAudioKey: true } },
-		},
+		with: { episodeDraft: callEpisodeDraft },
 	})
 	if (!call) {
 		// Maybe they tried to delete a call they don't own?
@@ -46,7 +44,7 @@ export async function action({ params, request }: Route.ActionArgs) {
 		)
 		return redirect('/calls/record')
 	}
-	await prisma.call.delete({ where: { id: params.callId } })
+	await db.delete(callTable, params.callId)
 	const keysToDelete = [
 		call.audioKey,
 		call.episodeDraft?.episodeAudioKey,
@@ -69,14 +67,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		throw new Error('params.callId is not defined')
 	}
 	const user = await requireUser(request)
-	const call = await prisma.call.findFirst({
-		// NOTE: this is how we ensure the user is the owner of the call
-		// and is therefore authorized to delete it.
+	const call = await db.findOne(callTable, {
 		where: { userId: user.id, id: params.callId },
-		select: {
-			id: true,
-			notes: true,
-		},
 	})
 	if (!call) {
 		return redirect('/calls/record')

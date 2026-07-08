@@ -1,5 +1,3 @@
-import http from 'http'
-import https from 'https'
 import { cachified, verboseReporter } from '@epic-web/cachified'
 import type * as H from 'hast'
 import { toString } from 'hast-util-to-string'
@@ -78,44 +76,107 @@ export function getMetadataFromHtml(html: string, url: string): Metadata {
 	}
 }
 
+/**
+ * Until the DNS flip, kentcdodds.com is served by the legacy host whose
+ * metadata (og:image etc.) points at retired infrastructure. Fetch our own
+ * pages' metadata from the current deployment instead so embedded link
+ * previews always reference assets we serve. After the flip this is an
+ * identity mapping.
+ */
+const SITE_METADATA_ORIGIN =
+	process.env.SITE_METADATA_ORIGIN ??
+	'https://kentcdodds-com.kentcdodds.workers.dev'
+
+function resolveMetadataFetchUrl(url: string) {
+	try {
+		const parsed = new URL(url)
+		if (parsed.hostname === 'kentcdodds.com') {
+			return new URL(
+				`${parsed.pathname}${parsed.search}`,
+				SITE_METADATA_ORIGIN,
+			).toString()
+		}
+	} catch {
+		// fall through to the original URL
+	}
+	return url
+}
+
 async function getMetadata(url: string): Promise<Metadata> {
 	// In mocks mode we don't want to make arbitrary external HTTP requests for
 	// link metadata (it can hang CI / e2e test runs and adds nondeterminism).
 	if (getEnv().MOCKS) return {}
 
-	const html = await fetchWithTimeout(url, {}, 2_000).then((res) => res.text())
-	return getMetadataFromHtml(html, url)
+	const fetchUrl = resolveMetadataFetchUrl(url)
+	const html = await fetchWithTimeout(fetchUrl, {}, 2_000).then((res) =>
+		res.text(),
+	)
+	const metadata = getMetadataFromHtml(html, url)
+	// Self-hosted images embed as host-relative URLs so compiled content
+	// works on any host (preview and custom domain alike).
+	if (metadata.image) {
+		for (const origin of [SITE_METADATA_ORIGIN, 'https://kentcdodds.com']) {
+			if (metadata.image.startsWith(`${origin}/`)) {
+				metadata.image = metadata.image.slice(origin.length)
+				break
+			}
+		}
+	}
+	// External og:images only render if our CSP img-src allows their host;
+	// otherwise drop the image and let the preview card render without one.
+	if (metadata.image && !metadata.image.startsWith('/')) {
+		if (!isCspAllowedImageHost(metadata.image)) {
+			metadata.image = undefined
+		}
+	}
+	return metadata
 }
 
-function unshorten(
-	urlString: string,
-	maxFollows: number = 10,
-): Promise<string> {
-	return new Promise((resolve, reject) => {
-		try {
-			const url = new URL(urlString)
-			if (url.protocol) {
-				const { request } = url.protocol === 'https:' ? https : http
-				request(urlString, { method: 'HEAD' }, (response) => {
-					const {
-						headers: { location },
-					} = response
-					if (location && location !== urlString && maxFollows > 0) {
-						const fullLocation = location.startsWith('/')
-							? new URL(location, url).toString()
-							: location
-						void unshorten(fullLocation, maxFollows - 1).then(resolve)
-					} else {
-						resolve(urlString)
-					}
-				}).end()
-			} else {
-				reject(`Invalid URL: ${urlString}`)
-			}
-		} catch (error: unknown) {
-			reject(error)
+/**
+ * Mirrors the img-src allowlist in services/site-worker/src/dynamic/csp.ts.
+ * Link-preview images from hosts outside this list would be blocked by the
+ * browser anyway, so we omit them at compile time.
+ */
+const CSP_IMAGE_HOSTS = [
+	'www.gravatar.com',
+	'pbs.twimg.com',
+	'i.ytimg.com',
+	'image.simplecastcdn.com',
+	'images.transistor.fm',
+	'img.transistor.fm',
+	'img.transistorcdn.com',
+	'lh4.googleusercontent.com',
+	'i2.wp.com',
+	'i1.wp.com',
+	'og-image-react-egghead.now.sh',
+	'og-image-react-egghead.vercel.app',
+	'www.epicweb.dev',
+]
+
+function isCspAllowedImageHost(urlString: string) {
+	try {
+		const { hostname } = new URL(urlString)
+		return CSP_IMAGE_HOSTS.some(
+			(host) => hostname === host || hostname.endsWith('.githubusercontent.com'),
+		)
+	} catch {
+		return false
+	}
+}
+
+async function unshorten(urlString: string, maxFollows = 10): Promise<string> {
+	let current = urlString
+	for (let follow = 0; follow < maxFollows; follow++) {
+		const response = await fetch(current, { method: 'HEAD', redirect: 'manual' })
+		const location = response.headers.get('location')
+		if (!location || response.status < 300 || response.status >= 400) {
+			return current
 		}
-	})
+		current = location.startsWith('/')
+			? new URL(location, current).toString()
+			: location
+	}
+	return current
 }
 
 async function getTweetCached(tweetId: string) {

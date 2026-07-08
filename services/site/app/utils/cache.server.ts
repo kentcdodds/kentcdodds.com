@@ -1,6 +1,4 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
+import { runBackgroundTask } from './background-task.server.ts'
 import {
 	type Cache,
 	cachified as baseCachified,
@@ -12,52 +10,76 @@ import {
 import { siteCacheReporter } from '#app/utils/cache-reporter.server.ts'
 import { remember } from '@epic-web/remember'
 import { LRUCache } from 'lru-cache'
-import { updatePrimaryCacheValue } from '#app/routes/resources/cache.sqlite.ts'
-import { getEnv } from '#app/utils/env.server.ts'
-import { getInstanceInfo, getInstanceInfoSync } from './litefs-js.server.js'
+import {
+	decodeCacheEntry,
+	encodeCacheEntry,
+	getKvExpirationTtl,
+} from '#app/utils/cache-encoding.server.ts'
+import {
+	recordCacheLruHit,
+	recordCacheRpcCall,
+} from '#app/utils/cache-request-stats.server.ts'
+import { getRuntimeBinding } from '#app/utils/runtime-bindings.server.ts'
 import { getUser } from './session.server.ts'
 import { time, type Timings } from './timing.server.ts'
 
-const cacheDb = remember('cacheDb', createDatabase)
-
-export function getCacheDb() {
-	return cacheDb
+type CacheRpcBinding = {
+	get(key: string): Promise<CacheEntry<unknown> | null>
+	set(key: string, entry: CacheEntry<unknown>): Promise<void>
+	delete(key: string): Promise<void>
+	keys(prefix?: string, limit?: number): Promise<Array<string>>
 }
 
-function createDatabase(tryAgain = true): DatabaseSync {
-	const cacheDatabasePath = getEnv().CACHE_DATABASE_PATH
-	const parentDir = path.dirname(cacheDatabasePath)
-	fs.mkdirSync(parentDir, { recursive: true })
-	const db = new DatabaseSync(cacheDatabasePath)
-	const { currentIsPrimary } = getInstanceInfoSync()
-	if (!currentIsPrimary) return db
-
-	try {
-		// create cache table with metadata JSON column and value JSON column if it does not exist already
-		db.exec(`
-      CREATE TABLE IF NOT EXISTS cache (
-        key TEXT PRIMARY KEY,
-        metadata TEXT,
-        value TEXT
-      )
-    `)
-	} catch (error: unknown) {
-		fs.unlinkSync(cacheDatabasePath)
-		if (tryAgain) {
-			console.error(
-				`Error creating cache database, deleting the file at "${cacheDatabasePath}" and trying again...`,
-			)
-			return createDatabase(false)
-		}
-		throw error
-	}
-	return db
+function getCacheRpcBinding(): CacheRpcBinding | undefined {
+	const binding = getRuntimeBinding<CacheRpcBinding>('CACHE_RPC')
+	if (!binding || typeof binding.get !== 'function') return undefined
+	return binding
 }
+
+type DirectKvNamespace = {
+	get(key: string): Promise<string | null>
+	put(
+		key: string,
+		value: string,
+		options?: { expirationTtl?: number },
+	): Promise<void>
+	delete(key: string): Promise<void>
+	list(options?: {
+		prefix?: string
+		limit?: number
+	}): Promise<{ keys: Array<{ name: string }> }>
+}
+
+function getDirectKvBinding(): DirectKvNamespace | undefined {
+	const binding = getRuntimeBinding<DirectKvNamespace>('SITE_CACHE_KV')
+	if (!binding || typeof binding.get !== 'function') return undefined
+	return binding
+}
+
+function usesPersistentKvCache() {
+	return Boolean(getCacheRpcBinding() || getDirectKvBinding())
+}
+
+const LRU_MAX_ENTRIES = 500
 
 const lruInstance = remember(
 	'lru-cache',
-	() => new LRUCache<string, CacheEntry<unknown>>({ max: 5000 }),
+	() => new LRUCache<string, CacheEntry<unknown>>({ max: LRU_MAX_ENTRIES }),
 )
+
+export type { CacheRequestStats } from '#app/utils/cache-request-stats.server.ts'
+export {
+	beginCacheRequestStats,
+	formatCacheRequestStatsHeader,
+} from '#app/utils/cache-request-stats.server.ts'
+
+export function isCacheAdminAvailable() {
+	return usesPersistentKvCache()
+}
+
+export function getPersistentCacheLabel() {
+	return 'KV'
+}
 
 export const lruCache = {
 	set(key, value) {
@@ -75,124 +97,132 @@ export const lruCache = {
 	},
 } satisfies Cache
 
-const isBuffer = (obj: unknown): obj is Buffer =>
-	Buffer.isBuffer(obj) || obj instanceof Uint8Array
-
-function bufferReplacer(_key: string, value: unknown) {
-	if (isBuffer(value)) {
-		return {
-			__isBuffer: true,
-			data: value.toString('base64'),
-		}
-	}
-	return value
+async function getDirectKvCacheEntry(key: string) {
+	const kv = getDirectKvBinding()
+	if (!kv) return null
+	const stored = await kv.get(key)
+	if (!stored) return null
+	return decodeCacheEntry(JSON.parse(stored))
 }
 
-function bufferReviver(_key: string, value: unknown) {
-	if (
-		value &&
-		typeof value === 'object' &&
-		'__isBuffer' in value &&
-		(value as any).data
-	) {
-		return Buffer.from((value as any).data, 'base64')
-	}
-	return value
+async function setDirectKvCacheEntry(key: string, entry: CacheEntry<unknown>) {
+	const kv = getDirectKvBinding()
+	if (!kv) return
+	const encoded = encodeCacheEntry(entry)
+	const expirationTtl = getKvExpirationTtl(entry)
+	await kv.put(key, JSON.stringify(encoded), expirationTtl ? { expirationTtl } : undefined)
 }
 
-const preparedGet = cacheDb.prepare(
-	'SELECT value, metadata FROM cache WHERE key = ?',
-)
-const preparedSet = cacheDb.prepare(
-	'INSERT OR REPLACE INTO cache (key, value, metadata) VALUES (?, ?, ?)',
-)
-const preparedDelete = cacheDb.prepare('DELETE FROM cache WHERE key = ?')
+async function deleteDirectKvCacheEntry(key: string) {
+	const kv = getDirectKvBinding()
+	if (!kv) return
+	await kv.delete(key)
+}
+
+async function listDirectKvCacheKeys(prefix: string | undefined, limit: number) {
+	const kv = getDirectKvBinding()
+	if (!kv) return []
+	const listed = await kv.list({ prefix, limit })
+	return listed.keys.map((entry) => entry.name)
+}
 
 export const cache: CachifiedCache = {
-	name: 'SQLite cache',
-	get(key) {
-		const result = preparedGet.get(key) as any
-		if (!result) return null
-		return {
-			metadata: JSON.parse(result.metadata),
-			value: JSON.parse(result.value, bufferReviver),
+	name: 'Application cache',
+	async get(key) {
+		const rpc = getCacheRpcBinding()
+		if (rpc) {
+			const lruHit = lruCache.get(key)
+			if (lruHit) {
+				recordCacheLruHit()
+				return lruHit
+			}
+			const rpcStart = performance.now()
+			const entry = await rpc.get(key)
+			recordCacheRpcCall(performance.now() - rpcStart)
+			if (entry) lruCache.set(key, entry)
+			return entry
 		}
+		const directKv = getDirectKvBinding()
+		if (directKv) {
+			const lruHit = lruCache.get(key)
+			if (lruHit) {
+				recordCacheLruHit()
+				return lruHit
+			}
+			const kvStart = performance.now()
+			const entry = await getDirectKvCacheEntry(key)
+			recordCacheRpcCall(performance.now() - kvStart)
+			if (entry) lruCache.set(key, entry)
+			return entry
+		}
+		return null
 	},
 	async set(key, entry) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-		if (currentIsPrimary) {
-			preparedSet.run(
-				key,
-				JSON.stringify(entry.value, bufferReplacer),
-				JSON.stringify(entry.metadata),
-			)
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue!({
-				key,
-				cacheValue: entry,
-			})
-				.then((response: Response) => {
-					if (!response.ok) {
-						console.error(
-							`Error updating cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-							{ entry },
-						)
-					}
-				})
-				.catch((error: unknown) => {
-					console.error(
-						`Error updating cache value for key "${key}" on primary instance (${primaryInstance})`,
-						{ entry, error },
-					)
-				})
+		const rpc = getCacheRpcBinding()
+		if (rpc) {
+			lruCache.set(key, entry)
+			await rpc.set(key, entry)
+			return
+		}
+		if (getDirectKvBinding()) {
+			lruCache.set(key, entry)
+			await setDirectKvCacheEntry(key, entry)
 		}
 	},
 	async delete(key) {
-		const { currentIsPrimary, primaryInstance } = await getInstanceInfo()
-		if (currentIsPrimary) {
-			preparedDelete.run(key)
-		} else {
-			// fire-and-forget cache update
-			void updatePrimaryCacheValue!({
-				key,
-				cacheValue: undefined,
-			})
-				.then((response: Response) => {
-					if (!response.ok) {
-						console.error(
-							`Error deleting cache value for key "${key}" on primary instance (${primaryInstance}): ${response.status} ${response.statusText}`,
-						)
-					}
-				})
-				.catch((error: unknown) => {
-					console.error(
-						`Error deleting cache value for key "${key}" on primary instance (${primaryInstance})`,
-						error,
-					)
-				})
+		const rpc = getCacheRpcBinding()
+		if (rpc) {
+			lruCache.delete(key)
+			await rpc.delete(key)
+			return
+		}
+		if (getDirectKvBinding()) {
+			lruCache.delete(key)
+			await deleteDirectKvCacheEntry(key)
 		}
 	},
 }
 
-const preparedAllKeys = cacheDb.prepare('SELECT key FROM cache LIMIT ?')
 export async function getAllCacheKeys(limit: number) {
+	const rpc = getCacheRpcBinding()
+	if (rpc) {
+		return {
+			kv: await rpc.keys(undefined, limit),
+			lru: [...lruInstance.keys()],
+		}
+	}
+	const directKv = getDirectKvBinding()
+	if (directKv) {
+		return {
+			kv: await listDirectKvCacheKeys(undefined, limit),
+			lru: [...lruInstance.keys()],
+		}
+	}
 	return {
-		sqlite: preparedAllKeys
-			.all(limit)
-			.map((row) => (row as { key: string }).key),
+		kv: [],
 		lru: [...lruInstance.keys()],
 	}
 }
 
-const preparedKeySearch = cacheDb.prepare(
-	'SELECT key FROM cache WHERE key LIKE ? LIMIT ?',
-)
 export async function searchCacheKeys(search: string, limit: number) {
+	const rpc = getCacheRpcBinding()
+	if (rpc) {
+		const keys = await rpc.keys(search, limit)
+		return {
+			kv: keys,
+			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
+		}
+	}
+	const directKv = getDirectKvBinding()
+	if (directKv) {
+		const keys = await listDirectKvCacheKeys(search, limit)
+		return {
+			kv: keys,
+			lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
+		}
+	}
 	return {
-		sqlite: preparedKeySearch
-			.all(`%${search}%`, limit)
-			.map((row) => (row as { key: string }).key),
+		kv: [],
 		lru: [...lruInstance.keys()].filter((key) => key.includes(search)),
 	}
 }
@@ -230,6 +260,10 @@ export async function cachified<Value>({
 	let cachifiedResolved = false
 	const cachifiedPromise = baseCachified(
 		{
+			// Thread the request's waitUntil so stale-while-revalidate background
+			// refreshes survive past the response in workerd. Without it, the
+			// runtime cancels the refresh promise when the request ends.
+			waitUntil: (promise) => runBackgroundTask(() => promise),
 			...options,
 			forceFresh: await shouldForceFresh({
 				forceFresh: options.forceFresh,

@@ -1,5 +1,10 @@
 import * as React from 'react'
-import { data as json, type HeadersFunction } from 'react-router'
+import {
+	data as json,
+	isRouteErrorResponse,
+	type HeadersFunction,
+	type MetaFunction,
+} from 'react-router'
 import { serverOnly$ } from 'vite-env-only/macros'
 import { BackLink } from '#app/components/arrow-button.tsx'
 import { BlurrableImage } from '#app/components/blurrable-image.tsx'
@@ -12,13 +17,12 @@ import { pathedRoutes } from '#app/other-routes.server.ts'
 import { type KCDHandle } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { getMdxPage, getMdxPagesInDirectory } from '#app/utils/mdx.server'
+import { getDomainUrl, requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import {
 	getBannerAltProp,
 	getBannerTitleProp,
-	mdxPageMeta,
 	useMdxComponent,
 } from '#app/utils/mdx.tsx'
-import { requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
 import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
@@ -75,7 +79,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 		})
 	}
 	return json(
-		{ page },
+		{
+			page,
+			socialMetas: (
+				await import('#app/utils/mdx-meta.server.ts')
+			).buildMdxPageSocialMetas(page, {
+				origin: getDomainUrl(request),
+				path: new URL(request.url).pathname,
+			}),
+		},
 		{
 			status: 200,
 			headers: {
@@ -110,7 +122,20 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta = mdxPageMeta
+export const meta: MetaFunction<typeof loader> = ({ data, error }) => {
+	if (isRouteErrorResponse(error) && error.status === 404) {
+		return [{ title: 'Not found' }]
+	}
+	if (
+		data != null &&
+		typeof data === 'object' &&
+		'socialMetas' in data &&
+		Array.isArray(data.socialMetas)
+	) {
+		return data.socialMetas
+	}
+	return []
+}
 
 export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 	const { code, frontmatter } = data.page
@@ -176,7 +201,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 												'1100px',
 											],
 											transformations: {
-												background: 'rgb:e6e9ee',
+												background: 'e6e9ee',
 											},
 										},
 									)}

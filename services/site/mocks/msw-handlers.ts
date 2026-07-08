@@ -21,7 +21,7 @@ import {
 // One-off handlers that don't warrant their own files.
 const miscHandlers: Array<HttpHandler> = [
 	http.get(
-		'https://res.cloudinary.com/kentcdodds-com/image/upload/w_100,q_auto,f_webp,e_blur:1000/unsplash/:photoId',
+		'https://kentcdodds.com/media/:transforms/unsplash/:photoId',
 		async () => {
 			if (
 				process.env.NODE_ENV !== 'test' &&
@@ -36,7 +36,16 @@ const miscHandlers: Array<HttpHandler> = [
 			return HttpResponse.json(buffer)
 		},
 	),
-	http.get(/res.cloudinary.com\/kentcdodds-com\//, () => {
+	http.get(/\/media\/[^/]+\/unsplash\//, () => {
+		if (process.env.NODE_ENV === 'test') {
+			return new HttpResponse(new Uint8Array(), {
+				status: 200,
+				headers: { 'Content-Type': 'image/webp' },
+			})
+		}
+		return passthrough()
+	}),
+	http.get(/\/media\//, () => {
 		if (process.env.NODE_ENV === 'test') {
 			return new HttpResponse(new Uint8Array(), {
 				status: 200,
@@ -46,24 +55,58 @@ const miscHandlers: Array<HttpHandler> = [
 		return passthrough()
 	}),
 	http.post(
-		'https://api.mailgun.net/v3/:domain/messages',
-		async ({ request, params }) => {
-			const reqBody = await request.text()
-			const body = Object.fromEntries(new URLSearchParams(reqBody))
+		'https://api.cloudflare.com/client/v4/accounts/:accountId/email/sending/send',
+		async ({ request }) => {
+			const body = (await request.json()) as {
+				to?: string | Array<string>
+				from?: string
+				subject?: string
+				text?: string
+				html?: string | null
+				reply_to?: string
+			}
+			const toRaw = body.to
+			const to =
+				typeof toRaw === 'string'
+					? toRaw
+					: Array.isArray(toRaw)
+						? toRaw[0]
+						: undefined
 			console.info('🔶 mocked email contents:', body)
 
-			if (body.text && body.to) {
+			if (to && body.text) {
 				const fixture = await readFixture()
+				const captured = {
+					to,
+					...(body.from ? { from: body.from } : {}),
+					...(body.reply_to ? { replyTo: body.reply_to } : {}),
+					...(body.subject ? { subject: body.subject } : {}),
+					...(body.text ? { text: body.text } : {}),
+					...(typeof body.html === 'string' ? { html: body.html } : {}),
+				}
 				await updateFixture({
 					email: {
 						...fixture.email,
-						[body.to]: body,
+						[to]: captured,
 					},
 				})
 			}
-			const randomId = '20210321210543.1.E01B8B612C44B41B'
-			const id = `<${randomId}>@${params.domain}`
-			return HttpResponse.json({ id, message: 'Queued. Thank you.' })
+			const delivered =
+				typeof body.to === 'string'
+					? [body.to]
+					: Array.isArray(body.to)
+						? body.to
+						: []
+			return HttpResponse.json({
+				success: true,
+				errors: [],
+				messages: [],
+				result: {
+					delivered,
+					permanent_bounces: [],
+					queued: [],
+				},
+			})
 		},
 	),
 	http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {

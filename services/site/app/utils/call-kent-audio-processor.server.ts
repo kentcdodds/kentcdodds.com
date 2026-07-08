@@ -5,6 +5,13 @@ type EpisodeAudioJob = {
 	draftId: string
 	callAudioKey: string
 	responseAudioKey: string
+	/**
+	 * Where the audio worker should send status callbacks. Built from the
+	 * request origin so each deployment (workers.dev preview, custom domain)
+	 * receives callbacks for its own drafts; the audio worker falls back to
+	 * its static env URL for jobs that omit it.
+	 */
+	callbackUrl: string
 }
 
 const cloudflareQueueEnqueueTimeoutMs = 10_000
@@ -13,6 +20,7 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 	draftId,
 	callAudioKey,
 	responseAudioKey,
+	callbackUrl,
 }: EpisodeAudioJob) {
 	const env = getEnv()
 	const queueId = env.CALL_KENT_AUDIO_CF_QUEUE_ID
@@ -26,6 +34,7 @@ async function enqueueCallKentEpisodeAudioJobToCloudflare({
 			draftId,
 			callAudioKey,
 			responseAudioKey,
+			callbackUrl,
 		},
 	}
 	let res: Response
@@ -91,10 +100,12 @@ export async function requestCallKentEpisodeAudioGeneration({
 	draftId,
 	callAudioKey,
 	responseAudioKey,
+	callbackUrl,
 }: EpisodeAudioJob) {
 	await enqueueCallKentEpisodeAudioJobToCloudflare({
 		draftId,
 		callAudioKey,
 		responseAudioKey,
+		callbackUrl,
 	})
 }

@@ -5,38 +5,35 @@ import { MailIcon } from '#app/components/icons.tsx'
 import { BlogSection } from '#app/components/sections/blog-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, getImgProps, images } from '#app/images.tsx'
+import { getImgProps, images } from '#app/images.tsx'
 import { KitForm } from '#app/kit/form.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
-import { getDisplayUrl, getUrl } from '#app/utils/misc.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/subscribe'
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	return getSocialMetas({
-		title: `Subscribe to the KCD Mailing List`,
-		description: `Get weekly insights, ideas, and proven coding practices from the KCD Mailing List`,
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.snowboard(),
-			words: `Subscribe to the KCD Mailing List`,
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const blogRecommendations = await getBlogRecommendations({ request, timings })
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+			title: 'Subscribe to the KCD Mailing List',
+			description:
+				'Get weekly insights, ideas, and proven coding practices from the KCD Mailing List',
+			socialImage: {
+				kind: 'generic-social',
+				words: 'Subscribe to the KCD Mailing List',
+				featuredImage: images.snowboard.id,
+			},
+	})
 
 	return json(
-		{ blogRecommendations },
+		{ blogRecommendations, socialMetas },
 		{
 			headers: {
 				'Cache-Control': 'private, max-age=3600',
@@ -82,10 +79,8 @@ export default function SubscribeScreen({
 										'630px',
 									],
 									transformations: {
-										resize: {
-											type: 'fill',
-											aspectRatio: '3:4',
-										},
+										fit: 'cover',
+										aspectRatio: '3:4',
 									},
 								})}
 							/>

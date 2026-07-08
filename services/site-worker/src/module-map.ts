@@ -1,0 +1,99 @@
+import appWorkerSource from '../dist/app-worker.js.txt'
+import reactJsxRuntimeShimSource from '../dist/react-jsx-runtime-shim.js.txt'
+import reactShimSource from '../dist/react-shim.js.txt'
+
+export type {
+	MdxArtifactBundle,
+	MdxArtifactDocument,
+} from '../../site/types/mdx-artifacts.ts'
+
+import type { MdxArtifactBundle } from '../../site/types/mdx-artifacts.ts'
+
+type WorkerLoaderModule =
+	| string
+	| { js: string }
+	| { json: unknown }
+	| { wasm: Uint8Array }
+
+export type WorkerLoaderModuleMap = Record<string, WorkerLoaderModule>
+
+export function buildSiteContentData(bundle: MdxArtifactBundle) {
+	const { documents, ...rest } = bundle
+	const contentDocuments: Record<string, unknown> = {}
+
+	for (const [key, document] of Object.entries(documents)) {
+		const { esm: _esm, code: _code, ...documentWithoutEsmAndCode } = document
+		contentDocuments[key] = documentWithoutEsmAndCode
+	}
+
+	return { ...rest, documents: contentDocuments }
+}
+
+function addNestedReactShimAliases(
+	modules: WorkerLoaderModuleMap,
+	reactShim: string,
+	jsxRuntimeShim: string,
+) {
+	const mdxPrefixes = new Set<string>()
+	for (const name of Object.keys(modules)) {
+		if (!name.startsWith('mdx/') || !name.endsWith('.js')) continue
+		const slash = name.lastIndexOf('/')
+		if (slash > 0) mdxPrefixes.add(`${name.slice(0, slash + 1)}`)
+	}
+	for (const prefix of mdxPrefixes) {
+		modules[`${prefix}react`] = { js: reactShim }
+		modules[`${prefix}react/jsx-runtime`] = { js: jsxRuntimeShim }
+	}
+}
+
+export function buildDynamicWorkerModuleMap(
+	bundle: MdxArtifactBundle,
+): WorkerLoaderModuleMap {
+	const modules: WorkerLoaderModuleMap = {
+		'app-worker.js': appWorkerSource,
+		react: { js: reactShimSource },
+		'react/jsx-runtime': { js: reactJsxRuntimeShimSource },
+		'site-content-data.json': { json: buildSiteContentData(bundle) },
+	}
+
+	for (const [documentKey, document] of Object.entries(bundle.documents)) {
+		const moduleName = `mdx/${document.contentDir}/${document.slug}.js`
+		if (modules[moduleName]) {
+			throw new Error(
+				`Duplicate MDX module name: ${moduleName} (${documentKey})`,
+			)
+		}
+		modules[moduleName] = { js: document.esm }
+	}
+
+	addNestedReactShimAliases(modules, reactShimSource, reactJsxRuntimeShimSource)
+
+	return modules
+}
+
+export function getDynamicWorkerId(codeHash: string, contentVersion: string) {
+	return `app:${codeHash}:content:${contentVersion}`
+}
+
+let appCodeHashPromise: Promise<string> | null = null
+
+/**
+ * Stable hash of the dynamic worker's actual code. Using this (instead of the
+ * deploy BUILD_SHA) in the loader id means redeploys that don't change the
+ * app bundle keep the same worker id, so the platform can reuse existing warm
+ * dynamic isolates across deploys.
+ */
+export function getAppCodeHash(): Promise<string> {
+	if (!appCodeHashPromise) {
+		appCodeHashPromise = (async () => {
+			const encoded = new TextEncoder().encode(
+				`${appWorkerSource}\u0000${reactShimSource}\u0000${reactJsxRuntimeShimSource}`,
+			)
+			const digest = await crypto.subtle.digest('SHA-256', encoded)
+			return Array.from(new Uint8Array(digest).slice(0, 8), (byte) =>
+				byte.toString(16).padStart(2, '0'),
+			).join('')
+		})()
+	}
+	return appCodeHashPromise
+}

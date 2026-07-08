@@ -1,16 +1,13 @@
-import { type TransformerOption } from '@cld-apis/types'
-import { buildImageUrl, setConfig } from 'cloudinary-build-url'
 import clsx from 'clsx'
-import emojiRegex from 'emoji-regex'
 import { type CSSProperties } from 'react'
-import { optionalTeams, toBase64, type OptionalTeam } from './utils/misc.ts'
-
-setConfig({
-	cloudName: 'kentcdodds-com',
-})
+import {
+	buildMediaUrl,
+	type MediaTransform,
+} from '#app/utils/media.ts'
+import { optionalTeams, type OptionalTeam } from './utils/misc.ts'
 
 type ImageBuilder = {
-	(transformations?: TransformerOption): string
+	(transform?: MediaTransform): string
 	alt: string
 	id: string
 	className?: string
@@ -36,8 +33,8 @@ function getImageBuilder(
 	alt: string = '',
 	{ className, style }: { className?: string; style?: CSSProperties } = {},
 ): ImageBuilder {
-	function imageBuilder(transformations?: TransformerOption) {
-		return buildImageUrl(id, { transformations })
+	function imageBuilder(transform?: MediaTransform) {
+		return buildMediaUrl(id, transform)
 	}
 	imageBuilder.alt = alt
 	imageBuilder.id = id
@@ -535,25 +532,33 @@ const images = createImages({
 const kodyProfiles: Record<OptionalTeam, { src: string; alt: string }> = {
 	RED: {
 		src: images.kodyProfileRed({
-			resize: { width: 80, type: 'pad', aspectRatio: '1/1' },
+			width: 80,
+			fit: 'pad',
+			aspectRatio: '1:1',
 		}),
 		alt: images.kodyProfileRed.alt,
 	},
 	BLUE: {
 		src: images.kodyProfileBlue({
-			resize: { width: 80, height: 80, type: 'pad' },
+			width: 80,
+			height: 80,
+			fit: 'pad',
 		}),
 		alt: images.kodyProfileBlue.alt,
 	},
 	YELLOW: {
 		src: images.kodyProfileYellow({
-			resize: { width: 80, height: 80, type: 'pad' },
+			width: 80,
+			height: 80,
+			fit: 'pad',
 		}),
 		alt: images.kodyProfileYellow.alt,
 	},
 	UNKNOWN: {
 		src: images.kodyProfileGray({
-			resize: { width: 80, height: 80, type: 'pad' },
+			width: 80,
+			height: 80,
+			fit: 'pad',
 		}),
 		alt: images.kodyProfileGray.alt,
 	},
@@ -695,16 +700,16 @@ function getImgProps(
 	}: {
 		widths: Array<number>
 		sizes: Array<string>
-		transformations?: TransformerOption
+		transformations?: MediaTransform
 		className?: string
 		style?: CSSProperties
 	},
 ) {
 	const averageSize = Math.ceil(widths.reduce((a, s) => a + s) / widths.length)
-	const aspectRatio = transformations?.resize?.aspectRatio
-		? transformations.resize.aspectRatio.replace(':', '/')
-		: transformations?.resize?.height && transformations.resize.width
-			? `${transformations.resize.width}/${transformations.resize.height}`
+	const aspectRatio = transformations?.aspectRatio
+		? transformations.aspectRatio.replace(':', '/')
+		: transformations?.height && transformations.width
+			? `${transformations.width}/${transformations.height}`
 			: imageBuilder.style?.aspectRatio
 
 	return {
@@ -716,19 +721,15 @@ function getImgProps(
 		className: clsx(imageBuilder.className, className),
 		alt: imageBuilder.alt,
 		src: imageBuilder({
-			quality: 'auto',
-			format: 'auto',
 			...transformations,
-			resize: { width: averageSize, ...transformations?.resize },
+			width: averageSize,
 		}),
 		srcSet: widths
 			.map((width) =>
 				[
 					imageBuilder({
-						quality: 'auto',
-						format: 'auto',
 						...transformations,
-						resize: { width, ...transformations?.resize },
+						width,
 					}),
 					`${width}w`,
 				].join(' '),
@@ -737,116 +738,6 @@ function getImgProps(
 		sizes: sizes.join(', '),
 		crossOrigin: 'anonymous',
 	} as const
-}
-
-function getSocialImageWithPreTitle({
-	title,
-	preTitle,
-	featuredImage: img,
-	url,
-	featuredImageStyle = 'portrait',
-}: {
-	title: string
-	preTitle: string
-	featuredImage: string
-	url: string
-	// square keeps 1:1 artwork (like podcast covers) uncropped and narrows the
-	// title column to make room for the wider image.
-	featuredImageStyle?: 'portrait' | 'square'
-}) {
-	const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
-
-	const encodedPreTitle = doubleEncode(emojiStrip(preTitle))
-	const preTitleSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_14,h_$gh,x_$gw_mul_1.5,y_$gh_mul_1.3,l_text:kentcdodds.com:Matter-Regular.woff2_50:${encodedPreTitle}`
-
-	const titleWidth = featuredImageStyle === 'square' ? 11 : 13.5
-	const encodedTitle = doubleEncode(emojiStrip(title))
-	const titleSection = `co_white,c_fit,g_north_west,w_$gw_mul_${titleWidth},h_$gh_mul_7,x_$gw_mul_1.5,y_$gh_mul_2.3,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedTitle}`
-
-	const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
-	const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
-
-	const encodedUrl = doubleEncode(emojiStrip(url))
-	const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_9,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
-
-	const featuredImageIsRemote = img.startsWith('http')
-	const featuredImageCloudinaryId = featuredImageIsRemote
-		? toBase64(img)
-		: img.replace(/\//g, ':')
-	const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
-	const featuredImageCrop =
-		featuredImageStyle === 'square' ? 'ar_1:1,r_24' : 'ar_3:4,r_12'
-	const featuredImageSection = `c_fill,${featuredImageCrop},g_east,h_$gh_mul_10,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
-
-	return [
-		`https://res.cloudinary.com/kentcdodds-com/image/upload`,
-		vars,
-		preTitleSection,
-		titleSection,
-		kentProfileSection,
-		kentNameSection,
-		urlSection,
-		featuredImageSection,
-		`c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`,
-	].join('/')
-}
-
-function getGenericSocialImage({
-	words,
-	featuredImage: img,
-	url,
-}: {
-	words: string
-	featuredImage: string
-	url: string
-}) {
-	const vars = `$th_1256,$tw_2400,$gw_$tw_div_24,$gh_$th_div_12`
-
-	const encodedWords = doubleEncode(emojiStrip(words))
-	const primaryWordsSection = `co_white,c_fit,g_north_west,w_$gw_mul_10,h_$gh_mul_7,x_$gw_mul_1.3,y_$gh_mul_1.5,l_text:kentcdodds.com:Matter-Regular.woff2_110:${encodedWords}`
-
-	const kentProfileSection = `c_fit,g_north_west,r_max,w_$gw_mul_4,h_$gh_mul_3,x_$gw,y_$gh_mul_8,l_kent:profile-transparent`
-	const kentNameSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,h_$gh_mul_4,x_$gw_mul_4.5,y_$gh_mul_9,l_text:kentcdodds.com:Matter-Regular.woff2_70:Kent%20C.%20Dodds`
-
-	const encodedUrl = doubleEncode(emojiStrip(url))
-	const urlSection = `co_rgb:a9adc1,c_fit,g_north_west,w_$gw_mul_5.5,x_$gw_mul_4.5,y_$gh_mul_9.8,l_text:kentcdodds.com:Matter-Regular.woff2_40:${encodedUrl}`
-
-	const featuredImageIsRemote = img.startsWith('http')
-	const featuredImageCloudinaryId = featuredImageIsRemote
-		? toBase64(img)
-		: img.replace(/\//g, ':')
-	const featuredImageLayerType = featuredImageIsRemote ? 'l_fetch:' : 'l_'
-
-	const featureImageSection = `c_fit,g_east,w_$gw_mul_11,h_$gh_mul_11,x_$gw,${featuredImageLayerType}${featuredImageCloudinaryId}`
-
-	const backgroundSection = `c_fill,w_$tw,h_$th/kentcdodds.com/social-background.png`
-	return [
-		`https://res.cloudinary.com/kentcdodds-com/image/upload`,
-		vars,
-		primaryWordsSection,
-		kentProfileSection,
-		kentNameSection,
-		urlSection,
-		featureImageSection,
-		backgroundSection,
-	].join('/')
-}
-
-function emojiStrip(string: string) {
-	return (
-		string
-			.replace(emojiRegex(), '')
-			// get rid of double spaces:
-			.split(' ')
-			.filter(Boolean)
-			.join(' ')
-			.trim()
-	)
-}
-
-// cloudinary needs double-encoding
-function doubleEncode(s: string) {
-	return encodeURIComponent(encodeURIComponent(s))
 }
 
 const kodyImages = {
@@ -869,8 +760,6 @@ export {
 	kodyImages,
 	getImgProps,
 	getImageBuilder,
-	getGenericSocialImage,
-	getSocialImageWithPreTitle,
 	illustrationImages,
 }
 export type { ImageBuilder }

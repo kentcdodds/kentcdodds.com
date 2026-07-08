@@ -1,16 +1,14 @@
 import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
-import { type MetaFunction } from 'react-router'
-import { CloudinaryVideo } from '#app/components/cloudinary-video.tsx'
+import { type ComponentType } from 'react'
+import { CloudinaryVideo } from '#app/components/media-video.tsx'
 import { MermaidDiagram } from '#app/components/mermaid.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
-	getSocialImageWithPreTitle,
 } from '#app/images.tsx'
 import { KitForm } from '#app/kit/form.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
 import { type MdxPage } from '#app/types.ts'
 import {
 	AnchorOrLink,
@@ -18,7 +16,7 @@ import {
 	getUrl,
 	typedBoolean,
 } from '#app/utils/misc-react.tsx'
-import { getSocialMetas } from './seo.ts'
+import { getRegisteredMdxComponent } from './mdx-component-registry.ts'
 import { Themed } from './theme.tsx'
 import { useOptionalUser } from './use-root-data.ts'
 
@@ -36,70 +34,6 @@ function getBannerTitleProp(frontmatter: MdxPage['frontmatter']) {
 	return (
 		frontmatter.bannerTitle ?? frontmatter.bannerAlt ?? frontmatter.bannerCredit
 	)
-}
-
-type ExtraMeta = Array<{ [key: string]: string }>
-
-type MetaLoader = () => Promise<
-	| {
-			page: MdxPage
-	  }
-	| Response
->
-
-const mdxPageMeta: MetaFunction<MetaLoader, { root: RootLoaderType }> = ({
-	data,
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	if (data && 'page' in data) {
-		// NOTE: keyword metadata is not used because it was used and abused by
-		// spammers. We use them for sorting on our own site, but we don't list
-		// it in the meta tags because it's possible to be penalized for doing so.
-		const { keywords: _keywords, ...extraMetaInfo } =
-			data.page.frontmatter.meta ?? {}
-		const extraMeta: ExtraMeta = Object.entries(extraMetaInfo).reduce(
-			(acc: ExtraMeta, [key, val]) => [...acc, { [key]: String(val) }],
-			[],
-		)
-
-		let title = data.page.frontmatter.title
-		const isDraft = data.page.frontmatter.draft
-		const isUnlisted = data.page.frontmatter.unlisted
-		if (isDraft) title = `(DRAFT) ${title ?? ''}`
-
-		return [
-			isDraft || isUnlisted ? { robots: 'noindex' } : null,
-			...getSocialMetas({
-				title,
-				description: data.page.frontmatter.description,
-				url: getUrl(requestInfo),
-				image: getSocialImageWithPreTitle({
-					url: getDisplayUrl(requestInfo),
-					featuredImage:
-						data.page.frontmatter.bannerCloudinaryId ??
-						'kentcdodds.com/illustrations/kody-flying_blue',
-					title:
-						data.page.frontmatter.socialImageTitle ??
-						data.page.frontmatter.title ??
-						'Untitled',
-					preTitle:
-						data.page.frontmatter.socialImagePreTitle ??
-						`Check out this article`,
-				}),
-				ogType: getUrl(requestInfo).includes('/blog/') ? 'article' : 'website',
-			}),
-			...extraMeta,
-		].filter(typedBoolean)
-	} else {
-		return [
-			{ title: 'Not found' },
-			{
-				description:
-					'You landed on a page that Kody the Coding Koala could not find 🐨😢',
-			},
-		]
-	}
 }
 
 function OptionalUser({
@@ -158,11 +92,31 @@ declare module 'react' {
  * @returns the component
  */
 function getMdxComponent(code: string) {
+	const Registered = getRegisteredMdxComponent(code)
+	if (Registered) {
+		function KCDRegisteredMdxComponent({
+			components,
+			...rest
+		}: {
+			components?: Record<string, ComponentType<unknown>>
+			[key: string]: unknown
+		}) {
+			if (!Registered) throw new Error('registered MDX component went away')
+			return (
+				<Registered
+					components={{ ...mdxComponents, ...components }}
+					{...rest}
+				/>
+			)
+		}
+		return KCDRegisteredMdxComponent
+	}
+
 	const Component = mdxBundler.getMDXComponent(code)
 	function KCDMdxComponent({
 		components,
 		...rest
-	}: Parameters<typeof Component>['0']) {
+	}: Parameters<typeof Component>[0]) {
 		return (
 			<Component components={{ ...mdxComponents, ...components }} {...rest} />
 		)
@@ -191,7 +145,7 @@ function BlogImage({
 					'850px',
 				],
 				transformations: {
-					background: transparentBackground ? undefined : 'rgb:e6e9ee',
+					background: transparentBackground ? undefined : 'e6e9ee',
 				},
 			})}
 			{...imgProps}
@@ -272,4 +226,4 @@ function useMdxComponent(code: string) {
 	}, [code])
 }
 
-export { getBannerAltProp, getBannerTitleProp, mdxPageMeta, useMdxComponent }
+export { getBannerAltProp, getBannerTitleProp, useMdxComponent }

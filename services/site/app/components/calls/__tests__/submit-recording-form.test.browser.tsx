@@ -25,7 +25,7 @@ import { RecordingForm } from '#app/components/calls/recording-form.tsx'
 test('RecordingForm validates the title before uploading audio', async () => {
 	vi.clearAllMocks()
 	mockUseRootData.mockReturnValue({
-		requestInfo: { flyPrimaryInstance: null },
+		requestInfo: {},
 	})
 	const fetchMock = vi.fn()
 	vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch)
@@ -61,7 +61,7 @@ test('RecordingForm validates the title before uploading audio', async () => {
 test('RecordingForm submits a valid recording and follows the redirect', async () => {
 	vi.clearAllMocks()
 	mockUseRootData.mockReturnValue({
-		requestInfo: { flyPrimaryInstance: 'primary-abc123' },
+		requestInfo: {},
 	})
 
 	const fetchMock = vi.fn().mockResolvedValue({
@@ -98,9 +98,6 @@ test('RecordingForm submits a valid recording and follows the redirect', async (
 		expect(audio.size).toBe(recording.size)
 		expect(audio.type).toBe(recording.type)
 		expect((requestInit.headers as Headers).get('content-type')).toBeNull()
-		expect((requestInit.headers as Headers).get('fly-force-instance-id')).toBe(
-			'primary-abc123',
-		)
 		await expect.poll(() => mockNavigate.mock.calls.length).toBe(1)
 		expect(mockNavigate).toHaveBeenCalledWith(
 			'/calls/record/fake-call-id?ok=1#done',

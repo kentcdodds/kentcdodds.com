@@ -3,6 +3,7 @@ import * as React from 'react'
 import {
 	data as json,
 	type HeadersFunction,
+	type MetaFunction,
 	Link,
 	redirect,
 	useParams,
@@ -33,17 +34,18 @@ import { getBlogMdxListItems, getMdxPage } from '#app/utils/mdx.server.ts'
 import {
 	getBannerAltProp,
 	getBannerTitleProp,
-	mdxPageMeta,
 	useMdxComponent,
 } from '#app/utils/mdx.tsx'
 import {
 	formatNumber,
+	getDomainUrl,
 	requireValidSlug,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
 import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
 import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { favoriteTable } from '#app/utils/db/schema.server.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { teamEmoji, useTeam } from '#app/utils/team-provider.tsx'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
@@ -114,18 +116,25 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const userPromise = getUser(request, { timings })
 	const favoritePromise = userPromise.then((user) =>
 		user
-			? prisma.favorite.findUnique({
+			? db.findOne(favoriteTable, {
 					where: {
-						userId_contentType_contentId: {
-							userId: user.id,
-							contentType: 'blog-post',
-							contentId: params.slug,
-						},
+						userId: user.id,
+						contentType: 'blog-post',
+						contentId: params.slug,
 					},
-					select: { id: true },
 				})
 			: null,
 	)
+	const readRankingsPromise = getBlogReadRankings({
+		request,
+		slug: params.slug,
+		timings,
+	})
+	const totalReadsPromise = getTotalPostReads({
+		request,
+		slug: params.slug,
+		timings,
+	})
 
 	const [recommendations, readRankings, totalReads, favorite] =
 		await Promise.all([
@@ -139,8 +148,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				],
 				exclude: [params.slug],
 			}),
-			getBlogReadRankings({ request, slug: params.slug, timings }),
-			getTotalPostReads({ request, slug: params.slug, timings }),
+			readRankingsPromise,
+			totalReadsPromise,
 			favoritePromise,
 		])
 
@@ -153,6 +162,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	return json(
 		{
 			page,
+			socialMetas: (
+				await import('#app/utils/mdx-meta.server.ts')
+			).buildMdxPageSocialMetas(page, {
+				origin: getDomainUrl(request),
+				path: new URL(request.url).pathname,
+			}),
 			isFavorite: Boolean(favorite),
 			recommendations,
 			readRankings,
@@ -165,7 +180,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta = mdxPageMeta
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+	if (
+		data != null &&
+		typeof data === 'object' &&
+		'socialMetas' in data &&
+		Array.isArray(data.socialMetas)
+	) {
+		return data.socialMetas
+	}
+	return []
+}
 
 function useOnRead({
 	parentElRef,
@@ -481,7 +506,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 												'1100px',
 											],
 											transformations: {
-												background: 'rgb:e6e9ee',
+												background: 'e6e9ee',
 											},
 										},
 									)}

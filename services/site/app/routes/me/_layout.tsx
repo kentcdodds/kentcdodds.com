@@ -20,8 +20,7 @@ import {
 } from '#app/components/icons.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { images } from '#app/images.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { handleFormSubmission } from '#app/utils/actions.server.ts'
@@ -35,11 +34,8 @@ import {
 import { getBlogMdxListItems } from '#app/utils/mdx.server.ts'
 import {
 	getDiscordAuthorizeURL,
-	getDisplayUrl,
 	getErrorMessage,
-	getOrigin,
 	getTeam,
-	getUrl,
 	reuseUsefulLoaderHeaders,
 } from '#app/utils/misc.ts'
 import {
@@ -47,8 +43,13 @@ import {
 	TEAM_SKIING_MAP,
 	TEAM_SNOWBOARD_MAP,
 } from '#app/utils/onboarding.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callKentCallerEpisodeTable,
+	favoriteTable,
+	sessionTable,
+	userTable,
+} from '#app/utils/db/schema.server.ts'
 import {
 	deleteOtherSessions,
 	getSession,
@@ -70,22 +71,8 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const domain = new URL(getOrigin(requestInfo)).host
-	return getSocialMetas({
-		title: `Your account on ${domain}`,
-		description: `Personal account information on ${domain}.`,
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.kodySnowboardingGray(),
-			words: `View your account info on ${domain}`,
-		}),
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 type FavoriteDisplayItem = {
 	contentType: FavoriteContentType
@@ -101,24 +88,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 	const [sessionCount, rawFavorites, callKentCallerEpisodes] =
 		await Promise.all([
-			prisma.session.count({
-				where: { userId: user.id },
-			}),
-			prisma.favorite.findMany({
-				where: { userId: user.id },
-				select: { contentType: true, contentId: true, createdAt: true },
-				orderBy: { createdAt: 'desc' },
-			}),
-			prisma.callKentCallerEpisode.findMany({
-				where: { userId: user.id },
-				select: {
-					id: true,
-					transistorEpisodeId: true,
-					isAnonymous: true,
-					createdAt: true,
-				},
-				orderBy: { createdAt: 'desc' },
-			}),
+			db.count(sessionTable, { where: { userId: user.id } }),
+			db
+				.query(favoriteTable)
+				.where({ userId: user.id })
+				.select('contentType', 'contentId', 'createdAt')
+				.orderBy('createdAt', 'desc')
+				.all(),
+			db
+				.query(callKentCallerEpisodeTable)
+				.where({ userId: user.id })
+				.select('id', 'transistorEpisodeId', 'isAnonymous', 'createdAt')
+				.orderBy('createdAt', 'desc')
+				.all(),
 		])
 
 	const wantsBlogPosts = rawFavorites.some((f) => f.contentType === 'blog-post')
@@ -253,6 +235,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const activity: 'skiing' | 'snowboarding' | 'onewheeling' =
 		activities[Math.floor(Math.random() * activities.length)] ?? 'skiing'
 
+	const domain = new URL(request.url).host
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title: `Your account on ${domain}`,
+		description: `Personal account information on ${domain}.`,
+		socialImage: {
+			kind: 'generic-social',
+			words: `View your account info on ${domain}`,
+			featuredImage: images.kodySnowboardingGray(),
+		},
+	})
+
 	const callKentCallerEpisodesDisplay = callKentCallerEpisodes.map((entry) => {
 		const episode = callEpisodeByTransistorId.get(entry.transistorEpisodeId)
 		if (!episode) {
@@ -290,6 +285,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 			teamType: activity,
 			favorites,
 			callKentCallerEpisodes: callKentCallerEpisodesDisplay,
+			socialMetas,
 		} as const,
 		{
 			headers: {
@@ -345,10 +341,7 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 		if (actionId === actionIds.deleteDiscordConnection && user.discordId) {
 			await deleteDiscordCache(user.discordId)
-			await prisma.user.update({
-				where: { id: user.id },
-				data: { discordId: null },
-			})
+			await db.update(userTable, user.id, { discordId: null })
 			const searchParams = new URLSearchParams({
 				message: `✅ Connection deleted`,
 			})
@@ -360,10 +353,7 @@ export async function action({ request }: Route.ActionArgs) {
 				validators: { firstName: getFirstNameError },
 				handleFormValues: async ({ firstName }) => {
 					if (firstName && user.firstName !== firstName) {
-						await prisma.user.update({
-							where: { id: user.id },
-							data: { firstName },
-						})
+						await db.update(userTable, user.id, { firstName })
 					}
 					const searchParams = new URLSearchParams({
 						message: `✅ Sucessfully saved your info`,
@@ -385,7 +375,7 @@ export async function action({ request }: Route.ActionArgs) {
 			if (user.discordId) await deleteDiscordCache(user.discordId)
 			if (user.kitId) await deleteKitCache(user.kitId)
 
-			await prisma.user.delete({ where: { id: user.id } })
+			await db.delete(userTable, user.id)
 			const searchParams = new URLSearchParams({
 				message: `✅ Your KCD account and all associated data has been completely deleted from the KCD database.`,
 			})

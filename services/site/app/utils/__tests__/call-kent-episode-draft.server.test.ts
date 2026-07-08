@@ -8,7 +8,7 @@ async function loadDraftModule() {
 	const generateCallKentEpisodeMetadataWithWorkersAi = vi.fn()
 	const formatCallKentTranscriptWithWorkersAi = vi.fn()
 	const transcribeMp3WithWorkersAi = vi.fn()
-	const findUnique = vi.fn()
+	const findOne = vi.fn()
 	const updateMany = vi.fn()
 
 	vi.doMock('#app/utils/call-kent-audio-storage.server.ts', () => ({
@@ -29,12 +29,10 @@ async function loadDraftModule() {
 	vi.doMock('#app/utils/cloudflare-ai-transcription.server.ts', () => ({
 		transcribeMp3WithWorkersAi,
 	}))
-	vi.doMock('#app/utils/prisma.server.ts', () => ({
-		prisma: {
-			callKentEpisodeDraft: {
-				findUnique,
-				updateMany,
-			},
+	vi.doMock('#app/utils/db.server.ts', () => ({
+		db: {
+			findOne,
+			updateMany,
 		},
 	}))
 
@@ -46,7 +44,7 @@ async function loadDraftModule() {
 		generateCallKentEpisodeMetadataWithWorkersAi,
 		formatCallKentTranscriptWithWorkersAi,
 		transcribeMp3WithWorkersAi,
-		findUnique,
+		findOne,
 		updateMany,
 		...mod,
 	}
@@ -60,7 +58,7 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		generateCallKentEpisodeMetadataWithWorkersAi,
 		formatCallKentTranscriptWithWorkersAi,
 		transcribeMp3WithWorkersAi,
-		findUnique,
+		findOne,
 		updateMany,
 		startCallKentEpisodeDraftProcessing,
 	} = await loadDraftModule()
@@ -68,7 +66,7 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 	const callerSegmentAudio = Buffer.from('caller-segment-audio')
 	const responseSegmentAudio = Buffer.from('response-segment-audio')
 
-	findUnique.mockResolvedValue({
+	findOne.mockResolvedValue({
 		id: 'draft-1',
 		status: 'PROCESSING',
 		step: 'TRANSCRIBING',
@@ -88,7 +86,7 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 			user: { firstName: 'Riley' },
 		},
 	})
-	updateMany.mockResolvedValue({ count: 1 })
+	updateMany.mockResolvedValue({ affectedRows: 1 })
 	getAudioBuffer
 		.mockResolvedValueOnce(Buffer.from('episode-audio'))
 		.mockResolvedValueOnce(callerSegmentAudio)
@@ -124,4 +122,7 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		callTitle: 'A testing question',
 		callerNotes: 'Need confidence in this flow.',
 	})
+	expect(updateMany.mock.results.every((result) => result.type === 'return')).toBe(
+		true,
+	)
 })

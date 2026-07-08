@@ -31,8 +31,6 @@ import {
 import { FeaturedSection } from '#app/components/sections/featured-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
-import { getSocialImageWithPreTitle } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
 import { FavoriteToggle } from '#app/routes/resources/favorite.tsx'
 import { HomeworkCompletionToggle } from '#app/routes/resources/homework-completion.tsx'
 import {
@@ -51,20 +49,17 @@ import {
 import {
 	formatDate,
 	formatDuration,
-	getDisplayUrl,
-	getOrigin,
-	getUrl,
 	listify,
 	reuseUsefulLoaderHeaders,
 	typedBoolean,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
 import { getClientSession } from '#app/utils/client.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { favoriteTable } from '#app/utils/db/schema.server.ts'
 import {
 	getEpisodeHomeworkCompletions,
-	prisma,
-} from '#app/utils/prisma.server.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
+} from '#app/utils/user-data.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
@@ -91,44 +86,14 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export const meta: Route.MetaFunction = ({ data, matches }) => {
-	const episode = data?.episode
-
-	const rootMatch = matches.find((match) => match?.id === 'root')
-	const requestInfo = (
-		rootMatch?.data as SerializeFrom<RootLoaderType> | undefined
-	)?.requestInfo
-	if (!episode) {
+export const meta: Route.MetaFunction = ({ data }) => {
+	if (!data?.episode) {
 		return [{ title: 'Chats with Kent Episode not found' }]
 	}
-	const {
-		description,
-		image,
-		mediaUrl,
-		simpleCastId,
-		episodeNumber,
-		seasonNumber,
-	} = episode
-	const title = `${episode.title} | Chats with Kent Podcast | ${episodeNumber}`
+	const { mediaUrl, simpleCastId } = data.episode
 	const playerUrl = `https://player.simplecast.com/${simpleCastId}`
 	return [
-		...getSocialMetas({
-			title,
-			description,
-			keywords: `chats with kent, kent c. dodds, ${
-				episode.meta?.keywords ?? ''
-			}`,
-			url: getUrl(requestInfo),
-			image: getSocialImageWithPreTitle({
-				title: episode.title,
-				preTitle: 'Check out this Podcast',
-				featuredImage: image,
-				url: getDisplayUrl({
-					origin: getOrigin(requestInfo),
-					path: getCWKEpisodePath({ seasonNumber, episodeNumber }),
-				}),
-			}),
-		}),
+		...(data.socialMetas ?? []),
 		{ 'twitter:card': 'player' },
 		{ 'twitter:player': playerUrl },
 		{ 'twitter:player:width': '436' },
@@ -176,15 +141,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		episodeNumber: episode.episodeNumber,
 	})
 	const favorite = user
-		? await prisma.favorite.findUnique({
+		? await db.findOne(favoriteTable, {
 				where: {
-					userId_contentType_contentId: {
-						userId: user.id,
-						contentType: favoriteContentType,
-						contentId: favoriteContentId,
-					},
+					userId: user.id,
+					contentType: favoriteContentType,
+					contentId: favoriteContentId,
 				},
-				select: { id: true },
 			})
 		: null
 	const completedHomeworkIds = await getEpisodeHomeworkCompletions({
@@ -206,6 +168,21 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		}
 	})
 
+	const title = `${episode.title} | Chats with Kent Podcast | ${episode.episodeNumber}`
+	const socialMetas = (
+		await import('#app/og/page-meta.server.ts')
+	).buildPageSocialMetasForRequest(request, {
+		title,
+		description: episode.description,
+		keywords: `chats with kent, kent c. dodds, ${episode.meta?.keywords ?? ''}`,
+		socialImage: {
+			kind: 'social-preview',
+			preTitle: 'Check out this Podcast',
+			title: episode.title,
+			featuredImage: episode.image,
+		},
+	})
+
 	return json(
 		{
 			prevEpisode:
@@ -222,6 +199,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			favoriteContentType,
 			favoriteContentId,
 			isFavorite: Boolean(favorite),
+			socialMetas,
 		},
 		{
 			headers: {

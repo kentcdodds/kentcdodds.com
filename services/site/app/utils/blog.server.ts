@@ -1,7 +1,10 @@
 import { subMonths, subYears } from 'date-fns'
+import { and, eq, gt, notInList, sql } from '@remix-run/data-table'
 import pLimit from 'p-limit'
 import { type MdxListItem, type Team, type User } from '#app/types.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
+import { db } from '#app/utils/db.server.ts'
+import { postReadTable } from '#app/utils/db/schema.server.ts'
 import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
 import { getClientSession, hasClientSessionCookie } from './client.server.ts'
@@ -9,10 +12,39 @@ import { sendMessageFromDiscordBot } from './discord.server.ts'
 import { getEnv } from './env.server.ts'
 import { getBlogMdxListItems } from './mdx.server.ts'
 import { getDomainUrl, getOptionalTeam, teams, typedBoolean } from './misc.ts'
-import { prisma } from './prisma.server.ts'
 import { getUser } from './session.server.ts'
 import { teamEmoji } from './team-provider.tsx'
 import { time, type Timings } from './timing.server.ts'
+
+async function addPostRead({
+	slug,
+	userId,
+	clientId,
+}: { slug: string } & (
+	| { userId: string; clientId?: undefined }
+	| { userId?: undefined; clientId: string }
+)) {
+	const ownerWhere = userId ? { userId } : { clientId }
+	const readInLastWeek = await db.findOne(postReadTable, {
+		where: and(
+			...(userId
+				? [eq('userId', userId)]
+				: [eq('clientId', clientId as string)]),
+			eq('postSlug', slug),
+			gt('createdAt', new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)),
+		),
+	})
+	if (readInLastWeek) {
+		return null
+	}
+
+	const postRead = await db.create(
+		postReadTable,
+		{ postSlug: slug, ...ownerWhere },
+		{ returnRow: true },
+	)
+	return { id: postRead.id }
+}
 
 async function getBlogRecommendations({
 	request,
@@ -50,20 +82,29 @@ async function getBlogRecommendations({
 	const readPosts =
 		user || hasClientSessionCookie(request)
 			? await time(
-					prisma.postRead.groupBy({
-						by: ['postSlug'],
-						where: user
-							? {
-									user: { id: user.id },
-									postSlug: { notIn: exclude.filter(Boolean) },
-								}
-							: {
-									clientId: (
-										await getClientSession(request, user)
-									).getClientId(),
-									postSlug: { notIn: exclude.filter(Boolean) },
-								},
-					}),
+					(async () => {
+						const excludedSlugs = exclude.filter(Boolean)
+						const clientId = user
+							? null
+							: (await getClientSession(request, user)).getClientId()
+						const predicates = [
+							...(user
+								? [eq('userId', user.id)]
+								: clientId
+									? [eq('clientId', clientId)]
+									: []),
+							...(excludedSlugs.length > 0
+								? [notInList('postSlug', excludedSlugs)]
+								: []),
+						]
+						if (predicates.length === 0) return []
+						return db
+							.query(postReadTable)
+							.where(and(...predicates))
+							.groupBy('postSlug')
+							.select('postSlug')
+							.all()
+					})(),
 					{
 						timings,
 						type: 'getReadPosts',
@@ -199,15 +240,17 @@ async function getBlogPostReadCounts({
 			try {
 				const timeoutMs = context.background ? 1000 * 10 : 1000 * 5
 				const result = await promiseWithTimeout(
-					prisma.postRead.groupBy({
-						by: ['postSlug'],
-						_count: { postSlug: true },
-					}),
+					(async () => {
+						const queryResult = await db.exec(
+							sql`SELECT "postSlug", count(*) as count FROM "PostRead" GROUP BY "postSlug"`,
+						)
+						return queryResult.rows ?? []
+					})(),
 					timeoutMs,
 				)
 
 				return Object.fromEntries(
-					result.map((r) => [r.postSlug, r._count.postSlug]),
+					result.map((row) => [row.postSlug as string, Number(row.count)]),
 				) as Record<string, number>
 			} catch (error: unknown) {
 				// Popularity counts should not take down the whole /blog page.
@@ -271,11 +314,13 @@ async function getReaderCount({
 		timings,
 		checkValue: (value: unknown) => typeof value === 'number',
 		getFreshValue: async () => {
-			// couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
-			const result = await prisma.$queryRaw`
-      SELECT
+			// couldn't figure out how to do this in one query without raw SQL 🤷‍♂️
+			const queryResult = await db.exec(
+				sql`SELECT
         (SELECT COUNT(DISTINCT "userId") FROM "PostRead" WHERE "userId" IS NOT NULL) +
-        (SELECT COUNT(DISTINCT "clientId") FROM "PostRead" WHERE "clientId" IS NOT NULL)`
+        (SELECT COUNT(DISTINCT "clientId") FROM "PostRead" WHERE "clientId" IS NOT NULL) as count`,
+			)
+			const result = queryResult.rows ?? []
 			if (!isRawQueryResult(result)) {
 				console.error(`Unexpected result from getReaderCount: ${result}`)
 				return 0
@@ -319,11 +364,10 @@ async function getBlogReadRankings({
 					totalReads: number
 					ranking: number
 				}> {
-					const totalReads = await prisma.postRead.count({
-						where: {
-							postSlug: slug,
-							user: { team },
-						},
+					const totalReads = await countPostReadsForTeam({
+						slug,
+						team,
+						timings,
 					})
 					const activeMembers = await getActiveMembers({ team, timings })
 					const recentReads = await getRecentReads({ slug, team, timings })
@@ -409,6 +453,68 @@ async function getAllBlogPostReadRankings({
 	})
 }
 
+async function countPostReadsForTeam({
+	slug,
+	team,
+	createdAfter,
+	timings,
+}: {
+	slug?: string
+	team: Team
+	createdAfter?: Date
+	timings?: Timings
+}) {
+	const count = await time(
+		(async () => {
+			if (slug && createdAfter) {
+				const result = await db.exec(
+					sql`SELECT count(*) as count FROM "PostRead" pr
+              INNER JOIN "User" u ON pr."userId" = u."id"
+              WHERE pr."postSlug" = ${slug}
+                AND pr."createdAt" > ${createdAfter.toISOString()}
+                AND u."team" = ${team}`,
+				)
+				return Number(result.rows?.[0]?.count ?? 0)
+			}
+
+			if (slug) {
+				const result = await db.exec(
+					sql`SELECT count(*) as count FROM "PostRead" pr
+              INNER JOIN "User" u ON pr."userId" = u."id"
+              WHERE pr."postSlug" = ${slug}
+                AND u."team" = ${team}`,
+				)
+				return Number(result.rows?.[0]?.count ?? 0)
+			}
+
+			if (createdAfter) {
+				const result = await db.exec(
+					sql`SELECT count(*) as count FROM "PostRead" pr
+              INNER JOIN "User" u ON pr."userId" = u."id"
+              WHERE pr."createdAt" > ${createdAfter.toISOString()}
+                AND u."team" = ${team}`,
+				)
+				return Number(result.rows?.[0]?.count ?? 0)
+			}
+
+			const result = await db.exec(
+				sql`SELECT count(*) as count FROM "PostRead" pr
+            INNER JOIN "User" u ON pr."userId" = u."id"
+            WHERE u."team" = ${team}`,
+			)
+			return Number(result.rows?.[0]?.count ?? 0)
+		})(),
+		{
+			timings,
+			type: createdAfter ? 'getRecentReads' : 'countPostReadsForTeam',
+			desc: createdAfter
+				? `Getting reads of ${slug} by ${team} within the last 6 months`
+				: `Getting total reads for ${team}`,
+		},
+	)
+	return count
+}
+
 async function getRecentReads({
 	slug,
 	team,
@@ -420,21 +526,12 @@ async function getRecentReads({
 }) {
 	const withinTheLastSixMonths = subMonths(new Date(), 6)
 
-	const count = await time(
-		prisma.postRead.count({
-			where: {
-				postSlug: slug,
-				createdAt: { gt: withinTheLastSixMonths },
-				user: { team },
-			},
-		}),
-		{
-			timings,
-			type: 'getRecentReads',
-			desc: `Getting reads of ${slug} by ${team} within the last 6 months`,
-		},
-	)
-	return count
+	return countPostReadsForTeam({
+		slug,
+		team,
+		createdAfter: withinTheLastSixMonths,
+		timings,
+	})
 }
 
 async function getActiveMembers({
@@ -447,16 +544,15 @@ async function getActiveMembers({
 	const withinTheLastYear = subYears(new Date(), 1)
 
 	const count = await time(
-		prisma.user.count({
-			where: {
-				team,
-				postReads: {
-					some: {
-						createdAt: { gt: withinTheLastYear },
-					},
-				},
-			},
-		}),
+		(async () => {
+			const result = await db.exec(
+				sql`SELECT count(DISTINCT u."id") as count FROM "User" u
+            INNER JOIN "PostRead" pr ON pr."userId" = u."id"
+            WHERE u."team" = ${team}
+              AND pr."createdAt" > ${withinTheLastYear.toISOString()}`,
+			)
+			return Number(result.rows?.[0]?.count ?? 0)
+		})(),
 		{
 			timings,
 			type: 'getActiveMembers',
@@ -478,9 +574,8 @@ async function getSlugReadsByUser({
 	const clientSession = await getClientSession(request, user)
 	const clientId = clientSession.getClientId()
 	const reads = await time(
-		prisma.postRead.findMany({
+		db.findMany(postReadTable, {
 			where: user ? { userId: user.id } : { clientId },
-			select: { postSlug: true },
 		}),
 		{
 			timings,
@@ -607,6 +702,7 @@ async function notifyOfOverallTeamLeaderChange({
 }
 
 export {
+	addPostRead,
 	getBlogRecommendations,
 	getBlogReadRankings,
 	getAllBlogPostReadRankings,

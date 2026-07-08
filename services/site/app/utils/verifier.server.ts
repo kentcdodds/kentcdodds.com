@@ -1,9 +1,10 @@
 // verifier is an email verification service
 
 import { getKitSubscriber } from '#app/kit/kit.server.js'
+import { db } from './db.server.ts'
+import { userTable } from './db/schema.server.ts'
 import { getEnv } from './env.server.ts'
 import { getErrorMessage } from './misc.ts'
-import { prisma } from './prisma.server.ts'
 
 const VERIFIER_API_KEY = getEnv().VERIFIER_API_KEY
 
@@ -48,8 +49,7 @@ export async function isEmailVerified(
 	email: string,
 ): Promise<{ verified: true } | { verified: false; message: string }> {
 	const userExists = Boolean(
-		await prisma.user.findUnique({
-			select: { id: true },
+		await db.findOne(userTable, {
 			where: { email },
 		}),
 	)

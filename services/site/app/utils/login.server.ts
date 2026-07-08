@@ -2,26 +2,44 @@ import { createCookieSessionStorage } from 'react-router'
 import { getEnv } from './env.server.ts'
 const authFlowExpirationTime = 1000 * 60 * 30
 
-const loginInfoStorage = createCookieSessionStorage({
-	cookie: {
-		name: 'KCD_login',
-		secure: true,
-		secrets: [getEnv().SESSION_SECRET],
-		sameSite: 'lax',
-		path: '/',
-		maxAge: authFlowExpirationTime / 1000,
-		httpOnly: true,
-	},
-})
+type LoginInfoSessionData = {
+	email?: string
+	signupEmail?: string
+	resetPasswordEmail?: string
+	error?: string
+	message?: string
+}
+
+let loginInfoStorage:
+	| ReturnType<typeof createCookieSessionStorage<LoginInfoSessionData>>
+	| undefined
+
+function getLoginInfoStorage() {
+	if (!loginInfoStorage) {
+		loginInfoStorage = createCookieSessionStorage<LoginInfoSessionData>({
+			cookie: {
+				name: 'KCD_login',
+				secure: true,
+				secrets: [getEnv().SESSION_SECRET],
+				sameSite: 'lax',
+				path: '/',
+				maxAge: authFlowExpirationTime / 1000,
+				httpOnly: true,
+			},
+		})
+	}
+	return loginInfoStorage
+}
 
 async function getLoginInfoSession(request: Request) {
-	const session = await loginInfoStorage.getSession(
+	const storage = getLoginInfoStorage()
+	const session = await storage.getSession(
 		request.headers.get('Cookie'),
 	)
-	const initialValue = await loginInfoStorage.commitSession(session)
+	const initialValue = await storage.commitSession(session)
 
 	const commit = async () => {
-		const currentValue = await loginInfoStorage.commitSession(session)
+		const currentValue = await storage.commitSession(session)
 		return currentValue === initialValue ? null : currentValue
 	}
 	return {
@@ -49,7 +67,7 @@ async function getLoginInfoSession(request: Request) {
 			session.unset('signupEmail')
 			session.unset('resetPasswordEmail')
 		},
-		destroy: () => loginInfoStorage.destroySession(session),
+		destroy: () => storage.destroySession(session),
 		commit,
 		/**
 		 * This will initialize a Headers object if one is not provided.

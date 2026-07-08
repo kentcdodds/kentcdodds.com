@@ -22,9 +22,6 @@ on:
         default: ""
 
 env:
-  # Set `SITE_CACHE_VERSION` as a repository variable so all workflows share one
-  # knob for invalidation.
-  SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION }}
   NODE_VERSION: 26
 
 jobs:
@@ -54,40 +51,10 @@ jobs:
       - name: 🏄 Copy test env vars
         run: cp services/site/.env.example services/site/.env
 
-      - name: 🏦 Prime Site Cache
-        id: site-cache
-        uses: actions/cache@v5
-        with:
-          path: services/site/other/cache.db
-          # `other/cache.db` is a derived artifact. Key it off the inputs that can
-          # make it stale (content + cache/MDX code + deps), not `github.sha`.
-          key: >-
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os
-            }}-node${{ env.NODE_VERSION }}-${{ hashFiles(
-              'package-lock.json',
-              'services/site/app/utils/cache.server.ts',
-              'services/site/app/utils/compile-mdx.server.ts',
-              'services/site/app/utils/github.server.ts',
-              'services/site/app/utils/markdown.server.ts',
-              'services/site/app/utils/mdx.server.ts',
-              'services/site/content/**',
-              'services/site/mocks/**'
-            ) }}
-          restore-keys: |
-            site-cache-mocks-${{ env.SITE_CACHE_VERSION }}-${{ runner.os }}-node${{ env.NODE_VERSION }}-
-
-      - name: 🛠 Setup Database (migrations)
-        if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npx prisma migrate deploy
-        working-directory: services/site
-
-      - name: 🏗 Build (production)
-        if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npm run build
-
-      - name: 😅 Generate Site Cache
-        if: steps.site-cache.outputs.cache-hit != 'true'
-        run: npm run prime-cache:mocks
+      - name: 🗄️ Migrate and seed local D1
+        # The JSX-page indexer boots the workerd dev stack, which reads from
+        # the local Miniflare D1 database.
+        run: npm run db:reset --workspace kentcdodds.com
 
       - name: 🔎 Index changed content
         run: |

@@ -24,13 +24,11 @@ vi.mock('#app/utils/session.server.ts', () => ({
 	requireAdminUser: vi.fn(),
 }))
 
-vi.mock('#app/utils/prisma.server.ts', () => ({
-	prisma: {
-		call: {
-			create: vi.fn(async ({ data }: { data: { id: string } }) => ({
-				id: data.id,
-			})),
-		},
+vi.mock('#app/utils/db.server.ts', () => ({
+	db: {
+		create: vi.fn(async (_table, data: { id: string }) => ({
+			id: data.id,
+		})),
 	},
 }))
 

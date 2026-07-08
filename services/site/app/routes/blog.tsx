@@ -29,7 +29,6 @@ import { H2, H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
 import {
 	getImageBuilder,
 	getImgProps,
-	getSocialImageWithPreTitle,
 	images,
 } from '#app/images.tsx'
 import { externalLinks } from '#app/external-links.tsx'
@@ -50,14 +49,11 @@ import { getBannerAltProp } from '#app/utils/mdx.tsx'
 import {
 	formatAbbreviatedNumber,
 	formatNumber,
-	getDisplayUrl,
-	getUrl,
 	isTeam,
 	reuseUsefulLoaderHeaders,
 	useUpdateQueryStringValueWithoutNavigation,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
 import {
@@ -221,6 +217,21 @@ export async function loader({ request }: Route.LoaderArgs) {
 		userReads,
 		tags: Array.from(tags),
 		overallLeadingTeam: getRankingLeader(readRankings)?.team ?? null,
+		socialMetas: (
+			await import('#app/og/page-meta.server.ts')
+		).buildPageSocialMetasForRequest(request, {
+			title: 'The Kent C. Dodds Blog',
+			description: `Join ${formatAbbreviatedNumber(totalBlogReaders)} people who have read Kent's ${formatNumber(posts.length)} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
+			keywords:
+				'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
+			ogType: 'website',
+			socialImage: {
+				kind: 'social-preview',
+				preTitle: 'Check out this Blog',
+				title: 'Priceless insights, ideas, and experiences for your dev work',
+				featuredImage: images.skis.id,
+			},
+		}),
 	}
 
 	return json(data, {
@@ -236,29 +247,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader, { root: RootLoaderType }> = ({
-	data,
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	const blogData = data as SerializeFrom<typeof loader> | undefined
-	const totalBlogReaders = blogData?.totalBlogReaders ?? 'thousands of'
-	const articleCount = blogData ? formatNumber(blogData.posts.length) : 'many'
-	return getSocialMetas({
-		title: 'The Kent C. Dodds Blog',
-		description: `Join ${totalBlogReaders} people who have read Kent's ${articleCount} articles on JavaScript, TypeScript, React, Testing, Career, and more.`,
-		keywords:
-			'JavaScript, TypeScript, React, Testing, Career, Software Development, Kent C. Dodds Blog',
-		url: getUrl(requestInfo),
-		image: getSocialImageWithPreTitle({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: images.skis.id,
-			preTitle: 'Check out this Blog',
-			title: `Priceless insights, ideas, and experiences for your dev work`,
-		}),
-		ogType: 'website',
-	})
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 // should be divisible by 3 and 2 (large screen, and medium screen).
 const PAGE_SIZE = 12

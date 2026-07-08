@@ -5,13 +5,14 @@ import { Grid } from '#app/components/grid.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { type KCDHandle } from '#app/types.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import {
 	getPasswordHash,
 	getPasswordStrengthError,
 	verifyPassword,
 } from '#app/utils/password.server.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import { passwordTable } from '#app/utils/db/schema.server.ts'
+import { upsertPasswordAndDeleteSessions } from '#app/utils/auth-write-flows.server.ts'
 import { getSession, requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.password'
 
@@ -33,10 +34,7 @@ type ActionData =
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const user = await requireUser(request)
-	const password = await prisma.password.findUnique({
-		where: { userId: user.id },
-		select: { userId: true },
-	})
+	const password = await db.find(passwordTable, user.id)
 	return json({ hasPassword: Boolean(password) })
 }
 
@@ -54,10 +52,7 @@ export async function action({ request }: Route.ActionArgs) {
 			? String(formData.get('confirmPassword'))
 			: ''
 
-	const existingPassword = await prisma.password.findUnique({
-		where: { userId: user.id },
-		select: { hash: true },
-	})
+	const existingPassword = await db.find(passwordTable, user.id)
 
 	if (existingPassword) {
 		if (typeof currentPassword !== 'string' || !currentPassword) {
@@ -106,16 +101,11 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const passwordHash = await getPasswordHash(password)
 
-	await ensurePrimary()
-	await prisma.$transaction([
-		prisma.password.upsert({
-			where: { userId: user.id },
-			update: { hash: passwordHash },
-			create: { userId: user.id, hash: passwordHash },
-		}),
-		// Invalidate all sessions (including this one) after a password change.
-		prisma.session.deleteMany({ where: { userId: user.id } }),
-	])
+	// Invalidate all sessions (including this one) after a password change.
+	await upsertPasswordAndDeleteSessions({
+		userId: user.id,
+		passwordHash,
+	})
 	const session = await getSession(request)
 	await session.signIn({ id: user.id })
 

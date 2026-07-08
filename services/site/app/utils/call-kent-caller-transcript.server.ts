@@ -1,8 +1,13 @@
+import { and, eq, ne } from '@remix-run/data-table'
 import { getAudioBuffer } from '#app/utils/call-kent-audio-storage.server.ts'
 import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-call-kent-transcript-format.server.ts'
 import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcription.server.ts'
+import { db } from '#app/utils/db.server.ts'
+import {
+	callTable,
+	callUser,
+} from '#app/utils/db/schema.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
-import { prisma } from '#app/utils/prisma.server.ts'
 
 function escapeRegExp(value: string) {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -36,33 +41,32 @@ export async function startCallKentCallerTranscriptProcessing(
 	{ force = false }: { force?: boolean } = {},
 ) {
 	try {
-		const started = await prisma.call.updateMany({
-			where: {
-				id: callId,
-				...(force ? {} : { callerTranscriptStatus: { not: 'PROCESSING' } }),
-			},
-			data: {
+		const started = await db.updateMany(
+			callTable,
+			{
 				callerTranscriptStatus: 'PROCESSING',
 				callerTranscriptErrorMessage: null,
 			},
-		})
-		if (started.count !== 1) return
-
-		const call = await prisma.call.findUnique({
-			where: { id: callId },
-			select: {
-				audioKey: true,
-				title: true,
-				notes: true,
-				isAnonymous: true,
-				user: { select: { firstName: true } },
+			{
+				where: force
+					? { id: callId }
+					: and(eq('id', callId), ne('callerTranscriptStatus', 'PROCESSING')),
 			},
+		)
+		if (started.affectedRows !== 1) return
+
+		const call = await db.findOne(callTable, {
+			where: { id: callId },
+			with: { user: callUser },
 		})
 		if (!call) {
 			throw new Error('Call not found.')
 		}
 		if (!call.audioKey) {
 			throw new Error('Caller audio is missing (audioKey is null).')
+		}
+		if (!call.user) {
+			throw new Error('Call user not found.')
 		}
 
 		const callerAudio = await getAudioBuffer({ key: call.audioKey })
@@ -99,21 +103,23 @@ export async function startCallKentCallerTranscriptProcessing(
 			)
 		}
 
-		await prisma.call.updateMany({
-			where: { id: callId, callerTranscriptStatus: 'PROCESSING' },
-			data: {
+		await db.updateMany(
+			callTable,
+			{
 				callerTranscript: transcript,
 				callerTranscriptStatus: 'READY',
 				callerTranscriptErrorMessage: null,
 			},
-		})
+			{ where: { id: callId, callerTranscriptStatus: 'PROCESSING' } },
+		)
 	} catch (error: unknown) {
-		await prisma.call.updateMany({
-			where: { id: callId, callerTranscriptStatus: 'PROCESSING' },
-			data: {
+		await db.updateMany(
+			callTable,
+			{
 				callerTranscriptStatus: 'ERROR',
 				callerTranscriptErrorMessage: getErrorMessage(error),
 			},
-		})
+			{ where: { id: callId, callerTranscriptStatus: 'PROCESSING' } },
+		)
 	}
 }

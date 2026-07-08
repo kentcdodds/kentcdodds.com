@@ -8,14 +8,6 @@ if (!process.env.NODE_ENV) {
 	process.env.NODE_ENV = process.env.CI ? 'test' : 'development'
 }
 
-// Playwright's web server resets the local SQLite DB for deterministic e2e runs.
-// This consent is intentionally scoped to Playwright so future agent-run e2e
-// sessions do not get blocked on the repo's dev-only reset step.
-if (!process.env.PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION) {
-	process.env.PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION =
-		'Yes, run npx playwright test even if it triggers prisma reset'
-}
-
 const PORT = Number(process.env.PORT || 3000)
 
 if (!PORT) {
@@ -27,6 +19,7 @@ if (!PORT) {
  */
 export default defineConfig({
 	testDir: './e2e',
+	globalSetup: process.env.CI ? './e2e/global-setup.ts' : undefined,
 	/* Maximum time one test can run for. */
 	timeout: 30 * 1000,
 	expect: {
@@ -78,11 +71,12 @@ export default defineConfig({
 	outputDir: 'test-results/',
 	webServer: {
 		command: process.env.CI
-			? `npx prisma migrate reset --force && cross-env PORT=${PORT} npm run start:mocks`
+			? `npm run db:reset && cross-env PORT=${PORT} npm run dev`
 			: `cross-env PORT=${PORT} npm run dev`,
 		port: Number(PORT),
 		// Default to a clean, deterministic server per run.
 		// Set `PW_REUSE_EXISTING_SERVER=true` to opt into reuse locally.
 		reuseExistingServer: process.env.PW_REUSE_EXISTING_SERVER === 'true',
+		timeout: 240_000,
 	},
 })

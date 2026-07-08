@@ -108,7 +108,7 @@ function KodyChooser() {
 			<div className="flex flex-col items-center">
 				<img
 					key={`${team}-${type}-${style}`}
-					src={imageObj({ resize: { width: 800, height: 800, type: 'pad' } })}
+					src={imageObj({ width: 800, height: 800, fit: 'pad' })}
 					alt={imageObj.alt}
 					className="h-96 w-96 rounded-lg object-contain"
 				/>

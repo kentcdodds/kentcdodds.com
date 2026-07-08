@@ -15,25 +15,15 @@ const absoluteHttpUrlString = z
 
 const schemaBase = z.object({
 	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
-	PORT: nonEmptyString,
 	MOCKS: z.enum(['true', 'false']).optional(),
-	STARTUP_SHORTCUTS: z.enum(['true', 'false']).optional(),
-	EXPIRED_SESSIONS_CLEANUP_DISABLED: z.enum(['true', 'false']).optional(),
 
 	ALLOWED_ACTION_ORIGINS: z.string().trim().optional(),
 
-	FLY_APP_NAME: nonEmptyString,
-	FLY_REGION: nonEmptyString,
-	FLY_MACHINE_ID: nonEmptyString,
-	LITEFS_DIR: nonEmptyString,
-
-	// Used by LiteFS + tooling. Optional because it can be derived from
+	// Used by local SQLite tooling. Optional because it can be derived from
 	// `DATABASE_URL` when using SQLite `file:` URLs.
 	DATABASE_PATH: z.string().trim().optional(),
 	DATABASE_URL: nonEmptyString,
-	CACHE_DATABASE_PATH: nonEmptyString,
 
-	BOT_GITHUB_TOKEN: nonEmptyString,
 	CALL_KENT_PODCAST_ID: nonEmptyString,
 	CHATS_WITH_KENT_PODCAST_ID: nonEmptyString,
 	KIT_API_KEY: nonEmptyString,
@@ -54,11 +44,11 @@ const schemaBase = z.object({
 	DISCORD_SCOPES: nonEmptyString,
 	DISCORD_YELLOW_CHANNEL: nonEmptyString,
 	DISCORD_YELLOW_ROLE: nonEmptyString,
-	INTERNAL_COMMAND_TOKEN: nonEmptyString,
-	MAGIC_LINK_SECRET: nonEmptyString,
-	MAILGUN_DOMAIN: nonEmptyString,
-	MAILGUN_SENDING_KEY: nonEmptyString,
 	REFRESH_CACHE_SECRET: nonEmptyString,
+	OG_IMAGE_SECRET: nonEmptyString,
+	// Comma-separated retired OG secrets still accepted for verification, so
+	// rotating OG_IMAGE_SECRET keeps externally cached signed URLs working.
+	OG_IMAGE_PREVIOUS_SECRETS: z.string().trim().optional(),
 	SENTRY_AUTH_TOKEN: z.string().trim().optional(),
 	// Sentry is optional; validate required combos in `superRefine`.
 	SENTRY_DSN: z.string().trim().optional(),
@@ -78,6 +68,7 @@ const schemaBase = z.object({
 
 	// Semantic search + AI features via Cloudflare Workers AI + Vectorize (+ AI Gateway).
 	CLOUDFLARE_ACCOUNT_ID: nonEmptyString,
+	/** Dedicated token with only Email Sending Edit (not CLOUDFLARE_API_TOKEN). */
 	CLOUDFLARE_API_TOKEN: nonEmptyString,
 	/** AI Gateway "id" is the gateway name you create in Cloudflare. */
 	CLOUDFLARE_AI_GATEWAY_ID: nonEmptyString,
@@ -134,7 +125,6 @@ const schemaBase = z.object({
 		.optional()
 		.default('manifests/ignore-list.json'),
 
-	GITHUB_REF: z.string().trim().optional().default('main'),
 
 	// Optional: /youtube route + indexing scripts.
 	YOUTUBE_PLAYLIST_ID: z
@@ -151,45 +141,22 @@ const schema = schemaBase.superRefine((values, ctx) => {
 			path: ['SENTRY_PROJECT_ID'],
 		})
 	}
-
-	// If we weren't explicitly given a DATABASE_PATH, require a `file:` URL so we
-	// can derive one deterministically.
-	if (!values.DATABASE_PATH && !values.DATABASE_URL.startsWith('file:')) {
-		ctx.addIssue({
-			code: 'custom',
-			message:
-				'DATABASE_PATH is required when DATABASE_URL is not a SQLite file: URL',
-			path: ['DATABASE_PATH'],
-		})
-	}
-
-	const port = Number(values.PORT)
-	if (!Number.isFinite(port) || port <= 0) {
-		ctx.addIssue({
-			code: 'custom',
-			message: 'PORT must be a positive number',
-			path: ['PORT'],
-		})
-	}
 })
 
 type BaseEnv = z.infer<typeof schemaBase>
 type BaseEnvInput = z.input<typeof schemaBase>
+export type RuntimeEnvSource = Record<string, string | undefined>
+const runtimeEnvSourceKey = Symbol.for('kentcdodds.runtimeEnvSource')
 
 export type Env = Omit<
 	BaseEnv,
-	| 'PORT'
 	| 'MOCKS'
 	| 'DATABASE_PATH'
-	| 'FLY_MACHINE_ID'
 	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
-	PORT: number
 	MOCKS: boolean
 	DATABASE_PATH: string
 	allowedActionOrigins: string[]
-	/** Instance identifier; fallback for startup race when env may not be injected yet. */
-	FLY_MACHINE_ID: string
 	/**
 	 * Defaults to `CLOUDFLARE_AI_TEXT_MODEL` when not explicitly set.
 	 * This keeps Call Kent metadata generation aligned with the site's configured
@@ -228,16 +195,12 @@ function computeAllowedActionOrigins(values: BaseEnv) {
 	if (values.NODE_ENV !== 'production') return ['**']
 
 	const productionOrigins = ['kentcdodds.com', '*.kentcdodds.com']
-	// Fly.io app name is required by schema; keep the old behavior anyway.
-	if (values.FLY_APP_NAME) {
-		productionOrigins.push(`${values.FLY_APP_NAME}.fly.dev`)
-	}
 	return productionOrigins
 }
 
 function deriveDatabasePath(values: BaseEnv) {
 	if (values.DATABASE_PATH) return values.DATABASE_PATH
-	// superRefine ensures this is a `file:` URL at this point.
+	if (!values.DATABASE_URL.startsWith('file:')) return ''
 	return values.DATABASE_URL.slice('file:'.length)
 }
 
@@ -247,16 +210,33 @@ let _cache:
 			env: Env
 	  }
 	| undefined
+let runtimeEnvSource: RuntimeEnvSource | undefined
+
+export function setRuntimeEnvSource(source: RuntimeEnvSource) {
+	runtimeEnvSource = source
+	getGlobalRuntimeEnvStore()[runtimeEnvSourceKey] = source
+	_cache = undefined
+}
+
+export function clearRuntimeEnvSource() {
+	runtimeEnvSource = undefined
+	delete getGlobalRuntimeEnvStore()[runtimeEnvSourceKey]
+	_cache = undefined
+}
 
 export function getEnv(): Env {
 	const keys = Object.keys(schemaBase.shape) as Array<keyof BaseEnv>
+	const source =
+		runtimeEnvSource ??
+		getGlobalRuntimeEnvStore()[runtimeEnvSourceKey] ??
+		process.env
 	const fingerprint = keys
-		.map((k) => `${String(k)}=${process.env[String(k)] ?? ''}`)
+		.map((k) => `${String(k)}=${JSON.stringify(source[String(k)])}`)
 		.join('\0')
 
 	if (_cache?.fingerprint === fingerprint) return _cache.env
 
-	const parsed = schema.safeParse(process.env)
+	const parsed = schema.safeParse(source)
 
 	if (parsed.success === false) {
 		// Prefer throwing the ZodError; `init()` prints a nicer message.
@@ -275,11 +255,9 @@ export function getEnv(): Env {
 			: 'https://api.cloudflare.com/client/v4'
 	const env: Env = {
 		...values,
-		PORT: Number(values.PORT),
 		MOCKS: values.MOCKS === 'true',
 		DATABASE_PATH: deriveDatabasePath(values),
 		allowedActionOrigins: computeAllowedActionOrigins(values),
-		FLY_MACHINE_ID: values.FLY_MACHINE_ID ?? 'unknown',
 		R2_ENDPOINT: derivedR2Endpoint,
 		CALL_KENT_AUDIO_CF_API_BASE_URL: callKentAudioCfApiBaseUrl,
 		CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID:
@@ -295,6 +273,11 @@ export function getEnv(): Env {
 
 	_cache = { fingerprint, env }
 	return env
+}
+
+function getGlobalRuntimeEnvStore() {
+	return globalThis as typeof globalThis &
+		Record<symbol, RuntimeEnvSource | undefined>
 }
 
 export function init() {

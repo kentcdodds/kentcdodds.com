@@ -20,11 +20,9 @@ export function TestimonialCard({
 					widths: [64, 128, 256],
 					sizes: ['4rem'],
 					transformations: {
-						gravity: 'face:center',
-						resize: {
-							aspectRatio: '1:1',
-							type: 'fill',
-						},
+						gravity: 'auto',
+						fit: 'cover',
+						aspectRatio: '1:1',
 					},
 				},
 			)}

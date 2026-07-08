@@ -1,19 +1,21 @@
 import { type Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { buildImageUrl } from 'cloudinary-build-url'
+import { type ComponentType } from 'react'
 import pLimit from 'p-limit'
 import calculateReadingTime from 'reading-time'
 import * as YAML from 'yaml'
-import { type GitHubFile, type MdxPage } from '#app/types.ts'
-import { compileMdx } from '#app/utils/compile-mdx.server.ts'
-import { getGitHubContentPath } from '#app/utils/github-content-paths.server.ts'
+import { type MdxPage } from '#app/types.ts'
+import { buildMediaUrl } from '#app/utils/media.ts'
 import {
-	downloadDirList,
-	downloadMdxFileOrDirectory,
-} from '#app/utils/github.server.ts'
-import { formatDate, typedBoolean } from '#app/utils/misc.ts'
-import { cache, cachified } from './cache.server.ts'
+	getArtifactDirList,
+	getContentData,
+	getDocumentCode,
+	getLoadMdxModule,
+	type ContentArtifactDocument,
+} from './content-artifacts.server.ts'
+import { formatDate } from './misc.ts'
+import { registerMdxComponentForCode } from './mdx-component-registry.ts'
 import { markdownToHtmlUnwrapped, stripHtml } from './markdown.server.ts'
 import { type Timings } from './timing.server.ts'
 
@@ -24,37 +26,7 @@ type CachifiedOptions = {
 	timings?: Timings
 }
 
-const defaultTTL = 1000 * 60 * 60 * 24 * 14
-const defaultStaleWhileRevalidate = 1000 * 60 * 60 * 24 * 365 * 100
-const blogListTTL = defaultStaleWhileRevalidate
-const notFoundTTL = 1000 * 60 * 60 * 24
-const notFoundStaleWhileRevalidate = 0
 const localBlogListItemLimit = pLimit(8)
-const downloadMdxFileLimit = pLimit(4)
-
-/** Spread SWR background refreshes so many stale keys don't hit the compile queue at once. */
-function staleRefreshJitterMs(key: string): number {
-	let h = 0
-	for (let i = 0; i < key.length; i++) {
-		h = Math.imul(31, h) + key.charCodeAt(i)
-	}
-	return Math.abs(h) % 2500
-}
-
-function applyNotFoundCacheMetadata(
-	metadata: { ttl?: number | null; swr?: number | null },
-	maxTtl: number | null | undefined,
-) {
-	// Cache negative lookups briefly to avoid hammering GitHub for repeated 404s,
-	// but don't keep them around for long (and never serve them stale).
-	const effectiveMaxTtl = typeof maxTtl === 'number' ? maxTtl : Infinity
-	metadata.ttl = Math.min(effectiveMaxTtl, notFoundTTL)
-	metadata.swr = notFoundStaleWhileRevalidate
-}
-
-const checkCompiledValue = (value: unknown) =>
-	typeof value === 'object' &&
-	(value === null || ('code' in value && 'frontmatter' in value))
 
 function parseYamlFrontmatter(source: string): Record<string, unknown> {
 	const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u)
@@ -157,6 +129,85 @@ async function getLocalBlogMdxListItem({
 	}
 }
 
+const workerMdxPageCache = new Map<string, MdxPage | null>()
+
+function resolveMdxModuleComponent(mod: Record<string, unknown>) {
+	const exported = mod.default
+	if (typeof exported === 'function') {
+		return exported as ComponentType<Record<string, unknown>>
+	}
+	if (
+		exported &&
+		typeof exported === 'object' &&
+		'default' in exported &&
+		typeof (exported as { default: unknown }).default === 'function'
+	) {
+		return (exported as { default: ComponentType<Record<string, unknown>> })
+			.default
+	}
+	return null
+}
+
+async function getWorkerMdxPage({
+	contentDir,
+	slug,
+}: {
+	contentDir: string
+	slug: string
+}): Promise<MdxPage | null> {
+	if (contentDir === 'blog' && isReadmeMdxEntry(slug)) return null
+
+	const contentData = getContentData()
+	if (!contentData) return null
+
+	const cacheKey = `${contentData.version}:${contentDir}:${slug}`
+	if (!import.meta.env.DEV && workerMdxPageCache.has(cacheKey)) {
+		return workerMdxPageCache.get(cacheKey) ?? null
+	}
+
+	const doc = contentData.documents[`${contentDir}/${slug}`] as
+		| ContentArtifactDocument
+		| undefined
+	if (!doc) {
+		if (!import.meta.env.DEV) workerMdxPageCache.set(cacheKey, null)
+		return null
+	}
+
+	if (doc.githubResolvable === false) {
+		if (!import.meta.env.DEV) workerMdxPageCache.set(cacheKey, null)
+		return null
+	}
+
+	const code = await getDocumentCode(contentDir, slug)
+	if (!code) {
+		if (!import.meta.env.DEV) workerMdxPageCache.set(cacheKey, null)
+		return null
+	}
+
+	const page: MdxPage = {
+		code,
+		slug: doc.slug,
+		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/services/site/content/${contentDir}/${slug}`,
+		readTime: doc.readTime as MdxPage['readTime'],
+		dateDisplay: doc.dateDisplay,
+		frontmatter: doc.frontmatter as MdxPage['frontmatter'],
+	}
+
+	const loadMdx = getLoadMdxModule()
+	if (loadMdx) {
+		const mod = await loadMdx(contentDir, slug)
+		const Component = mod ? resolveMdxModuleComponent(mod) : null
+		if (Component) {
+			registerMdxComponentForCode(page.code, { default: Component })
+		}
+	}
+
+	if (!import.meta.env.DEV) {
+		workerMdxPageCache.set(cacheKey, page)
+	}
+	return page
+}
+
 export async function getMdxPage(
 	{
 		contentDir,
@@ -165,309 +216,216 @@ export async function getMdxPage(
 		contentDir: string
 		slug: string
 	},
-	options: CachifiedOptions,
+	_options: CachifiedOptions,
 ): Promise<MdxPage | null> {
-	if (contentDir === 'blog' && isReadmeMdxEntry(slug)) return null
-
-	const { forceFresh, ttl = defaultTTL, request, timings } = options
-	const key = `mdx-page:${contentDir}:${slug}:compiled`
-	try {
-		const page = await cachified({
-			key,
-			cache,
-			request,
-			timings,
-			ttl,
-			staleWhileRevalidate: defaultStaleWhileRevalidate,
-			staleRefreshTimeout: staleRefreshJitterMs(key),
-			forceFresh,
-			checkValue: checkCompiledValue,
-			getFreshValue: async (context) => {
-				const pageFiles = await downloadMdxFilesCached(
-					contentDir,
-					slug,
-					options,
-				)
-				const compiledPage = await compileMdxCached({
-					contentDir,
-					slug,
-					...pageFiles,
-					options,
-				}).catch((err) => {
-					console.error(`Failed to get a fresh value for mdx:`, {
-						contentDir,
-						slug,
-					})
-					return Promise.reject(err)
-				})
-				if (!compiledPage) {
-					applyNotFoundCacheMetadata(context.metadata, ttl)
-				}
-				return compiledPage
-			},
-		})
-		return page
-	} catch (error: unknown) {
-		console.error(
-			`mdx: failed to load page ${contentDir}/${slug}, returning null`,
-			error,
-		)
-		return null
-	}
+	return getWorkerMdxPage({ contentDir, slug })
 }
 
 export async function getMdxPagesInDirectory(
 	contentDir: string,
-	options: CachifiedOptions,
+	_options: CachifiedOptions,
 ) {
-	const dirList = await getMdxDirList(contentDir, options)
-
-	// our octokit throttle plugin will make sure we don't hit the rate limit
-	const pageDatas = await Promise.all(
-		dirList.map(async ({ slug }) => {
-			return {
-				...(await downloadMdxFilesCached(contentDir, slug, options)),
-				slug,
-			}
-		}),
-	)
-
+	const contentData = getContentData()
+	if (!contentData) return []
+	const dirList = getArtifactDirList(contentData, contentDir)
 	const pages = await Promise.all(
-		pageDatas.map((pageData) =>
-			compileMdxCached({ contentDir, ...pageData, options }),
-		),
+		dirList.map(({ slug }) => getWorkerMdxPage({ contentDir, slug })),
 	)
-	return pages.filter(typedBoolean)
+	return pages.filter((page): page is MdxPage => page !== null)
 }
-
-const getDirListKey = (contentDir: string) => `${contentDir}:dir-list`
 
 export async function getMdxDirList(
 	contentDir: string,
-	options?: CachifiedOptions,
+	_options?: CachifiedOptions,
 ) {
-	const { forceFresh, ttl = defaultTTL, request, timings } = options ?? {}
-	const key = getDirListKey(contentDir)
-	return cachified({
-		cache,
-		request,
-		timings,
-		ttl,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		staleRefreshTimeout: staleRefreshJitterMs(key),
-		forceFresh,
-		key,
-		checkValue: (value: unknown) => Array.isArray(value),
-		getFreshValue: async () => {
-			try {
-				const fullContentDirPath = getGitHubContentPath(contentDir)
-				const dirList = (await downloadDirList(fullContentDirPath))
-					.map(({ name, path }) => ({
-						name,
-						slug: path
-							.replace(/\\/g, '/')
-							.replace(`${fullContentDirPath}/`, '')
-							.replace(/\.mdx$/, ''),
-					}))
-					.filter(({ name }) => !isReadmeMdxEntry(name))
-				return dirList
-			} catch (error: unknown) {
-				console.error(
-					`mdx: failed to fetch GitHub dir list for ${contentDir}, returning empty`,
-					error,
-				)
-				return []
-			}
-		},
-	})
+	const contentData = getContentData()
+	return contentData ? getArtifactDirList(contentData, contentDir) : []
 }
 
-export async function getBlogMdxListItems(options: CachifiedOptions) {
-	const { request, forceFresh, ttl = blogListTTL, timings } = options
-	const key = 'blog:mdx-list-items'
-	try {
-		return await cachified({
-			cache,
-			request,
-			timings,
-			ttl,
-			staleWhileRevalidate: defaultStaleWhileRevalidate,
-			staleRefreshTimeout: staleRefreshJitterMs(key),
-			forceFresh,
-			key,
-			getFreshValue: async () => {
-				const localFiles = await getLocalBlogMdxFiles()
-				let pages = (
-					await Promise.all(
-						localFiles.map(({ slug, filePath }) =>
-							localBlogListItemLimit(() =>
-								getLocalBlogMdxListItem({ slug, filePath }),
-							),
-						),
-					)
-				)
-					.filter(typedBoolean)
-					.filter((p) => !p.frontmatter.draft && !p.frontmatter.unlisted)
+export async function getBlogMdxListItems(_options: CachifiedOptions) {
+	return getContentData()?.blogList ?? []
+}
 
-				pages = pages.sort((a, z) => {
-					const aTime = new Date(a.frontmatter.date ?? '').getTime()
-					const zTime = new Date(z.frontmatter.date ?? '').getTime()
-					return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
-				})
+type CompiledMdxBase = {
+	code: string
+	readTime?: ReturnType<typeof calculateReadingTime>
+	frontmatter: MdxPage['frontmatter']
+}
 
-				return pages
-			},
-		})
-	} catch (error: unknown) {
-		console.error(
-			`mdx: failed to load blog list items, returning empty fallback`,
-			error,
-		)
-		return []
+export async function enrichCompiledMdxPage({
+	slug,
+	entry,
+	compiledPage,
+}: {
+	slug: string
+	entry: string
+	compiledPage: CompiledMdxBase
+}): Promise<MdxPage> {
+	const page = {
+		...compiledPage,
+		slug,
+		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
+	}
+
+	if (
+		page.frontmatter.bannerCloudinaryId &&
+		!page.frontmatter.bannerBlurDataUrl
+	) {
+		try {
+			page.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
+				page.frontmatter.bannerCloudinaryId,
+			)
+		} catch (error: unknown) {
+			console.error(
+				'oh no, there was an error getting the blur image data url',
+				error,
+			)
+		}
+	}
+	if (page.frontmatter.bannerCredit) {
+		const credit = await markdownToHtmlUnwrapped(page.frontmatter.bannerCredit)
+		page.frontmatter.bannerCredit = credit
+		const noHtml = await stripHtml(credit)
+		if (!page.frontmatter.bannerAlt) {
+			page.frontmatter.bannerAlt = noHtml.replace(/(photo|image)/i, '').trim()
+		}
+		if (!page.frontmatter.bannerTitle) {
+			page.frontmatter.bannerTitle = noHtml
+		}
+	}
+
+	return {
+		dateDisplay: page.frontmatter.date
+			? formatDate(page.frontmatter.date)
+			: undefined,
+		...page,
 	}
 }
 
-export async function downloadMdxFilesCached(
-	contentDir: string,
+export async function getLocalBlogMdxListItemsUncached() {
+	const localFiles = await getLocalBlogMdxFiles()
+	let pages = (
+		await Promise.all(
+			localFiles.map(({ slug, filePath }) =>
+				localBlogListItemLimit(() =>
+					getLocalBlogMdxListItem({ slug, filePath }),
+				),
+			),
+		)
+	)
+		.filter((page): page is Omit<MdxPage, 'code'> => page !== null)
+		.filter((p) => !p.frontmatter.draft && !p.frontmatter.unlisted)
+
+	pages = pages.sort((a, z) => {
+		const aTime = new Date(a.frontmatter.date ?? '').getTime()
+		const zTime = new Date(z.frontmatter.date ?? '').getTime()
+		return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
+	})
+
+	const readmeListItem = await getReadmeBlogListItem()
+	if (readmeListItem) pages.push(readmeListItem)
+
+	return pages
+}
+
+async function getReadmeBlogListItem(): Promise<Omit<MdxPage, 'code'> | null> {
+	const filePath = path.join(process.cwd(), 'content', 'blog', 'README.md')
+	try {
+		const source = await fs.readFile(filePath, 'utf8')
+		const frontmatter = parseYamlFrontmatter(source) as MdxPage['frontmatter']
+		return {
+			slug: 'README',
+			editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${toGitHubEditPath(filePath)}`,
+			readTime: calculateReadingTime(source),
+			dateDisplay: frontmatter.date ? formatDate(frontmatter.date) : undefined,
+			frontmatter,
+		}
+	} catch {
+		return null
+	}
+}
+
+function toMdxDirListEntry(
+	filePath: string,
 	slug: string,
-	options: CachifiedOptions,
-) {
-	const { forceFresh, ttl = defaultTTL, request, timings } = options
-	const key = `${contentDir}:${slug}:downloaded`
-	const downloaded = await cachified({
-		cache,
-		request,
-		timings,
-		ttl,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		staleRefreshTimeout: staleRefreshJitterMs(key),
-		forceFresh,
-		key,
-		checkValue: (value: unknown) => {
-			if (typeof value !== 'object') {
-				return `value is not an object`
-			}
-			if (value === null) {
-				return `value is null`
-			}
-
-			const download = value as Record<string, unknown>
-			if (!Array.isArray(download.files)) {
-				return `value.files is not an array`
-			}
-			if (typeof download.entry !== 'string') {
-				return `value.entry is not a string`
-			}
-
-			return true
-		},
-		getFreshValue: async (context) => {
-			const result = await downloadMdxFileLimit(() =>
-				downloadMdxFileOrDirectory(`${contentDir}/${slug}`),
-			)
-			if (!result.files.length) {
-				applyNotFoundCacheMetadata(context.metadata, ttl)
-			}
-			return result
-		},
-	})
-	return downloaded
+): { name: string; slug: string; type: 'file' | 'dir' } {
+	const normalized = filePath.replace(/\\/g, '/')
+	const isDirectoryPost =
+		normalized.endsWith('/index.mdx') || normalized.endsWith('/index.md')
+	return {
+		name: path.basename(filePath),
+		slug,
+		type: isDirectoryPost ? 'dir' : 'file',
+	}
 }
 
-async function compileMdxCached({
-	contentDir,
-	slug,
-	entry,
-	files,
-	options,
-}: {
-	contentDir: string
-	slug: string
-	entry: string
-	files: Array<GitHubFile>
-	options: CachifiedOptions
-}) {
-	const { ttl = defaultTTL } = options
-	const key = `${contentDir}:${slug}:compiled`
-	const page = await cachified({
-		cache,
-		ttl: defaultTTL,
-		staleWhileRevalidate: defaultStaleWhileRevalidate,
-		...options,
-		key,
-		staleRefreshTimeout: staleRefreshJitterMs(key),
-		checkValue: checkCompiledValue,
-		getFreshValue: async (context) => {
-			const compiledPage = await compileMdx<MdxPage['frontmatter']>(slug, files)
-			if (compiledPage) {
-				if (
-					compiledPage.frontmatter.bannerCloudinaryId &&
-					!compiledPage.frontmatter.bannerBlurDataUrl
-				) {
-					try {
-						compiledPage.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
-							compiledPage.frontmatter.bannerCloudinaryId,
-						)
-					} catch (error: unknown) {
-						console.error(
-							'oh no, there was an error getting the blur image data url',
-							error,
-						)
-					}
-				}
-				if (compiledPage.frontmatter.bannerCredit) {
-					const credit = await markdownToHtmlUnwrapped(
-						compiledPage.frontmatter.bannerCredit,
-					)
-					compiledPage.frontmatter.bannerCredit = credit
-					const noHtml = await stripHtml(credit)
-					if (!compiledPage.frontmatter.bannerAlt) {
-						compiledPage.frontmatter.bannerAlt = noHtml
-							.replace(/(photo|image)/i, '')
-							.trim()
-					}
-					if (!compiledPage.frontmatter.bannerTitle) {
-						compiledPage.frontmatter.bannerTitle = noHtml
-					}
-				}
-				return {
-					dateDisplay: compiledPage.frontmatter.date
-						? formatDate(compiledPage.frontmatter.date)
-						: undefined,
-					...compiledPage,
-					slug,
-					editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
-				}
-			} else {
-				applyNotFoundCacheMetadata(context.metadata, ttl)
-				return null
-			}
-		},
-	})
-	return page
+export async function getLocalMdxDirList(contentDir: 'blog' | 'pages') {
+	if (contentDir === 'blog') {
+		const localFiles = await getLocalBlogMdxFiles()
+		return localFiles.map(({ slug, filePath }) =>
+			toMdxDirListEntry(filePath, slug),
+		)
+	}
+
+	const pagesDir = path.join(process.cwd(), 'content', 'pages')
+	let entries: Array<Dirent>
+	try {
+		entries = await fs.readdir(pagesDir, { withFileTypes: true })
+	} catch (error: unknown) {
+		console.error('mdx: failed to read local pages content directory', error)
+		return []
+	}
+
+	return entries
+		.filter(
+			(entry) =>
+				entry.isFile() &&
+				/\.(mdx|md)$/i.test(entry.name) &&
+				!isReadmeMdxEntry(entry.name),
+		)
+		.map((entry) => ({
+			name: entry.name,
+			slug: entry.name.replace(/\.(mdx|md)$/i, ''),
+			type: 'file' as const,
+		}))
 }
+
+// Staging fallback matters only until the production worker serves /media
+// (first main deploy); drop with the staging decommission (issue #815).
+const MEDIA_ORIGINS = process.env.MEDIA_ORIGIN
+	? [process.env.MEDIA_ORIGIN]
+	: [
+			'https://kentcdodds-com.kentcdodds.workers.dev',
+			'https://kentcdodds-com-staging.kentcdodds.workers.dev',
+		]
 
 async function getBlurDataUrl(cloudinaryId: string) {
-	const imageURL = buildImageUrl(cloudinaryId, {
-		transformations: {
-			resize: { width: 100 },
-			quality: 'auto',
-			format: 'webp',
-			effect: {
-				name: 'blur',
-				value: '1000',
-			},
-		},
-	})
-	const dataUrl = await getDataUrlForImage(imageURL)
-	return dataUrl
+	let lastError: unknown
+	for (const origin of MEDIA_ORIGINS) {
+		const imageURL = buildMediaUrl(
+			cloudinaryId,
+			{ width: 100, blur: 100, format: 'webp' },
+			{ origin },
+		)
+		try {
+			return await getDataUrlForImage(imageURL)
+		} catch (error) {
+			lastError = error
+		}
+	}
+	throw lastError
 }
 
 async function getDataUrlForImage(imageUrl: string) {
 	const res = await fetch(imageUrl)
+	if (!res.ok) {
+		throw new Error(`Failed to fetch blur image (${res.status}): ${imageUrl}`)
+	}
 	const arrayBuffer = await res.arrayBuffer()
 	const base64 = Buffer.from(arrayBuffer).toString('base64')
 	const mime = res.headers.get('Content-Type') ?? 'image/webp'
 	const dataUrl = `data:${mime};base64,${base64}`
 	return dataUrl
 }
+
+export { isReadmeMdxEntry }

@@ -1,0 +1,16 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"types": ["@cloudflare/workers-types", "node", "vitest/globals"]
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.d.ts",
+		"generated/**/*.ts",
+		"../site/app/og/**/*.ts",
+		"../site/app/og/**/*.tsx",
+		"../site/app/og/wasm.d.ts",
+		"../site/app/utils/media.ts",
+		"../site/app/utils/media-serving.server.ts"
+	]
+}

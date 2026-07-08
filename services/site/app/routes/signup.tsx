@@ -13,15 +13,8 @@ import { tagKCDSiteSubscriber } from '#app/kit/kit.server.ts'
 import { type KCDHandle, type Team } from '#app/types.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
-import { ensurePrimary } from '#app/utils/litefs-js.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import {
-	getDomainUrl,
-	getErrorStack,
-	isResponse,
-	isTeam,
-	teams,
-} from '#app/utils/misc.ts'
+import { getDomainUrl, getErrorStack, isTeam, teams } from '#app/utils/misc.ts'
 import {
 	TEAM_ONEWHEELING_MAP,
 	TEAM_SKIING_MAP,
@@ -31,10 +24,15 @@ import {
 	getPasswordHash,
 	getPasswordStrengthError,
 } from '#app/utils/password.server.ts'
+import { db, isUniqueConstraintError } from '#app/utils/db.server.ts'
 import {
-	migrateHomeworkCompletionsToUser,
-	prisma,
-} from '#app/utils/prisma.server.ts'
+	passwordTable,
+	postReadTable,
+	userTable,
+	verificationTable,
+} from '#app/utils/db/schema.server.ts'
+import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
+import { runBackgroundTask } from '#app/utils/background-task.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { useTeam } from '#app/utils/team-provider.tsx'
@@ -114,9 +112,8 @@ export async function action({ request }: Route.ActionArgs) {
 			})
 		}
 
-		const userExists = await prisma.user.findUnique({
+		const userExists = await db.findOne(userTable, {
 			where: { email },
-			select: { id: true },
 		})
 		if (userExists) {
 			loginInfoSession.flashMessage(
@@ -145,13 +142,9 @@ export async function action({ request }: Route.ActionArgs) {
 				domainUrl,
 			})
 		} catch (error: unknown) {
-			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-			// If we swallow it, the email will never get sent.
-			if (isResponse(error)) throw error
 			// Avoid leaving an unused verification record around if email sending fails.
 			try {
-				await ensurePrimary()
-				await prisma.verification.delete({ where: { id: verification.id } })
+				await db.delete(verificationTable, verification.id)
 			} catch (cleanupError) {
 				console.error(
 					'Failed to cleanup verification after email send failure',
@@ -269,26 +262,43 @@ export async function action({ request }: Route.ActionArgs) {
 		const safePassword = String(password)
 
 		const passwordHash = await getPasswordHash(safePassword)
-		await ensurePrimary()
 		let user: { id: string }
 		try {
-			user = await prisma.user.create({
-				data: {
+			// No db.transaction here: D1 has no interactive transactions, so a
+			// rollback would be a silent no-op. Compensate instead — if the
+			// password insert fails, delete the just-created user so the email
+			// isn't left claimed by a password-less account.
+			const createdUser = await db.create(
+				userTable,
+				{
 					email: signupEmail,
 					firstName: safeFirstName,
 					team: safeTeam,
-					password: { create: { hash: passwordHash } },
+					role: 'MEMBER',
 				},
-				select: { id: true },
-			})
+				{ returnRow: true },
+			)
+			try {
+				await db.create(passwordTable, {
+					userId: createdUser.id,
+					hash: passwordHash,
+				})
+			} catch (error: unknown) {
+				await db
+					.deleteMany(userTable, { where: { id: createdUser.id } })
+					.catch((cleanupError: unknown) => {
+						console.error(
+							'Signup compensation failed: user row left without password',
+							{ userId: createdUser.id },
+							cleanupError,
+						)
+					})
+				throw error
+			}
+			user = { id: createdUser.id }
 		} catch (error: unknown) {
 			// If the account was created in another concurrent attempt, send the user to login.
-			if (
-				error &&
-				typeof error === 'object' &&
-				'code' in error &&
-				error.code === 'P2002'
-			) {
+			if (isUniqueConstraintError(error)) {
 				loginInfoSession.clean()
 				loginInfoSession.flashMessage(
 					'An account already exists for that email. Log in instead (or reset your password).',
@@ -301,29 +311,25 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 
 		// Best-effort: don't block account creation on mailing-list issues.
-		void tagKCDSiteSubscriber({
-			email: signupEmail,
-			firstName: safeFirstName,
-			fields: { kcd_team: safeTeam, kcd_site_id: user.id },
-		})
-			.then(async (sub) => {
-				await ensurePrimary()
-				await prisma.user.update({
-					data: { kitId: String(sub.id) },
-					where: { id: user.id },
+		runBackgroundTask(() =>
+			tagKCDSiteSubscriber({
+				email: signupEmail,
+				firstName: safeFirstName,
+				fields: { kcd_team: safeTeam, kcd_site_id: user.id },
+			})
+				.then(async (sub) => {
+					await db.update(userTable, user.id, { kitId: String(sub.id) })
 				})
-			})
-			.catch((error) => {
-				console.error('Failed to tag subscriber on signup', error)
-			})
+				.catch((error) => {
+					console.error('Failed to tag subscriber on signup', error)
+				}),
+		)
 
 		let session: Awaited<ReturnType<typeof getSession>>
 		try {
 			session = await getSession(request)
 			await session.signIn(user)
 		} catch (error: unknown) {
-			// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-			if (isResponse(error)) throw error
 			console.error('Signup succeeded but auto-login failed', error)
 			loginInfoSession.unsetSignupEmail()
 			loginInfoSession.flashMessage(
@@ -341,11 +347,11 @@ export async function action({ request }: Route.ActionArgs) {
 			const clientId = clientSession.getClientId()
 			// update all PostReads from clientId to userId
 			if (clientId) {
-				await ensurePrimary()
-				await prisma.postRead.updateMany({
-					data: { userId: user.id, clientId: null },
-					where: { clientId },
-				})
+				await db.updateMany(
+					postReadTable,
+					{ userId: user.id, clientId: null },
+					{ where: { clientId } },
+				)
 				await migrateHomeworkCompletionsToUser({
 					userId: user.id,
 					clientId,
@@ -363,8 +369,6 @@ export async function action({ request }: Route.ActionArgs) {
 		await loginInfoSession.getHeaders(headers)
 		return redirect('/me', { headers })
 	} catch (error: unknown) {
-		// `ensurePrimary()` throws a Response to replay the request on the primary instance.
-		if (isResponse(error)) throw error
 		console.error(getErrorStack(error))
 		return json(
 			{
@@ -439,9 +443,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 
 	// If a user already exists for this email, stop signup and send them to login.
-	const userExists = await prisma.user.findUnique({
+	const userExists = await db.findOne(userTable, {
 		where: { email: signupEmail },
-		select: { id: true },
 	})
 	if (userExists) {
 		loginInfoSession.unsetSignupEmail()
@@ -872,10 +875,8 @@ export default function NewAccount({
 										'650px',
 									],
 									transformations: {
-										resize: {
-											type: 'fill',
-											aspectRatio: '3:4',
-										},
+										fit: 'cover',
+										aspectRatio: '3:4',
 									},
 								})}
 							/>

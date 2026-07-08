@@ -5,24 +5,14 @@ node_modules/
 /.cache
 /services/site/.cache/
 /.nx
-/build
-/server-build
-/public/build
 /services/site/build
 /services/site/server-build
 /services/site/public/build
 /coverage
 tsconfig.tsbuildinfo
 *.tsbuildinfo
-/prisma/sqlite.db
-/prisma/sqlite.db-journal
-/app/utils/prisma-generated.server
-/services/site/prisma/sqlite.db
-/services/site/prisma/sqlite.db-journal
-/services/site/app/utils/prisma-generated.server
-
-other/postcss.ignored
-
+/services/site/.data/sqlite.db
+/services/site/.data/sqlite.db-journal
 *.local.*
 
 .env
@@ -35,14 +25,16 @@ other/postcss.ignored
 /services/site/test-results/
 /services/site/playwright-report/
 /services/site/playwright/.cache/
-/services/site/other/cache.db
-
+/services/site-worker/dist
 *.bkp.*
-
-*.heapsnapshot
 
 *.db-journal
 .wrangler
+/services/site-worker/.dev.vars
+/services/site/.dev.vars
+/services/site-worker/generated/
 other/wrangler-logs/
 .react-router/
 /services/site/.react-router/
+/services/site/other/cache.db
+/services/site-worker/generated-wrangler.jsonc

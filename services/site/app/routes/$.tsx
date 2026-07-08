@@ -5,13 +5,20 @@
 // ensure the user gets the right status code and we can display a nicer error
 // message for them than the Remix and/or browser default.
 
-import { data as json } from 'react-router'
+import { data as json, isRouteErrorResponse, type MetaFunction } from 'react-router'
 import { ArrowLink } from '#app/components/arrow-button.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorPage, FourOhFour } from '#app/components/errors.tsx'
 import { Facepalm } from '#app/components/kifs.tsx'
 import { type NotFoundMatch } from '#app/utils/not-found-matches.ts'
 import { getNotFoundSuggestions } from '#app/utils/not-found-suggestions.server.ts'
+
+export const meta: MetaFunction<typeof loader> = ({ error }) => {
+	if (isRouteErrorResponse(error) && error.status === 404) {
+		return [{ title: 'Not found' }]
+	}
+	return []
+}
 
 export async function loader({ request }: { request: Request }) {
 	const accept = request.headers.get('accept') ?? ''

@@ -20,7 +20,19 @@ jobs:
     concurrency:
       group: refresh-content-${{ github.ref }}
       cancel-in-progress: true
+    env:
+      SITE_URL: https://kentcdodds-com.kentcdodds.workers.dev
+      WORKER_URL: https://kentcdodds-com.kentcdodds.workers.dev
     steps:
+      # WORKER_URL is hardcoded to production: a manual dispatch from a
+      # non-main ref would publish that ref's MDX artifacts to the production
+      # worker (same hazard as the dev-branch push bug fixed earlier).
+      - name: 🛑 Refuse non-main manual dispatch
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Refresh Content publishes to production; dispatch it from main only (got ${{ github.ref }})."
+          exit 1
+
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
         with:
@@ -30,8 +42,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 26
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: 🥬 Refresh Content
+      - name: 📥 Install dependencies
+        run: npm ci --workspace=kentcdodds.com --include-workspace-root
+
+      - name: 🥬 Refresh changed content
         run:
           node ./other/refresh-changed-content.ts ${{ inputs.current_commit_sha
           || github.sha }}

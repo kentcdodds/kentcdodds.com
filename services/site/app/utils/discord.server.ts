@@ -1,7 +1,8 @@
 import { type Team, type User } from '#app/types.ts'
 import { getEnv } from './env.server.ts'
 import { getTeam } from './misc.ts'
-import { prisma } from './prisma.server.ts'
+import { db } from './db.server.ts'
+import { userTable } from './db/schema.server.ts'
 
 function getDiscordConfig() {
 	const env = getEnv()
@@ -126,10 +127,7 @@ async function updateDiscordRolesForUser(
 	discordMember: DiscordMember,
 	user: User,
 ) {
-	await prisma.user.update({
-		where: { id: user.id },
-		data: { discordId: discordMember.user.id },
-	})
+	await db.update(userTable, user.id, { discordId: discordMember.user.id })
 
 	const team = getTeam(user.team)
 	if (!team) {

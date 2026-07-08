@@ -1,9 +1,10 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
+import { useFetcher } from 'react-router'
 import {
 	getCallKentEpisodeArtworkAvatar,
-	getCallKentEpisodeArtworkUrl,
+	type CallKentEpisodeArtworkAvatar,
 } from '#app/utils/call-kent-artwork.ts'
 import { getAvatar } from '#app/utils/misc-react.tsx'
 import { imgSrc } from '#app/utils/suspense-image.ts'
@@ -14,9 +15,70 @@ function getHost(origin: string) {
 	try {
 		return new URL(origin).host
 	} catch {
-		// origin should be a valid URL, but keep preview resilient
 		return origin.replace(/^https?:\/\//, '')
 	}
+}
+
+function useSignedEpisodeArtworkUrl({
+	title,
+	host,
+	firstName,
+	avatar,
+	avatarIsRound,
+	isAnonymous,
+}: {
+	title: string
+	host: string
+	firstName: string
+	avatar: CallKentEpisodeArtworkAvatar
+	avatarIsRound: boolean
+	isAnonymous: boolean
+}) {
+	const fetcher = useFetcher<{ url?: string; error?: string }>()
+	const requestKeyRef = React.useRef('')
+
+	React.useEffect(() => {
+		const requestKey = JSON.stringify({
+			title,
+			host,
+			firstName,
+			avatar,
+			avatarIsRound,
+			isAnonymous,
+		})
+		if (requestKeyRef.current === requestKey) return
+		requestKeyRef.current = requestKey
+
+		void fetcher.submit(
+			JSON.stringify({
+				template: 'call-kent-episode-art',
+				params: {
+					title,
+					url: `${host}/calls/00/00`,
+					name: isAnonymous ? '- Anonymous' : `- ${firstName}`,
+					avatarKind: avatar.kind === 'public' ? 'media' : 'fetch',
+					avatarSource: avatar.kind === 'public' ? avatar.publicId : avatar.url,
+					avatarIsRound,
+					size: 520,
+				},
+			}),
+			{
+				method: 'POST',
+				action: '/resources/og-image-sign',
+				encType: 'application/json',
+			},
+		)
+	}, [
+		title,
+		host,
+		firstName,
+		avatar,
+		avatarIsRound,
+		isAnonymous,
+		fetcher,
+	])
+
+	return fetcher.data?.url ?? null
 }
 
 export function EpisodeArtworkPreview({
@@ -59,17 +121,14 @@ export function EpisodeArtworkPreview({
 		[email, team, hasGravatar, isAnonymous],
 	)
 
-	const artworkUrl = React.useMemo(() => {
-		return getCallKentEpisodeArtworkUrl({
-			title: titleForPreview,
-			url: `${host}/calls/00/00`,
-			name: isAnonymous ? '- Anonymous' : `- ${firstName}`,
-			avatar,
-			avatarIsRound: hasGravatar && !isAnonymous,
-			// 2x for a crisp UI preview (the element is ~260px wide).
-			size: 520,
-		})
-	}, [titleForPreview, host, firstName, avatar, hasGravatar, isAnonymous])
+	const artworkUrl = useSignedEpisodeArtworkUrl({
+		title: titleForPreview,
+		host,
+		firstName,
+		avatar,
+		avatarIsRound: hasGravatar && !isAnonymous,
+		isAnonymous,
+	})
 
 	const tooltip = isAnonymous
 		? `Anonymous is enabled. Your call still shows up in Kent's admin with your info, but the published episode artwork uses a generic Kody avatar instead of your photo.`
@@ -91,7 +150,6 @@ export function EpisodeArtworkPreview({
 	}, [isTooltipOpen])
 
 	function handleTooltipPointerLeave() {
-		// If the button is focused (keyboard/touch), keep the tooltip open until blur.
 		const wrapper = tooltipWrapperRef.current
 		if (!wrapper) {
 			setIsTooltipOpen(false)
@@ -198,12 +256,18 @@ export function EpisodeArtworkPreview({
 				<div className="flex w-full flex-col gap-3 lg:w-[260px] lg:flex-none">
 					<p className="text-primary text-sm font-medium">Preview</p>
 					<div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-200 shadow-sm dark:bg-gray-700">
-						<EpisodeArtworkImg
-							src={artworkUrl}
-							alt="Episode artwork preview"
-							loading="lazy"
-							className="h-full w-full object-cover"
-						/>
+						{artworkUrl ? (
+							<EpisodeArtworkImg
+								src={artworkUrl}
+								alt="Episode artwork preview"
+								loading="lazy"
+								className="h-full w-full object-cover"
+							/>
+						) : (
+							<div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
+								Generating preview…
+							</div>
+						)}
 					</div>
 				</div>
 			</div>

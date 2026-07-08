@@ -1,4 +1,7 @@
 import 'dotenv/config'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { cloudflare } from '@cloudflare/vite-plugin'
 import { reactRouter } from '@react-router/dev/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
@@ -6,6 +9,8 @@ import { defineConfig } from 'vite'
 import { envOnlyMacros } from 'vite-env-only'
 import { cjsInterop } from 'vite-plugin-cjs-interop'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import { mdxDevManifestPlugin } from './other/vite-plugins/mdx-dev-manifest.ts'
+import { localD1PersistPath } from './scripts/local-d1-state.mjs'
 
 const MODE = process.env.NODE_ENV
 const SENTRY_UPLOAD =
@@ -38,16 +43,31 @@ if (SENTRY_UPLOAD && MODE === 'production') {
 	}
 }
 
-export default defineConfig(async () => {
+const siteDir = path.dirname(fileURLToPath(import.meta.url))
+
+export default defineConfig(async ({ command }) => {
+	const isDevServer = command === 'serve'
 	return {
 		plugins: [
-			cjsInterop({
-				dependencies: [
-					'md5-hash',
-					'@remark-embedder/core',
-					'@remark-embedder/transformer-oembed',
-				],
-			}),
+			isDevServer
+				? cloudflare({
+						configPath: './wrangler.dev.jsonc',
+						viteEnvironment: { name: 'ssr' },
+						persistState: { path: localD1PersistPath },
+					})
+				: null,
+			isDevServer ? mdxDevManifestPlugin() : null,
+			// cjsInterop's SSR transforms break in workerd (TDZ on __cjsInterop*__).
+			// Production SSR build targets Node; dev SSR runs in the CF vite plugin runtime.
+			!isDevServer
+				? cjsInterop({
+						dependencies: [
+							'md5-hash',
+							'@remark-embedder/core',
+							'@remark-embedder/transformer-oembed',
+						],
+					})
+				: null,
 			envOnlyMacros(),
 			tailwindcss(),
 			reactRouter(),
@@ -72,6 +92,76 @@ export default defineConfig(async () => {
 					})
 				: null,
 		],
+		server: {
+			port: Number(process.env.PORT || 3000),
+			strictPort: true,
+		},
+		// Pre-bundle client deps that are only imported from lazily-visited
+		// routes. Without this, the first visit to e.g. /blog triggers a Vite
+		// re-optimization that restarts the workerd runtime mid-request and
+		// surfaces as a one-off 500 in dev.
+		optimizeDeps: isDevServer
+			? {
+					include: [
+						'buffer',
+						'@tanstack/react-hotkeys',
+						'clsx',
+						'framer-motion',
+						'spin-delay',
+						'error-stack-parser',
+						'@sentry/react-router',
+						'md5-hash',
+						'lru-cache',
+						'mdx-bundler/client/index.js',
+						'@epic-web/client-hints',
+						'@epic-web/client-hints/color-scheme',
+						'@epic-web/client-hints/time-zone',
+						'@conform-to/zod/v4',
+						'zod',
+						'downshift',
+						'date-fns',
+						'@reach/dialog',
+						'@reach/tabs',
+						'@reach/checkbox',
+						'@radix-ui/react-tooltip',
+						'react-lite-youtube-embed',
+						'match-sorter',
+						'@epic-web/invariant',
+					],
+				}
+			: undefined,
+		define: isDevServer
+			? {
+					__MDX_DEV_CACHE_ROOT__: JSON.stringify(
+						path.join(siteDir, 'node_modules/.cache/mdx-dev'),
+					),
+				}
+			: undefined,
+		resolve: isDevServer
+			? {
+					alias: [
+						{
+							find: 'bcrypt',
+							replacement: path.join(siteDir, 'other/stubs/bcrypt.ts'),
+						},
+						{
+							find: 'node:sqlite',
+							replacement: path.join(
+								siteDir,
+								'other/stubs/node-sqlite-stub.ts',
+							),
+						},
+						{
+							find: 'esbuild',
+							replacement: path.join(siteDir, 'other/stubs/esbuild.ts'),
+						},
+						{
+							find: /^mdx-bundler$/,
+							replacement: path.join(siteDir, 'other/stubs/mdx-bundler.ts'),
+						},
+					],
+				}
+			: undefined,
 		build: {
 			// This is an OSS project, so it's fine to generate "regular" sourcemaps.
 			// If we ever want sourcemaps upload without exposing them publicly, switch

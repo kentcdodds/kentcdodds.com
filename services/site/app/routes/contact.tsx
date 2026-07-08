@@ -17,12 +17,9 @@ import {
 	getHeroImageProps,
 } from '#app/components/sections/hero-section.tsx'
 import { H2, Paragraph } from '#app/components/typography.tsx'
-import { getGenericSocialImage, images } from '#app/images.tsx'
-import { type RootLoaderType } from '#app/root.tsx'
+import { images } from '#app/images.tsx'
 import { handleFormSubmission } from '#app/utils/actions.server.ts'
-import { getDisplayUrl, getUrl } from '#app/utils/misc.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
-import { getSocialMetas } from '#app/utils/seo.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/contact'
@@ -65,17 +62,18 @@ export async function action({ request }: Route.ActionArgs) {
 		handleFormValues: async (fields) => {
 			const { subject, body } = fields
 
-			const sender = `"${user.firstName}" <${user.email}>`
-
 			// this bit is included so I can have a filter that ensures
 			// messages sent from the contact form never end up in spam.
 			const noSpamMessage = '- Sent via the KCD Contact Form'
 
+			// Cloudflare Email Sending requires `from` to be on our domain, so
+			// the visitor's address goes in replyTo (replying still works).
 			await sendEmail({
-				from: sender,
+				from: `"${user.firstName} (via KCD contact form)" <contact@kentcdodds.com>`,
+				replyTo: `"${user.firstName}" <${user.email}>`,
 				to: `"Kent C. Dodds" <me@kentcdodds.com>`,
 				subject,
-				text: `${body}\n\n${noSpamMessage}`,
+				text: `${body}\n\nFrom: ${user.firstName} <${user.email}>\n${noSpamMessage}`,
 			})
 
 			const actionData: ActionData = { fields, status: 'success', errors: {} }
@@ -89,21 +87,24 @@ export const headers: HeadersFunction = () => ({
 	Vary: 'Cookie',
 })
 
-export const meta: MetaFunction<{}, { root: RootLoaderType }> = ({
-	matches,
-}) => {
-	const requestInfo = matches.find((m) => m.id === 'root')?.data.requestInfo
-	return getSocialMetas({
-		title: 'Contact Kent C. Dodds',
-		description: 'Send Kent C. Dodds a personal email.',
-		url: getUrl(requestInfo),
-		image: getGenericSocialImage({
-			url: getDisplayUrl(requestInfo),
-			featuredImage: 'unsplash/photo-1563225409-127c18758bd5',
-			words: `Shoot Kent an email`,
+export async function loader({ request }: Route.LoaderArgs) {
+	return {
+		socialMetas: (
+			await import('#app/og/page-meta.server.ts')
+		).buildPageSocialMetasForRequest(request, {
+			title: 'Contact Kent C. Dodds',
+			description: 'Send Kent C. Dodds a personal email.',
+			socialImage: {
+				kind: 'generic-social',
+				words: 'Shoot Kent an email',
+				featuredImage: 'unsplash/photo-1563225409-127c18758bd5',
+			},
 		}),
-	})
+	}
 }
+
+export const meta: MetaFunction<typeof loader> = ({ data }) =>
+	data?.socialMetas ?? []
 
 export default function ContactRoute() {
 	const contactFetcher = useFetcher<typeof action>()

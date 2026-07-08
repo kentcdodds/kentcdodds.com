@@ -54,7 +54,11 @@ ${bodyLorem}
 		retryDelay: 200,
 	})
 	invariant(email, 'Email not found')
-	expect(email.from).toMatch(user.email)
+	// Cloudflare Email Sending requires `from` on our domain; the visitor's
+	// address rides in replyTo (and is echoed in the body).
+	expect(email.from).toMatch('contact@kentcdodds.com')
+	expect(email.replyTo ?? '').toMatch(user.email)
+	expect(email.text).toMatch(user.email)
 	expect(email.subject).toMatch(subject)
 	expect(email.text).toMatch(bodyLorem)
 	expect(email.text).toMatch('- Sent via the KCD Contact Form')

@@ -7,10 +7,13 @@ import { type SearchResult } from '@kcd-internal/search-shared'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
 import { getBlogRecommendations } from '#app/utils/blog.server.js'
+import { cache, cachified } from '#app/utils/cache.server.js'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
-import { downloadMdxFilesCached } from '#app/utils/mdx.server.js'
+import { GITHUB_CONTENT_PATH } from '#app/utils/github-content-paths.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
-import { prisma } from '#app/utils/prisma.server.js'
+import { sql } from '@remix-run/data-table'
+import { db } from '#app/utils/db.server.js'
+import { postReadTable, userTable } from '#app/utils/db/schema.server.js'
 import { searchKCD } from '#app/utils/search.server.js'
 import { getSeasons as getChatsWithKentSeasons } from '#app/utils/simplecast.server.js'
 import { isEmailVerified } from '#app/utils/verifier.server.js'
@@ -23,6 +26,39 @@ type TransportEntry =
 	| Promise<WebStandardStreamableHTTPServerTransport>
 
 const transports = new Map<string, TransportEntry>()
+
+const rawBlogPostBase = `https://raw.githubusercontent.com/kentcdodds/kentcdodds.com/main/${GITHUB_CONTENT_PATH}/blog`
+
+async function fetchRawBlogPostFiles(slug: string) {
+	const candidates = [
+		`${rawBlogPostBase}/${slug}.mdx`,
+		`${rawBlogPostBase}/${slug}.md`,
+		`${rawBlogPostBase}/${slug}/index.mdx`,
+		`${rawBlogPostBase}/${slug}/index.md`,
+	]
+	for (const url of candidates) {
+		const response = await fetch(url)
+		if (!response.ok) continue
+		const content = await response.text()
+		const filePath = url.replace(
+			'https://raw.githubusercontent.com/kentcdodds/kentcdodds.com/main/',
+			'',
+		)
+		return [{ path: filePath, content }]
+	}
+	return []
+}
+
+async function getRawBlogPostFilesCached(slug: string) {
+	return cachified({
+		cache,
+		key: `mcp:blog-post-raw:${slug}`,
+		ttl: 1000 * 60 * 60 * 24,
+		staleWhileRevalidate: 1000 * 60 * 60 * 24 * 7,
+		getFreshValue: () => fetchRawBlogPostFiles(slug),
+		checkValue: (value: unknown) => Array.isArray(value),
+	})
+}
 
 function createServer() {
 	const server = new McpServer(
@@ -59,10 +95,7 @@ function createServer() {
 		},
 		async ({ firstName }, extra) => {
 			const user = await requireUser(extra.authInfo)
-			await prisma.user.update({
-				where: { id: user.id },
-				data: { firstName },
-			})
+			await db.update(userTable, user.id, { firstName })
 			return { content: [{ type: 'text', text: 'User info updated' }] }
 		},
 	)
@@ -76,22 +109,20 @@ function createServer() {
 		async (_, extra) => {
 			const request = requireRequest()
 			const user = await requireUser(extra.authInfo)
-			const postReads = await prisma.postRead.findMany({
-				where: { userId: user.id },
-				select: {
-					postSlug: true,
-					createdAt: true,
-				},
-				orderBy: {
-					createdAt: 'desc',
-				},
-			})
+			const postReads = await db
+				.query(postReadTable)
+				.where({ userId: user.id })
+				.select('postSlug', 'createdAt')
+				.orderBy('createdAt', 'desc')
+				.all()
 			const domainUrl = getDomainUrl(request)
 			const groupedBySlug = groupBy(postReads, 'postSlug')
 			const posts = Object.entries(groupedBySlug).map(([postSlug, reads]) => ({
 				url: `${domainUrl}/blog/${postSlug}`,
 				readCount: reads.length,
-				reads: reads.map(({ createdAt }) => createdAt.toISOString()),
+				reads: reads.map(({ createdAt }) =>
+					(createdAt as Date).toISOString(),
+				),
 			}))
 
 			return {
@@ -144,16 +175,17 @@ function createServer() {
 		async () => {
 			const request = requireRequest()
 			const domainUrl = getDomainUrl(request)
-			const mostPopularPosts = await prisma.postRead.groupBy({
-				by: ['postSlug'],
-				_count: true,
-				orderBy: {
-					_count: {
-						postSlug: 'desc',
-					},
-				},
-				take: 10,
-			})
+			const popularPostsResult = await db.exec(sql`
+				SELECT "postSlug", COUNT(*) AS count
+				FROM "PostRead"
+				GROUP BY "postSlug"
+				ORDER BY count DESC
+				LIMIT 10
+			`)
+			const mostPopularPosts = (popularPostsResult.rows ?? []).map((row) => ({
+				postSlug: String(row.postSlug),
+				_count: Number(row.count),
+			}))
 
 			const posts = mostPopularPosts.map(({ postSlug, _count }) => ({
 				url: `${domainUrl}/blog/${postSlug}`,
@@ -294,7 +326,7 @@ function createServer() {
 			},
 		},
 		async ({ slug }) => {
-			const { files } = await downloadMdxFilesCached('blog', slug, {})
+			const files = await getRawBlogPostFilesCached(slug)
 
 			if (!files.length) {
 				return {
@@ -523,20 +555,20 @@ function getUserId(authInfo?: AuthInfo): string | null {
 async function getUser(authInfo?: AuthInfo) {
 	const userId = getUserId(authInfo)
 	if (!userId) return null
-	const user = await prisma.user.findUnique({
-		where: { id: userId },
-		select: {
-			id: true,
-			firstName: true,
-			email: true,
-			team: true,
-			_count: {
-				select: { postReads: true },
-			},
-		},
+	const userRow = await db.findOne(userTable, { where: { id: userId } })
+	if (!userRow) return null
+	const postReadCount = await db.count(postReadTable, {
+		where: { userId },
 	})
-	if (!user) return null
-	return user
+	return {
+		id: userRow.id,
+		firstName: userRow.firstName,
+		email: userRow.email,
+		team: userRow.team,
+		_count: {
+			postReads: postReadCount,
+		},
+	}
 }
 
 async function requireUser(authInfo: AuthInfo | undefined) {

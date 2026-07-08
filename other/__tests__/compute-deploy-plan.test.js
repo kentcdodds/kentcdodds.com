@@ -31,7 +31,7 @@ const defaultDeployPlanOpts = {
 	refName: 'main',
 }
 
-test('deploys the site when deployment diff includes a fly-deployable file', async () => {
+test('deploys the site when deployment diff includes a site-deployable file', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -75,11 +75,61 @@ test('deploys the site when deployment diff includes a fly-deployable file', asy
 	})
 
 	expect(deployPlan.deploySite).toBe(true)
-	expect(deployPlan.refreshContent).toBe(true)
+	expect(deployPlan.refreshContent).toBe(false)
 	expect(deployPlan.indexSemanticContent).toBe(true)
 	expect(deployPlan.deploySearchWorker).toBe(false)
 	expect(deployPlan.deployCallKentAudioWorker).toBe(false)
 	expect(deployPlan.deployOauthWorker).toBe(false)
+})
+
+test('skips refresh content when site deploy will publish MDX artifacts', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
+		if (url.endsWith('/refresh-commit-sha.json')) {
+			return { sha: 'refresh-sha' }
+		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+	})
+	const getChangedFilesImpl = vi.fn(
+		async (ignoredCurrentCommitSha, compareCommitSha) => {
+			if (compareCommitSha === 'deployed-site-sha') {
+				return [
+					{ changeType: 'modified', filename: 'services/site/app/routes/index.tsx' },
+					{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' },
+				]
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return [{ changeType: 'modified', filename: 'services/site/content/blog/post.mdx' }]
+			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
+			}
+			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
+		},
+	)
+	const log = createLogger()
+
+	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
+		currentCommitSha: 'current-sha',
+		pushBeforeSha: 'push-before-sha',
+		eventName: 'push',
+		fetchJsonImpl,
+		getChangedFilesImpl,
+		fetchImpl,
+		log,
+	})
+
+	expect(deployPlan.deploySite).toBe(true)
+	expect(deployPlan.refreshContent).toBe(false)
 })
 
 test('deploys the site when the site workflow changes', async () => {
@@ -135,7 +185,7 @@ test('deploys the site when the site workflow changes', async () => {
 	expect(deployPlan.deployOauthWorker).toBe(false)
 })
 
-test('skips site deploy when deployment diff only includes non-fly targets', async () => {
+test('skips site deploy when deployment diff only includes non-site targets', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -156,6 +206,61 @@ test('skips site deploy when deployment diff only includes non-fly targets', asy
 					{
 						changeType: 'modified',
 						filename: 'services/call-kent-audio-worker/src/index.ts',
+					},
+				]
+			}
+			if (compareCommitSha === 'refresh-sha') {
+				return []
+			}
+			if (compareCommitSha === 'push-before-sha') {
+				return []
+			}
+			if (compareCommitSha === 'deployed-sha') {
+				return []
+			}
+			throw new Error(`Unexpected compare sha: ${compareCommitSha}`)
+		},
+	)
+	const log = createLogger()
+
+	const deployPlan = await computeDeployPlan({
+		...defaultDeployPlanOpts,
+		currentCommitSha: 'current-sha',
+		pushBeforeSha: 'push-before-sha',
+		eventName: 'push',
+		fetchJsonImpl,
+		getChangedFilesImpl,
+		fetchImpl,
+		log,
+	})
+
+	expect(deployPlan.deploySite).toBe(false)
+})
+
+test('deploys the site when deployment diff only includes site-worker changes', async () => {
+	const fetchJsonImpl = vi.fn(async (url) => {
+		if (url.endsWith('/refresh-commit-sha.json')) {
+			return { sha: 'refresh-sha' }
+		}
+		if (url.endsWith('/build/info.json')) {
+			return { commit: { sha: 'fallback' } }
+		}
+		return null
+	})
+	const fetchImpl = createMockDeploymentFetch({
+		'site-production': 'deployed-site-sha',
+	})
+	const getChangedFilesImpl = vi.fn(
+		async (ignoredCurrentCommitSha, compareCommitSha) => {
+			if (compareCommitSha === 'deployed-site-sha') {
+				return [
+					{
+						changeType: 'modified',
+						filename: 'services/site-worker/src/index.ts',
+					},
+					{
+						changeType: 'modified',
+						filename: '.github/workflows/cf-preview-deploy.yml',
 					},
 				]
 			}
@@ -672,7 +777,7 @@ test('failed deploy stays deployable across unrelated push', async () => {
 	expect(deployPlan.deployOauthWorker).toBe(true)
 })
 
-test('isolates site-staging from site-production', async () => {
+test('non-main refs have no site deployment environment', async () => {
 	const fetchJsonImpl = vi.fn(async (url) => {
 		if (url.endsWith('/refresh-commit-sha.json')) {
 			return { sha: 'refresh-sha' }
@@ -683,17 +788,10 @@ test('isolates site-staging from site-production', async () => {
 		return null
 	})
 	const fetchImpl = createMockDeploymentFetch({
-		'site-staging': 'staging-deployed-sha',
 		'site-production': 'production-deployed-sha',
 	})
 	const getChangedFilesImpl = vi.fn(
 		async (ignoredCurrentCommitSha, compareCommitSha) => {
-			if (compareCommitSha === 'staging-deployed-sha') {
-				return [{ changeType: 'modified', filename: 'services/site/app/routes/index.tsx' }]
-			}
-			if (compareCommitSha === 'production-deployed-sha') {
-				return []
-			}
 			if (compareCommitSha === 'refresh-sha') {
 				return []
 			}
@@ -717,7 +815,10 @@ test('isolates site-staging from site-production', async () => {
 		log,
 	})
 
+	// Without a deployment environment for the ref, unknown diffs default to
+	// deployable, but the deploy jobs themselves only run on main.
 	expect(deployPlan.deploySite).toBe(true)
+	expect(deployPlan.refreshContent).toBe(false)
 })
 
 test('GitHub API failure defaults to deploy', async () => {

@@ -11,8 +11,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json .npmrc nx.json tsconfig.base.json ./
 COPY services/site/package.json services/site/package.json
-COPY services/site/prisma services/site/prisma
-COPY services/site/prisma.config.ts services/site/prisma.config.ts
+COPY services/site/migrations services/site/migrations
 COPY services/oauth/package.json services/oauth/package.json
 COPY services/call-kent-audio-worker/package.json services/call-kent-audio-worker/package.json
 COPY services/search-worker/package.json services/search-worker/package.json
