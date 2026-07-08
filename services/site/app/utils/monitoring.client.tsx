@@ -13,6 +13,8 @@ export function init() {
 			'Request to /lookout failed',
 			"Can't find variable: CONFIG",
 			'CONFIG is not defined',
+			// Injected/third-party module loaders (seen from chatgpt.com referrers).
+			/^Module load timeout: m_\d+$/,
 		],
 		beforeSend(event, hint) {
 			if (isBrowserExtensionError(hint.originalException)) {
