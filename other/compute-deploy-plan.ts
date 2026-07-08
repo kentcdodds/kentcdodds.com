@@ -22,7 +22,6 @@ const nonSiteDeployableFiles = new Set([
   ".github/workflows/deploy-call-kent-audio-worker.yml",
   ".github/workflows/deploy-search-worker.yml",
   ".github/workflows/deploy-oauth-worker.yml",
-  ".github/workflows/cf-preview-deploy.yml",
 ]);
 
 const semanticContentPathPrefixes = [

@@ -62,7 +62,6 @@ jobs:
     uses: ./.github/workflows/deploy-site.yml
     with:
       should_deploy: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-      deploy_target: production
     secrets: inherit
 
   refresh-content:

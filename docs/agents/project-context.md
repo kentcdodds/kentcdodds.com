@@ -80,13 +80,12 @@ reference:
 - Production schema changes must follow widen-then-narrow rollouts:
   deploy backward-compatible "widen" changes first, then ship narrowing
   constraints/removals in a follow-up deploy. Apply D1 migrations with
-  `npm run d1:migrations:apply:production --workspace site-worker` (remote) or
-  the staging equivalent for preview.
+  `npm run d1:migrations:apply:production --workspace site-worker` (remote).
 - When shipping a widen migration, create a linked follow-up issue for the
   narrow step before merging so the cleanup pass does not get forgotten.
 - Cache uses `SITE_CACHE_KV` in dev (Miniflare) and `CACHE_RPC` in production.
-- Search runs through `services/search-worker`. Production/staging site envs must
-  set `SEARCH_WORKER_URL` and `SEARCH_WORKER_TOKEN`.
+- Search runs through `services/search-worker`. Production site envs must set
+  `SEARCH_WORKER_URL` and `SEARCH_WORKER_TOKEN`.
 - Search Worker URL: if `SEARCH_WORKER_URL` contains `mock`, MSW returns fixtures;
   otherwise MSW passthrough sends traffic to that URL (e.g. local `wrangler dev`
   on `http://127.0.0.1:8787`). Tests expect a mock URL (see `.env.example`).

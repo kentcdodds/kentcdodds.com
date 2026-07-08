@@ -1,6 +1,6 @@
-# Site preview parent worker
+# Site parent worker
 
-Cloudflare parent worker for the kentcdodds.com migration. See
+Cloudflare parent worker for kentcdodds.com. See
 `docs/agents/cloudflare-worker-architecture.md` for the shared contract.
 
 ## Responsibilities
@@ -10,7 +10,7 @@ Cloudflare parent worker for the kentcdodds.com migration. See
 - Dynamic requests via `worker_loaders` (`LOADER` binding) using MDX artifacts
   from R2 + `CONTENT_KV`
 - RPC entrypoints: `D1Rpc` (D1 SQL), `CacheRpc` (KV), `ContentRpc` (MDX
-  artifacts), `OutboundProxy` (preview mocks)
+  artifacts), `OutboundProxy` (local/staging mocks)
 - Scheduled jobs:
   - `0 3 * * *` — daily cleanup for expired `Session` / `Verification` rows
   - `*/2 * * * *` — warmup requests to keep parent artifact cache and dynamic
@@ -21,17 +21,17 @@ Cloudflare parent worker for the kentcdodds.com migration. See
 `npm run build:worker --workspace site-worker` produces:
 
 - `dist/app-worker.js.txt` — esbuild bundle of the dynamic app bootstrap
-- `dist/react-shim.js.txt` / `dist/react-jsx-runtime-shim.js.txt` — delegate
-  to the single React copy published on `globalThis` by `app-worker.js`
+- `dist/react-shim.js.txt` / `dist/react-jsx-runtime-shim.js.txt` — delegate to
+  the single React copy published on `globalThis` by `app-worker.js`
 
 Wrangler `rules: [{ type: "Text", globs: ["**/*.txt"] }]` inlines these as
 strings in the parent worker bundle.
 
 ## D1 database access
 
-The parent worker exposes `D1Rpc` (`services/site-worker/src/rpc/d1-rpc.ts`)
-for SQL-level access to `APP_DB`. The dynamic app worker calls it via the
-`D1_RPC` loopback stub; `services/site/app/utils/db.server.ts` adapts it through
+The parent worker exposes `D1Rpc` (`services/site-worker/src/rpc/d1-rpc.ts`) for
+SQL-level access to `APP_DB`. The dynamic app worker calls it via the `D1_RPC`
+loopback stub; `services/site/app/utils/db.server.ts` adapts it through
 `SqliteExecutorDataTableAdapter`.
 
 ## Local development
@@ -48,32 +48,31 @@ separately for interactive testing.
 
 If `worker_loaders` is unavailable in your local Wrangler build, unit tests
 still cover manifest/module-map/cache/proxy logic; verify the loader path on the
-deployed preview worker.
+deployed production worker.
 
-## Preview provisioning + deploy
+## Production deploy
 
 ```sh
-CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... npm run provision:preview --workspace site-worker
-WRANGLER_CONFIG=generated-wrangler.jsonc npm run d1:migrations:apply:staging --workspace site-worker
-npm run publish:artifacts --workspace site-worker -- /path/to/bundle.json
-REFRESH_CACHE_SECRET=... node services/site-worker/scripts/generate-worker-secrets.mjs --target=staging services/site-worker/.wrangler/preview-secrets.json
-npm exec wrangler -- secret bulk services/site-worker/.wrangler/preview-secrets.json --config services/site-worker/generated-wrangler.jsonc
-npm run seed:preview-d1 --workspace site-worker
+npm run provision:production --workspace site-worker
+WRANGLER_CONFIG=generated-wrangler.jsonc npm run d1:migrations:apply:production --workspace site-worker
+node services/site-worker/scripts/generate-worker-secrets.mjs --target=production services/site-worker/.wrangler/production-secrets.json
+npm exec wrangler -- secret bulk services/site-worker/.wrangler/production-secrets.json --config services/site-worker/generated-wrangler.jsonc
+npm run publish:artifacts --workspace site-worker -- /path/to/bundle.json --via-endpoint https://kentcdodds.com/resources/mdx-artifacts
 BUILD_SHA=$(git rev-parse HEAD) npm run deploy --workspace site-worker
 ```
 
-CI runs the same flow from `.github/workflows/cf-preview-deploy.yml`.
+CI runs the production path from `.github/workflows/deployment.yml` and
+`.github/workflows/deploy-site.yml`.
 
 ## Scripts
 
-| Script              | Purpose                                                                          |
-| ------------------- | -------------------------------------------------------------------------------- |
-| `provision:preview` | Staging target: write `generated-wrangler.jsonc` (`--target=staging`, default) |
-| `provision:production` | Production target: write `generated-wrangler.jsonc` |
-| `secrets:generate` | Build worker secrets JSON (`generate-worker-secrets.mjs`; pass `--target=`) |
-| `publish:artifacts` | Upload MDX bundle JSON to R2 + update `mdx-manifest:current` (`--local` for dev) |
-| `seed:preview-d1`   | Idempotent preview seed (`me@kentcdodds.com` / `iliketwix`; `--local` for dev)   |
-| `test:local-e2e`    | Local migrations, seed, artifact publish, `.dev.vars` setup                      |
+| Script                 | Purpose                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `provision:production` | Production target: write `generated-wrangler.jsonc`                              |
+| `secrets:generate`     | Build worker secrets JSON (`generate-worker-secrets.mjs`; pass `--target=`)      |
+| `publish:artifacts`    | Upload MDX bundle JSON to R2 + update `mdx-manifest:current` (`--local` for dev) |
+| `seed:preview-d1`      | Local/dev D1 seed helper (`me@kentcdodds.com` / `iliketwix`; `--local` for dev)  |
+| `test:local-e2e`       | Local migrations, seed, artifact publish, `.dev.vars` setup                      |
 
 D1 migration scripts accept `WRANGLER_CONFIG` (defaults to `wrangler.jsonc`
 locally and `generated-wrangler.jsonc` for remote).

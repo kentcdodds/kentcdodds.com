@@ -461,9 +461,8 @@ The Vite plugin uses a **single-worker** model for HMR. Production uses the
 **parent worker + Worker Loader dynamic worker** topology with RPC stubs
 (`D1_RPC`, `CACHE_RPC`, `CONTENT_RPC`). Local dev binds D1/KV directly and
 loads MDX server modules via Vite `/@fs` dynamic imports (no eval in workerd).
-Staging/preview deploys and CI e2e against the dev worker exercise real workerd
-but not the parent/loader split; preview/production smoke tests cover the full
-topology.
+CI e2e against the dev worker exercises real workerd but not the parent/loader
+split; production smoke tests cover the full topology.
 
 ### Dev worker entry
 
@@ -497,8 +496,8 @@ with site-worker's `OutboundProxy`). Signup verification emails are captured to
 console.
 
 The full parent + dynamic worker topology is exercised via
-`services/site-worker` (`npm run dev --workspace site-worker` on port 8792),
-staging/preview deploys, and CI smoke tests.
+`services/site-worker` (`npm run dev --workspace site-worker` on port 8792) and
+production deploy smoke tests.
 
 ### Site-worker local dev
 
@@ -511,20 +510,10 @@ npm run dev --workspace site-worker
 The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
 (plain text `OK`) plus the full site routes through the dynamic app worker.
 
-## Staging / preview deployment
-
-- Worker: `kentcdodds-com-staging` (`kentcdodds-com-staging.kentcdodds.workers.dev`)
-- D1: `kentcdodds-com-staging-app-db` (`01a8ba77-2a63-4a14-898d-6023942a480f`)
-- KV: `SITE_CACHE_KV`=`5180bc7fb5b14a5888db2ed8ac0e21ee`,
-  `CONTENT_KV`=`976edaf098ed4c3391385bf7550ba5a6`
-- R2: `kcd-site-cf-preview-artifacts`
-- Service bindings: `kcd-oauth-provider`, `kcd-search-worker` (production workers)
-- Deploys from `.github/workflows/cf-preview-deploy.yml` on qualifying PRs.
-
 ## Production deployment (main)
 
 - Worker: `kentcdodds-com` (`kentcdodds-com.kentcdodds.workers.dev`; custom
-  domain attached manually at DNS cutover — not configured in wrangler yet)
+  domains attached after cutover)
 - D1: `kentcdodds-com-db` (`af33bd8b-c9b2-484a-afa5-43ee322ff49c`)
 - KV: `SITE_CACHE_KV`=`9430f933f2ff4bc5881385851869b02e`,
   `CONTENT_KV`=`e9ec6e92d8034f3db76343162f2b3a26`
@@ -534,16 +523,24 @@ The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
   to `main` (`npm run provision:production`, `generate-worker-secrets.mjs
 --target=production`, artifact publish via endpoint, D1 migrations, smoke).
 
-### Resource naming
+### Retired staging resources
 
-| Target                   | Worker + D1               | KV + R2                 |
-| ------------------------ | ------------------------- | ----------------------- |
-| Staging (branch preview) | `kentcdodds-com-staging*` | `kcd-site-cf-preview-*` |
-| Production (main)        | `kentcdodds-com*`         | `kentcdodds-com-*`      |
+The standalone preview deploy workflow was removed after production cutover.
+These staging resources remain listed until they are explicitly deleted:
+
+- Worker: `kentcdodds-com-staging`
+- D1: `kentcdodds-com-staging-app-db`
+  (`01a8ba77-2a63-4a14-898d-6023942a480f`)
+- KV: `SITE_CACHE_KV`=`5180bc7fb5b14a5888db2ed8ac0e21ee`,
+  `CONTENT_KV`=`976edaf098ed4c3391385bf7550ba5a6`
+- R2: `kcd-site-cf-preview-artifacts`
+
+Ask Kent before deleting staging Cloudflare resources.
 
 `wrangler.jsonc` uses `env.production` overrides for production bindings; the
-default top-level config is staging. `provision-preview.mjs --target=staging|production`
-writes `generated-wrangler.jsonc` with the resolved target + `BUILD_SHA`.
+default top-level config still points at the retired staging resources for
+local parent-worker dev. `provision-preview.mjs --target=production` writes
+`generated-wrangler.jsonc` with production bindings + `BUILD_SHA`.
 
 ### CI token limitations
 
@@ -551,8 +548,8 @@ The repo `CLOUDFLARE_API_TOKEN` can deploy worker scripts and upload secrets
 but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 
 - Resource IDs are committed in `services/site-worker/wrangler.jsonc`; `npm run
-provision:preview` / `provision:production` skips Cloudflare API calls when IDs
-  are present (use `--force-ensure` for fresh environments with a privileged token).
+provision:production` skips Cloudflare API calls when IDs are present (use
+  `--force-ensure` for fresh environments with a privileged token).
 - D1 migrations and seed steps in CI are **non-fatal** with a loud warning.
 - Artifact publish in CI uses `POST /resources/mdx-artifacts` (no R2/KV API
   needed).
@@ -570,21 +567,19 @@ drop it in the same migration when needed.
 | ---------------------------------------------------------------- | ------------------------------- |
 | `npm run d1:migrations:list:local --workspace site-worker`       | List pending local Miniflare D1 |
 | `npm run d1:migrations:apply:local --workspace site-worker`      | Apply to local Miniflare D1     |
-| `npm run d1:migrations:list:staging --workspace site-worker`     | List pending remote staging D1  |
-| `npm run d1:migrations:apply:staging --workspace site-worker`    | Apply to remote staging D1      |
 | `npm run d1:migrations:apply:production --workspace site-worker` | Apply to remote production D1   |
 
 ### Runbook: schema changes
 
-1. Apply migrations manually with a token that has D1 write access (staging or
-   production command from the table above).
-2. Re-seed if needed: `npm run seed:preview-d1 --workspace site-worker`
-3. Redeploy the worker (schema is applied via D1 migrations, not a generated client).
+1. Apply migrations manually with a token that has D1 write access (production
+   command from the table above).
+2. Redeploy the worker (schema is applied via D1 migrations, not a generated
+   client).
 
 ### Runbook: fresh environment provisioning
 
 1. Ensure a Cloudflare API token with D1/KV/R2 create permissions.
-2. `npm run provision:preview --workspace site-worker -- --force-ensure`
+2. `npm run provision:production --workspace site-worker -- --force-ensure`
 3. Commit the stamped IDs back into `wrangler.jsonc` if new resources were created.
 4. Apply migrations, seed, deploy, upload secrets, publish artifacts.
 
@@ -611,8 +606,8 @@ curl -sX PUT \
   -d '{"read_replication":{"mode":"auto"}}'
 ```
 
-`npm run provision:preview --workspace site-worker` (and `provision:production`)
-calls `ensureReadReplication` idempotently when a privileged token is present; CI
+`npm run provision:production --workspace site-worker` calls
+`ensureReadReplication` idempotently when a privileged token is present; CI
 tokens without D1:Edit log a warning and continue.
 
 Verify mode + primary region:

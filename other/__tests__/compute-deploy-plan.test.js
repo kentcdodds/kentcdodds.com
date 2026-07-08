@@ -294,7 +294,7 @@ test("deploys the site when deployment diff only includes site-worker changes", 
           },
           {
             changeType: "modified",
-            filename: ".github/workflows/cf-preview-deploy.yml",
+            filename: "services/site-worker/wrangler.jsonc",
           },
         ];
       }
