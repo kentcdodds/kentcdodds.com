@@ -26,14 +26,18 @@ function run(command, args, options = {}) {
 }
 
 function main() {
-	run('node', [
-		path.join(workerDir, 'scripts/seed-preview-d1.mjs'),
-		'--local',
-		'--config',
-		wranglerDevConfigPath,
-		'--persist-to',
-		localD1PersistPath,
-	], { stdio: 'inherit' })
+	run(
+		'node',
+		[
+			path.join(workerDir, 'scripts/seed-local-d1.mjs'),
+			'--local',
+			'--config',
+			wranglerDevConfigPath,
+			'--persist-to',
+			localD1PersistPath,
+		],
+		{ stdio: 'inherit' },
+	)
 }
 
 main()
