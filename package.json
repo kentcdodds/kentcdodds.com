@@ -48,5 +48,20 @@
     "lint-staged": "^16.4.0",
     "nx": "^22.5.4",
     "prettier": "^3.8.1"
+  },
+  "allowScripts": {
+    "esbuild@0.18.20": true,
+    "esbuild@0.27.3": true,
+    "esbuild@0.28.1": true,
+    "esbuild@0.27.7": true,
+    "esbuild@0.27.4": true,
+    "@sentry/cli@2.58.5": true,
+    "bcrypt@6.0.0": true,
+    "fsevents@2.3.3": true,
+    "fsevents@2.3.2": true,
+    "msw@2.12.13": true,
+    "nx@22.6.0": true,
+    "sharp@0.34.5": true,
+    "workerd@1.20260701.1": true
   }
 }
