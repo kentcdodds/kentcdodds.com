@@ -4,7 +4,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const workerDir = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	'..',
+)
 const baseConfigPath = path.join(workerDir, 'wrangler.jsonc')
 const generatedConfigPath = path.join(workerDir, 'generated-wrangler.jsonc')
 
@@ -42,7 +45,9 @@ function parseTarget() {
 	const targetArg = process.argv.find((arg) => arg.startsWith('--target='))
 	const target = targetArg?.split('=')[1] ?? 'staging'
 	if (target !== 'staging' && target !== 'production') {
-		throw new Error(`Invalid --target=${target}; expected staging or production`)
+		throw new Error(
+			`Invalid --target=${target}; expected staging or production`,
+		)
 	}
 	return target
 }
@@ -87,7 +92,7 @@ async function pathExists(filePath) {
 function stripJsoncComments(source) {
 	// Only strip line comments. Block-comment regex must not run on this config:
 	// globs like "**/*.wasm" contain `/*` and would be corrupted.
-	return source.replace(/^\s*\/\/.*$/gm, '')
+	return source.replace(/^\s*\/\/.*$/gm, '').replace(/,\s*([}\]])/g, '$1')
 }
 
 async function readBaseConfig() {
@@ -205,7 +210,9 @@ async function ensureReadReplication(databaseId, databaseName) {
 		})
 		const updated = await cfApi(`/d1/database/${databaseId}`)
 		const updatedPrimary =
-			updated.primary_location_hint ?? updated.running_in_region ?? primaryRegion
+			updated.primary_location_hint ??
+			updated.running_in_region ??
+			primaryRegion
 		console.log(
 			`Enabled D1 read replication: ${databaseName} (${databaseId}); primary=${updatedPrimary}`,
 		)
