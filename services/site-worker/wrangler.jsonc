@@ -1,83 +1,86 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	// Default (staging) — used by `wrangler dev`, dry-run, and branch preview deploys.
+	// Default (retired staging) — used by `wrangler dev` and dry-run.
 	"name": "kentcdodds-com-staging",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-03-17",
-	"compatibility_flags": ["nodejs_compat", "no_handle_cross_request_promise_resolution"],
+	"compatibility_flags": [
+		"nodejs_compat",
+		"no_handle_cross_request_promise_resolution",
+	],
 	"workers_dev": true,
 	"vars": {
 		"BUILD_SHA": "local-dev",
 		"COMPATIBILITY_DATE": "2026-03-17",
 		// Local wrangler dev of the parent worker mocks third-party APIs.
-		"OUTBOUND_MOCKS": "true"
+		"OUTBOUND_MOCKS": "true",
 	},
 	"worker_loaders": [
 		{
-			"binding": "LOADER"
-		}
+			"binding": "LOADER",
+		},
 	],
 	"kv_namespaces": [
 		{
 			"binding": "SITE_CACHE_KV",
-			"id": "5180bc7fb5b14a5888db2ed8ac0e21ee"
+			"id": "5180bc7fb5b14a5888db2ed8ac0e21ee",
 		},
 		{
 			"binding": "CONTENT_KV",
-			"id": "976edaf098ed4c3391385bf7550ba5a6"
-		}
+			"id": "976edaf098ed4c3391385bf7550ba5a6",
+		},
 	],
 	"r2_buckets": [
 		{
 			"binding": "MDX_ARTIFACTS",
-			"bucket_name": "kcd-site-cf-preview-artifacts"
+			"bucket_name": "kcd-site-cf-preview-artifacts",
 		},
 		{
 			"binding": "MEDIA_BUCKET",
-			"bucket_name": "kentcdodds-com"
-		}
+			"bucket_name": "kentcdodds-com",
+		},
 	],
 	"images": {
-		"binding": "IMAGES"
+		"binding": "IMAGES",
 	},
 	"d1_databases": [
 		{
 			"binding": "APP_DB",
 			"database_name": "kentcdodds-com-staging-app-db",
 			"database_id": "01a8ba77-2a63-4a14-898d-6023942a480f",
-			"migrations_dir": "../site/migrations"
-		}
+			"migrations_dir": "../site/migrations",
+		},
 	],
 	"services": [
 		{
 			"binding": "OAUTH_WORKER",
-			"service": "kcd-oauth-provider"
+			"service": "kcd-oauth-provider",
 		},
 		{
 			"binding": "SEARCH_WORKER",
-			"service": "kcd-search-worker"
-		}
+			"service": "kcd-search-worker",
+		},
 	],
 	"triggers": {
-		"crons": ["0 3 * * *", "*/2 * * * *"]
+		"crons": ["0 3 * * *", "*/2 * * * *"],
 	},
 	"rules": [
 		{
 			"type": "Text",
-			"globs": ["**/*.txt"]
+			"globs": ["**/*.txt"],
 		},
 		{
 			"type": "CompiledWasm",
-			"globs": ["**/*.wasm"]
+			"globs": ["**/*.wasm"],
 		},
 		{
 			"type": "Data",
-			"globs": ["**/*.woff", "**/*.ttf"]
-		}
+			"globs": ["**/*.woff", "**/*.ttf"],
+		},
 	],
 	"assets": {
 		"binding": "ASSETS",
-		"directory": "../site/build/client"
+		"directory": "../site/build/client",
 	},
 	"env": {
 		"production": {
@@ -87,34 +90,34 @@
 			"kv_namespaces": [
 				{
 					"binding": "SITE_CACHE_KV",
-					"id": "9430f933f2ff4bc5881385851869b02e"
+					"id": "9430f933f2ff4bc5881385851869b02e",
 				},
 				{
 					"binding": "CONTENT_KV",
-					"id": "e9ec6e92d8034f3db76343162f2b3a26"
-				}
+					"id": "e9ec6e92d8034f3db76343162f2b3a26",
+				},
 			],
 			"r2_buckets": [
 				{
 					"binding": "MDX_ARTIFACTS",
-					"bucket_name": "kentcdodds-com-artifacts"
+					"bucket_name": "kentcdodds-com-artifacts",
 				},
 				{
 					"binding": "MEDIA_BUCKET",
-					"bucket_name": "kentcdodds-com"
-				}
+					"bucket_name": "kentcdodds-com",
+				},
 			],
 			"images": {
-				"binding": "IMAGES"
+				"binding": "IMAGES",
 			},
 			"d1_databases": [
 				{
 					"binding": "APP_DB",
 					"database_name": "kentcdodds-com-db",
 					"database_id": "af33bd8b-c9b2-484a-afa5-43ee322ff49c",
-					"migrations_dir": "../site/migrations"
-				}
-			]
-		}
-	}
+					"migrations_dir": "../site/migrations",
+				},
+			],
+		},
+	},
 }
