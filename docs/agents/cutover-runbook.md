@@ -133,8 +133,8 @@ passes:
 
 1. Destroy Fly app `kcd` and its `data_machines` volume.
 2. Remove the Fly ACME DNS record.
-3. Revoke temporary Cloudflare API token
-   `2ad2cb7de2ef6cb0208fe61d8e1f71f4`.
+3. Revoke the temporary Cloudflare API token recorded in the private cutover
+   cleanup notes.
 4. Ask Kent to delete any local Fly snapshot files because they may contain PII.
 
 ## Archived tooling
