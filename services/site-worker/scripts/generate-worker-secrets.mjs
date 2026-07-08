@@ -4,13 +4,16 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const workerDir = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	'..',
+)
 
 function parseTarget() {
 	const targetArg = process.argv.find((arg) => arg.startsWith('--target='))
-	const target = targetArg?.split('=')[1] ?? 'staging'
-	if (target !== 'staging' && target !== 'production') {
-		throw new Error(`Invalid --target=${target}; expected staging or production`)
+	const target = targetArg?.split('=')[1] ?? 'production'
+	if (target !== 'production') {
+		throw new Error(`Invalid --target=${target}; only production is supported`)
 	}
 	return target
 }
@@ -27,33 +30,12 @@ function deriveOrEnv(key, label, refreshCacheSecret, derivedFallbacks) {
 }
 
 /**
- * Real-integration secrets (Fly-parity values like Discord keys and
- * SESSION_SECRET). On staging a derived placeholder keeps the worker booting.
- * On production we NEVER emit a derived fallback: these are set directly on
- * the worker (see the cutover runbook), and emitting a fallback here would
- * make every deploy's `wrangler secret bulk` clobber the real values.
+ * Real-integration secrets are set directly on the worker. We never emit a
+ * derived fallback because `wrangler secret bulk` would clobber the real value.
  */
-function integrationSecret({
-	key,
-	target,
-	secretPrefix,
-	refreshCacheSecret,
-	omittedForProduction,
-	staticStagingValue,
-}) {
-	if (target === 'production') {
-		// Production values for integration secrets live on the worker itself
-		// (synced from Fly; see docs/agents/cutover-runbook.md). Never upload a
-		// CI-env copy: it may be stale or diverge from paired services (e.g. the
-		// audio worker's callback secret), and bulk upload would clobber the
-		// working value.
-		omittedForProduction.push(key)
-		return undefined
-	}
-	const fromEnv = process.env[key]
-	if (typeof fromEnv === 'string' && fromEnv.trim()) return fromEnv.trim()
-	if (staticStagingValue !== undefined) return staticStagingValue
-	return deriveSecret(`${secretPrefix}${key}`, refreshCacheSecret)
+function integrationSecret({ key, omittedForProduction }) {
+	omittedForProduction.push(key)
+	return undefined
 }
 
 /**
@@ -94,8 +76,6 @@ const INTEGRATION_SECRET_KEYS = [
 	'CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET',
 ]
 
-const STATIC_STAGING_VALUES = {}
-
 async function main() {
 	const target = parseTarget()
 	const derivedFallbacks = []
@@ -106,17 +86,13 @@ async function main() {
 		throw new Error('REFRESH_CACHE_SECRET is required to derive worker secrets')
 	}
 
-	const accountId = process.env.CLOUDFLARE_ACCOUNT_ID ?? 'preview-account'
+	const accountId = process.env.CLOUDFLARE_ACCOUNT_ID ?? 'production-account'
 	const secretPrefix = `${target}:`
 	const integrationSecrets = {}
 	for (const key of INTEGRATION_SECRET_KEYS) {
 		const value = integrationSecret({
 			key,
-			target,
-			secretPrefix,
-			refreshCacheSecret,
 			omittedForProduction,
-			staticStagingValue: STATIC_STAGING_VALUES[key],
 		})
 		if (value !== undefined) integrationSecrets[key] = value
 	}
@@ -125,7 +101,7 @@ async function main() {
 		...integrationSecrets,
 		NODE_ENV: 'production',
 		MOCKS: 'false',
-		DATABASE_URL: 'file:./preview.db',
+		DATABASE_URL: 'file:./production.db',
 		R2_ENDPOINT: `https://${accountId}.r2.cloudflarestorage.com`,
 		DISCORD_SCOPES: 'identify email',
 		REFRESH_CACHE_SECRET: refreshCacheSecret,
@@ -201,26 +177,19 @@ async function main() {
 		),
 	}
 
-	const defaultOutputName =
-		target === 'production' ? 'production-secrets.json' : 'preview-secrets.json'
-	const outputPath =
-		process.argv.find((arg) => !arg.startsWith('--') && arg.endsWith('.json')) ??
-		path.join(workerDir, '.wrangler', defaultOutputName)
-	await fs.mkdir(path.dirname(outputPath), { recursive: true })
-	await fs.writeFile(outputPath, `${JSON.stringify(secrets, null, 2)}\n`)
-	console.log(`Wrote ${outputPath}`)
-
 	if (derivedFallbacks.length > 0) {
 		const banner = [
 			'',
-			'⚠️  CUTOVER BLOCKER: the following secrets used derived fallbacks',
-			`(target=${target}). Set real GitHub/production secrets before cutover:`,
+			'⚠️  PRODUCTION SECRET CONFIGURATION ERROR: the following secrets used derived fallbacks',
+			`(target=${target}). Set real GitHub/production secrets before deploy:`,
 			...derivedFallbacks.map((key) => `  - ${key}`),
 			'',
 		].join('\n')
 		console.warn(banner)
 		if (process.env.GITHUB_ACTIONS === 'true') {
-			console.warn(`::warning title=Derived worker secrets::${derivedFallbacks.join(', ')}`)
+			console.warn(
+				`::warning title=Derived worker secrets::${derivedFallbacks.join(', ')}`,
+			)
 		}
 		if (target === 'production') {
 			// A derived placeholder uploaded via `wrangler secret bulk` would
@@ -231,6 +200,15 @@ async function main() {
 			process.exit(1)
 		}
 	}
+
+	const defaultOutputName = 'production-secrets.json'
+	const outputPath =
+		process.argv.find(
+			(arg) => !arg.startsWith('--') && arg.endsWith('.json'),
+		) ?? path.join(workerDir, '.wrangler', defaultOutputName)
+	await fs.mkdir(path.dirname(outputPath), { recursive: true })
+	await fs.writeFile(outputPath, `${JSON.stringify(secrets, null, 2)}\n`)
+	console.log(`Wrote ${outputPath}`)
 
 	if (omittedForProduction.length > 0) {
 		console.log(

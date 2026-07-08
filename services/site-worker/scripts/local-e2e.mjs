@@ -5,7 +5,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 
-const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const workerDir = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	'..',
+)
 const port = Number(process.env.SITE_WORKER_DEV_PORT ?? 8792)
 const configPath = path.join(workerDir, 'wrangler.jsonc')
 const defaultBundlePath = '/tmp/bundle.json'
@@ -105,9 +108,9 @@ async function main() {
 	console.log('Applying D1 migrations locally...')
 	run('npm', ['run', 'd1:migrations:apply:local', '--workspace', 'site-worker'])
 
-	console.log('Seeding preview D1 locally...')
+	console.log('Seeding local D1...')
 	run('node', [
-		path.join(workerDir, 'scripts/seed-preview-d1.mjs'),
+		path.join(workerDir, 'scripts/seed-local-d1.mjs'),
 		'--local',
 		'--config',
 		configPath,

@@ -11,21 +11,6 @@ const workerDir = path.resolve(
 const baseConfigPath = path.join(workerDir, 'wrangler.jsonc')
 const generatedConfigPath = path.join(workerDir, 'generated-wrangler.jsonc')
 
-const STAGING_RESOURCES = {
-	d1: {
-		name: 'kentcdodds-com-staging-app-db',
-		binding: 'APP_DB',
-	},
-	kv: [
-		{ title: 'kcd-site-cf-preview-cache', binding: 'SITE_CACHE_KV' },
-		{ title: 'kcd-site-cf-preview-content', binding: 'CONTENT_KV' },
-	],
-	r2: {
-		name: 'kcd-site-cf-preview-artifacts',
-		binding: 'MDX_ARTIFACTS',
-	},
-}
-
 const PRODUCTION_RESOURCES = {
 	d1: {
 		name: 'kentcdodds-com-db',
@@ -39,21 +24,6 @@ const PRODUCTION_RESOURCES = {
 		name: 'kentcdodds-com-artifacts',
 		binding: 'MDX_ARTIFACTS',
 	},
-}
-
-function parseTarget() {
-	const targetArg = process.argv.find((arg) => arg.startsWith('--target='))
-	const target = targetArg?.split('=')[1] ?? 'staging'
-	if (target !== 'staging' && target !== 'production') {
-		throw new Error(
-			`Invalid --target=${target}; expected staging or production`,
-		)
-	}
-	return target
-}
-
-function getResourcesForTarget(target) {
-	return target === 'production' ? PRODUCTION_RESOURCES : STAGING_RESOURCES
 }
 
 // Use the Cloudflare REST API directly rather than parsing wrangler CLI
@@ -104,18 +74,13 @@ function isPlaceholderId(id) {
 	return !id || String(id).startsWith('00000000-0000-0000')
 }
 
-function resolveTargetConfig(baseConfig, target) {
-	if (target === 'production') {
-		const production = baseConfig.env?.production
-		if (!production) {
-			throw new Error('Missing env.production block in wrangler.jsonc')
-		}
-		const { env: _env, ...shared } = baseConfig
-		return { ...shared, ...production }
+function resolveProductionConfig(baseConfig) {
+	const production = baseConfig.env?.production
+	if (!production) {
+		throw new Error('Missing env.production block in wrangler.jsonc')
 	}
-
-	const { env: _env, ...staging } = baseConfig
-	return staging
+	const { env: _env, ...shared } = baseConfig
+	return { ...shared, ...production }
 }
 
 function resourcesProvisioned(config, resources) {
@@ -231,7 +196,7 @@ async function ensureReadReplication(databaseId, databaseName) {
 	}
 }
 
-async function maybeEnsureReadReplication(config, resources, target) {
+async function maybeEnsureReadReplication(config, resources) {
 	const d1 = config.d1_databases?.find(
 		(entry) => entry.binding === resources.d1.binding,
 	)
@@ -243,15 +208,13 @@ async function maybeEnsureReadReplication(config, resources, target) {
 	await ensureReadReplication(databaseId, resources.d1.name)
 }
 
-async function writeGeneratedConfig({ config, buildSha, target }) {
+async function writeGeneratedConfig({ config, buildSha }) {
 	const output = {
 		...config,
 		vars: {
 			...config.vars,
 			BUILD_SHA: buildSha,
-			// Staging/preview mock third-party APIs in the OutboundProxy;
-			// production always reaches the real services.
-			OUTBOUND_MOCKS: target === 'production' ? 'false' : 'true',
+			OUTBOUND_MOCKS: 'false',
 		},
 	}
 
@@ -261,41 +224,33 @@ async function writeGeneratedConfig({ config, buildSha, target }) {
 		`${JSON.stringify(output, null, '\t')}\n`,
 	)
 	console.log(
-		`Wrote ${path.relative(workerDir, generatedConfigPath)} (target=${target})`,
+		`Wrote ${path.relative(workerDir, generatedConfigPath)} (target=production)`,
 	)
 }
 
 async function main() {
-	const target = parseTarget()
-	const resources = getResourcesForTarget(target)
+	const resources = PRODUCTION_RESOURCES
 	const forceEnsure = process.argv.includes('--force-ensure')
 	const buildSha =
 		process.env.BUILD_SHA ??
 		process.env.GITHUB_SHA?.slice(0, 12) ??
-		'preview-local'
+		'production-local'
 
 	if (!(await pathExists(baseConfigPath))) {
 		throw new Error(`Missing base wrangler config at ${baseConfigPath}`)
 	}
 
 	const baseConfig = await readBaseConfig()
-	const targetConfig = resolveTargetConfig(baseConfig, target)
+	const targetConfig = resolveProductionConfig(baseConfig)
 
 	if (!forceEnsure && resourcesProvisioned(targetConfig, resources)) {
-		const d1 = targetConfig.d1_databases.find(
-			(entry) => entry.binding === resources.d1.binding,
-		)
-		const kvIds = Object.fromEntries(
-			targetConfig.kv_namespaces.map((entry) => [entry.binding, entry.id]),
-		)
 		console.log(
-			`${target} resources already provisioned in wrangler.jsonc; skipping Cloudflare API calls`,
+			'production resources already provisioned in wrangler.jsonc; skipping Cloudflare API calls',
 		)
-		await maybeEnsureReadReplication(targetConfig, resources, target)
+		await maybeEnsureReadReplication(targetConfig, resources)
 		await writeGeneratedConfig({
 			config: targetConfig,
 			buildSha,
-			target,
 		})
 		return
 	}
@@ -326,12 +281,11 @@ async function main() {
 		})),
 	}
 
-	await maybeEnsureReadReplication(provisionedConfig, resources, target)
+	await maybeEnsureReadReplication(provisionedConfig, resources)
 
 	await writeGeneratedConfig({
 		config: provisionedConfig,
 		buildSha,
-		target,
 	})
 }
 
