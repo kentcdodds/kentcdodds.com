@@ -33,8 +33,51 @@ describe("refreshChangedContent", () => {
 
     expect(result).toEqual({ status: "no-compare-sha" });
     expect(fetchJsonImpl).toHaveBeenCalledTimes(2);
+    expect(fetchJsonImpl).toHaveBeenNthCalledWith(
+      2,
+      "https://example.test/__meta",
+      expect.objectContaining({ timeoutTime: expect.any(Number) }),
+    );
     expect(getChangedFilesImpl).not.toHaveBeenCalled();
     expect(postRefreshCacheImpl).not.toHaveBeenCalled();
+  });
+
+  test("falls back to /__meta buildSha when refresh-commit-sha is empty", async () => {
+    const fetchJsonImpl = vi.fn(async (url) => {
+      if (url.endsWith("/refresh-commit-sha.json")) return null;
+      if (url.endsWith("/__meta")) {
+        return { buildSha: "meta-build-sha", contentVersion: "v1" };
+      }
+      return null;
+    });
+    const getChangedFilesImpl = vi.fn(async () => [
+      {
+        changeType: "modified",
+        filename: "services/site/content/blog/some-post.mdx",
+      },
+    ]);
+    const postRefreshCacheImpl = vi.fn(async () => ({ ok: true }));
+    const log = createLogger();
+
+    const result = await refreshChangedContent({
+      currentCommitSha: "current-sha",
+      baseUrl: "https://example.test",
+      fetchJsonImpl,
+      getChangedFilesImpl,
+      postRefreshCacheImpl,
+      log,
+      skipPublish: true,
+    });
+
+    expect(result).toEqual({
+      status: "refreshed",
+      attempts: 1,
+      contentPaths: ["blog/some-post.mdx"],
+    });
+    expect(getChangedFilesImpl).toHaveBeenCalledWith(
+      "current-sha",
+      "meta-build-sha",
+    );
   });
 
   test("throws when currentCommitSha is missing", async () => {
@@ -116,7 +159,7 @@ describe("refreshChangedContent", () => {
     expect(postRefreshCacheImpl).toHaveBeenLastCalledWith({
       http: undefined,
       postData: {
-        commitSha: 'current-sha',
+        commitSha: "current-sha",
       },
       options: { hostname: "kentcdodds-com.kentcdodds.workers.dev" },
     });
