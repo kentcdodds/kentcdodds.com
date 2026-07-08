@@ -10,7 +10,7 @@ Cloudflare parent worker for kentcdodds.com. See
 - Dynamic requests via `worker_loaders` (`LOADER` binding) using MDX artifacts
   from R2 + `CONTENT_KV`
 - RPC entrypoints: `D1Rpc` (D1 SQL), `CacheRpc` (KV), `ContentRpc` (MDX
-  artifacts), `OutboundProxy` (local/staging mocks)
+  artifacts), `OutboundProxy` (local/dev mocks)
 - Scheduled jobs:
   - `0 3 * * *` — daily cleanup for expired `Session` / `Verification` rows
   - `*/2 * * * *` — warmup requests to keep parent artifact cache and dynamic
@@ -71,7 +71,7 @@ CI runs the production path from `.github/workflows/deployment.yml` and
 | `provision:production` | Production target: write `generated-wrangler.jsonc`                              |
 | `secrets:generate`     | Build worker secrets JSON (`generate-worker-secrets.mjs`; pass `--target=`)      |
 | `publish:artifacts`    | Upload MDX bundle JSON to R2 + update `mdx-manifest:current` (`--local` for dev) |
-| `seed:preview-d1`      | Local/dev D1 seed helper (`me@kentcdodds.com` / `iliketwix`; `--local` for dev)  |
+| `seed:local-d1`        | Local/dev D1 seed helper (`me@kentcdodds.com` / `iliketwix`; `--local` for dev)  |
 | `test:local-e2e`       | Local migrations, seed, artifact publish, `.dev.vars` setup                      |
 
 D1 migration scripts accept `WRANGLER_CONFIG` (defaults to `wrangler.jsonc`

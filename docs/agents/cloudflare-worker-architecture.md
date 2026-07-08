@@ -282,7 +282,7 @@ shared `services/site/app/utils/media-serving.server.ts`):
   `cloudinaryId` YAML/MDX prop names are retained as content contracts.
 - OG rendering resolves R2 assets directly via the `MEDIA_BUCKET` + `IMAGES`
   bindings (no HTTP hop); Node scripts and dev fall back to the deployed
-  `/media` endpoint (production → staging until first main deploy).
+  `/media` endpoint.
 - In dev, missing local objects proxy from the deployed endpoint; transformed
   variants are proxied whole because the local miniflare images binding is
   low-fidelity (letterboxes instead of cover-cropping).
@@ -501,7 +501,7 @@ production deploy smoke tests.
 
 ### Site-worker local dev
 
-After local D1 migrations are applied, start the staging worker:
+After local D1 migrations are applied, start the parent worker:
 
 ```sh
 npm run dev --workspace site-worker
@@ -539,7 +539,7 @@ Ask Kent before deleting staging Cloudflare resources.
 
 `wrangler.jsonc` uses `env.production` overrides for production bindings; the
 default top-level config still points at the retired staging resources for
-local parent-worker dev. `provision-preview.mjs --target=production` writes
+local parent-worker dev. `generate-worker-config.mjs` writes
 `generated-wrangler.jsonc` with production bindings + `BUILD_SHA`.
 
 ### CI token limitations
@@ -550,7 +550,6 @@ but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 - Resource IDs are committed in `services/site-worker/wrangler.jsonc`; `npm run
 provision:production` skips Cloudflare API calls when IDs are present (use
   `--force-ensure` for fresh environments with a privileged token).
-- D1 migrations and seed steps in CI are **non-fatal** with a loud warning.
 - Artifact publish in CI uses `POST /resources/mdx-artifacts` (no R2/KV API
   needed).
 
@@ -585,20 +584,12 @@ drop it in the same migration when needed.
 
 ## D1 read replication
 
-Enable globally for staging and production D1 databases (needs D1:Edit token):
+Enable globally for production D1 (needs D1:Edit token):
 
 ```bash
 export CLOUDFLARE_API_TOKEN=…
 export CLOUDFLARE_ACCOUNT_ID=a41d50ecaf0ae0f86dd1824ef6729cb2
 
-# Staging (01a8ba77-2a63-4a14-898d-6023942a480f)
-curl -sX PUT \
-  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/01a8ba77-2a63-4a14-898d-6023942a480f" \
-  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{"read_replication":{"mode":"auto"}}'
-
-# Production (af33bd8b-c9b2-484a-afa5-43ee322ff49c)
 curl -sX PUT \
   "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/af33bd8b-c9b2-484a-afa5-43ee322ff49c" \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
@@ -618,6 +609,6 @@ curl -sX GET \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" | jq '.result | {read_replication, running_in_region, primary_location_hint}'
 ```
 
-**Primary location (July 2026):** both staging and production D1 report
+**Primary location (July 2026):** production D1 reports
 `running_in_region: ENAM`. Prefer `running_in_region` over
 `primary_location_hint` when checking older databases.

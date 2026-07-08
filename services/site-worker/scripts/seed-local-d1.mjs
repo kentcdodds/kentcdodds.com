@@ -110,7 +110,7 @@ async function main() {
 	console.log(
 		adminCount > 0
 			? 'Seed data verified/repaired (admin already existed)'
-			: 'Seeded preview D1 admin user and sample users',
+			: 'Seeded local D1 admin user and sample users',
 	)
 }
 

@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { publishViaEndpoint } from './publish-artifacts-lib.mjs'
 
-const workerDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const workerDir = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	'..',
+)
 
 function usage() {
 	console.error(
@@ -63,7 +66,7 @@ async function publishViaWrangler(bundlePath, configPath, local) {
 
 	const bucketName =
 		config.r2_buckets?.find((entry) => entry.binding === 'MDX_ARTIFACTS')
-			?.bucket_name ?? 'kcd-site-cf-preview-artifacts'
+			?.bucket_name ?? 'kentcdodds-com-artifacts'
 
 	const r2Args = [
 		'r2',
@@ -129,7 +132,10 @@ async function main() {
 
 	const viaEndpoint = getArgValue('--via-endpoint')
 	if (viaEndpoint) {
-		const { version, payload } = await publishViaEndpoint(bundlePath, viaEndpoint)
+		const { version, payload } = await publishViaEndpoint(
+			bundlePath,
+			viaEndpoint,
+		)
 		console.log(`Published via ${viaEndpoint} (version ${version})`, payload)
 		return
 	}

@@ -42,7 +42,7 @@ export type ParentWorkerEnv = MediaServingEnv & {
 	SEARCH_WORKER?: ServiceWorkerBinding
 	BUILD_SHA: string
 	COMPATIBILITY_DATE: string
-	/** 'true' on staging/preview: third-party APIs are mocked by OutboundProxy. */
+	/** 'true' in local/dev configs: third-party APIs are mocked by OutboundProxy. */
 	OUTBOUND_MOCKS?: string
 	REFRESH_CACHE_SECRET?: string
 	SEARCH_WORKER_URL?: string

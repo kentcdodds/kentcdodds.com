@@ -18,10 +18,10 @@
     "d1:migrations:list:local": "wrangler d1 migrations list APP_DB --local --config ${WRANGLER_CONFIG:-wrangler.jsonc}",
     "d1:migrations:apply:local": "wrangler d1 migrations apply APP_DB --local --config ${WRANGLER_CONFIG:-wrangler.jsonc}",
     "d1:migrations:apply:production": "wrangler d1 migrations apply APP_DB --remote --config ${WRANGLER_CONFIG:-generated-wrangler.jsonc}",
-    "provision:production": "node ./scripts/provision-preview.mjs --target=production",
+    "provision:production": "node ./scripts/generate-worker-config.mjs",
     "secrets:generate": "node ./scripts/generate-worker-secrets.mjs",
     "publish:artifacts": "node ./scripts/publish-artifacts.mjs",
-    "seed:preview-d1": "node ./scripts/seed-preview-d1.mjs",
+    "seed:local-d1": "node ./scripts/seed-local-d1.mjs",
     "test:local-e2e": "node ./scripts/local-e2e.mjs",
     "cf-typegen": "wrangler types"
   },

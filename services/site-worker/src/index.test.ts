@@ -292,7 +292,7 @@ describe('outbound proxy routing', () => {
 		}
 	})
 
-	test('staging (OUTBOUND_MOCKS=true) serves mocks instead of fetching', async () => {
+	test('OUTBOUND_MOCKS=true serves mocks instead of fetching', async () => {
 		const realFetch = globalThis.fetch
 		const fetchSpy = vi.fn(async () => new Response('real-api'))
 		globalThis.fetch = fetchSpy as unknown as typeof fetch
