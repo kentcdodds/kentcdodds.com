@@ -2,7 +2,7 @@
 
 Ordered procedure for hard cutover of **kentcdodds.com** from the Fly.io app (`kcd`) to the Cloudflare Workers stack (`kentcdodds-com` worker + D1 `kentcdodds-com-db`).
 
-**Migration scripts:** `services/site-worker/scripts/migrate-sqlite-to-d1.mjs` (full import + `--since` backfill).
+**Migration scripts:** archived after the 2026-07-08 cutover once D1 was fully reconciled.
 
 **Accepted data-loss window:** a few minutes of writes during DNS propagation and the backfill gap. Deletions on Fly during the window are **not** replicated (accepted). Writes to D1 during a failed cutover that rolls back to Fly are **lost on rollback** (symmetric caveat).
 
@@ -153,7 +153,8 @@ radius if that token ever leaks — it can send email as the domain).
    production worker (`Verification code sent to me@kentcdodds.com`, row
    persisted, delivery confirmed). Fly's separate token is no longer used
    anywhere on the worker.
-4. **Deliverability** — New Email Sending accounts start with conservative
+
+3. **Deliverability** — New Email Sending accounts start with conservative
    daily quotas that ramp with reputation. Volume here is low (auth codes,
    contact form, call notifications), so expect at most a brief warm-up period.
    Monitor via dash **Email Sending** analytics and bounce notifications.
@@ -250,7 +251,7 @@ Save `SNAPSHOT_TIME` — required for the post-DNS backfill (`--since`).
 
 ---
 
-## 2. T−0: write freeze (recommended) 
+## 2. T−0: write freeze (recommended)
 
 A short write freeze turns the cutover into a zero-data-loss operation: no
 backfill window, no lost form submissions. Because kentcdodds.com is already
@@ -296,38 +297,25 @@ Generate a production wrangler config (or use `generated-wrangler.jsonc` after p
 
 Ensure migrations are applied **before** data import (empty tables).
 
-```bash
-export CLOUDFLARE_API_TOKEN=…   # privileged; never commit
-export CLOUDFLARE_ACCOUNT_ID=a41d50ecaf0ae0f86dd1824ef6729cb2
+Historical note: the Fly SQLite to D1 importer was archived after the
+2026-07-08 cutover once all 11 app tables were reconciled and no further
+backfill was needed.
 
-cd services/site-worker
+The archived importer's **`--reset` wiped all rows from the app tables first**
+(child-first, FK-safe) so seeded/test data — including the seeded admin with a
+known password — did not survive into production. With `--reset`, `--verify`'s
+count comparison was an exact-equality proof. The importer refused to combine
+`--reset` with `--since`.
 
-npm run migrate:sqlite-to-d1 -- \
-  --source /path/to/migrate-snapshot-*.db \
-  --database APP_DB \
-  --config ./generated-wrangler.jsonc \
-  --reset \
-  --verify
-```
+**Idempotence:** the importer used `INSERT … ON CONFLICT … DO UPDATE` (not
+`INSERT OR REPLACE`) so parent-row updates did not CASCADE-delete children.
+Re-runs converged safely.
 
-**`--reset` wipes all rows from the app tables first** (child-first, FK-safe)
-so seeded/test data — including the seeded admin with a known password — does
-not survive into production. With `--reset`, `--verify`'s count comparison is
-an exact-equality proof. Never combine with `--since` (the script refuses).
+**Resumability:** the archived importer supported retrying one table and
+adding per-table filters during the completed migration.
 
-**Idempotence:** uses `INSERT … ON CONFLICT … DO UPDATE` (not `INSERT OR REPLACE`) so parent-row updates do not CASCADE-delete children. Re-runs converge safely.
-
-**Resumability:**
-
-```bash
-# Retry one table
-npm run migrate:sqlite-to-d1 -- --source … --database APP_DB --config … --tables PostRead
-
-# Extra filter (ANDed with --since clause when present)
-npm run migrate:sqlite-to-d1 -- … --table-where PostRead="postSlug LIKE 'fix-%'"
-```
-
-Review `--verify` output: per-table counts, `max(createdAt)`, five random users (emails shown as `sha256:…` truncated hashes).
+The `--verify` output included per-table counts, `max(createdAt)`, and five
+random users (emails shown as `sha256:…` truncated hashes).
 
 ---
 
@@ -388,16 +376,10 @@ traffic to hit zero, then copy rows created/updated on Fly **after**
 
 If Fly still received writes post-snapshot, take a **second** `.backup` or run backfill against a fresher snapshot; the `--since` path assumes the **same** source file plus new rows applied locally OR a new snapshot that still contains old rows (INSERT OR REPLACE overwrites).
 
-**Typical path** (Fly still running, same snapshot file stale): take another Fly `.backup` download, then:
-
-```bash
-npm run migrate:sqlite-to-d1 -- \
-  --source /path/to/migrate-snapshot-*.db \
-  --database APP_DB \
-  --config ./generated-wrangler.jsonc \
-  --since "${SNAPSHOT_TIME}" \
-  --verify
-```
+**Historical path:** while Fly was still running, the migration tooling could
+backfill rows from a second `.backup` using the cutover `SNAPSHOT_TIME`. This
+path is no longer available in the repo because production D1 has been fully
+reconciled.
 
 `--since` behavior:
 
@@ -430,10 +412,6 @@ through the zone, configure shared protection in the Cloudflare dashboard
 ## 7. Final verification
 
 ```bash
-# Re-run verify-only by running full migrate with --verify on unchanged snapshot
-# (idempotent; fast if no new rows)
-npm run migrate:sqlite-to-d1 -- --source … --database APP_DB --config … --verify
-
 # Worker health
 curl -s https://kentcdodds.com/__meta | jq .
 curl -s https://kentcdodds.com/healthcheck
@@ -484,33 +462,19 @@ Keep Fly idle (not destroyed) until the confidence window ends.
 
 ---
 
-## Script reference
+## Archived script reference
 
-| Script | Purpose |
-|--------|---------|
-| `npm run migrate:sqlite-to-d1 --workspace site-worker` | Full or incremental (`--since`) import |
-| `npm run migrate:build-fixture --workspace site-worker` | Inflate local SQLite for perf testing |
-| `npm run migrate:pipeline-test --workspace site-worker` | End-to-end test against scratch D1 |
-
-### Key flags
-
-| Flag | Description |
-|------|-------------|
-| `--source <path>` | Local SQLite file (Fly `.backup` download) |
-| `--database <name>` | Wrangler D1 target (`APP_DB` binding name from config) |
-| `--config <path>` | Wrangler JSONC with D1 binding |
-| `--since <ISO-8601>` | Incremental backfill cutoff |
-| `--verify` | Row counts + spot checks after import |
-| `--tables <csv>` | Subset for resume |
-| `--local` | Miniflare local D1 (dev only) |
+The Fly SQLite to D1 importer, local fixture builder, and scratch-D1 pipeline
+test were removed after the successful production cutover and final
+reconciliation. Reconstruct the tooling from git history only if a future audit
+requires it; do not run destructive reset imports against production D1.
 
 ---
 
 ## Performance expectations
 
-Migration import time scales with row count; `PostRead` dominates. Use
-`npm run migrate:pipeline-test --workspace site-worker` against an inflated
-fixture for a local timing baseline.
+Migration import time scaled with row count; `PostRead` dominated the completed
+cutover import.
 
 ## D1 read replication
 
@@ -524,11 +488,11 @@ Pre-cutover checklist:
 
 ## Limitations / accepted losses
 
-| Scenario | Handling |
-|----------|----------|
-| Writes during DNS propagation (before backfill) | Recovered by `--since` backfill if still in SQLite source |
-| Deletes during cutover window | **Not replicated** — accepted |
+| Scenario                                            | Handling                                                            |
+| --------------------------------------------------- | ------------------------------------------------------------------- |
+| Writes during DNS propagation (before backfill)     | Recovered by `--since` backfill if still in SQLite source           |
+| Deletes during cutover window                       | **Not replicated** — accepted                                       |
 | Fly receives writes after snapshot, before DNS flip | Include in backfill if captured in a newer snapshot or same DB file |
-| Rollback to Fly after D1 writes | D1-only writes **lost** |
-| Cache DB (`SITE_CACHE_KV`) | **Not migrated** — ephemeral; rebuilds on traffic |
-| `_prisma_migrations` | **Not migrated** — D1 uses Wrangler migration table separately |
+| Rollback to Fly after D1 writes                     | D1-only writes **lost**                                             |
+| Cache DB (`SITE_CACHE_KV`)                          | **Not migrated** — ephemeral; rebuilds on traffic                   |
+| `_prisma_migrations`                                | **Not migrated** — D1 uses Wrangler migration table separately      |
