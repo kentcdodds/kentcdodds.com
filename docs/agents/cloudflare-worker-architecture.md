@@ -138,6 +138,13 @@ Two paths:
    updates `mdx-manifest:current`, and clears its manifest cache.
 
 `GET /__meta` returns `{ buildSha, contentVersion }` for deploy verification.
+Content-only refreshes (`🥬 Refresh Content`) still matter after the Workers
+cutover: when a push changes only `services/site/content/` and does not trigger
+a site redeploy, CI compiles MDX, publishes the artifact bundle via
+`POST /resources/mdx-artifacts`, and records the commit via
+`POST /action/refresh-cache`. Compare SHA resolution prefers
+`/refresh-commit-sha.json`, then falls back to `/__meta.buildSha` (the old
+Fly-era `/build/info.json` asset is no longer published).
 
 ## Bootstrap ↔ app bridge (globals contract)
 
@@ -222,9 +229,7 @@ runtime in the worker).
 ## Server-side MDX rendering (no eval)
 
 - Route loaders that return MDX pages call `ensureMdxComponentLoaded(page)`
-  (server-only), which does `await import(\`mdx/${contentDir}/${slug}.js\`)`
-  and caches the component in a module-level registry keyed by
-  `${contentDir}/${slug}`.
+  (server-only), which does `await import(\`mdx/${contentDir}/${slug}.js\`)`and caches the component in a module-level registry keyed by`${contentDir}/${slug}`.
 - `useMdxComponent` checks the server registry first (synchronously, during
   SSR); in the browser (or in Node dev) it falls back to the existing
   mdx-bundler `new Function` path via `getDocumentCode` / `CONTENT_RPC`. Both
@@ -269,7 +274,7 @@ shared `services/site/app/utils/media-serving.server.ts`):
   bytes with `Range` support; transforms are ignored.
 - **Input limit**: the binding fails on inputs over ~20 MiB
   ("Network connection lost"); `migrate-cloudinary-to-r2.mjs
-  --normalize-oversized` re-encoded such masters to ≤4096px.
+--normalize-oversized` re-encoded such masters to ≤4096px.
 - **Edge cache**: `caches.default`, 1-year immutable; media is excluded from
   dynamic rate limiting (asset tier).
 - URL building in the app goes exclusively through `buildMediaUrl` /
@@ -527,14 +532,14 @@ The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
 - Service bindings: same production oauth/search workers
 - Deploys from `.github/workflows/deployment.yml` → `deploy-site.yml` on pushes
   to `main` (`npm run provision:production`, `generate-worker-secrets.mjs
-  --target=production`, artifact publish via endpoint, D1 migrations, smoke).
+--target=production`, artifact publish via endpoint, D1 migrations, smoke).
 
 ### Resource naming
 
-| Target | Worker + D1 | KV + R2 |
-| ------ | ----------- | ------- |
+| Target                   | Worker + D1               | KV + R2                 |
+| ------------------------ | ------------------------- | ----------------------- |
 | Staging (branch preview) | `kentcdodds-com-staging*` | `kcd-site-cf-preview-*` |
-| Production (main) | `kentcdodds-com*` | `kentcdodds-com-*` |
+| Production (main)        | `kentcdodds-com*`         | `kentcdodds-com-*`      |
 
 `wrangler.jsonc` uses `env.production` overrides for production bindings; the
 default top-level config is staging. `provision-preview.mjs --target=staging|production`
@@ -546,7 +551,7 @@ The repo `CLOUDFLARE_API_TOKEN` can deploy worker scripts and upload secrets
 but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 
 - Resource IDs are committed in `services/site-worker/wrangler.jsonc`; `npm run
-  provision:preview` / `provision:production` skips Cloudflare API calls when IDs
+provision:preview` / `provision:production` skips Cloudflare API calls when IDs
   are present (use `--force-ensure` for fresh environments with a privileged token).
 - D1 migrations and seed steps in CI are **non-fatal** with a loud warning.
 - Artifact publish in CI uses `POST /resources/mdx-artifacts` (no R2/KV API
@@ -561,13 +566,13 @@ table. Do not rename migration files after deploy.
 D1 rejects `CREATE TEMP TABLE` in migrations — use a regular guard table and
 drop it in the same migration when needed.
 
-| Command | Target |
-| --- | --- |
-| `npm run d1:migrations:list:local --workspace site-worker` | List pending local Miniflare D1 |
-| `npm run d1:migrations:apply:local --workspace site-worker` | Apply to local Miniflare D1 |
-| `npm run d1:migrations:list:staging --workspace site-worker` | List pending remote staging D1 |
-| `npm run d1:migrations:apply:staging --workspace site-worker` | Apply to remote staging D1 |
-| `npm run d1:migrations:apply:production --workspace site-worker` | Apply to remote production D1 |
+| Command                                                          | Target                          |
+| ---------------------------------------------------------------- | ------------------------------- |
+| `npm run d1:migrations:list:local --workspace site-worker`       | List pending local Miniflare D1 |
+| `npm run d1:migrations:apply:local --workspace site-worker`      | Apply to local Miniflare D1     |
+| `npm run d1:migrations:list:staging --workspace site-worker`     | List pending remote staging D1  |
+| `npm run d1:migrations:apply:staging --workspace site-worker`    | Apply to remote staging D1      |
+| `npm run d1:migrations:apply:production --workspace site-worker` | Apply to remote production D1   |
 
 ### Runbook: schema changes
 

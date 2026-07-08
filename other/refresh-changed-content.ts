@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { publishViaEndpoint as publishViaEndpointImpl } from "../services/site-worker/scripts/publish-artifacts-lib.mjs";
 import { getChangedFiles, fetchJson } from "./get-changed-files.js";
+import { resolveCompareCommitSha } from "./resolve-compare-commit-sha.ts";
 import { postRefreshCache } from "./utils.js";
 
 const defaultBaseUrl =
@@ -154,17 +155,11 @@ export async function refreshChangedContent({
     throw new Error("currentCommitSha is required");
   }
 
-  const shaInfo = await fetchJsonImpl(`${baseUrl}/refresh-commit-sha.json`, {
+  const compareSha = await resolveCompareCommitSha({
+    baseUrl,
+    fetchJsonImpl,
     timeoutTime: defaultFetchTimeoutMs,
   });
-  let compareSha = shaInfo?.sha;
-  if (!compareSha) {
-    const buildInfo = await fetchJsonImpl(`${baseUrl}/build/info.json`, {
-      timeoutTime: defaultFetchTimeoutMs,
-    });
-    compareSha = buildInfo?.commit?.sha;
-    log.log(`No compare sha found, using build sha: ${compareSha}`);
-  }
   if (typeof compareSha !== "string") {
     log.log("🤷‍♂️ No sha to compare to. Unsure what to refresh.");
     return { status: "no-compare-sha" as const };
