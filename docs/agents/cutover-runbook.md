@@ -39,8 +39,6 @@ SQLite importer has been archived from the repository.
 - Do not destroy the Fly app or volume until Kent explicitly confirms the
   rollback window is closed and final D1-vs-Fly verification has been rerun.
 - Do not delete production D1, KV, R2, or Worker resources.
-- Do not cancel or instruct cancellation of Cloudinary until the originals
-  archive check passes.
 - Do not run destructive D1 imports or table resets against production.
 - Ask Kent before each irreversible infrastructure action.
 
@@ -99,17 +97,6 @@ If a critical production issue requires rollback:
 3. Prefer fixing forward unless the incident requires immediate rollback.
 
 ## Remaining post-cutover cleanup
-
-### Cloudinary
-
-Before Cloudinary cancellation, verify that pre-normalization originals are
-archived under `originals/` in the `kentcdodds-com` R2 bucket.
-
-```bash
-node services/site-worker/scripts/migrate-cloudinary-to-r2.mjs --archive-originals --dry-run
-```
-
-Only Kent can cancel the Cloudinary account.
 
 ### Staging / abandoned Cloudflare resources
 
