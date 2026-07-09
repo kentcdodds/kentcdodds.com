@@ -12,7 +12,7 @@ magic.
 - Use disposable objects only when there is real cleanup. If no cleanup, skip
   `using` and `Symbol.dispose`.
 - For setup-only `using` bindings, name variables with an `ignored` prefix so
-  `@typescript-eslint/no-unused-vars` accepts intentional non-reads.
+  the unused-vars lint rule accepts intentional non-reads.
 - Build helpers that return ready-to-run objects (factory pattern), not globals.
 - Keep test intent obvious in the name: "auth handler returns 400 for invalid
   JSON".
@@ -42,65 +42,68 @@ When the disposable is needed only for side-effects (like env restoration), use
 an `ignored` prefix for the binding name:
 
 ```ts
-import { test, expect } from 'bun:test'
-import { setEnv } from '#tests/env-disposable.ts'
+import { test, expect } from "vitest";
+import { setEnv } from "#tests/env-disposable.ts";
 
-test('reads env var', () => {
-	using ignoredEnv = setEnv({ MY_VAR: 'hello' })
-	expect(process.env.MY_VAR).toBe('hello')
-})
+test("reads env var", () => {
+  using ignoredEnv = setEnv({ MY_VAR: "hello" });
+  expect(process.env.MY_VAR).toBe("hello");
+});
 ```
 
 ### `Symbol.dispose` with `using`
 
 ```ts
-import { test, expect } from 'bun:test'
+import fs from "node:fs";
+import { test, expect } from "vitest";
 
 const createTempFile = () => {
-	const path = `/tmp/test-${crypto.randomUUID()}.txt`
-	Bun.write(path, 'hello')
+  const path = `/tmp/test-${crypto.randomUUID()}.txt`;
+  fs.writeFileSync(path, "hello");
 
-	return {
-		path,
-		[Symbol.dispose]: () => {
-			try {
-				Bun.file(path).delete()
-			} catch {
-				// Cleanup should never fail the test.
-			}
-		},
-	}
-}
+  return {
+    path,
+    [Symbol.dispose]: () => {
+      try {
+        fs.unlinkSync(path);
+      } catch {
+        // Cleanup should never fail the test.
+      }
+    },
+  };
+};
 
-test('reads a temp file', () => {
-	using tempFile = createTempFile()
-	const contents = Bun.file(tempFile.path).text()
-	return contents.then((text) => expect(text).toBe('hello'))
-})
+test("reads a temp file", () => {
+  using tempFile = createTempFile();
+  expect(fs.readFileSync(tempFile.path, "utf8")).toBe("hello");
+});
 ```
 
 ### `Symbol.asyncDispose` with `await using`
 
 ```ts
-import { test, expect } from 'bun:test'
+import http from "node:http";
+import { test, expect } from "vitest";
 
 const createDisposableServer = async () => {
-	const server = Bun.serve({
-		port: 0,
-		fetch: () => new Response('ok'),
-	})
+  const server = http.createServer((_req, res) => res.end("ok"));
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+  const address = server.address();
+  if (typeof address !== "object" || address === null) {
+    throw new Error("expected a TCP address");
+  }
 
-	return {
-		url: `http://localhost:${server.port}`,
-		[Symbol.asyncDispose]: async () => {
-			await server.stop()
-		},
-	}
-}
+  return {
+    url: `http://localhost:${address.port}`,
+    [Symbol.asyncDispose]: async () => {
+      await new Promise((resolve) => server.close(resolve));
+    },
+  };
+};
 
-test('fetches from a disposable server', async () => {
-	await using server = await createDisposableServer()
-	const response = await fetch(server.url)
-	expect(await response.text()).toBe('ok')
-})
+test("fetches from a disposable server", async () => {
+  await using server = await createDisposableServer();
+  const response = await fetch(server.url);
+  expect(await response.text()).toBe("ok");
+});
 ```

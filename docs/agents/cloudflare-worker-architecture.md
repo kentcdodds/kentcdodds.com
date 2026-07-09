@@ -50,8 +50,8 @@ not require a redeploy. **Production deploys exclusively to Cloudflare Workers**
                         └──────────────────────────────────────────┘
 ```
 
-MDX compilation happens in Node (CI or local scripts) with the **exact same
-mdx-bundler pipeline as today** (`compileMdx` in
+MDX compilation happens in Node (CI or local scripts) with the **same
+mdx-bundler pipeline** (`compileMdx` in
 `services/site/app/utils/compile-mdx.server.ts`). The compiled output is
 published as an artifact bundle; the worker never compiles or evals anything at
 request time. The client keeps the existing `new Function` mdx-bundler path
@@ -95,7 +95,7 @@ by CI to R2 + KV. Format (JSON, schema in
 		"blog/example-post": {
 			"contentDir": "blog",
 			"slug": "example-post",
-			"code": "<mdx-bundler IIFE string (client, same as today)>",
+			"code": "<mdx-bundler IIFE string (client)>",
 			"esm": "<ESM module source (server import, same compile inputs)>",
 			"frontmatter": {},
 			"readTime": {},
@@ -159,8 +159,8 @@ that would break the Node/dev build:
   `Symbol.for('kentcdodds.runtimeBindingSource')` bridges from PR #799.
 
 App-side access goes through `services/site/app/utils/content-artifacts.server.ts`
-(single accessor module; returns `null`s in Node dev so existing code paths
-keep working).
+(single accessor module; returns `null`s when the artifact globals are unset —
+e.g. Node unit tests — so existing code paths keep working).
 
 ## RPC error contract
 
@@ -201,8 +201,8 @@ The dynamic worker is created with `globalOutbound` pointing at the parent's
    (avoids CF error 1042 on worker-to-worker `*.workers.dev` calls).
 2. **Mocks** — Cloudflare Email Sending, Discord, Kit, Verifier get inline mock
    responses (same shapes as MSW mocks in `services/site/mocks/`).
-3. **Passthrough** — everything else (GitHub raw, Transistor,
-   Simplecast, oEmbed providers, Twitter/X API hosts) uses global `fetch`.
+3. **Passthrough** — everything else (GitHub raw, Transistor, Simplecast,
+   oEmbed providers, the Twitter syndication CDN) uses global `fetch`.
 
 `mermaid-to-svg.kentcdodds.workers.dev` is compile-time only (not fetched at
 runtime in the worker).
@@ -223,7 +223,9 @@ runtime in the worker).
 ## Server-side MDX rendering (no eval)
 
 - Route loaders that return MDX pages call `ensureMdxComponentLoaded(page)`
-  (server-only), which does `await import(\`mdx/${contentDir}/${slug}.js\`)`and caches the component in a module-level registry keyed by`${contentDir}/${slug}`.
+  (server-only), which does `await import('mdx/' + contentDir + '/' + slug + '.js')`
+  and caches the component in a module-level registry keyed by
+  `${contentDir}/${slug}`.
 - `useMdxComponent` checks the server registry first (synchronously, during
   SSR); in the browser (or in Node dev) it falls back to the existing
   mdx-bundler `new Function` path via `getDocumentCode` / `CONTENT_RPC`. Both

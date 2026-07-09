@@ -2,8 +2,8 @@
 
 This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
 running on Cloudflare Workers in production, with a workerd-native local dev
-stack (`@cloudflare/vite-plugin` + Miniflare D1/KV). Prisma schema tooling
-remains for migrations; runtime DB access uses `@remix-run/data-table`.
+stack (`@cloudflare/vite-plugin` + Miniflare D1/KV). SQL migrations live in
+`services/site/migrations/`; runtime DB access uses `@remix-run/data-table`.
 
 ## Prerequisites
 

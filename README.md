@@ -12,7 +12,8 @@ TypeScript, Vite, and Cloudflare Workers.
 - React Router + React + TypeScript
 - Vite build pipeline + `@cloudflare/vite-plugin` (local dev in workerd)
 - Cloudflare Workers (production) with D1 + KV + R2
-- Prisma (schema/migrations only) + `@remix-run/data-table` (runtime DB)
+- Flat SQL migrations (`services/site/migrations/`) + `@remix-run/data-table`
+  (runtime DB)
 - Tailwind CSS
 - Vitest and Playwright for testing
 
