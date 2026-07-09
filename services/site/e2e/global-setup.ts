@@ -4,8 +4,11 @@ const baseUrl = `http://localhost:${PORT}`
 async function warmupPath(path: string) {
 	// The first requests can race the MDX sidecar's initial compile; retry
 	// until the stack is actually ready instead of failing the whole run.
+	const startedAt = Date.now()
 	const deadline = Date.now() + 4 * 60_000
+	let attempts = 0
 	for (;;) {
+		attempts++
 		try {
 			const response = await fetch(`${baseUrl}${path}`, {
 				headers: { Accept: 'text/html' },
@@ -13,6 +16,9 @@ async function warmupPath(path: string) {
 			})
 			if (response.ok) {
 				await response.arrayBuffer()
+				console.info(
+					`playwright global setup: warmed ${path} in ${Date.now() - startedAt}ms after ${attempts} attempt(s)`,
+				)
 				return
 			}
 			if (Date.now() > deadline) {

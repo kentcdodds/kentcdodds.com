@@ -104,6 +104,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npm run test:e2e:install --workspace kentcdodds.com
 
+      - name: 🧰 Cache MDX dev artifacts
+        uses: actions/cache@v5
+        with:
+          path: services/site/node_modules/.cache/mdx-dev
+          key: mdx-dev-${{ runner.os }}-${{ hashFiles('package-lock.json', 'services/site/content/**', 'services/site/other/**', 'services/site/app/**') }}
+          restore-keys: |
+            mdx-dev-${{ runner.os }}-
+
       - name: 🎭 Playwright tests
         run: npx playwright test
         working-directory: services/site

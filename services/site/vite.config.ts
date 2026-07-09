@@ -120,6 +120,7 @@ export default defineConfig(async ({ command }) => {
 						'zod',
 						'downshift',
 						'date-fns',
+						'@reach/accordion',
 						'@reach/dialog',
 						'@reach/tabs',
 						'@reach/checkbox',
@@ -127,6 +128,9 @@ export default defineConfig(async ({ command }) => {
 						'react-lite-youtube-embed',
 						'match-sorter',
 						'@epic-web/invariant',
+						'gsap',
+						'@xstate/react',
+						'xstate',
 					],
 				}
 			: undefined,
