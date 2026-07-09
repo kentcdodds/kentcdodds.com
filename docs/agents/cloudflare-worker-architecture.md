@@ -253,19 +253,19 @@ Without those scripts, `HydratedRouter` never finishes decoding state,
 fall through to native full-page POSTs. Verify with curl: HTML must contain
 `streamController.enqueue` (7 inline scripts on the homepage).
 
-## Media serving (Cloudinary replaced)
+## Media serving (R2 + Workers Images)
 
 All photos/illustrations/video live in the pre-existing `kentcdodds-com` R2
-bucket, keyed by their legacy Cloudinary public IDs (some hand-copied assets
-use prefix-stripped keys; `mediaKeyCandidates` in
-`services/site/app/utils/media.ts` tries both). The parent worker serves them
-at `/media/<transform-segment>/<id>` (`services/site-worker/src/media.ts` +
-shared `services/site/app/utils/media-serving.server.ts`):
+bucket, keyed by their legacy media IDs (some hand-copied assets use
+prefix-stripped keys; `mediaKeyCandidates` in `services/site/app/utils/media.ts`
+tries both). The parent worker serves them at `/media/<transform-segment>/<id>`
+(`services/site-worker/src/media.ts` + shared
+`services/site/app/utils/media-serving.server.ts`):
 
 - **Transforms** run through the Workers `images` binding (`IMAGES`):
   width/height/aspect-ratio, `fit` (cover/contain/pad/scale-down), `gravity`
-  (`auto` saliency — the binding has **no face gravity**; legacy Cloudinary
-  face crops map to `auto`), background fill, blur (LQIP), quality.
+  (`auto` saliency — the binding has **no face gravity**; legacy face-crop
+  transforms map to `auto`), background fill, blur (LQIP), quality.
 - **Format negotiation**: `f_auto` (default) serves AVIF/WebP by `Accept`
   header. The Workers Cache API ignores `Vary`, so the Accept class
   (avif/webp/base) is baked into the edge-cache key (`__accept` param).
@@ -273,8 +273,8 @@ shared `services/site/app/utils/media-serving.server.ts`):
 - **Video** (mp4 detected by content type/extension/magic) streams original
   bytes with `Range` support; transforms are ignored.
 - **Input limit**: the binding fails on inputs over ~20 MiB
-  ("Network connection lost"); `migrate-cloudinary-to-r2.mjs
---normalize-oversized` re-encoded such masters to ≤4096px.
+  ("Network connection lost"); oversized masters were normalized during the
+  completed media migration.
 - **Edge cache**: `caches.default`, 1-year immutable; media is excluded from
   dynamic rate limiting (asset tier).
 - URL building in the app goes exclusively through `buildMediaUrl` /
