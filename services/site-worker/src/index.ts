@@ -31,6 +31,7 @@ import {
 	bumpPageCacheGeneration,
 	clearPageCacheGenerationCache,
 	handlePageCacheRequest,
+	PAGE_CACHE_GENERATION_HEADER,
 } from './page-cache.ts'
 import { serveStaticAsset } from './static-assets.ts'
 import { handleMediaRequest } from './media.ts'
@@ -124,9 +125,14 @@ async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	await env.CONTENT_KV.put('mdx-manifest:current', manifest)
 	clearManifestCache()
 	clearArtifactBundleCache()
-	await bumpPageCacheGeneration(env.CONTENT_KV)
+	const pageCacheGeneration = await bumpPageCacheGeneration(env.CONTENT_KV)
 
-	return Response.json({ ok: true, version: bundle.version, r2Key })
+	return Response.json({
+		ok: true,
+		version: bundle.version,
+		r2Key,
+		pageCacheGeneration,
+	})
 }
 
 async function handleMetaRequest(env: ParentWorkerEnv) {
@@ -338,6 +344,7 @@ export default {
 			if (assetResponse) return assetResponse
 		}
 
+		let pageCacheGeneration: string | undefined
 		if (
 			url.pathname === '/action/refresh-cache' &&
 			request.method === 'POST' &&
@@ -348,13 +355,29 @@ export default {
 				env.REFRESH_CACHE_SECRET,
 			)
 		) {
-			await bumpPageCacheGeneration(env.CONTENT_KV)
+			pageCacheGeneration = await bumpPageCacheGeneration(env.CONTENT_KV)
 			clearPageCacheGenerationCache()
 		}
 
-		return handlePageCacheRequest(request, env, ctx, (dynamicRequest) =>
-			handleDynamicRequest(dynamicRequest, env, ctx as ParentExecutionContext),
+		const response = await handlePageCacheRequest(
+			request,
+			env,
+			ctx,
+			(dynamicRequest) =>
+				handleDynamicRequest(
+					dynamicRequest,
+					env,
+					ctx as ParentExecutionContext,
+				),
 		)
+		if (!pageCacheGeneration) return response
+		const headers = new Headers(response.headers)
+		headers.set(PAGE_CACHE_GENERATION_HEADER, pageCacheGeneration)
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers,
+		})
 	},
 
 	async scheduled(

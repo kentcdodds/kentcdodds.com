@@ -6,6 +6,9 @@ export const PAGE_CACHE_FRESH_TTL_SEC = 300
 export const PAGE_CACHE_EXPIRATION_TTL_SEC = 26 * 60 * 60
 export const PAGE_CACHE_GENERATION_MEMORY_TTL_MS = 15_000
 export const PAGE_CACHE_KV_READ_CACHE_TTL_SEC = 30
+export const PAGE_CACHE_GENERATION_HEADER = 'X-Page-Cache-Generation'
+export const PAGE_CACHE_PREWARM_HEADER = 'X-Page-Cache-Prewarm'
+export const PAGE_CACHE_STORED_HEADER = 'X-Page-Cache-Stored'
 
 const THEME_COOKIE_NAME = 'en_theme'
 const SESSION_COOKIE_NAME = 'KCD_root_session'
@@ -302,6 +305,7 @@ export async function bumpPageCacheGeneration(contentKv: {
 	const value = Date.now().toString()
 	await contentKv.put(PAGE_CACHE_GENERATION_KEY, value)
 	generationCache = { value, fetchedAt: Date.now() }
+	return value
 }
 
 export function generatePageCacheNonce() {
@@ -450,6 +454,7 @@ function buildCachedResponse(
 	request: Request,
 	entry: PageCacheEntry,
 	cacheStatus: 'HIT' | 'STALE',
+	generation: string,
 ) {
 	const ageSec = Math.max(0, Math.floor((Date.now() - entry.storedAt) / 1000))
 	const freshNonce = entry.nonce ? generatePageCacheNonce() : ''
@@ -458,6 +463,7 @@ function buildCachedResponse(
 		: entry
 	const headers = new Headers(rewritten.headers)
 	headers.set('X-Edge-Cache', cacheStatus)
+	headers.set(PAGE_CACHE_GENERATION_HEADER, generation)
 	headers.set('Age', String(ageSec))
 
 	if (request.method === 'HEAD') {
@@ -473,9 +479,23 @@ function buildCachedResponse(
 	})
 }
 
-function withEdgeCacheHeader(response: Response, status: 'MISS' | 'BYPASS') {
+function withEdgeCacheHeader(
+	response: Response,
+	status: 'MISS' | 'BYPASS',
+	{
+		generation,
+		stored,
+	}: {
+		generation?: string
+		stored?: boolean
+	} = {},
+) {
 	const headers = new Headers(response.headers)
 	headers.set('X-Edge-Cache', status)
+	if (generation) headers.set(PAGE_CACHE_GENERATION_HEADER, generation)
+	if (stored !== undefined) {
+		headers.set(PAGE_CACHE_STORED_HEADER, stored ? 'true' : 'false')
+	}
 	return new Response(response.body, {
 		status: response.status,
 		statusText: response.statusText,
@@ -497,11 +517,12 @@ async function storePageCacheFromFillResponse(
 		statusText: fillResponse.statusText,
 		headers,
 	})
-	if (!isPageCacheStoreEligible(stripped, pathname)) return
+	if (!isPageCacheStoreEligible(stripped, pathname)) return false
 
 	const entry = encodePageCacheEntry(stripped, body)
-	if (!entry) return
+	if (!entry) return false
 	await writePageCacheEntry(kv, key, entry)
+	return true
 }
 
 async function revalidatePageCacheEntry(
@@ -543,6 +564,16 @@ export async function handlePageCacheRequest(
 	}
 
 	const generation = await getPageCacheGeneration(env.CONTENT_KV)
+	const prewarmGeneration = request.headers.get(PAGE_CACHE_PREWARM_HEADER)
+	if (prewarmGeneration && prewarmGeneration !== generation) {
+		return new Response(null, {
+			status: 409,
+			headers: {
+				'X-Edge-Cache': 'BYPASS',
+				[PAGE_CACHE_GENERATION_HEADER]: generation,
+			},
+		})
+	}
 	const key = buildPageCacheKey(request, generation)
 	const entry = await readPageCacheEntry(env.SITE_CACHE_KV, key)
 	const pathname = new URL(request.url).pathname
@@ -550,7 +581,7 @@ export async function handlePageCacheRequest(
 	if (entry) {
 		const ageSec = Math.floor((Date.now() - entry.storedAt) / 1000)
 		if (ageSec < PAGE_CACHE_FRESH_TTL_SEC) {
-			return buildCachedResponse(request, entry, 'HIT')
+			return buildCachedResponse(request, entry, 'HIT', generation)
 		}
 
 		ctx.waitUntil(
@@ -560,7 +591,7 @@ export async function handlePageCacheRequest(
 				},
 			),
 		)
-		return buildCachedResponse(request, entry, 'STALE')
+		return buildCachedResponse(request, entry, 'STALE', generation)
 	}
 
 	// On a miss, fill the cache. When the request carried no cookies beyond
@@ -574,6 +605,20 @@ export async function handlePageCacheRequest(
 	if (request.method === 'GET') {
 		if (canStoreOwnResponse(request)) {
 			const responseForStore = response.clone()
+			if (prewarmGeneration) {
+				let stored = false
+				try {
+					stored = await storePageCacheFromFillResponse(
+						key,
+						responseForStore,
+						env.SITE_CACHE_KV,
+						pathname,
+					)
+				} catch (error: unknown) {
+					console.warn('page-cache prewarm fill failed', key, error)
+				}
+				return withEdgeCacheHeader(response, 'MISS', { generation, stored })
+			}
 			ctx.waitUntil(
 				storePageCacheFromFillResponse(
 					key,
@@ -595,5 +640,5 @@ export async function handlePageCacheRequest(
 		}
 	}
 
-	return withEdgeCacheHeader(response, 'MISS')
+	return withEdgeCacheHeader(response, 'MISS', { generation })
 }

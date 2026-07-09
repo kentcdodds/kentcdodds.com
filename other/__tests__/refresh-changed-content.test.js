@@ -56,7 +56,10 @@ describe("refreshChangedContent", () => {
         filename: "services/site/content/blog/some-post.mdx",
       },
     ]);
-    const postRefreshCacheImpl = vi.fn(async () => ({ ok: true }));
+    const postRefreshCacheImpl = vi.fn(async () => ({
+      ok: true,
+      pageCacheGeneration: "generation-2",
+    }));
     const log = createLogger();
 
     const result = await refreshChangedContent({
@@ -176,7 +179,10 @@ describe("refreshChangedContent", () => {
         filename: "services/site/content/blog/some-post/index.mdx",
       },
     ]);
-    const postRefreshCacheImpl = vi.fn(async () => ({ ok: true }));
+    const postRefreshCacheImpl = vi.fn(async () => ({
+      ok: true,
+      pageCacheGeneration: "generation-2",
+    }));
     const prewarmResult = {
       attempted: 6,
       warmed: 6,
@@ -209,6 +215,7 @@ describe("refreshChangedContent", () => {
         "/blog/some-post",
         "/sitemap.xml",
       ],
+      expectedGeneration: "generation-2",
       log,
     });
     expect(result).toEqual({

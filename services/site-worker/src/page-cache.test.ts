@@ -13,7 +13,10 @@ import {
 	isPageCacheServeEligible,
 	isPageCacheStoreEligible,
 	PAGE_CACHE_FRESH_TTL_SEC,
+	PAGE_CACHE_GENERATION_HEADER,
 	PAGE_CACHE_GENERATION_MEMORY_TTL_MS,
+	PAGE_CACHE_PREWARM_HEADER,
+	PAGE_CACHE_STORED_HEADER,
 	readPageCacheEntry,
 	requestPrefersMarkdown,
 	rewriteCachedEntryNonce,
@@ -211,7 +214,9 @@ describe('generation cache', () => {
 		await expect(getPageCacheGeneration(contentKv)).resolves.toBe('7')
 		expect(get).toHaveBeenCalledTimes(1)
 
-		vi.setSystemTime(new Date(now.getTime() + PAGE_CACHE_GENERATION_MEMORY_TTL_MS + 1))
+		vi.setSystemTime(
+			new Date(now.getTime() + PAGE_CACHE_GENERATION_MEMORY_TTL_MS + 1),
+		)
 		await expect(getPageCacheGeneration(contentKv)).resolves.toBe('7')
 		expect(get).toHaveBeenCalledTimes(2)
 	})
@@ -219,7 +224,8 @@ describe('generation cache', () => {
 	test('bump updates memory cache immediately', async () => {
 		const put = vi.fn().mockResolvedValue(undefined)
 		const contentKv = { put }
-		await bumpPageCacheGeneration(contentKv)
+		const generation = await bumpPageCacheGeneration(contentKv)
+		expect(generation).toMatch(/^\d+$/)
 		const get = vi.fn()
 		await expect(getPageCacheGeneration({ get })).resolves.toMatch(/^\d+$/)
 		expect(get).not.toHaveBeenCalled()
@@ -251,8 +257,14 @@ describe('SWR state machine', () => {
 			.mockResolvedValue(null)
 		const kvPut = vi.fn().mockResolvedValue(undefined)
 		const env = makeEnv({
-			SITE_CACHE_KV: { get: kvGet, put: kvPut } as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
-			CONTENT_KV: { get: vi.fn().mockResolvedValue('1'), put: vi.fn() } as unknown as ParentWorkerEnv['CONTENT_KV'],
+			SITE_CACHE_KV: {
+				get: kvGet,
+				put: kvPut,
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+			CONTENT_KV: {
+				get: vi.fn().mockResolvedValue('1'),
+				put: vi.fn(),
+			} as unknown as ParentWorkerEnv['CONTENT_KV'],
 		})
 
 		const fetchDynamic = vi.fn().mockResolvedValue(
@@ -270,6 +282,7 @@ describe('SWR state machine', () => {
 			fetchDynamic,
 		)
 		expect(hit.headers.get('X-Edge-Cache')).toBe('HIT')
+		expect(hit.headers.get(PAGE_CACHE_GENERATION_HEADER)).toBe('1')
 		expect(await hit.text()).toBe('<html>fresh</html>')
 		expect(fetchDynamic).not.toHaveBeenCalled()
 
@@ -290,6 +303,62 @@ describe('SWR state machine', () => {
 		)
 		expect(miss.headers.get('X-Edge-Cache')).toBe('MISS')
 		expect(fetchDynamic).toHaveBeenCalled()
+	})
+
+	test('prewarm waits for its generation and confirms the cache write', async () => {
+		const kvPut = vi.fn().mockResolvedValue(undefined)
+		const generationGet = vi.fn().mockResolvedValue('current-generation')
+		const env = makeEnv({
+			SITE_CACHE_KV: {
+				get: vi.fn().mockResolvedValue(null),
+				put: kvPut,
+			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
+			CONTENT_KV: {
+				get: generationGet,
+				put: vi.fn(),
+			} as unknown as ParentWorkerEnv['CONTENT_KV'],
+		})
+		const fetchDynamic = vi.fn().mockResolvedValue(
+			new Response('<html>current</html>', {
+				status: 200,
+				headers: { 'content-type': 'text/html' },
+			}),
+		)
+		const ctx = { waitUntil: vi.fn() } as unknown as ExecutionContext
+
+		const staleGeneration = await handlePageCacheRequest(
+			new Request('https://example.com/blog/example', {
+				headers: { [PAGE_CACHE_PREWARM_HEADER]: 'next-generation' },
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		expect(staleGeneration.status).toBe(409)
+		expect(staleGeneration.headers.get(PAGE_CACHE_GENERATION_HEADER)).toBe(
+			'current-generation',
+		)
+		expect(fetchDynamic).not.toHaveBeenCalled()
+		expect(kvPut).not.toHaveBeenCalled()
+
+		clearPageCacheGenerationCache()
+		generationGet.mockResolvedValue('next-generation')
+		const warmed = await handlePageCacheRequest(
+			new Request('https://example.com/blog/example', {
+				headers: { [PAGE_CACHE_PREWARM_HEADER]: 'next-generation' },
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		expect(warmed.status).toBe(200)
+		expect(warmed.headers.get('X-Edge-Cache')).toBe('MISS')
+		expect(warmed.headers.get(PAGE_CACHE_GENERATION_HEADER)).toBe(
+			'next-generation',
+		)
+		expect(warmed.headers.get(PAGE_CACHE_STORED_HEADER)).toBe('true')
+		expect(kvPut).toHaveBeenCalledTimes(1)
+		expect(ctx.waitUntil).not.toHaveBeenCalled()
 	})
 
 	test('client-id request on /blog bypasses the shared cache entirely', async () => {
@@ -414,7 +483,8 @@ describe('SWR state machine', () => {
 	test('fill request strips cookies except theme', async () => {
 		const request = new Request('https://example.com/blog', {
 			headers: {
-				cookie: 'KCD_client_id=abc; en_theme=dark; kcd_d1_bookmark=v1-abc; other=1',
+				cookie:
+					'KCD_client_id=abc; en_theme=dark; kcd_d1_bookmark=v1-abc; other=1',
 			},
 		})
 		const fill = buildPageCacheFillRequest(request)
@@ -533,7 +603,9 @@ describe('SWR state machine', () => {
 		await Promise.all(waitUntilPromises)
 
 		expect(kvPut).toHaveBeenCalledTimes(1)
-		const stored = JSON.parse(String(kvPut.mock.calls[0]?.[1])) as PageCacheEntry
+		const stored = JSON.parse(
+			String(kvPut.mock.calls[0]?.[1]),
+		) as PageCacheEntry
 		const storedHeaderNames = stored.headers.map(([name]) => name.toLowerCase())
 		expect(storedHeaderNames).not.toContain('x-cache-stats')
 		expect(storedHeaderNames).not.toContain('x-d1-stats')

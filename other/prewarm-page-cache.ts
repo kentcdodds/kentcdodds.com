@@ -4,6 +4,8 @@ export type PageCachePrewarmResult = {
   attempts: number;
   status?: number;
   edgeCache?: string;
+  generation?: string;
+  stored?: boolean;
   error?: string;
 };
 
@@ -18,10 +20,12 @@ function sleep(durationMs: number) {
 async function requestPage({
   url,
   fetchImpl,
+  expectedGeneration,
   timeoutMs,
 }: {
   url: string;
   fetchImpl: typeof fetch;
+  expectedGeneration?: string;
   timeoutMs: number;
 }) {
   const controller = new AbortController();
@@ -31,6 +35,9 @@ async function requestPage({
       headers: {
         accept: "text/html",
         "user-agent": "kcd-content-refresh-prewarm",
+        ...(expectedGeneration
+          ? { "x-page-cache-prewarm": expectedGeneration }
+          : {}),
       },
       redirect: "manual",
       signal: controller.signal,
@@ -45,15 +52,17 @@ async function requestPage({
 export async function prewarmPageCache({
   baseUrl,
   paths,
+  expectedGeneration,
   fetchImpl = fetch,
   log = console,
-  maxAttempts = 6,
+  maxAttempts = 75,
   pollDelayMs = 1_000,
   timeoutMs = 15_000,
   sleepImpl = sleep,
 }: {
   baseUrl: string;
   paths: ReadonlyArray<string>;
+  expectedGeneration?: string;
   fetchImpl?: typeof fetch;
   log?: Pick<typeof console, "log" | "warn">;
   maxAttempts?: number;
@@ -73,20 +82,38 @@ export async function prewarmPageCache({
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const response = await requestPage({ url, fetchImpl, timeoutMs });
+        const response = await requestPage({
+          url,
+          fetchImpl,
+          expectedGeneration,
+          timeoutMs,
+        });
         const edgeCache = response.headers.get("X-Edge-Cache") ?? undefined;
+        const generation =
+          response.headers.get("X-Page-Cache-Generation") ?? undefined;
+        const storedHeader = response.headers.get("X-Page-Cache-Stored");
+        const stored =
+          storedHeader === null ? undefined : storedHeader === "true";
+        const generationMatches =
+          !expectedGeneration || generation === expectedGeneration;
         result = {
           url,
           ok:
             response.status === 200 &&
-            (edgeCache === "HIT" || edgeCache === "STALE"),
+            generationMatches &&
+            (edgeCache === "HIT" || edgeCache === "STALE" || stored === true),
           attempts: attempt,
           status: response.status,
           edgeCache,
+          ...(generation ? { generation } : {}),
+          ...(stored !== undefined ? { stored } : {}),
         };
 
         if (result.ok) break;
+        const waitingForGeneration =
+          Boolean(expectedGeneration) && !generationMatches;
         if (
+          !waitingForGeneration &&
           response.status < 500 &&
           response.status !== 429 &&
           edgeCache !== "MISS"
@@ -111,6 +138,8 @@ export async function prewarmPageCache({
         url: result.url,
         attempts: result.attempts,
         edgeCache: result.edgeCache,
+        generation: result.generation,
+        stored: result.stored,
       });
     } else {
       log.warn("Page cache prewarm failed.", result);

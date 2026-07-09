@@ -91,6 +91,60 @@ test("reports a cache bypass without retrying", async () => {
   expect(log.warn).toHaveBeenCalledOnce();
 });
 
+test("waits for the refreshed generation and accepts a confirmed synchronous fill", async () => {
+  const fetchImpl = vi
+    .fn()
+    .mockResolvedValueOnce(
+      new Response(null, {
+        status: 409,
+        headers: {
+          "X-Edge-Cache": "BYPASS",
+          "X-Page-Cache-Generation": "old-generation",
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      new Response("rendered", {
+        status: 200,
+        headers: {
+          "X-Edge-Cache": "MISS",
+          "X-Page-Cache-Generation": "new-generation",
+          "X-Page-Cache-Stored": "true",
+        },
+      }),
+    );
+  const sleepImpl = vi.fn(async () => undefined);
+
+  const result = await prewarmPageCache({
+    baseUrl: "https://example.com",
+    paths: ["/blog/example"],
+    expectedGeneration: "new-generation",
+    fetchImpl,
+    log: createLogger(),
+    maxAttempts: 2,
+    sleepImpl,
+  });
+
+  expect(result.results[0]).toEqual({
+    url: "https://example.com/blog/example",
+    ok: true,
+    attempts: 2,
+    status: 200,
+    edgeCache: "MISS",
+    generation: "new-generation",
+    stored: true,
+  });
+  expect(fetchImpl).toHaveBeenLastCalledWith(
+    "https://example.com/blog/example",
+    expect.objectContaining({
+      headers: expect.objectContaining({
+        "x-page-cache-prewarm": "new-generation",
+      }),
+    }),
+  );
+  expect(sleepImpl).toHaveBeenCalledOnce();
+});
+
 test("retries transient failures and reports an exhausted prewarm", async () => {
   const fetchImpl = vi
     .fn()

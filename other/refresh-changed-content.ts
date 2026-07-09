@@ -212,6 +212,10 @@ export async function refreshChangedContent({
   });
 
   if (refreshResult.ok) {
+    const pageCacheGeneration =
+      typeof refreshResult.response?.pageCacheGeneration === "string"
+        ? refreshResult.response.pageCacheGeneration
+        : undefined;
     const prewarmPaths = getContentPrewarmUrls(contentChanges);
     const prewarm =
       skipPrewarm || prewarmPaths.length === 0
@@ -219,6 +223,9 @@ export async function refreshChangedContent({
         : await prewarmPageCacheImpl({
             baseUrl: prewarmBaseUrl,
             paths: prewarmPaths,
+            ...(pageCacheGeneration
+              ? { expectedGeneration: pageCacheGeneration }
+              : {}),
             log,
           });
     log.log(`Content refresh finished.`, {
