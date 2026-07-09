@@ -331,10 +331,27 @@ describe('SWR state machine', () => {
 		const fetchDynamic = vi.fn().mockResolvedValue(
 			new Response('<html>current</html>', {
 				status: 200,
-				headers: { 'content-type': 'text/html' },
+				headers: {
+					'content-type': 'text/html',
+					'X-Content-Version': 'content-v2',
+				},
 			}),
 		)
 		const ctx = { waitUntil: vi.fn() } as unknown as ExecutionContext
+
+		const incompletePrewarm = await handlePageCacheRequest(
+			new Request('https://example.com/blog/example', {
+				headers: {
+					[PAGE_CACHE_PREWARM_HEADER]: 'current-generation',
+				},
+			}),
+			env,
+			ctx,
+			fetchDynamic,
+		)
+		expect(incompletePrewarm.status).toBe(400)
+		expect(fetchDynamic).not.toHaveBeenCalled()
+		expect(kvPut).not.toHaveBeenCalled()
 
 		const staleGeneration = await handlePageCacheRequest(
 			new Request('https://example.com/blog/example', {

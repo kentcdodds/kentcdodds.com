@@ -567,7 +567,17 @@ export async function handlePageCacheRequest(
 
 	const generation = await getPageCacheGeneration(env.CONTENT_KV)
 	const prewarmGeneration = request.headers.get(PAGE_CACHE_PREWARM_HEADER)
-	if (prewarmGeneration && prewarmGeneration !== generation) {
+	const prewarmContentVersion = request.headers.get(
+		PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER,
+	)
+	if (Boolean(prewarmGeneration) !== Boolean(prewarmContentVersion)) {
+		return new Response(null, {
+			status: 400,
+			headers: { [PAGE_CACHE_GENERATION_HEADER]: generation },
+		})
+	}
+	const isPrewarm = Boolean(prewarmGeneration && prewarmContentVersion)
+	if (isPrewarm && prewarmGeneration !== generation) {
 		return new Response(null, {
 			status: 409,
 			headers: {
@@ -579,7 +589,7 @@ export async function handlePageCacheRequest(
 	const key = buildPageCacheKey(request, generation)
 	// A prewarm must render the requested content version even if another
 	// request filled this generation before the manifest propagated.
-	const entry = prewarmGeneration
+	const entry = isPrewarm
 		? null
 		: await readPageCacheEntry(env.SITE_CACHE_KV, key)
 	const pathname = new URL(request.url).pathname
@@ -611,7 +621,20 @@ export async function handlePageCacheRequest(
 	if (request.method === 'GET') {
 		if (canStoreOwnResponse(request)) {
 			const responseForStore = response.clone()
-			if (prewarmGeneration) {
+			if (isPrewarm) {
+				if (
+					responseForStore.headers.get('X-Content-Version') !==
+					prewarmContentVersion
+				) {
+					return new Response(null, {
+						status: 409,
+						headers: {
+							[PAGE_CACHE_GENERATION_HEADER]: generation,
+							'X-Content-Version':
+								responseForStore.headers.get('X-Content-Version') ?? '',
+						},
+					})
+				}
 				let stored = false
 				try {
 					stored = await storePageCacheFromFillResponse(
