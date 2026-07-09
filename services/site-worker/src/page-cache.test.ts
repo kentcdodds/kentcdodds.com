@@ -15,6 +15,7 @@ import {
 	PAGE_CACHE_FRESH_TTL_SEC,
 	PAGE_CACHE_GENERATION_HEADER,
 	PAGE_CACHE_GENERATION_MEMORY_TTL_MS,
+	PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER,
 	PAGE_CACHE_PREWARM_HEADER,
 	PAGE_CACHE_STORED_HEADER,
 	readPageCacheEntry,
@@ -307,10 +308,19 @@ describe('SWR state machine', () => {
 
 	test('prewarm waits for its generation and confirms the cache write', async () => {
 		const kvPut = vi.fn().mockResolvedValue(undefined)
+		const kvGet = vi.fn().mockResolvedValue(
+			JSON.stringify({
+				body: '<html>stale content</html>',
+				status: 200,
+				headers: [['content-type', 'text/html']],
+				nonce: '',
+				storedAt: Date.now(),
+			} satisfies PageCacheEntry),
+		)
 		const generationGet = vi.fn().mockResolvedValue('current-generation')
 		const env = makeEnv({
 			SITE_CACHE_KV: {
-				get: vi.fn().mockResolvedValue(null),
+				get: kvGet,
 				put: kvPut,
 			} as unknown as ParentWorkerEnv['SITE_CACHE_KV'],
 			CONTENT_KV: {
@@ -328,7 +338,10 @@ describe('SWR state machine', () => {
 
 		const staleGeneration = await handlePageCacheRequest(
 			new Request('https://example.com/blog/example', {
-				headers: { [PAGE_CACHE_PREWARM_HEADER]: 'next-generation' },
+				headers: {
+					[PAGE_CACHE_PREWARM_HEADER]: 'next-generation',
+					[PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER]: 'content-v2',
+				},
 			}),
 			env,
 			ctx,
@@ -345,7 +358,10 @@ describe('SWR state machine', () => {
 		generationGet.mockResolvedValue('next-generation')
 		const warmed = await handlePageCacheRequest(
 			new Request('https://example.com/blog/example', {
-				headers: { [PAGE_CACHE_PREWARM_HEADER]: 'next-generation' },
+				headers: {
+					[PAGE_CACHE_PREWARM_HEADER]: 'next-generation',
+					[PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER]: 'content-v2',
+				},
 			}),
 			env,
 			ctx,
@@ -357,6 +373,7 @@ describe('SWR state machine', () => {
 			'next-generation',
 		)
 		expect(warmed.headers.get(PAGE_CACHE_STORED_HEADER)).toBe('true')
+		expect(kvGet).not.toHaveBeenCalled()
 		expect(kvPut).toHaveBeenCalledTimes(1)
 		expect(ctx.waitUntil).not.toHaveBeenCalled()
 	})

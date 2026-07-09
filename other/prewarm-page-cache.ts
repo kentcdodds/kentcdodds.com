@@ -5,6 +5,7 @@ export type PageCachePrewarmResult = {
   status?: number;
   edgeCache?: string;
   generation?: string;
+  contentVersion?: string;
   stored?: boolean;
   error?: string;
 };
@@ -21,11 +22,13 @@ async function requestPage({
   url,
   fetchImpl,
   expectedGeneration,
+  expectedContentVersion,
   timeoutMs,
 }: {
   url: string;
   fetchImpl: typeof fetch;
   expectedGeneration?: string;
+  expectedContentVersion?: string;
   timeoutMs: number;
 }) {
   const controller = new AbortController();
@@ -37,6 +40,11 @@ async function requestPage({
         "user-agent": "kcd-content-refresh-prewarm",
         ...(expectedGeneration
           ? { "x-page-cache-prewarm": expectedGeneration }
+          : {}),
+        ...(expectedContentVersion
+          ? {
+              "x-page-cache-prewarm-content-version": expectedContentVersion,
+            }
           : {}),
       },
       redirect: "manual",
@@ -53,6 +61,7 @@ export async function prewarmPageCache({
   baseUrl,
   paths,
   expectedGeneration,
+  expectedContentVersion,
   fetchImpl = fetch,
   log = console,
   maxAttempts = 75,
@@ -63,6 +72,7 @@ export async function prewarmPageCache({
   baseUrl: string;
   paths: ReadonlyArray<string>;
   expectedGeneration?: string;
+  expectedContentVersion?: string;
   fetchImpl?: typeof fetch;
   log?: Pick<typeof console, "log" | "warn">;
   maxAttempts?: number;
@@ -86,34 +96,53 @@ export async function prewarmPageCache({
           url,
           fetchImpl,
           expectedGeneration,
+          expectedContentVersion,
           timeoutMs,
         });
         const edgeCache = response.headers.get("X-Edge-Cache") ?? undefined;
         const generation =
           response.headers.get("X-Page-Cache-Generation") ?? undefined;
+        const contentVersion =
+          response.headers.get("X-Content-Version") ?? undefined;
         const storedHeader = response.headers.get("X-Page-Cache-Stored");
         const stored =
           storedHeader === null ? undefined : storedHeader === "true";
         const generationMatches =
           !expectedGeneration || generation === expectedGeneration;
+        const contentVersionMatches =
+          !expectedContentVersion || contentVersion === expectedContentVersion;
         result = {
           url,
           ok:
             response.status === 200 &&
             generationMatches &&
+            contentVersionMatches &&
             (edgeCache === "HIT" || edgeCache === "STALE" || stored === true),
           attempts: attempt,
           status: response.status,
           edgeCache,
           ...(generation ? { generation } : {}),
+          ...(contentVersion ? { contentVersion } : {}),
           ...(stored !== undefined ? { stored } : {}),
         };
 
         if (result.ok) break;
         const waitingForGeneration =
           Boolean(expectedGeneration) && !generationMatches;
+        const waitingForContentVersion =
+          Boolean(expectedContentVersion) && !contentVersionMatches;
+        if (
+          generationMatches &&
+          contentVersionMatches &&
+          edgeCache === "MISS" &&
+          stored === false
+        ) {
+          result.error = "Worker rendered the page but could not store it";
+          break;
+        }
         if (
           !waitingForGeneration &&
+          !waitingForContentVersion &&
           response.status < 500 &&
           response.status !== 429 &&
           edgeCache !== "MISS"
@@ -139,6 +168,7 @@ export async function prewarmPageCache({
         attempts: result.attempts,
         edgeCache: result.edgeCache,
         generation: result.generation,
+        contentVersion: result.contentVersion,
         stored: result.stored,
       });
     } else {

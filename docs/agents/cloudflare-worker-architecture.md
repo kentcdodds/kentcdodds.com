@@ -404,13 +404,13 @@ in the entry. On every `HIT`/`STALE`, the parent generates a fresh nonce,
 The parent in-memory generation cache is cleared on bump.
 After a content-only refresh completes its final generation bump, the refresh
 workflow sends cookieless requests for affected public URLs through
-`kentcdodds.com`. Each request carries the generation returned by the refresh;
-an isolate on an older generation returns `409` so the workflow retries. On a
-cache miss, the worker synchronously stores the response and confirms it with
-`X-Page-Cache-Stored: true`; an existing `HIT` for the requested generation is
-also accepted. This renders changed MDX before an end user arrives without
-depending on KV read-after-write visibility. Blog changes also prewarm the
-homepage, blog index, feeds, and sitemap.
+`kentcdodds.com`. Each request carries the cache generation and content version
+returned by the refresh; an isolate on an older value returns `409` so the
+workflow retries. Prewarm requests bypass existing page entries and parent
+manifest caches, then synchronously replace the entry and confirm it with
+`X-Page-Cache-Stored: true`. This prevents a fresh cache generation from being
+filled with stale MDX and does not depend on KV read-after-write visibility.
+Blog changes also prewarm the homepage, blog index, feeds, and sitemap.
 
 ### Observability
 

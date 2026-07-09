@@ -32,6 +32,7 @@ import {
 	clearPageCacheGenerationCache,
 	handlePageCacheRequest,
 	PAGE_CACHE_GENERATION_HEADER,
+	PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER,
 } from './page-cache.ts'
 import { serveStaticAsset } from './static-assets.ts'
 import { handleMediaRequest } from './media.ts'
@@ -66,6 +67,7 @@ function getStringEnvBindings(env: ParentWorkerEnv) {
 }
 
 const ARTIFACT_PUBLISH_PATH = '/resources/mdx-artifacts'
+const CONTENT_VERSION_HEADER = 'X-Content-Version'
 
 async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	// Publishing MDX artifacts is effectively a code deploy (the bundles run
@@ -182,7 +184,11 @@ async function handleDynamicRequest(
 	ctx: ParentExecutionContext,
 ) {
 	const parentStartedAt = performance.now()
-	const bypassManifestCache = shouldBypassManifestCache(request)
+	const expectedContentVersion = request.headers.get(
+		PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER,
+	)
+	const bypassManifestCache =
+		shouldBypassManifestCache(request) || Boolean(expectedContentVersion)
 	if (bypassManifestCache) {
 		clearManifestCache()
 		clearArtifactBundleCache()
@@ -195,6 +201,12 @@ async function handleDynamicRequest(
 	if (!manifest) {
 		return unprovisionedResponse({
 			missing: 'CONTENT_KV mdx-manifest:current',
+		})
+	}
+	if (expectedContentVersion && manifest.version !== expectedContentVersion) {
+		return new Response(null, {
+			status: 409,
+			headers: { [CONTENT_VERSION_HEADER]: manifest.version },
 		})
 	}
 
@@ -272,6 +284,7 @@ async function handleDynamicRequest(
 		moduleMapCache: hadModuleMapCache ? 1 : 0,
 	})
 	const headers = new Headers(response.headers)
+	headers.set(CONTENT_VERSION_HEADER, manifest.version)
 	headers.set(
 		'X-Cold-Start-Timing',
 		mergeColdStartTimingHeaders(

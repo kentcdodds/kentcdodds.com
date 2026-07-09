@@ -59,6 +59,7 @@ describe("refreshChangedContent", () => {
     const postRefreshCacheImpl = vi.fn(async () => ({
       ok: true,
       pageCacheGeneration: "generation-2",
+      contentVersion: "content-v2",
     }));
     const log = createLogger();
 
@@ -182,6 +183,7 @@ describe("refreshChangedContent", () => {
     const postRefreshCacheImpl = vi.fn(async () => ({
       ok: true,
       pageCacheGeneration: "generation-2",
+      contentVersion: "content-v2",
     }));
     const prewarmResult = {
       attempted: 6,
@@ -216,6 +218,7 @@ describe("refreshChangedContent", () => {
         "/sitemap.xml",
       ],
       expectedGeneration: "generation-2",
+      expectedContentVersion: "content-v2",
       log,
     });
     expect(result).toEqual({
@@ -224,6 +227,37 @@ describe("refreshChangedContent", () => {
       contentPaths: ["blog/some-post/index.mdx"],
       prewarm: prewarmResult,
     });
+  });
+
+  test("does not prewarm without generation and content version guarantees", async () => {
+    const prewarmPageCacheImpl = vi.fn();
+    const log = createLogger();
+
+    const result = await refreshChangedContent({
+      currentCommitSha: "current-sha",
+      fetchJsonImpl: vi.fn(async () => ({ sha: "compare-sha" })),
+      getChangedFilesImpl: vi.fn(async () => [
+        {
+          changeType: "modified",
+          filename: "services/site/content/blog/some-post.mdx",
+        },
+      ]),
+      postRefreshCacheImpl: vi.fn(async () => ({ ok: true })),
+      prewarmPageCacheImpl,
+      log,
+      skipPublish: true,
+      skipPrewarm: false,
+    });
+
+    expect(result).toMatchObject({
+      status: "refreshed",
+      prewarm: { attempted: 0, warmed: 0, failed: 0, results: [] },
+    });
+    expect(prewarmPageCacheImpl).not.toHaveBeenCalled();
+    expect(log.warn).toHaveBeenCalledWith(
+      expect.stringContaining("did not identify"),
+      { pageCacheGeneration: undefined, contentVersion: undefined },
+    );
   });
 
   test("returns refresh-failed after exhausting retries without throwing", async () => {

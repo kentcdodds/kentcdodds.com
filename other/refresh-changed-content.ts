@@ -216,18 +216,33 @@ export async function refreshChangedContent({
       typeof refreshResult.response?.pageCacheGeneration === "string"
         ? refreshResult.response.pageCacheGeneration
         : undefined;
+    const contentVersion =
+      typeof refreshResult.response?.contentVersion === "string"
+        ? refreshResult.response.contentVersion
+        : undefined;
     const prewarmPaths = getContentPrewarmUrls(contentChanges);
-    const prewarm =
-      skipPrewarm || prewarmPaths.length === 0
-        ? { attempted: 0, warmed: 0, failed: 0, results: [] }
-        : await prewarmPageCacheImpl({
-            baseUrl: prewarmBaseUrl,
-            paths: prewarmPaths,
-            ...(pageCacheGeneration
-              ? { expectedGeneration: pageCacheGeneration }
-              : {}),
-            log,
-          });
+    let prewarm: Awaited<ReturnType<typeof prewarmPageCache>> = {
+      attempted: 0,
+      warmed: 0,
+      failed: 0,
+      results: [],
+    };
+    if (!skipPrewarm && prewarmPaths.length > 0) {
+      if (!pageCacheGeneration || !contentVersion) {
+        log.warn(
+          "Skipping page cache prewarm because the refresh response did not identify its cache generation and content version.",
+          { pageCacheGeneration, contentVersion },
+        );
+      } else {
+        prewarm = await prewarmPageCacheImpl({
+          baseUrl: prewarmBaseUrl,
+          paths: prewarmPaths,
+          expectedGeneration: pageCacheGeneration,
+          expectedContentVersion: contentVersion,
+          log,
+        });
+      }
+    }
     log.log(`Content refresh finished.`, {
       response: refreshResult.response,
       attempts: refreshResult.attempts,

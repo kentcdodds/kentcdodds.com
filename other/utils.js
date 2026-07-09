@@ -72,10 +72,14 @@ export async function postRefreshCache({
               }
               const pageCacheGeneration =
                 res.headers["x-page-cache-generation"];
+              const contentVersion = res.headers["x-content-version"];
               resolve({
                 ...parsed,
                 ...(typeof pageCacheGeneration === "string"
                   ? { pageCacheGeneration }
+                  : {}),
+                ...(typeof contentVersion === "string"
+                  ? { contentVersion }
                   : {}),
               });
             } catch {

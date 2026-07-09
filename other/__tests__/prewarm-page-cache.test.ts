@@ -100,6 +100,7 @@ test("waits for the refreshed generation and accepts a confirmed synchronous fil
         headers: {
           "X-Edge-Cache": "BYPASS",
           "X-Page-Cache-Generation": "old-generation",
+          "X-Content-Version": "old-content",
         },
       }),
     )
@@ -109,6 +110,7 @@ test("waits for the refreshed generation and accepts a confirmed synchronous fil
         headers: {
           "X-Edge-Cache": "MISS",
           "X-Page-Cache-Generation": "new-generation",
+          "X-Content-Version": "new-content",
           "X-Page-Cache-Stored": "true",
         },
       }),
@@ -119,6 +121,7 @@ test("waits for the refreshed generation and accepts a confirmed synchronous fil
     baseUrl: "https://example.com",
     paths: ["/blog/example"],
     expectedGeneration: "new-generation",
+    expectedContentVersion: "new-content",
     fetchImpl,
     log: createLogger(),
     maxAttempts: 2,
@@ -132,6 +135,7 @@ test("waits for the refreshed generation and accepts a confirmed synchronous fil
     status: 200,
     edgeCache: "MISS",
     generation: "new-generation",
+    contentVersion: "new-content",
     stored: true,
   });
   expect(fetchImpl).toHaveBeenLastCalledWith(
@@ -139,10 +143,45 @@ test("waits for the refreshed generation and accepts a confirmed synchronous fil
     expect.objectContaining({
       headers: expect.objectContaining({
         "x-page-cache-prewarm": "new-generation",
+        "x-page-cache-prewarm-content-version": "new-content",
       }),
     }),
   );
   expect(sleepImpl).toHaveBeenCalledOnce();
+});
+
+test("fails immediately when the matching worker cannot store the page", async () => {
+  const fetchImpl = vi.fn(async () => {
+    return new Response("not cacheable", {
+      status: 200,
+      headers: {
+        "X-Edge-Cache": "MISS",
+        "X-Page-Cache-Generation": "new-generation",
+        "X-Content-Version": "new-content",
+        "X-Page-Cache-Stored": "false",
+      },
+    });
+  });
+  const sleepImpl = vi.fn(async () => undefined);
+
+  const result = await prewarmPageCache({
+    baseUrl: "https://example.com",
+    paths: ["/blog/example"],
+    expectedGeneration: "new-generation",
+    expectedContentVersion: "new-content",
+    fetchImpl,
+    log: createLogger(),
+    sleepImpl,
+  });
+
+  expect(result.results[0]).toMatchObject({
+    ok: false,
+    attempts: 1,
+    stored: false,
+    error: "Worker rendered the page but could not store it",
+  });
+  expect(fetchImpl).toHaveBeenCalledOnce();
+  expect(sleepImpl).not.toHaveBeenCalled();
 });
 
 test("retries transient failures and reports an exhausted prewarm", async () => {

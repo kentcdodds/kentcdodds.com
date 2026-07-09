@@ -8,6 +8,8 @@ export const PAGE_CACHE_GENERATION_MEMORY_TTL_MS = 15_000
 export const PAGE_CACHE_KV_READ_CACHE_TTL_SEC = 30
 export const PAGE_CACHE_GENERATION_HEADER = 'X-Page-Cache-Generation'
 export const PAGE_CACHE_PREWARM_HEADER = 'X-Page-Cache-Prewarm'
+export const PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER =
+	'X-Page-Cache-Prewarm-Content-Version'
 export const PAGE_CACHE_STORED_HEADER = 'X-Page-Cache-Stored'
 
 const THEME_COOKIE_NAME = 'en_theme'
@@ -575,7 +577,11 @@ export async function handlePageCacheRequest(
 		})
 	}
 	const key = buildPageCacheKey(request, generation)
-	const entry = await readPageCacheEntry(env.SITE_CACHE_KV, key)
+	// A prewarm must render the requested content version even if another
+	// request filled this generation before the manifest propagated.
+	const entry = prewarmGeneration
+		? null
+		: await readPageCacheEntry(env.SITE_CACHE_KV, key)
 	const pathname = new URL(request.url).pathname
 
 	if (entry) {
