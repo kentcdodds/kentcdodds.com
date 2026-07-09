@@ -118,6 +118,26 @@ reference:
   locally requires Docker plus real R2-accessible inputs. The sandbox image
   expects `services/call-kent-audio-worker/assets/{intro,interstitial,outro}.mp3`.
 
+## Mock architecture
+
+- One canonical, workerd-safe mock handler per external service lives in
+  `services/site/app/utils/outbound-mock-*.server.ts` (pure
+  `(request) => Response | null` functions). The dev worker
+  (`installDevMockFetch`), Playwright e2e, and the production worker's
+  `OutboundProxy` (when `OUTBOUND_MOCKS=true`) all run these directly.
+- The MSW tree (`services/site/mocks/*`, vitest backend tests only) must not
+  reimplement service behavior: register per-host bridges via
+  `bridgeOutboundMock` in `services/site/mocks/msw-bridge.ts` that delegate to
+  the canonical handler and `passthrough()` when it declines.
+- Canonical handlers must stay workerd-safe: no `msw`, `node:fs`, faker, or
+  module-scope I/O (`node:crypto` is fine). Node-only behavior (fixture files,
+  content-dir scans, Vectorize corpus seeding) stays in `mocks/*` or enters
+  via options callbacks (see `onOutboundEmail`).
+- Services fetched only from Node contexts (GitHub, OAuth, oEmbed, Twitter,
+  Simplecast, YouTube, Mermaid) remain MSW-only.
+- Gotcha: `new Response('', { status: 204 })` throws in Node undici — use a
+  `null` body for null-body statuses.
+
 ## Seed data
 
 The seed script (`services/site/scripts/seed-local-d1.mjs`) creates an admin

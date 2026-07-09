@@ -9,6 +9,8 @@ type StoredObject = {
 	size: number
 }
 
+// Seed a handful of objects so `/search/admin` is usable in local mocks without
+// requiring real R2 access.
 const FIXTURE_MANIFEST_OBJECTS: Record<string, unknown> = {
 	'manifests/repo-content.json': {
 		version: 1,
@@ -25,6 +27,27 @@ const FIXTURE_MANIFEST_OBJECTS: Record<string, unknown> = {
 						chunkIndex: 0,
 						chunkCount: 2,
 					},
+					{
+						id: 'blog:super-simple-start-to-remix:chunk:1',
+						hash: 'fixture-hash-blog-1',
+						snippet: 'Fixture snippet: second chunk...',
+						chunkIndex: 1,
+						chunkCount: 2,
+					},
+				],
+			},
+			'page:uses': {
+				type: 'page',
+				url: '/uses',
+				title: 'Uses',
+				chunks: [
+					{
+						id: 'page:uses:chunk:0',
+						hash: 'fixture-hash-page-0',
+						snippet: 'Fixture snippet: page content...',
+						chunkIndex: 0,
+						chunkCount: 1,
+					},
 				],
 			},
 		},
@@ -36,6 +59,7 @@ const FIXTURE_MANIFEST_OBJECTS: Record<string, unknown> = {
 				type: 'ck',
 				url: '/calls/1/1',
 				title: 'Fixture Call Kent Episode',
+				sourceUpdatedAt: '2026-02-01T00:00:00.000Z',
 				chunks: [
 					{
 						id: 'ck:s01e01:chunk:0',
@@ -48,20 +72,109 @@ const FIXTURE_MANIFEST_OBJECTS: Record<string, unknown> = {
 			},
 		},
 	},
+	'manifests/youtube-PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf.json': {
+		version: 1,
+		docs: {
+			'youtube:dQw4w9WgXcQ': {
+				type: 'youtube',
+				url: '/youtube?video=dQw4w9WgXcQ',
+				title: 'Fixture YouTube Video',
+				sourceUpdatedAt: '2026-02-01',
+				transcriptSource: 'manual',
+				chunks: [
+					{
+						id: 'youtube:dQw4w9WgXcQ:chunk:0',
+						hash: 'fixture-hash-yt-0',
+						snippet: 'Fixture snippet: transcript chunk...',
+						chunkIndex: 0,
+						chunkCount: 3,
+					},
+					{
+						id: 'youtube:dQw4w9WgXcQ:chunk:1',
+						hash: 'fixture-hash-yt-1',
+						snippet: 'Fixture snippet: another transcript chunk...',
+						chunkIndex: 1,
+						chunkCount: 3,
+					},
+					{
+						id: 'youtube:dQw4w9WgXcQ:chunk:2',
+						hash: 'fixture-hash-yt-2',
+						snippet: 'Fixture snippet: third transcript chunk...',
+						chunkIndex: 2,
+						chunkCount: 3,
+					},
+				],
+			},
+		},
+	},
 	'lexical-search/repo-content.json': {
 		version: 1,
 		generatedAt: '2026-02-01T00:00:00.000Z',
-		chunks: [],
+		chunks: [
+			{
+				id: 'blog:super-simple-start-to-remix:chunk:0',
+				type: 'blog',
+				slug: 'super-simple-start-to-remix',
+				url: '/blog/super-simple-start-to-remix',
+				title: 'Super Simple Start to Remix',
+				snippet: 'Fixture snippet: this represents indexed blog content...',
+				text: 'Remix basics, loaders, actions, and routing concepts.',
+				chunkIndex: 0,
+				chunkCount: 2,
+			},
+			{
+				id: 'page:uses:chunk:0',
+				type: 'page',
+				slug: 'uses',
+				url: '/uses',
+				title: 'Uses',
+				snippet: 'Fixture snippet: page content...',
+				text: 'Kent uses hardware, software, keyboard, and editor tools.',
+				chunkIndex: 0,
+				chunkCount: 1,
+			},
+		],
 	},
 	'lexical-search/podcasts.json': {
 		version: 1,
 		generatedAt: '2026-02-01T00:00:00.000Z',
-		chunks: [],
+		chunks: [
+			{
+				id: 'ck:s01e01:chunk:0',
+				type: 'ck',
+				slug: 's01e01',
+				url: '/calls/1/1',
+				title: 'Fixture Call Kent Episode',
+				snippet: 'Fixture snippet: podcast summary...',
+				text: 'Authentication, debugging, and practical software engineering advice.',
+				chunkIndex: 0,
+				chunkCount: 1,
+				sourceUpdatedAt: '2026-02-01T00:00:00.000Z',
+			},
+		],
 	},
 	'lexical-search/youtube.json': {
 		version: 1,
 		generatedAt: '2026-02-01T00:00:00.000Z',
-		chunks: [],
+		chunks: [
+			{
+				id: 'youtube:dQw4w9WgXcQ:chunk:0',
+				type: 'youtube',
+				slug: 'dQw4w9WgXcQ',
+				url: '/youtube?video=dQw4w9WgXcQ',
+				title: 'Fixture YouTube Video',
+				snippet: 'Fixture snippet: transcript chunk...',
+				text: 'React shallow rendering and testing discussion.',
+				chunkIndex: 0,
+				chunkCount: 3,
+				startSeconds: 123,
+				endSeconds: 150,
+				imageUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+				imageAlt: 'Fixture YouTube Video',
+				sourceUpdatedAt: '2026-02-01',
+				transcriptSource: 'manual',
+			},
+		],
 	},
 }
 
@@ -219,7 +332,11 @@ function bodyInitFromBytes(bytes: Uint8Array): BodyInit {
 	) as ArrayBuffer
 }
 
-function xmlResponse(body: string, status = 200, headers: Record<string, string> = {}) {
+function xmlResponse(
+	body: string,
+	status = 200,
+	headers: Record<string, string> = {},
+) {
 	return new Response(body, {
 		status,
 		headers: {
@@ -250,7 +367,8 @@ export async function maybeHandleR2MockFetch(request: Request) {
 
 	if (request.method === 'DELETE') {
 		if (key) store.delete(key)
-		return new Response('', { status: 204 })
+		// Note: 204 is a null-body status; passing '' throws in Node (undici).
+		return new Response(null, { status: 204 })
 	}
 
 	if (request.method === 'HEAD') {

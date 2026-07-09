@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import {
 	handleCallKentAudioProcessorEvent,
 	type CallKentAudioProcessorEvent,
@@ -12,8 +12,40 @@ import {
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
 
-function json(data: unknown, init?: ResponseInit) {
-	return Response.json(data, init)
+type CloudflareApiEnvelope<T> = {
+	success: boolean
+	errors: Array<{ code: number; message: string }>
+	messages: Array<{ code: number; message: string }>
+	result: T
+}
+
+type CallKentQueueEnvelope = {
+	content_type?: string
+	body?: {
+		draftId?: string
+		callAudioKey?: string
+		responseAudioKey?: string
+	}
+}
+
+function jsonOk<T>(result: T, init?: { status?: number }) {
+	const body: CloudflareApiEnvelope<T> = {
+		success: true,
+		errors: [],
+		messages: [],
+		result,
+	}
+	return Response.json(body, { status: init?.status ?? 200 })
+}
+
+function jsonError(status: number, message: string, code = 10000) {
+	const body: CloudflareApiEnvelope<null> = {
+		success: false,
+		errors: [{ code, message }],
+		messages: [],
+		result: null,
+	}
+	return Response.json(body, { status })
 }
 
 function getBearerToken(request: Request) {
@@ -28,7 +60,11 @@ function shouldMockCloudflare(request: Request) {
 	return Boolean(token && token.startsWith('MOCK'))
 }
 
-function concatUint8Arrays(parts: Uint8Array[]) {
+function clamp(n: number, min: number, max: number) {
+	return Math.min(max, Math.max(min, n))
+}
+
+function concatUint8Arrays(parts: Array<Uint8Array>) {
 	const total = parts.reduce((sum, part) => sum + part.length, 0)
 	const out = new Uint8Array(total)
 	let offset = 0
@@ -43,18 +79,26 @@ function modelFromWorkersAiGatewayPathname(pathname: string) {
 	const marker = '/workers-ai/'
 	const index = pathname.indexOf(marker)
 	if (index === -1) return null
-	return decodeURIComponent(pathname.slice(index + marker.length))
+	const raw = pathname.slice(index + marker.length)
+	if (!raw) return null
+	// `raw` may include slashes (e.g. @cf/google/embeddinggemma-300m) or be a
+	// single encoded segment.
+	return decodeURIComponent(raw)
 }
 
 function makePcm16SineWaveWav({
 	durationSeconds,
 	frequencyHz,
+	sampleRate = 8000,
+	amplitude = 0.25,
 }: {
 	durationSeconds: number
 	frequencyHz: number
+	sampleRate?: number
+	amplitude?: number
 }) {
-	const sampleRate = 16_000
-	const numSamples = Math.floor(sampleRate * durationSeconds)
+	const safeDuration = clamp(durationSeconds, 0.25, 30)
+	const numSamples = Math.floor(safeDuration * sampleRate)
 	const bytesPerSample = 2
 	const dataSize = numSamples * bytesPerSample
 	const buffer = new ArrayBuffer(44 + dataSize)
@@ -77,19 +121,55 @@ function makePcm16SineWaveWav({
 	view.setUint16(34, 16, true)
 	writeString(36, 'data')
 	view.setUint32(40, dataSize, true)
+	const twoPiF = 2 * Math.PI * frequencyHz
+	const scale = Math.max(0, Math.min(1, amplitude)) * 32_767
 	for (let i = 0; i < numSamples; i++) {
 		const t = i / sampleRate
-		const sample = Math.sin(2 * Math.PI * frequencyHz * t) * 0.2
-		view.setInt16(44 + i * 2, Math.floor(sample * 32_767), true)
+		const sample = Math.round(Math.sin(twoPiF * t) * scale)
+		view.setInt16(44 + i * 2, sample, true)
 	}
 	return new Uint8Array(buffer)
+}
+
+function frequencyFromSpeakerAndText(speaker: string, text: string) {
+	const hash = createHash('sha256')
+		.update(`${speaker}:${text.slice(0, 64)}`, 'utf8')
+		.digest()
+	const byte = hash[0] ?? 0
+	// 220Hz..880Hz
+	return 220 + Math.round((byte / 255) * 660)
+}
+
+function isCallKentQueueMessage(value: unknown): value is {
+	draftId: string
+	callAudioKey: string
+	responseAudioKey: string
+} {
+	if (!value || typeof value !== 'object') return false
+	const candidate = value as {
+		draftId?: unknown
+		callAudioKey?: unknown
+		responseAudioKey?: unknown
+	}
+	return (
+		typeof candidate.draftId === 'string' &&
+		candidate.draftId.length > 0 &&
+		typeof candidate.callAudioKey === 'string' &&
+		candidate.callAudioKey.length > 0 &&
+		typeof candidate.responseAudioKey === 'string' &&
+		candidate.responseAudioKey.length > 0
+	)
+}
+
+function isEmbeddingsRequestBody(body: Record<string, unknown> | null) {
+	return Array.isArray(body?.text)
 }
 
 async function dispatchCallKentAudioProcessorEvent(
 	event: CallKentAudioProcessorEvent,
 ) {
 	// Dev workerd cannot await nested localhost callback POSTs during queue enqueue
-	// (same-isolate deadlock). Mirror MSW by dispatching in-process instead.
+	// (same-isolate deadlock). Mirror production mocks by dispatching in-process instead.
 	await handleCallKentAudioProcessorEvent(event)
 }
 
@@ -150,8 +230,9 @@ async function handleWorkersAiGateway(request: Request, url: URL) {
 		modelFromWorkersAiGatewayPathname(url.pathname) ?? 'unknown-model'
 	const contentType = (request.headers.get('content-type') ?? '').toLowerCase()
 
+	// Transcription requests in-app are raw MP3 bytes (`audio/mpeg`).
 	if (contentType.includes('audio/')) {
-		return json({
+		return jsonOk({
 			text: `Mock transcription (${model}): hello from Workers AI.`,
 		})
 	}
@@ -164,6 +245,8 @@ async function handleWorkersAiGateway(request: Request, url: URL) {
 	}
 
 	const lowerModel = model.toLowerCase()
+
+	// Text-to-speech (e.g. @cf/deepgram/aura-2-en, @cf/myshell-ai/melotts).
 	if (
 		lowerModel.includes('deepgram/aura') ||
 		lowerModel.includes('aura-') ||
@@ -176,22 +259,20 @@ async function handleWorkersAiGateway(request: Request, url: URL) {
 					? body.prompt
 					: ''
 		if (!text.trim()) {
-			return json(
-				{
-					success: false,
-					errors: [
-						{
-							code: 10001,
-							message: `Mock Workers AI expected JSON body { text: string } for TTS (model: ${model}).`,
-						},
-					],
-				},
-				{ status: 400 },
+			return jsonError(
+				400,
+				`Mock Workers AI expected JSON body { text: string } for TTS (model: ${model}).`,
+				10001,
 			)
 		}
+		const speaker =
+			typeof body?.speaker === 'string' && body.speaker.trim()
+				? body.speaker.trim()
+				: 'luna'
+		const frequencyHz = frequencyFromSpeakerAndText(speaker, text)
 		const wav = makePcm16SineWaveWav({
 			durationSeconds: 6,
-			frequencyHz: 440,
+			frequencyHz,
 		})
 		return new Response(wav, {
 			status: 200,
@@ -202,6 +283,7 @@ async function handleWorkersAiGateway(request: Request, url: URL) {
 		})
 	}
 
+	// Text generation / chat models (used for Call Kent metadata generation).
 	const messagesRaw = body?.messages
 	const hasMessages = Array.isArray(messagesRaw) && messagesRaw.length > 0
 	const promptRaw = body?.prompt
@@ -234,10 +316,10 @@ async function handleWorkersAiGateway(request: Request, url: URL) {
 				.replace(/([.!?])\s+(?=[A-Z0-9])/g, '$1\n\n')
 				.replace(/\n{3,}/g, '\n\n')
 				.trim()
-			return json({ response: formatted })
+			return jsonOk({ response: formatted })
 		}
 
-		return json({
+		return jsonOk({
 			response: JSON.stringify({
 				title: `Mock Call Kent episode title (${model})`,
 				description:
@@ -247,75 +329,59 @@ async function handleWorkersAiGateway(request: Request, url: URL) {
 		})
 	}
 
-	return json({
-		success: false,
-		errors: [
-			{
-				code: 10001,
-				message: `Mock Workers AI received unsupported request for model: ${model}`,
-			},
-		],
-	}, { status: 400 })
+	// Embeddings ({ text: string[] }) stay in the MSW layer (vector-store coupling).
+	// Return null so the MSW bridge can handle them; workerd leaves them unhandled.
+	if (isEmbeddingsRequestBody(body)) return null
+
+	return jsonError(
+		400,
+		`Mock Workers AI received unsupported request for model: ${model}`,
+		10001,
+	)
 }
 
 async function handleCloudflareQueue(request: Request, url: URL) {
 	if (!shouldMockCloudflare(request)) return null
 	if (request.method !== 'POST') return null
-	if (!url.pathname.includes('/queues/') || !url.pathname.endsWith('/messages')) {
+	if (
+		!url.pathname.includes('/queues/') ||
+		!url.pathname.endsWith('/messages')
+	) {
 		return null
 	}
 
-	type QueuePayload = {
-		content_type?: string
-		body?: {
-			draftId?: string
-			callAudioKey?: string
-			responseAudioKey?: string
-		}
-	}
-
-	let payload: QueuePayload | null = null
+	let payload: CallKentQueueEnvelope | null = null
 	try {
-		payload = (await request.json()) as QueuePayload
+		payload = (await request.json()) as CallKentQueueEnvelope
 	} catch {
-		return json({ success: false, errors: [{ code: 10001, message: 'Invalid JSON' }] }, { status: 400 })
+		return jsonError(400, 'Invalid JSON body for Queue messages endpoint.')
 	}
 
 	const message = payload?.body
 	if (
 		payload?.content_type !== 'json' ||
-		!message?.draftId ||
-		!message.callAudioKey ||
-		!message.responseAudioKey
+		!message ||
+		!isCallKentQueueMessage(message)
 	) {
-		return json(
-			{
-				success: false,
-				errors: [
-					{
-						code: 10001,
-						message:
-							'Expected queue message body with draftId, callAudioKey, and responseAudioKey.',
-					},
-				],
-			},
-			{ status: 400 },
+		return jsonError(
+			400,
+			'Expected queue message body with draftId, callAudioKey, and responseAudioKey.',
 		)
 	}
 
-	await processCallKentAudioQueueMessage({
-		draftId: message.draftId!,
-		callAudioKey: message.callAudioKey!,
-		responseAudioKey: message.responseAudioKey!,
-	})
+	// Await in-process so enqueue is deterministic for tests and workerd (same-isolate).
+	await processCallKentAudioQueueMessage(message)
 
-	return json({ success: true, result: { message_id: randomUUID() } })
+	return jsonOk({ message_id: randomUUID() })
 }
 
 export async function maybeHandleCloudflareMockFetch(request: Request) {
 	const url = new URL(request.url)
 
-	if (url.origin === CLOUDFLARE_API_BASE || url.hostname === 'api.cloudflare.com') {
+	if (
+		url.origin === CLOUDFLARE_API_BASE ||
+		url.hostname === 'api.cloudflare.com'
+	) {
 		const queue = await handleCloudflareQueue(request, url)
 		if (queue) return queue
 	}
