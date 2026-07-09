@@ -354,30 +354,41 @@ async function requestTextDocument({
 	})
 }
 
-async function waitForSitemap({
-	origin,
+// The dev server (Vite) binds to `localhost`, which can resolve to IPv4
+// (127.0.0.1) or IPv6 (::1) depending on the runner. If we probe only one
+// address family and the server bound to the other, every request is refused
+// and startup "times out" even though the server is up. Probe both loopback
+// families and use whichever one actually answers.
+export function getLoopbackOriginsForPort(port: number) {
+	return [`http://127.0.0.1:${port}`, `http://[::1]:${port}`]
+}
+
+export async function resolveReachableSitemapOrigin({
+	candidateOrigins,
 	logs,
 	timeoutMs,
 }: {
-	origin: string
+	candidateOrigins: string[]
 	logs: () => string
 	timeoutMs: number
-}) {
+}): Promise<string> {
 	const start = Date.now()
 	while (Date.now() - start < timeoutMs) {
-		try {
-			const res = await requestTextDocument({
-				url: `${origin}/sitemap.xml`,
-				accept: 'application/xml',
-			})
-			if (res.statusCode >= 200 && res.statusCode < 300) return
-		} catch {
-			// still starting
+		for (const origin of candidateOrigins) {
+			try {
+				const res = await requestTextDocument({
+					url: `${origin}/sitemap.xml`,
+					accept: 'application/xml',
+				})
+				if (res.statusCode >= 200 && res.statusCode < 300) return origin
+			} catch {
+				// still starting, or this address family isn't bound yet
+			}
 		}
 		await sleep(750)
 	}
 	throw new Error(
-		`Timed out waiting for local dev server at ${origin}. Recent logs:\n${logs()}`,
+		`Timed out waiting for local dev server on ${candidateOrigins.join(', ')}. Recent logs:\n${logs()}`,
 	)
 }
 
@@ -387,7 +398,7 @@ export async function startLocalDevServerForSitemap({
 	startupTimeoutMs?: number
 } = {}): Promise<RunningDevServer> {
 	const port = await getPort({ port: portNumbers(3200, 3999) })
-	const origin = `http://127.0.0.1:${port}`
+	const candidateOrigins = getLoopbackOriginsForPort(port)
 	const npmExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 	const child = spawn(npmExecutable, ['run', 'dev'], {
 		cwd: path.join(process.cwd(), 'services', 'site'),
@@ -454,8 +465,8 @@ export async function startLocalDevServerForSitemap({
 	}
 
 	try {
-		await waitForSitemap({
-			origin,
+		const origin = await resolveReachableSitemapOrigin({
+			candidateOrigins,
 			logs: () => outputLog,
 			timeoutMs: startupTimeoutMs,
 		})
