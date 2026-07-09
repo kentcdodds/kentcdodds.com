@@ -29,12 +29,7 @@ type ImageTransformOptions = {
 }
 
 type ImageOutputOptions = {
-	format:
-		| 'image/jpeg'
-		| 'image/png'
-		| 'image/gif'
-		| 'image/webp'
-		| 'image/avif'
+	format: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' | 'image/avif'
 	quality?: number
 }
 
@@ -64,11 +59,6 @@ export const MEDIA_CACHE_CONTROL_NOT_FOUND = 'public, max-age=60' as const
 
 export const PRODUCTION_MEDIA_ORIGIN =
 	'https://kentcdodds-com.kentcdodds.workers.dev'
-// The staging fallback matters only until the production worker (with the
-// /media route) is deployed from main; it can be dropped with the staging
-// decommission (issue #815).
-export const STAGING_MEDIA_ORIGIN =
-	'https://kentcdodds-com-staging.kentcdodds.workers.dev'
 
 const MAX_DIMENSION = 4096
 const MAX_BLUR = 250
@@ -85,7 +75,12 @@ export function isMp4Magic(bytes: Uint8Array) {
 }
 
 export function sniffImageContentType(bytes: Uint8Array): string | null {
-	if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+	if (
+		bytes.length >= 3 &&
+		bytes[0] === 0xff &&
+		bytes[1] === 0xd8 &&
+		bytes[2] === 0xff
+	) {
 		return 'image/jpeg'
 	}
 	if (
@@ -214,14 +209,14 @@ export function hasTransformValues(transform: MediaTransform | undefined) {
 	if (!transform) return false
 	return Boolean(
 		transform.width ||
-			transform.height ||
-			transform.aspectRatio ||
-			transform.fit ||
-			transform.gravity ||
-			transform.background ||
-			transform.blur ||
-			transform.quality ||
-			transform.format,
+		transform.height ||
+		transform.aspectRatio ||
+		transform.fit ||
+		transform.gravity ||
+		transform.background ||
+		transform.blur ||
+		transform.quality ||
+		transform.format,
 	)
 }
 
@@ -581,7 +576,10 @@ export function getMediaAcceptClass(acceptHeader: string | null) {
 	return 'base'
 }
 
-export function getMediaCacheKey(request: Request, transform: MediaTransform | undefined) {
+export function getMediaCacheKey(
+	request: Request,
+	transform: MediaTransform | undefined,
+) {
 	if (!needsFormatNegotiation(transform)) {
 		return new Request(request.url, { method: 'GET' })
 	}
@@ -632,7 +630,9 @@ export async function serveMediaRequest(
 			: null
 		const object = await env.MEDIA_BUCKET.get(
 			key,
-			range ? { range: { offset: range.offset, length: range.length } } : undefined,
+			range
+				? { range: { offset: range.offset, length: range.length } }
+				: undefined,
 		)
 		if (!object) return notFoundMediaResponse()
 

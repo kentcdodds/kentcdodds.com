@@ -187,11 +187,7 @@ function getLimitForTier(tier: RateLimitTier, mocks: boolean) {
 }
 
 function getClientIp(request: Request) {
-	return (
-		request.headers.get('CF-Connecting-IP') ??
-		request.headers.get('Fly-Client-Ip') ??
-		'0.0.0.0'
-	)
+	return request.headers.get('CF-Connecting-IP') ?? '0.0.0.0'
 }
 
 export function checkRateLimit(

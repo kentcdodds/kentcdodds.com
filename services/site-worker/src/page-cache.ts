@@ -221,10 +221,7 @@ function isClientPersonalizedPath(request: Request, pathname: string) {
  * fetch instead. The theme cookie is part of the cache key and the D1
  * bookmark only affects replica routing, so both are store-safe.
  */
-const STORE_SAFE_COOKIES = new Set([
-	THEME_COOKIE_NAME,
-	D1_BOOKMARK_COOKIE_NAME,
-])
+const STORE_SAFE_COOKIES = new Set([THEME_COOKIE_NAME, D1_BOOKMARK_COOKIE_NAME])
 
 function canStoreOwnResponse(request: Request) {
 	const cookieHeader = request.headers.get('Cookie')
@@ -364,7 +361,6 @@ export function buildPageCacheFillRequest(request: Request) {
 	// drop client-IP headers so they rate-limit against a shared internal
 	// bucket instead of consuming the visitor's quota.
 	headers.delete('CF-Connecting-IP')
-	headers.delete('Fly-Client-Ip')
 	return new Request(request.url, {
 		// Always fill with GET: HEAD shares the cache key with GET, and a
 		// HEAD-shaped fill would store an empty body that later GETs would be

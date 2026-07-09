@@ -85,8 +85,9 @@
 	"env": {
 		"production": {
 			"name": "kentcdodds-com",
-			// Custom domain (kentcdodds.com) is attached manually at DNS cutover.
-			// Do not add routes or custom_domains here until cutover is complete.
+			// Custom domains (kentcdodds.com, www.kentcdodds.com) are attached in
+			// the Cloudflare dashboard; keep them out of wrangler to avoid
+			// redeploy churn on domain/cert state.
 			"kv_namespaces": [
 				{
 					"binding": "SITE_CACHE_KV",

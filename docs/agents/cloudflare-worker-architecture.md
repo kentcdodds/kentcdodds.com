@@ -6,10 +6,6 @@ not require a redeploy. **Production deploys exclusively to Cloudflare Workers**
 (`kentcdodds-com`); local dev and CI/e2e run the app in real workerd via
 `@cloudflare/vite-plugin` (single-worker HMR model).
 
-> **Migration history:** Fly → Cloudflare cutover completed in PR
-> [#813](https://github.com/kentcdodds/kentcdodds.com/pull/813). For the ordered
-> production procedure, see [cutover-runbook.md](./cutover-runbook.md).
-
 ## Overview
 
 ```text
@@ -138,13 +134,11 @@ Two paths:
    updates `mdx-manifest:current`, and clears its manifest cache.
 
 `GET /__meta` returns `{ buildSha, contentVersion }` for deploy verification.
-Content-only refreshes (`🥬 Refresh Content`) still matter after the Workers
-cutover: when a push changes only `services/site/content/` and does not trigger
-a site redeploy, CI compiles MDX, publishes the artifact bundle via
-`POST /resources/mdx-artifacts`, and records the commit via
-`POST /action/refresh-cache`. Compare SHA resolution prefers
-`/refresh-commit-sha.json`, then falls back to `/__meta.buildSha` (the old
-Fly-era `/build/info.json` asset is no longer published).
+Content-only refreshes (`🥬 Refresh Content`) matter when a push changes only
+`services/site/content/` and does not trigger a site redeploy: CI compiles MDX,
+publishes the artifact bundle via `POST /resources/mdx-artifacts`, and records
+the commit via `POST /action/refresh-cache`. Compare SHA resolution prefers
+`/refresh-commit-sha.json`, then falls back to `/__meta.buildSha`.
 
 ## Bootstrap ↔ app bridge (globals contract)
 
@@ -255,17 +249,17 @@ fall through to native full-page POSTs. Verify with curl: HTML must contain
 
 ## Media serving (R2 + Workers Images)
 
-All photos/illustrations/video live in the pre-existing `kentcdodds-com` R2
-bucket, keyed by their legacy media IDs (some hand-copied assets use
-prefix-stripped keys; `mediaKeyCandidates` in `services/site/app/utils/media.ts`
-tries both). The parent worker serves them at `/media/<transform-segment>/<id>`
+All photos/illustrations/video live in the `kentcdodds-com` R2 bucket, keyed by
+stable public IDs (some hand-copied assets use prefix-stripped keys;
+`mediaKeyCandidates` in `services/site/app/utils/media.ts` tries both). The
+parent worker serves them at `/media/<transform-segment>/<id>`
 (`services/site-worker/src/media.ts` + shared
 `services/site/app/utils/media-serving.server.ts`):
 
 - **Transforms** run through the Workers `images` binding (`IMAGES`):
   width/height/aspect-ratio, `fit` (cover/contain/pad/scale-down), `gravity`
-  (`auto` saliency — the binding has **no face gravity**; legacy face-crop
-  transforms map to `auto`), background fill, blur (LQIP), quality.
+  (`auto` saliency — the binding has **no face gravity**; face-oriented crops
+  in content map to `auto`), background fill, blur (LQIP), quality.
 - **Format negotiation**: `f_auto` (default) serves AVIF/WebP by `Accept`
   header. The Workers Cache API ignores `Vary`, so the Accept class
   (avif/webp/base) is baked into the edge-cache key (`__accept` param).
@@ -273,8 +267,7 @@ tries both). The parent worker serves them at `/media/<transform-segment>/<id>`
 - **Video** (mp4 detected by content type/extension/magic) streams original
   bytes with `Range` support; transforms are ignored.
 - **Input limit**: the binding fails on inputs over ~20 MiB
-  ("Network connection lost"); oversized masters were normalized during the
-  completed media migration.
+  ("Network connection lost"); keep masters within that bound.
 - **Edge cache**: `caches.default`, 1-year immutable; media is excluded from
   dynamic rate limiting (asset tier).
 - URL building in the app goes exclusively through `buildMediaUrl` /
@@ -325,7 +318,7 @@ sandbox container image (fine when only the consumer logic changed).
 ## Performance profile (measured July 2026)
 
 - Warm dynamic isolates serve pages in ~0.10-0.30s TTFB (measured from a US
-  VM), so warm traffic is at parity or faster than the former Fly deployment.
+  VM).
 - Cold dynamic isolates cost ~1.4-2.5s: ~0.9s isolate creation + module-map
   transfer + app bundle eval, plus first-request work. Mitigations in place:
   minified app bundle (9.4 → 4.1MB), per-document `code` served via
@@ -437,12 +430,10 @@ per-IP caps in `parent-rate-limit.ts` (600/min and 60/min respectively) as
 an anti-burn guard.
 
 Real shared abuse control must come from Cloudflare zone-level tools (WAF
-custom rules, Rate Limiting rules, Bot Fight Mode) once DNS points at the
-worker — the cutover runbook includes configuring rules for the sensitive
-tiers (auth endpoints, search, OG/media) as a post-flip step. `/media` and
-OG rendering consume Images transformations and R2 reads per request; if
-spend becomes noticeable, add zone rate-limiting rules scoped to those
-paths.
+custom rules, Rate Limiting rules, Bot Fight Mode). Prefer zone rules for
+sensitive tiers (auth endpoints, search, OG/media). `/media` and OG rendering
+consume Images transformations and R2 reads per request; if spend becomes
+noticeable, add zone rate-limiting rules scoped to those paths.
 
 ## Local development
 
@@ -513,29 +504,15 @@ The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
 ## Production deployment (main)
 
 - Worker: `kentcdodds-com` (`kentcdodds-com.kentcdodds.workers.dev`; custom
-  domains attached after cutover)
+  domains `kentcdodds.com` / `www.kentcdodds.com` attached in the dashboard)
 - D1: `kentcdodds-com-db` (`af33bd8b-c9b2-484a-afa5-43ee322ff49c`)
 - KV: `SITE_CACHE_KV`=`9430f933f2ff4bc5881385851869b02e`,
   `CONTENT_KV`=`e9ec6e92d8034f3db76343162f2b3a26`
 - R2: `kentcdodds-com-artifacts`
-- Service bindings: same production oauth/search workers
+- Service bindings: production oauth/search workers
 - Deploys from `.github/workflows/deployment.yml` → `deploy-site.yml` on pushes
   to `main` (`npm run provision:production`, `generate-worker-secrets.mjs
 --target=production`, artifact publish via endpoint, D1 migrations, smoke).
-
-### Retired staging resources
-
-The standalone preview deploy workflow was removed after production cutover.
-These staging resources remain listed until they are explicitly deleted:
-
-- Worker: `kentcdodds-com-staging`
-- D1: `kentcdodds-com-staging-app-db`
-  (`01a8ba77-2a63-4a14-898d-6023942a480f`)
-- KV: `SITE_CACHE_KV`=`5180bc7fb5b14a5888db2ed8ac0e21ee`,
-  `CONTENT_KV`=`976edaf098ed4c3391385bf7550ba5a6`
-- R2: `kcd-site-cf-preview-artifacts`
-
-Ask Kent before deleting staging Cloudflare resources.
 
 `wrangler.jsonc` uses local placeholder bindings at the top level and
 `env.production` overrides for production bindings. `generate-worker-config.mjs`

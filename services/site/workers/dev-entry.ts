@@ -25,10 +25,7 @@ import {
 import { installDevMockFetch } from '#app/utils/dev-outbound-fetch.server.ts'
 import { setRequestWaitUntil } from '#app/utils/background-task.server.ts'
 import { runWithRequestContext } from '#app/utils/request-context.server.ts'
-import {
-	setRuntimeEnvSource,
-	getEnv,
-} from '#app/utils/env.server.ts'
+import { setRuntimeEnvSource, getEnv } from '#app/utils/env.server.ts'
 import {
 	setRuntimeBindingSource,
 	type RuntimeBindingSource,
@@ -52,10 +49,7 @@ import {
 	getAgentSearchHintHeaders,
 } from '../../site-worker/src/dynamic/rate-limiting.ts'
 import { handleMediaRequest } from '../../site-worker/src/media.ts'
-import {
-	PRODUCTION_MEDIA_ORIGIN,
-	STAGING_MEDIA_ORIGIN,
-} from '#app/utils/media-serving.server.ts'
+import { PRODUCTION_MEDIA_ORIGIN } from '#app/utils/media-serving.server.ts'
 
 if (import.meta.hot) {
 	import.meta.hot.accept()
@@ -95,9 +89,8 @@ const MAX_CACHED_REQUEST_HANDLERS = 10
 
 function getMarkdownNegotiation() {
 	if (!markdownNegotiationPromise) {
-		markdownNegotiationPromise = import(
-			'#app/utils/markdown-negotiation.server.ts'
-		)
+		markdownNegotiationPromise =
+			import('#app/utils/markdown-negotiation.server.ts')
 	}
 	return markdownNegotiationPromise
 }
@@ -185,21 +178,21 @@ async function ensureRuntimeBridges(env: WorkerEnv) {
 	}
 
 	const manifest = await getDevManifest()
-    const { modulesDir, moduleMtimes: _moduleMtimes, ...contentData } = manifest
+	const { modulesDir, moduleMtimes: _moduleMtimes, ...contentData } = manifest
 	;(globalThis as Record<symbol, unknown>)[contentDataKey] = contentData
 	;(globalThis as Record<symbol, unknown>)[loadMdxModuleKey] = async (
 		contentDir: string,
 		slug: string,
 	) => {
 		const docKey = `${contentDir}/${slug}`
-		const doc = contentData.documents[docKey] as { moduleFile?: string } | undefined
+		const doc = contentData.documents[docKey] as
+			| { moduleFile?: string }
+			| undefined
 		const relativePath = doc?.moduleFile ?? `${contentDir}/${slug}.mjs`
 		const modulePath = `${modulesDir}/${relativePath}`.replace(/\\/g, '/')
 		const cacheBust = contentData.version
 		try {
-			return await import(
-				/* @vite-ignore */ `/@fs${modulePath}?t=${cacheBust}`
-			)
+			return await import(/* @vite-ignore */ `/@fs${modulePath}?t=${cacheBust}`)
 		} catch (error: unknown) {
 			console.error(`loadMdxModule failed for ${modulePath}`, error)
 			return null
@@ -216,9 +209,8 @@ async function getSiteRequestHandler(
 
 	const handler = createRequestHandler(
 		async () => {
-			const build = (await import(
-				'virtual:react-router/server-build'
-			)) as ServerBuild
+			const build =
+				(await import('virtual:react-router/server-build')) as ServerBuild
 			return {
 				...build,
 				allowedActionOrigins: getWorkerAllowedActionOrigins(request),
@@ -294,9 +286,7 @@ async function handleDevMediaRequest(
 ) {
 	const override = (env as { MEDIA_FALLBACK_ORIGIN?: string })
 		.MEDIA_FALLBACK_ORIGIN
-	const fallbackOrigins = override
-		? [override]
-		: [PRODUCTION_MEDIA_ORIGIN, STAGING_MEDIA_ORIGIN]
+	const fallbackOrigins = override ? [override] : [PRODUCTION_MEDIA_ORIGIN]
 	return handleMediaRequest(request, env as never, ctx, { fallbackOrigins })
 }
 
@@ -321,7 +311,10 @@ async function runPreRouterPipeline(
 
 	if (url.pathname === '/img/social' && request.method === 'GET') {
 		return {
-			response: redirectResponse(getLegacyGenericSocialImageUrl(`${proto}://${host}`), 302),
+			response: redirectResponse(
+				getLegacyGenericSocialImageUrl(`${proto}://${host}`),
+				302,
+			),
 			rateLimit: null,
 		}
 	}
@@ -536,7 +529,8 @@ async function handleSiteRequest(
 				mode: import.meta.env.DEV ? 'development' : 'production',
 			})
 			const mocks = getStringEnvBindings(env).MOCKS === 'true'
-			const rateLimit = preRouter.rateLimit ?? checkRateLimit(request, { mocks })
+			const rateLimit =
+				preRouter.rateLimit ?? checkRateLimit(request, { mocks })
 			applyRateLimitHeaders(headers, rateLimit)
 			if (
 				rateLimit.tier === 'markdown' &&
@@ -552,7 +546,9 @@ async function handleSiteRequest(
 			}
 			if (
 				response.ok &&
-				Boolean(headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i))
+				Boolean(
+					headers.get('content-type')?.match(/\btext\/(html|markdown)\b/i),
+				)
 			) {
 				appendVaryAccept(headers)
 			}

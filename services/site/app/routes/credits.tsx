@@ -24,24 +24,19 @@ import {
 } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
-import {
-	getImageBuilder,
-	getImgProps,
-	images,
-} from '#app/images.tsx'
+import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { getPeople } from '#app/utils/credits.server.ts'
 import { externalLinks } from '#app/external-links.tsx'
-import {
-	getOrigin,
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
+import { getOrigin, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/credits'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const people = await getPeople({ request })
-	const domain = new URL(getOrigin({ origin: new URL(request.url).origin, path: '' })).host
+	const domain = new URL(
+		getOrigin({ origin: new URL(request.url).origin, path: '' }),
+	).host
 	const socialMetas = (
 		await import('#app/og/page-meta.server.ts')
 	).buildPageSocialMetasForRequest(request, {
@@ -292,15 +287,6 @@ function CreditsIndex({ loaderData: data }: Route.ComponentProps) {
 						pull requests
 					</a>
 					{` to get it ready for launch. Thank you!`}
-				</Paragraph>
-				<Paragraph className="col-span-4">
-					{`The folks at `}
-					<a href="https://fly.io">Fly.io</a>
-					{`
-            were an enormous help in getting me off the ground with hosting the
-            site and databases. The backend is totally not my domain and they
-            seriously helped me be successful.
-          `}
 				</Paragraph>
 			</Grid>
 		</>

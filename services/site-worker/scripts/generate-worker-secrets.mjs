@@ -39,9 +39,8 @@ function integrationSecret({ key, omittedForProduction }) {
 }
 
 /**
- * Secrets that must hold real Fly-parity integration values in production.
- * `SESSION_SECRET` in particular must match Fly's value so sessions survive
- * the cutover.
+ * Integration secrets that live on the worker and must not be overwritten by
+ * CI bulk upload (values may differ from any GitHub Actions secret copy).
  */
 const INTEGRATION_SECRET_KEYS = [
 	'SESSION_SECRET',
@@ -66,13 +65,11 @@ const INTEGRATION_SECRET_KEYS = [
 	'TWITTER_BEARER_TOKEN',
 	'VERIFIER_API_KEY',
 	'OG_IMAGE_SECRET',
-	// Config values CI does not have as GitHub secrets: copied from Fly during
-	// cutover, so production bulk uploads must never overwrite them.
+	// Config values CI does not have as GitHub secrets.
 	'R2_BUCKET',
 	'CALL_KENT_R2_BUCKET',
 	'CALL_KENT_AUDIO_CF_QUEUE_ID',
-	// Must match the secret set manually on kcd-call-kent-audio-worker; the
-	// production value was synced from Fly and may not equal the GitHub copy.
+	// Must match the secret set on kcd-call-kent-audio-worker.
 	'CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET',
 ]
 
@@ -216,7 +213,7 @@ async function main() {
 				'',
 				'The following integration secrets are not in the CI env and were',
 				'omitted from the bulk upload (existing values on the worker are',
-				'preserved; set them directly per docs/agents/cutover-runbook.md):',
+				'preserved; set them directly on the worker when rotating):',
 				...omittedForProduction.map((key) => `  - ${key}`),
 				'',
 			].join('\n'),
