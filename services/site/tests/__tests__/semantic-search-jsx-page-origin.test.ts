@@ -58,9 +58,12 @@ describe('jsx page dev server origin resolution', () => {
 		let server: Awaited<ReturnType<typeof startSitemapServer>>
 		try {
 			server = await startSitemapServer('::1')
-		} catch {
-			// Skip when the runner has no IPv6 loopback available.
-			return
+		} catch (error) {
+			// Skip only when the runner genuinely lacks an IPv6 loopback; surface
+			// any other failure so it can't silently hide a real regression.
+			const code = (error as NodeJS.ErrnoException | null)?.code
+			if (code === 'EADDRNOTAVAIL' || code === 'EAFNOSUPPORT') return
+			throw error
 		}
 		try {
 			const origin = await resolveReachableSitemapOrigin({
