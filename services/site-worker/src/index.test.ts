@@ -254,7 +254,7 @@ describe('worker service routing', () => {
 
 describe('outbound proxy routing', () => {
 	test('marks public hosts as passthrough', () => {
-		expect(PASSTHROUGH_HOSTS.has('api.twitter.com')).toBe(true)
+		expect(PASSTHROUGH_HOSTS.has('cdn.syndication.twimg.com')).toBe(true)
 		expect(PASSTHROUGH_HOSTS.has('api.cloudflare.com')).toBe(false)
 	})
 
