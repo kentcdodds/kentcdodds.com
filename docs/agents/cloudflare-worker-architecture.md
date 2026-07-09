@@ -537,10 +537,9 @@ These staging resources remain listed until they are explicitly deleted:
 
 Ask Kent before deleting staging Cloudflare resources.
 
-`wrangler.jsonc` uses `env.production` overrides for production bindings; the
-default top-level config still points at the retired staging resources for
-local parent-worker dev. `generate-worker-config.mjs` writes
-`generated-wrangler.jsonc` with production bindings + `BUILD_SHA`.
+`wrangler.jsonc` uses local placeholder bindings at the top level and
+`env.production` overrides for production bindings. `generate-worker-config.mjs`
+writes `generated-wrangler.jsonc` with production bindings + `BUILD_SHA`.
 
 ### CI token limitations
 

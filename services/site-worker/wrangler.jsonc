@@ -1,7 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	// Default (retired staging) — used by `wrangler dev` and dry-run.
-	"name": "kentcdodds-com-staging",
+	// Default local config — used by `wrangler dev` and dry-run.
+	"name": "kentcdodds-com-local",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-03-17",
 	"compatibility_flags": [
@@ -23,17 +23,17 @@
 	"kv_namespaces": [
 		{
 			"binding": "SITE_CACHE_KV",
-			"id": "5180bc7fb5b14a5888db2ed8ac0e21ee",
+			"id": "local-site-cache-kv",
 		},
 		{
 			"binding": "CONTENT_KV",
-			"id": "976edaf098ed4c3391385bf7550ba5a6",
+			"id": "local-content-kv",
 		},
 	],
 	"r2_buckets": [
 		{
 			"binding": "MDX_ARTIFACTS",
-			"bucket_name": "kcd-site-cf-preview-artifacts",
+			"bucket_name": "kentcdodds-com-local-artifacts",
 		},
 		{
 			"binding": "MEDIA_BUCKET",
@@ -46,8 +46,8 @@
 	"d1_databases": [
 		{
 			"binding": "APP_DB",
-			"database_name": "kentcdodds-com-staging-app-db",
-			"database_id": "01a8ba77-2a63-4a14-898d-6023942a480f",
+			"database_name": "kentcdodds-com-local-app-db",
+			"database_id": "00000000-0000-0000-0000-000000000001",
 			"migrations_dir": "../site/migrations",
 		},
 	],
