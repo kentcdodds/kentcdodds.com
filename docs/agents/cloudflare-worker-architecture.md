@@ -144,9 +144,13 @@ the commit via `POST /action/refresh-cache`. Compare SHA resolution prefers
 
 The dynamic worker's main module (`app-worker.js`) is an esbuild bundle of
 `services/site-worker/src/dynamic/bootstrap.ts` which imports the site server
-build. Before handling any request it sets these globals so app code (bundled
-from `services/site`) can reach worker-provided content without static imports
-that would break the Node/dev build:
+build. Request handling (pre-router, CSP, rate limits, markdown negotiation,
+logging) lives in the shared factory
+`services/site/app/utils/worker-request-pipeline.server.ts`; bootstrap only
+supplies prod bridges, cold-start headers, and the cached server build. Before
+handling any request it sets these globals so app code (bundled from
+`services/site`) can reach worker-provided content without static imports that
+would break the Node/dev build:
 
 - `globalThis[Symbol.for('kentcdodds.contentData')]` — the artifact bundle
   JSON with per-document `code` and `esm` **stripped** (metadata, blogList,
@@ -459,10 +463,12 @@ split; production smoke tests cover the full topology.
 
 ### Dev worker entry
 
-`services/site/workers/dev-entry.ts` — `createRequestHandler` +
-`virtual:react-router/server-build`, runtime env/binding bridges, pre-router
-pipeline (rate limiting, CSP), outbound fetch mocks when `MOCKS=true`, and MDX
-content from `virtual:mdx-dev-manifest` + `/@fs` module imports.
+`services/site/workers/dev-entry.ts` is a thin entry over
+`createWorkerFetchHandler` from
+`services/site/app/utils/worker-request-pipeline.server.ts`. It supplies
+dev-only early routes (`/media/*`, `/resources/og-image`), outbound fetch mocks
+when `MOCKS=true`, MDX from `virtual:mdx-dev-manifest` + `/@fs`, and a lazy
+`virtual:react-router/server-build` handler.
 
 ### MDX in dev (no eval in workerd)
 
