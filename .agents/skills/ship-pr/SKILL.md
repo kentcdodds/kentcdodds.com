@@ -35,7 +35,7 @@ without `gh`, and `request` / `graphql` (`kody:@kentcdodds/github/request`,
 ## Done → Discord
 
 ```javascript
-import sendMeAMessage from 'kody:@kentcdodds/discord-gateway/send-me-a-message'
+import sendMeAMessage from 'kody:@kentcdodds/discord/send-me-a-message'
 
 export default async function main() {
 	const content = ` ... `
