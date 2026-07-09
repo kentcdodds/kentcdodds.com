@@ -216,7 +216,7 @@ async function main() {
 				'',
 				'The following integration secrets are not in the CI env and were',
 				'omitted from the bulk upload (existing values on the worker are',
-				'preserved; set them directly per docs/agents/cutover-runbook.md):',
+				'preserved; see docs/agents/cloudflare-worker-architecture.md):',
 				...omittedForProduction.map((key) => `  - ${key}`),
 				'',
 			].join('\n'),

@@ -7,8 +7,8 @@ not require a redeploy. **Production deploys exclusively to Cloudflare Workers**
 `@cloudflare/vite-plugin` (single-worker HMR model).
 
 > **Migration history:** Fly → Cloudflare cutover completed in PR
-> [#813](https://github.com/kentcdodds/kentcdodds.com/pull/813). For the ordered
-> production procedure, see [cutover-runbook.md](./cutover-runbook.md).
+> [#813](https://github.com/kentcdodds/kentcdodds.com/pull/813). Remaining
+> decommission work is tracked in GitHub issues #836, #837, and #838.
 
 ## Overview
 
