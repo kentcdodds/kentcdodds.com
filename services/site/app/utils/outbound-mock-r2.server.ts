@@ -332,7 +332,11 @@ function bodyInitFromBytes(bytes: Uint8Array): BodyInit {
 	) as ArrayBuffer
 }
 
-function xmlResponse(body: string, status = 200, headers: Record<string, string> = {}) {
+function xmlResponse(
+	body: string,
+	status = 200,
+	headers: Record<string, string> = {},
+) {
 	return new Response(body, {
 		status,
 		headers: {

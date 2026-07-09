@@ -123,7 +123,10 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 		requiredHeader(request.headers, 'x-api-key')
 		const filename = url.searchParams.get('filename')
 		if (!filename) {
-			return json({ errors: [{ title: 'filename is required' }] }, { status: 400 })
+			return json(
+				{ errors: [{ title: 'filename is required' }] },
+				{ status: 400 },
+			)
 		}
 		const bucketId = randomUUID()
 		const fileId = filename.replace(/[^a-zA-Z0-9._-]/g, '_')
@@ -255,7 +258,9 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 		return json({ data: episode })
 	}
 
-	const episodeMatch = /^\/v1\/episodes\/(?<episodeId>[^/]+)$/.exec(url.pathname)
+	const episodeMatch = /^\/v1\/episodes\/(?<episodeId>[^/]+)$/.exec(
+		url.pathname,
+	)
 	if (request.method === 'PATCH' && episodeMatch?.groups?.episodeId) {
 		requiredHeader(request.headers, 'x-api-key')
 		const body = (await request.json()) as {
