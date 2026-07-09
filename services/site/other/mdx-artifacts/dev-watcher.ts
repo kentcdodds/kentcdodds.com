@@ -16,10 +16,15 @@ import {
 } from '#app/utils/mdx.server.ts'
 import { type MdxArtifactBundle } from '../../types/mdx-artifacts.ts'
 import { compileMdxArtifactDocument } from './compile-document.ts'
-import { computeContentVersion } from './content-version.ts'
+import {
+	ARTIFACT_COMPILER_VERSION,
+	computeContentVersion,
+} from './content-version.ts'
 import {
 	collectContentInputFiles,
 	discoverLocalMdxDocuments,
+	readLocalMdxFiles,
+	readLocalMdxParentDirList,
 	readLocalDataFiles,
 	type MdxDocumentRef,
 } from './local-content.ts'
@@ -31,14 +36,42 @@ const MANIFEST_MODULE_PATH = path.join(CACHE_ROOT, 'manifest.module.mjs')
 const COMPILED_HASH_PATH = path.join(CACHE_ROOT, 'compiled-hashes.json')
 const SIDECAR_PORT = Number(process.env.MDX_DEV_SIDECAR_PORT ?? 3099)
 const MSW_DATA_PATH = path.join(process.cwd(), 'mocks/msw.local.json')
+const compileOnce = process.argv.includes('--compile-once')
 
-type CompiledHashIndex = Record<string, string>
+type CompiledHashEntry = {
+	inputHash: string
+	moduleFile: string
+}
+
+type CompiledHashIndex = Record<string, CompiledHashEntry>
 
 type ManifestDocument = MdxArtifactBundle['documents'][string]
+type DevManifestDocument = Omit<ManifestDocument, 'esm'> & {
+	esm?: string
+	moduleFile?: string
+}
 
 async function readCompiledHashes(): Promise<CompiledHashIndex> {
 	try {
-		return JSON.parse(await fs.readFile(COMPILED_HASH_PATH, 'utf8'))
+		const raw = JSON.parse(
+			await fs.readFile(COMPILED_HASH_PATH, 'utf8'),
+		) as Record<string, unknown> | null
+		const entries: CompiledHashIndex = {}
+		if (!raw || typeof raw !== 'object') return entries
+		for (const [key, value] of Object.entries(raw)) {
+			if (!value || typeof value !== 'object') continue
+			const entry = value as Partial<CompiledHashEntry>
+			if (
+				typeof entry.inputHash === 'string' &&
+				typeof entry.moduleFile === 'string'
+			) {
+				entries[key] = {
+					inputHash: entry.inputHash,
+					moduleFile: entry.moduleFile,
+				}
+			}
+		}
+		return entries
 	} catch {
 		return {}
 	}
@@ -65,7 +98,7 @@ function getModuleFileName(slug: string, compiled: ManifestDocument) {
 	return `${slug}.${hash}.mjs`
 }
 
-function stripEsm(document: ManifestDocument) {
+function stripEsm(document: DevManifestDocument) {
 	const { esm: _esm, ...rest } = document
 	return rest
 }
@@ -96,11 +129,24 @@ async function buildManifest(
 	}
 }
 
+async function readCurrentManifest(): Promise<
+	| (MdxArtifactBundle & { documents: Record<string, DevManifestDocument> })
+	| null
+> {
+	try {
+		return JSON.parse(await fs.readFile(MANIFEST_PATH, 'utf8'))
+	} catch {
+		return null
+	}
+}
+
 async function writeManifest(
-	documents: Record<string, ManifestDocument>,
+	documents: Record<string, DevManifestDocument>,
 	moduleFiles: Record<string, string>,
 ) {
-	const bundle = await buildManifest(documents)
+	const bundle = await buildManifest(
+		documents as Record<string, ManifestDocument>,
+	)
 	const manifestDocuments = Object.fromEntries(
 		Object.entries(bundle.documents).map(([key, document]) => [
 			key,
@@ -120,6 +166,41 @@ async function writeManifest(
 	)
 }
 
+async function computeDocumentInputHash(document: MdxDocumentRef) {
+	const [download, parentDirList] = await Promise.all([
+		readLocalMdxFiles(document.contentDir, document.slug),
+		readLocalMdxParentDirList(document.contentDir),
+	])
+	if (!download) {
+		throw new Error(`Missing local MDX content for ${document.key}`)
+	}
+
+	const hash = createHash('sha256')
+	hash.update(`compiler:${ARTIFACT_COMPILER_VERSION}`)
+	hash.update('\0')
+	hash.update(document.key)
+	hash.update('\0')
+	hash.update(download.entry)
+	hash.update('\0')
+	for (const file of [...download.files].sort((a, b) =>
+		a.path.localeCompare(b.path),
+	)) {
+		hash.update(file.path)
+		hash.update('\0')
+		hash.update(file.content)
+		hash.update('\0')
+	}
+	for (const entry of [...parentDirList].sort((a, b) =>
+		a.name.localeCompare(b.name),
+	)) {
+		hash.update(entry.name)
+		hash.update('\0')
+		hash.update(entry.type)
+		hash.update('\0')
+	}
+	return hash.digest('hex')
+}
+
 async function compileDocument(document: MdxDocumentRef) {
 	const compiled = await compileMdxArtifactDocument(document)
 	const moduleFileName = getModuleFileName(document.slug, compiled)
@@ -129,6 +210,32 @@ async function compileDocument(document: MdxDocumentRef) {
 		compiled,
 		`${document.contentDir}/${moduleFileName}`,
 	] as const
+}
+
+async function tryReuseDocument({
+	document,
+	inputHash,
+	hashIndex,
+	currentManifest,
+}: {
+	document: MdxDocumentRef
+	inputHash: string
+	hashIndex: CompiledHashIndex
+	currentManifest: Awaited<ReturnType<typeof readCurrentManifest>>
+}) {
+	const hashEntry = hashIndex[document.key]
+	const cachedDocument = currentManifest?.documents[document.key]
+	if (!hashEntry || hashEntry.inputHash !== inputHash || !cachedDocument) {
+		return null
+	}
+	const moduleFile = hashEntry.moduleFile || cachedDocument.moduleFile
+	if (!moduleFile) return null
+	try {
+		await fs.access(path.join(MODULES_DIR, moduleFile))
+		return [document.key, cachedDocument, moduleFile] as const
+	} catch {
+		return null
+	}
 }
 
 async function compileAllDocuments({
@@ -146,11 +253,27 @@ async function compileAllDocuments({
 
 	const limit = pLimit(concurrency)
 	const failures: Array<{ key: string; error: string }> = []
+	const hashIndex = await readCompiledHashes()
+	const currentManifest = await readCurrentManifest()
+	let reused = 0
+	let compiled = 0
 	const compiledEntries = await Promise.all(
 		allDocuments.map((document) =>
 			limit(async () => {
 				try {
-					return await compileDocument(document)
+					const inputHash = await computeDocumentInputHash(document)
+					const reusedEntry = await tryReuseDocument({
+						document,
+						inputHash,
+						hashIndex,
+						currentManifest,
+					})
+					if (reusedEntry) {
+						reused++
+						return { entry: reusedEntry, inputHash }
+					}
+					compiled++
+					return { entry: await compileDocument(document), inputHash }
 				} catch (error: unknown) {
 					const message = error instanceof Error ? error.message : String(error)
 					failures.push({ key: document.key, error: message })
@@ -167,24 +290,31 @@ async function compileAllDocuments({
 		throw new Error(`${failures.length} document(s) failed to compile`)
 	}
 
-	const documents: Record<string, ManifestDocument> = {}
+	const documents: Record<string, DevManifestDocument> = {}
 	const moduleFiles: Record<string, string> = {}
 	for (const entry of compiledEntries) {
 		if (!entry) continue
-		const [key, document, moduleFile] = entry
+		const [key, document, moduleFile] = entry.entry
 		documents[key] = document
 		moduleFiles[key] = moduleFile
 	}
 
 	await writeManifest(documents, moduleFiles)
-	const hashIndex: CompiledHashIndex = {}
+	const nextHashIndex: CompiledHashIndex = {}
 	for (const document of allDocuments) {
-		hashIndex[document.key] = documents[document.key]?.code.slice(0, 64) ?? ''
+		const result = compiledEntries.find(
+			(entry) => entry?.entry[0] === document.key,
+		)
+		if (!result) continue
+		nextHashIndex[document.key] = {
+			inputHash: result.inputHash,
+			moduleFile: result.entry[2],
+		}
 	}
-	await writeCompiledHashes(hashIndex)
+	await writeCompiledHashes(nextHashIndex)
 
 	console.info(
-		`mdx-dev: compiled ${allDocuments.length} documents (${getEmbedFallbackCount()} embed fallbacks)`,
+		`mdx-dev: compiled ${compiled} documents, reused ${reused} cached documents (${getEmbedFallbackCount()} embed fallbacks)`,
 	)
 }
 
@@ -199,9 +329,9 @@ async function recompileDocumentKey(key: string) {
 	const currentManifest = JSON.parse(
 		await fs.readFile(MANIFEST_PATH, 'utf8'),
 	) as MdxArtifactBundle & {
-		documents: Record<string, ManifestDocument & { moduleFile?: string }>
+		documents: Record<string, DevManifestDocument>
 	}
-	const documents: Record<string, ManifestDocument> = {}
+	const documents: Record<string, DevManifestDocument> = {}
 	const moduleFiles: Record<string, string> = {}
 	for (const [docKey, doc] of Object.entries(currentManifest.documents)) {
 		documents[docKey] = {
@@ -216,7 +346,10 @@ async function recompileDocumentKey(key: string) {
 	await writeManifest(documents, moduleFiles)
 
 	const hashes = await readCompiledHashes()
-	hashes[key] = compiled.code.slice(0, 64)
+	hashes[key] = {
+		inputHash: await computeDocumentInputHash({ contentDir, slug, key }),
+		moduleFile,
+	}
 	await writeCompiledHashes(hashes)
 	console.info(`mdx-dev: recompiled ${key}`)
 }
@@ -334,8 +467,17 @@ async function startSidecarServer() {
 
 async function main() {
 	const startedAt = Date.now()
-	await startSidecarServer()
+	const server = await startSidecarServer()
 	await compileAllDocuments({ concurrency: 4 })
+	if (compileOnce) {
+		await new Promise<void>((resolve, reject) => {
+			server.close((error) => (error ? reject(error) : resolve()))
+		})
+		console.info(
+			`mdx-dev: compile-once complete in ${Date.now() - startedAt}ms`,
+		)
+		return
+	}
 
 	const contentDir = path.join(process.cwd(), 'content')
 	const watcher = chokidar.watch(contentDir, {
