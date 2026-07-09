@@ -101,6 +101,13 @@ reference:
 - Oxlint config caveat: prefer package-export extends
   (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
   extends into `node_modules` can fail to inherit the shared env/rules.
+- Semantic search caveat: the JSX-page indexer
+  (`other/semantic-search/jsx-page-content.ts`) boots `npm run dev` and waits for
+  `/sitemap.xml`. Vite binds to `localhost`, which resolves to IPv6 (`::1`) or
+  IPv4 (`127.0.0.1`) depending on the runner, so the readiness probe checks both
+  loopback families (`resolveReachableSitemapOrigin`) and uses whichever the dev
+  server actually bound to. Probing a single hard-coded address caused CI
+  "Timed out waiting for local dev server" failures even though the server was up.
 - Semantic search caveat: YouTube auto-captions can include cue-only chunks like
   `[Music]`. The YouTube indexer filters these low-signal caption lines and
   merges tiny trailing transcript chunks at ingest time, but old vectors can
