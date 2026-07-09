@@ -205,11 +205,11 @@ Schema and migrations live in `services/site/migrations/` as flat `.sql` files.
 `app/utils/db/schema.server.ts` (`@remix-run/data-table`) is the runtime schema
 source of truth.
 
-| Environment | Database |
-| --- | --- |
-| Unit tests (Node) | In-memory SQLite via test helpers, or file at `services/site/.data/sqlite.db` (`DATABASE_URL`) |
-| Local dev + Playwright e2e | Miniflare D1 (`.wrangler/state/v3/d1/…`) |
-| Staging / production | Cloudflare D1 via `services/site-worker` |
+| Environment                | Database                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| Unit tests (Node)          | In-memory SQLite via test helpers, or file at `services/site/.data/sqlite.db` (`DATABASE_URL`) |
+| Local dev + Playwright e2e | Miniflare D1 (`.wrangler/state/v3/d1/…`)                                                       |
+| Production                 | Cloudflare D1 via `services/site-worker`                                                       |
 
 Create a migration:
 

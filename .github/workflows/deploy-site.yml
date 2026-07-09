@@ -15,7 +15,6 @@ on:
         default: true
 
 env:
-  SITE_CACHE_VERSION: ${{ vars.SITE_CACHE_VERSION }}
   NODE_VERSION: 26
 
 jobs:
@@ -54,14 +53,6 @@ jobs:
 
       - name: 🔬 Verify site
         run: npm run ci:verify --workspace=kentcdodds.com
-
-      - name: 📦 Upload site build artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: site-build-artifacts
-          path: |
-            services/site/build/
-          retention-days: 7
 
   playwright:
     name: 🎭 Playwright
@@ -187,7 +178,6 @@ jobs:
           CHATS_WITH_KENT_PODCAST_ID: ${{ secrets.CHATS_WITH_KENT_PODCAST_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET: ${{ secrets.CALL_KENT_AUDIO_PROCESSOR_CALLBACK_SECRET }}
         run: |
           SECRETS_FILE=services/site-worker/.wrangler/production-secrets.json
           node services/site-worker/scripts/generate-worker-secrets.mjs --target=production "$SECRETS_FILE"

@@ -2,8 +2,6 @@
   "name": "oauth",
   "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "format": "prettier --write .",
     "lint": "oxlint . --ignore-pattern worker-configuration.d.ts --ignore-pattern .wrangler",

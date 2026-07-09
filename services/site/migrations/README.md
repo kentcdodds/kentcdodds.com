@@ -1,16 +1,17 @@
 # SQL migrations
 
 Committed flat SQL files for the site database schema. Wrangler D1 applies these
-in filename order and records each applied filename in the `d1_migrations` table.
+in filename order and records each applied filename in the `d1_migrations`
+table.
 
 ## Naming convention
 
-`YYYYMMDDHHMMSS_snake-name.sql` — the timestamp prefix must sort chronologically.
-Example: `20260401162552_homework_completions.sql`.
+`YYYYMMDDHHMMSS_snake-name.sql` — the timestamp prefix must sort
+chronologically. Example: `20260401162552_homework_completions.sql`.
 
-**Never rename a migration file after it has been applied** in staging,
-production, or any shared local D1 state. Wrangler journals by filename; a
-rename looks like a new migration and can break deploys.
+**Never rename a migration file after it has been applied** in production or any
+shared local D1 state. Wrangler journals by filename; a rename looks like a new
+migration and can break deploys.
 
 ## Creating a migration
 
@@ -38,7 +39,8 @@ Cloudflare D1 does not support interactive transactions. Follow a
    deploy after the app no longer depends on the old shape.
 
 Avoid `CREATE TEMP TABLE` in migrations (D1 rejects temporary tables). Use a
-regular table for preflight guards and drop it in the same migration when needed.
+regular table for preflight guards and drop it in the same migration when
+needed.
 
 ## Runtime schema source of truth
 
