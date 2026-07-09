@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { isBogusCrawlerPath } from './bootstrap.ts'
+import { isBogusCrawlerPath } from '../../../site/app/utils/worker-request-pipeline.server.ts'
 
 const scannerPostPaths = ['/RSC/abc.txt', '/session/root/shell', '/session']
 
