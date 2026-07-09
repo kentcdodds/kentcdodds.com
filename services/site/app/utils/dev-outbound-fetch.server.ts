@@ -13,7 +13,7 @@ function isLocalRequest(url: URL) {
 }
 
 async function captureEmailViaSidecar(body: Record<string, string>) {
-	console.info('🔶 mocked email contents:', body)
+	// Logging lives in maybeHandleEmailMockFetch so MSW + workerd share one log.
 	try {
 		await fetch(`${DEV_SIDECAR_URL}/__dev/capture-email`, {
 			method: 'POST',

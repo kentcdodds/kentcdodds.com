@@ -1,10 +1,13 @@
 import { http, passthrough, HttpResponse, type HttpHandler } from 'msw'
+import { maybeHandleEmailMockFetch } from '#app/utils/outbound-mock-email.server.ts'
+import { maybeHandleMiscMockFetch } from '#app/utils/outbound-mock-misc.server.ts'
 import { cloudflareR2Handlers } from './cloudflare-r2.ts'
 import { cloudflareHandlers } from './cloudflare.ts'
 import { discordHandlers } from './discord.ts'
 import { githubHandlers } from './github.ts'
 import { kitHandlers } from './kit.ts'
 import { mermaidToSvgHandlers } from './mermaid-to-svg.ts'
+import { bridgeOutboundMock } from './msw-bridge.ts'
 import { oauthHandlers } from './oauth.ts'
 import { oembedHandlers } from './oembed.ts'
 import { searchWorkerHandlers } from './search-worker.ts'
@@ -17,6 +20,23 @@ import {
 	readFixture,
 	updateFixture,
 } from './utils.ts'
+
+const handleEmailMock = bridgeOutboundMock((request) =>
+	maybeHandleEmailMockFetch(request, {
+		onOutboundEmail: async (captured) => {
+			// Preserve prior MSW capture gate: only persist when text is present.
+			const to = captured.to
+			if (!to || !captured.text) return
+			const fixture = await readFixture()
+			await updateFixture({
+				email: {
+					...fixture.email,
+					[to]: captured,
+				},
+			})
+		},
+	}),
+)
 
 // One-off handlers that don't warrant their own files.
 const miscHandlers: Array<HttpHandler> = [
@@ -56,65 +76,13 @@ const miscHandlers: Array<HttpHandler> = [
 	}),
 	http.post(
 		'https://api.cloudflare.com/client/v4/accounts/:accountId/email/sending/send',
-		async ({ request }) => {
-			const body = (await request.json()) as {
-				to?: string | Array<string>
-				from?: string
-				subject?: string
-				text?: string
-				html?: string | null
-				reply_to?: string
-			}
-			const toRaw = body.to
-			const to =
-				typeof toRaw === 'string'
-					? toRaw
-					: Array.isArray(toRaw)
-						? toRaw[0]
-						: undefined
-			console.info('🔶 mocked email contents:', body)
-
-			if (to && body.text) {
-				const fixture = await readFixture()
-				const captured = {
-					to,
-					...(body.from ? { from: body.from } : {}),
-					...(body.reply_to ? { replyTo: body.reply_to } : {}),
-					...(body.subject ? { subject: body.subject } : {}),
-					...(body.text ? { text: body.text } : {}),
-					...(typeof body.html === 'string' ? { html: body.html } : {}),
-				}
-				await updateFixture({
-					email: {
-						...fixture.email,
-						[to]: captured,
-					},
-				})
-			}
-			const delivered =
-				typeof body.to === 'string'
-					? [body.to]
-					: Array.isArray(body.to)
-						? body.to
-						: []
-			return HttpResponse.json({
-				success: true,
-				errors: [],
-				messages: [],
-				result: {
-					delivered,
-					permanent_bounces: [],
-					queued: [],
-				},
-			})
-		},
+		handleEmailMock,
 	),
-	http.head('https://www.gravatar.com/avatar/:md5Hash', async () => {
+	http.head('https://www.gravatar.com/avatar/:md5Hash', async (info) => {
 		if (process.env.NODE_ENV !== 'test' && (await isConnectedToTheInternet())) {
 			return passthrough()
 		}
-
-		return HttpResponse.json(null, { status: 404 })
+		return bridgeOutboundMock(maybeHandleMiscMockFetch)(info)
 	}),
 	http.get(/http:\/\/(localhost|127\.0\.0\.1):\d+\/.*/, async () =>
 		passthrough(),
@@ -125,8 +93,9 @@ const miscHandlers: Array<HttpHandler> = [
 	http.post(/http:\/\/(localhost|127\.0\.0\.1):\d+\/.*/, async () =>
 		passthrough(),
 	),
-	http.get('https://verifyright.co/verify/:email', () =>
-		HttpResponse.json({ status: true }),
+	http.all(
+		'https://verifyright.co/*',
+		bridgeOutboundMock(maybeHandleMiscMockFetch),
 	),
 	http.get('https://api.pwnedpasswords.com/range/:prefix', () => {
 		// Empty response means "not found" for all suffixes.

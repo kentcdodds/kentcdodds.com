@@ -28,8 +28,9 @@ import {
 	buildSiteContentData,
 	type MdxArtifactBundle,
 } from './module-map.ts'
-import { mockRoutes, PASSTHROUGH_HOSTS } from './rpc/outbound-mock-routes.ts'
+import { PASSTHROUGH_HOSTS } from './rpc/outbound-mock-routes.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
+import { maybeHandleOutboundMockFetch } from '../../site/app/utils/outbound-mock-handler.server.ts'
 import type { ParentWorkerEnv } from './rpc/types.ts'
 import {
 	getServiceBindingForHost,
@@ -258,17 +259,48 @@ describe('outbound proxy routing', () => {
 		expect(PASSTHROUGH_HOSTS.has('api.cloudflare.com')).toBe(false)
 	})
 
-	test('includes email, kit, discord, and verifier mocks', () => {
-		const hosts = new Set(mockRoutes.map((route) => route.host))
-		expect(hosts).toEqual(
-			new Set([
-				'api.cloudflare.com',
-				'api.kit.com',
-				'discord.com',
-				'verifyright.co',
-				'www.gravatar.com',
-			]),
-		)
+	test('includes email, kit, discord, and verifier mocks', async () => {
+		const hosts = [
+			'api.cloudflare.com',
+			'api.kit.com',
+			'discord.com',
+			'verifyright.co',
+			'www.gravatar.com',
+		] as const
+		const sampleRequests: Record<(typeof hosts)[number], Request> = {
+			'api.cloudflare.com': new Request(
+				'https://api.cloudflare.com/client/v4/accounts/test/email/sending/send',
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ to: 'test@example.com', text: 'hi' }),
+				},
+			),
+			'api.kit.com': new Request('https://api.kit.com/v3/subscribers'),
+			'discord.com': new Request('https://discord.com/api/oauth2/token', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: new URLSearchParams({
+					client_id: 'id',
+					client_secret: 'secret',
+					grant_type: 'authorization_code',
+					redirect_uri: 'https://example.com/callback',
+					scope: 'identify',
+				}),
+			}),
+			'verifyright.co': new Request(
+				'https://verifyright.co/verify/test@example.com',
+			),
+			'www.gravatar.com': new Request('https://www.gravatar.com/avatar/abc', {
+				method: 'HEAD',
+			}),
+		}
+		for (const host of hosts) {
+			const response = await maybeHandleOutboundMockFetch(sampleRequests[host])
+			expect(response, `expected mock for ${host}`).not.toBeNull()
+		}
 	})
 
 	test('production (OUTBOUND_MOCKS unset) passes third-party hosts through', async () => {

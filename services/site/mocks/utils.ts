@@ -73,21 +73,4 @@ function requiredHeader(headers: Headers, header: string) {
 	}
 }
 
-function requiredProperty(
-	object: { [key: string]: unknown },
-	property: string,
-) {
-	if (!object[property]) {
-		const objectString = JSON.stringify(object)
-		throw new Error(
-			`Property "${property}" required, but not found in ${objectString}`,
-		)
-	}
-}
-
-export {
-	requiredParam,
-	requiredHeader,
-	requiredProperty,
-	isConnectedToTheInternet,
-}
+export { requiredParam, requiredHeader, isConnectedToTheInternet }
