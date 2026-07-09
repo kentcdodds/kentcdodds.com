@@ -94,26 +94,38 @@ const changeTypes = {
   R: "moved",
 };
 
+export function parseChangedFiles(gitOutput) {
+  const changes = [];
+  for (const line of gitOutput.split("\n").filter(Boolean)) {
+    const [status, firstFilename, secondFilename] = line.split("\t");
+    const change = status?.[0];
+    const changeType = changeTypes[change];
+    const filename = changeType === "moved" ? secondFilename : firstFilename;
+    if (!filename) {
+      console.error(`Unable to parse changed file: ${line}`);
+      continue;
+    }
+    if (changeType) {
+      changes.push({
+        changeType,
+        filename,
+        ...(changeType === "moved" && firstFilename
+          ? { previousFilename: firstFilename }
+          : {}),
+      });
+    } else {
+      console.error(`Unknown change type: ${change} ${filename}`);
+    }
+  }
+  return changes;
+}
+
 export async function getChangedFiles(currentCommitSha, compareCommitSha) {
   try {
-    const lineParser = /^(?<change>\w).*?\s+(?<filename>.+$)/;
     const gitOutput = execSync(
       `git diff --name-status ${currentCommitSha} ${compareCommitSha}`,
     ).toString();
-    const changedFiles = gitOutput
-      .split("\n")
-      .map((line) => line.match(lineParser)?.groups)
-      .filter(Boolean);
-    const changes = [];
-    for (const { change, filename } of changedFiles) {
-      const changeType = changeTypes[change];
-      if (changeType) {
-        changes.push({ changeType: changeTypes[change], filename });
-      } else {
-        console.error(`Unknown change type: ${change} ${filename}`);
-      }
-    }
-    return changes;
+    return parseChangedFiles(gitOutput);
   } catch (error) {
     console.error(`Something went wrong trying to get changed files.`, error);
     return null;

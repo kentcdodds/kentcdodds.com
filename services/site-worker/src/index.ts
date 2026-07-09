@@ -31,6 +31,8 @@ import {
 	bumpPageCacheGeneration,
 	clearPageCacheGenerationCache,
 	handlePageCacheRequest,
+	PAGE_CACHE_GENERATION_HEADER,
+	PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER,
 } from './page-cache.ts'
 import { serveStaticAsset } from './static-assets.ts'
 import { handleMediaRequest } from './media.ts'
@@ -65,6 +67,7 @@ function getStringEnvBindings(env: ParentWorkerEnv) {
 }
 
 const ARTIFACT_PUBLISH_PATH = '/resources/mdx-artifacts'
+const CONTENT_VERSION_HEADER = 'X-Content-Version'
 
 async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	// Publishing MDX artifacts is effectively a code deploy (the bundles run
@@ -124,9 +127,14 @@ async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
 	await env.CONTENT_KV.put('mdx-manifest:current', manifest)
 	clearManifestCache()
 	clearArtifactBundleCache()
-	await bumpPageCacheGeneration(env.CONTENT_KV)
+	const pageCacheGeneration = await bumpPageCacheGeneration(env.CONTENT_KV)
 
-	return Response.json({ ok: true, version: bundle.version, r2Key })
+	return Response.json({
+		ok: true,
+		version: bundle.version,
+		r2Key,
+		pageCacheGeneration,
+	})
 }
 
 async function handleMetaRequest(env: ParentWorkerEnv) {
@@ -176,7 +184,11 @@ async function handleDynamicRequest(
 	ctx: ParentExecutionContext,
 ) {
 	const parentStartedAt = performance.now()
-	const bypassManifestCache = shouldBypassManifestCache(request)
+	const expectedContentVersion = request.headers.get(
+		PAGE_CACHE_PREWARM_CONTENT_VERSION_HEADER,
+	)
+	const bypassManifestCache =
+		shouldBypassManifestCache(request) || Boolean(expectedContentVersion)
 	if (bypassManifestCache) {
 		clearManifestCache()
 		clearArtifactBundleCache()
@@ -189,6 +201,12 @@ async function handleDynamicRequest(
 	if (!manifest) {
 		return unprovisionedResponse({
 			missing: 'CONTENT_KV mdx-manifest:current',
+		})
+	}
+	if (expectedContentVersion && manifest.version !== expectedContentVersion) {
+		return new Response(null, {
+			status: 409,
+			headers: { [CONTENT_VERSION_HEADER]: manifest.version },
 		})
 	}
 
@@ -266,6 +284,7 @@ async function handleDynamicRequest(
 		moduleMapCache: hadModuleMapCache ? 1 : 0,
 	})
 	const headers = new Headers(response.headers)
+	headers.set(CONTENT_VERSION_HEADER, manifest.version)
 	headers.set(
 		'X-Cold-Start-Timing',
 		mergeColdStartTimingHeaders(
@@ -338,6 +357,7 @@ export default {
 			if (assetResponse) return assetResponse
 		}
 
+		let pageCacheGeneration: string | undefined
 		if (
 			url.pathname === '/action/refresh-cache' &&
 			request.method === 'POST' &&
@@ -348,13 +368,29 @@ export default {
 				env.REFRESH_CACHE_SECRET,
 			)
 		) {
-			await bumpPageCacheGeneration(env.CONTENT_KV)
+			pageCacheGeneration = await bumpPageCacheGeneration(env.CONTENT_KV)
 			clearPageCacheGenerationCache()
 		}
 
-		return handlePageCacheRequest(request, env, ctx, (dynamicRequest) =>
-			handleDynamicRequest(dynamicRequest, env, ctx as ParentExecutionContext),
+		const response = await handlePageCacheRequest(
+			request,
+			env,
+			ctx,
+			(dynamicRequest) =>
+				handleDynamicRequest(
+					dynamicRequest,
+					env,
+					ctx as ParentExecutionContext,
+				),
 		)
+		if (!pageCacheGeneration) return response
+		const headers = new Headers(response.headers)
+		headers.set(PAGE_CACHE_GENERATION_HEADER, pageCacheGeneration)
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers,
+		})
 	},
 
 	async scheduled(

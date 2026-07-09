@@ -56,7 +56,11 @@ describe("refreshChangedContent", () => {
         filename: "services/site/content/blog/some-post.mdx",
       },
     ]);
-    const postRefreshCacheImpl = vi.fn(async () => ({ ok: true }));
+    const postRefreshCacheImpl = vi.fn(async () => ({
+      ok: true,
+      pageCacheGeneration: "generation-2",
+      contentVersion: "content-v2",
+    }));
     const log = createLogger();
 
     const result = await refreshChangedContent({
@@ -73,6 +77,7 @@ describe("refreshChangedContent", () => {
       status: "refreshed",
       attempts: 1,
       contentPaths: ["blog/some-post.mdx"],
+      prewarm: { attempted: 0, warmed: 0, failed: 0, results: [] },
     });
     expect(getChangedFilesImpl).toHaveBeenCalledWith(
       "current-sha",
@@ -154,6 +159,7 @@ describe("refreshChangedContent", () => {
       status: "refreshed",
       attempts: 2,
       contentPaths: ["blog/some-post.mdx"],
+      prewarm: { attempted: 0, warmed: 0, failed: 0, results: [] },
     });
     expect(postRefreshCacheImpl).toHaveBeenCalledTimes(2);
     expect(postRefreshCacheImpl).toHaveBeenLastCalledWith({
@@ -164,6 +170,94 @@ describe("refreshChangedContent", () => {
       options: { hostname: "kentcdodds-com.kentcdodds.workers.dev" },
     });
     expect(log.warn).toHaveBeenCalledTimes(1);
+  });
+
+  test("prewarms affected public URLs after the final cache refresh", async () => {
+    const fetchJsonImpl = vi.fn(async () => ({ sha: "compare-sha" }));
+    const getChangedFilesImpl = vi.fn(async () => [
+      {
+        changeType: "modified",
+        filename: "services/site/content/blog/some-post/index.mdx",
+      },
+    ]);
+    const postRefreshCacheImpl = vi.fn(async () => ({
+      ok: true,
+      pageCacheGeneration: "generation-2",
+      contentVersion: "content-v2",
+    }));
+    const prewarmResult = {
+      attempted: 6,
+      warmed: 6,
+      failed: 0,
+      results: [],
+    };
+    const prewarmPageCacheImpl = vi.fn(async () => prewarmResult);
+    const log = createLogger();
+
+    const result = await refreshChangedContent({
+      currentCommitSha: "current-sha",
+      baseUrl: "https://example.test",
+      fetchJsonImpl,
+      getChangedFilesImpl,
+      postRefreshCacheImpl,
+      prewarmPageCacheImpl,
+      prewarmBaseUrl: "https://kentcdodds.com",
+      log,
+      skipPublish: true,
+      skipPrewarm: false,
+    });
+
+    expect(prewarmPageCacheImpl).toHaveBeenCalledWith({
+      baseUrl: "https://kentcdodds.com",
+      paths: [
+        "/",
+        "/blog",
+        "/blog.json",
+        "/blog/rss.xml",
+        "/blog/some-post",
+        "/sitemap.xml",
+      ],
+      expectedGeneration: "generation-2",
+      expectedContentVersion: "content-v2",
+      log,
+    });
+    expect(result).toEqual({
+      status: "refreshed",
+      attempts: 1,
+      contentPaths: ["blog/some-post/index.mdx"],
+      prewarm: prewarmResult,
+    });
+  });
+
+  test("does not prewarm without generation and content version guarantees", async () => {
+    const prewarmPageCacheImpl = vi.fn();
+    const log = createLogger();
+
+    const result = await refreshChangedContent({
+      currentCommitSha: "current-sha",
+      fetchJsonImpl: vi.fn(async () => ({ sha: "compare-sha" })),
+      getChangedFilesImpl: vi.fn(async () => [
+        {
+          changeType: "modified",
+          filename: "services/site/content/blog/some-post.mdx",
+        },
+      ]),
+      postRefreshCacheImpl: vi.fn(async () => ({ ok: true })),
+      prewarmPageCacheImpl,
+      log,
+      skipPublish: true,
+      skipPrewarm: false,
+    });
+
+    expect(result).toMatchObject({
+      status: "refreshed",
+      prewarm: { attempted: 0, warmed: 0, failed: 0, results: [] },
+    });
+    expect(prewarmPageCacheImpl).not.toHaveBeenCalled();
+    expect(log.warn).toHaveBeenCalledWith(
+      expect.stringContaining("did not identify"),
+      { pageCacheGeneration: undefined, contentVersion: undefined },
+    );
   });
 
   test("returns refresh-failed after exhausting retries without throwing", async () => {
