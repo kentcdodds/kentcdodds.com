@@ -29,20 +29,16 @@ const schemaBase = z.object({
 	KIT_API_KEY: nonEmptyString,
 	KIT_API_SECRET: nonEmptyString,
 	DISCORD_ADMIN_USER_ID: nonEmptyString,
-	DISCORD_BLUE_CHANNEL: nonEmptyString,
 	DISCORD_BLUE_ROLE: nonEmptyString,
 	DISCORD_BOT_TOKEN: nonEmptyString,
-	DISCORD_CALL_KENT_CHANNEL: nonEmptyString,
 	DISCORD_CLIENT_ID: nonEmptyString,
 	DISCORD_CLIENT_SECRET: nonEmptyString,
 	DISCORD_GUILD_ID: nonEmptyString,
 	DISCORD_LEADERBOARD_CHANNEL: nonEmptyString,
 	DISCORD_MEMBER_ROLE: nonEmptyString,
 	DISCORD_PRIVATE_BOT_CHANNEL: nonEmptyString,
-	DISCORD_RED_CHANNEL: nonEmptyString,
 	DISCORD_RED_ROLE: nonEmptyString,
 	DISCORD_SCOPES: nonEmptyString,
-	DISCORD_YELLOW_CHANNEL: nonEmptyString,
 	DISCORD_YELLOW_ROLE: nonEmptyString,
 	REFRESH_CACHE_SECRET: nonEmptyString,
 	OG_IMAGE_SECRET: nonEmptyString,
@@ -125,7 +121,6 @@ const schemaBase = z.object({
 		.optional()
 		.default('manifests/ignore-list.json'),
 
-
 	// Optional: /youtube route + indexing scripts.
 	YOUTUBE_PLAYLIST_ID: z
 		.string()
@@ -150,9 +145,7 @@ const runtimeEnvSourceKey = Symbol.for('kentcdodds.runtimeEnvSource')
 
 export type Env = Omit<
 	BaseEnv,
-	| 'MOCKS'
-	| 'DATABASE_PATH'
-	| 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
+	'MOCKS' | 'DATABASE_PATH' | 'CLOUDFLARE_AI_EMBEDDING_GATEWAY_ID'
 > & {
 	MOCKS: boolean
 	DATABASE_PATH: string
@@ -313,7 +306,7 @@ export function init() {
 }
 
 /**
- * This is used in both `entry.server.ts` and `root.tsx` to ensure that
+ * This is used in both `entry.server.tsx` and `root.tsx` to ensure that
  * the environment variables are set and globally available before the app is
  * started.
  *
