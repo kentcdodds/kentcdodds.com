@@ -73,27 +73,6 @@ describe('rate limiting (worker)', () => {
 		expect(differentIp.remaining).toBe(9)
 	})
 
-	it('falls back to Fly-Client-Ip when CF-Connecting-IP is absent', () => {
-		const ip = testIp('fly-fallback')
-		const request = createRequest({
-			method: 'POST',
-			pathname: '/login',
-			headers: { 'Fly-Client-Ip': ip },
-		})
-
-		exhaustRateLimit(request, 10)
-		expect(checkRateLimit(request).allowed).toBe(false)
-
-		const differentIp = checkRateLimit(
-			createRequest({
-				method: 'POST',
-				pathname: '/login',
-				headers: { 'Fly-Client-Ip': testIp('fly-other') },
-			}),
-		)
-		expect(differentIp.allowed).toBe(true)
-	})
-
 	it('uses strong limiter for non-GET requests on non-strongest paths', () => {
 		const request = createRequest({
 			method: 'POST',

@@ -9,7 +9,6 @@ import {
 	findR2ObjectHead,
 	PRODUCTION_MEDIA_ORIGIN,
 	readR2MagicBytes,
-	STAGING_MEDIA_ORIGIN,
 	type MediaServingEnv,
 	sniffImageContentType,
 } from '#app/utils/media-serving.server.ts'
@@ -83,15 +82,16 @@ async function resolveMediaDataUri(
 		const { key } = headResult
 		const magic = await readR2MagicBytes(env.MEDIA_BUCKET, key)
 		const segment = transform ? serializeMediaTransform(transform) : undefined
-		const outputFormat = transform?.format && transform.format !== 'auto'
-			? (`image/${transform.format}` as const)
-			: sniffImageContentType(magic) === 'image/gif'
-				? 'image/webp'
-				: sniffImageContentType(magic) === 'image/png'
-					? 'image/png'
-					: sniffImageContentType(magic) === 'image/webp'
-						? 'image/webp'
-						: 'image/jpeg'
+		const outputFormat =
+			transform?.format && transform.format !== 'auto'
+				? (`image/${transform.format}` as const)
+				: sniffImageContentType(magic) === 'image/gif'
+					? 'image/webp'
+					: sniffImageContentType(magic) === 'image/png'
+						? 'image/png'
+						: sniffImageContentType(magic) === 'image/webp'
+							? 'image/webp'
+							: 'image/jpeg'
 
 		const object = await env.MEDIA_BUCKET.get(key)
 		if (!object) {
@@ -129,15 +129,9 @@ async function resolveMediaDataUri(
 
 	// No bindings (Node preview script) or object missing locally (dev with an
 	// empty local R2): fetch through the deployed /media endpoint instead.
-	let lastError: unknown
-	for (const origin of [PRODUCTION_MEDIA_ORIGIN, STAGING_MEDIA_ORIGIN]) {
-		try {
-			return await fetchAsDataUri(buildMediaUrl(id, transform, { origin }))
-		} catch (error) {
-			lastError = error
-		}
-	}
-	throw lastError
+	return fetchAsDataUri(
+		buildMediaUrl(id, transform, { origin: PRODUCTION_MEDIA_ORIGIN }),
+	)
 }
 
 export function stripEmoji(value: string) {
@@ -156,7 +150,10 @@ export async function resolveFeaturedImageDataUri(
 	if (featuredImage.startsWith('data:')) {
 		return featuredImage
 	}
-	if (featuredImage.startsWith('http://') || featuredImage.startsWith('https://')) {
+	if (
+		featuredImage.startsWith('http://') ||
+		featuredImage.startsWith('https://')
+	) {
 		assertAllowedExternalUrl(featuredImage)
 		return fetchAsDataUri(featuredImage)
 	}

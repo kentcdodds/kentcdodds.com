@@ -13,6 +13,7 @@ tsconfig.tsbuildinfo
 *.tsbuildinfo
 /services/site/.data/sqlite.db
 /services/site/.data/sqlite.db-journal
+/migrate-snapshot-*.db
 *.local.*
 
 .env
