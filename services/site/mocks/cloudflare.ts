@@ -19,7 +19,7 @@ import {
 	putEpisodeDraftResponseSegmentAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { handleCallKentAudioProcessorEvent } from '#app/utils/call-kent-audio-processor-callback.server.ts'
-import { mockTransistorEpisodes } from './transistor.ts'
+import { getTransistorMockEpisodes } from './transistor.ts'
 import { requiredHeader } from './utils.ts'
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
@@ -484,7 +484,7 @@ function getStaticDocs(): SearchDoc[] {
 }
 
 function getPodcastDocs(): SearchDoc[] {
-	return mockTransistorEpisodes.map((episode) => {
+	return getTransistorMockEpisodes().map((episode) => {
 		const a = episode.attributes
 		const seasonNumber = typeof a.season === 'number' ? a.season : 1
 		const episodeNumber = typeof a.number === 'number' ? a.number : 0
