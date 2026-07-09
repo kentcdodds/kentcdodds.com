@@ -21,7 +21,8 @@ jobs:
       group: refresh-content-${{ github.ref }}
       cancel-in-progress: true
     env:
-      SITE_URL: https://kentcdodds-com.kentcdodds.workers.dev
+      # Cache keys include the host, so compare and prewarm the public origin.
+      SITE_URL: https://kentcdodds.com
       WORKER_URL: https://kentcdodds-com.kentcdodds.workers.dev
     steps:
       # WORKER_URL is hardcoded to production: a manual dispatch from a

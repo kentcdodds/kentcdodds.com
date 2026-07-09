@@ -402,6 +402,11 @@ in the entry. On every `HIT`/`STALE`, the parent generates a fresh nonce,
 2. `POST /action/refresh-cache` (parent intercept before dynamic forward)
 
 The parent in-memory generation cache is cleared on bump.
+After a content-only refresh completes its final generation bump, the refresh
+workflow sends cookieless requests for affected public URLs through
+`kentcdodds.com` and polls until `X-Edge-Cache: HIT`. This renders changed MDX
+before an end user arrives and verifies that the asynchronous KV fill completed.
+Blog changes also prewarm the homepage, blog index, feeds, and sitemap.
 
 ### Observability
 

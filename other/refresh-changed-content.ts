@@ -2,7 +2,9 @@
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { publishViaEndpoint as publishViaEndpointImpl } from "../services/site-worker/scripts/publish-artifacts-lib.mjs";
+import { getContentPrewarmUrls } from "./content-prewarm-urls.ts";
 import { getChangedFiles, fetchJson } from "./get-changed-files.js";
+import { prewarmPageCache } from "./prewarm-page-cache.ts";
 import { resolveCompareCommitSha } from "./resolve-compare-commit-sha.ts";
 import { postRefreshCache } from "./utils.js";
 
@@ -133,10 +135,13 @@ export async function refreshChangedContent({
   getChangedFilesImpl = getChangedFiles,
   postRefreshCacheImpl = postRefreshCache,
   publishArtifactsImpl = publishArtifacts,
+  prewarmPageCacheImpl = prewarmPageCache,
+  prewarmBaseUrl = baseUrl,
   log = console,
   maxRefreshAttempts = defaultRefreshRetryOptions.maxAttempts,
   retryDelayMs = defaultRefreshRetryOptions.baseDelayMs,
   skipPublish = process.env.SKIP_ARTIFACT_PUBLISH === "true",
+  skipPrewarm = skipPublish || process.env.SKIP_PAGE_CACHE_PREWARM === "true",
 }: {
   currentCommitSha?: string;
   baseUrl?: string;
@@ -146,10 +151,13 @@ export async function refreshChangedContent({
   getChangedFilesImpl?: typeof getChangedFiles;
   postRefreshCacheImpl?: typeof postRefreshCache;
   publishArtifactsImpl?: typeof publishArtifacts;
+  prewarmPageCacheImpl?: typeof prewarmPageCache;
+  prewarmBaseUrl?: string;
   log?: Pick<typeof console, "log" | "warn" | "error">;
   maxRefreshAttempts?: number;
   retryDelayMs?: number;
   skipPublish?: boolean;
+  skipPrewarm?: boolean;
 } = {}) {
   if (!currentCommitSha) {
     throw new Error("currentCommitSha is required");
@@ -167,9 +175,12 @@ export async function refreshChangedContent({
 
   const changedFiles =
     (await getChangedFilesImpl(currentCommitSha, compareSha)) ?? [];
-  const contentPaths = changedFiles
-    .filter((f) => f.filename.startsWith("services/site/content/"))
-    .map((f) => f.filename.replace(/^services\/site\/content\//, ""));
+  const contentChanges = changedFiles.filter((file) =>
+    file.filename.startsWith("services/site/content/"),
+  );
+  const contentPaths = contentChanges.map((f) =>
+    f.filename.replace(/^services\/site\/content\//, ""),
+  );
   if (!contentPaths.length) {
     log.log("🆗 Not refreshing changed content because no content changed.");
     return { status: "no-content-changes" as const };
@@ -201,14 +212,25 @@ export async function refreshChangedContent({
   });
 
   if (refreshResult.ok) {
+    const prewarmPaths = getContentPrewarmUrls(contentChanges);
+    const prewarm =
+      skipPrewarm || prewarmPaths.length === 0
+        ? { attempted: 0, warmed: 0, failed: 0, results: [] }
+        : await prewarmPageCacheImpl({
+            baseUrl: prewarmBaseUrl,
+            paths: prewarmPaths,
+            log,
+          });
     log.log(`Content refresh finished.`, {
       response: refreshResult.response,
       attempts: refreshResult.attempts,
+      prewarm,
     });
     return {
       status: "refreshed" as const,
       attempts: refreshResult.attempts,
       contentPaths,
+      prewarm,
     };
   }
 

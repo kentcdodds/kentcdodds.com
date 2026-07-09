@@ -73,6 +73,7 @@ describe("refreshChangedContent", () => {
       status: "refreshed",
       attempts: 1,
       contentPaths: ["blog/some-post.mdx"],
+      prewarm: { attempted: 0, warmed: 0, failed: 0, results: [] },
     });
     expect(getChangedFilesImpl).toHaveBeenCalledWith(
       "current-sha",
@@ -154,6 +155,7 @@ describe("refreshChangedContent", () => {
       status: "refreshed",
       attempts: 2,
       contentPaths: ["blog/some-post.mdx"],
+      prewarm: { attempted: 0, warmed: 0, failed: 0, results: [] },
     });
     expect(postRefreshCacheImpl).toHaveBeenCalledTimes(2);
     expect(postRefreshCacheImpl).toHaveBeenLastCalledWith({
@@ -164,6 +166,57 @@ describe("refreshChangedContent", () => {
       options: { hostname: "kentcdodds-com.kentcdodds.workers.dev" },
     });
     expect(log.warn).toHaveBeenCalledTimes(1);
+  });
+
+  test("prewarms affected public URLs after the final cache refresh", async () => {
+    const fetchJsonImpl = vi.fn(async () => ({ sha: "compare-sha" }));
+    const getChangedFilesImpl = vi.fn(async () => [
+      {
+        changeType: "modified",
+        filename: "services/site/content/blog/some-post/index.mdx",
+      },
+    ]);
+    const postRefreshCacheImpl = vi.fn(async () => ({ ok: true }));
+    const prewarmResult = {
+      attempted: 6,
+      warmed: 6,
+      failed: 0,
+      results: [],
+    };
+    const prewarmPageCacheImpl = vi.fn(async () => prewarmResult);
+    const log = createLogger();
+
+    const result = await refreshChangedContent({
+      currentCommitSha: "current-sha",
+      baseUrl: "https://example.test",
+      fetchJsonImpl,
+      getChangedFilesImpl,
+      postRefreshCacheImpl,
+      prewarmPageCacheImpl,
+      prewarmBaseUrl: "https://kentcdodds.com",
+      log,
+      skipPublish: true,
+      skipPrewarm: false,
+    });
+
+    expect(prewarmPageCacheImpl).toHaveBeenCalledWith({
+      baseUrl: "https://kentcdodds.com",
+      paths: [
+        "/",
+        "/blog",
+        "/blog.json",
+        "/blog/rss.xml",
+        "/blog/some-post",
+        "/sitemap.xml",
+      ],
+      log,
+    });
+    expect(result).toEqual({
+      status: "refreshed",
+      attempts: 1,
+      contentPaths: ["blog/some-post/index.mdx"],
+      prewarm: prewarmResult,
+    });
   });
 
   test("returns refresh-failed after exhausting retries without throwing", async () => {
