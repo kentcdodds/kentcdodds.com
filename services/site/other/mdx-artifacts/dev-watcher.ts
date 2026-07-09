@@ -134,7 +134,21 @@ async function readCurrentManifest(): Promise<
 	| null
 > {
 	try {
-		return JSON.parse(await fs.readFile(MANIFEST_PATH, 'utf8'))
+		const manifest = JSON.parse(await fs.readFile(MANIFEST_PATH, 'utf8')) as
+			| (MdxArtifactBundle & { documents?: unknown })
+			| null
+		if (
+			!manifest ||
+			manifest.schemaVersion !== 1 ||
+			!manifest.documents ||
+			typeof manifest.documents !== 'object' ||
+			Array.isArray(manifest.documents)
+		) {
+			return null
+		}
+		return manifest as MdxArtifactBundle & {
+			documents: Record<string, DevManifestDocument>
+		}
 	} catch {
 		return null
 	}
@@ -273,7 +287,14 @@ async function compileAllDocuments({
 						return { entry: reusedEntry, inputHash }
 					}
 					compiled++
-					return { entry: await compileDocument(document), inputHash }
+					const entry = await compileDocument(document)
+					const latestInputHash = await computeDocumentInputHash(document)
+					if (latestInputHash !== inputHash) {
+						throw new Error(
+							`MDX input changed while compiling ${document.key}; retry compilation`,
+						)
+					}
+					return { entry, inputHash }
 				} catch (error: unknown) {
 					const message = error instanceof Error ? error.message : String(error)
 					failures.push({ key: document.key, error: message })
@@ -468,16 +489,21 @@ async function startSidecarServer() {
 async function main() {
 	const startedAt = Date.now()
 	const server = await startSidecarServer()
-	await compileAllDocuments({ concurrency: 4 })
 	if (compileOnce) {
-		await new Promise<void>((resolve, reject) => {
-			server.close((error) => (error ? reject(error) : resolve()))
-		})
-		console.info(
-			`mdx-dev: compile-once complete in ${Date.now() - startedAt}ms`,
-		)
+		try {
+			await compileAllDocuments({ concurrency: 4 })
+			console.info(
+				`mdx-dev: compile-once complete in ${Date.now() - startedAt}ms`,
+			)
+		} finally {
+			await new Promise<void>((resolve, reject) => {
+				server.close((error) => (error ? reject(error) : resolve()))
+			})
+		}
 		return
 	}
+
+	await compileAllDocuments({ concurrency: 4 })
 
 	const contentDir = path.join(process.cwd(), 'content')
 	const watcher = chokidar.watch(contentDir, {
