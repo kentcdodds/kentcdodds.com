@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { totalTtl, type CacheEntry } from '@epic-web/cachified'
 
 const MIN_KV_TTL_SECONDS = 60
@@ -5,16 +6,8 @@ const MIN_KV_TTL_SECONDS = 60
 type BufferLike = { __isBuffer: true; data: string }
 type SerializedNodeBuffer = { type: 'Buffer'; data: Array<number> }
 
-function getBuffer() {
-	return (globalThis as { Buffer?: typeof Buffer }).Buffer
-}
-
 function isBuffer(value: unknown) {
-	const BufferConstructor = getBuffer()
-	return (
-		(Boolean(BufferConstructor) && BufferConstructor?.isBuffer(value)) ||
-		value instanceof Uint8Array
-	)
+	return Buffer.isBuffer(value) || value instanceof Uint8Array
 }
 
 function isSerializedNodeBuffer(value: unknown): value is SerializedNodeBuffer {
@@ -28,20 +21,16 @@ function isSerializedNodeBuffer(value: unknown): value is SerializedNodeBuffer {
 
 export function bufferReplacer(_key: string, value: unknown) {
 	if (isBuffer(value)) {
-		const BufferConstructor = getBuffer()
-		if (!BufferConstructor) return value
 		return {
 			__isBuffer: true,
-			data: BufferConstructor.from(value).toString('base64'),
+			data: Buffer.from(value).toString('base64'),
 		} satisfies BufferLike
 	}
 
 	if (isSerializedNodeBuffer(value)) {
-		const BufferConstructor = getBuffer()
-		if (!BufferConstructor) return value
 		return {
 			__isBuffer: true,
-			data: BufferConstructor.from(value.data).toString('base64'),
+			data: Buffer.from(value.data).toString('base64'),
 		} satisfies BufferLike
 	}
 
@@ -55,15 +44,11 @@ export function bufferReviver(_key: string, value: unknown) {
 		'__isBuffer' in value &&
 		(value as BufferLike).data
 	) {
-		const BufferConstructor = getBuffer()
-		if (!BufferConstructor) return value
-		return BufferConstructor.from((value as BufferLike).data, 'base64')
+		return Buffer.from((value as BufferLike).data, 'base64')
 	}
 
 	if (isSerializedNodeBuffer(value)) {
-		const BufferConstructor = getBuffer()
-		if (!BufferConstructor) return value
-		return BufferConstructor.from(value.data)
+		return Buffer.from(value.data)
 	}
 
 	return value

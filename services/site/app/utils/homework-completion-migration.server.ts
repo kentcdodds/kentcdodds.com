@@ -98,59 +98,15 @@ async function setEpisodeHomeworkCompletion({
 	return false
 }
 
-type HomeworkCompletionToMigrate = {
-	seasonNumber: number
-	episodeNumber: number
-	itemIndex: number
-}
-
-type HomeworkCompletionStore = {
-	findMany(args: {
-		where: { clientId: string }
-		select: {
-			seasonNumber: true
-			episodeNumber: true
-			itemIndex: true
-		}
-	}): Promise<Array<HomeworkCompletionToMigrate>>
-	upsert(args: {
-		where: {
-			userId_seasonNumber_episodeNumber_itemIndex: {
-				userId: string
-				seasonNumber: number
-				episodeNumber: number
-				itemIndex: number
-			}
-		}
-		create: {
-			userId: string
-			seasonNumber: number
-			episodeNumber: number
-			itemIndex: number
-		}
-		update: { updatedAt: Date }
-	}): Promise<unknown>
-	deleteMany(args: { where: { clientId: string } }): Promise<unknown>
-}
-
-async function migrateHomeworkCompletionsToUserRecords({
+async function migrateHomeworkCompletionsToUser({
 	userId,
 	clientId,
-	homeworkCompletion,
-	isUniqueConstraintError = () => false,
 }: {
 	userId: string
 	clientId: string
-	homeworkCompletion: HomeworkCompletionStore
-	isUniqueConstraintError?: (error: unknown) => boolean
 }) {
-	const completions = await homeworkCompletion.findMany({
+	const completions = await db.findMany(homeworkCompletionTable, {
 		where: { clientId },
-		select: {
-			seasonNumber: true,
-			episodeNumber: true,
-			itemIndex: true,
-		},
 	})
 	if (completions.length === 0) {
 		return 0
@@ -158,24 +114,11 @@ async function migrateHomeworkCompletionsToUserRecords({
 
 	for (const completion of completions) {
 		try {
-			await homeworkCompletion.upsert({
-				where: {
-					userId_seasonNumber_episodeNumber_itemIndex: {
-						userId,
-						seasonNumber: completion.seasonNumber,
-						episodeNumber: completion.episodeNumber,
-						itemIndex: completion.itemIndex,
-					},
-				},
-				create: {
-					userId,
-					seasonNumber: completion.seasonNumber,
-					episodeNumber: completion.episodeNumber,
-					itemIndex: completion.itemIndex,
-				},
-				update: {
-					updatedAt: new Date(),
-				},
+			await upsertHomeworkCompletionRecord({
+				userId,
+				seasonNumber: completion.seasonNumber,
+				episodeNumber: completion.episodeNumber,
+				itemIndex: completion.itemIndex,
 			})
 		} catch (error) {
 			if (!isUniqueConstraintError(error)) {
@@ -184,60 +127,12 @@ async function migrateHomeworkCompletionsToUserRecords({
 		}
 	}
 
-	await homeworkCompletion.deleteMany({ where: { clientId } })
+	await db.deleteMany(homeworkCompletionTable, { where: { clientId } })
 	return completions.length
 }
 
-function createHomeworkCompletionStore(): HomeworkCompletionStore {
-	return {
-		findMany: async ({ where }) => {
-			const rows = await db.findMany(homeworkCompletionTable, { where })
-			return rows.map((row) => ({
-				seasonNumber: row.seasonNumber,
-				episodeNumber: row.episodeNumber,
-				itemIndex: row.itemIndex,
-			}))
-		},
-		upsert: async ({ where, create }) => {
-			const composite = where.userId_seasonNumber_episodeNumber_itemIndex
-			try {
-				await upsertHomeworkCompletionRecord({
-					userId: composite.userId,
-					seasonNumber: create.seasonNumber,
-					episodeNumber: create.episodeNumber,
-					itemIndex: create.itemIndex,
-				})
-			} catch (error) {
-				if (!isUniqueConstraintError(error)) {
-					throw error
-				}
-			}
-		},
-		deleteMany: async ({ where }) => {
-			await db.deleteMany(homeworkCompletionTable, { where })
-		},
-	}
-}
-
-async function migrateHomeworkCompletionsToUser({
-	userId,
-	clientId,
-}: {
-	userId: string
-	clientId: string
-}) {
-	return migrateHomeworkCompletionsToUserRecords({
-		userId,
-		clientId,
-		homeworkCompletion: createHomeworkCompletionStore(),
-		isUniqueConstraintError,
-	})
-}
-
 export {
-	createHomeworkCompletionStore,
 	getEpisodeHomeworkCompletions,
 	migrateHomeworkCompletionsToUser,
-	migrateHomeworkCompletionsToUserRecords,
 	setEpisodeHomeworkCompletion,
 }
