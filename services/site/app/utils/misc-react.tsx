@@ -22,8 +22,8 @@ export * from './misc.ts'
 
 // Gravatar's `default=` fallback must be an absolute URL (Gravatar redirects
 // the browser to it). When callers thread the request origin we use it so the
-// fallback works on any host (workers.dev preview pre-flip, custom domain
-// after); otherwise we fall back to the production domain.
+// fallback works on any host (workers.dev or the custom domain); otherwise we
+// fall back to the production domain.
 const PRODUCTION_MEDIA_ORIGIN = 'https://kentcdodds.com'
 const defaultAvatarSize = 128
 

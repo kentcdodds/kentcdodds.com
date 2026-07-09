@@ -77,11 +77,9 @@ export function getMetadataFromHtml(html: string, url: string): Metadata {
 }
 
 /**
- * Until the DNS flip, kentcdodds.com is served by the legacy host whose
- * metadata (og:image etc.) points at retired infrastructure. Fetch our own
- * pages' metadata from the current deployment instead so embedded link
- * previews always reference assets we serve. After the flip this is an
- * identity mapping.
+ * Fetch our own pages' metadata via the worker's workers.dev origin instead of
+ * the public custom domain, so the worker doesn't re-enter itself through
+ * kentcdodds.com. Override with `SITE_METADATA_ORIGIN` if needed.
  */
 const SITE_METADATA_ORIGIN =
 	process.env.SITE_METADATA_ORIGIN ??
@@ -157,7 +155,8 @@ function isCspAllowedImageHost(urlString: string) {
 	try {
 		const { hostname } = new URL(urlString)
 		return CSP_IMAGE_HOSTS.some(
-			(host) => hostname === host || hostname.endsWith('.githubusercontent.com'),
+			(host) =>
+				hostname === host || hostname.endsWith('.githubusercontent.com'),
 		)
 	} catch {
 		return false
@@ -167,7 +166,10 @@ function isCspAllowedImageHost(urlString: string) {
 async function unshorten(urlString: string, maxFollows = 10): Promise<string> {
 	let current = urlString
 	for (let follow = 0; follow < maxFollows; follow++) {
-		const response = await fetch(current, { method: 'HEAD', redirect: 'manual' })
+		const response = await fetch(current, {
+			method: 'HEAD',
+			redirect: 'manual',
+		})
 		const location = response.headers.get('location')
 		if (!location || response.status < 300 || response.status >= 400) {
 			return current
