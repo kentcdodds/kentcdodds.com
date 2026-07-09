@@ -4,7 +4,7 @@ import {
 	decodeCacheEntry,
 	encodeCacheEntry,
 	getKvExpirationTtl,
-} from '../cache-encoding.ts'
+} from '../../../site/app/utils/cache-encoding.server.ts'
 import type { ParentWorkerEnv } from './types.ts'
 import {
 	deleteKvCacheLruEntry,

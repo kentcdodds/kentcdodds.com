@@ -84,7 +84,7 @@ the deployed probe worker separately.
 
 Produced by `npm run mdx:compile --workspace kentcdodds.com` (Node), published
 by CI to R2 + KV. Format (JSON, schema in
-`services/site/types/mdx-artifacts.d.ts`):
+`services/site/types/mdx-artifacts.ts`):
 
 ```jsonc
 {

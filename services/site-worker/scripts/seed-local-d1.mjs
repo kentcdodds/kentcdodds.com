@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { randomUUID } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import bcrypt from 'bcryptjs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -12,10 +13,19 @@ const workerDir = path.resolve(
 
 function getConfigPath() {
 	const index = process.argv.indexOf('--config')
-	if (index === -1) {
-		return path.join(workerDir, 'generated-wrangler.jsonc')
+	const configPath =
+		index === -1
+			? path.join(
+					workerDir,
+					process.argv.includes('--local')
+						? 'wrangler.jsonc'
+						: 'generated-wrangler.jsonc',
+				)
+			: process.argv[index + 1]
+	if (!existsSync(configPath)) {
+		throw new Error(`Wrangler config not found: ${configPath}`)
 	}
-	return process.argv[index + 1]
+	return configPath
 }
 
 function getPersistToPath() {
