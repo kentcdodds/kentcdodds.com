@@ -1,3 +1,7 @@
+// The "Better with Kent" playlist on Kent's YouTube channel. Episode watch
+// links and embeds include this so viewers land in the full show playlist.
+const betterWithKentPlaylistId = 'PLV5CVI1eNcJhP4nrJt85L7PxHjebFpDfY'
+
 const externalLinks = {
 	applePodcast:
 		'https://podcasts.apple.com/us/podcast/chats-with-kent-c-dodds/id1475543959',
@@ -11,8 +15,7 @@ const externalLinks = {
 	callKentRSS: 'https://feeds.transistor.fm/call-kent',
 	betterWithKentYouTube:
 		'https://www.youtube.com/@KentCDodds-vids?sub_confirmation=1',
-	betterWithKentPlaylist:
-		'https://www.youtube.com/playlist?list=PLV5CVI1eNcJhP4nrJt85L7PxHjebFpDfY',
+	betterWithKentPlaylist: `https://www.youtube.com/playlist?list=${betterWithKentPlaylistId}`,
 	betterWithKentApple:
 		'https://podcasts.apple.com/us/podcast/better-with-kent/id1896798447',
 	betterWithKentPocketCasts: 'https://pca.st/itunes/1896798447',
@@ -29,4 +32,4 @@ const externalLinks = {
 	rss: 'https://kentcdodds.com/blog/rss.xml',
 }
 
-export { externalLinks }
+export { betterWithKentPlaylistId, externalLinks }

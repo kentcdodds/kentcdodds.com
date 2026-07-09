@@ -1,10 +1,7 @@
 import { z } from 'zod'
+import { betterWithKentPlaylistId } from '#app/external-links.tsx'
 import { cache, cachified } from './cache.server.ts'
 import { type Timings } from './timing.server.ts'
-
-// The "Better with Kent" playlist on Kent's YouTube channel. Episodes are
-// added here by the publishing pipeline in the kcd-youtube repo.
-export const betterWithKentPlaylistId = 'PLV5CVI1eNcJhP4nrJt85L7PxHjebFpDfY'
 
 const betterWithKentEpisodeSchema = z.object({
 	videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
