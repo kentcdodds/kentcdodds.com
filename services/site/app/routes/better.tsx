@@ -17,19 +17,16 @@ import { PodcastSubs } from '#app/components/podcast-subs.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
-import { externalLinks } from '#app/external-links.tsx'
 import {
-	getImgProps,
-	images,
-} from '#app/images.tsx'
+	betterWithKentPlaylistId,
+	externalLinks,
+} from '#app/external-links.tsx'
+import { getImgProps, images } from '#app/images.tsx'
 import {
 	type BetterWithKentEpisode,
 	getBetterWithKentEpisodes,
 } from '#app/utils/better-with-kent.server.ts'
-import {
-	formatDate,
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc-react.tsx'
+import { formatDate, reuseUsefulLoaderHeaders } from '#app/utils/misc-react.tsx'
 import { getServerTimeHeader, type Timings } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/better'
 
@@ -77,7 +74,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) =>
 	data?.socialMetas ?? []
 
 function getWatchUrl(videoId: string) {
-	return `https://www.youtube.com/watch?v=${videoId}`
+	return `https://www.youtube.com/watch?v=${videoId}&list=${betterWithKentPlaylistId}`
 }
 
 function SubscribeButton({
@@ -164,7 +161,10 @@ export default function BetterRoute({
 									// img.youtube.com which our CSP img-src does not allow, so we
 									// point straight at the i.ytimg.com thumbnail instead.
 									thumbnail={`https://i.ytimg.com/vi/${latestEpisode.videoId}/maxresdefault.jpg`}
-									params="rel=0"
+									params={new URLSearchParams({
+										rel: '0',
+										list: betterWithKentPlaylistId,
+									}).toString()}
 								/>
 							</div>
 						</div>
