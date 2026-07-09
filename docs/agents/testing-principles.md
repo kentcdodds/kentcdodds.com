@@ -55,17 +55,19 @@ test("reads env var", () => {
 
 ```ts
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test, expect } from "vitest";
 
 const createTempFile = () => {
-  const path = `/tmp/test-${crypto.randomUUID()}.txt`;
-  fs.writeFileSync(path, "hello");
+  const tmpFile = path.join(os.tmpdir(), `test-${crypto.randomUUID()}.txt`);
+  fs.writeFileSync(tmpFile, "hello");
 
   return {
-    path,
+    path: tmpFile,
     [Symbol.dispose]: () => {
       try {
-        fs.unlinkSync(path);
+        fs.unlinkSync(tmpFile);
       } catch {
         // Cleanup should never fail the test.
       }
