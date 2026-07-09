@@ -40,6 +40,9 @@ export async function maybeHandleKitMockFetch(request: Request) {
 			email?: string
 			fields?: Array<string>
 		}
+		if (typeof body.email !== 'string' || body.email === '') {
+			return json({ error: 'email required' }, { status: 400 })
+		}
 		const targetId = url.pathname.split('/')[3] ?? '0'
 		const isForm = url.pathname.includes('/forms/')
 		console.log(isForm ? 'Subscribing to form' : 'Subscribing to tag', {
@@ -58,7 +61,7 @@ export async function maybeHandleKitMockFetch(request: Request) {
 				subscriber: {
 					id: 987654321,
 					first_name: body.first_name ?? 'Test',
-					email_address: body.email ?? 'test@example.com',
+					email_address: body.email,
 					state: 'inactive',
 					created_at: new Date().toJSON(),
 					fields: body.fields ?? [],

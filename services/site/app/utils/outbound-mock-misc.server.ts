@@ -7,6 +7,7 @@ export async function maybeHandleMiscMockFetch(request: Request) {
 
 	if (
 		url.hostname === 'verifyright.co' &&
+		request.method === 'GET' &&
 		/^\/verify\/[^/]+$/.test(url.pathname)
 	) {
 		return json({ status: true })

@@ -17,16 +17,8 @@ function json(data: unknown, init?: ResponseInit) {
 
 function emailBodyToFixture(
 	body: EmailSendingRequestBody,
-): Record<string, string> | null {
-	const toRaw = body.to
-	const to =
-		typeof toRaw === 'string'
-			? toRaw
-			: Array.isArray(toRaw)
-				? toRaw[0]
-				: undefined
-	if (!to) return null
-
+	to: string,
+): Record<string, string> {
 	const fixture: Record<string, string> = { to }
 	if (body.from) fixture.from = body.from
 	if (body.reply_to) fixture.replyTo = body.reply_to
@@ -34,6 +26,12 @@ function emailBodyToFixture(
 	if (body.text) fixture.text = body.text
 	if (typeof body.html === 'string') fixture.html = body.html
 	return fixture
+}
+
+function recipientsFromBody(body: EmailSendingRequestBody): Array<string> {
+	if (typeof body.to === 'string') return [body.to]
+	if (Array.isArray(body.to)) return body.to
+	return []
 }
 
 export async function maybeHandleEmailMockFetch(
@@ -50,19 +48,14 @@ export async function maybeHandleEmailMockFetch(
 	}
 
 	const body = (await request.json()) as EmailSendingRequestBody
-	const fixture = emailBodyToFixture(body)
-	if (fixture?.to) {
+	const delivered = recipientsFromBody(body)
+	for (const to of delivered) {
+		const fixture = emailBodyToFixture(body, to)
 		// Single log site for mocked emails (dev sidecar + MSW capture callbacks
 		// must not log again).
 		console.info('🔶 mocked email contents:', fixture)
 		await options.onOutboundEmail?.(fixture)
 	}
-	const delivered =
-		typeof body.to === 'string'
-			? [body.to]
-			: Array.isArray(body.to)
-				? body.to
-				: []
 	return json({
 		success: true,
 		errors: [],

@@ -71,6 +71,9 @@ export function resetCloudflareMockState() {
 	vectorizeIndexes.clear()
 	seededIndexPromises.clear()
 	embeddingVectorToText.clear()
+	// The corpus reads mutable Transistor mock state, so rebuild after resets.
+	searchCorpusPromise = null
+	docEmbeddingCache.clear()
 }
 
 function getBearerToken(request: MockableRequest) {

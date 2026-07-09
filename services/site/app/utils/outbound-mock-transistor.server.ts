@@ -235,7 +235,7 @@ export async function maybeHandleTransistorMockFetch(request: Request) {
 		if (!body?.episode) {
 			return missingPropertyError('episode')
 		}
-		if (body.episode.status && body.episode.status !== 'published') {
+		if (body.episode.status !== 'published') {
 			return json(
 				{
 					errors: [
