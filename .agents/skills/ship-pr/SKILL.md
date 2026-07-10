@@ -13,19 +13,18 @@ description: >
    `{ prUrl, status: 'ready' }`, or `{ owner, repo, prNumber, status: 'ready' }`
 2. Wait for CI — `gh pr checks` (compose `loop-on-ci`, `fix-ci`)
 3. Fix failures; address valid AI-reviewer feedback (ignore insignificant nits /
-   already-fixed / wrong)
+   already-fixed / wrong); check mergability with base branch and rebase if
+   needed
 4. Green and no valid feedback left → break
 5. Push → repeat
 
-## Mode
+## Merge and Deploy if requested or the change is low risk
 
-By default, continue to Discord message with summary and include PR link
-
-If explicitly requested, merge PR as Kody with
-`kody:@kentcdodds/github/pr/merge` using `{ prUrl, mergeMethod: 'squash' }` (or
-`{ owner, repo, prNumber, ... }`; optional `commitTitle`), watch CI deploy, when
-finished, continue to the discord message and include a summary with link to PR,
-deployed URL link, or failing job link.
+Squash and merge PR as Kody with
+`kody:@kentcdodds/github/pr/merge` using
+`{ prUrl, mergeMethod: 'squash' }` (or `{ owner, repo, prNumber, ... }`;
+optional `commitTitle`), watch CI deploy. Relevant links for the discord message
+include: agent, PR, CI job, and relevant deployment page(s).
 
 Other useful exports on the same package: `pr/get-checks` for check-run status
 without `gh`, and `request` / `graphql` (`kody:@kentcdodds/github/request`,
@@ -33,16 +32,14 @@ without `gh`, and `request` / `graphql` (`kody:@kentcdodds/github/request`,
 
 ## Done → Discord
 
-Post the summary to channel `1491568683737157683`:
+When finished (whether merged or not), send a discord summary with relevant links.
 
 ```javascript
 import postMessage from 'kody:@kentcdodds/discord/post-message'
 
 export default async function main() {
 	const content = ` ... `
-	return postMessage({
-		channelId: '1491568683737157683',
-		content,
-	})
+	const shipPrChannelId = '1491568683737157683'
+	return postMessage({ channelId: shipPrChannelId, content })
 }
 ```
