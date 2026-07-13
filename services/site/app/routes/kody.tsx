@@ -27,6 +27,8 @@ function KodyChooser() {
 	// Define image type options for each style
 	const normalImageOptions = [
 		{ label: 'Profile', value: 'profile' },
+		{ label: 'Standing', value: 'standing' },
+		{ label: 'Standing with Jacket', value: 'standingJacket' },
 		{ label: 'Snowboarding', value: 'snowboarding' },
 		{ label: 'Skiing', value: 'skiing' },
 		{ label: 'Onewheeling', value: 'onewheeling' },
@@ -34,6 +36,8 @@ function KodyChooser() {
 		{ label: 'Back Flipping', value: 'backFlipping' },
 	] as const
 	const flyingImageOptions = [
+		{ label: 'Standing', value: 'flyingStanding' },
+		{ label: 'Standing with Jacket', value: 'flyingStandingJacket' },
 		{ label: 'Snowboarding', value: 'flyingSnowboarding' },
 		{ label: 'Skiing', value: 'flyingSkiing' },
 		{ label: 'Onewheeling', value: 'flyingOnewheeling' },

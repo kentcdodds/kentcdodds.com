@@ -418,6 +418,86 @@ const images = createImages({
 		alt: 'Illustration of Kody the Koala back flipping in gray',
 		style: { aspectRatio: '0.563' },
 	},
+	kodyStandingYellow: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_yellow',
+		alt: 'Illustration of Kody the Koala standing in yellow',
+		style: { aspectRatio: '0.486' },
+	},
+	kodyStandingRed: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_red',
+		alt: 'Illustration of Kody the Koala standing in red',
+		style: { aspectRatio: '0.486' },
+	},
+	kodyStandingBlue: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_blue',
+		alt: 'Illustration of Kody the Koala standing in blue',
+		style: { aspectRatio: '0.486' },
+	},
+	kodyStandingGray: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_gray',
+		alt: 'Illustration of Kody the Koala standing in gray',
+		style: { aspectRatio: '0.486' },
+	},
+	kodyStandingJacketYellow: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_yellow',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket in yellow',
+		style: { aspectRatio: '0.482' },
+	},
+	kodyStandingJacketRed: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_red',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket in red',
+		style: { aspectRatio: '0.482' },
+	},
+	kodyStandingJacketBlue: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_blue',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket in blue',
+		style: { aspectRatio: '0.482' },
+	},
+	kodyStandingJacketGray: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_gray',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket in gray',
+		style: { aspectRatio: '0.482' },
+	},
+	kodyFlyingStandingYellow: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_flying_yellow',
+		alt: 'Illustration of Kody the Koala standing surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
+	kodyFlyingStandingRed: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_flying_red',
+		alt: 'Illustration of Kody the Koala standing surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
+	kodyFlyingStandingBlue: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_flying_blue',
+		alt: 'Illustration of Kody the Koala standing surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
+	kodyFlyingStandingGray: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_flying_gray',
+		alt: 'Illustration of Kody the Koala standing surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
+	kodyFlyingStandingJacketYellow: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_flying_yellow',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
+	kodyFlyingStandingJacketRed: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_flying_red',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
+	kodyFlyingStandingJacketBlue: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_flying_blue',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
+	kodyFlyingStandingJacketGray: {
+		id: 'kentcdodds.com/illustrations/kody/kody_standing_jacket_flying_gray',
+		alt: 'Illustration of Kody the Koala standing wearing a jacket surrounded by green leaves, a battery, a snowboard, a onewheel, a solar panel, and a recycle logo.',
+		style: square,
+	},
 	helmet: {
 		id: 'kentcdodds.com/illustrations/helmet',
 		alt: 'Illustration of a helmet',
@@ -601,6 +681,18 @@ const kodyBackFlippingImages: Record<OptionalTeam, ImageBuilder> = {
 	BLUE: images.kodyBackFlippingBlue,
 	UNKNOWN: images.kodyBackFlippingGray,
 }
+const kodyStandingImages: Record<OptionalTeam, ImageBuilder> = {
+	RED: images.kodyStandingRed,
+	YELLOW: images.kodyStandingYellow,
+	BLUE: images.kodyStandingBlue,
+	UNKNOWN: images.kodyStandingGray,
+}
+const kodyStandingJacketImages: Record<OptionalTeam, ImageBuilder> = {
+	RED: images.kodyStandingJacketRed,
+	YELLOW: images.kodyStandingJacketYellow,
+	BLUE: images.kodyStandingJacketBlue,
+	UNKNOWN: images.kodyStandingJacketGray,
+}
 
 const kodyFlyingSnowboardingImages: Record<OptionalTeam, ImageBuilder> = {
 	RED: images.kodyFlyingSnowboardingRed,
@@ -631,6 +723,18 @@ const kodyFlyingBackFlippingImages: Record<OptionalTeam, ImageBuilder> = {
 	YELLOW: images.kodyFlyingBackFlippingYellow,
 	BLUE: images.kodyFlyingBackFlippingBlue,
 	UNKNOWN: images.kodyFlyingBackFlippingGray,
+}
+const kodyFlyingStandingImages: Record<OptionalTeam, ImageBuilder> = {
+	RED: images.kodyFlyingStandingRed,
+	YELLOW: images.kodyFlyingStandingYellow,
+	BLUE: images.kodyFlyingStandingBlue,
+	UNKNOWN: images.kodyFlyingStandingGray,
+}
+const kodyFlyingStandingJacketImages: Record<OptionalTeam, ImageBuilder> = {
+	RED: images.kodyFlyingStandingJacketRed,
+	YELLOW: images.kodyFlyingStandingJacketYellow,
+	BLUE: images.kodyFlyingStandingJacketBlue,
+	UNKNOWN: images.kodyFlyingStandingJacketGray,
 }
 
 export function getRandomSportyKody(team?: OptionalTeam | undefined) {
@@ -742,11 +846,15 @@ function getImgProps(
 
 const kodyImages = {
 	profile: kodyProfileImages,
+	standing: kodyStandingImages,
+	standingJacket: kodyStandingJacketImages,
 	snowboarding: kodySnowboardingImages,
 	skiing: kodySkiingImages,
 	onewheeling: kodyOnewheelingImages,
 	playingSoccer: kodyPlayingSoccerImages,
 	backFlipping: kodyBackFlippingImages,
+	flyingStanding: kodyFlyingStandingImages,
+	flyingStandingJacket: kodyFlyingStandingJacketImages,
 	flyingSnowboarding: kodyFlyingSnowboardingImages,
 	flyingSkiing: kodyFlyingSkiingImages,
 	flyingOnewheeling: kodyFlyingOnewheelingImages,
