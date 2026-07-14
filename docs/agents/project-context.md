@@ -90,6 +90,8 @@ reference:
   otherwise MSW passthrough sends traffic to that URL (e.g. local `wrangler dev`
   on `http://127.0.0.1:8787`). Tests expect a mock URL (see `.env.example`).
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
+  `README.md` is repository documentation, not a post, and must stay out of
+  `blogList`; syndication routes consume that list directly.
   The MDX dev-watcher sidecar (`other/mdx-artifacts/dev-watcher.ts`) compiles
   content to `node_modules/.cache/mdx-dev/` and triggers Vite full-reload on change.
 - `npm run dev` runs concurrently: MDX dev-watcher sidecar + `react-router dev`
