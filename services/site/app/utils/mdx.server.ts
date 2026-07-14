@@ -322,27 +322,7 @@ export async function getLocalBlogMdxListItemsUncached() {
 		return aTime > zTime ? -1 : aTime === zTime ? 0 : 1
 	})
 
-	const readmeListItem = await getReadmeBlogListItem()
-	if (readmeListItem) pages.push(readmeListItem)
-
 	return pages
-}
-
-async function getReadmeBlogListItem(): Promise<Omit<MdxPage, 'code'> | null> {
-	const filePath = path.join(process.cwd(), 'content', 'blog', 'README.md')
-	try {
-		const source = await fs.readFile(filePath, 'utf8')
-		const frontmatter = parseYamlFrontmatter(source) as MdxPage['frontmatter']
-		return {
-			slug: 'README',
-			editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${toGitHubEditPath(filePath)}`,
-			readTime: calculateReadingTime(source),
-			dateDisplay: frontmatter.date ? formatDate(frontmatter.date) : undefined,
-			frontmatter,
-		}
-	} catch {
-		return null
-	}
 }
 
 function toMdxDirListEntry(
