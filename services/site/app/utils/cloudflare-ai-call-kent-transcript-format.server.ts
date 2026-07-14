@@ -1,6 +1,7 @@
 import {
 	getWorkersAiRunUrl,
 	unwrapWorkersAiText,
+	WORKERS_AI_REQUEST_TIMEOUT_MS,
 } from './cloudflare-ai-utils.server.ts'
 import { getEnv } from './env.server.ts'
 
@@ -131,6 +132,7 @@ ${endMarker}
 			],
 			max_tokens: maxTokensToUse,
 		}),
+		signal: AbortSignal.timeout(WORKERS_AI_REQUEST_TIMEOUT_MS),
 	})
 
 	if (!res.ok) {

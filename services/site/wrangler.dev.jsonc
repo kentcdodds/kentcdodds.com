@@ -41,6 +41,21 @@
 	"images": {
 		"binding": "IMAGES"
 	},
+	"queues": {
+		"producers": [
+			{
+				"binding": "CALL_KENT_TRANSCRIPTION_QUEUE",
+				"queue": "kcd-call-kent-transcription"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "kcd-call-kent-transcription",
+				"max_batch_size": 1,
+				"max_retries": 2
+			}
+		],
+	},
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "./public"

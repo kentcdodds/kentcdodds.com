@@ -1,11 +1,11 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { and, eq, inList } from '@remix-run/data-table'
 import { z } from 'zod'
-import { runBackgroundTask } from '#app/utils/background-task.server.ts'
-import { startCallKentEpisodeDraftProcessing } from '#app/utils/call-kent-episode-draft.server.ts'
+import { enqueueCallKentTranscriptionJob } from '#app/utils/call-kent-transcription-queue.server.ts'
 import { db } from '#app/utils/db.server.ts'
 import { callKentEpisodeDraftTable } from '#app/utils/db/schema.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
+import { getErrorMessage } from '#app/utils/misc.ts'
 
 const audioGenerationStartedEventSchema = z.object({
 	type: z.literal('audio_generation_started'),
@@ -154,6 +154,11 @@ export async function handleCallKentAudioProcessorEvent(
 			return
 		}
 		case 'audio_generation_completed': {
+			const draft = await db.findOne(callKentEpisodeDraftTable, {
+				where: { id: event.draftId },
+			})
+			if (!draft?.processingJobId) return
+			const processingJobId = draft.processingJobId
 			const updated = await db.updateMany(
 				callKentEpisodeDraftTable,
 				{
@@ -168,16 +173,35 @@ export async function handleCallKentAudioProcessorEvent(
 				{
 					where: and(
 						eq('id', event.draftId),
+						eq('processingJobId', processingJobId),
 						eq('status', 'PROCESSING'),
 						inList('step', ['STARTED', 'GENERATING_AUDIO']),
 					),
 				},
 			)
 			if (updated.affectedRows !== 1) return
-			// The audio worker aborts its callback fetch after 10s; the pipeline
-			// (transcription, metadata) takes far longer, so it must not block
-			// the callback response. Errors are recorded on the draft row.
-			runBackgroundTask(() => startCallKentEpisodeDraftProcessing(event.draftId))
+			try {
+				await enqueueCallKentTranscriptionJob({
+					version: 1,
+					type: 'episode-draft',
+					draftId: event.draftId,
+					jobId: processingJobId,
+				})
+			} catch (error: unknown) {
+				await db.updateMany(
+					callKentEpisodeDraftTable,
+					{
+						errorMessage: `Unable to enqueue episode transcription: ${getErrorMessage(error)}`,
+					},
+					{
+						where: {
+							id: event.draftId,
+							processingJobId,
+							status: 'PROCESSING',
+						},
+					},
+				)
+			}
 			return
 		}
 		case 'audio_generation_failed': {
@@ -188,13 +212,21 @@ export async function handleCallKentAudioProcessorEvent(
 					step: 'DONE',
 					errorMessage: event.errorMessage,
 				},
-				{ where: { id: event.draftId, status: 'PROCESSING' } },
+				{
+					where: and(
+						eq('id', event.draftId),
+						eq('status', 'PROCESSING'),
+						inList('step', ['STARTED', 'GENERATING_AUDIO']),
+					),
+				},
 			)
 			return
 		}
 		default: {
 			const _exhaustive: never = event
-			throw new Error(`Unhandled event type: ${(_exhaustive as { type: string }).type}`)
+			throw new Error(
+				`Unhandled event type: ${(_exhaustive as { type: string }).type}`,
+			)
 		}
 	}
 }

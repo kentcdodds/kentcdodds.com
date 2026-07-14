@@ -125,6 +125,7 @@ export default function RecordScreen() {
 										fields: {
 											title: 'Call Kent question',
 											notes: formattedNotes,
+											questionText,
 										},
 										errors: {},
 									})

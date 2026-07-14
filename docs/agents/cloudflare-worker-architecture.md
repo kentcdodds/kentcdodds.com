@@ -19,10 +19,12 @@ not require a redeploy. **Production deploys exclusively to Cloudflare Workers**
                         │      D1Rpc      (SQL executor on D1)     │
                         │      CacheRpc   (KV-backed cachified)    │
                         │      ContentRpc (per-doc client code)    │
-                        │      OutboundProxy (outbound fetch)        │
-                        │  - scheduled(): expired-data cleanup +   │
-                        │    dynamic-isolate warmup                │
-                        │  bindings: APP_DB (D1), SITE_CACHE_KV,     │
+                        │      OutboundProxy (outbound fetch)      │
+                        │      CallKentTranscriptionQueueRpc       │
+                        │  - consumes Call Kent transcription jobs│
+                        │  - scheduled(): cleanup + warmup + stale│
+                        │    Call Kent transcription recovery     │
+                        │  bindings: APP_DB (D1), SITE_CACHE_KV,   │
                         │    CONTENT_KV, MDX_ARTIFACTS (R2),       │
                         │    LOADER, ASSETS, OAUTH_WORKER,           │
                         │    SEARCH_WORKER (service bindings)        │
@@ -46,7 +48,8 @@ not require a redeploy. **Production deploys exclusively to Cloudflare Workers**
                         │     blogList, dirLists, dataFiles; no    │
                         │     per-doc code/esm — see CONTENT_RPC)  │
                         │  env: string vars + D1_RPC stub +        │
-                        │    CACHE_RPC + CONTENT_RPC loopback stubs│
+                        │    CACHE_RPC + CONTENT_RPC + Call Kent   │
+                        │    transcription queue RPC stub         │
                         └──────────────────────────────────────────┘
 ```
 
@@ -223,6 +226,9 @@ runtime in the worker).
   it as the cachified store when present (LRU stays in-isolate).
 - `CONTENT_RPC`: loopback entrypoint with
   `getDocumentCode(contentDir, slug)` for client MDX IIFE strings.
+- `CALL_KENT_TRANSCRIPTION_QUEUE`: loopback
+  `CallKentTranscriptionQueueRpc.send(job)` entrypoint. The parent validates the
+  versioned job and sends it through its direct Queue binding.
 
 ## Server-side MDX rendering (no eval)
 
@@ -293,7 +299,9 @@ Configured in `services/site-worker/wrangler.jsonc`:
 - `0 3 * * *` — daily expired-data cleanup (`Session` / `Verification` rows
   past expiry) via `deleteExpiredSessionsAndVerifications`.
 - `*/2 * * * *` — warmup cron hitting `/`, `/blog`, and `/healthcheck` to keep
-  the parent artifact cache and a few dynamic isolates warm.
+  the parent artifact cache and a few dynamic isolates warm. The same invocation
+  re-enqueues caller transcripts and post-audio episode drafts that have remained
+  `PROCESSING` without an update for more than 20 minutes.
 
 ## Call Kent audio pipeline (queue + callbacks)
 
@@ -308,11 +316,9 @@ Episode audio generation runs in the separate `kcd-call-kent-audio-worker`
    static `CALL_KENT_AUDIO_CALLBACK_URL` env var.
 2. The audio worker sends HMAC-signed `started` / `completed` / `failed`
    callbacks to `/resources/calls/episode-audio-callback` with a **10s fetch
-   timeout**. The callback handler must therefore respond fast: the heavy
-   post-completion pipeline (R2 downloads, Whisper transcription, metadata
-   generation) runs via `runBackgroundTask`, never awaited in the handler.
-   Awaiting it caused the audio worker to abort after 10s and send a
-   `failed` event that flipped READY-bound drafts to ERROR.
+   timeout**. On completion, the callback persists all generated D1 keys and
+   awaits only a fast enqueue to `kcd-call-kent-transcription`; it never runs
+   transcription or metadata generation in callback background work.
 3. Errors are recorded on the `CallKentEpisodeDraft` row (`status: 'ERROR'`,
    `errorMessage`); recovery = reset the row to
    `status='PROCESSING', step='GENERATING_AUDIO'` and re-enqueue the job.
@@ -320,6 +326,37 @@ Episode audio generation runs in the separate `kcd-call-kent-audio-worker`
 Deploying the audio worker from a VM without docker: `wrangler deploy
 --containers-rollout=none` updates the worker JS without rebuilding the
 sandbox container image (fine when only the consumer logic changed).
+
+## Call Kent transcription queue
+
+`kcd-call-kent-transcription` is produced and consumed by the site worker. Its
+strict payload is either
+`{ version: 1, type: 'caller-transcription', callId, jobId }` or
+`{ version: 1, type: 'episode-draft', draftId, jobId }`, where `jobId` is a UUID
+persisted on the row before dispatch.
+
+- Production dynamic app requests enqueue through the parent's
+  `CALL_KENT_TRANSCRIPTION_QUEUE` RPC stub. The parent owns the direct Queue
+  producer binding and queue consumer.
+- Local Vite/workerd development binds and consumes the same queue directly in
+  `workers/dev-entry.ts`.
+- Batches contain one message. Processing uses an invocation-local data-table
+  database over the direct D1 binding; request-scoped D1 objects are not retained
+  globally.
+- A consumer atomically claims a 20-minute lease guarded by entity id, job id,
+  `PROCESSING`, and an absent/expired lease. Every checkpoint, READY write, retry
+  release, and terminal ERROR write is guarded by that job and lease.
+- Attempts one and two release their matching lease and call `retry()` without
+  persisting terminal state. Attempt three records `ERROR` only for the matching
+  job/lease and acknowledges the message.
+- Duplicate and superseded jobs are acknowledged without processing. Episode
+  retries resume from persisted transcript and metadata checkpoints.
+- The 2-minute cron recovers stale caller work and episode work that already has
+  generated audio and is in `TRANSCRIBING` or `GENERATING_METADATA`. It scans at
+  most 50 calls and 50 drafts ordered oldest-first, dispatches only persisted job
+  ids, and touches successfully dispatched rows to avoid re-enqueueing every two
+  minutes. It does not claim leases or enqueue drafts still waiting on the
+  separate audio-generation queue.
 
 ## Performance profile (measured July 2026)
 
@@ -526,6 +563,7 @@ The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
 - KV: `SITE_CACHE_KV`=`9430f933f2ff4bc5881385851869b02e`,
   `CONTENT_KV`=`e9ec6e92d8034f3db76343162f2b3a26`
 - R2: `kentcdodds-com-artifacts`
+- Queue: `kcd-call-kent-transcription` (site worker producer + consumer)
 - Service bindings: production oauth/search workers
 - Deploys from `.github/workflows/deployment.yml` → `deploy-site.yml` on pushes
   to `main` (`npm run provision:production`, `generate-worker-secrets.mjs
@@ -571,9 +609,11 @@ drop it in the same migration when needed.
 ### Runbook: fresh environment provisioning
 
 1. Ensure a Cloudflare API token with D1/KV/R2 create permissions.
-2. `npm run provision:production --workspace site-worker -- --force-ensure`
-3. Commit the stamped IDs back into `wrangler.jsonc` if new resources were created.
-4. Apply migrations, seed, deploy, upload secrets, publish artifacts.
+2. Create the queue once with
+   `npm exec wrangler -- queues create kcd-call-kent-transcription`.
+3. `npm run provision:production --workspace site-worker -- --force-ensure`
+4. Commit the stamped IDs back into `wrangler.jsonc` if new resources were created.
+5. Apply migrations, seed, deploy, upload secrets, publish artifacts.
 
 ## D1 read replication
 

@@ -2,22 +2,31 @@ import { createHmac } from 'node:crypto'
 import { expect, test, vi } from 'vitest'
 import { callKentEpisodeDraftTable } from '../db/schema.server.ts'
 
+const processingJobId = '11111111-1111-4111-8111-111111111111'
+
+vi.mock('#app/utils/background-task.server.ts', () => ({
+	runBackgroundTask: vi.fn(),
+}))
+
 async function loadCallbackModule() {
 	vi.resetModules()
 	const updateMany = vi.fn()
-	const startCallKentEpisodeDraftProcessing = vi.fn()
+	const findOne = vi.fn(async () => ({ processingJobId }))
+	const enqueueCallKentTranscriptionJob = vi.fn()
 	vi.doMock('#app/utils/db.server.ts', () => ({
 		db: {
+			findOne,
 			updateMany,
 		},
 	}))
-	vi.doMock('#app/utils/call-kent-episode-draft.server.ts', () => ({
-		startCallKentEpisodeDraftProcessing,
+	vi.doMock('#app/utils/call-kent-transcription-queue.server.ts', () => ({
+		enqueueCallKentTranscriptionJob,
 	}))
 	const mod = await import('../call-kent-audio-processor-callback.server.ts')
 	return {
+		findOne,
 		updateMany,
-		startCallKentEpisodeDraftProcessing,
+		enqueueCallKentTranscriptionJob,
 		...mod,
 	}
 }
@@ -61,17 +70,25 @@ test('verifyCallKentAudioProcessorCallbackSignature validates signed payload', a
 	).toBe(false)
 })
 
-test('handleCallKentAudioProcessorEvent stores generated audio metadata and continues processing', async () => {
+test('completed audio callback stores keys and awaits durable enqueue', async () => {
 	vi.clearAllMocks()
 	const {
 		updateMany,
-		startCallKentEpisodeDraftProcessing,
+		enqueueCallKentTranscriptionJob,
 		handleCallKentAudioProcessorEvent,
 	} = await loadCallbackModule()
 	updateMany.mockResolvedValue({
 		affectedRows: 1,
 	})
-	await handleCallKentAudioProcessorEvent({
+	let resolveEnqueue = () => {}
+	enqueueCallKentTranscriptionJob.mockImplementation(
+		() =>
+			new Promise<void>((resolve) => {
+				resolveEnqueue = resolve
+			}),
+	)
+	let settled = false
+	const handling = handleCallKentAudioProcessorEvent({
 		type: 'audio_generation_completed',
 		draftId: 'draft-1',
 		episodeAudioKey: 'call-kent/drafts/draft-1/episode.mp3',
@@ -79,7 +96,15 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 		episodeAudioSize: 321,
 		callerSegmentAudioKey: 'call-kent/drafts/draft-1/caller-segment.mp3',
 		responseSegmentAudioKey: 'call-kent/drafts/draft-1/response-segment.mp3',
+	}).then(() => {
+		settled = true
 	})
+	await vi.waitFor(() => {
+		expect(enqueueCallKentTranscriptionJob).toHaveBeenCalled()
+	})
+	expect(settled).toBe(false)
+	resolveEnqueue()
+	await handling
 	expect(updateMany).toHaveBeenCalledWith(
 		callKentEpisodeDraftTable,
 		{
@@ -97,5 +122,82 @@ test('handleCallKentAudioProcessorEvent stores generated audio metadata and cont
 			}),
 		}),
 	)
-	expect(startCallKentEpisodeDraftProcessing).toHaveBeenCalledWith('draft-1')
+	expect(enqueueCallKentTranscriptionJob).toHaveBeenCalledWith({
+		version: 1,
+		type: 'episode-draft',
+		draftId: 'draft-1',
+		jobId: processingJobId,
+	})
+})
+
+test('completed audio callback remains recoverable when durable enqueue fails', async () => {
+	vi.clearAllMocks()
+	const {
+		updateMany,
+		enqueueCallKentTranscriptionJob,
+		handleCallKentAudioProcessorEvent,
+	} = await loadCallbackModule()
+	updateMany.mockResolvedValue({ affectedRows: 1 })
+	enqueueCallKentTranscriptionJob.mockRejectedValue(
+		new Error('queue unavailable'),
+	)
+
+	await handleCallKentAudioProcessorEvent({
+		type: 'audio_generation_completed',
+		draftId: 'draft-1',
+		episodeAudioKey: 'episode.mp3',
+		episodeAudioContentType: 'audio/mpeg',
+		episodeAudioSize: 321,
+	})
+
+	expect(updateMany).toHaveBeenLastCalledWith(
+		callKentEpisodeDraftTable,
+		{
+			errorMessage:
+				'Unable to enqueue episode transcription: queue unavailable',
+		},
+		{
+			where: {
+				id: 'draft-1',
+				processingJobId,
+				status: 'PROCESSING',
+			},
+		},
+	)
+})
+
+test('late audio failure cannot overwrite transcription or metadata work', async () => {
+	vi.clearAllMocks()
+	const { updateMany, handleCallKentAudioProcessorEvent } =
+		await loadCallbackModule()
+	updateMany.mockResolvedValue({ affectedRows: 0 })
+
+	await handleCallKentAudioProcessorEvent({
+		type: 'audio_generation_failed',
+		draftId: 'draft-1',
+		errorMessage: 'late audio failure',
+	})
+
+	expect(updateMany).toHaveBeenCalledWith(
+		callKentEpisodeDraftTable,
+		{
+			status: 'ERROR',
+			step: 'DONE',
+			errorMessage: 'late audio failure',
+		},
+		expect.objectContaining({
+			where: expect.objectContaining({
+				type: 'logical',
+				operator: 'and',
+				predicates: expect.arrayContaining([
+					expect.objectContaining({
+						type: 'comparison',
+						operator: 'in',
+						column: 'step',
+						value: ['STARTED', 'GENERATING_AUDIO'],
+					}),
+				]),
+			}),
+		}),
+	)
 })

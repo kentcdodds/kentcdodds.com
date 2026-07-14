@@ -1,5 +1,9 @@
 import { Buffer } from 'node:buffer'
+import { type Database } from '@remix-run/data-table'
 import { expect, test, vi } from 'vitest'
+
+const jobId = '11111111-1111-4111-8111-111111111111'
+const leaseId = '22222222-2222-4222-8222-222222222222'
 
 async function loadDraftModule() {
 	vi.resetModules()
@@ -29,13 +33,6 @@ async function loadDraftModule() {
 	vi.doMock('#app/utils/cloudflare-ai-transcription.server.ts', () => ({
 		transcribeMp3WithWorkersAi,
 	}))
-	vi.doMock('#app/utils/db.server.ts', () => ({
-		db: {
-			findOne,
-			updateMany,
-		},
-	}))
-
 	const mod = await import('../call-kent-episode-draft.server.ts')
 
 	return {
@@ -69,6 +66,8 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 	findOne.mockResolvedValue({
 		id: 'draft-1',
 		status: 'PROCESSING',
+		processingJobId: jobId,
+		processingLeaseId: leaseId,
 		step: 'TRANSCRIBING',
 		transcript: null,
 		title: null,
@@ -88,7 +87,6 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 	})
 	updateMany.mockResolvedValue({ affectedRows: 1 })
 	getAudioBuffer
-		.mockResolvedValueOnce(Buffer.from('episode-audio'))
 		.mockResolvedValueOnce(callerSegmentAudio)
 		.mockResolvedValueOnce(responseSegmentAudio)
 	transcribeMp3WithWorkersAi.mockResolvedValue('This is Kent responding.')
@@ -102,8 +100,16 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		keywords: 'testing, transcript',
 	})
 
-	await startCallKentEpisodeDraftProcessing('draft-1')
+	await startCallKentEpisodeDraftProcessing('draft-1', {
+		database: { findOne, updateMany } as unknown as Database,
+		jobId,
+		leaseId,
+	})
 
+	expect(getAudioBuffer).toHaveBeenCalledTimes(2)
+	expect(getAudioBuffer).not.toHaveBeenCalledWith({
+		key: 'drafts/draft-1.mp3',
+	})
 	expect(transcribeMp3WithWorkersAi).toHaveBeenCalledTimes(1)
 	expect(transcribeMp3WithWorkersAi).toHaveBeenCalledWith({
 		mp3: responseSegmentAudio,
@@ -122,7 +128,24 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		callTitle: 'A testing question',
 		callerNotes: 'Need confidence in this flow.',
 	})
-	expect(updateMany.mock.results.every((result) => result.type === 'return')).toBe(
-		true,
+	expect(
+		updateMany.mock.results.every((result) => result.type === 'return'),
+	).toBe(true)
+	expect(updateMany).toHaveBeenLastCalledWith(
+		expect.anything(),
+		expect.objectContaining({
+			status: 'READY',
+			step: 'DONE',
+			processingLeaseId: null,
+			processingLeaseExpiresAt: null,
+		}),
+		{
+			where: {
+				id: 'draft-1',
+				processingJobId: jobId,
+				processingLeaseId: leaseId,
+				status: 'PROCESSING',
+			},
+		},
 	)
 })

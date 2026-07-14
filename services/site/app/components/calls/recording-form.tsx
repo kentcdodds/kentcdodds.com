@@ -27,12 +27,14 @@ export type RecordingFormData = {
 		audio?: never
 		title?: string | null
 		notes?: string | null
+		questionText?: string | null
 	}
 	errors: {
 		generalError?: string
 		audio?: string | null
 		title?: string | null
 		notes?: string | null
+		questionText?: string | null
 	}
 }
 
@@ -49,10 +51,12 @@ function isRecordingFormDataEqual(
 	return (
 		first.fields.title === second.fields.title &&
 		first.fields.notes === second.fields.notes &&
+		first.fields.questionText === second.fields.questionText &&
 		first.errors.generalError === second.errors.generalError &&
 		first.errors.audio === second.errors.audio &&
 		first.errors.title === second.errors.title &&
-		first.errors.notes === second.errors.notes
+		first.errors.notes === second.errors.notes &&
+		first.errors.questionText === second.errors.questionText
 	)
 }
 
@@ -231,7 +235,10 @@ export function RecordingForm({
 		})()
 	}
 
-	const generalError = submissionData?.errors.generalError || requestError
+	const generalError =
+		submissionData?.errors.generalError ||
+		submissionData?.errors.questionText ||
+		requestError
 	const audioError = submissionData?.errors.audio
 	const audioDescribedBy = [
 		generalError ? 'general-error-message' : null,
@@ -268,6 +275,14 @@ export function RecordingForm({
 			<form method="post" onSubmit={handleSubmit} noValidate>
 				<input type="hidden" name="intent" value={intent} />
 				{callId ? <input type="hidden" name="callId" value={callId} /> : null}
+				{submissionData?.fields.questionText !== null &&
+				submissionData?.fields.questionText !== undefined ? (
+					<input
+						type="hidden"
+						name="questionText"
+						value={submissionData.fields.questionText}
+					/>
+				) : null}
 
 				{intent === 'create-call' && user && userInfo ? (
 					<EpisodeArtworkPreview

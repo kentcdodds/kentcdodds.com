@@ -7,6 +7,12 @@ import {
 	getOrBuildModuleMap,
 } from './artifact-bundle-cache.ts'
 import {
+	consumeCallKentTranscriptionBatch,
+	reenqueueStaleCallKentTranscriptionJobs,
+} from '../../site/app/utils/call-kent-transcription-consumer.server.ts'
+import { createDirectD1Database } from '../../site/app/utils/db/direct-d1-database.server.ts'
+import { setRuntimeEnvSource } from '../../site/app/utils/env.server.ts'
+import {
 	formatColdStartTiming,
 	mergeColdStartTimingHeaders,
 } from './cold-start-timing.ts'
@@ -22,10 +28,11 @@ import {
 	shouldBypassManifestCache,
 } from './manifest.ts'
 import { CacheRpc } from './rpc/cache-rpc.ts'
+import { CallKentTranscriptionQueueRpc } from './rpc/call-kent-transcription-queue-rpc.ts'
 import { ContentRpc } from './rpc/content-rpc.ts'
 import { D1Rpc } from './rpc/d1-rpc.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
-import type { DynamicWorkerConfig, ParentWorkerEnv } from './rpc/types.ts'
+import type { ParentWorkerEnv } from './rpc/types.ts'
 
 import {
 	bumpPageCacheGeneration,
@@ -51,12 +58,21 @@ type ParentExecutionContext = ExecutionContext & {
 	exports: {
 		D1Rpc: (options: { props: Record<string, never> }) => unknown
 		CacheRpc: (options: { props: Record<string, never> }) => unknown
+		CallKentTranscriptionQueueRpc: (options: {
+			props: Record<string, never>
+		}) => unknown
 		ContentRpc: (options: { props: Record<string, never> }) => unknown
 		OutboundProxy: (options: { props: Record<string, never> }) => unknown
 	}
 }
 
-export { CacheRpc, ContentRpc, D1Rpc, OutboundProxy }
+export {
+	CacheRpc,
+	CallKentTranscriptionQueueRpc,
+	ContentRpc,
+	D1Rpc,
+	OutboundProxy,
+}
 
 function getStringEnvBindings(env: ParentWorkerEnv) {
 	return Object.fromEntries(
@@ -262,6 +278,8 @@ async function handleDynamicRequest(
 				D1_RPC: ctx.exports.D1Rpc({ props: {} }),
 				CACHE_RPC: ctx.exports.CacheRpc({ props: {} }),
 				CONTENT_RPC: ctx.exports.ContentRpc({ props: {} }),
+				CALL_KENT_TRANSCRIPTION_QUEUE:
+					ctx.exports.CallKentTranscriptionQueueRpc({ props: {} }),
 			},
 			globalOutbound: ctx.exports.OutboundProxy({ props: {} }),
 		}
@@ -399,7 +417,19 @@ export default {
 		ctx: ExecutionContext,
 	) {
 		if (controller.cron === WARMUP_CRON) {
-			await warmDynamicWorker(env, ctx as ParentExecutionContext)
+			setRuntimeEnvSource(getStringEnvBindings(env))
+			const database = createDirectD1Database(env.APP_DB)
+			const [, recovery] = await Promise.all([
+				warmDynamicWorker(env, ctx as ParentExecutionContext),
+				reenqueueStaleCallKentTranscriptionJobs({
+					database,
+					enqueue: async (job) =>
+						await env.CALL_KENT_TRANSCRIPTION_QUEUE.send(job),
+				}),
+			])
+			if (recovery.selected > 0) {
+				console.info('call-kent-transcription-stale-recovery', recovery)
+			}
 			return
 		}
 
@@ -410,5 +440,12 @@ export default {
 		) {
 			console.info('expired-data-cleanup', result)
 		}
+	},
+
+	async queue(batch, env) {
+		setRuntimeEnvSource(getStringEnvBindings(env))
+		await consumeCallKentTranscriptionBatch(batch, {
+			database: createDirectD1Database(env.APP_DB),
+		})
 	},
 } satisfies ExportedHandler<ParentWorkerEnv>
