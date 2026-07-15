@@ -11,6 +11,7 @@ import {
 	callUser,
 } from '#app/utils/db/schema.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
+import { type CallKentTranscriptionProcessingOutcome } from '#app/utils/call-kent-transcription-processing.ts'
 
 export async function startCallKentEpisodeDraftProcessing(
 	draftId: string,
@@ -19,7 +20,7 @@ export async function startCallKentEpisodeDraftProcessing(
 		jobId,
 		leaseId,
 	}: { database: Database; jobId: string; leaseId: string },
-) {
+): Promise<CallKentTranscriptionProcessingOutcome> {
 	const processingWhere = {
 		id: draftId,
 		processingJobId: jobId,
@@ -32,16 +33,14 @@ export async function startCallKentEpisodeDraftProcessing(
 			call: callKentEpisodeDraftCall.with({ user: callUser }),
 		},
 	})
-	if (!draft) return
-	if (draft.status !== 'PROCESSING') return
+	if (!draft) return 'stale'
 	if (!draft.call) throw new Error('Call not found for episode draft.')
 	const call = draft.call
 	if (!call.user) throw new Error('Call user not found for episode draft.')
-	if (call.callerTranscriptStatus === 'PROCESSING') {
-		throw new Error('Caller transcript is still processing.')
-	}
 
-	let segmentMp3s: { callerMp3: Buffer; responseMp3: Buffer } | null = null
+	const callerName = call.isAnonymous ? undefined : call.user.firstName
+	const callTitle = call.title
+	const callerNotes = call.notes ?? undefined
 
 	// Step 2: transcript (skip if already present)
 	let transcript = draft.transcript
@@ -49,72 +48,46 @@ export async function startCallKentEpisodeDraftProcessing(
 	let callerTranscriptForMetadata: string | null = null
 	let responderTranscriptForMetadata: string | null = null
 	if (!transcript) {
+		if (call.callerTranscriptStatus === 'PROCESSING') {
+			return 'deferred'
+		}
+		if (call.callerTranscriptStatus !== 'READY') {
+			throw new Error(
+				`Caller transcript is not ready (status: ${call.callerTranscriptStatus}).`,
+			)
+		}
+		const savedCallerTranscript = normalizeCallerTranscriptForEpisode({
+			callerTranscript: call.callerTranscript,
+			callerName,
+		})
+		if (!savedCallerTranscript) {
+			throw new Error('Caller transcript is READY but empty.')
+		}
+		if (!draft.responseSegmentAudioKey) {
+			throw new Error('Episode response segment audio is missing.')
+		}
 		const stepTranscribe = await database.updateMany(
 			callKentEpisodeDraftTable,
 			{ step: 'TRANSCRIBING', errorMessage: null },
 			{ where: processingWhere },
 		)
-		if (stepTranscribe.affectedRows !== 1) return
-		const callerName = call.isAnonymous ? undefined : call.user.firstName
-		const callTitle = call.title
-		const callerNotes = call.notes ?? undefined
-		const savedCallerTranscript = normalizeCallerTranscriptForEpisode({
-			callerTranscript: call.callerTranscript,
-			callerName,
+		if (stepTranscribe.affectedRows !== 1) return 'stale'
+		const responseMp3 = await getAudioBuffer({
+			key: draft.responseSegmentAudioKey,
 		})
-
-		if (
-			!segmentMp3s &&
-			draft.callerSegmentAudioKey &&
-			draft.responseSegmentAudioKey
-		) {
-			const [callerMp3, responseMp3] = await Promise.all([
-				getAudioBuffer({ key: draft.callerSegmentAudioKey }),
-				getAudioBuffer({ key: draft.responseSegmentAudioKey }),
-			])
-			segmentMp3s = { callerMp3, responseMp3 }
-		}
-
-		if (segmentMp3s) {
-			const callerTranscriptPromise = savedCallerTranscript
-				? Promise.resolve(savedCallerTranscript)
-				: transcribeMp3WithWorkersAi({
-						mp3: segmentMp3s.callerMp3,
-						callerName,
-						callTitle,
-						callerNotes,
-					})
-			const [callerTranscript, kentTranscript] = await Promise.all([
-				callerTranscriptPromise,
-				transcribeMp3WithWorkersAi({
-					mp3: segmentMp3s.responseMp3,
-					callerName,
-					callTitle,
-					callerNotes,
-				}),
-			])
-			callerTranscriptForMetadata = callerTranscript
-			responderTranscriptForMetadata = kentTranscript
-			transcript = assembleCallKentTranscript({
-				callerName,
-				callerTranscript,
-				kentTranscript,
-			})
-		} else {
-			// Fallback: transcribe the stitched episode audio (includes bumpers).
-			if (!draft.episodeAudioKey) {
-				throw new Error(
-					'Episode audio is missing. Audio generation must complete before draft processing can continue.',
-				)
-			}
-			const episodeMp3 = await getAudioBuffer({ key: draft.episodeAudioKey })
-			transcript = await transcribeMp3WithWorkersAi({
-				mp3: episodeMp3,
-				callerName,
-				callTitle,
-				callerNotes,
-			})
-		}
+		const kentTranscript = await transcribeMp3WithWorkersAi({
+			mp3: responseMp3,
+			callerName,
+			callTitle,
+			callerNotes,
+		})
+		callerTranscriptForMetadata = savedCallerTranscript
+		responderTranscriptForMetadata = kentTranscript
+		transcript = assembleCallKentTranscript({
+			callerName,
+			callerTranscript: savedCallerTranscript,
+			kentTranscript,
+		})
 		const rawTranscript = transcript.trim()
 		if (!rawTranscript) {
 			throw new Error('Workers AI transcription returned an empty transcript.')
@@ -145,7 +118,7 @@ export async function startCallKentEpisodeDraftProcessing(
 			{ transcript, step: 'GENERATING_METADATA' },
 			{ where: processingWhere },
 		)
-		if (step3.affectedRows !== 1) return
+		if (step3.affectedRows !== 1) return 'stale'
 	}
 
 	if (!transcript) {
@@ -159,7 +132,7 @@ export async function startCallKentEpisodeDraftProcessing(
 			{ step: 'GENERATING_METADATA', errorMessage: null },
 			{ where: processingWhere },
 		)
-		if (stepMetadata.affectedRows !== 1) return
+		if (stepMetadata.affectedRows !== 1) return 'stale'
 
 		const metadata = await generateCallKentEpisodeMetadataWithWorkersAi({
 			// Prefer segment transcripts (caller + Kent) for metadata when available.
@@ -180,7 +153,7 @@ export async function startCallKentEpisodeDraftProcessing(
 		const nextDescription = existingDescription || metadata.description.trim()
 		const nextKeywords = existingKeywords || metadata.keywords.trim()
 
-		await database.updateMany(
+		const completed = await database.updateMany(
 			callKentEpisodeDraftTable,
 			{
 				title: nextTitle,
@@ -193,8 +166,9 @@ export async function startCallKentEpisodeDraftProcessing(
 			},
 			{ where: processingWhere },
 		)
+		return completed.affectedRows === 1 ? 'completed' : 'stale'
 	} else {
-		await database.updateMany(
+		const completed = await database.updateMany(
 			callKentEpisodeDraftTable,
 			{
 				status: 'READY',
@@ -204,5 +178,6 @@ export async function startCallKentEpisodeDraftProcessing(
 			},
 			{ where: processingWhere },
 		)
+		return completed.affectedRows === 1 ? 'completed' : 'stale'
 	}
 }

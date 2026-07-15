@@ -45,12 +45,13 @@ test('caller transcript success is guarded by job and lease ownership', async ()
 	}))
 	const updateMany = vi.fn(async () => ({ affectedRows: 1 }))
 
-	await startCallKentCallerTranscriptProcessing('call-1', {
+	const outcome = await startCallKentCallerTranscriptProcessing('call-1', {
 		database: { findOne, updateMany } as unknown as Database,
 		jobId,
 		leaseId,
 	})
 
+	expect(outcome).toBe('completed')
 	expect(updateMany).toHaveBeenLastCalledWith(
 		expect.anything(),
 		{
@@ -69,4 +70,28 @@ test('caller transcript success is guarded by job and lease ownership', async ()
 			},
 		},
 	)
+})
+
+test('caller transcript reports stale when its final READY write loses ownership', async () => {
+	const { startCallKentCallerTranscriptProcessing } = await loadCallerModule()
+	const findOne = vi.fn(async () => ({
+		id: 'call-1',
+		title: 'Question',
+		notes: null,
+		isAnonymous: false,
+		audioKey: 'caller.mp3',
+		callerTranscriptJobId: jobId,
+		callerTranscriptLeaseId: leaseId,
+		callerTranscriptStatus: 'PROCESSING',
+		user: { firstName: 'Riley' },
+	}))
+	const updateMany = vi.fn(async () => ({ affectedRows: 0 }))
+
+	const outcome = await startCallKentCallerTranscriptProcessing('call-1', {
+		database: { findOne, updateMany } as unknown as Database,
+		jobId,
+		leaseId,
+	})
+
+	expect(outcome).toBe('stale')
 })

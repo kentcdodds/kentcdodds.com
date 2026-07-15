@@ -348,11 +348,18 @@ persisted on the row before dispatch.
 - A consumer atomically claims a 20-minute lease guarded by entity id, job id,
   `PROCESSING`, and an absent/expired lease. Every checkpoint, READY write, retry
   release, and terminal ERROR write is guarded by that job and lease.
+- Processors return an explicit `completed`, `stale`, or `deferred` outcome.
+  Stale work releases any still-owned lease before acknowledgement. Deferred
+  episode work releases and retries even on the final delivery so the stale
+  recovery cron can dispatch it again later.
 - Attempts one and two release their matching lease and call `retry()` without
   persisting terminal state. Attempt three records `ERROR` only for the matching
   job/lease and acknowledges the message.
 - Duplicate and superseded jobs are acknowledged without processing. Episode
   retries resume from persisted transcript and metadata checkpoints.
+- Episode transcription waits for a usable caller transcript in `READY`, requires
+  both generated segment keys, and transcribes only Kent's response segment.
+  Legacy audio callbacks mint and persist a job id atomically with the audio keys.
 - The 2-minute cron recovers stale caller work and episode work that already has
   generated audio and is in `TRANSCRIBING` or `GENERATING_METADATA`. It scans at
   most 50 calls and 50 drafts ordered oldest-first, dispatches only persisted job

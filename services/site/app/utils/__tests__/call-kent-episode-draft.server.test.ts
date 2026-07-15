@@ -60,7 +60,6 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		startCallKentEpisodeDraftProcessing,
 	} = await loadDraftModule()
 
-	const callerSegmentAudio = Buffer.from('caller-segment-audio')
 	const responseSegmentAudio = Buffer.from('response-segment-audio')
 
 	findOne.mockResolvedValue({
@@ -81,14 +80,13 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 			title: 'A testing question',
 			notes: 'Need confidence in this flow.',
 			isAnonymous: false,
+			callerTranscriptStatus: 'READY',
 			callerTranscript: 'Caller: I edited this caller transcript.',
 			user: { firstName: 'Riley' },
 		},
 	})
 	updateMany.mockResolvedValue({ affectedRows: 1 })
-	getAudioBuffer
-		.mockResolvedValueOnce(callerSegmentAudio)
-		.mockResolvedValueOnce(responseSegmentAudio)
+	getAudioBuffer.mockResolvedValueOnce(responseSegmentAudio)
 	transcribeMp3WithWorkersAi.mockResolvedValue('This is Kent responding.')
 	assembleCallKentTranscript.mockReturnValue('raw assembled transcript')
 	formatCallKentTranscriptWithWorkersAi.mockResolvedValue(
@@ -100,13 +98,17 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		keywords: 'testing, transcript',
 	})
 
-	await startCallKentEpisodeDraftProcessing('draft-1', {
+	const outcome = await startCallKentEpisodeDraftProcessing('draft-1', {
 		database: { findOne, updateMany } as unknown as Database,
 		jobId,
 		leaseId,
 	})
 
-	expect(getAudioBuffer).toHaveBeenCalledTimes(2)
+	expect(outcome).toBe('completed')
+	expect(getAudioBuffer).toHaveBeenCalledTimes(1)
+	expect(getAudioBuffer).not.toHaveBeenCalledWith({
+		key: 'drafts/draft-1-caller.mp3',
+	})
 	expect(getAudioBuffer).not.toHaveBeenCalledWith({
 		key: 'drafts/draft-1.mp3',
 	})
@@ -170,13 +172,127 @@ test('startCallKentEpisodeDraftProcessing waits for caller transcript processing
 		},
 	})
 
+	const outcome = await startCallKentEpisodeDraftProcessing('draft-1', {
+		database: { findOne, updateMany } as unknown as Database,
+		jobId,
+		leaseId,
+	})
+	expect(outcome).toBe('deferred')
+	expect(getAudioBuffer).not.toHaveBeenCalled()
+	expect(updateMany).not.toHaveBeenCalled()
+})
+
+test.each([
+	{
+		status: 'NOT_STARTED',
+		transcript: null,
+		error: 'Caller transcript is not ready (status: NOT_STARTED).',
+	},
+	{
+		status: 'READY',
+		transcript: '   ',
+		error: 'Caller transcript is READY but empty.',
+	},
+])(
+	'startCallKentEpisodeDraftProcessing rejects unusable caller transcript status $status',
+	async ({ status, transcript, error }) => {
+		const { findOne, updateMany, startCallKentEpisodeDraftProcessing } =
+			await loadDraftModule()
+		findOne.mockResolvedValue({
+			id: 'draft-1',
+			status: 'PROCESSING',
+			processingJobId: jobId,
+			processingLeaseId: leaseId,
+			callerSegmentAudioKey: 'caller.mp3',
+			responseSegmentAudioKey: 'response.mp3',
+			call: {
+				id: 'call-1',
+				isAnonymous: false,
+				callerTranscriptStatus: status,
+				callerTranscript: transcript,
+				user: { firstName: 'Riley' },
+			},
+		})
+
+		await expect(
+			startCallKentEpisodeDraftProcessing('draft-1', {
+				database: { findOne, updateMany } as unknown as Database,
+				jobId,
+				leaseId,
+			}),
+		).rejects.toThrow(error)
+		expect(updateMany).not.toHaveBeenCalled()
+	},
+)
+
+test('startCallKentEpisodeDraftProcessing requires response segment audio', async () => {
+	const {
+		getAudioBuffer,
+		findOne,
+		updateMany,
+		startCallKentEpisodeDraftProcessing,
+	} = await loadDraftModule()
+	findOne.mockResolvedValue({
+		id: 'draft-1',
+		status: 'PROCESSING',
+		processingJobId: jobId,
+		processingLeaseId: leaseId,
+		callerSegmentAudioKey: 'caller.mp3',
+		responseSegmentAudioKey: null,
+		call: {
+			id: 'call-1',
+			isAnonymous: false,
+			callerTranscriptStatus: 'READY',
+			callerTranscript: 'Riley: Saved transcript.',
+			user: { firstName: 'Riley' },
+		},
+	})
+
 	await expect(
 		startCallKentEpisodeDraftProcessing('draft-1', {
 			database: { findOne, updateMany } as unknown as Database,
 			jobId,
 			leaseId,
 		}),
-	).rejects.toThrow('Caller transcript is still processing.')
+	).rejects.toThrow('Episode response segment audio is missing.')
 	expect(getAudioBuffer).not.toHaveBeenCalled()
 	expect(updateMany).not.toHaveBeenCalled()
+})
+
+test('startCallKentEpisodeDraftProcessing reports stale when final READY write loses ownership', async () => {
+	const {
+		findOne,
+		updateMany,
+		startCallKentEpisodeDraftProcessing,
+		generateCallKentEpisodeMetadataWithWorkersAi,
+	} = await loadDraftModule()
+	findOne.mockResolvedValue({
+		id: 'draft-1',
+		status: 'PROCESSING',
+		processingJobId: jobId,
+		processingLeaseId: leaseId,
+		transcript: 'Saved episode transcript.',
+		title: 'Saved title',
+		description: 'Saved description',
+		keywords: 'saved',
+		call: {
+			id: 'call-1',
+			title: 'Question',
+			notes: null,
+			isAnonymous: false,
+			callerTranscriptStatus: 'ERROR',
+			callerTranscript: null,
+			user: { firstName: 'Riley' },
+		},
+	})
+	updateMany.mockResolvedValue({ affectedRows: 0 })
+
+	const outcome = await startCallKentEpisodeDraftProcessing('draft-1', {
+		database: { findOne, updateMany } as unknown as Database,
+		jobId,
+		leaseId,
+	})
+
+	expect(outcome).toBe('stale')
+	expect(generateCallKentEpisodeMetadataWithWorkersAi).not.toHaveBeenCalled()
 })

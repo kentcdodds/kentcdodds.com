@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { and, eq, inList } from '@remix-run/data-table'
+import { and, eq, inList, isNull } from '@remix-run/data-table'
 import { z } from 'zod'
 import { enqueueCallKentTranscriptionJob } from '#app/utils/call-kent-transcription-queue.server.ts'
 import { db } from '#app/utils/db.server.ts'
@@ -157,11 +157,14 @@ export async function handleCallKentAudioProcessorEvent(
 			const draft = await db.findOne(callKentEpisodeDraftTable, {
 				where: { id: event.draftId },
 			})
-			if (!draft?.processingJobId) return
-			const processingJobId = draft.processingJobId
+			if (!draft) return
+			const hasProcessingJobId = draft.processingJobId !== null
+			const processingJobId =
+				draft.processingJobId ?? globalThis.crypto.randomUUID()
 			const updated = await db.updateMany(
 				callKentEpisodeDraftTable,
 				{
+					processingJobId,
 					episodeAudioKey: event.episodeAudioKey,
 					episodeAudioContentType: event.episodeAudioContentType,
 					episodeAudioSize: event.episodeAudioSize,
@@ -173,7 +176,9 @@ export async function handleCallKentAudioProcessorEvent(
 				{
 					where: and(
 						eq('id', event.draftId),
-						eq('processingJobId', processingJobId),
+						hasProcessingJobId
+							? eq('processingJobId', processingJobId)
+							: isNull('processingJobId'),
 						eq('status', 'PROCESSING'),
 						inList('step', ['STARTED', 'GENERATING_AUDIO']),
 					),

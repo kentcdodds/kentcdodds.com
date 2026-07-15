@@ -11,7 +11,11 @@ vi.mock('#app/utils/background-task.server.ts', () => ({
 async function loadCallbackModule() {
 	vi.resetModules()
 	const updateMany = vi.fn()
-	const findOne = vi.fn(async () => ({ processingJobId }))
+	const findOne = vi.fn(
+		async (): Promise<{ processingJobId: string | null }> => ({
+			processingJobId,
+		}),
+	)
 	const enqueueCallKentTranscriptionJob = vi.fn()
 	vi.doMock('#app/utils/db.server.ts', () => ({
 		db: {
@@ -108,6 +112,7 @@ test('completed audio callback stores keys and awaits durable enqueue', async ()
 	expect(updateMany).toHaveBeenCalledWith(
 		callKentEpisodeDraftTable,
 		{
+			processingJobId,
 			episodeAudioKey: 'call-kent/drafts/draft-1/episode.mp3',
 			episodeAudioContentType: 'audio/mpeg',
 			episodeAudioSize: 321,
@@ -128,6 +133,62 @@ test('completed audio callback stores keys and awaits durable enqueue', async ()
 		draftId: 'draft-1',
 		jobId: processingJobId,
 	})
+})
+
+test('completed audio callback adopts a legacy draft with a new job ID', async () => {
+	vi.clearAllMocks()
+	const {
+		findOne,
+		updateMany,
+		enqueueCallKentTranscriptionJob,
+		handleCallKentAudioProcessorEvent,
+	} = await loadCallbackModule()
+	findOne.mockResolvedValue({ processingJobId: null })
+	updateMany.mockResolvedValue({ affectedRows: 1 })
+	const randomUUID = vi
+		.spyOn(globalThis.crypto, 'randomUUID')
+		.mockReturnValue(processingJobId)
+
+	try {
+		await handleCallKentAudioProcessorEvent({
+			type: 'audio_generation_completed',
+			draftId: 'legacy-draft',
+			episodeAudioKey: 'episode.mp3',
+			episodeAudioContentType: 'audio/mpeg',
+			episodeAudioSize: 321,
+			callerSegmentAudioKey: 'caller.mp3',
+			responseSegmentAudioKey: 'response.mp3',
+		})
+
+		expect(updateMany).toHaveBeenCalledWith(
+			callKentEpisodeDraftTable,
+			expect.objectContaining({
+				processingJobId,
+				episodeAudioKey: 'episode.mp3',
+				callerSegmentAudioKey: 'caller.mp3',
+				responseSegmentAudioKey: 'response.mp3',
+			}),
+			expect.objectContaining({
+				where: expect.objectContaining({
+					predicates: expect.arrayContaining([
+						expect.objectContaining({
+							type: 'null',
+							operator: 'isNull',
+							column: 'processingJobId',
+						}),
+					]),
+				}),
+			}),
+		)
+		expect(enqueueCallKentTranscriptionJob).toHaveBeenCalledWith({
+			version: 1,
+			type: 'episode-draft',
+			draftId: 'legacy-draft',
+			jobId: processingJobId,
+		})
+	} finally {
+		randomUUID.mockRestore()
+	}
 })
 
 test('completed audio callback remains recoverable when durable enqueue fails', async () => {

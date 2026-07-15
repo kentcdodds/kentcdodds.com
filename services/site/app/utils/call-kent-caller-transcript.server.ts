@@ -4,6 +4,7 @@ import { formatCallKentTranscriptWithWorkersAi } from '#app/utils/cloudflare-ai-
 import { transcribeMp3WithWorkersAi } from '#app/utils/cloudflare-ai-transcription.server.ts'
 import { callTable, callUser } from '#app/utils/db/schema.server.ts'
 import { getErrorMessage } from '#app/utils/misc.ts'
+import { type CallKentTranscriptionProcessingOutcome } from '#app/utils/call-kent-transcription-processing.ts'
 
 function escapeRegExp(value: string) {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -39,7 +40,7 @@ export async function startCallKentCallerTranscriptProcessing(
 		jobId,
 		leaseId,
 	}: { database: Database; jobId: string; leaseId: string },
-) {
+): Promise<CallKentTranscriptionProcessingOutcome> {
 	const call = await database.findOne(callTable, {
 		where: and(
 			eq('id', callId),
@@ -49,7 +50,7 @@ export async function startCallKentCallerTranscriptProcessing(
 		),
 		with: { user: callUser },
 	})
-	if (!call) return
+	if (!call) return 'stale'
 	if (!call.audioKey) {
 		throw new Error('Caller audio is missing (audioKey is null).')
 	}
@@ -91,7 +92,7 @@ export async function startCallKentCallerTranscriptProcessing(
 		)
 	}
 
-	await database.updateMany(
+	const completed = await database.updateMany(
 		callTable,
 		{
 			callerTranscript: transcript,
@@ -109,4 +110,5 @@ export async function startCallKentCallerTranscriptProcessing(
 			},
 		},
 	)
+	return completed.affectedRows === 1 ? 'completed' : 'stale'
 }

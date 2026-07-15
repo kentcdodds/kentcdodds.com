@@ -21,6 +21,7 @@ import {
 	parseCallKentTranscriptionJob,
 	type CallKentTranscriptionJob,
 } from '#app/utils/call-kent-transcription-queue.server.ts'
+import { type CallKentTranscriptionProcessingOutcome } from '#app/utils/call-kent-transcription-processing.ts'
 
 const MAX_DELIVERY_ATTEMPTS = 3
 const PROCESSING_LEASE_MILLISECONDS = 20 * 60 * 1000
@@ -126,7 +127,6 @@ async function releaseLease({
 						id: job.callId,
 						callerTranscriptJobId: job.jobId,
 						callerTranscriptLeaseId: leaseId,
-						callerTranscriptStatus: 'PROCESSING',
 					},
 				},
 			)
@@ -141,7 +141,6 @@ async function releaseLease({
 						id: job.draftId,
 						processingJobId: job.jobId,
 						processingLeaseId: leaseId,
-						status: 'PROCESSING',
 					},
 				},
 			)
@@ -256,9 +255,10 @@ export async function consumeCallKentTranscriptionBatch(
 		}
 
 		try {
+			let outcome: CallKentTranscriptionProcessingOutcome
 			switch (job.type) {
 				case 'caller-transcription': {
-					await processCaller(job.callId, {
+					outcome = await processCaller(job.callId, {
 						database,
 						jobId: job.jobId,
 						leaseId,
@@ -266,7 +266,7 @@ export async function consumeCallKentTranscriptionBatch(
 					break
 				}
 				case 'episode-draft': {
-					await processDraft(job.draftId, {
+					outcome = await processDraft(job.draftId, {
 						database,
 						jobId: job.jobId,
 						leaseId,
@@ -278,7 +278,42 @@ export async function consumeCallKentTranscriptionBatch(
 					throw new Error(`Unhandled Call Kent job: ${String(exhaustive)}`)
 				}
 			}
-			message.ack()
+			switch (outcome) {
+				case 'completed': {
+					message.ack()
+					break
+				}
+				case 'stale': {
+					await releaseLease({ database, job, leaseId }).catch(
+						(error: unknown) => {
+							console.error('Unable to release stale Call Kent job lease.', {
+								job,
+								error: getErrorMessage(error),
+							})
+						},
+					)
+					message.ack()
+					break
+				}
+				case 'deferred': {
+					await releaseLease({ database, job, leaseId }).catch(
+						(error: unknown) => {
+							console.error('Unable to release deferred Call Kent job lease.', {
+								job,
+								error: getErrorMessage(error),
+							})
+						},
+					)
+					message.retry()
+					break
+				}
+				default: {
+					const exhaustive: never = outcome
+					throw new Error(
+						`Unhandled Call Kent processing outcome: ${String(exhaustive)}`,
+					)
+				}
+			}
 		} catch (error: unknown) {
 			if (message.attempts < MAX_DELIVERY_ATTEMPTS) {
 				await releaseLease({ database, job, leaseId })
@@ -360,13 +395,7 @@ export async function reenqueueStaleCallKentTranscriptionJobs({
 			where: and(
 				eq('status', 'PROCESSING'),
 				notNull('processingJobId'),
-				or(
-					notNull('episodeAudioKey'),
-					and(
-						notNull('callerSegmentAudioKey'),
-						notNull('responseSegmentAudioKey'),
-					),
-				),
+				or(notNull('episodeAudioKey'), notNull('responseSegmentAudioKey')),
 				inList('step', ['TRANSCRIBING', 'GENERATING_METADATA']),
 				lt('updatedAt', staleBefore),
 			),

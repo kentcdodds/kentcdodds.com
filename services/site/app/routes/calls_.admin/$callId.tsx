@@ -9,6 +9,7 @@ import {
 	useSubmit,
 } from 'react-router'
 import { Button } from '#app/components/button.tsx'
+import { CallKentProcessingWarning } from '#app/components/calls/processing-warning.tsx'
 import { CallRecorder } from '#app/components/calls/recorder.tsx'
 import {
 	getNavigationPathFromResponse,
@@ -225,10 +226,13 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 				</div>
 
 				{callerTranscriptStatus === 'PROCESSING' ? (
-					<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
-						<Spinner showSpinner={true} size={16} />
-						<span>Generating caller transcript…</span>
-					</div>
+					<>
+						<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+							<Spinner showSpinner={true} size={16} />
+							<span>Generating caller transcript…</span>
+						</div>
+						<CallKentProcessingWarning message={callerTranscriptError} />
+					</>
 				) : null}
 
 				{callerTranscriptStatus === 'ERROR' ? (
@@ -485,9 +489,11 @@ function ResponseAudioDraftForm({
 function DraftPending({
 	callId,
 	step,
+	errorMessage,
 }: {
 	callId: string
 	step: EpisodeDraft['step']
+	errorMessage?: string | null
 }) {
 	const stepLabel =
 		{
@@ -507,6 +513,7 @@ function DraftPending({
 			<Paragraph className="mt-2 text-gray-500 dark:text-slate-400">
 				{`This may take a bit. You can undo if you want to re-record right away.`}
 			</Paragraph>
+			<CallKentProcessingWarning message={errorMessage} />
 			<Form
 				method="post"
 				action={recordingFormActionPath}
@@ -885,6 +892,7 @@ function RecordingDetailScreen({
 									? 'DONE'
 									: (polledStatus?.step ?? draft.step)) as EpisodeDraft['step']
 							}
+							errorMessage={polledStatus?.errorMessage ?? draft.errorMessage}
 						/>
 					) : draft.status === 'ERROR' || polledStatus?.status === 'ERROR' ? (
 						<div className="rounded-lg bg-red-50 p-6 dark:bg-red-950/30">

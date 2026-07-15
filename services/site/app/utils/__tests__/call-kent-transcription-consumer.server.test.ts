@@ -55,8 +55,8 @@ test.each(jobs)(
 	async ({ job }) => {
 		const message = createMessage(job, 1)
 		const updateMany = createUpdateManyMock()
-		const processCaller = vi.fn(async () => {})
-		const processDraft = vi.fn(async () => {})
+		const processCaller = vi.fn(async () => 'completed' as const)
+		const processDraft = vi.fn(async () => 'completed' as const)
 
 		await consumeCallKentTranscriptionBatch(
 			{ messages: [message] },
@@ -182,19 +182,94 @@ test.each(jobs)(
 							id: job.callId,
 							callerTranscriptJobId: job.jobId,
 							callerTranscriptLeaseId: leaseId,
-							callerTranscriptStatus: 'PROCESSING',
 						}
 					: {
 							id: job.draftId,
 							processingJobId: job.jobId,
 							processingLeaseId: leaseId,
-							status: 'PROCESSING',
 						},
 		})
 		expect(message.retry).toHaveBeenCalledOnce()
 		expect(message.ack).not.toHaveBeenCalled()
 	},
 )
+
+test('consumer releases its own lease before acknowledging a stale processing outcome', async () => {
+	const job = jobs[1]!.job
+	const message = createMessage(job, 1)
+	const updateMany = createUpdateManyMock()
+	const processDraft = vi.fn(async () => 'stale' as const)
+
+	await consumeCallKentTranscriptionBatch(
+		{ messages: [message] },
+		{
+			database: { updateMany } as unknown as Database,
+			processDraft,
+			createLeaseId: () => leaseId,
+		},
+	)
+
+	expect(updateMany).toHaveBeenCalledTimes(2)
+	expect(updateMany.mock.calls[1]?.[1]).toEqual({
+		processingLeaseId: null,
+		processingLeaseExpiresAt: null,
+	})
+	expect(message.ack).toHaveBeenCalledOnce()
+	expect(message.retry).not.toHaveBeenCalled()
+})
+
+test('consumer releases and retries deferred work even on the last delivery', async () => {
+	const job = jobs[1]!.job
+	const message = createMessage(job, 3)
+	const updateMany = createUpdateManyMock()
+	const processDraft = vi.fn(async () => 'deferred' as const)
+
+	await consumeCallKentTranscriptionBatch(
+		{ messages: [message] },
+		{
+			database: { updateMany } as unknown as Database,
+			processDraft,
+			createLeaseId: () => leaseId,
+		},
+	)
+
+	expect(updateMany).toHaveBeenCalledTimes(2)
+	expect(updateMany.mock.calls[1]?.[1]).toEqual({
+		processingLeaseId: null,
+		processingLeaseExpiresAt: null,
+	})
+	expect(message.retry).toHaveBeenCalledOnce()
+	expect(message.ack).not.toHaveBeenCalled()
+})
+
+test('deferred lease release failure still retries without recording terminal error', async () => {
+	const job = jobs[1]!.job
+	const message = createMessage(job, 3)
+	const updateMany = vi
+		.fn()
+		.mockResolvedValueOnce({ affectedRows: 1 })
+		.mockRejectedValueOnce(new Error('lease release failed'))
+	const processDraft = vi.fn(async () => 'deferred' as const)
+	const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+	await consumeCallKentTranscriptionBatch(
+		{ messages: [message] },
+		{
+			database: { updateMany } as unknown as Database,
+			processDraft,
+			createLeaseId: () => leaseId,
+		},
+	)
+
+	expect(updateMany).toHaveBeenCalledTimes(2)
+	expect(message.retry).toHaveBeenCalledOnce()
+	expect(message.ack).not.toHaveBeenCalled()
+	expect(consoleError).toHaveBeenCalledWith(
+		'Unable to release deferred Call Kent job lease.',
+		expect.objectContaining({ error: 'lease release failed' }),
+	)
+	consoleError.mockRestore()
+})
 
 test.each(jobs)(
 	'$name records final ERROR only for its matching job and lease',
@@ -297,8 +372,9 @@ test('stale recovery uses stored job IDs, bounded ordered pages, and touches dis
 						column: 'episodeAudioKey',
 					}),
 					expect.objectContaining({
-						type: 'logical',
-						operator: 'and',
+						type: 'null',
+						operator: 'notNull',
+						column: 'responseSegmentAudioKey',
 					}),
 				]),
 			}),

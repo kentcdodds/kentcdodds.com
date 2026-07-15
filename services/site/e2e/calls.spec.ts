@@ -62,7 +62,7 @@ test('Call Kent recording flow', async ({ page, login }) => {
 		name: /caller transcript/i,
 	})
 	await expect(callerTranscript).toBeEnabled({ timeout: 60_000 })
-	await expect(callerTranscript).not.toHaveValue('')
+	await expect(callerTranscript).not.toHaveValue('', { timeout: 60_000 })
 	await recordAudio(page)
 	await page.getByRole('button', { name: /generate episode draft/i }).click()
 
