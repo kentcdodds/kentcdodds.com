@@ -37,6 +37,9 @@ export async function startCallKentEpisodeDraftProcessing(
 	if (!draft.call) throw new Error('Call not found for episode draft.')
 	const call = draft.call
 	if (!call.user) throw new Error('Call user not found for episode draft.')
+	if (call.callerTranscriptStatus === 'PROCESSING') {
+		throw new Error('Caller transcript is still processing.')
+	}
 
 	let segmentMp3s: { callerMp3: Buffer; responseMp3: Buffer } | null = null
 

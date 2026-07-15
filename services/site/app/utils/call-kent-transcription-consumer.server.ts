@@ -360,7 +360,13 @@ export async function reenqueueStaleCallKentTranscriptionJobs({
 			where: and(
 				eq('status', 'PROCESSING'),
 				notNull('processingJobId'),
-				notNull('episodeAudioKey'),
+				or(
+					notNull('episodeAudioKey'),
+					and(
+						notNull('callerSegmentAudioKey'),
+						notNull('responseSegmentAudioKey'),
+					),
+				),
 				inList('step', ['TRANSCRIBING', 'GENERATING_METADATA']),
 				lt('updatedAt', staleBefore),
 			),

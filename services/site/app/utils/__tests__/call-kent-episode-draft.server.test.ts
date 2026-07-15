@@ -149,3 +149,34 @@ test('startCallKentEpisodeDraftProcessing reuses saved caller transcript', async
 		},
 	)
 })
+
+test('startCallKentEpisodeDraftProcessing waits for caller transcript processing', async () => {
+	const {
+		getAudioBuffer,
+		findOne,
+		updateMany,
+		startCallKentEpisodeDraftProcessing,
+	} = await loadDraftModule()
+	findOne.mockResolvedValue({
+		id: 'draft-1',
+		status: 'PROCESSING',
+		processingJobId: jobId,
+		processingLeaseId: leaseId,
+		transcript: null,
+		call: {
+			id: 'call-1',
+			callerTranscriptStatus: 'PROCESSING',
+			user: { firstName: 'Riley' },
+		},
+	})
+
+	await expect(
+		startCallKentEpisodeDraftProcessing('draft-1', {
+			database: { findOne, updateMany } as unknown as Database,
+			jobId,
+			leaseId,
+		}),
+	).rejects.toThrow('Caller transcript is still processing.')
+	expect(getAudioBuffer).not.toHaveBeenCalled()
+	expect(updateMany).not.toHaveBeenCalled()
+})

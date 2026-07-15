@@ -300,8 +300,10 @@ Configured in `services/site-worker/wrangler.jsonc`:
   past expiry) via `deleteExpiredSessionsAndVerifications`.
 - `*/2 * * * *` — warmup cron hitting `/`, `/blog`, and `/healthcheck` to keep
   the parent artifact cache and a few dynamic isolates warm. The same invocation
-  re-enqueues caller transcripts and post-audio episode drafts that have remained
-  `PROCESSING` without an update for more than 20 minutes.
+  re-enqueues up to 50 caller transcripts and 50 post-audio episode drafts that
+  have remained `PROCESSING` without an update for more than 20 minutes. Draft
+  recovery is limited to transcription/metadata steps with generated episode or
+  segment audio; audio-generation jobs remain owned by their separate queue.
 
 ## Call Kent audio pipeline (queue + callbacks)
 

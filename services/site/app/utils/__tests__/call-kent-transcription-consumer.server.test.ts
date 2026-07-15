@@ -282,6 +282,28 @@ test('stale recovery uses stored job IDs, bounded ordered pages, and touches dis
 			]),
 		})
 	}
+	const draftQuery = findMany.mock.calls.find(
+		([table]) => table === callKentEpisodeDraftTable,
+	)?.[1]
+	expect(draftQuery?.where).toMatchObject({
+		predicates: expect.arrayContaining([
+			expect.objectContaining({
+				type: 'logical',
+				operator: 'or',
+				predicates: expect.arrayContaining([
+					expect.objectContaining({
+						type: 'null',
+						operator: 'notNull',
+						column: 'episodeAudioKey',
+					}),
+					expect.objectContaining({
+						type: 'logical',
+						operator: 'and',
+					}),
+				]),
+			}),
+		]),
+	})
 	expect(enqueue.mock.calls.map(([job]) => job)).toEqual([
 		{
 			version: 1,
