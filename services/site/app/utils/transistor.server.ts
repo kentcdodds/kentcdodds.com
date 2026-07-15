@@ -5,6 +5,7 @@ import {
 	type TransistorAuthorizedJson,
 	type TransistorCreateEpisodeData,
 	type TransistorCreatedJson,
+	type TransistorEpisodeData,
 	type TransistorEpisodesJson,
 	type TransistorErrorResponse,
 	type TransistorPublishedJson,
@@ -14,18 +15,51 @@ import {
 	isAbortError,
 	throwIfAborted,
 	waitForDelay,
+	type Sleep,
 } from './abort-utils.server.ts'
 import { cache, cachified, shouldForceFresh } from './cache.server.ts'
-import {
-	getCallKentEpisodeArtworkAvatar,
-} from './call-kent-artwork.ts'
+import { getCallKentEpisodeArtworkAvatar } from './call-kent-artwork.ts'
 import { getCallKentEpisodeArtworkUrl } from './call-kent-artwork.server.ts'
 import { getOgImageSecret } from '#app/og/secrets.server.ts'
 import { getEpisodePath } from './call-kent.ts'
 import { getEnv } from './env.server.ts'
 import { stripHtml } from './markdown.server.ts'
+import { getRuntimeBinding } from './runtime-bindings.server.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
+
+const EPISODES_CACHE_KEY_PREFIX = 'transistor:episodes:'
+const POST_PUBLISH_REFRESH_ATTEMPTS = 15
+const POST_PUBLISH_REFRESH_DELAY_MS = 2000
+
+type CacheGenerationRpc = {
+	getGeneration(name: string): Promise<string>
+	bumpGeneration(name: string): Promise<string>
+}
+
+function getEpisodesCacheGenerationName() {
+	return `transistor-episodes:${getEnv().CALL_KENT_PODCAST_ID}`
+}
+
+function getCacheGenerationRpc() {
+	const binding = getRuntimeBinding<CacheGenerationRpc>('CACHE_RPC')
+	if (!binding || typeof binding.getGeneration !== 'function') return null
+	return binding
+}
+
+async function getEpisodesCacheKey() {
+	const rpc = getCacheGenerationRpc()
+	const generation = rpc
+		? await rpc.getGeneration(getEpisodesCacheGenerationName())
+		: 'local'
+	return `${EPISODES_CACHE_KEY_PREFIX}${getEnv().CALL_KENT_PODCAST_ID}:${generation}`
+}
+
+async function bumpEpisodesCacheGeneration() {
+	const rpc = getCacheGenerationRpc()
+	if (!rpc) return null
+	return rpc.bumpGeneration(getEpisodesCacheGenerationName())
+}
 
 function getErrorCode(error: unknown) {
 	if (!error || typeof error !== 'object') return ''
@@ -336,21 +370,54 @@ async function createEpisode({
 		slug,
 	}
 
-	// update the cache with the new episode
-	await getCachedEpisodes({ forceFresh: true })
-
 	return returnValue
 }
 
-async function getEpisodes({ signal }: { signal?: AbortSignal } = {}) {
+async function refreshEpisodesAfterPublish({
+	episodeId,
+	attempts = POST_PUBLISH_REFRESH_ATTEMPTS,
+	delayMs = POST_PUBLISH_REFRESH_DELAY_MS,
+	sleep,
+}: {
+	episodeId: string
+	attempts?: number
+	delayMs?: number
+	sleep?: Sleep
+}) {
+	for (let attempt = 1; attempt <= attempts; attempt++) {
+		const episodes = await getCachedEpisodes({ forceFresh: true })
+		if (episodes.some((episode) => episode.transistorEpisodeId === episodeId)) {
+			return true
+		}
+		if (attempt < attempts) {
+			await waitForDelay({ delayMs, sleep })
+		}
+	}
+
+	// Every forced attempt replaces the cache. Do not leave the final incomplete
+	// list cached for its normal one-day TTL.
+	await cache.delete(await getEpisodesCacheKey())
+	return false
+}
+
+async function getTransistorEpisodes({
+	signal,
+}: {
+	signal?: AbortSignal
+} = {}): Promise<Array<TransistorEpisodeData>> {
 	throwIfAborted(signal)
+	const showId = getEnv().CALL_KENT_PODCAST_ID
 	// Transistor's API max per-page is 100; fetch all pages sequentially
 	const perPage = 100
 
 	// Fetch first page to learn how many total pages there are
 	const firstPage = await fetchTransitor<TransistorEpisodesJson>({
 		endpoint: `/v1/episodes`,
-		query: { 'pagination[per]': String(perPage), 'pagination[page]': '1' },
+		query: {
+			show_id: showId,
+			'pagination[per]': String(perPage),
+			'pagination[page]': '1',
+		},
 		signal,
 	})
 
@@ -366,6 +433,7 @@ async function getEpisodes({ signal }: { signal?: AbortSignal } = {}) {
 		const pageData = await fetchTransitor<TransistorEpisodesJson>({
 			endpoint: `/v1/episodes`,
 			query: {
+				show_id: showId,
 				'pagination[per]': String(perPage),
 				'pagination[page]': String(page),
 			},
@@ -373,6 +441,11 @@ async function getEpisodes({ signal }: { signal?: AbortSignal } = {}) {
 		})
 		allEpisodesData.push(...pageData.data)
 	}
+	return allEpisodesData
+}
+
+async function getEpisodes({ signal }: { signal?: AbortSignal } = {}) {
+	const allEpisodesData = await getTransistorEpisodes({ signal })
 
 	// sort by episode number
 	const sortedTransistorEpisodes = allEpisodesData.sort((a, b) => {
@@ -418,17 +491,12 @@ async function getEpisodes({ signal }: { signal?: AbortSignal } = {}) {
 }
 
 async function getCurrentSeason() {
-	const episodesResponse = await fetchTransitor<TransistorEpisodesJson>({
-		endpoint: `/v1/episodes`,
-		query: {
-			'pagination[per]': '1',
-			order: 'desc',
-		},
-	})
-
-	const lastEpisode = episodesResponse.data[0]
-	const season = lastEpisode?.attributes.season
-	return typeof season === 'number' ? season : 1
+	const episodes = await getTransistorEpisodes()
+	return episodes.reduce(
+		(currentSeason, episode) =>
+			Math.max(currentSeason, episode.attributes.season),
+		1,
+	)
 }
 
 async function getCachedEpisodes({
@@ -442,8 +510,8 @@ async function getCachedEpisodes({
 	timings?: Timings
 	signal?: AbortSignal
 }) {
-	const episodesCacheKey = `transistor:episodes:${getEnv().CALL_KENT_PODCAST_ID}`
 	try {
+		const episodesCacheKey = await getEpisodesCacheKey()
 		return await cachified({
 			cache,
 			request,
@@ -474,7 +542,10 @@ async function getCachedEpisodes({
 }
 
 export {
+	bumpEpisodesCacheGeneration,
 	createEpisode,
+	getCurrentSeason,
 	getCachedEpisodes as getEpisodes,
+	refreshEpisodesAfterPublish,
 	updateEpisodeTranscriptText,
 }

@@ -28,6 +28,7 @@ type CacheRpcBinding = {
 	set(key: string, entry: CacheEntry<unknown>): Promise<void>
 	delete(key: string): Promise<void>
 	keys(prefix?: string, limit?: number): Promise<Array<string>>
+	bumpPageCacheGeneration?(): Promise<string>
 }
 
 function getCacheRpcBinding(): CacheRpcBinding | undefined {
@@ -81,6 +82,12 @@ export function getPersistentCacheLabel() {
 	return 'KV'
 }
 
+export async function invalidatePageCache() {
+	const rpc = getCacheRpcBinding()
+	if (typeof rpc?.bumpPageCacheGeneration !== 'function') return null
+	return rpc.bumpPageCacheGeneration()
+}
+
 export const lruCache = {
 	set(key, value) {
 		const ttl = totalTtl(value.metadata)
@@ -110,7 +117,11 @@ async function setDirectKvCacheEntry(key: string, entry: CacheEntry<unknown>) {
 	if (!kv) return
 	const encoded = encodeCacheEntry(entry)
 	const expirationTtl = getKvExpirationTtl(entry)
-	await kv.put(key, JSON.stringify(encoded), expirationTtl ? { expirationTtl } : undefined)
+	await kv.put(
+		key,
+		JSON.stringify(encoded),
+		expirationTtl ? { expirationTtl } : undefined,
+	)
 }
 
 async function deleteDirectKvCacheEntry(key: string) {
@@ -119,7 +130,10 @@ async function deleteDirectKvCacheEntry(key: string) {
 	await kv.delete(key)
 }
 
-async function listDirectKvCacheKeys(prefix: string | undefined, limit: number) {
+async function listDirectKvCacheKeys(
+	prefix: string | undefined,
+	limit: number,
+) {
 	const kv = getDirectKvBinding()
 	if (!kv) return []
 	const listed = await kv.list({ prefix, limit })

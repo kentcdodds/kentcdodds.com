@@ -25,9 +25,7 @@ test('uses the lru cache before CACHE_RPC on worker cache hits', async () => {
 	})
 	const { beginCacheRequestStats, cache, formatCacheRequestStatsHeader } =
 		await import('../cache.server.ts')
-	const { runWithRequestContext } = await import(
-		'../request-context.server.ts'
-	)
+	const { runWithRequestContext } = await import('../request-context.server.ts')
 	const key = `worker-cache:${randomUUID()}`
 	const entry = {
 		value: { ok: true },
@@ -46,7 +44,9 @@ test('uses the lru cache before CACHE_RPC on worker cache hits', async () => {
 	})
 
 	expect(rpcGet).not.toHaveBeenCalled()
-	expect(formatCacheRequestStatsHeader(stats)).toBe('lru_hits=1,rpc_calls=0,rpc_ms=0.0')
+	expect(formatCacheRequestStatsHeader(stats)).toBe(
+		'lru_hits=1,rpc_calls=0,rpc_ms=0.0',
+	)
 })
 
 test('lists kv keys from CACHE_RPC in getAllCacheKeys', async () => {
@@ -83,4 +83,21 @@ test('searches kv keys from CACHE_RPC in searchCacheKeys', async () => {
 		lru: expect.any(Array),
 	})
 	expect(cacheRpc.keys).toHaveBeenCalledWith('search', 25)
+})
+
+test('invalidates the parent page cache through CACHE_RPC', async () => {
+	const bumpPageCacheGeneration = vi.fn().mockResolvedValue('pages-123')
+	setRuntimeBindingSource({
+		CACHE_RPC: {
+			get: vi.fn(),
+			set: vi.fn(),
+			delete: vi.fn(),
+			keys: vi.fn(),
+			bumpPageCacheGeneration,
+		},
+	})
+	const { invalidatePageCache } = await import('../cache.server.ts')
+
+	await expect(invalidatePageCache()).resolves.toBe('pages-123')
+	expect(bumpPageCacheGeneration).toHaveBeenCalledOnce()
 })

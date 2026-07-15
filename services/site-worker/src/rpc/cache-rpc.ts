@@ -6,6 +6,7 @@ import {
 	getKvExpirationTtl,
 } from '../../../site/app/utils/cache-encoding.server.ts'
 import type { ParentWorkerEnv } from './types.ts'
+import { bumpPageCacheGeneration } from '../page-cache.ts'
 import {
 	deleteKvCacheLruEntry,
 	getKvCacheLruEntry,
@@ -14,6 +15,7 @@ import {
 
 const KV_VALUE_PREFIX = 'cache:value:'
 const KV_METADATA_PREFIX = 'cache:metadata:'
+const CACHE_GENERATION_PREFIX = 'cache:generation:'
 const KV_EDGE_CACHE_TTL_SECONDS = 60
 
 export class CacheRpc extends WorkerEntrypoint<ParentWorkerEnv> {
@@ -71,5 +73,25 @@ export class CacheRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 		})
 
 		return list.keys.map((entry) => entry.name.slice(KV_VALUE_PREFIX.length))
+	}
+
+	async bumpPageCacheGeneration() {
+		return bumpPageCacheGeneration(this.env.CONTENT_KV)
+	}
+
+	async getGeneration(name: string) {
+		return (
+			(await this.env.CONTENT_KV.get(`${CACHE_GENERATION_PREFIX}${name}`)) ??
+			'0'
+		)
+	}
+
+	async bumpGeneration(name: string) {
+		const generation = Date.now().toString()
+		await this.env.CONTENT_KV.put(
+			`${CACHE_GENERATION_PREFIX}${name}`,
+			generation,
+		)
+		return generation
 	}
 }

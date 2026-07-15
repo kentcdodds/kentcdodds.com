@@ -11,6 +11,7 @@ vi.mock('#app/utils/cache.server.ts', () => ({
 			getFreshValue(),
 	),
 	shouldForceFresh: vi.fn(() => false),
+	invalidatePageCache: vi.fn(),
 }))
 
 vi.mock('#app/utils/session.server.ts', () => ({
@@ -29,8 +30,15 @@ vi.mock('#app/utils/db.server.ts', () => ({
 		create: vi.fn(async (_table, data: { id: string }) => ({
 			id: data.id,
 		})),
+		findOne: vi.fn(),
+		update: vi.fn(),
 		updateMany: vi.fn(),
 	},
+}))
+
+vi.mock('#app/utils/auth-write-flows.server.ts', () => ({
+	recordPublishedCallKentEpisode: vi.fn(),
+	replaceCallKentEpisodeDraft: vi.fn(),
 }))
 
 vi.mock('#app/utils/call-kent-transcription-queue.server.ts', () => ({
@@ -46,7 +54,9 @@ vi.mock('#app/utils/send-email.server.ts', () => ({
 }))
 
 vi.mock('#app/utils/transistor.server.ts', () => ({
+	bumpEpisodesCacheGeneration: vi.fn(),
 	createEpisode: vi.fn(),
+	refreshEpisodesAfterPublish: vi.fn(),
 }))
 
 vi.mock('#app/utils/markdown.server.ts', () => ({
@@ -95,7 +105,15 @@ vi.mock('#app/utils/call-kent-audio-storage.server.ts', () => ({
 
 import { putCallAudioFromDataUrl } from '#app/utils/call-kent-audio-storage.server.ts'
 import { enqueueCallKentTranscriptionJob } from '#app/utils/call-kent-transcription-queue.server.ts'
+import { invalidatePageCache } from '#app/utils/cache.server.ts'
 import { db } from '#app/utils/db.server.ts'
+import { recordPublishedCallKentEpisode } from '#app/utils/auth-write-flows.server.ts'
+import { sendEmail } from '#app/utils/send-email.server.ts'
+import {
+	bumpEpisodesCacheGeneration,
+	createEpisode,
+	refreshEpisodesAfterPublish,
+} from '#app/utils/transistor.server.ts'
 import { action } from '../save.tsx'
 
 test('create-call accepts a large multipart audio file', async () => {
@@ -341,4 +359,101 @@ test('create-call rejects malformed legacy audio strings', async () => {
 		},
 	})
 	expect(putCallAudioFromDataUrl).not.toHaveBeenCalled()
+})
+
+test('publish invalidates the parent page cache after persistence without failing the redirect', async () => {
+	vi.clearAllMocks()
+	vi.mocked(db.findOne).mockResolvedValueOnce({
+		id: 'call_1',
+		userId: 'user_1',
+		title: 'Call title',
+		notes: null,
+		isAnonymous: false,
+		audioKey: 'call-audio',
+		createdAt: new Date('2026-07-15T03:00:00.000Z'),
+		user: {
+			firstName: 'Probe',
+			email: 'probe@example.com',
+			team: 'BLUE',
+		},
+		episodeDraft: {
+			status: 'READY',
+			title: 'Exploring Interests at 15',
+			description: 'Episode description',
+			keywords: 'interests,learning',
+			transcript: 'Probe: How should I explore my interests?',
+			episodeAudioKey: 'episode-audio',
+			responseAudioKey: null,
+			callerSegmentAudioKey: null,
+			responseSegmentAudioKey: null,
+		},
+	} as never)
+	vi.mocked(createEpisode).mockResolvedValueOnce({
+		transistorEpisodeId: 'episode_28',
+		episodeUrl: 'https://kentcdodds.com/calls/05/28/exploring-interests-at-15',
+		episodePath: '/calls/05/28/exploring-interests-at-15',
+		imageUrl: 'https://kentcdodds.com/resources/og-image',
+		seasonNumber: 5,
+		episodeNumber: 28,
+		slug: 'exploring-interests-at-15',
+	})
+	vi.mocked(recordPublishedCallKentEpisode).mockResolvedValueOnce(undefined)
+	vi.mocked(refreshEpisodesAfterPublish).mockResolvedValueOnce(true)
+	vi.mocked(bumpEpisodesCacheGeneration).mockResolvedValueOnce('episodes-123')
+	vi.mocked(invalidatePageCache).mockRejectedValueOnce(
+		new Error('CACHE_RPC unavailable'),
+	)
+	const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+	const body = new URLSearchParams({
+		intent: 'publish-episode-draft',
+		callId: 'call_1',
+	})
+	const request = new Request('http://localhost/resources/calls/save', {
+		method: 'POST',
+		body,
+	})
+
+	try {
+		const response = (await action({ request } as never)) as Response
+
+		expect(response.status).toBe(302)
+		expect(response.headers.get('location')).toBe('/calls')
+		expect(recordPublishedCallKentEpisode).toHaveBeenCalledOnce()
+		expect(refreshEpisodesAfterPublish).toHaveBeenCalledWith({
+			episodeId: 'episode_28',
+		})
+		expect(bumpEpisodesCacheGeneration).toHaveBeenCalledOnce()
+		expect(invalidatePageCache).toHaveBeenCalledOnce()
+		expect(sendEmail).toHaveBeenCalledWith(
+			expect.objectContaining({
+				to: 'probe@example.com',
+				subject: 'Your "Call Kent" episode has been published',
+			}),
+		)
+		expect(
+			vi.mocked(recordPublishedCallKentEpisode).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(refreshEpisodesAfterPublish).mock.invocationCallOrder[0] ?? 0,
+		)
+		expect(
+			vi.mocked(refreshEpisodesAfterPublish).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(bumpEpisodesCacheGeneration).mock.invocationCallOrder[0] ?? 0,
+		)
+		expect(
+			vi.mocked(bumpEpisodesCacheGeneration).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(invalidatePageCache).mock.invocationCallOrder[0] ?? 0,
+		)
+		expect(
+			vi.mocked(invalidatePageCache).mock.invocationCallOrder[0],
+		).toBeLessThan(vi.mocked(sendEmail).mock.invocationCallOrder[0] ?? 0)
+		expect(consoleError).toHaveBeenCalledWith(
+			'Call Kent episode published but cache invalidation failed.',
+			{ transistorEpisodeId: 'episode_28' },
+			expect.any(Error),
+		)
+	} finally {
+		consoleError.mockRestore()
+	}
 })
