@@ -45,10 +45,6 @@ vi.mock('#app/utils/call-kent-transcription-queue.server.ts', () => ({
 	enqueueCallKentTranscriptionJob: vi.fn(),
 }))
 
-vi.mock('#app/utils/discord.server.ts', () => ({
-	sendMessageFromDiscordBot: vi.fn(),
-}))
-
 vi.mock('#app/utils/send-email.server.ts', () => ({
 	sendEmail: vi.fn(),
 }))
@@ -157,6 +153,15 @@ test('create-call accepts a large multipart audio file', async () => {
 		type: 'caller-transcription',
 		callId: expect.any(String),
 		jobId: expect.any(String),
+	})
+	expect(sendEmail).toHaveBeenCalledWith({
+		to: '"Kent C. Dodds" <me@kentcdodds.com>',
+		from: '"Call Kent" <hello+calls@kentcdodds.com>',
+		replyTo: '"Probe" <probe@example.com>',
+		subject: 'New Call Kent call: My large call',
+		text: expect.stringMatching(
+			/New Call Kent call[\s\S]*A large recording should submit successfully\.[\s\S]*\/calls\/admin\//,
+		),
 	})
 }, 30_000)
 
