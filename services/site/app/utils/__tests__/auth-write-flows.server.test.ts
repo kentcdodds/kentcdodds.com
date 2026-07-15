@@ -32,6 +32,19 @@ test('recordPublishedCallKentEpisode upserts the caller episode before deleting 
 	})
 
 	expect(db.exec).toHaveBeenCalledTimes(1)
+	expect(db.exec).toHaveBeenCalledWith(
+		expect.stringContaining('INSERT INTO "CallKentCallerEpisode"'),
+		[
+			expect.any(String),
+			expect.any(String),
+			expect.any(String),
+			'user-1',
+			'Call title',
+			'Call notes',
+			0,
+			'episode-1',
+		],
+	)
 	expect(db.deleteMany).toHaveBeenCalledWith(callTable, {
 		where: { id: 'call-1' },
 	})

@@ -119,6 +119,13 @@ reference:
   worker's outbound fetch mocks end-to-end, but running the real worker sandbox
   locally requires Docker plus real R2-accessible inputs. The sandbox image
   expects `services/call-kent-audio-worker/assets/{intro,interstitial,outro}.mp3`.
+- Transistor episode-list ordering is not chronological across Call Kent
+  seasons. Determine the current season from the maximum `season` across every
+  paginated result; selecting the first descending result can publish into
+  Season 1.
+- Call Kent publish waits until the new Transistor episode is list-ready, then
+  rotates both the episode-cache key and parent page-cache generation before
+  redirecting. Keep those invalidations after durable caller-episode persistence.
 
 ## Mock architecture
 

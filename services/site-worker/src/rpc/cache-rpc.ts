@@ -5,7 +5,9 @@ import {
 	encodeCacheEntry,
 	getKvExpirationTtl,
 } from '../../../site/app/utils/cache-encoding.server.ts'
+import { callKentEpisodesCacheGenerationKey } from '../../../site/app/utils/call-kent-cache-keys.ts'
 import type { ParentWorkerEnv } from './types.ts'
+import { bumpPageCacheGeneration } from '../page-cache.ts'
 import {
 	deleteKvCacheLruEntry,
 	getKvCacheLruEntry,
@@ -71,5 +73,27 @@ export class CacheRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 		})
 
 		return list.keys.map((entry) => entry.name.slice(KV_VALUE_PREFIX.length))
+	}
+
+	async bumpPageCacheGeneration() {
+		return bumpPageCacheGeneration(this.env.CONTENT_KV)
+	}
+
+	async getCallKentEpisodesCacheGeneration() {
+		return (
+			(await this.env.CONTENT_KV.get(callKentEpisodesCacheGenerationKey)) ?? '0'
+		)
+	}
+
+	async invalidateCallKentCaches() {
+		const episodesCacheGeneration = Date.now().toString()
+		await this.env.CONTENT_KV.put(
+			callKentEpisodesCacheGenerationKey,
+			episodesCacheGeneration,
+		)
+		const pageCacheGeneration = await bumpPageCacheGeneration(
+			this.env.CONTENT_KV,
+		)
+		return { episodesCacheGeneration, pageCacheGeneration }
 	}
 }

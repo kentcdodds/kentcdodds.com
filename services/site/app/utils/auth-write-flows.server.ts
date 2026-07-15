@@ -1,7 +1,6 @@
 import { query } from '@remix-run/data-table'
 import { db } from './db.server.ts'
 import {
-	callKentCallerEpisodeTable,
 	callKentEpisodeDraftTable,
 	callTable,
 	passwordTable,
@@ -23,25 +22,37 @@ async function recordPublishedCallKentEpisode({
 	isAnonymous: boolean
 	transistorEpisodeId: string
 }) {
+	const now = new Date().toISOString()
 	await db.exec(
-		query(callKentCallerEpisodeTable).upsert(
-			{
-				userId,
-				callTitle,
-				callNotes,
-				isAnonymous,
-				transistorEpisodeId,
-			},
-			{
-				conflictTarget: ['transistorEpisodeId'],
-				update: {
-					userId,
-					callTitle,
-					callNotes,
-					isAnonymous,
-				},
-			},
-		),
+		`
+			INSERT INTO "CallKentCallerEpisode" (
+				"id",
+				"createdAt",
+				"updatedAt",
+				"userId",
+				"callTitle",
+				"callNotes",
+				"isAnonymous",
+				"transistorEpisodeId"
+			)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			ON CONFLICT ("transistorEpisodeId") DO UPDATE SET
+				"updatedAt" = excluded."updatedAt",
+				"userId" = excluded."userId",
+				"callTitle" = excluded."callTitle",
+				"callNotes" = excluded."callNotes",
+				"isAnonymous" = excluded."isAnonymous"
+		`,
+		[
+			crypto.randomUUID(),
+			now,
+			now,
+			userId,
+			callTitle,
+			callNotes,
+			Number(isAnonymous),
+			transistorEpisodeId,
+		],
 	)
 	await db.deleteMany(callTable, { where: { id: callId } })
 }

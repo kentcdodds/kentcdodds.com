@@ -11,6 +11,7 @@ import {
 	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { runBackgroundTask } from '#app/utils/background-task.server.ts'
+import { invalidatePageCache } from '#app/utils/cache.server.ts'
 import { requestCallKentEpisodeAudioGeneration } from '#app/utils/call-kent-audio-processor.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
 import { getErrorForCallKentQuestionText } from '#app/utils/call-kent-text-to-speech.ts'
@@ -43,7 +44,10 @@ import {
 import { sendEmail } from '#app/utils/send-email.server.ts'
 import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
 import { teamEmoji } from '#app/utils/team-provider.tsx'
-import { createEpisode } from '#app/utils/transistor.server.ts'
+import {
+	createEpisode,
+	refreshEpisodesAfterPublish,
+} from '#app/utils/transistor.server.ts'
 import { type Route } from './+types/save'
 
 type ActionData = RecordingFormData
@@ -390,32 +394,6 @@ async function publishCall({
 		})
 		publishedTransistorEpisodeId = published.transistorEpisodeId
 
-		if (published.episodeUrl) {
-			try {
-				const callUser = call.user
-				const email = getPublishedCallKentEpisodeEmail({
-					firstName: callUser.firstName,
-					episodeTitle: title,
-					episodeUrl: published.episodeUrl,
-					imageUrl: published.imageUrl,
-				})
-				runBackgroundTask(() =>
-					sendEmail({
-						to: callUser.email,
-						from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
-						subject: `Your "Call Kent" episode has been published`,
-						text: email.text,
-						html: email.html,
-					}),
-				)
-			} catch (error: unknown) {
-				console.error(
-					`Problem sending email about a call: ${published.episodeUrl}`,
-					error,
-				)
-			}
-		}
-
 		// Persist a per-caller record so users can see their episodes on /me even
 		// after the raw call record is removed.
 		try {
@@ -437,6 +415,61 @@ async function publishCall({
 				error,
 			)
 			throw error
+		}
+
+		try {
+			const episodeIsListReady = await refreshEpisodesAfterPublish({
+				episodeId: published.transistorEpisodeId,
+			})
+			if (!episodeIsListReady) {
+				console.warn(
+					'Transistor episode was published but did not become list-ready before the refresh timeout.',
+					{ transistorEpisodeId: published.transistorEpisodeId },
+				)
+			}
+		} catch (error: unknown) {
+			// The episode and local caller record are already durable. Cache refresh
+			// failures must not encourage publishing the same episode again.
+			console.error('Unable to refresh episodes after Transistor publish.', {
+				transistorEpisodeId: published.transistorEpisodeId,
+				error,
+			})
+		}
+
+		try {
+			await invalidatePageCache()
+		} catch (error: unknown) {
+			// Publishing and DB persistence have completed. The redirect should
+			// still succeed even if cache invalidation is temporarily unavailable.
+			console.error(
+				'Call Kent episode published but page cache invalidation failed.',
+				{ transistorEpisodeId: published.transistorEpisodeId },
+				error,
+			)
+		}
+
+		if (published.episodeUrl) {
+			try {
+				const callUser = call.user
+				const email = getPublishedCallKentEpisodeEmail({
+					firstName: callUser.firstName,
+					episodeTitle: title,
+					episodeUrl: published.episodeUrl,
+					imageUrl: published.imageUrl,
+				})
+				await sendEmail({
+					to: callUser.email,
+					from: `"Kent C. Dodds" <hello+calls@kentcdodds.com>`,
+					subject: `Your "Call Kent" episode has been published`,
+					text: email.text,
+					html: email.html,
+				})
+			} catch (error: unknown) {
+				console.error(
+					`Problem sending email about a call: ${published.episodeUrl}`,
+					error,
+				)
+			}
 		}
 
 		// Best-effort cleanup of stored audio blobs after publish.
