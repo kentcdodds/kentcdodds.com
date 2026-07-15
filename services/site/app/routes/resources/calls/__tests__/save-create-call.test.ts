@@ -158,6 +158,15 @@ test('create-call accepts a large multipart audio file', async () => {
 		callId: expect.any(String),
 		jobId: expect.any(String),
 	})
+	expect(sendEmail).toHaveBeenCalledWith({
+		to: '"Kent C. Dodds" <me@kentcdodds.com>',
+		from: '"Call Kent" <hello+calls@kentcdodds.com>',
+		replyTo: '"Probe" <probe@example.com>',
+		subject: 'New Call Kent call: My large call',
+		text: expect.stringMatching(
+			/New Call Kent call[\s\S]*A large recording should submit successfully\.[\s\S]*\/calls\/admin\//,
+		),
+	})
 }, 30_000)
 
 test('create-call stores typed question wording as a ready transcript without enqueueing', async () => {

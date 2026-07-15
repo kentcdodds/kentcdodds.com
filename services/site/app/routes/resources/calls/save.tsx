@@ -10,7 +10,6 @@ import {
 	putCallAudioFromDataUrl,
 	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
-import { runBackgroundTask } from '#app/utils/background-task.server.ts'
 import { invalidatePageCache } from '#app/utils/cache.server.ts'
 import { requestCallKentEpisodeAudioGeneration } from '#app/utils/call-kent-audio-processor.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
@@ -21,13 +20,10 @@ import {
 	getErrorForTitle,
 	getErrorForNotes,
 } from '#app/utils/call-kent.ts'
-import { sendMessageFromDiscordBot } from '#app/utils/discord.server.ts'
-import { getEnv } from '#app/utils/env.server.ts'
 import { markdownToHtml } from '#app/utils/markdown.server.ts'
 import {
 	getDomainUrl,
 	getErrorMessage,
-	getOptionalTeam,
 	getStringFormValue,
 } from '#app/utils/misc.ts'
 import { db } from '#app/utils/db.server.ts'
@@ -43,7 +39,6 @@ import {
 } from '#app/utils/auth-write-flows.server.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
 import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
-import { teamEmoji } from '#app/utils/team-provider.tsx'
 import {
 	bumpEpisodesCacheGeneration,
 	createEpisode,
@@ -214,38 +209,26 @@ async function createCall({
 		}
 
 		try {
-			const env = getEnv()
-			const channelId = env.DISCORD_PRIVATE_BOT_CHANNEL
-			const adminUserId = env.DISCORD_ADMIN_USER_ID
-			const { firstName, team, discordId } = user
-			const userMention = discordId ? `<@!${discordId}>` : firstName
-			const emoji = teamEmoji[getOptionalTeam(team)]
-			const baseMessage = `📳 <@!${adminUserId}> ring ring! New call from ${userMention} ${emoji}: "${title}"${isAnonymous ? ' (anonymous)' : ''}`
 			const callAdminUrl = `${domainUrl}/calls/admin/${createdCall.id}`
-			const discordMaxLength = 2000
-			const notesHeader = `\n\nNotes:\n`
 			const trimmedNotes = notes?.trim()
-
-			let message = `${baseMessage}\n\n${callAdminUrl}`
-			if (trimmedNotes) {
-				// Keep under Discord's hard 2000-character limit by truncating notes.
-				const maxNotesLength =
-					discordMaxLength -
-					(baseMessage.length + notesHeader.length + 2 + callAdminUrl.length) // +2 for "\n\n" before URL
-				if (maxNotesLength > 0) {
-					const truncatedNotes =
-						trimmedNotes.length > maxNotesLength
-							? maxNotesLength > 3
-								? `${trimmedNotes.slice(0, maxNotesLength - 3)}...`
-								: trimmedNotes.slice(0, maxNotesLength)
-							: trimmedNotes
-					message = `${baseMessage}${notesHeader}${truncatedNotes}\n\n${callAdminUrl}`
-				}
-			}
-			runBackgroundTask(() => sendMessageFromDiscordBot(channelId, message))
+			const text = [
+				`# New Call Kent call`,
+				`**Caller:** ${user.firstName} <${user.email}>${isAnonymous ? ' (anonymous)' : ''}`,
+				`**Title:** ${title}`,
+				trimmedNotes ? `## Notes\n\n${trimmedNotes}` : null,
+				`[Review this call](${callAdminUrl})`,
+			]
+				.filter((value): value is string => Boolean(value))
+				.join('\n\n')
+			await sendEmail({
+				to: `"Kent C. Dodds" <me@kentcdodds.com>`,
+				from: `"Call Kent" <hello+calls@kentcdodds.com>`,
+				replyTo: `"${user.firstName}" <${user.email}>`,
+				subject: `New Call Kent call: ${title}`,
+				text,
+			})
 		} catch (error: unknown) {
-			console.error('Problem sending a call message', error)
-			// ignore
+			console.error('Problem sending new Call Kent email', error)
 		}
 
 		return redirect(`/calls/record/${createdCall.id}`)
