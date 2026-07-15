@@ -101,6 +101,35 @@ function isNonEmptyString(value: unknown): value is string {
 	return typeof value === 'string' && value.trim().length > 0
 }
 
+function isWebReadableStream(
+	value: unknown,
+): value is ReadableStream<Uint8Array> {
+	return (
+		typeof value === 'object' &&
+		value !== null &&
+		typeof (value as { getReader?: unknown }).getReader === 'function'
+	)
+}
+
+export function toAudioReadable(body: unknown): Readable {
+	if (body instanceof Readable) return body
+	if (isWebReadableStream(body)) {
+		return Readable.fromWeb(body as Parameters<typeof Readable.fromWeb>[0])
+	}
+	if (
+		typeof body === 'object' &&
+		body !== null &&
+		typeof (body as { transformToWebStream?: unknown }).transformToWebStream ===
+			'function'
+	) {
+		const stream = (
+			body as { transformToWebStream(): ReadableStream<Uint8Array> }
+		).transformToWebStream()
+		return Readable.fromWeb(stream as Parameters<typeof Readable.fromWeb>[0])
+	}
+	throw new Error('Unexpected R2 response body type')
+}
+
 let _r2Client: S3Client | null = null
 let _r2ClientConfig: {
 	endpoint: string
@@ -159,10 +188,7 @@ function createR2Store({ bucket }: { bucket: string }): AudioStore {
 				}),
 			)
 			const body = res.Body
-			if (!(body instanceof Readable)) {
-				throw new Error('Unexpected R2 response body type')
-			}
-			return { body }
+			return { body: toAudioReadable(body) }
 		},
 		async head({ key }) {
 			const res = await client.send(
