@@ -71,7 +71,7 @@ describe('cloudflare MSW mocks', () => {
 	test('Workers AI (AI Gateway) chat endpoint returns { result: { response } }', async () => {
 		const apiToken = 'MOCK_test-token'
 		const res = await fetch(
-			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/@cf/meta/llama-3.1-8b-instruct',
+			'https://gateway.ai.cloudflare.com/v1/acc123/test-gateway/workers-ai/MOCK_CLOUDFLARE_AI_CALL_KENT_METADATA_MODEL',
 			{
 				method: 'POST',
 				headers: {
