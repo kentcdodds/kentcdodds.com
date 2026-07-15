@@ -510,8 +510,8 @@ async function getCachedEpisodes({
 	timings?: Timings
 	signal?: AbortSignal
 }) {
-	const episodesCacheKey = await getEpisodesCacheKey()
 	try {
+		const episodesCacheKey = await getEpisodesCacheKey()
 		return await cachified({
 			cache,
 			request,

@@ -87,6 +87,22 @@ test('getEpisodes does not forward signal to fetch', async () => {
 	}
 })
 
+test('getEpisodes returns the empty fallback when cache generation lookup fails', async () => {
+	getGeneration.mockRejectedValueOnce(new Error('generation unavailable'))
+	const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+	const { getEpisodes } = await import('../transistor.server.ts')
+
+	try {
+		await expect(getEpisodes({ forceFresh: true })).resolves.toEqual([])
+		expect(consoleError).toHaveBeenCalledWith(
+			'transistor: cachified failed to resolve episodes, returning empty fallback',
+			expect.any(Error),
+		)
+	} finally {
+		consoleError.mockRestore()
+	}
+})
+
 test('getCurrentSeason uses the highest season across unordered pages', async () => {
 	const { getCurrentSeason } = await import('../transistor.server.ts')
 	const fetchSpy = vi
