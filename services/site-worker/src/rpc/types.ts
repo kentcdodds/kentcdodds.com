@@ -1,4 +1,5 @@
 import type { MediaServingEnv } from '../../../site/app/utils/media-serving.server.ts'
+import type { CallKentTranscriptionJob } from '../../../site/app/utils/call-kent-transcription-queue.server.ts'
 
 export type AssetsBinding = {
 	fetch(request: Request): Response | Promise<Response>
@@ -40,6 +41,7 @@ export type ParentWorkerEnv = MediaServingEnv & {
 	LOADER: WorkerLoaderBinding
 	OAUTH_WORKER?: ServiceWorkerBinding
 	SEARCH_WORKER?: ServiceWorkerBinding
+	CALL_KENT_TRANSCRIPTION_QUEUE: Queue<CallKentTranscriptionJob>
 	BUILD_SHA: string
 	COMPATIBILITY_DATE: string
 	/** 'true' in local/dev configs: third-party APIs are mocked by OutboundProxy. */

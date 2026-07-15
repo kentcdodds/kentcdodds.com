@@ -46,11 +46,17 @@ async function recordPublishedCallKentEpisode({
 	await db.deleteMany(callTable, { where: { id: callId } })
 }
 
-async function replaceCallKentEpisodeDraft({ callId }: { callId: string }) {
+async function replaceCallKentEpisodeDraft({
+	callId,
+	processingJobId,
+}: {
+	callId: string
+	processingJobId: string
+}) {
 	await db.deleteMany(callKentEpisodeDraftTable, { where: { callId } })
 	return db.create(
 		callKentEpisodeDraftTable,
-		{ callId },
+		{ callId, processingJobId },
 		{ returnRow: true },
 	)
 }

@@ -61,6 +61,23 @@
 			"service": "kcd-search-worker",
 		},
 	],
+	"queues": {
+		"producers": [
+			{
+				"binding": "CALL_KENT_TRANSCRIPTION_QUEUE",
+				"queue": "kcd-call-kent-transcription",
+			},
+		],
+		"consumers": [
+			{
+				"queue": "kcd-call-kent-transcription",
+				"max_batch_size": 1,
+				"max_retries": 2,
+				"retry_delay": 60,
+				"dead_letter_queue": "kcd-call-kent-transcription-dlq",
+			},
+		],
+	},
 	"triggers": {
 		"crons": ["0 3 * * *", "*/2 * * * *"],
 	},
@@ -119,6 +136,23 @@
 					"migrations_dir": "../site/migrations",
 				},
 			],
+			"queues": {
+				"producers": [
+					{
+						"binding": "CALL_KENT_TRANSCRIPTION_QUEUE",
+						"queue": "kcd-call-kent-transcription",
+					},
+				],
+				"consumers": [
+					{
+						"queue": "kcd-call-kent-transcription",
+						"max_batch_size": 1,
+						"max_retries": 2,
+						"retry_delay": 60,
+						"dead_letter_queue": "kcd-call-kent-transcription-dlq",
+					},
+				],
+			},
 		},
 	},
 }

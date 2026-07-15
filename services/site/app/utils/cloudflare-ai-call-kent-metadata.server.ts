@@ -1,6 +1,7 @@
 import {
 	getWorkersAiRunUrl,
 	unwrapWorkersAiText,
+	WORKERS_AI_REQUEST_TIMEOUT_MS,
 } from './cloudflare-ai-utils.server.ts'
 import { getEnv } from './env.server.ts'
 
@@ -135,6 +136,7 @@ ${callTitle ? `Caller-provided title: ${callTitle}\n\n` : ''}${callerNotes?.trim
 			],
 			max_tokens: 800,
 		}),
+		signal: AbortSignal.timeout(WORKERS_AI_REQUEST_TIMEOUT_MS),
 	})
 
 	if (!res.ok) {

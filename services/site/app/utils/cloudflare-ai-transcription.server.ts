@@ -1,11 +1,14 @@
+import { Buffer } from 'node:buffer'
+import {
+	getWorkersAiRunUrl,
+	WORKERS_AI_REQUEST_TIMEOUT_MS,
+} from './cloudflare-ai-utils.server.ts'
+import { getEnv } from './env.server.ts'
+
 type WhisperTranscriptionResponse = {
 	text: string
 	// Other fields exist (words/vtt/etc) but we only need `text` for Transistor.
 }
-
-import { Buffer } from 'node:buffer'
-import { getWorkersAiRunUrl } from './cloudflare-ai-utils.server.ts'
-import { getEnv } from './env.server.ts'
 
 export async function transcribeMp3WithWorkersAi({
 	mp3,
@@ -82,6 +85,7 @@ ${callerName ? `- ${callerName}` : ''}
 			'Content-Type': isWhisperLargeV3Turbo ? 'application/json' : 'audio/mpeg',
 		},
 		body,
+		signal: AbortSignal.timeout(WORKERS_AI_REQUEST_TIMEOUT_MS),
 	})
 
 	if (!res.ok) {

@@ -7,7 +7,7 @@ async function recordAudio(page: Page) {
 	await expect(
 		page.getByRole('button', { name: /start recording/i }),
 	).toBeVisible({
-		timeout: 15_000,
+		timeout: 30_000,
 	})
 	await page.getByRole('button', { name: /start recording/i }).click()
 	await page.waitForTimeout(1_000)
@@ -17,7 +17,7 @@ async function recordAudio(page: Page) {
 }
 
 test('Call Kent recording flow', async ({ page, login }) => {
-	test.setTimeout(120_000)
+	test.setTimeout(180_000)
 	const user = await login()
 	await page.goto('/calls')
 
@@ -58,12 +58,17 @@ test('Call Kent recording flow', async ({ page, login }) => {
 	await login({ role: 'ADMIN' })
 	// Navigate directly to avoid flakiness from list ordering / other calls.
 	await page.goto(`/calls/admin/${callId}`)
+	const callerTranscript = page.getByRole('textbox', {
+		name: /caller transcript/i,
+	})
+	await expect(callerTranscript).toBeEnabled({ timeout: 60_000 })
+	await expect(callerTranscript).not.toHaveValue('', { timeout: 60_000 })
 	await recordAudio(page)
 	await page.getByRole('button', { name: /generate episode draft/i }).click()
 
 	// Wait for draft processing to finish and editor to appear.
 	await expect(page.getByLabel(/episode title/i)).toBeVisible({
-		timeout: 60_000,
+		timeout: 90_000,
 	})
 
 	// Publish requires a double-confirmation click.

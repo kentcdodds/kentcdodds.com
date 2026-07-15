@@ -29,11 +29,12 @@ vi.mock('#app/utils/db.server.ts', () => ({
 		create: vi.fn(async (_table, data: { id: string }) => ({
 			id: data.id,
 		})),
+		updateMany: vi.fn(),
 	},
 }))
 
-vi.mock('#app/utils/call-kent-caller-transcript.server.ts', () => ({
-	startCallKentCallerTranscriptProcessing: vi.fn(),
+vi.mock('#app/utils/call-kent-transcription-queue.server.ts', () => ({
+	enqueueCallKentTranscriptionJob: vi.fn(),
 }))
 
 vi.mock('#app/utils/discord.server.ts', () => ({
@@ -93,13 +94,17 @@ vi.mock('#app/utils/call-kent-audio-storage.server.ts', () => ({
 }))
 
 import { putCallAudioFromDataUrl } from '#app/utils/call-kent-audio-storage.server.ts'
+import { enqueueCallKentTranscriptionJob } from '#app/utils/call-kent-transcription-queue.server.ts'
+import { db } from '#app/utils/db.server.ts'
 import { action } from '../save.tsx'
 
 test('create-call accepts a large multipart audio file', async () => {
+	vi.clearAllMocks()
 	const body = new FormData()
 	body.set('intent', 'create-call')
 	body.set('title', 'My large call')
 	body.set('notes', 'A large recording should submit successfully.')
+	body.set('questionText', '')
 	body.set(
 		'audio',
 		new File([new Uint8Array(16 * 1024 * 1024)], 'call.webm', {
@@ -118,7 +123,171 @@ test('create-call accepts a large multipart audio file', async () => {
 
 	expect(response.status).toBe(302)
 	expect(response.headers.get('location')).toMatch(/^\/calls\/record\//)
+	expect(db.create).toHaveBeenCalledWith(
+		expect.anything(),
+		expect.objectContaining({
+			callerTranscriptStatus: 'PROCESSING',
+			callerTranscriptErrorMessage: null,
+			callerTranscriptJobId: expect.any(String),
+			callerTranscriptLeaseId: null,
+			callerTranscriptLeaseExpiresAt: null,
+		}),
+		{ returnRow: true },
+	)
+	expect(enqueueCallKentTranscriptionJob).toHaveBeenCalledWith({
+		version: 1,
+		type: 'caller-transcription',
+		callId: expect.any(String),
+		jobId: expect.any(String),
+	})
 }, 30_000)
+
+test('create-call stores typed question wording as a ready transcript without enqueueing', async () => {
+	vi.clearAllMocks()
+	const body = new URLSearchParams({
+		intent: 'create-call',
+		title: 'Typed question call',
+		notes: 'These editable notes are not transcript provenance.',
+		questionText:
+			'  How should I structure loaders without duplicating fetches?  ',
+		audio: 'data:audio/webm;codecs=opus;base64,ZmFrZQ==',
+	})
+	const request = new Request('http://localhost/resources/calls/save', {
+		method: 'POST',
+		headers: {
+			host: 'localhost',
+			'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+		},
+		body,
+	})
+
+	const response = (await action({ request } as never)) as Response
+
+	expect(response.status).toBe(302)
+	expect(db.create).toHaveBeenCalledWith(
+		expect.anything(),
+		expect.objectContaining({
+			notes: 'These editable notes are not transcript provenance.',
+			callerTranscript:
+				'Probe: How should I structure loaders without duplicating fetches?',
+			callerTranscriptStatus: 'READY',
+			callerTranscriptErrorMessage: null,
+			callerTranscriptJobId: null,
+		}),
+		{ returnRow: true },
+	)
+	expect(enqueueCallKentTranscriptionJob).not.toHaveBeenCalled()
+})
+
+test('create-call labels an anonymous typed question transcript as Caller', async () => {
+	vi.clearAllMocks()
+	const body = new URLSearchParams({
+		intent: 'create-call',
+		title: 'Anonymous typed call',
+		questionText: 'What makes a useful abstraction in a growing codebase?',
+		anonymous: 'on',
+		audio: 'data:audio/webm;codecs=opus;base64,ZmFrZQ==',
+	})
+	const request = new Request('http://localhost/resources/calls/save', {
+		method: 'POST',
+		headers: {
+			host: 'localhost',
+			'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+		},
+		body,
+	})
+
+	const response = (await action({ request } as never)) as Response
+
+	expect(response.status).toBe(302)
+	expect(db.create).toHaveBeenCalledWith(
+		expect.anything(),
+		expect.objectContaining({
+			isAnonymous: true,
+			callerTranscript:
+				'Caller: What makes a useful abstraction in a growing codebase?',
+			callerTranscriptStatus: 'READY',
+		}),
+		{ returnRow: true },
+	)
+	expect(enqueueCallKentTranscriptionJob).not.toHaveBeenCalled()
+})
+
+test('create-call rejects an invalid supplied typed question instead of enqueueing', async () => {
+	vi.clearAllMocks()
+	const body = new URLSearchParams({
+		intent: 'create-call',
+		title: 'Invalid typed call',
+		questionText: 'Too short',
+		audio: 'data:audio/webm;codecs=opus;base64,ZmFrZQ==',
+	})
+	const request = new Request('http://localhost/resources/calls/save', {
+		method: 'POST',
+		headers: {
+			host: 'localhost',
+			'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+		},
+		body,
+	})
+
+	const result = (await action({ request } as never)) as {
+		type?: string
+		data?: RecordingFormData
+		init?: ResponseInit | null
+	}
+
+	expect(result.type).toBe('DataWithResponseInit')
+	expect(result.init?.status).toBe(400)
+	expect(result.data).toMatchObject({
+		fields: {
+			questionText: 'Too short',
+		},
+		errors: {
+			questionText: 'Question text must be at least 20 characters',
+		},
+	})
+	expect(putCallAudioFromDataUrl).not.toHaveBeenCalled()
+	expect(db.create).not.toHaveBeenCalled()
+	expect(enqueueCallKentTranscriptionJob).not.toHaveBeenCalled()
+})
+
+test('create-call records ERROR when caller transcription enqueue fails', async () => {
+	vi.clearAllMocks()
+	vi.mocked(enqueueCallKentTranscriptionJob).mockRejectedValueOnce(
+		new Error('queue unavailable'),
+	)
+	const body = new URLSearchParams({
+		intent: 'create-call',
+		title: 'Queue failure call',
+		audio: 'data:audio/webm;codecs=opus;base64,ZmFrZQ==',
+	})
+	const request = new Request('http://localhost/resources/calls/save', {
+		method: 'POST',
+		headers: {
+			host: 'localhost',
+			'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+		},
+		body,
+	})
+
+	const response = (await action({ request } as never)) as Response
+
+	expect(response.status).toBe(302)
+	expect(db.updateMany).toHaveBeenCalledWith(
+		expect.anything(),
+		{
+			callerTranscriptErrorMessage:
+				'Unable to enqueue caller transcription: queue unavailable',
+		},
+		{
+			where: {
+				id: expect.any(String),
+				callerTranscriptJobId: expect.any(String),
+				callerTranscriptStatus: 'PROCESSING',
+			},
+		},
+	)
+})
 
 test('create-call still accepts a urlencoded audio data URL', async () => {
 	const body = new URLSearchParams({

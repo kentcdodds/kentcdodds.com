@@ -7,6 +7,7 @@ type WorkersAiRunUrlOptions = {
 }
 
 const EMBEDDING_GEMMA_MODEL_SEGMENT = 'embeddinggemma-300m'
+export const WORKERS_AI_REQUEST_TIMEOUT_MS = 5 * 60 * 1000
 
 function usesEmbeddingGemmaModel(model: string) {
 	return model.includes(EMBEDDING_GEMMA_MODEL_SEGMENT)

@@ -1,5 +1,8 @@
+import { join } from 'node:path'
 import type { ExecutionContext } from '@cloudflare/workers-types'
 import { type ServerBuild } from 'react-router'
+import { consumeCallKentTranscriptionBatch } from '#app/utils/call-kent-transcription-consumer.server.ts'
+import { createDirectD1Database } from '#app/utils/db/direct-d1-database.server.ts'
 import { installDevMockFetch } from '#app/utils/dev-outbound-fetch.server.ts'
 import { setRuntimeEnvSource } from '#app/utils/env.server.ts'
 import { setRuntimeBindingSource } from '#app/utils/runtime-bindings.server.ts'
@@ -25,7 +28,6 @@ let fetchMocksInstalled = false
 let manifestPromise: Promise<MdxDevManifestModule> | null = null
 
 async function readDevManifestFromDisk(): Promise<MdxDevManifestModule> {
-	const { join } = await import('node:path')
 	const cacheRoot = __MDX_DEV_CACHE_ROOT__
 	const modulesDir = join(cacheRoot, 'modules')
 	const sidecarPort = Number(process.env.MDX_DEV_SIDECAR_PORT ?? 3099)
@@ -128,7 +130,7 @@ async function handleEarlyRequest(
 	return null
 }
 
-export default createWorkerFetchHandler({
+const fetchHandler = createWorkerFetchHandler({
 	redirectsText,
 	ensureRuntimeBridges,
 	handleEarlyRequest,
@@ -140,3 +142,15 @@ export default createWorkerFetchHandler({
 			(await import('virtual:react-router/server-build')) as ServerBuild
 	},
 })
+
+export default {
+	...fetchHandler,
+	async queue(batch: MessageBatch<unknown>, env: WorkerEnv) {
+		const stringEnv = getStringEnvBindings(env)
+		setRuntimeEnvSource(stringEnv)
+		setRuntimeBindingSource(env)
+		await consumeCallKentTranscriptionBatch(batch, {
+			database: createDirectD1Database(env.APP_DB as D1Database),
+		})
+	},
+} satisfies ExportedHandler<WorkerEnv>

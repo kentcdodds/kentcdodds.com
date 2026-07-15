@@ -58,7 +58,7 @@ test('RecordingForm validates the title before uploading audio', async () => {
 	}
 })
 
-test('RecordingForm submits a valid recording and follows the redirect', async () => {
+test('RecordingForm submits a valid recording with hidden typed question text and follows the redirect', async () => {
 	vi.clearAllMocks()
 	mockUseRootData.mockReturnValue({
 		requestInfo: {},
@@ -82,7 +82,17 @@ test('RecordingForm submits a valid recording and follows the redirect', async (
 	try {
 		const recording = new Blob(['audio'], { type: 'audio/webm' })
 		const screen = await render(
-			<RecordingForm audio={recording} intent="create-call" />,
+			<RecordingForm
+				audio={recording}
+				intent="create-call"
+				data={{
+					fields: {
+						questionText:
+							'How do I keep route data dependencies explicit and reusable?',
+					},
+					errors: {},
+				}}
+			/>,
 		)
 		await screen.getByLabelText('Title').fill('My First Call')
 		await screen.getByRole('button', { name: 'Submit Recording' }).click()
@@ -93,6 +103,9 @@ test('RecordingForm submits a valid recording and follows the redirect', async (
 		expect(requestInit.body).toBeInstanceOf(FormData)
 		const body = requestInit.body as FormData
 		expect(body.get('title')).toBe('My First Call')
+		expect(body.get('questionText')).toBe(
+			'How do I keep route data dependencies explicit and reusable?',
+		)
 		expect(body.get('audio')).toBeInstanceOf(File)
 		const audio = body.get('audio') as File
 		expect(audio.size).toBe(recording.size)

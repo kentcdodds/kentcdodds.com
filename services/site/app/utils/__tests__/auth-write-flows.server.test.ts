@@ -46,16 +46,19 @@ test('replaceCallKentEpisodeDraft deletes any old draft before creating a new on
 	db.deleteMany.mockResolvedValue({ affectedRows: 1 })
 	db.create.mockResolvedValue(draft)
 
-	await expect(replaceCallKentEpisodeDraft({ callId: 'call-1' })).resolves.toBe(
-		draft,
-	)
+	await expect(
+		replaceCallKentEpisodeDraft({
+			callId: 'call-1',
+			processingJobId: 'job-1',
+		}),
+	).resolves.toBe(draft)
 
 	expect(db.deleteMany).toHaveBeenCalledWith(callKentEpisodeDraftTable, {
 		where: { callId: 'call-1' },
 	})
 	expect(db.create).toHaveBeenCalledWith(
 		callKentEpisodeDraftTable,
-		{ callId: 'call-1' },
+		{ callId: 'call-1', processingJobId: 'job-1' },
 		{ returnRow: true },
 	)
 	expect(db.deleteMany.mock.invocationCallOrder[0]).toBeLessThan(

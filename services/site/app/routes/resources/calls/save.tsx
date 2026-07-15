@@ -11,9 +11,10 @@ import {
 	putEpisodeDraftResponseAudioFromBuffer,
 } from '#app/utils/call-kent-audio-storage.server.ts'
 import { runBackgroundTask } from '#app/utils/background-task.server.ts'
-import { startCallKentCallerTranscriptProcessing } from '#app/utils/call-kent-caller-transcript.server.ts'
 import { requestCallKentEpisodeAudioGeneration } from '#app/utils/call-kent-audio-processor.server.ts'
 import { getPublishedCallKentEpisodeEmail } from '#app/utils/call-kent-published-email.ts'
+import { getErrorForCallKentQuestionText } from '#app/utils/call-kent-text-to-speech.ts'
+import { enqueueCallKentTranscriptionJob } from '#app/utils/call-kent-transcription-queue.server.ts'
 import {
 	getErrorForAudio,
 	getErrorForTitle,
@@ -91,17 +92,22 @@ function getActionData(formData: FormData) {
 		audio: getAudioFormValue(formData, 'audio'),
 		title: getStringFormValue(formData, 'title'),
 		notes: getStringFormValue(formData, 'notes'),
+		questionText: getStringFormValue(formData, 'questionText'),
 	}
 
 	const actionData: ActionData = {
 		fields: {
 			title: fields.title,
 			notes: fields.notes,
+			questionText: fields.questionText,
 		},
 		errors: {
 			audio: getErrorForAudio(fields.audio),
 			title: getErrorForTitle(fields.title),
 			notes: getErrorForNotes(fields.notes),
+			questionText: !fields.questionText?.trim()
+				? null
+				: getErrorForCallKentQuestionText(fields.questionText),
 		},
 	}
 
@@ -135,12 +141,14 @@ async function createCall({
 	try {
 		const user = await requireUser(request)
 		const domainUrl = getDomainUrl(request)
-		const { audio, title, notes } = fields
+		const { audio, title, notes, questionText } = fields
 		if (!audio || !title) {
 			return json(actionData, 400)
 		}
+		const typedQuestion = questionText?.trim() ?? null
 
 		const callId = randomUUID()
+		const callerTranscriptJobId = typedQuestion ? null : randomUUID()
 		const stored = await putCallAudioFromFormValue({ callId, audio })
 		let createdCall: { id: string }
 		try {
@@ -155,6 +163,14 @@ async function createCall({
 					audioKey: stored.key,
 					audioContentType: stored.contentType,
 					audioSize: stored.size,
+					callerTranscript: typedQuestion
+						? `${isAnonymous ? 'Caller' : user.firstName}: ${typedQuestion}`
+						: null,
+					callerTranscriptStatus: typedQuestion ? 'READY' : 'PROCESSING',
+					callerTranscriptErrorMessage: null,
+					callerTranscriptJobId,
+					callerTranscriptLeaseId: null,
+					callerTranscriptLeaseExpiresAt: null,
 				},
 				{ returnRow: true },
 			)
@@ -164,9 +180,33 @@ async function createCall({
 			throw error
 		}
 
-		runBackgroundTask(() =>
-			startCallKentCallerTranscriptProcessing(createdCall.id),
-		)
+		if (!typedQuestion) {
+			if (!callerTranscriptJobId) {
+				throw new Error('Caller transcription job ID is missing.')
+			}
+			try {
+				await enqueueCallKentTranscriptionJob({
+					version: 1,
+					type: 'caller-transcription',
+					callId: createdCall.id,
+					jobId: callerTranscriptJobId,
+				})
+			} catch (error: unknown) {
+				await db.updateMany(
+					callTable,
+					{
+						callerTranscriptErrorMessage: `Unable to enqueue caller transcription: ${getErrorMessage(error)}`,
+					},
+					{
+						where: {
+							id: createdCall.id,
+							callerTranscriptJobId,
+							callerTranscriptStatus: 'PROCESSING',
+						},
+					},
+				)
+			}
+		}
 
 		try {
 			const env = getEnv()
@@ -495,7 +535,8 @@ async function createEpisodeDraft({
 	}
 
 	// Replace any existing draft so "re-record response" is safe and predictable.
-	const draft = await replaceCallKentEpisodeDraft({ callId })
+	const processingJobId = randomUUID()
+	const draft = await replaceCallKentEpisodeDraft({ callId, processingJobId })
 
 	try {
 		if (!call.audioKey) {
@@ -564,14 +605,37 @@ async function generateCallerTranscript({
 	})
 	if (!call) return redirectCallNotFound()
 
+	const callerTranscriptJobId = randomUUID()
 	await db.update(callTable, callId, {
 		callerTranscriptStatus: 'PROCESSING',
 		callerTranscriptErrorMessage: null,
+		callerTranscriptJobId,
+		callerTranscriptLeaseId: null,
+		callerTranscriptLeaseExpiresAt: null,
 	})
 
-	runBackgroundTask(() =>
-		startCallKentCallerTranscriptProcessing(callId, { force: true }),
-	)
+	try {
+		await enqueueCallKentTranscriptionJob({
+			version: 1,
+			type: 'caller-transcription',
+			callId,
+			jobId: callerTranscriptJobId,
+		})
+	} catch (error: unknown) {
+		await db.updateMany(
+			callTable,
+			{
+				callerTranscriptErrorMessage: `Unable to enqueue caller transcription: ${getErrorMessage(error)}`,
+			},
+			{
+				where: {
+					id: callId,
+					callerTranscriptJobId,
+					callerTranscriptStatus: 'PROCESSING',
+				},
+			},
+		)
+	}
 	return redirect(`/calls/admin/${callId}`)
 }
 
@@ -600,12 +664,18 @@ async function updateCallerTranscript({
 			callerTranscript: null,
 			callerTranscriptStatus: 'NOT_STARTED',
 			callerTranscriptErrorMessage: null,
+			callerTranscriptJobId: null,
+			callerTranscriptLeaseId: null,
+			callerTranscriptLeaseExpiresAt: null,
 		})
 	} else {
 		await db.update(callTable, callId, {
 			callerTranscript: nextTranscript,
 			callerTranscriptStatus: 'READY',
 			callerTranscriptErrorMessage: null,
+			callerTranscriptJobId: null,
+			callerTranscriptLeaseId: null,
+			callerTranscriptLeaseExpiresAt: null,
 		})
 	}
 

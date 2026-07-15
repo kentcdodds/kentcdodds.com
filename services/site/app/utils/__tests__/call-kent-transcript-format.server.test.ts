@@ -116,6 +116,7 @@ test('formatCallKentTranscriptWithWorkersAi prompts for paragraph breaks in long
 		const request = fetchSpy.mock.calls[0]?.[1]
 		expect(request).toBeDefined()
 		expect(request?.body).toBeTypeOf('string')
+		expect(request?.signal).toBeInstanceOf(AbortSignal)
 
 		const body = JSON.parse(String(request?.body)) as {
 			messages: Array<{ role: string; content: string }>

@@ -21,8 +21,12 @@ const dateColumns = {
 	password: ['createdAt', 'updatedAt'] as const,
 	verification: ['createdAt', 'expiresAt'] as const,
 	session: ['createdAt', 'expirationDate'] as const,
-	call: ['createdAt', 'updatedAt'] as const,
-	callKentEpisodeDraft: ['createdAt', 'updatedAt'] as const,
+	call: ['createdAt', 'updatedAt', 'callerTranscriptLeaseExpiresAt'] as const,
+	callKentEpisodeDraft: [
+		'createdAt',
+		'updatedAt',
+		'processingLeaseExpiresAt',
+	] as const,
 	callKentCallerEpisode: ['createdAt', 'updatedAt'] as const,
 	postRead: ['createdAt'] as const,
 	passkey: ['createdAt', 'updatedAt'] as const,
@@ -102,6 +106,9 @@ export const callTable = table({
 		callerTranscript: c.text().nullable(),
 		callerTranscriptStatus: c.text(),
 		callerTranscriptErrorMessage: c.text().nullable(),
+		callerTranscriptJobId: c.uuid().nullable(),
+		callerTranscriptLeaseId: c.uuid().nullable(),
+		callerTranscriptLeaseExpiresAt: c.timestamp().nullable(),
 		userId: c.uuid(),
 		audioKey: c.text().nullable(),
 		audioContentType: c.text().nullable(),
@@ -122,6 +129,9 @@ export const callKentEpisodeDraftTable = table({
 		status: c.text(),
 		step: c.text(),
 		errorMessage: c.text().nullable(),
+		processingJobId: c.uuid().nullable(),
+		processingLeaseId: c.uuid().nullable(),
+		processingLeaseExpiresAt: c.timestamp().nullable(),
 		episodeAudioKey: c.text().nullable(),
 		episodeAudioContentType: c.text().nullable(),
 		episodeAudioSize: c.integer().nullable(),
@@ -271,7 +281,9 @@ export const passwordUser = belongsTo(passwordTable, userTable, {
 export const sessionUser = belongsTo(sessionTable, userTable, {
 	foreignKey: 'userId',
 })
-export const callUser = belongsTo(callTable, userTable, { foreignKey: 'userId' })
+export const callUser = belongsTo(callTable, userTable, {
+	foreignKey: 'userId',
+})
 export const callEpisodeDraft = hasOne(callTable, callKentEpisodeDraftTable, {
 	foreignKey: 'callId',
 })
@@ -335,7 +347,9 @@ export type Call = TableRow<typeof callTable> & {
 	createdAt: Date
 	updatedAt: Date
 }
-export type CallKentEpisodeDraft = TableRow<typeof callKentEpisodeDraftTable> & {
+export type CallKentEpisodeDraft = TableRow<
+	typeof callKentEpisodeDraftTable
+> & {
 	createdAt: Date
 	updatedAt: Date
 }
