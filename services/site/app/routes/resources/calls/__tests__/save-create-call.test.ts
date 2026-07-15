@@ -45,10 +45,6 @@ vi.mock('#app/utils/call-kent-transcription-queue.server.ts', () => ({
 	enqueueCallKentTranscriptionJob: vi.fn(),
 }))
 
-vi.mock('#app/utils/discord.server.ts', () => ({
-	sendMessageFromDiscordBot: vi.fn(),
-}))
-
 vi.mock('#app/utils/send-email.server.ts', () => ({
 	sendEmail: vi.fn(),
 }))
