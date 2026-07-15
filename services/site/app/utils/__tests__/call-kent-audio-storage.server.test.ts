@@ -5,6 +5,7 @@ import {
 	getAudioStream,
 	headAudioObject,
 	putCallAudioFromBuffer,
+	toAudioReadable,
 } from '../call-kent-audio-storage.server.ts'
 
 process.env.R2_BUCKET = 'mock-r2-bucket'
@@ -12,6 +13,14 @@ process.env.R2_ENDPOINT = 'https://mock.r2.cloudflarestorage.com'
 process.env.R2_ACCESS_KEY_ID = 'MOCKR2ACCESSKEYID'
 process.env.R2_SECRET_ACCESS_KEY = 'MOCKR2SECRETACCESSKEY'
 process.env.CALL_KENT_R2_BUCKET = 'mock-call-kent-audio'
+
+async function readBytes(body: NodeJS.ReadableStream) {
+	const chunks: Array<Buffer> = []
+	for await (const chunk of body) {
+		chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+	}
+	return new Uint8Array(Buffer.concat(chunks))
+}
 
 describe('call kent audio storage (R2 via MSW)', () => {
 	test('round-trips audio bytes and supports range reads', async () => {
@@ -62,4 +71,32 @@ describe('call kent audio storage (R2 via MSW)', () => {
 
 		await deleteAudioObject({ key: putRes.key })
 	})
+})
+
+test('normalizes a Web ReadableStream returned by Workers R2 fetches', async () => {
+	const expected = new Uint8Array([1, 2, 3, 4])
+	const stream = new ReadableStream<Uint8Array>({
+		start(controller) {
+			controller.enqueue(expected)
+			controller.close()
+		},
+	})
+
+	await expect(readBytes(toAudioReadable(stream))).resolves.toEqual(expected)
+})
+
+test('normalizes an AWS SDK body with transformToWebStream', async () => {
+	const expected = new Uint8Array([5, 6, 7, 8])
+	const body = {
+		transformToWebStream() {
+			return new ReadableStream<Uint8Array>({
+				start(controller) {
+					controller.enqueue(expected)
+					controller.close()
+				},
+			})
+		},
+	}
+
+	await expect(readBytes(toAudioReadable(body))).resolves.toEqual(expected)
 })
