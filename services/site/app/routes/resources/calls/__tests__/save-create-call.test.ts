@@ -54,6 +54,7 @@ vi.mock('#app/utils/send-email.server.ts', () => ({
 }))
 
 vi.mock('#app/utils/transistor.server.ts', () => ({
+	bumpEpisodesCacheGeneration: vi.fn(),
 	createEpisode: vi.fn(),
 	refreshEpisodesAfterPublish: vi.fn(),
 }))
@@ -109,6 +110,7 @@ import { db } from '#app/utils/db.server.ts'
 import { recordPublishedCallKentEpisode } from '#app/utils/auth-write-flows.server.ts'
 import { sendEmail } from '#app/utils/send-email.server.ts'
 import {
+	bumpEpisodesCacheGeneration,
 	createEpisode,
 	refreshEpisodesAfterPublish,
 } from '#app/utils/transistor.server.ts'
@@ -397,6 +399,7 @@ test('publish invalidates the parent page cache after persistence without failin
 	})
 	vi.mocked(recordPublishedCallKentEpisode).mockResolvedValueOnce(undefined)
 	vi.mocked(refreshEpisodesAfterPublish).mockResolvedValueOnce(true)
+	vi.mocked(bumpEpisodesCacheGeneration).mockResolvedValueOnce('episodes-123')
 	vi.mocked(invalidatePageCache).mockRejectedValueOnce(
 		new Error('CACHE_RPC unavailable'),
 	)
@@ -419,6 +422,7 @@ test('publish invalidates the parent page cache after persistence without failin
 		expect(refreshEpisodesAfterPublish).toHaveBeenCalledWith({
 			episodeId: 'episode_28',
 		})
+		expect(bumpEpisodesCacheGeneration).toHaveBeenCalledOnce()
 		expect(invalidatePageCache).toHaveBeenCalledOnce()
 		expect(sendEmail).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -434,13 +438,18 @@ test('publish invalidates the parent page cache after persistence without failin
 		expect(
 			vi.mocked(refreshEpisodesAfterPublish).mock.invocationCallOrder[0],
 		).toBeLessThan(
+			vi.mocked(bumpEpisodesCacheGeneration).mock.invocationCallOrder[0] ?? 0,
+		)
+		expect(
+			vi.mocked(bumpEpisodesCacheGeneration).mock.invocationCallOrder[0],
+		).toBeLessThan(
 			vi.mocked(invalidatePageCache).mock.invocationCallOrder[0] ?? 0,
 		)
 		expect(
 			vi.mocked(invalidatePageCache).mock.invocationCallOrder[0],
 		).toBeLessThan(vi.mocked(sendEmail).mock.invocationCallOrder[0] ?? 0)
 		expect(consoleError).toHaveBeenCalledWith(
-			'Call Kent episode published but page cache invalidation failed.',
+			'Call Kent episode published but cache invalidation failed.',
 			{ transistorEpisodeId: 'episode_28' },
 			expect.any(Error),
 		)

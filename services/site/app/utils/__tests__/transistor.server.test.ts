@@ -1,7 +1,9 @@
 import { expect, test, vi } from 'vitest'
 
-const { cacheDelete } = vi.hoisted(() => ({
+const { bumpGeneration, cacheDelete, getGeneration } = vi.hoisted(() => ({
+	bumpGeneration: vi.fn().mockResolvedValue('next'),
 	cacheDelete: vi.fn(),
+	getGeneration: vi.fn().mockResolvedValue('test'),
 }))
 
 vi.mock('../cache.server.ts', () => {
@@ -12,10 +14,13 @@ vi.mock('../cache.server.ts', () => {
 		}: {
 			getFreshValue: (context: {}) => unknown
 		}) => await getFreshValue({}),
-		getCallKentEpisodesCacheGeneration: async () => 'test',
 		shouldForceFresh: async () => true,
 	}
 })
+
+vi.mock('../runtime-bindings.server.ts', () => ({
+	getRuntimeBinding: () => ({ bumpGeneration, getGeneration }),
+}))
 
 function makeEpisode({
 	id,
@@ -109,6 +114,15 @@ test('getCurrentSeason uses the highest season across unordered pages', async ()
 	} finally {
 		fetchSpy.mockRestore()
 	}
+})
+
+test('bumps a show-scoped episode cache generation', async () => {
+	bumpGeneration.mockClear()
+	const { bumpEpisodesCacheGeneration } =
+		await import('../transistor.server.ts')
+
+	await expect(bumpEpisodesCacheGeneration()).resolves.toBe('next')
+	expect(bumpGeneration).toHaveBeenCalledWith('transistor-episodes:12345')
 })
 
 test('an immediate refresh can cache an episode before it is list-ready', async () => {

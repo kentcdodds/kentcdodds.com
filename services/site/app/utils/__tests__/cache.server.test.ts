@@ -85,42 +85,19 @@ test('searches kv keys from CACHE_RPC in searchCacheKeys', async () => {
 	expect(cacheRpc.keys).toHaveBeenCalledWith('search', 25)
 })
 
-test('invalidates Call Kent episode and page cache generations through CACHE_RPC', async () => {
-	const invalidateCallKentCaches = vi.fn().mockResolvedValue({
-		episodesCacheGeneration: 'episodes-123',
-		pageCacheGeneration: 'pages-123',
-	})
+test('invalidates the parent page cache through CACHE_RPC', async () => {
+	const bumpPageCacheGeneration = vi.fn().mockResolvedValue('pages-123')
 	setRuntimeBindingSource({
 		CACHE_RPC: {
 			get: vi.fn(),
 			set: vi.fn(),
 			delete: vi.fn(),
 			keys: vi.fn(),
-			invalidateCallKentCaches,
+			bumpPageCacheGeneration,
 		},
 	})
 	const { invalidatePageCache } = await import('../cache.server.ts')
 
 	await expect(invalidatePageCache()).resolves.toBe('pages-123')
-	expect(invalidateCallKentCaches).toHaveBeenCalledOnce()
-})
-
-test('reads the Call Kent episode cache generation through CACHE_RPC', async () => {
-	const getCallKentEpisodesCacheGeneration = vi
-		.fn()
-		.mockResolvedValue('episodes-123')
-	setRuntimeBindingSource({
-		CACHE_RPC: {
-			get: vi.fn(),
-			set: vi.fn(),
-			delete: vi.fn(),
-			keys: vi.fn(),
-			getCallKentEpisodesCacheGeneration,
-		},
-	})
-	const { getCallKentEpisodesCacheGeneration: readGeneration } =
-		await import('../cache.server.ts')
-
-	await expect(readGeneration()).resolves.toBe('episodes-123')
-	expect(getCallKentEpisodesCacheGeneration).toHaveBeenCalledOnce()
+	expect(bumpPageCacheGeneration).toHaveBeenCalledOnce()
 })

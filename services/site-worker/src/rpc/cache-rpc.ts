@@ -5,7 +5,6 @@ import {
 	encodeCacheEntry,
 	getKvExpirationTtl,
 } from '../../../site/app/utils/cache-encoding.server.ts'
-import { callKentEpisodesCacheGenerationKey } from '../../../site/app/utils/call-kent-cache-keys.ts'
 import type { ParentWorkerEnv } from './types.ts'
 import { bumpPageCacheGeneration } from '../page-cache.ts'
 import {
@@ -16,6 +15,7 @@ import {
 
 const KV_VALUE_PREFIX = 'cache:value:'
 const KV_METADATA_PREFIX = 'cache:metadata:'
+const CACHE_GENERATION_PREFIX = 'cache:generation:'
 const KV_EDGE_CACHE_TTL_SECONDS = 60
 
 export class CacheRpc extends WorkerEntrypoint<ParentWorkerEnv> {
@@ -79,21 +79,19 @@ export class CacheRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 		return bumpPageCacheGeneration(this.env.CONTENT_KV)
 	}
 
-	async getCallKentEpisodesCacheGeneration() {
+	async getGeneration(name: string) {
 		return (
-			(await this.env.CONTENT_KV.get(callKentEpisodesCacheGenerationKey)) ?? '0'
+			(await this.env.CONTENT_KV.get(`${CACHE_GENERATION_PREFIX}${name}`)) ??
+			'0'
 		)
 	}
 
-	async invalidateCallKentCaches() {
-		const episodesCacheGeneration = Date.now().toString()
+	async bumpGeneration(name: string) {
+		const generation = Date.now().toString()
 		await this.env.CONTENT_KV.put(
-			callKentEpisodesCacheGenerationKey,
-			episodesCacheGeneration,
+			`${CACHE_GENERATION_PREFIX}${name}`,
+			generation,
 		)
-		const pageCacheGeneration = await bumpPageCacheGeneration(
-			this.env.CONTENT_KV,
-		)
-		return { episodesCacheGeneration, pageCacheGeneration }
+		return generation
 	}
 }

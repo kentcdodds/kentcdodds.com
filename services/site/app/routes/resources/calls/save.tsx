@@ -45,6 +45,7 @@ import { sendEmail } from '#app/utils/send-email.server.ts'
 import { requireAdminUser, requireUser } from '#app/utils/session.server.ts'
 import { teamEmoji } from '#app/utils/team-provider.tsx'
 import {
+	bumpEpisodesCacheGeneration,
 	createEpisode,
 	refreshEpisodesAfterPublish,
 } from '#app/utils/transistor.server.ts'
@@ -417,8 +418,9 @@ async function publishCall({
 			throw error
 		}
 
+		let episodeIsListReady = false
 		try {
-			const episodeIsListReady = await refreshEpisodesAfterPublish({
+			episodeIsListReady = await refreshEpisodesAfterPublish({
 				episodeId: published.transistorEpisodeId,
 			})
 			if (!episodeIsListReady) {
@@ -436,16 +438,19 @@ async function publishCall({
 			})
 		}
 
-		try {
-			await invalidatePageCache()
-		} catch (error: unknown) {
-			// Publishing and DB persistence have completed. The redirect should
-			// still succeed even if cache invalidation is temporarily unavailable.
-			console.error(
-				'Call Kent episode published but page cache invalidation failed.',
-				{ transistorEpisodeId: published.transistorEpisodeId },
-				error,
-			)
+		if (episodeIsListReady) {
+			try {
+				await bumpEpisodesCacheGeneration()
+				await invalidatePageCache()
+			} catch (error: unknown) {
+				// Publishing and DB persistence have completed. The redirect should
+				// still succeed even if cache invalidation is temporarily unavailable.
+				console.error(
+					'Call Kent episode published but cache invalidation failed.',
+					{ transistorEpisodeId: published.transistorEpisodeId },
+					error,
+				)
+			}
 		}
 
 		if (published.episodeUrl) {

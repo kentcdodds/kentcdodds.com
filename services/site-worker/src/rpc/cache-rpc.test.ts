@@ -1,5 +1,4 @@
 import { expect, test, vi } from 'vitest'
-import { callKentEpisodesCacheGenerationKey } from '../../../site/app/utils/call-kent-cache-keys.ts'
 import { CacheRpc } from './cache-rpc.ts'
 import type { ParentWorkerEnv } from './types.ts'
 
@@ -16,7 +15,7 @@ test('bumpPageCacheGeneration updates CONTENT_KV', async () => {
 	expect(put).toHaveBeenCalledWith('page-cache:generation', '1784085261000')
 })
 
-test('invalidates Call Kent episode and page cache generations together', async () => {
+test('bumps a named cache generation in CONTENT_KV', async () => {
 	vi.useFakeTimers()
 	vi.setSystemTime(new Date('2026-07-15T03:14:21.000Z'))
 	const put = vi.fn().mockResolvedValue(undefined)
@@ -25,26 +24,24 @@ test('invalidates Call Kent episode and page cache generations together', async 
 	} as unknown as ParentWorkerEnv
 	const rpc = new CacheRpc({} as ExecutionContext, env)
 
-	await expect(rpc.invalidateCallKentCaches()).resolves.toEqual({
-		episodesCacheGeneration: '1784085261000',
-		pageCacheGeneration: '1784085261000',
-	})
-	expect(put).toHaveBeenCalledWith(
-		callKentEpisodesCacheGenerationKey,
+	await expect(rpc.bumpGeneration('transistor-episodes:12345')).resolves.toBe(
 		'1784085261000',
 	)
-	expect(put).toHaveBeenCalledWith('page-cache:generation', '1784085261000')
+	expect(put).toHaveBeenCalledWith(
+		'cache:generation:transistor-episodes:12345',
+		'1784085261000',
+	)
 })
 
-test('reads the persisted Call Kent episode cache generation', async () => {
+test('reads a named cache generation from CONTENT_KV', async () => {
 	const get = vi.fn().mockResolvedValue('episodes-123')
 	const env = {
 		CONTENT_KV: { get },
 	} as unknown as ParentWorkerEnv
 	const rpc = new CacheRpc({} as ExecutionContext, env)
 
-	await expect(rpc.getCallKentEpisodesCacheGeneration()).resolves.toBe(
+	await expect(rpc.getGeneration('transistor-episodes:12345')).resolves.toBe(
 		'episodes-123',
 	)
-	expect(get).toHaveBeenCalledWith(callKentEpisodesCacheGenerationKey)
+	expect(get).toHaveBeenCalledWith('cache:generation:transistor-episodes:12345')
 })

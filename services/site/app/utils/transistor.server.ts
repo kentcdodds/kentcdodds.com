@@ -17,18 +17,14 @@ import {
 	waitForDelay,
 	type Sleep,
 } from './abort-utils.server.ts'
-import {
-	cache,
-	cachified,
-	getCallKentEpisodesCacheGeneration,
-	shouldForceFresh,
-} from './cache.server.ts'
+import { cache, cachified, shouldForceFresh } from './cache.server.ts'
 import { getCallKentEpisodeArtworkAvatar } from './call-kent-artwork.ts'
 import { getCallKentEpisodeArtworkUrl } from './call-kent-artwork.server.ts'
 import { getOgImageSecret } from '#app/og/secrets.server.ts'
 import { getEpisodePath } from './call-kent.ts'
 import { getEnv } from './env.server.ts'
 import { stripHtml } from './markdown.server.ts'
+import { getRuntimeBinding } from './runtime-bindings.server.ts'
 import { type Timings } from './timing.server.ts'
 import { getDirectAvatarForUser } from './user-info.server.ts'
 
@@ -36,9 +32,33 @@ const EPISODES_CACHE_KEY_PREFIX = 'transistor:episodes:'
 const POST_PUBLISH_REFRESH_ATTEMPTS = 15
 const POST_PUBLISH_REFRESH_DELAY_MS = 2000
 
+type CacheGenerationRpc = {
+	getGeneration(name: string): Promise<string>
+	bumpGeneration(name: string): Promise<string>
+}
+
+function getEpisodesCacheGenerationName() {
+	return `transistor-episodes:${getEnv().CALL_KENT_PODCAST_ID}`
+}
+
+function getCacheGenerationRpc() {
+	const binding = getRuntimeBinding<CacheGenerationRpc>('CACHE_RPC')
+	if (!binding || typeof binding.getGeneration !== 'function') return null
+	return binding
+}
+
 async function getEpisodesCacheKey() {
-	const generation = await getCallKentEpisodesCacheGeneration()
+	const rpc = getCacheGenerationRpc()
+	const generation = rpc
+		? await rpc.getGeneration(getEpisodesCacheGenerationName())
+		: 'local'
 	return `${EPISODES_CACHE_KEY_PREFIX}${getEnv().CALL_KENT_PODCAST_ID}:${generation}`
+}
+
+async function bumpEpisodesCacheGeneration() {
+	const rpc = getCacheGenerationRpc()
+	if (!rpc) return null
+	return rpc.bumpGeneration(getEpisodesCacheGenerationName())
 }
 
 function getErrorCode(error: unknown) {
@@ -522,6 +542,7 @@ async function getCachedEpisodes({
 }
 
 export {
+	bumpEpisodesCacheGeneration,
 	createEpisode,
 	getCurrentSeason,
 	getCachedEpisodes as getEpisodes,

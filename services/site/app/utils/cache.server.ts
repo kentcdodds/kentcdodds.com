@@ -29,11 +29,6 @@ type CacheRpcBinding = {
 	delete(key: string): Promise<void>
 	keys(prefix?: string, limit?: number): Promise<Array<string>>
 	bumpPageCacheGeneration?(): Promise<string>
-	getCallKentEpisodesCacheGeneration?(): Promise<string>
-	invalidateCallKentCaches?(): Promise<{
-		episodesCacheGeneration: string
-		pageCacheGeneration: string
-	}>
 }
 
 function getCacheRpcBinding(): CacheRpcBinding | undefined {
@@ -89,19 +84,8 @@ export function getPersistentCacheLabel() {
 
 export async function invalidatePageCache() {
 	const rpc = getCacheRpcBinding()
-	if (typeof rpc?.invalidateCallKentCaches === 'function') {
-		return (await rpc.invalidateCallKentCaches()).pageCacheGeneration
-	}
 	if (typeof rpc?.bumpPageCacheGeneration !== 'function') return null
 	return rpc.bumpPageCacheGeneration()
-}
-
-export async function getCallKentEpisodesCacheGeneration() {
-	const rpc = getCacheRpcBinding()
-	if (typeof rpc?.getCallKentEpisodesCacheGeneration !== 'function') {
-		return 'local'
-	}
-	return rpc.getCallKentEpisodesCacheGeneration()
 }
 
 export const lruCache = {
