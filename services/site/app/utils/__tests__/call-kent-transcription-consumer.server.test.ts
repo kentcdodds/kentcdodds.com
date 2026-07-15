@@ -294,6 +294,22 @@ test.each(jobs)(
 		)
 
 		expect(updateMany).toHaveBeenCalledTimes(2)
+		expect(updateMany.mock.calls[1]?.[1]).toMatchObject(
+			job.type === 'caller-transcription'
+				? {
+						callerTranscriptStatus: 'ERROR',
+						callerTranscriptErrorMessage: 'permanent failure',
+						callerTranscriptLeaseId: null,
+						callerTranscriptLeaseExpiresAt: null,
+					}
+				: {
+						status: 'ERROR',
+						errorMessage: 'permanent failure',
+						step: 'DONE',
+						processingLeaseId: null,
+						processingLeaseExpiresAt: null,
+					},
+		)
 		expect(updateMany.mock.calls[1]?.[2]).toEqual({
 			where:
 				job.type === 'caller-transcription'

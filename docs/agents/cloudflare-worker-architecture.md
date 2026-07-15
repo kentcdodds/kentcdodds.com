@@ -354,11 +354,12 @@ persisted on the row before dispatch.
   recovery cron can dispatch it again later.
 - Attempts one and two release their matching lease and call `retry()` without
   persisting terminal state. Attempt three records `ERROR` only for the matching
-  job/lease and acknowledges the message.
+  job/lease and acknowledges the message. Exhausted platform deliveries also
+  land in `kcd-call-kent-transcription-dlq` for operator visibility.
 - Duplicate and superseded jobs are acknowledged without processing. Episode
   retries resume from persisted transcript and metadata checkpoints.
 - Episode transcription waits for a usable caller transcript in `READY`, requires
-  both generated segment keys, and transcribes only Kent's response segment.
+  the generated response segment, and transcribes only Kent's response.
   Legacy audio callbacks mint and persist a job id atomically with the audio keys.
 - The 2-minute cron recovers stale caller work and episode work that already has
   generated audio and is in `TRANSCRIBING` or `GENERATING_METADATA`. It scans at

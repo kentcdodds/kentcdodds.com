@@ -104,6 +104,7 @@ test('create-call accepts a large multipart audio file', async () => {
 	body.set('intent', 'create-call')
 	body.set('title', 'My large call')
 	body.set('notes', 'A large recording should submit successfully.')
+	body.set('questionText', '')
 	body.set(
 		'audio',
 		new File([new Uint8Array(16 * 1024 * 1024)], 'call.webm', {

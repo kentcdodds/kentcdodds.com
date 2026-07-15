@@ -53,7 +53,8 @@
 				"queue": "kcd-call-kent-transcription",
 				"max_batch_size": 1,
 				"max_retries": 2,
-				"retry_delay": 60
+				"retry_delay": 60,
+				"dead_letter_queue": "kcd-call-kent-transcription-dlq"
 			}
 		],
 	},

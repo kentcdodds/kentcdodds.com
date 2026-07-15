@@ -105,10 +105,9 @@ function getActionData(formData: FormData) {
 			audio: getErrorForAudio(fields.audio),
 			title: getErrorForTitle(fields.title),
 			notes: getErrorForNotes(fields.notes),
-			questionText:
-				fields.questionText === null
-					? null
-					: getErrorForCallKentQuestionText(fields.questionText),
+			questionText: !fields.questionText?.trim()
+				? null
+				: getErrorForCallKentQuestionText(fields.questionText),
 		},
 	}
 
