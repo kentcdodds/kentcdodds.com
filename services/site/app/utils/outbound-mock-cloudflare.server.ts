@@ -250,7 +250,8 @@ async function handleWorkersAiGateway(request: Request, url: URL) {
 	if (
 		lowerModel.includes('deepgram/aura') ||
 		lowerModel.includes('aura-') ||
-		lowerModel.includes('melotts')
+		lowerModel.includes('melotts') ||
+		lowerModel.includes('mock')
 	) {
 		const text =
 			typeof body?.text === 'string'
