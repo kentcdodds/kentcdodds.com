@@ -155,6 +155,13 @@ export default function KodyPage() {
 			/>
 			<main className="mx-auto flex flex-col items-center">
 				<section className="prose dark:prose-dark">
+					<p className="bg-secondary mb-8 rounded-lg p-6 text-lg">
+						Looking for Kody, Kent's personal AI assistant platform? Head to{' '}
+						<a className="underlined" href="https://heykody.dev">
+							heykody.dev
+						</a>
+						.
+					</p>
 					<H2>Who is Kody?</H2>
 					<p className="mb-8 text-lg">
 						Kody the Koala is the beloved mascot of the KCD Community. If you've
