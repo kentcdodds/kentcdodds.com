@@ -87,6 +87,14 @@ Import from `#app/utils/db.server.ts`.
 | `delete` / `deleteMany` | `db.delete(table, id)` / `db.deleteMany(table, { where })` |
 | `upsert` (single field unique) | `db.query(table).upsert(values, { conflictTarget: ['email'], update })` |
 | `upsert` (composite unique) | `db.query(table).upsert(values, { conflictTarget: [...], update, touch: true })` |
+
+### Upsert bind-order caveat
+
+`SqliteExecutorDataTableAdapter.compileUpsertStatement` must push INSERT
+bound values before ON CONFLICT UPDATE values. SQL placeholder order is
+`INSERT ... VALUES (?, ...) ON CONFLICT DO UPDATE SET col = ?`; if update
+params are pushed first, columns get the wrong bindings (e.g. Password
+`userId` receiving the hash → FK failure / 500 on password set/reset).
 | `count` | `db.count(table, { where })` |
 | `groupBy` | `db.query(table).groupBy('col').select({...})` **or** `db.exec(sql\`...\`)` |
 | `$queryRaw` / `$executeRaw` | `db.exec(sql\`...\`)` or `db.exec({ text, values })` |

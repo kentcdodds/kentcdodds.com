@@ -592,6 +592,17 @@ function compileUpsertStatement(
 		throw new Error('upsert requires at least one value')
 	}
 
+	// Bind insert placeholders before the ON CONFLICT update placeholders so
+	// context.values matches SQL placeholder order (INSERT ... then UPDATE).
+	const insertValuesSql = insertColumns
+		.map((column) =>
+			pushValue(
+				context,
+				(statement.values as Record<string, unknown>)[column],
+			),
+		)
+		.join(', ')
+
 	const updateValues = statement.update ?? statement.values
 	const updateColumns = Object.keys(updateValues)
 	let conflictClause = ''
@@ -626,14 +637,7 @@ function compileUpsertStatement(
 			' (' +
 			insertColumns.map((column) => quotePath(column)).join(', ') +
 			') values (' +
-			insertColumns
-				.map((column) =>
-					pushValue(
-						context,
-						(statement.values as Record<string, unknown>)[column],
-					),
-				)
-				.join(', ') +
+			insertValuesSql +
 			')' +
 			conflictClause +
 			compileReturningClause(statement.returning),
