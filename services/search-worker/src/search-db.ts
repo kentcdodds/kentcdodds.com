@@ -589,6 +589,7 @@ export async function queryLexicalSearch({
 						c.imageAlt
 					FROM lexical_search_fts f
 					JOIN lexical_chunks c ON c.id = f.id
+					JOIN lexical_sources s ON s.sourceKey = c.sourceKey
 					WHERE lexical_search_fts MATCH ?
 					ORDER BY bm25(lexical_search_fts, 10.0, 1.0), c.chunkIndex
 					LIMIT ?
