@@ -26,4 +26,6 @@ fixes it.
 - Client SDK filters live in `services/site/app/utils/sentry-noise.ts` (wired
   from `monitoring.client.tsx`): prefer narrow `ignoreErrors` / `denyUrls` /
   `beforeSend` signatures. Do not broadly filter `Failed to fetch` / network
-  errors — those can hide real outages.
+  errors — those can hide real outages. Message/stack drop rules must establish
+  an external source (distinctive third-party signature, extension/IAB URL, or
+  provider error code such as EIP-1193 `4001`) — never a generic phrase alone.

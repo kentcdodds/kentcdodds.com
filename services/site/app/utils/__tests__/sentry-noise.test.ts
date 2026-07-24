@@ -4,6 +4,7 @@ import {
 	SENTRY_IGNORE_ERRORS,
 	isBrowserExtensionError,
 	isDegradedUiPerformanceEvent,
+	isWalletUserRejection,
 	shouldDropSentryEvent,
 } from '../sentry-noise.ts'
 
@@ -41,10 +42,64 @@ test('filters injected extension post Method not found (KCD-W9)', () => {
 	expect(matchesIgnoreError('Error invoking post: Method not found')).toBe(true)
 })
 
-test('filters EIP-1193 wallet user rejection (KCD-ZV)', () => {
+test('scopes EIP-1193 wallet user rejection (KCD-ZV)', () => {
+	expect(matchesIgnoreError('user rejected the request')).toBe(false)
+
 	expect(
-		matchesIgnoreError(
-			'Non-Error promise rejection captured with value: user rejected the request',
+		isWalletUserRejection(
+			{},
+			{
+				originalException: { code: 4001, message: 'User rejected the request' },
+			},
+		),
+	).toBe(true)
+
+	expect(
+		isWalletUserRejection({
+			exception: {
+				values: [
+					{
+						type: 'UnhandledRejection',
+						value:
+							'Non-Error promise rejection captured with value: user rejected the request',
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	expect(
+		isWalletUserRejection({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'user rejected the request',
+						stacktrace: {
+							frames: [{ filename: '/app/routes/checkout.tsx' }],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'UnhandledRejection',
+							value:
+								'Non-Error promise rejection captured with value: user rejected the request',
+						},
+					],
+				},
+			},
+			{
+				originalException: { code: 4001, message: 'User rejected the request' },
+			},
 		),
 	).toBe(true)
 })
@@ -94,6 +149,11 @@ test('detects browser extension stacks and denyUrls', () => {
 	expect(isBrowserExtensionError(extensionError)).toBe(true)
 	expect(matchesDenyUrl('chrome-extension://abc/content.js')).toBe(true)
 	expect(matchesDenyUrl('moz-extension://abc/content.js')).toBe(true)
+
+	const anonymousScriptError = new Error('boom')
+	anonymousScriptError.stack =
+		'Error: boom\n    at anonymous scripts:1:1\n    at /app/routes/blog.tsx:10:2'
+	expect(isBrowserExtensionError(anonymousScriptError)).toBe(false)
 })
 
 test('drops degraded UI performance noise and lookout/translate requests', () => {

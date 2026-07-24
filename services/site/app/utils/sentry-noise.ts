@@ -3,7 +3,9 @@
  * browser extensions, in-app browsers, and similar non-app sources.
  *
  * Prefer message/URL signatures over broad network-error filters so real
- * outages still alert.
+ * outages still alert. Drop rules must establish an external source via a
+ * distinctive payload signature, extension/IAB URL, or provider error code —
+ * not a generic phrase alone.
  */
 
 export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
@@ -23,8 +25,6 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/Invalid call to runtime\.sendMessage\(\)\. Tab not found/,
 	// Injected extension post bridge (KCD-W9).
 	/Error invoking post: Method not found/,
-	// EIP-1193 wallet extension user dismissal (KCD-ZV).
-	/user rejected the request/,
 	// Android in-app browser (Instagram/etc.) native bridge (KCD-ZM).
 	/Error invoking postMessage: Java object is gone/,
 	// Injected social/OG scrapers reading meta tags that aren't present (KCD-2K family).
@@ -46,6 +46,7 @@ export const SENTRY_DENY_URLS: Array<RegExp> = [
 type SentryExceptionValue = {
 	type?: string | null
 	value?: string | null
+	stacktrace?: { frames?: Array<{ filename?: string | null }> | null } | null
 }
 
 type SentryEventLike = {
@@ -54,9 +55,12 @@ type SentryEventLike = {
 	exception?: { values?: Array<SentryExceptionValue> | null } | null
 }
 
+const WALLET_PROVIDER_STACK =
+	/metamask|coinbase|rainbow|walletconnect|phantom|ethereum|eip-1193|inpage\.js|nkbihfbeogaeaoehlefnkodbefgpgknn/i
+
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
-	return /chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:|anonymous scripts/i.test(
+	return /chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:/i.test(
 		exception.stack,
 	)
 }
@@ -68,11 +72,69 @@ export function isDegradedUiPerformanceEvent(event: SentryEventLike): boolean {
 	)
 }
 
+function eventMessages(event: SentryEventLike): Array<string> {
+	const messages = (event.exception?.values ?? [])
+		.map((value) => value.value ?? '')
+		.filter(Boolean)
+	if (event.message) messages.push(event.message)
+	return messages
+}
+
+function hasStackFrames(event: SentryEventLike): boolean {
+	return (event.exception?.values ?? []).some(
+		(value) => (value.stacktrace?.frames?.length ?? 0) > 0,
+	)
+}
+
+function stackBlob(event: SentryEventLike, originalException: unknown): string {
+	const frameFiles = (event.exception?.values ?? [])
+		.flatMap((value) => value.stacktrace?.frames ?? [])
+		.map((frame) => frame.filename ?? '')
+		.join('\n')
+	const errorStack =
+		originalException instanceof Error ? (originalException.stack ?? '') : ''
+	return `${frameFiles}\n${errorStack}`
+}
+
+/**
+ * EIP-1193 wallet extensions reject with code 4001 / "user rejected the
+ * request". Only drop when that provider signal is present — never on the
+ * phrase alone.
+ */
+export function isWalletUserRejection(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const original = hint.originalException
+	if (original && typeof original === 'object' && 'code' in original) {
+		const code = (original as { code?: unknown }).code
+		if (code === 4001 || code === '4001') return true
+	}
+
+	const looksLikeUserRejection = eventMessages(event).some((message) =>
+		/user rejected the request/i.test(message),
+	)
+	if (!looksLikeUserRejection) return false
+
+	// Non-Error wallet rejections often have zero frames; require a provider
+	// marker whenever any stack evidence exists.
+	if (hasStackFrames(event) || original instanceof Error) {
+		return WALLET_PROVIDER_STACK.test(stackBlob(event, original))
+	}
+
+	return (event.exception?.values ?? []).some(
+		(value) =>
+			value.type === 'UnhandledRejection' ||
+			/Non-Error promise rejection/i.test(value.value ?? ''),
+	)
+}
+
 export function shouldDropSentryEvent(
 	event: SentryEventLike,
 	hint: { originalException?: unknown } = {},
 ): boolean {
 	if (isBrowserExtensionError(hint.originalException)) return true
+	if (isWalletUserRejection(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true
