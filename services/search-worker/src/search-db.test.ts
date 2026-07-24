@@ -33,17 +33,35 @@ type BoundStatement = {
 
 function createBatchDb() {
 	const boundStatements: Array<BoundStatement> = []
+	const batches: Array<Array<BoundStatement>> = []
 	const db = {
 		prepare: vi.fn((sql: string) => ({
 			bind: vi.fn((...values: Array<unknown>) => ({ sql, values })),
 		})),
 		batch: vi.fn(async (statements: Array<D1PreparedStatement>) => {
-			boundStatements.push(...(statements as unknown as Array<BoundStatement>))
+			const bound = statements as unknown as Array<BoundStatement>
+			boundStatements.push(...bound)
+			batches.push(bound)
 			return []
 		}),
 	} as unknown as D1Database
 
-	return { db, boundStatements }
+	return { db, boundStatements, batches }
+}
+
+function estimateBatchBytes(statements: Array<BoundStatement>) {
+	let bytes = 0
+	for (const statement of statements) {
+		bytes += statement.sql.length + 128
+		for (const value of statement.values) {
+			if (typeof value === 'string') bytes += value.length
+			else if (typeof value === 'number' || typeof value === 'boolean')
+				bytes += 16
+			else if (value == null) bytes += 4
+			else bytes += String(value).length
+		}
+	}
+	return bytes
 }
 
 test('replaceSearchSource scopes duplicate chunk storage ids by source', async () => {
@@ -142,6 +160,49 @@ test('replaceSearchSource scopes duplicate chunk storage ids by source', async (
 	expect(docInsertStatements.map((statement) => statement.values[7])).toEqual([
 		2, 2,
 	])
+})
+
+test('replaceSearchSource chunks D1 batches under the RPC size limit', async () => {
+	const { db, boundStatements, batches } = createBatchDb()
+	// Reproduce the podcast sync failure mode: one giant replace exceeds 32 MiB
+	// when sent as a single D1 batch RPC payload (~35.7 MiB in production).
+	const chunkText = 'a'.repeat(250_000)
+	const chunkCount = 80
+	const artifact: LexicalSearchArtifact = {
+		version: 1,
+		generatedAt: '2026-07-24T00:00:00.000Z',
+		chunks: Array.from({ length: chunkCount }, (_, index) => ({
+			id: `podcast:episode:chunk:${index}`,
+			type: 'podcast',
+			slug: 'episode',
+			url: '/chats/episode',
+			title: 'Large Podcast Episode',
+			snippet: 'chunk snippet',
+			text: chunkText,
+			chunkIndex: index,
+			chunkCount,
+		})),
+	}
+
+	await replaceSearchSource({
+		db,
+		sourceKey: 'lexical-search/podcasts.json',
+		artifact,
+		syncedAt: '2026-07-24T01:00:00.000Z',
+	})
+
+	const D1_RPC_HARD_LIMIT_BYTES = 32 * 1024 * 1024
+	const totalEstimatedBytes = estimateBatchBytes(boundStatements)
+	expect(totalEstimatedBytes).toBeGreaterThan(D1_RPC_HARD_LIMIT_BYTES)
+	expect(batches.length).toBeGreaterThan(1)
+	for (const batch of batches) {
+		expect(estimateBatchBytes(batch)).toBeLessThan(D1_RPC_HARD_LIMIT_BYTES)
+	}
+
+	const sourceInsertIndex = boundStatements.findIndex((statement) =>
+		statement.sql.includes('INSERT INTO lexical_sources'),
+	)
+	expect(sourceInsertIndex).toBe(boundStatements.length - 1)
 })
 
 test('queryLexicalSearch quotes hyphenated date tokens for FTS', async () => {
