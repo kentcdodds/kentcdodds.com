@@ -82,11 +82,10 @@ export function buildPageSocialMetasForRequest(
 }
 
 export function buildPageSocialMetasFromMatches(
-	matches: Array<{ id: string; data?: unknown }>,
+	matches: Array<{ id: string; loaderData?: unknown }>,
 	options: BuildPageSocialMetasOptions,
 ) {
-	const requestInfo = matches.find((match) => match.id === 'root')?.data as
-		| { requestInfo?: RequestInfo }
-		| undefined
+	const requestInfo = matches.find((match) => match.id === 'root')
+		?.loaderData as { requestInfo?: RequestInfo } | undefined
 	return buildPageSocialMetas(requestInfo?.requestInfo, options)
 }

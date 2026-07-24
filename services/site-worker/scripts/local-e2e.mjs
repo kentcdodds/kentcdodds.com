@@ -100,7 +100,7 @@ async function main() {
 	}
 
 	console.log('Applying D1 migrations locally...')
-	run('npm', ['run', 'd1:migrations:apply:local', '--workspace', 'site-worker'])
+	run('bun', ['run', '--filter', 'site-worker', 'd1:migrations:apply:local'])
 
 	console.log('Seeding local D1...')
 	run('node', [
@@ -124,7 +124,7 @@ async function main() {
 
 	console.log('Local e2e setup complete.')
 	console.log(
-		`Start the parent worker with: npm run dev --workspace site-worker (port ${port})`,
+		`Start the parent worker with: bun run --filter site-worker dev (port ${port})`,
 	)
 }
 

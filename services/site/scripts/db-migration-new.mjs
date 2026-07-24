@@ -33,7 +33,7 @@ function toSnakeName(name) {
 function main() {
 	const rawName = process.argv.slice(2).join(' ').trim()
 	if (!rawName || rawName === '--help' || rawName === '-h') {
-		console.log('Usage: npm run db:migration:new -- <snake_or_kebab_name>')
+		console.log('Usage: bun run db:migration:new -- <snake_or_kebab_name>')
 		process.exit(rawName ? 0 : 1)
 	}
 

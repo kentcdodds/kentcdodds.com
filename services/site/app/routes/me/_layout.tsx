@@ -71,8 +71,8 @@ export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 type FavoriteDisplayItem = {
 	contentType: FavoriteContentType

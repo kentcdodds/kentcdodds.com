@@ -50,7 +50,7 @@ export const meta: MetaFunction<
 	typeof loader,
 	{ root: RootLoaderType; 'routes/calls/_layout': typeof callsLoader }
 > = ({ matches, params }) => {
-	const rootData = matches.find((m) => m.id === 'root')?.data as
+	const rootData = matches.find((m) => m.id === 'root')?.loaderData as
 		| SerializeFrom<typeof rootLoader>
 		| undefined
 	if (!rootData) {
@@ -59,7 +59,7 @@ export const meta: MetaFunction<
 
 	const { requestInfo } = rootData
 	const callsData = matches.find((m) => m.id === 'routes/calls/_layout')
-		?.data as SerializeFrom<typeof callsLoader> | undefined
+		?.loaderData as SerializeFrom<typeof callsLoader> | undefined
 	if (!callsData) {
 		console.error(
 			`A call was unable to retrieve the parent's data by routes/calls/_layout`,

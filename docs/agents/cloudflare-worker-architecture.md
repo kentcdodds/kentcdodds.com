@@ -85,7 +85,7 @@ the deployed probe worker separately.
 
 ## Artifact bundle contract
 
-Produced by `npm run mdx:compile --workspace kentcdodds.com` (Node), published
+Produced by `bun run --filter kentcdodds.com mdx:compile` (Node), published
 by CI to R2 + KV. Format (JSON, schema in
 `services/site/types/mdx-artifacts.ts`):
 
@@ -129,9 +129,9 @@ picks up the new modules. No worker redeploy is needed for content changes.
 
 Two paths:
 
-1. **Direct (privileged token):** `npm run publish:artifacts --workspace site-worker -- bundle.json`
+1. **Direct (privileged token):** `bun run --filter site-worker publish:artifacts -- bundle.json`
    uses Wrangler to write R2 + KV (needs D1/KV/R2 API permissions).
-2. **Via endpoint (CI / no CF resource API):** `npm run publish:artifacts --workspace site-worker -- bundle.json --via-endpoint https://…/resources/mdx-artifacts`
+2. **Via endpoint (CI / no CF resource API):** `bun run --filter site-worker publish:artifacts -- bundle.json --via-endpoint https://…/resources/mdx-artifacts`
    with `REFRESH_CACHE_SECRET` in the `auth` header (same convention as
    `/action/refresh-cache`). The parent worker streams the bundle to R2,
    updates `mdx-manifest:current`, and clears its manifest cache.
@@ -499,7 +499,7 @@ noticeable, add zone rate-limiting rules scoped to those paths.
 
 ## Local development
 
-`npm run dev` (in `services/site`) runs two processes concurrently:
+`bun run dev` (in `services/site`) runs two processes concurrently:
 
 1. **MDX dev-watcher sidecar** (`other/mdx-artifacts/dev-watcher.ts`) — compiles
    all local MDX on startup (cached under `node_modules/.cache/mdx-dev/`), watches
@@ -507,6 +507,11 @@ noticeable, add zone rate-limiting rules scoped to those paths.
    for Cloudflare Email Sending mock capture.
 2. **Vite + React Router dev** with `@cloudflare/vite-plugin` — serves the app
    in real workerd with local D1/KV bindings from `wrangler.dev.jsonc`.
+
+Bun is the repository package manager and task runner, not the framework
+bundler. React Router route-module compilation and Cloudflare's workerd
+Environment API integration still require Vite. Bun's standalone fullstack
+server currently lacks the SSR/framework adapter needed by this topology.
 
 ### Dev vs production fidelity trade-off
 
@@ -537,7 +542,7 @@ deduped via Vite resolution so interactive MDX SSR shares one React instance.
 ### Database and cache in dev
 
 - `APP_DB` — local Miniflare D1 (persistent under `.wrangler/state/v3/d1/`).
-  Seed: `npm run db:reset --workspace kentcdodds.com`.
+  Seed: `bun run --filter kentcdodds.com db:reset`.
 - `SITE_CACHE_KV` / `CONTENT_KV` — local Miniflare KV simulations.
 - `db.server.ts` uses a direct-D1 executor when bindings expose `.prepare`/`.batch`.
 - `cache.server.ts` uses direct KV when `SITE_CACHE_KV` is present.
@@ -551,7 +556,7 @@ with site-worker's `OutboundProxy`). Signup verification emails are captured to
 console.
 
 The full parent + dynamic worker topology is exercised via
-`services/site-worker` (`npm run dev --workspace site-worker` on port 8792) and
+`services/site-worker` (`bun run --filter site-worker dev` on port 8792) and
 production deploy smoke tests.
 
 ### Site-worker local dev
@@ -559,7 +564,7 @@ production deploy smoke tests.
 After local D1 migrations are applied, start the parent worker:
 
 ```sh
-npm run dev --workspace site-worker
+bun run --filter site-worker dev
 ```
 
 The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
@@ -576,8 +581,9 @@ The worker listens on `http://127.0.0.1:8792` and exposes `GET /healthcheck`
 - Queue: `kcd-call-kent-transcription` (site worker producer + consumer)
 - Service bindings: production oauth/search workers
 - Deploys from `.github/workflows/deployment.yml` → `deploy-site.yml` on pushes
-  to `main` (`npm run provision:production`, `generate-worker-secrets.mjs
---target=production`, artifact publish via endpoint, D1 migrations, smoke).
+  to `main` (`bun run --filter site-worker provision:production`,
+  `generate-worker-secrets.mjs --target=production`, artifact publish via
+  endpoint, D1 migrations, smoke).
 
 `wrangler.jsonc` uses local placeholder bindings at the top level and
 `env.production` overrides for production bindings. `generate-worker-config.mjs`
@@ -588,8 +594,9 @@ writes `generated-wrangler.jsonc` with production bindings + `BUILD_SHA`.
 The repo `CLOUDFLARE_API_TOKEN` can deploy worker scripts and upload secrets
 but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 
-- Resource IDs are committed in `services/site-worker/wrangler.jsonc`; `npm run
-provision:production` skips Cloudflare API calls when IDs are present (use
+- Resource IDs are committed in `services/site-worker/wrangler.jsonc`;
+  `bun run --filter site-worker provision:production` skips Cloudflare API
+  calls when IDs are present (use
   `--force-ensure` for fresh environments with a privileged token).
 - Artifact publish in CI uses `POST /resources/mdx-artifacts` (no R2/KV API
   needed).
@@ -603,11 +610,11 @@ table. Do not rename migration files after deploy.
 D1 rejects `CREATE TEMP TABLE` in migrations — use a regular guard table and
 drop it in the same migration when needed.
 
-| Command                                                          | Target                          |
-| ---------------------------------------------------------------- | ------------------------------- |
-| `npm run d1:migrations:list:local --workspace site-worker`       | List pending local Miniflare D1 |
-| `npm run d1:migrations:apply:local --workspace site-worker`      | Apply to local Miniflare D1     |
-| `npm run d1:migrations:apply:production --workspace site-worker` | Apply to remote production D1   |
+| Command                                                       | Target                          |
+| ------------------------------------------------------------- | ------------------------------- |
+| `bun run --filter site-worker d1:migrations:list:local`       | List pending local Miniflare D1 |
+| `bun run --filter site-worker d1:migrations:apply:local`      | Apply to local Miniflare D1     |
+| `bun run --filter site-worker d1:migrations:apply:production` | Apply to remote production D1   |
 
 ### Runbook: schema changes
 
@@ -620,8 +627,8 @@ drop it in the same migration when needed.
 
 1. Ensure a Cloudflare API token with D1/KV/R2 create permissions.
 2. Create the queue once with
-   `npm exec wrangler -- queues create kcd-call-kent-transcription`.
-3. `npm run provision:production --workspace site-worker -- --force-ensure`
+   `bunx wrangler queues create kcd-call-kent-transcription`.
+3. `bun run --filter site-worker provision:production -- --force-ensure`
 4. Commit the stamped IDs back into `wrangler.jsonc` if new resources were created.
 5. Apply migrations, seed, deploy, upload secrets, publish artifacts.
 
@@ -640,7 +647,7 @@ curl -sX PUT \
   -d '{"read_replication":{"mode":"auto"}}'
 ```
 
-`npm run provision:production --workspace site-worker` calls
+`bun run --filter site-worker provision:production` calls
 `ensureReadReplication` idempotently when a privileged token is present; CI
 tokens without D1:Edit log a warning and continue.
 

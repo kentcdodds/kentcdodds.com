@@ -70,8 +70,8 @@ export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
 export const links: LinksFunction = () => youTubeEmbedLinks()
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 function getWatchUrl(videoId: string) {
 	return `https://www.youtube.com/watch?v=${videoId}&list=${betterWithKentPlaylistId}`

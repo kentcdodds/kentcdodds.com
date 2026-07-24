@@ -71,8 +71,8 @@ export default defineConfig({
 	outputDir: 'test-results/',
 	webServer: {
 		command: process.env.CI
-			? `npm run db:reset && cross-env PORT=${PORT} npm run dev`
-			: `cross-env PORT=${PORT} npm run dev`,
+			? `bun run db:reset && cross-env PORT=${PORT} bun run dev`
+			: `cross-env PORT=${PORT} bun run dev`,
 		port: Number(PORT),
 		// Default to a clean, deterministic server per run.
 		// Set `PW_REUSE_EXISTING_SERVER=true` to opt into reuse locally.

@@ -26,10 +26,7 @@ const stubAliases = {
 		'esbuild-node-resolve.ts',
 	),
 	'@mdx-js/esbuild': path.join(stubsDir, 'mdx-esbuild.ts'),
-	'mdx-bundler/client/index.js': path.join(
-		stubsDir,
-		'mdx-bundler-client.ts',
-	),
+	'mdx-bundler/client/index.js': path.join(stubsDir, 'mdx-bundler-client.ts'),
 	'mdx-bundler': path.join(stubsDir, 'mdx-bundler.ts'),
 	'reading-time': path.join(stubsDir, 'reading-time.ts'),
 }
@@ -49,7 +46,7 @@ async function ensureSiteBuild() {
 		await readFile(siteBuildPath)
 	} catch {
 		throw new Error(
-			'Site server build missing. Run `npm run build:site --workspace site-worker` first.',
+			'Site server build missing. Run `bun run --filter site-worker build:site` first.',
 		)
 	}
 }
@@ -145,10 +142,7 @@ async function patchAppWorkerWorkerdCompat(outfile) {
 }
 
 async function buildAppWorkerBundle() {
-	const bootstrapPath = path.resolve(
-		siteWorkerRoot,
-		'src/dynamic/bootstrap.ts',
-	)
+	const bootstrapPath = path.resolve(siteWorkerRoot, 'src/dynamic/bootstrap.ts')
 	const outfile = path.join(distDir, 'app-worker.js.txt')
 
 	await esbuild.build({

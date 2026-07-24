@@ -29,10 +29,7 @@ import { images } from '#app/images.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import {
-	getOrigin,
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
+import { getOrigin, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import {
 	DUMMY_PASSWORD_HASH,
 	verifyPassword,
@@ -62,7 +59,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		Vary: 'Cookie',
 	})
 	await loginSession.getHeaders(headers)
-	const domain = new URL(getOrigin({ origin: new URL(request.url).origin, path: '' })).host
+	const domain = new URL(
+		getOrigin({ origin: new URL(request.url).origin, path: '' }),
+	).host
 	const socialMetas = (
 		await import('#app/og/page-meta.server.ts')
 	).buildPageSocialMetasForRequest(request, {
@@ -88,8 +87,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData()

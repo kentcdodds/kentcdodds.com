@@ -142,7 +142,7 @@ stdout via `tee`.
   For live output, open **File Station** and **tail** the log file, or SSH with
   `tail -f` if you enable it later.
 - **Container Manager → Log** for a container that only exists during
-  `docker build` (for example the container running `RUN npm ci`) often shows
+  `dory build` (for example the container running `RUN bun install`) often shows
   **“No logs available”**. Build output still goes to **Docker’s build stream**,
   which is what you see in `youtube-indexer.log` when the task runs
   `start-youtube-indexer.sh`.
@@ -158,11 +158,11 @@ stdout via `tee`.
 During **`docker build`**, each Dockerfile step runs in a **temporary**
 container. Docker **does not** let you set a friendly `--name` for those; the UI
 shows random names like `adjective_scientist`. That container is **only** the
-build running something like `npm ci`, not the final indexer.
+build running something like `bun install`, not the final indexer.
 
 The **named** container `kcd-youtube-indexer` appears when the build **finishes**
 and the script runs **`docker run --name kcd-youtube-indexer`** for the Node
-indexer. If the build is still on step `RUN npm ci`, you will not see that
+indexer. If the build is still on step `RUN bun install`, you will not see that
 named container yet.
 
 ### Image column showing `-`

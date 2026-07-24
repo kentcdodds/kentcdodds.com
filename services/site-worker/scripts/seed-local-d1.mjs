@@ -56,7 +56,7 @@ function runWranglerExecute(sql, { local }) {
 		args.push('--remote')
 	}
 
-	const result = spawnSync('npm', ['exec', 'wrangler', '--', ...args], {
+	const result = spawnSync('bunx', ['wrangler', ...args], {
 		cwd: workerDir,
 		encoding: 'utf8',
 		env: process.env,

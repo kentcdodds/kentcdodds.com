@@ -96,12 +96,12 @@ function getWorkerUrl() {
 
 function compileMdxArtifacts(bundlePath: string) {
   const result = spawnSync(
-    "npm",
+    "bun",
     [
       "run",
-      "mdx:compile",
-      "--workspace",
+      "--filter",
       "kentcdodds.com",
+      "mdx:compile",
       "--",
       "--out",
       bundlePath,

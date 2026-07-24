@@ -13,8 +13,8 @@ import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/subscribe'
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
@@ -22,14 +22,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const socialMetas = (
 		await import('#app/og/page-meta.server.ts')
 	).buildPageSocialMetasForRequest(request, {
-			title: 'Subscribe to the KCD Mailing List',
-			description:
-				'Get weekly insights, ideas, and proven coding practices from the KCD Mailing List',
-			socialImage: {
-				kind: 'generic-social',
-				words: 'Subscribe to the KCD Mailing List',
-				featuredImage: images.snowboard.id,
-			},
+		title: 'Subscribe to the KCD Mailing List',
+		description:
+			'Get weekly insights, ideas, and proven coding practices from the KCD Mailing List',
+		socialImage: {
+			kind: 'generic-social',
+			words: 'Subscribe to the KCD Mailing List',
+			featuredImage: images.snowboard.id,
+		},
 	})
 
 	return json(

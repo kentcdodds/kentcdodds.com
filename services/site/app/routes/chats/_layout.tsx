@@ -20,11 +20,7 @@ import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
-import {
-	getImageBuilder,
-	getImgProps,
-	images,
-} from '#app/images.tsx'
+import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import {
@@ -81,8 +77,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? [{ title: 'Chats with Kent Seasons not found' }]
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? [{ title: 'Chats with Kent Seasons not found' }]
 
 function PodcastHome({ loaderData: data }: Route.ComponentProps) {
 	const [sortOrder, setSortOrder] = React.useState<'desc' | 'asc'>('asc')

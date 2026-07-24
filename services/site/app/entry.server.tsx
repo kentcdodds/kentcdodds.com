@@ -15,6 +15,7 @@ import {
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
+import { cspNonceContext } from './utils/router-context.ts'
 
 let entryServerInitialized = false
 
@@ -103,7 +104,7 @@ async function serveTheBots(...args: DocRequestArgs) {
 		reactRouterContext,
 		loadContext,
 	] = args
-	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
+	const nonce = loadContext.get(cspNonceContext)
 	const { controller, clearAbortTimeout } = createAbortTimeout()
 	let stream: Awaited<ReturnType<typeof renderToReadableStream>>
 	try {
@@ -134,7 +135,7 @@ async function serveBrowsers(...args: DocRequestArgs) {
 		reactRouterContext,
 		loadContext,
 	] = args
-	const nonce = loadContext.cspNonce ? String(loadContext.cspNonce) : ''
+	const nonce = loadContext.get(cspNonceContext)
 	let didError = false
 	const { controller, clearAbortTimeout } = createAbortTimeout()
 	let stream: Awaited<ReturnType<typeof renderToReadableStream>>

@@ -45,14 +45,14 @@ export function buildMdxPageSocialMetas(
 	].filter(typedBoolean)
 }
 
-export const mdxPageMeta: MetaFunction = ({ data }) => {
+export const mdxPageMeta: MetaFunction = ({ loaderData }) => {
 	if (
-		data != null &&
-		typeof data === 'object' &&
-		'socialMetas' in data &&
-		Array.isArray(data.socialMetas)
+		loaderData != null &&
+		typeof loaderData === 'object' &&
+		'socialMetas' in loaderData &&
+		Array.isArray(loaderData.socialMetas)
 	) {
-		return data.socialMetas
+		return loaderData.socialMetas
 	}
 
 	return [

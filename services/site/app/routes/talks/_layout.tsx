@@ -34,8 +34,8 @@ import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { useOptionalUser } from '#app/utils/use-root-data.ts'
 import { type Route } from './+types/_layout'
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const talksAndTags = await getTalksAndTags({ request })
@@ -56,12 +56,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 	})
 
-	return json({ ...talksAndTags, socialMetas }, {
-		headers: {
-			'Cache-Control': 'public, max-age=3600',
-			Vary: 'Cookie',
+	return json(
+		{ ...talksAndTags, socialMetas },
+		{
+			headers: {
+				'Cache-Control': 'public, max-age=3600',
+				Vary: 'Cookie',
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders

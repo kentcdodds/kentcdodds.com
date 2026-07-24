@@ -57,9 +57,7 @@ import {
 import { getClientSession } from '#app/utils/client.server.ts'
 import { db } from '#app/utils/db.server.ts'
 import { favoriteTable } from '#app/utils/db/schema.server.ts'
-import {
-	getEpisodeHomeworkCompletions,
-} from '#app/utils/user-data.server.ts'
+import { getEpisodeHomeworkCompletions } from '#app/utils/user-data.server.ts'
 import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { getUser } from '#app/utils/session.server.ts'
 import { getSeasons } from '#app/utils/simplecast.server.ts'
@@ -86,14 +84,14 @@ export const handle: KCDHandle = {
 	}),
 }
 
-export const meta: Route.MetaFunction = ({ data }) => {
-	if (!data?.episode) {
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+	if (!loaderData?.episode) {
 		return [{ title: 'Chats with Kent Episode not found' }]
 	}
-	const { mediaUrl, simpleCastId } = data.episode
+	const { mediaUrl, simpleCastId } = loaderData.episode
 	const playerUrl = `https://player.simplecast.com/${simpleCastId}`
 	return [
-		...(data.socialMetas ?? []),
+		...(loaderData.socialMetas ?? []),
 		{ 'twitter:card': 'player' },
 		{ 'twitter:player': playerUrl },
 		{ 'twitter:player:width': '436' },

@@ -1,4 +1,7 @@
+FROM oven/bun:1.3.14 AS bun
 FROM node:26-bookworm-slim
+
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	ca-certificates \
@@ -9,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY package.json package-lock.json .npmrc nx.json tsconfig.base.json ./
+COPY package.json bun.lock bunfig.toml nx.json tsconfig.base.json ./
 COPY services/site/package.json services/site/package.json
 COPY services/site/migrations services/site/migrations
 COPY services/oauth/package.json services/oauth/package.json
@@ -17,7 +20,7 @@ COPY services/call-kent-audio-worker/package.json services/call-kent-audio-worke
 COPY services/search-worker/package.json services/search-worker/package.json
 COPY services/search-shared/package.json services/search-shared/package.json
 
-RUN npm ci --workspace=kentcdodds.com --include-workspace-root
+RUN bun install --frozen-lockfile --filter kcd-workspace --filter kentcdodds.com
 
 COPY . .
 

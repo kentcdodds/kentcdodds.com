@@ -42,8 +42,9 @@ Worker vars / secrets:
 
 Wrangler migrations live in `migrations/`. Apply before relying on a fresh DB:
 
-- **Local (Miniflare)**: `npx wrangler d1 migrations apply kcd-search --local`
-- **Remote (production D1)**: `npx wrangler d1 migrations apply kcd-search --remote`
+- **Local (Miniflare)**: `bunx wrangler d1 migrations apply kcd-search --local`
+- **Remote (production D1)**:
+  `bunx wrangler d1 migrations apply kcd-search --remote`
 
 The Worker also runs `CREATE TABLE IF NOT EXISTS …` on demand. D1’s in-Worker
 `exec()` only runs the first line of a string — use `d1-sql.ts`’s `sql` tag for
@@ -51,7 +52,7 @@ readable multiline DDL that flattens to one line.
 
 ## Local development
 
-- Run `npm run dev --workspace search-worker`
+- Run `bun run --filter search-worker dev`
 - The local Worker listens on `http://127.0.0.1:8787`
 - With `MOCKS=true`, set `SEARCH_WORKER_URL=http://127.0.0.1:8787` (host must
   **not** contain `mock`) and align `SEARCH_WORKER_TOKEN` with `env.local` in

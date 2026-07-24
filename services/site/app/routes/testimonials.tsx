@@ -16,22 +16,21 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H2 } from '#app/components/typography.tsx'
 import { getImgProps, images } from '#app/images.tsx'
 import { externalLinks } from '#app/external-links.tsx'
-import {
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
+import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/testimonials'
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const timings = {}
 	const testimonials = await getTestimonials({ request, timings })
-	const testimonialCount = testimonials.length > 0 ? `${testimonials.length} ` : ''
+	const testimonialCount =
+		testimonials.length > 0 ? `${testimonials.length} ` : ''
 	const title = `${testimonialCount}testimonials about Kent C. Dodds`
 	const socialMetas = (
 		await import('#app/og/page-meta.server.ts')

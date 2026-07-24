@@ -58,15 +58,15 @@ export const handle: KCDHandle & { id: string } = {
 	id: 'root',
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-	const requestInfo = data?.requestInfo
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
+	const requestInfo = loaderData?.requestInfo
 	return [
 		{ viewport: 'width=device-width,initial-scale=1,viewport-fit=cover' },
 		{
 			'theme-color':
 				requestInfo?.userPrefs.theme === 'dark' ? '#1F2028' : '#FFF',
 		},
-		...(data?.rootSocialMetas ?? []),
+		...(loaderData?.rootSocialMetas ?? []),
 	]
 }
 
@@ -109,10 +109,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const requestPath = new URL(request.url).pathname
 	const session = await getSession(request)
 	const [user, clientSession, loginInfoSession] = await Promise.all([
-			session.getUser({ timings }),
-			getClientSession(request, session.getUser({ timings })),
-			getLoginInfoSession(request),
-		])
+		session.getUser({ timings }),
+		getClientSession(request, session.getUser({ timings })),
+		getLoginInfoSession(request),
+	])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
 	const randomFooterImageKey = randomFooterImageKeys[

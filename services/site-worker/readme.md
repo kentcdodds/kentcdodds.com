@@ -18,7 +18,7 @@ Cloudflare parent worker for kentcdodds.com. See
 
 ## Dist build (`dist/*.txt`)
 
-`npm run build:worker --workspace site-worker` produces:
+`bun run --filter site-worker build:worker` produces:
 
 - `dist/app-worker.js.txt` — esbuild bundle of the dynamic app bootstrap
 - `dist/react-shim.js.txt` / `dist/react-jsx-runtime-shim.js.txt` — delegate to
@@ -37,9 +37,9 @@ loopback stub; `services/site/app/utils/db.server.ts` adapts it through
 ## Local development
 
 ```sh
-npm run build:worker --workspace site-worker
-npm run test:local-e2e --workspace site-worker   # migrations, seed, publish /tmp/bundle.json
-npm run dev --workspace site-worker                # http://127.0.0.1:8792
+bun run --filter site-worker build:worker
+bun run --filter site-worker test:local-e2e   # migrations, seed, publish /tmp/bundle.json
+bun run --filter site-worker dev              # http://127.0.0.1:8792
 ```
 
 `test:local-e2e` applies D1 migrations, seeds the admin user, publishes the MDX
@@ -53,12 +53,12 @@ deployed production worker.
 ## Production deploy
 
 ```sh
-npm run provision:production --workspace site-worker
-WRANGLER_CONFIG=generated-wrangler.jsonc npm run d1:migrations:apply:production --workspace site-worker
+bun run --filter site-worker provision:production
+WRANGLER_CONFIG=generated-wrangler.jsonc bun run --filter site-worker d1:migrations:apply:production
 node services/site-worker/scripts/generate-worker-secrets.mjs --target=production services/site-worker/.wrangler/production-secrets.json
-npm exec wrangler -- secret bulk services/site-worker/.wrangler/production-secrets.json --config services/site-worker/generated-wrangler.jsonc
-npm run publish:artifacts --workspace site-worker -- /path/to/bundle.json --via-endpoint https://kentcdodds.com/resources/mdx-artifacts
-BUILD_SHA=$(git rev-parse HEAD) npm run deploy --workspace site-worker
+bunx wrangler secret bulk services/site-worker/.wrangler/production-secrets.json --config services/site-worker/generated-wrangler.jsonc
+bun run --filter site-worker publish:artifacts -- /path/to/bundle.json --via-endpoint https://kentcdodds.com/resources/mdx-artifacts
+BUILD_SHA=$(git rev-parse HEAD) bun run --filter site-worker deploy
 ```
 
 CI runs the production path from `.github/workflows/deployment.yml` and

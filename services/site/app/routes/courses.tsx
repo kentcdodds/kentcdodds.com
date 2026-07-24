@@ -13,9 +13,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { H2, H6, Paragraph } from '#app/components/typography.tsx'
 import { flagshipProducts } from '#app/flagship-products.ts'
 import { getImgProps, images } from '#app/images.tsx'
-import {
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
+import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { getTestimonials } from '#app/utils/testimonials.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { type Route } from './+types/courses'
@@ -52,8 +50,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 function CoursesHome({ loaderData: data }: Route.ComponentProps) {
 	const featuredProduct = flagshipProducts[0]!

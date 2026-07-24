@@ -1,9 +1,6 @@
 // this is a placeholder to make /routes/talks/_layout catch nested paths
 
-import {
-	data as json,
-	type MetaFunction,
-} from 'react-router'
+import { data as json, type MetaFunction } from 'react-router'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { type Route } from './+types/$slug'
 
@@ -29,14 +26,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	return json({ socialMetas })
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
 	if (
-		data != null &&
-		typeof data === 'object' &&
-		'socialMetas' in data &&
-		Array.isArray(data.socialMetas)
+		loaderData != null &&
+		typeof loaderData === 'object' &&
+		'socialMetas' in loaderData &&
+		Array.isArray(loaderData.socialMetas)
 	) {
-		return data.socialMetas
+		return loaderData.socialMetas
 	}
 	return []
 }

@@ -180,14 +180,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
 	if (
-		data != null &&
-		typeof data === 'object' &&
-		'socialMetas' in data &&
-		Array.isArray(data.socialMetas)
+		loaderData != null &&
+		typeof loaderData === 'object' &&
+		'socialMetas' in loaderData &&
+		Array.isArray(loaderData.socialMetas)
 	) {
-		return data.socialMetas
+		return loaderData.socialMetas
 	}
 	return []
 }

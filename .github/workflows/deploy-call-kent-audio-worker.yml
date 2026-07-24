@@ -22,24 +22,27 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 26
-          cache: npm
-          cache-dependency-path: package-lock.json
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
 
       - name: 📥 Install audio worker deps
-        run: npm ci --workspace=call-kent-audio-worker --include-workspace-root
+        run: bun install --frozen-lockfile
 
       - name: 🔬 Lint audio worker
-        run: npm run lint --workspace call-kent-audio-worker
+        run: bun run --filter call-kent-audio-worker lint
 
       - name: ʦ Typecheck audio worker
-        run: npm run typecheck --workspace call-kent-audio-worker
+        run: bun run --filter call-kent-audio-worker typecheck
 
       - name: 🧪 Test audio worker
-        run: npm run test --workspace call-kent-audio-worker
+        run: bun run --filter call-kent-audio-worker test
 
       - name: ☁️ Deploy via Wrangler
         working-directory: services/call-kent-audio-worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npm exec wrangler -- deploy
+        run: bunx wrangler deploy

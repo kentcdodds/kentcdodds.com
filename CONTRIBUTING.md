@@ -61,14 +61,16 @@ instructions:
 ### System Requirements
 
 - [Node.js](https://nodejs.org/) 26
+- [Bun](https://bun.com/) 1.3.14
 - [git](https://git-scm.com/) >= 2.7.0
-- [Docker](https://www.docker.com/) (optional; needed for Call Kent sandbox work)
+- Dory (optional; the supported container-runtime entry point for Call Kent
+  sandbox work)
 
 ### Setup steps
 
 1.  Fork and clone the repo
 2.  Copy `services/site/.env.example` into `services/site/.env`
-3.  Run `npm run setup -s` to install dependencies and run validation
+3.  Run `bun run setup` to install dependencies and run validation
 4.  Create a branch for your PR with `git checkout -b pr/your-branch-name`
 
 > Tip: Keep your `main` branch pointing at the original repository and make pull
@@ -98,26 +100,26 @@ cd ./kentcdodds.com
 cp services/site/.env.example services/site/.env
 
 # Install deps
-npm install
+bun install
 
 # setup local D1 (migrations + seed)
-npm run db:reset --workspace kentcdodds.com
+bun run --filter kentcdodds.com db:reset
 
 # run build, typecheck, linting
-npm run validate
+bun run validate
 
 # Install playwright browsers
-npm run test:e2e:install
+bun run test:e2e:install
 
 # run e2e tests
-npm run test:e2e:run
+bun run test:e2e:run
 ```
 
 If that all worked without trouble, you should be able to start development
 with:
 
 ```sh
-npm run dev
+bun run dev
 ```
 
 And open up `http://localhost:3000` and rock!
@@ -146,13 +148,13 @@ with Playwright.
 
 ```sh
 # run the unit and component tests with vitest via:
-npm run test
+bun run test
 
 # run the Playwright tests in dev mode:
-npm run test:e2e:dev
+bun run test:e2e:dev
 
 # run the Playwright tests in headless mode:
-npm run test:e2e:run
+bun run test:e2e:run
 ```
 
 ## Running static tests (Formatting/Linting/Typing)
@@ -164,34 +166,38 @@ git hooks from the repository root:
   typechecking, and builds.
 - `pre-push` runs the workspace test suite.
 
-After `npm install`, Husky installs the hooks automatically via the root
+After `bun install`, Husky installs the hooks automatically via the root
 `prepare` script. CI workspace installs include the workspace root so the same
 plain `prepare` command works there too.
 You can run the same checks manually if you want:
 
 ```sh
-npm run format
-npm run format:staged
-npm run lint
-npm run lint:all
-npm run typecheck
-npm run typecheck:all
-npm run build
-npm run build:all
-npm run precommit:verify
-npm run test
-npm run test:all
-npm run prepush:verify
+bun run format
+bun run format:staged
+bun run lint
+bun run lint:all
+bun run typecheck
+bun run typecheck:all
+bun run build
+bun run build:all
+bun run precommit:verify
+bun run test
+bun run test:all
+bun run prepush:verify
 ```
 
 These are all configured in the project to hopefully work with whatever editor
 plugins you have so it should work as you working as well.
 
-This repo uses npm workspaces, so install dependencies from the repository root.
-To run a script for a specific workspace package, use `npm run <script>
---workspace <package-name>`.
-The main site now lives in `services/site`, and the root `npm run dev`,
-`npm run build`, `npm run test`, and related commands forward there.
+This repo uses Bun workspaces, so install dependencies from the repository root.
+To run a script for a specific workspace package, use
+`bun run --filter <package-name> <script>`.
+The main site now lives in `services/site`, and the root `bun run dev`,
+`bun run build`, `bun run test`, and related commands forward there.
+
+Bun is the package manager and task runner. Node 26 remains required for
+Node-specific scripts; Vite remains React Router's framework compiler and the
+Cloudflare Vite plugin keeps local development in workerd.
 
 ## Styles
 
@@ -214,19 +220,20 @@ source of truth.
 Create a migration:
 
 ```sh
-npm run db:migration:new --workspace kentcdodds.com -- add_my_column
+bun run --filter kentcdodds.com db:migration:new -- add_my_column
 ```
 
 Edit the generated SQL, then reset local dev D1 + seed:
 
 ```sh
-npm run db:reset --workspace kentcdodds.com
+bun run --filter kentcdodds.com db:reset
 ```
 
 This applies migrations to the local Miniflare D1 database and runs the seed
 script (admin user `me@kentcdodds.com` / `iliketwix`).
 
-Remote D1 migrations: `npm run d1:migrations:apply:production --workspace site-worker`
+Remote D1 migrations:
+`bun run --filter site-worker d1:migrations:apply:production`
 (after widen steps land on `main`). See
 `docs/agents/cloudflare-worker-architecture.md` for the full command table.
 
@@ -239,10 +246,10 @@ Production runs on the Cloudflare Worker `kentcdodds-com` (see
 run the app in workerd via `@cloudflare/vite-plugin` (single-worker HMR model).
 
 Schema changes: widen-then-narrow migrations; apply remote D1 migrations via
-`npm run d1:migrations:apply:production --workspace site-worker` after merging
+`bun run --filter site-worker d1:migrations:apply:production` after merging
 widen steps.
 
-Local D1 reset + seed: `npm run db:reset --workspace kentcdodds.com`.
+Local D1 reset + seed: `bun run --filter kentcdodds.com db:reset`.
 
 ## Help needed
 

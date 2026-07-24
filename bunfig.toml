@@ -1,0 +1,3 @@
+[install]
+auto = "disable"
+linker = "hoisted"

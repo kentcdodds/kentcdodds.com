@@ -103,8 +103,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 	}
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 export default function ContactRoute() {
 	const contactFetcher = useFetcher<typeof action>()

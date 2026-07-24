@@ -22,10 +22,8 @@ function run(command, args, options = {}) {
 }
 
 function main() {
-	run('npm', [
-		'exec',
+	run('bunx', [
 		'wrangler',
-		'--',
 		'd1',
 		'migrations',
 		'apply',

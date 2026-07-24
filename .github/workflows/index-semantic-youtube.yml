@@ -26,11 +26,14 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 26
-          cache: npm
-          cache-dependency-path: package-lock.json
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
 
       - name: 📥 Install site deps
-        run: npm ci --workspace=kentcdodds.com --include-workspace-root
+        run: bun install --frozen-lockfile
 
       - name: 🔎 Index youtube playlist
         run: |

@@ -3,9 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "bun@1.3.14",
   "engines": {
     "node": "26",
-    "npm": ">=10"
+    "bun": "1.3.14"
   },
   "imports": {
     "#app/*": "./services/site/app/*",
@@ -16,29 +17,29 @@
     "services/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace kentcdodds.com",
+    "dev": "bun run --filter kentcdodds.com dev",
     "prepare": "husky",
-    "build": "npm run build --workspace kentcdodds.com",
+    "build": "bun run --filter kentcdodds.com build",
     "build:all": "nx run-many -t build",
-    "test": "npm run test --workspace kentcdodds.com",
+    "test": "bun run --filter kentcdodds.com test",
     "test:all": "nx run-many -t test",
-    "test:backend": "npm run test:backend --workspace kentcdodds.com",
-    "test:backend:watch": "npm run test:backend:watch --workspace kentcdodds.com",
-    "test:browser": "npm run test:browser --workspace kentcdodds.com",
-    "test:browser:watch": "npm run test:browser:watch --workspace kentcdodds.com",
-    "test:e2e:dev": "npm run test:e2e:dev --workspace kentcdodds.com",
-    "test:e2e:run": "npm run test:e2e:run --workspace kentcdodds.com",
-    "test:e2e:install": "npm run test:e2e:install --workspace kentcdodds.com",
-    "lint": "npm run lint --workspace kentcdodds.com",
+    "test:backend": "bun run --filter kentcdodds.com test:backend",
+    "test:backend:watch": "bun run --filter kentcdodds.com test:backend:watch",
+    "test:browser": "bun run --filter kentcdodds.com test:browser",
+    "test:browser:watch": "bun run --filter kentcdodds.com test:browser:watch",
+    "test:e2e:dev": "bun run --filter kentcdodds.com test:e2e:dev",
+    "test:e2e:run": "bun run --filter kentcdodds.com test:e2e:run",
+    "test:e2e:install": "bun run --filter kentcdodds.com test:e2e:install",
+    "lint": "bun run --filter kentcdodds.com lint",
     "lint:all": "nx run-many -t lint",
-    "format": "npm run format --workspace kentcdodds.com",
+    "format": "bun run --filter kentcdodds.com format",
     "format:staged": "lint-staged",
-    "typecheck": "npm run typecheck --workspace kentcdodds.com",
+    "typecheck": "bun run --filter kentcdodds.com typecheck",
     "typecheck:all": "nx run-many -t typecheck",
-    "precommit:verify": "npm run format:staged && npm run lint:all && npm run typecheck:all && npm run build:all",
-    "prepush:verify": "npm run test:all",
-    "validate": "npm run validate --workspace kentcdodds.com",
-    "setup": "npm install && npm run setup --workspace kentcdodds.com",
+    "precommit:verify": "bun run format:staged && bun run lint:all && bun run typecheck:all && bun run build:all",
+    "prepush:verify": "bun run test:all",
+    "validate": "bun run --filter kentcdodds.com validate",
+    "setup": "bun install && bun run --filter kentcdodds.com setup",
     "nx:graph": "nx graph"
   },
   "devDependencies": {
@@ -49,19 +50,14 @@
     "nx": "^22.5.4",
     "prettier": "^3.8.1"
   },
-  "allowScripts": {
-    "esbuild@0.18.20": true,
-    "esbuild@0.27.3": true,
-    "esbuild@0.28.1": true,
-    "esbuild@0.27.7": true,
-    "esbuild@0.27.4": true,
-    "@sentry/cli@2.58.5": true,
-    "bcrypt@6.0.0": true,
-    "fsevents@2.3.3": true,
-    "fsevents@2.3.2": true,
-    "msw@2.12.13": true,
-    "nx@22.6.0": true,
-    "sharp@0.34.5": true,
-    "workerd@1.20260701.1": true
-  }
+  "trustedDependencies": [
+    "@sentry/cli",
+    "bcrypt",
+    "esbuild",
+    "fsevents",
+    "msw",
+    "nx",
+    "sharp",
+    "workerd"
+  ]
 }

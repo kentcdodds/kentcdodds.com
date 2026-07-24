@@ -3,7 +3,7 @@ import * as sharedReact from 'react'
 import * as sharedJsxRuntime from 'react/jsx-runtime'
 import {
 	createRequestHandler,
-	type AppLoadContext,
+	RouterContextProvider,
 	type ServerBuild,
 } from 'react-router'
 import {
@@ -25,6 +25,7 @@ import {
 import { setRequestWaitUntil } from './background-task.server.ts'
 import { runWithRequestContext } from './request-context.server.ts'
 import { getEnv } from './env.server.ts'
+import { cspNonceContext } from './router-context.ts'
 import { type RuntimeBindingSource } from './runtime-bindings.server.ts'
 import { getLegacyGenericSocialImageUrl } from '../og/meta.server.ts'
 import {
@@ -57,7 +58,7 @@ export type WorkerEnv = RuntimeBindingSource & Record<string, unknown>
 
 type SiteRequestHandler = (
 	request: Request,
-	loadContext?: AppLoadContext,
+	loadContext?: RouterContextProvider,
 ) => Promise<Response>
 
 type MarkdownNegotiation = typeof import('./markdown-negotiation.server.ts')
@@ -252,15 +253,13 @@ export function createWorkerFetchHandler(options: WorkerFetchHandlerOptions) {
 						const build = await buildSource()
 						return {
 							...build,
-							allowedActionOrigins:
-								getWorkerAllowedActionOrigins(request),
+							allowedActionOrigins: getWorkerAllowedActionOrigins(request),
 						}
 					}, options.requestHandlerMode)
 				: createRequestHandler(
 						{
 							...buildSource,
-							allowedActionOrigins:
-								getWorkerAllowedActionOrigins(request),
+							allowedActionOrigins: getWorkerAllowedActionOrigins(request),
 						},
 						options.requestHandlerMode,
 					)
@@ -284,11 +283,7 @@ export function createWorkerFetchHandler(options: WorkerFetchHandlerOptions) {
 		const proto = request.headers.get('X-Forwarded-Proto') ?? 'https'
 
 		if (options.handleEarlyRequest) {
-			const earlyResponse = await options.handleEarlyRequest(
-				request,
-				env,
-				ctx,
-			)
+			const earlyResponse = await options.handleEarlyRequest(request, env, ctx)
 			if (earlyResponse) {
 				return { response: earlyResponse, rateLimit: null }
 			}
@@ -454,10 +449,9 @@ export function createWorkerFetchHandler(options: WorkerFetchHandlerOptions) {
 				const handlerStartedAt = performance.now()
 				const handler = await getSiteRequestHandler(request)
 				const handlerReadyMs = performance.now() - handlerStartedAt
-				let response = await handler(request, {
-					cloudflare: { env, ctx },
-					cspNonce,
-				} as AppLoadContext)
+				const routerContext = new RouterContextProvider()
+				routerContext.set(cspNonceContext, cspNonce)
+				let response = await handler(request, routerContext)
 				const handlerServeMs =
 					performance.now() - handlerStartedAt - handlerReadyMs
 
@@ -475,9 +469,7 @@ export function createWorkerFetchHandler(options: WorkerFetchHandlerOptions) {
 					headers,
 					request,
 					cspNonce,
-					...(options.cspMode === undefined
-						? {}
-						: { mode: options.cspMode }),
+					...(options.cspMode === undefined ? {} : { mode: options.cspMode }),
 				})
 				// Reuse the pre-router rate-limit result so a request only consumes one
 				// quota unit (checkRateLimit increments the window on every call).

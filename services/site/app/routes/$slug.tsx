@@ -17,7 +17,11 @@ import { pathedRoutes } from '#app/other-routes.server.ts'
 import { type KCDHandle } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { getMdxPage, getMdxPagesInDirectory } from '#app/utils/mdx.server'
-import { getDomainUrl, requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
+import {
+	getDomainUrl,
+	requireValidSlug,
+	reuseUsefulLoaderHeaders,
+} from '#app/utils/misc.ts'
 import {
 	getBannerAltProp,
 	getBannerTitleProp,
@@ -122,17 +126,17 @@ export async function action({ params, request }: Route.ActionArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data, error }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData, error }) => {
 	if (isRouteErrorResponse(error) && error.status === 404) {
 		return [{ title: 'Not found' }]
 	}
 	if (
-		data != null &&
-		typeof data === 'object' &&
-		'socialMetas' in data &&
-		Array.isArray(data.socialMetas)
+		loaderData != null &&
+		typeof loaderData === 'object' &&
+		'socialMetas' in loaderData &&
+		Array.isArray(loaderData.socialMetas)
 	) {
-		return data.socialMetas
+		return loaderData.socialMetas
 	}
 	return []
 }

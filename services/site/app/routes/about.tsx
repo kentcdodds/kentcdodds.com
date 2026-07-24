@@ -28,16 +28,11 @@ import { BlogSection } from '#app/components/sections/blog-section.tsx'
 import { HeaderSection } from '#app/components/sections/header-section.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { H2, H3, H6, Paragraph } from '#app/components/typography.tsx'
-import {
-	getImgProps,
-	images,
-} from '#app/images.tsx'
+import { getImgProps, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
-import {
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
+import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import { getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -78,8 +73,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 export const links: LinksFunction = () => {
 	return youTubeEmbedLinks()

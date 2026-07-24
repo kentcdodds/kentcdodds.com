@@ -42,11 +42,14 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: package-lock.json
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
 
       - name: 📥 Install site deps
-        run: npm ci --workspace=kentcdodds.com --include-workspace-root
+        run: bun install --frozen-lockfile
 
       - name: 🏄 Copy test env vars
         run: cp services/site/.env.example services/site/.env
@@ -54,7 +57,7 @@ jobs:
       - name: 🗄️ Migrate and seed local D1
         # The JSX-page indexer boots the workerd dev stack, which reads from
         # the local Miniflare D1 database.
-        run: npm run db:reset --workspace kentcdodds.com
+        run: bun run --filter kentcdodds.com db:reset
 
       - name: 🔎 Index changed content
         run: |

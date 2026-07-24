@@ -26,11 +26,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { Tag } from '#app/components/tag.tsx'
 import { TeamStats } from '#app/components/team-stats.tsx'
 import { H2, H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
-import {
-	getImageBuilder,
-	getImgProps,
-	images,
-} from '#app/images.tsx'
+import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type KCDHandle, type Team } from '#app/types.ts'
@@ -247,8 +243,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 // should be divisible by 3 and 2 (large screen, and medium screen).
 const PAGE_SIZE = 12

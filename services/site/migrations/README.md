@@ -16,13 +16,13 @@ migration and can break deploys.
 ## Creating a migration
 
 ```sh
-npm run db:migration:new --workspace kentcdodds.com -- add_my_column
+bun run --filter kentcdodds.com db:migration:new -- add_my_column
 ```
 
 Edit the generated `.sql` file, then reset local dev state:
 
 ```sh
-npm run db:reset --workspace kentcdodds.com
+bun run --filter kentcdodds.com db:reset
 ```
 
 CI applies migrations via `wrangler d1 migrations apply` (see

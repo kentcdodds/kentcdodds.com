@@ -1,6 +1,6 @@
 # Project context
 
-This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v7 app
+This is Kent C. Dodds' personal website (kentcdodds.com) — a React Router v8 app
 running on Cloudflare Workers in production, with a workerd-native local dev
 stack (`@cloudflare/vite-plugin` + Miniflare D1/KV). SQL migrations live in
 `services/site/migrations/`; runtime DB access uses `@remix-run/data-table`.
@@ -9,6 +9,7 @@ stack (`@cloudflare/vite-plugin` + Miniflare D1/KV). SQL migrations live in
 
 - Node.js 26 is required (`engines` in `package.json`).
   - Install via `nvm install 26 && nvm alias default 26`.
+- Bun 1.3.14 is the package manager and task runner.
 
 ## Key commands
 
@@ -17,21 +18,21 @@ reference:
 
 | Task            | Command                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
-| Dev server      | `npm run dev` (workerd + Vite HMR on port 3000; `MOCKS=true` by default)          |
-| Format (staged) | `npm run format:staged`                                                           |
-| Lint            | `npm run lint`                                                                    |
-| Lint (all)      | `npm run lint:all`                                                                |
-| Typecheck       | `npm run typecheck`                                                               |
-| Typecheck (all) | `npm run typecheck:all`                                                           |
-| Build (all)     | `npm run build:all`                                                               |
-| Unit tests      | `npm run test` (runs backend + browser-mode tests)                                |
-| Tests (all)     | `npm run test:all`                                                                |
-| Pre-commit gate | `npm run precommit:verify`                                                        |
-| Pre-push gate   | `npm run prepush:verify`                                                          |
-| Backend tests   | `npm run test:backend`                                                            |
-| Browser tests   | `npm run test:browser` (requires Playwright browsers: `npm run test:e2e:install`) |
-| E2E tests       | `npm run test:e2e:dev` (requires Playwright browsers: `npm run test:e2e:install`) |
-| DB reset + seed | `npm run db:reset --workspace kentcdodds.com` (local Miniflare D1)                |
+| Dev server      | `bun run dev` (workerd + Vite HMR on port 3000; `MOCKS=true` by default)          |
+| Format (staged) | `bun run format:staged`                                                           |
+| Lint            | `bun run lint`                                                                    |
+| Lint (all)      | `bun run lint:all`                                                                |
+| Typecheck       | `bun run typecheck`                                                               |
+| Typecheck (all) | `bun run typecheck:all`                                                           |
+| Build (all)     | `bun run build:all`                                                               |
+| Unit tests      | `bun run test` (runs backend + browser-mode tests)                                |
+| Tests (all)     | `bun run test:all`                                                                |
+| Pre-commit gate | `bun run precommit:verify`                                                        |
+| Pre-push gate   | `bun run prepush:verify`                                                          |
+| Backend tests   | `bun run test:backend`                                                            |
+| Browser tests   | `bun run test:browser` (requires Playwright browsers: `bun run test:e2e:install`) |
+| E2E tests       | `bun run test:e2e:dev` (requires Playwright browsers: `bun run test:e2e:install`) |
+| DB reset + seed | `bun run --filter kentcdodds.com db:reset` (local Miniflare D1)                   |
 
 ## Non-obvious caveats
 
@@ -42,19 +43,24 @@ reference:
   dev-watcher sidecar (`POST /__dev/capture-email` on port 3099) and logged to
   the dev worker console. No real API keys are needed for local development;
   `services/site/.env.example` values are sufficient.
-- This repo uses npm workspaces. Install dependencies from the repository root,
-  and run worker/package scripts with `npm run <script> --workspace <name>`.
-- `npm install` runs `prepare`, which installs Husky hooks. Pre-commit formats
+- This repo uses Bun workspaces. Install dependencies from the repository root,
+  and run package scripts with `bun run --filter <name> <script>`.
+- `bun install` runs `prepare`, which installs Husky hooks. Pre-commit formats
   staged files with `lint-staged` and then runs workspace lint, typecheck, and
   build checks. Pre-push runs workspace tests.
-- CI workflows that install a single workspace use `npm ci --include-workspace-root`
-  so the root Husky dependency is still available during `prepare`.
+- CI uses `bun install --frozen-lockfile`; `bun.lock` is the only dependency
+  lockfile.
 - Cloudflare worker deploy workflows should use the workspace-installed
-  Wrangler CLI (`npm exec wrangler -- ...`) instead of relying on
+  Wrangler CLI (`bunx wrangler ...`) instead of relying on
   `cloudflare/wrangler-action` or a runner-preinstalled Wrangler release, so CI
   deploys stay aligned with the repo lockfile.
-- The main site lives in `services/site`. Root `npm run dev`, `npm run build`,
-  `npm run test`, and similar commands forward to that workspace.
+- The main site lives in `services/site`. Root `bun run dev`, `bun run build`,
+  `bun run test`, and similar commands forward to that workspace.
+- Bun does not replace Vite here. React Router Framework Mode and
+  `@cloudflare/vite-plugin` require Vite's Environment API to compile route
+  modules and run the server graph in workerd. Bun owns installs/task
+  orchestration; Node 26 remains for Node-only scripts; production remains
+  workerd.
 - Search worker relevance thresholds (`M`, `R`, `noCloseMatches`): see
   [`search-relevance.md`](./search-relevance.md).
 - Playwright already launches Chromium with fake media permissions/device input
@@ -70,17 +76,17 @@ reference:
   Local dev and e2e use workerd via `@cloudflare/vite-plugin`. Architecture,
   deploy, D1 migrations, and sharp edges:
   [`cloudflare-worker-architecture.md`](./cloudflare-worker-architecture.md).
-  MDX artifact compiler (`npm run mdx:compile --workspace kentcdodds.com`)
+  MDX artifact compiler (`bun run --filter kentcdodds.com mdx:compile`)
   requires the app server module graph to stay importable by plain Node (no
   `.tsx` in the chain). Production workerd forbids module-scope I/O/timers/random
   (keep module init lazy — `wrangler dev` is lenient and won't catch this).
 - If Playwright E2E tests fail with D1 "table does not exist" errors, run
-  `npm run db:reset --workspace kentcdodds.com` to apply migrations and seed
+  `bun run --filter kentcdodds.com db:reset` to apply migrations and seed
   data against the local Miniflare D1 database.
 - Production schema changes must follow widen-then-narrow rollouts:
   deploy backward-compatible "widen" changes first, then ship narrowing
   constraints/removals in a follow-up deploy. Apply D1 migrations with
-  `npm run d1:migrations:apply:production --workspace site-worker` (remote).
+  `bun run --filter site-worker d1:migrations:apply:production` (remote).
 - When shipping a widen migration, create a linked follow-up issue for the
   narrow step before merging so the cleanup pass does not get forgotten.
 - Cache uses `SITE_CACHE_KV` in dev (Miniflare) and `CACHE_RPC` in production.
@@ -94,17 +100,17 @@ reference:
   `blogList`; syndication routes consume that list directly.
   The MDX dev-watcher sidecar (`other/mdx-artifacts/dev-watcher.ts`) compiles
   content to `node_modules/.cache/mdx-dev/` and triggers Vite full-reload on change.
-- `npm run dev` runs concurrently: MDX dev-watcher sidecar + `react-router dev`
+- `bun run dev` runs concurrently: MDX dev-watcher sidecar + `react-router dev`
   (Vite + `@cloudflare/vite-plugin`). Do not wrap in an outer `node --watch`.
   React Router dev rewrites `.react-router/types` on startup, which can trigger
   an infinite restart loop in headless/CI environments.
-- Playwright caveat: `services/site/playwright.config.ts` runs `npm run db:reset`
+- Playwright caveat: `services/site/playwright.config.ts` runs `bun run db:reset`
   before e2e in CI so tests start from a migrated + seeded local D1 database.
 - Oxlint config caveat: prefer package-export extends
   (`"@epic-web/config/oxlint"`) in `.oxlintrc.json`. In this repo, path-based
   extends into `node_modules` can fail to inherit the shared env/rules.
 - Semantic search caveat: the JSX-page indexer
-  (`other/semantic-search/jsx-page-content.ts`) boots `npm run dev` and waits for
+  (`other/semantic-search/jsx-page-content.ts`) boots `bun run dev` and waits for
   `/sitemap.xml`. Vite binds to `localhost`, which resolves to IPv6 (`::1`) or
   IPv4 (`127.0.0.1`) depending on the runner, so the readiness probe checks both
   loopback families (`resolveReachableSitemapOrigin`) and uses whichever the dev
@@ -153,7 +159,7 @@ The seed script (`services/site/scripts/seed-local-d1.mjs`) creates an admin
 user against the local Miniflare D1 database: `me@kentcdodds.com` / `iliketwix`
 (role ADMIN, Blue Team).
 
-After `npm run db:reset --workspace kentcdodds.com`, verify the seed ran.
+After `bun run --filter kentcdodds.com db:reset`, verify the seed ran.
 Unit tests apply committed SQL migrations via `app/utils/db/test-helpers.server.ts`.
 
 ## Cloud / headless manual testing
@@ -173,10 +179,10 @@ Unit tests apply committed SQL migrations via `app/utils/db/test-helpers.server.
   `PATH="$(dirname "$(nvm which 26)"):$PATH"` when testing.
 - The first request after starting the dev server may compile all MDX blog posts
   via the sidecar watcher and can take ~30 s; subsequent loads are fast.
-- Playwright browsers (needed for `npm run test:browser` and `test:e2e:*`) are
+- Playwright browsers (needed for `bun run test:browser` and `test:e2e:*`) are
   pre-installed in the VM snapshot under `~/.cache/ms-playwright`, so you should
-  not normally need to reinstall them. On Node 26, `npm run test:e2e:install`
-  (i.e. `npx playwright install`) hangs during archive extraction (the download
+  not normally need to reinstall them. On Node 26, `bun run test:e2e:install`
+  (i.e. `bunx playwright install`) can hang during archive extraction (the download
   reaches 100% but never finishes unpacking). If a browser is missing or its
   revision changed, install it manually instead: `curl` the build zips from
   `https://cdn.playwright.dev/builds/...` and unzip them into the matching
@@ -185,9 +191,9 @@ Unit tests apply committed SQL migrations via `app/utils/db/test-helpers.server.
   Both `chrome-linux64` (chromium) and `chrome-headless-shell-linux64`
   (chromium-headless-shell) come from the `builds/cft/<version>/linux64/` path;
   ffmpeg comes from `builds/ffmpeg/<rev>/ffmpeg-linux.zip`.
-- Run the Playwright e2e suite with `npm run test:e2e:run` (CI mode, its own
+- Run the Playwright e2e suite with `bun run test:e2e:run` (CI mode, its own
   server on port 8811). It fails to start if a dev server is already bound to
-  port 3000/3099 (the MDX sidecar), so stop `npm run dev` first, or set
+  port 3000/3099 (the MDX sidecar), so stop `bun run dev` first, or set
   `PW_REUSE_EXISTING_SERVER=true` to reuse a running dev server.
 - In cloud VMs, Chrome may block camera/microphone access by default. Visiting
   `/calls/record/new` can hit the route ErrorBoundary unless `localhost` is

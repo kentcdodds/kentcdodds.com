@@ -33,7 +33,7 @@ test('blog meta returns loader social metas when available', () => {
 	]
 
 	const metas = meta({
-		data: { socialMetas },
+		loaderData: { socialMetas },
 		location: {
 			pathname: '/blog',
 			search: '',
@@ -50,7 +50,7 @@ test('blog meta returns loader social metas when available', () => {
 
 test('blog meta returns empty array when loader data is unavailable', () => {
 	const metas = meta({
-		data: undefined,
+		loaderData: undefined,
 		location: {
 			pathname: '/blog',
 			search: '',

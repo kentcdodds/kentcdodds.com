@@ -18,18 +18,12 @@ import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { externalLinks } from '#app/external-links.tsx'
-import {
-	getImageBuilder,
-	getImgProps,
-	images,
-} from '#app/images.tsx'
+import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type CallKentSeason, type KCDHandle } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
-import {
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
+import { reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import {
 	CallsEpisodeUIStateProvider,
 	useMatchLoaderData,
@@ -94,8 +88,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
-	data?.socialMetas ?? []
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) =>
+	loaderData?.socialMetas ?? []
 
 export default function CallHomeScreen({
 	loaderData: data,

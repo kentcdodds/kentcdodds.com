@@ -7,14 +7,15 @@ import { test as base } from '@playwright/test'
 import { parse } from 'cookie'
 import fsExtra from 'fs-extra'
 import { createCookieSessionStorage } from 'react-router'
-import {
-	createDatabase,
-	type Database,
-} from '@remix-run/data-table'
+import { createDatabase, type Database } from '@remix-run/data-table'
 import { inList } from '@remix-run/data-table'
 import { createSqliteExecutorDataTableAdapter } from '#app/utils/db/d1-data-table-adapter.server.ts'
 import { createNodeSqliteExecutor } from '#app/utils/db/node-sqlite-executor.server.ts'
-import { sessionTable, userTable, type User } from '#app/utils/db/schema.server.ts'
+import {
+	sessionTable,
+	userTable,
+	type User,
+} from '#app/utils/db/schema.server.ts'
 import { getEnv } from '#app/utils/env.server.ts'
 import { sessionExpirationTime } from '#app/utils/user-data.server.ts'
 import { localD1StateDir } from '../scripts/local-d1-state.mjs'
@@ -48,7 +49,7 @@ function getLocalD1SqlitePath() {
 	const sqlitePath = findLocalD1SqliteFile()
 	if (!sqlitePath) {
 		throw new Error(
-			`Could not find local D1 sqlite under ${localD1StateDir}. Run npm run db:reset --workspace kentcdodds.com or start the dev worker once.`,
+			`Could not find local D1 sqlite under ${localD1StateDir}. Run bun run --filter kentcdodds.com db:reset or start the dev worker once.`,
 		)
 	}
 	return sqlitePath
