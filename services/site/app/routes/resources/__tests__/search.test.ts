@@ -83,6 +83,10 @@ test('loader degrades gracefully when the search worker times out', async () => 
 	)
 
 	expect(result.init?.status).toBe(503)
+	// A transient outage must never be cached.
+	expect(new Headers(result.init?.headers).get('Cache-Control')).toBe(
+		'no-store',
+	)
 	expect(result.data).toEqual({
 		error: 'Search is temporarily unavailable. Please try again.',
 	})
