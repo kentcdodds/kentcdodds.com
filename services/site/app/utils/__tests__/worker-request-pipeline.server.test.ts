@@ -169,6 +169,27 @@ test.each(['/%5C', '//%5C', '/%5Cfoo', '/%5C%5C', '/foo%5Cbar', '/%5c'])(
 	},
 )
 
+test('worker pipeline serves a path with a malformed percent escape', async () => {
+	const getServerBuild = vi.fn(async () => createMinimalSplatServerBuild())
+	const handler = createWorkerFetchHandler({
+		redirectsText: '',
+		ensureRuntimeBridges: async () => {},
+		getServerBuild,
+		requestHandlerMode: 'production',
+		errorLogLabel: 'test-malformed-escape',
+	})
+
+	// `decodeURIComponent('/s/100%')` throws, which used to escape out of request
+	// logging and 500 the response.
+	const response = await handler.fetch(
+		new Request('https://kentcdodds.com/s/100%'),
+		{},
+		createTestExecutionContext(),
+	)
+
+	expect(response.status).toBe(200)
+})
+
 test('worker pipeline still reaches the router for a normal path', async () => {
 	const getServerBuild = vi.fn(async () => createMinimalSplatServerBuild())
 	const handler = createWorkerFetchHandler({

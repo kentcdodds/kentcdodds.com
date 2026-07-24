@@ -220,6 +220,19 @@ function shouldSkipRequestLog(request: Request, response: Response) {
 	return headToRoot || getToHealthcheck
 }
 
+/**
+ * Log lines decode the path purely for readability, but `decodeURIComponent`
+ * throws on malformed escapes like `/s/100%`. Scanner traffic (and the
+ * occasional real search) hits that, and logging must never fail a request.
+ */
+function decodeForLog(value: string) {
+	try {
+		return decodeURIComponent(value)
+	} catch {
+		return value
+	}
+}
+
 function logRequest(request: Request, response: Response, startedAt: number) {
 	if (shouldSkipRequestLog(request, response)) return
 	const url = new URL(request.url)
@@ -229,7 +242,7 @@ function logRequest(request: Request, response: Response, startedAt: number) {
 	console.log(
 		[
 			request.method,
-			`${host}${decodeURIComponent(url.pathname + url.search)}`,
+			`${host}${decodeForLog(url.pathname + url.search)}`,
 			String(response.status),
 			contentLength,
 			'-',
