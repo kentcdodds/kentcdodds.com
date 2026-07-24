@@ -15,6 +15,16 @@ export class SearchQueryTooLongError extends Error {
 	}
 }
 
+export class SearchWorkerTimeoutError extends Error {
+	timeoutMs: number
+
+	constructor(timeoutMs: number) {
+		super(`Search worker request timed out after ${timeoutMs}ms`)
+		this.name = 'SearchWorkerTimeoutError'
+		this.timeoutMs = timeoutMs
+	}
+}
+
 export type SearchResult = {
 	id: string
 	score: number
