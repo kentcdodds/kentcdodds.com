@@ -89,6 +89,11 @@ reference:
 - Search Worker URL: if `SEARCH_WORKER_URL` contains `mock`, MSW returns fixtures;
   otherwise MSW passthrough sends traffic to that URL (e.g. local `wrangler dev`
   on `http://127.0.0.1:8787`). Tests expect a mock URL (see `.env.example`).
+- Search sync caveat: `/internal/sync` loads lexical artifacts from R2 and writes
+  them into the search-worker D1 via `db.batch()`. Cloudflare limits serialized
+  RPC args to 32 MiB; large podcast/youtube sources must be written in sized
+  batches (`replaceSearchSource` in `services/search-worker/src/search-db.ts`).
+  Do not collapse those writes back into a single giant batch.
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
   `README.md` is repository documentation, not a post, and must stay out of
   `blogList`; syndication routes consume that list directly.
