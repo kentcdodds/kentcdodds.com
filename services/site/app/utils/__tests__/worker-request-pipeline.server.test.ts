@@ -121,10 +121,14 @@ test.each([
 	['/%5C%5C', true],
 	['/foo%5Cbar', true],
 	['/\\', true],
-	['/%', true],
 	['/', false],
 	['/blog', false],
 	['/foo%2Fbar', false],
+	// Unescaped and non-ASCII percent sequences are legitimate: `/s/100%` is a
+	// real search URL even though `decodeURIComponent` rejects it.
+	['/s/100%', false],
+	['/blog/caf%C3%A9', false],
+	['/%C0%80', false],
 ] as const)('isMalformedRequestPath(%j) → %s', (pathname, expected) => {
 	expect(isMalformedRequestPath(pathname)).toBe(expected)
 })

@@ -175,14 +175,7 @@ export function isBogusCrawlerPath(pathname: string) {
  * a different host (`/\evil.com` → `http://evil.com/`). Reject both up front.
  */
 export function isMalformedRequestPath(pathname: string) {
-	if (pathname.includes('\\')) return true
-	let decoded: string
-	try {
-		decoded = decodeURIComponent(pathname)
-	} catch {
-		return true
-	}
-	return decoded.includes('\\')
+	return /\\|%5c/i.test(pathname)
 }
 
 function redirectResponse(destination: string, status = 301) {
