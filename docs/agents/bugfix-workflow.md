@@ -23,3 +23,7 @@ fixes it.
 - If evidence points to app code, file or fix the bug; if it points to
   external/injected noise, open a PR to filter it instead of adding defensive
   code.
+- Client SDK filters live in `services/site/app/utils/sentry-noise.ts` (wired
+  from `monitoring.client.tsx`): prefer narrow `ignoreErrors` / `denyUrls` /
+  `beforeSend` signatures. Do not broadly filter `Failed to fetch` / network
+  errors — those can hide real outages.
