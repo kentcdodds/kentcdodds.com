@@ -23,3 +23,10 @@ fixes it.
 - If evidence points to app code, file or fix the bug; if it points to
   external/injected noise, open a PR to filter it instead of adding defensive
   code.
+- Client `RouteErrorResponse: 502 Route Error` (from
+  `useCapturedRouteError` / `getRouteErrorResponseException`) often wraps
+  Cloudflare's generic Bad Gateway HTML (`<title>… | 502: Bad gateway</title>`,
+  Ray ID, host Error). That is edge/origin failure during document or SPA data
+  fetch, not an app `throw` of status 502. Confirm via
+  `extra.route_error_response.data` before treating it as a route bug. App code
+  almost never throws 502 (exception: `resources/lookout`).
