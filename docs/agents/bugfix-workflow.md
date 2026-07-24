@@ -29,3 +29,14 @@ fixes it.
   errors — those can hide real outages. Message/stack drop rules must establish
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
+- Client `RouteErrorResponse: 502 Route Error` (from
+  `useCapturedRouteError` / `getRouteErrorResponseException`) often wraps
+  Cloudflare's generic Bad Gateway HTML (`<title>… | 502: Bad gateway</title>`,
+  Ray ID, host Error). That is edge/origin failure during document or SPA data
+  fetch, not an app `throw` of status 502. Confirm via
+  `extra.route_error_response.data` before treating it as a route bug. App code
+  almost never throws 502 (exception: `resources/lookout`).
+- A stack trace that predates a platform migration may still describe a live
+  bug. Before writing an issue off as stale, reproduce it against the current
+  runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
+  workerd).

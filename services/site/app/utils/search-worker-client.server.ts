@@ -1,7 +1,8 @@
-import type {
-	SearchWorkerHealthResponse,
-	SearchResult,
-	SearchWorkerSearchResponse,
+import {
+	SearchWorkerTimeoutError,
+	type SearchWorkerHealthResponse,
+	type SearchResult,
+	type SearchWorkerSearchResponse,
 } from '@kcd-internal/search-shared'
 import { getEnv } from '#app/utils/env.server.ts'
 
@@ -50,9 +51,7 @@ async function requestSearchWorkerJson<T extends { ok: boolean }>({
 		return json
 	} catch (error) {
 		if (error instanceof Error && error.name === 'AbortError') {
-			throw new Error(
-				`Search worker request timed out after ${searchWorkerTimeoutMs}ms`,
-			)
+			throw new SearchWorkerTimeoutError(searchWorkerTimeoutMs)
 		}
 		throw error
 	} finally {

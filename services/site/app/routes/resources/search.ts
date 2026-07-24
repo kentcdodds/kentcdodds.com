@@ -1,8 +1,14 @@
 import { data as json } from 'react-router'
-import { SearchQueryTooLongError } from '@kcd-internal/search-shared'
+import {
+	SearchQueryTooLongError,
+	SearchWorkerTimeoutError,
+} from '@kcd-internal/search-shared'
 import { getDomainUrl } from '#app/utils/misc.ts'
 import { searchKCD } from '#app/utils/search.server.ts'
 import { type Route } from './+types/search'
+
+const SEARCH_UNAVAILABLE_MESSAGE =
+	'Search is temporarily unavailable. Please try again.'
 
 function normalizeSummary(value: unknown) {
 	if (typeof value !== 'string') return undefined
@@ -27,6 +33,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 	} catch (error) {
 		if (error instanceof SearchQueryTooLongError) {
 			return json({ error: error.message }, { status: 400, headers })
+		}
+		// Non-critical resource: degrade for upstream timeouts instead of 500ing
+		// into Sentry (navbar already renders `{ error }` as a soft message).
+		if (error instanceof SearchWorkerTimeoutError) {
+			console.warn(error)
+			return json(
+				{ error: SEARCH_UNAVAILABLE_MESSAGE },
+				{ status: 503, headers },
+			)
 		}
 		throw error
 	}

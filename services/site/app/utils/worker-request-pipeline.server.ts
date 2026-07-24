@@ -167,6 +167,17 @@ export function isBogusCrawlerPath(pathname: string) {
 	return bogusCrawlerCallPathEndings.has(lastSegment)
 }
 
+/**
+ * Backslashes are not legal in a URL path, and WHATWG URL parsing rewrites them
+ * to `/`. That makes `new URL(decodedPathname, base)` either throw
+ * (`/\` → `//` → `TypeError: Invalid URL`, which is what React Router's SSR
+ * `encodeLocation` hit in Sentry KCD-XP / KCD-YG) or, worse, silently resolve to
+ * a different host (`/\evil.com` → `http://evil.com/`). Reject both up front.
+ */
+export function isMalformedRequestPath(pathname: string) {
+	return /\\|%5c/i.test(pathname)
+}
+
 function redirectResponse(destination: string, status = 301) {
 	return new Response(null, {
 		status,
@@ -209,6 +220,19 @@ function shouldSkipRequestLog(request: Request, response: Response) {
 	return headToRoot || getToHealthcheck
 }
 
+/**
+ * Log lines decode the path purely for readability, but `decodeURIComponent`
+ * throws on malformed escapes like `/s/100%`. Scanner traffic (and the
+ * occasional real search) hits that, and logging must never fail a request.
+ */
+function decodeForLog(value: string) {
+	try {
+		return decodeURIComponent(value)
+	} catch {
+		return value
+	}
+}
+
 function logRequest(request: Request, response: Response, startedAt: number) {
 	if (shouldSkipRequestLog(request, response)) return
 	const url = new URL(request.url)
@@ -218,7 +242,7 @@ function logRequest(request: Request, response: Response, startedAt: number) {
 	console.log(
 		[
 			request.method,
-			`${host}${decodeURIComponent(url.pathname + url.search)}`,
+			`${host}${decodeForLog(url.pathname + url.search)}`,
 			String(response.status),
 			contentLength,
 			'-',
@@ -252,15 +276,13 @@ export function createWorkerFetchHandler(options: WorkerFetchHandlerOptions) {
 						const build = await buildSource()
 						return {
 							...build,
-							allowedActionOrigins:
-								getWorkerAllowedActionOrigins(request),
+							allowedActionOrigins: getWorkerAllowedActionOrigins(request),
 						}
 					}, options.requestHandlerMode)
 				: createRequestHandler(
 						{
 							...buildSource,
-							allowedActionOrigins:
-								getWorkerAllowedActionOrigins(request),
+							allowedActionOrigins: getWorkerAllowedActionOrigins(request),
 						},
 						options.requestHandlerMode,
 					)
@@ -283,12 +305,15 @@ export function createWorkerFetchHandler(options: WorkerFetchHandlerOptions) {
 		const host = getHost(request)
 		const proto = request.headers.get('X-Forwarded-Proto') ?? 'https'
 
+		if (isMalformedRequestPath(url.pathname)) {
+			return {
+				response: new Response('Bad Request', { status: 400 }),
+				rateLimit: null,
+			}
+		}
+
 		if (options.handleEarlyRequest) {
-			const earlyResponse = await options.handleEarlyRequest(
-				request,
-				env,
-				ctx,
-			)
+			const earlyResponse = await options.handleEarlyRequest(request, env, ctx)
 			if (earlyResponse) {
 				return { response: earlyResponse, rateLimit: null }
 			}
@@ -475,9 +500,7 @@ export function createWorkerFetchHandler(options: WorkerFetchHandlerOptions) {
 					headers,
 					request,
 					cspNonce,
-					...(options.cspMode === undefined
-						? {}
-						: { mode: options.cspMode }),
+					...(options.cspMode === undefined ? {} : { mode: options.cspMode }),
 				})
 				// Reuse the pre-router rate-limit result so a request only consumes one
 				// quota unit (checkRateLimit increments the window on every call).
