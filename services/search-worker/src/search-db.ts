@@ -260,16 +260,85 @@ function isFtsQuerySyntaxError(error: unknown) {
 	)
 }
 
-async function runStatementsInTransaction({
+/**
+ * Cloudflare D1/Workers RPC rejects serialized arguments larger than 32 MiB.
+ * Keep each batch well under that ceiling; statement-count is a secondary cap.
+ */
+const D1_BATCH_MAX_SERIALIZED_BYTES = 8 * 1024 * 1024
+const D1_BATCH_MAX_STATEMENTS = 200
+
+type SizedPreparedStatement = {
+	statement: D1PreparedStatement
+	estimatedBytes: number
+}
+
+function estimateSerializedBytes(
+	sqlText: string,
+	values: ReadonlyArray<unknown>,
+) {
+	let bytes = sqlText.length
+	for (const value of values) {
+		if (typeof value === 'string') {
+			bytes += value.length
+		} else if (typeof value === 'number' || typeof value === 'boolean') {
+			bytes += 16
+		} else if (value == null) {
+			bytes += 4
+		} else {
+			bytes += String(value).length
+		}
+	}
+	// Cap'n Proto / RPC framing overhead per statement (conservative).
+	return bytes + 128
+}
+
+function prepareSizedStatement(
+	db: D1Database,
+	sqlText: string,
+	values: ReadonlyArray<unknown>,
+): SizedPreparedStatement {
+	return {
+		statement: db.prepare(sqlText).bind(...values),
+		estimatedBytes: estimateSerializedBytes(sqlText, values),
+	}
+}
+
+async function runBatchedStatements({
 	db,
 	statements,
+	maxSerializedBytes = D1_BATCH_MAX_SERIALIZED_BYTES,
+	maxStatements = D1_BATCH_MAX_STATEMENTS,
 }: {
 	db: D1Database
-	statements: Array<D1PreparedStatement>
+	statements: ReadonlyArray<SizedPreparedStatement>
+	maxSerializedBytes?: number
+	maxStatements?: number
 }) {
 	if (statements.length === 0) return
-	// D1 batch() runs all statements atomically (implicit transaction), not BEGIN/COMMIT.
-	await db.batch(statements)
+
+	let batch: Array<D1PreparedStatement> = []
+	let batchBytes = 0
+
+	const flush = async () => {
+		if (batch.length === 0) return
+		// Each D1 batch() is atomic; large source replaces span multiple batches.
+		await db.batch(batch)
+		batch = []
+		batchBytes = 0
+	}
+
+	for (const { statement, estimatedBytes } of statements) {
+		const wouldExceedBytes =
+			batch.length > 0 && batchBytes + estimatedBytes > maxSerializedBytes
+		const wouldExceedCount = batch.length >= maxStatements
+		if (wouldExceedBytes || wouldExceedCount) {
+			await flush()
+		}
+		batch.push(statement)
+		batchBytes += estimatedBytes
+	}
+
+	await flush()
 }
 
 async function setMetadataValue({
@@ -331,39 +400,40 @@ export async function replaceSearchSource({
 	syncedAt: string
 }) {
 	const docs = buildDocRecords({ sourceKey, artifact })
-	const statements: Array<D1PreparedStatement> = [
-		db
-			.prepare('DELETE FROM lexical_search_fts WHERE sourceKey = ?')
-			.bind(sourceKey),
-		db
-			.prepare('DELETE FROM lexical_chunks WHERE sourceKey = ?')
-			.bind(sourceKey),
-		db.prepare('DELETE FROM lexical_docs WHERE sourceKey = ?').bind(sourceKey),
-		db
-			.prepare('DELETE FROM lexical_sources WHERE sourceKey = ?')
-			.bind(sourceKey),
-		db
-			.prepare(
-				`
-					INSERT INTO lexical_sources (sourceKey, generatedAt, chunkCount, syncedAt)
-					VALUES (?, ?, ?, ?)
-				`,
-			)
-			.bind(sourceKey, artifact.generatedAt, artifact.chunks.length, syncedAt),
+	// Delete first (including source metadata) so a mid-sync failure leaves the
+	// source unmarked and the next sync retries instead of skipping.
+	const statements: Array<SizedPreparedStatement> = [
+		prepareSizedStatement(
+			db,
+			'DELETE FROM lexical_search_fts WHERE sourceKey = ?',
+			[sourceKey],
+		),
+		prepareSizedStatement(
+			db,
+			'DELETE FROM lexical_chunks WHERE sourceKey = ?',
+			[sourceKey],
+		),
+		prepareSizedStatement(db, 'DELETE FROM lexical_docs WHERE sourceKey = ?', [
+			sourceKey,
+		]),
+		prepareSizedStatement(
+			db,
+			'DELETE FROM lexical_sources WHERE sourceKey = ?',
+			[sourceKey],
+		),
 	]
 
 	for (const doc of docs.values()) {
 		statements.push(
-			db
-				.prepare(
-					`
-						INSERT INTO lexical_docs (
-							docId, sourceKey, type, slug, url, title, snippet, chunkCount,
-							imageUrl, imageAlt, sourceUpdatedAt, transcriptSource
-						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-					`,
-				)
-				.bind(
+			prepareSizedStatement(
+				db,
+				`
+					INSERT INTO lexical_docs (
+						docId, sourceKey, type, slug, url, title, snippet, chunkCount,
+						imageUrl, imageAlt, sourceUpdatedAt, transcriptSource
+					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				`,
+				[
 					doc.docId,
 					doc.sourceKey,
 					doc.type,
@@ -376,7 +446,8 @@ export async function replaceSearchSource({
 					doc.imageAlt ?? null,
 					doc.sourceUpdatedAt ?? null,
 					doc.transcriptSource ?? null,
-				),
+				],
+			),
 		)
 	}
 
@@ -398,17 +469,16 @@ export async function replaceSearchSource({
 		})
 		const storageDocId = getStorageDocId({ sourceKey, docId })
 		statements.push(
-			db
-				.prepare(
-					`
-						INSERT INTO lexical_chunks (
-							id, docId, sourceKey, type, slug, url, title, snippet, text,
-							chunkIndex, chunkCount, startSeconds, endSeconds, imageUrl,
-							imageAlt, sourceUpdatedAt, transcriptSource
-						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-					`,
-				)
-				.bind(
+			prepareSizedStatement(
+				db,
+				`
+					INSERT INTO lexical_chunks (
+						id, docId, sourceKey, type, slug, url, title, snippet, text,
+						chunkIndex, chunkCount, startSeconds, endSeconds, imageUrl,
+						imageAlt, sourceUpdatedAt, transcriptSource
+					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				`,
+				[
 					storageChunkId,
 					storageDocId,
 					sourceKey,
@@ -426,19 +496,32 @@ export async function replaceSearchSource({
 					chunk.imageAlt ?? null,
 					chunk.sourceUpdatedAt ?? null,
 					chunk.transcriptSource ?? null,
-				),
-			db
-				.prepare(
-					`
-						INSERT INTO lexical_search_fts (id, docId, sourceKey, title, text)
-						VALUES (?, ?, ?, ?, ?)
-					`,
-				)
-				.bind(storageChunkId, storageDocId, sourceKey, chunk.title, chunk.text),
+				],
+			),
+			prepareSizedStatement(
+				db,
+				`
+					INSERT INTO lexical_search_fts (id, docId, sourceKey, title, text)
+					VALUES (?, ?, ?, ?, ?)
+				`,
+				[storageChunkId, storageDocId, sourceKey, chunk.title, chunk.text],
+			),
 		)
 	}
 
-	await runStatementsInTransaction({ db, statements })
+	// Mark the source complete only after all docs/chunks are written.
+	statements.push(
+		prepareSizedStatement(
+			db,
+			`
+				INSERT INTO lexical_sources (sourceKey, generatedAt, chunkCount, syncedAt)
+				VALUES (?, ?, ?, ?)
+			`,
+			[sourceKey, artifact.generatedAt, artifact.chunks.length, syncedAt],
+		),
+	)
+
+	await runBatchedStatements({ db, statements })
 }
 
 export async function clearSearchSource({
@@ -448,21 +531,29 @@ export async function clearSearchSource({
 	db: D1Database
 	sourceKey: string
 }) {
-	await runStatementsInTransaction({
+	await runBatchedStatements({
 		db,
 		statements: [
-			db
-				.prepare('DELETE FROM lexical_search_fts WHERE sourceKey = ?')
-				.bind(sourceKey),
-			db
-				.prepare('DELETE FROM lexical_chunks WHERE sourceKey = ?')
-				.bind(sourceKey),
-			db
-				.prepare('DELETE FROM lexical_docs WHERE sourceKey = ?')
-				.bind(sourceKey),
-			db
-				.prepare('DELETE FROM lexical_sources WHERE sourceKey = ?')
-				.bind(sourceKey),
+			prepareSizedStatement(
+				db,
+				'DELETE FROM lexical_search_fts WHERE sourceKey = ?',
+				[sourceKey],
+			),
+			prepareSizedStatement(
+				db,
+				'DELETE FROM lexical_chunks WHERE sourceKey = ?',
+				[sourceKey],
+			),
+			prepareSizedStatement(
+				db,
+				'DELETE FROM lexical_docs WHERE sourceKey = ?',
+				[sourceKey],
+			),
+			prepareSizedStatement(
+				db,
+				'DELETE FROM lexical_sources WHERE sourceKey = ?',
+				[sourceKey],
+			),
 		],
 	})
 }
@@ -498,6 +589,7 @@ export async function queryLexicalSearch({
 						c.imageAlt
 					FROM lexical_search_fts f
 					JOIN lexical_chunks c ON c.id = f.id
+					JOIN lexical_sources s ON s.sourceKey = c.sourceKey
 					WHERE lexical_search_fts MATCH ?
 					ORDER BY bm25(lexical_search_fts, 10.0, 1.0), c.chunkIndex
 					LIMIT ?
