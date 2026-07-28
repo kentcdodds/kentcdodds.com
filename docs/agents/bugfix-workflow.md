@@ -53,6 +53,17 @@ fixes it.
   the same signature appears for many still-existing routes (`routes/courses`,
   `routes/blog_/$slug`, etc.). Filter via `sentry-noise.ts` — do not "fix" by
   re-adding routes that already exist.
+- Client React Router data-protocol noise (KCD-XF family):
+  `Unable to decode turbo-stream response` (`.data` single-fetch) and
+  `__manifest` JSON parse failures (`Unexpected token '<', "<!DOCTYPE"…` or
+  Safari `The string did not match the expected pattern` from
+  `fetchAndApplyManifestPatches`) mean the client got HTML/empty/truncated
+  bodies instead of turbo-stream/JSON. Healthy origin returns
+  `text/x-script` / `application/json` (or manifest `204` +
+  `X-Remix-Reload-Document`). Filter via `isReactRouterDataProtocolNoise`
+  (DOCTYPE payload signature; turbo-stream / Safari pattern require RR stack
+  or `.data`/`__manifest` breadcrumbs). Do not broaden to generic
+  `Failed to fetch`.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on

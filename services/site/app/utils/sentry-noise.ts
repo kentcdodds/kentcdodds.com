@@ -8,6 +8,15 @@
  * not a generic phrase alone.
  */
 
+const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
+const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
+const SAFARI_JSON_PATTERN_ERROR =
+	/^The string did not match the expected pattern\.?$/i
+const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
+const REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK =
+	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
+const DATA_PROTOCOL_REQUEST = /\/(?:__manifest|\S+\.data)(?:\?|$)/i
+
 export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	// Tunnel / self-reporting
 	'Request to /lookout failed',
@@ -45,6 +54,9 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	// response skew across deploys (stale tab). Distinctive framework message from
 	// unwrapSingleFetchResult — not an app missing-route bug (KCD-VP family).
 	/No result found for routeId "/,
+	// HTML document body parsed as JSON — distinctive "<!DOCTYPE" payload
+	// (KCD-ZJ / __manifest edge HTML).
+	HTML_AS_JSON_ERROR,
 ]
 
 export const SENTRY_DENY_URLS: Array<RegExp> = [
@@ -77,6 +89,7 @@ type RouteErrorResponseExtra = {
 type SentryBreadcrumbLike = {
 	category?: string | null
 	message?: string | null
+	data?: { url?: string | null } | null
 }
 
 type SentryEventLike = {
@@ -135,11 +148,20 @@ function hasStackFrames(event: SentryEventLike): boolean {
 function stackBlob(event: SentryEventLike, originalException: unknown): string {
 	const frameFiles = (event.exception?.values ?? [])
 		.flatMap((value) => value.stacktrace?.frames ?? [])
-		.map((frame) => frame.filename ?? '')
+		.map((frame) => `${frame.filename ?? ''}\n${frame.function ?? ''}`)
 		.join('\n')
 	const errorStack =
 		originalException instanceof Error ? (originalException.stack ?? '') : ''
 	return `${frameFiles}\n${errorStack}`
+}
+
+function breadcrumbBlob(event: SentryEventLike): string {
+	return (event.breadcrumbs ?? [])
+		.map(
+			(crumb) =>
+				`${crumb.category ?? ''}\n${crumb.message ?? ''}\n${crumb.data?.url ?? ''}`,
+		)
+		.join('\n')
 }
 
 export function isCloudflareEdgeErrorHtml(data: string): boolean {
@@ -205,6 +227,48 @@ export function isReactRouterEdgeHttpStatusError(
 	}
 
 	return REACT_ROUTER_MANIFEST_PATCH_STACK.test(stackBlob(event, original))
+}
+
+/**
+ * React Router client data-protocol failures when `.data` / `__manifest`
+ * responses are HTML, empty, or truncated (edge/intermediary), not app throws.
+ *
+ * - `<!DOCTYPE` in a JSON SyntaxError is the HTML payload signature (ignoreErrors).
+ * - Turbo-stream decode requires RR single-fetch stack or `.data`/`__manifest`
+ *   breadcrumb evidence — never the message alone (KCD-XF/YY/Y8).
+ * - Safari pattern SyntaxError is scoped to manifest patch fetches (KCD-XG/X3).
+ */
+export function isReactRouterDataProtocolNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const messages = eventMessages(event)
+	if (messages.some((message) => HTML_AS_JSON_ERROR.test(message))) {
+		return true
+	}
+
+	const evidence = `${stackBlob(event, hint.originalException)}\n${breadcrumbBlob(event)}`
+	const protocolEvidence =
+		REACT_ROUTER_TURBO_STREAM_STACK.test(evidence) ||
+		REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK.test(evidence) ||
+		DATA_PROTOCOL_REQUEST.test(evidence)
+
+	if (
+		messages.some((message) => message.includes(TURBO_STREAM_DECODE_ERROR)) &&
+		protocolEvidence
+	) {
+		return true
+	}
+
+	const safariPattern = messages.some((message) =>
+		SAFARI_JSON_PATTERN_ERROR.test(message.trim()),
+	)
+	if (!safariPattern) return false
+
+	return (
+		REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK.test(evidence) ||
+		DATA_PROTOCOL_REQUEST.test(evidence)
+	)
 }
 
 /**
@@ -351,6 +415,7 @@ export function shouldDropSentryEvent(
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
+	if (isReactRouterDataProtocolNoise(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true
 	if (
