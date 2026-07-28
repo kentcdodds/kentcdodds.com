@@ -3,7 +3,10 @@ import {
 	SENTRY_DENY_URLS,
 	SENTRY_IGNORE_ERRORS,
 	isBrowserExtensionError,
+	isCloudflareEdgeErrorHtml,
+	isCloudflareEdgeRouteError,
 	isDegradedUiPerformanceEvent,
+	isReactRouterEdgeHttpStatusError,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
 } from '../sentry-noise.ts'
@@ -157,6 +160,134 @@ test('does not broadly ignore generic Failed to fetch', () => {
 	expect(
 		matchesIgnoreError('NetworkError when attempting to fetch resource.'),
 	).toBe(false)
+})
+
+test('filters Cloudflare edge RouteErrorResponse HTML (KCD-VH family)', () => {
+	const badGatewayHtml = `<!DOCTYPE html><html><head><title>kentcdodds.com | 502: Bad gateway</title></head><body>Ray ID: abc123 cloudflare</body></html>`
+	const timeoutHtml = `<!DOCTYPE html><html><head><title>kentcdodds.com | 524: A timeout occurred</title></head><body>Cloudflare Ray ID: xyz</body></html>`
+
+	expect(isCloudflareEdgeErrorHtml(badGatewayHtml)).toBe(true)
+	expect(isCloudflareEdgeErrorHtml(timeoutHtml)).toBe(true)
+	expect(isCloudflareEdgeErrorHtml('<title>App Error</title>')).toBe(false)
+
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 502,
+			statusText: '',
+			data: badGatewayHtml,
+		}),
+	).toBe(true)
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 503,
+			statusText: '',
+			data: '',
+		}),
+	).toBe(true)
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 502,
+			statusText: '',
+			data: 'Failed to proxy request to Sentry',
+		}),
+	).toBe(false)
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 503,
+			statusText: '',
+			data: { error: 'Search temporarily unavailable' },
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [{ type: 'RouteErrorResponse', value: '502 Route Error' }],
+			},
+			extra: {
+				route_error_response: {
+					status: 502,
+					statusText: '',
+					data: badGatewayHtml,
+				},
+			},
+		}),
+	).toBe(true)
+})
+
+test('filters React Router manifest-patch edge HTTP status errors (KCD-ZH/YD/YF)', () => {
+	const original = new Error('502 ')
+	original.stack =
+		'Error: 502 \n    at fetchAndApplyManifestPatches (react-router/dist/chunk.js:1:1)'
+
+	expect(
+		isReactRouterEdgeHttpStatusError(
+			{
+				exception: {
+					values: [
+						{
+							type: 'Error',
+							value: '502 ',
+							stacktrace: {
+								frames: [
+									{
+										filename:
+											'../../../node_modules/react-router/dist/development/chunk.mjs',
+										function: 'fetchAndApplyManifestPatches',
+									},
+								],
+							},
+						},
+					],
+				},
+			},
+			{ originalException: original },
+		),
+	).toBe(true)
+
+	expect(
+		isReactRouterEdgeHttpStatusError({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: '502 ',
+						stacktrace: {
+							frames: [{ filename: '/app/routes/blog.tsx', function: 'loader' }],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'Error',
+							value: '503 ',
+							stacktrace: {
+								frames: [
+									{
+										filename: 'react-router/dist/chunk.mjs',
+										function: 'fetchAndApplyManifestPatches',
+									},
+								],
+							},
+						},
+					],
+				},
+			},
+			{
+				originalException: Object.assign(new Error('503 '), {
+					stack: 'Error: 503 \n    at fetchAndApplyManifestPatches (x:1:1)',
+				}),
+			},
+		),
+	).toBe(true)
 })
 
 test('detects browser extension stacks and denyUrls', () => {

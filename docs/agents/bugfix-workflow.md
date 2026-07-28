@@ -29,8 +29,9 @@ fixes it.
   errors — those can hide real outages. Message/stack drop rules must establish
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
-- Client `RouteErrorResponse: 502 Route Error` (from
+- Client `RouteErrorResponse: 502/503/524 Route Error` (from
   `useCapturedRouteError` / `getRouteErrorResponseException`) often wraps
+<<<<<<< HEAD
   Cloudflare's generic Bad Gateway HTML (`<title>… | 502: Bad gateway</title>`,
   Ray ID, host Error). That is edge/origin failure during document or SPA data
   fetch, not an app `throw` of status 502. Confirm via
@@ -43,6 +44,18 @@ fixes it.
   the same signature appears for many still-existing routes (`routes/courses`,
   `routes/blog_/$slug`, etc.). Filter via `sentry-noise.ts` — do not "fix" by
   re-adding routes that already exist.
+=======
+  Cloudflare's generic edge HTML (`<title>… | 502: Bad gateway</title>`,
+  `503: Service unavailable`, `524: A timeout occurred`, Ray ID). That is
+  edge/origin failure during document or SPA data fetch, not an app `throw`.
+  Confirm via `extra.route_error_response.data` before treating it as a route
+  bug. Related client noise: React Router `Error: 502 `/`503 ` from
+  `fetchAndApplyManifestPatches` when `__manifest` hits the same edge
+  statuses. Filters: `sentry-noise.ts`
+  (`isCloudflareEdgeRouteError` / `isReactRouterEdgeHttpStatusError`). App
+  502/503 responses carry a non-empty body (`resources/lookout`, search) and
+  must not be filtered.
+>>>>>>> origin/main
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
