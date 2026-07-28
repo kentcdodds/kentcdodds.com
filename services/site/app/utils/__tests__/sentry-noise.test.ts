@@ -4,6 +4,7 @@ import {
 	SENTRY_IGNORE_ERRORS,
 	isBrowserExtensionError,
 	isDegradedUiPerformanceEvent,
+	isReactRouterDataProtocolNoise,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
 } from '../sentry-noise.ts'
@@ -139,6 +140,119 @@ test('does not broadly ignore generic Failed to fetch', () => {
 	expect(matchesIgnoreError('Load failed')).toBe(false)
 	expect(
 		matchesIgnoreError('NetworkError when attempting to fetch resource.'),
+	).toBe(false)
+})
+
+test('filters React Router turbo-stream decode noise (KCD-XF family)', () => {
+	expect(matchesIgnoreError('Unable to decode turbo-stream response')).toBe(
+		true,
+	)
+	expect(
+		isReactRouterDataProtocolNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Unable to decode turbo-stream response',
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'../../../node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs',
+									function: 'fetchAndDecodeViaTurboStream',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [
+					{ type: 'Error', value: 'Unable to decode turbo-stream response' },
+				],
+			},
+		}),
+	).toBe(true)
+})
+
+test('filters HTML-as-JSON manifest/data protocol noise (KCD-ZJ)', () => {
+	const message =
+		'Unexpected token \'<\', "<!DOCTYPE "... is not valid JSON'
+	expect(matchesIgnoreError(message)).toBe(true)
+	expect(
+		isReactRouterDataProtocolNoise({
+			exception: { values: [{ type: 'SyntaxError', value: message }] },
+		}),
+	).toBe(true)
+})
+
+test('scopes Safari JSON pattern errors to manifest protocol (KCD-XG/X3)', () => {
+	expect(
+		matchesIgnoreError('The string did not match the expected pattern.'),
+	).toBe(false)
+
+	expect(
+		isReactRouterDataProtocolNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: 'The string did not match the expected pattern.',
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'../../../node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs',
+									function: 'fetchAndApplyManifestPatches',
+								},
+								{ filename: '[native code]', function: 'json' },
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	expect(
+		isReactRouterDataProtocolNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: 'The string did not match the expected pattern.',
+					},
+				],
+			},
+			breadcrumbs: [
+				{
+					category: 'fetch',
+					data: {
+						url: 'https://kentcdodds.com/__manifest?paths=%2Fblog%2FREADME&version=368d9afc',
+					},
+				},
+			],
+		}),
+	).toBe(true)
+
+	expect(
+		isReactRouterDataProtocolNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: 'The string did not match the expected pattern.',
+						stacktrace: {
+							frames: [{ filename: '/app/routes/search.tsx', function: 'loader' }],
+						},
+					},
+				],
+			},
+		}),
 	).toBe(false)
 })
 

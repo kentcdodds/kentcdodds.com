@@ -31,6 +31,12 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/document\.querySelector\("meta\[property='og:type'\]"\)\.content/,
 	// Injected HTML parsers / translators mutating the DOM (KCD-ZZ).
 	/evaluating 'elem\.firstChild'/,
+	// React Router single-fetch decode when the body is not turbo-stream
+	// (edge/HTML/truncated responses). Exact library message only (KCD-XF family).
+	'Unable to decode turbo-stream response',
+	// HTML document body parsed as JSON — distinctive "<!DOCTYPE" payload
+	// (KCD-ZJ / __manifest edge HTML).
+	/Unexpected token '<',\s*"<!DOCTYPE/i,
 ]
 
 export const SENTRY_DENY_URLS: Array<RegExp> = [
@@ -46,13 +52,25 @@ export const SENTRY_DENY_URLS: Array<RegExp> = [
 type SentryExceptionValue = {
 	type?: string | null
 	value?: string | null
-	stacktrace?: { frames?: Array<{ filename?: string | null }> | null } | null
+	stacktrace?: {
+		frames?: Array<{
+			filename?: string | null
+			function?: string | null
+		}> | null
+	} | null
+}
+
+type SentryBreadcrumbLike = {
+	category?: string | null
+	message?: string | null
+	data?: { url?: string | null } | null
 }
 
 type SentryEventLike = {
 	message?: string | null
 	request?: { url?: string | null } | null
 	exception?: { values?: Array<SentryExceptionValue> | null } | null
+	breadcrumbs?: Array<SentryBreadcrumbLike> | null
 }
 
 const WALLET_PROVIDER_STACK =
@@ -89,11 +107,58 @@ function hasStackFrames(event: SentryEventLike): boolean {
 function stackBlob(event: SentryEventLike, originalException: unknown): string {
 	const frameFiles = (event.exception?.values ?? [])
 		.flatMap((value) => value.stacktrace?.frames ?? [])
-		.map((frame) => frame.filename ?? '')
+		.map((frame) => `${frame.filename ?? ''}\n${frame.function ?? ''}`)
 		.join('\n')
 	const errorStack =
 		originalException instanceof Error ? (originalException.stack ?? '') : ''
 	return `${frameFiles}\n${errorStack}`
+}
+
+function breadcrumbBlob(event: SentryEventLike): string {
+	return (event.breadcrumbs ?? [])
+		.map(
+			(crumb) =>
+				`${crumb.category ?? ''}\n${crumb.message ?? ''}\n${crumb.data?.url ?? ''}`,
+		)
+		.join('\n')
+}
+
+const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
+const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
+const SAFARI_JSON_PATTERN_ERROR =
+	/^The string did not match the expected pattern\.?$/i
+const REACT_ROUTER_MANIFEST_STACK =
+	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
+const MANIFEST_REQUEST = /\/__manifest(?:\?|$)/i
+
+/**
+ * React Router client data-protocol failures when `.data` / `__manifest`
+ * responses are HTML, empty, or truncated (edge/intermediary), not app throws.
+ * Evidence: exact RR turbo-stream message; JSON parse of `<!DOCTYPE`; Safari
+ * pattern SyntaxError scoped to manifest patch fetches (KCD-XF/XG/X3/ZJ/YY/Y8).
+ */
+export function isReactRouterDataProtocolNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const messages = eventMessages(event)
+	if (messages.some((message) => message.includes(TURBO_STREAM_DECODE_ERROR))) {
+		return true
+	}
+	if (messages.some((message) => HTML_AS_JSON_ERROR.test(message))) {
+		return true
+	}
+
+	const safariPattern = messages.some((message) =>
+		SAFARI_JSON_PATTERN_ERROR.test(message.trim()),
+	)
+	if (!safariPattern) return false
+
+	const evidence = `${stackBlob(event, hint.originalException)}\n${breadcrumbBlob(event)}`
+	return (
+		REACT_ROUTER_MANIFEST_STACK.test(evidence) ||
+		MANIFEST_REQUEST.test(evidence)
+	)
 }
 
 /**
@@ -136,6 +201,7 @@ export function shouldDropSentryEvent(
 	if (isBrowserExtensionError(hint.originalException)) return true
 	if (isWalletUserRejection(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
+	if (isReactRouterDataProtocolNoise(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true
 	return false

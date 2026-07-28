@@ -36,6 +36,15 @@ fixes it.
   fetch, not an app `throw` of status 502. Confirm via
   `extra.route_error_response.data` before treating it as a route bug. App code
   almost never throws 502 (exception: `resources/lookout`).
+- Client React Router data-protocol noise (KCD-XF family):
+  `Unable to decode turbo-stream response` (`.data` single-fetch) and
+  `__manifest` JSON parse failures (`Unexpected token '<', "<!DOCTYPE"…` or
+  Safari `The string did not match the expected pattern` from
+  `fetchAndApplyManifestPatches`) mean the client got HTML/empty/truncated
+  bodies instead of turbo-stream/JSON. Healthy origin returns
+  `text/x-script` / `application/json` (or manifest `204` +
+  `X-Remix-Reload-Document`). Prefer narrow `sentry-noise` filters over
+  defensive client decode wrappers; do not broaden to generic `Failed to fetch`.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
