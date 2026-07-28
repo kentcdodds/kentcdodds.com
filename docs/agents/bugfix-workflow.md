@@ -114,3 +114,10 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
   workerd).
+- Client `TypeError: …constructor is not a constructor` from date-fns
+  `constructFrom` (`normalizeDates` → `Array.map` → `new date.constructor`)
+  means the browser environment made `Date.constructor` non-constructable
+  (extensions/polyfills). Stack often lands in homepage
+  `ProblemSolutionSection` via `differenceInYears`. Prefer plain calendar-year
+  math (`getYearsTeaching` in `utils/years-teaching.ts`) for static marketing
+  copy — do not filter the generic constructor TypeError (KCD-100).
