@@ -12,6 +12,7 @@ import {
 	appendAgentDiscoveryHeaders,
 	shouldAppendAgentDiscoveryHeaders,
 } from '#app/utils/agent-discovery.ts'
+import { isReactRouterCsrfAbortError } from '#app/utils/sentry-noise.ts'
 import { routes as otherRoutes } from './other-routes.server.ts'
 import { getEnv, getPublicEnv, init } from './utils/env.server.ts'
 import { NonceProvider } from './utils/nonce-provider.ts'
@@ -209,6 +210,10 @@ export function handleError(
 	// Skip capturing if the request is aborted as Remix docs suggest
 	// Ref: https://remix.run/docs/en/main/file-conventions/entry.server#handleerror
 	if (request.signal.aborted) {
+		return
+	}
+	// React Router CSRF rejects are expected 400s (KCD-YN), not app failures.
+	if (isReactRouterCsrfAbortError(error)) {
 		return
 	}
 	if (error instanceof Error) {

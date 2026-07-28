@@ -1,12 +1,35 @@
 /**
- * Narrow client-side Sentry noise filters for injected third-party scripts,
- * browser extensions, in-app browsers, and similar non-app sources.
+ * Narrow Sentry noise filters for injected third-party scripts, browser
+ * extensions, in-app browsers, and expected framework security rejects.
  *
  * Prefer message/URL signatures over broad network-error filters so real
  * outages still alert. Drop rules must establish an external source via a
- * distinctive payload signature, extension/IAB URL, or provider error code —
- * not a generic phrase alone.
+ * distinctive payload signature, extension/IAB URL, provider error code, or
+ * framework CSRF-abort text — not a generic phrase alone.
+ *
+ * Client SDK: wired from `monitoring.client.tsx` via `ignoreErrors` /
+ * `denyUrls` / `shouldDropSentryEvent`. Server: `isReactRouterCsrfAbortError`
+ * is wired from `entry.server.tsx` `handleError` (KCD-YN).
  */
+
+/**
+ * React Router `throwIfPotentialCSRFAttack` rejects cross-origin POSTs with
+ * these exact messages, then `handleError` would otherwise report them.
+ * That is expected security behavior (attacker probes / mismatched Origin),
+ * not an app bug — skip Sentry capture.
+ */
+const REACT_ROUTER_CSRF_ABORT_MESSAGES = [
+	'header does not match `origin` header from a forwarded action request. Aborting the action.',
+	'`origin` header is not a valid URL. Aborting the action.',
+	'`x-forwarded-host` or `host` headers are not provided. One of these is needed to compare the `origin` header from a forwarded action request. Aborting the action.',
+] as const
+
+export function isReactRouterCsrfAbortError(error: unknown): boolean {
+	if (!(error instanceof Error)) return false
+	return REACT_ROUTER_CSRF_ABORT_MESSAGES.some((message) =>
+		error.message.includes(message),
+	)
+}
 
 const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
 const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i

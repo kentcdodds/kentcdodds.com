@@ -10,6 +10,7 @@ import {
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
 	isPageTranslatorCallStackOverflow,
+	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
 	isReactRouterEdgeHttpStatusError,
 	isTranslatorDomMutationNoise,
@@ -814,4 +815,37 @@ test('filters page-translator call stack overflows with font breadcrumbs (KCD-QW
 			documentElement: { className: 'dark' },
 		}),
 	).toBe(false)
+})
+
+test('recognizes React Router CSRF abort messages (KCD-YN)', () => {
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error(
+				'host header does not match `origin` header from a forwarded action request. Aborting the action.',
+			),
+		),
+	).toBe(true)
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error(
+				'x-forwarded-host header does not match `origin` header from a forwarded action request. Aborting the action.',
+			),
+		),
+	).toBe(true)
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error('`origin` header is not a valid URL. Aborting the action.'),
+		),
+	).toBe(true)
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error(
+				'`x-forwarded-host` or `host` headers are not provided. One of these is needed to compare the `origin` header from a forwarded action request. Aborting the action.',
+			),
+		),
+	).toBe(true)
+	expect(isReactRouterCsrfAbortError(new Error('Aborting the action.'))).toBe(
+		false,
+	)
+	expect(isReactRouterCsrfAbortError('not an error')).toBe(false)
 })
