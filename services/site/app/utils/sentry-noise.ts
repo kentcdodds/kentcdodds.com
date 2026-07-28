@@ -40,6 +40,10 @@ const REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK =
 	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
 const DATA_PROTOCOL_REQUEST = /\/(?:__manifest|\S+\.data)(?:\?|$)/i
 
+/** Safari / extension CustomEvent wrapping unhandledrejection (KCD-S8). */
+const CUSTOM_EVENT_UNHANDLED_REJECTION_MESSAGE =
+	/Event `CustomEvent` \(type=unhandledrejection\) captured as promise rejection/i
+
 export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	// Tunnel / self-reporting
 	'Request to /lookout failed',
@@ -82,7 +86,7 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	HTML_AS_JSON_ERROR,
 	// Safari / extension CustomEvent wrapping unhandledrejection (KCD-S8).
 	// Sentry serializes the Event itself when it is the rejection reason.
-	/Event `CustomEvent` \(type=unhandledrejection\) captured as promise rejection/,
+	CUSTOM_EVENT_UNHANDLED_REJECTION_MESSAGE,
 ]
 
 export const SENTRY_DENY_URLS: Array<RegExp> = [
@@ -116,7 +120,10 @@ type RouteErrorResponseExtra = {
 type SentryBreadcrumbLike = {
 	category?: string | null
 	message?: string | null
-	data?: { url?: string | null } | null
+	data?: {
+		url?: string | null
+		arguments?: Array<unknown> | null
+	} | null
 }
 
 type SerializedRejectionExtra = {
@@ -215,6 +222,82 @@ function breadcrumbBlob(event: SentryEventLike): string {
 				`${crumb.category ?? ''}\n${crumb.message ?? ''}\n${crumb.data?.url ?? ''}`,
 		)
 		.join('\n')
+}
+
+/**
+ * Native `fetch` never resolves to `undefined`. When React Router then reads
+ * `.ok` / `.status`, that alone is not enough to drop — a first-party broken
+ * wrapper would look the same. Require the injected interceptor's adjacent
+ * trailing `URL:` → `Options:` console breadcrumbs (not in app/RR source)
+ * before classifying as extension noise (KCD-ZY / KCD-ZX).
+ */
+const UNDEFINED_FETCH_RESPONSE_PROP =
+	/Cannot read properties of undefined \(reading '(?:ok|status)'\)|undefined is not an object \(evaluating ['"].*\.(?:ok|status)['"]\)/
+
+const REACT_ROUTER_FETCH_RESPONSE_CONSUMERS =
+	/fetchAndApplyManifestPatches|fetchAndDecodeViaTurboStream|Failed to fetch manifest patches/
+
+function isUrlInterceptorMessage(message: string): boolean {
+	return message === 'URL:' || message.startsWith('URL: ')
+}
+
+function isOptionsInterceptorMessage(message: string): boolean {
+	return message === 'Options:' || message.startsWith('Options: ')
+}
+
+function crumbTexts(crumb: SentryBreadcrumbLike): Array<string> {
+	const texts: Array<string> = []
+	if (typeof crumb.message === 'string' && crumb.message) {
+		texts.push(crumb.message)
+	}
+	for (const arg of crumb.data?.arguments ?? []) {
+		if (typeof arg === 'string' && arg) texts.push(arg)
+	}
+	return texts
+}
+
+/**
+ * Injected fetch wrappers seen in KCD-ZY/ZX log `URL:` then `Options:` as
+ * adjacent trailing console breadcrumbs immediately before the broken fetch.
+ */
+export function hasInjectedFetchInterceptorBreadcrumbs(
+	event: SentryEventLike,
+): boolean {
+	const consoleCrumbs = (event.breadcrumbs ?? []).filter(
+		(crumb) => (crumb.category ?? 'console') === 'console',
+	)
+	if (consoleCrumbs.length < 2) return false
+
+	const trailing = consoleCrumbs.slice(-6)
+	for (let i = 0; i < trailing.length - 1; i++) {
+		const current = crumbTexts(trailing[i] ?? {})
+		const next = crumbTexts(trailing[i + 1] ?? {})
+		if (
+			current.some(isUrlInterceptorMessage) &&
+			next.some(isOptionsInterceptorMessage)
+		) {
+			return true
+		}
+	}
+	return false
+}
+
+export function isBrokenClientFetchContractError(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const looksLikeUndefinedResponse = eventMessages(event).some((message) =>
+		UNDEFINED_FETCH_RESPONSE_PROP.test(message),
+	)
+	if (!looksLikeUndefinedResponse) return false
+	if (
+		!REACT_ROUTER_FETCH_RESPONSE_CONSUMERS.test(
+			stackBlob(event, hint.originalException),
+		)
+	) {
+		return false
+	}
+	return hasInjectedFetchInterceptorBreadcrumbs(event)
 }
 
 export function isCloudflareEdgeErrorHtml(data: string): boolean {
@@ -492,10 +575,10 @@ export function isCustomEventUnhandledRejectionNoise(
 	event: SentryEventLike,
 	hint: { originalException?: unknown } = {},
 ): boolean {
-	const customEventMessage =
-		/Event `CustomEvent` \(type=unhandledrejection\) captured as promise rejection/i
 	if (
-		eventMessages(event).some((message) => customEventMessage.test(message))
+		eventMessages(event).some((message) =>
+			CUSTOM_EVENT_UNHANDLED_REJECTION_MESSAGE.test(message),
+		)
 	) {
 		return true
 	}
@@ -635,6 +718,7 @@ export function shouldDropSentryEvent(
 	if (isTranslatorDomMutationNoise(event, hint)) return true
 	if (isWalletUserRejection(event, hint)) return true
 	if (isCustomEventUnhandledRejectionNoise(event, hint)) return true
+	if (isBrokenClientFetchContractError(event, hint)) return true
 	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true

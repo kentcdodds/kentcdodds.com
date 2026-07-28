@@ -29,6 +29,18 @@ fixes it.
   errors — those can hide real outages. Message/stack drop rules must establish
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
+- Client `TypeError: Failed to fetch` / Firefox `NetworkError when attempting to
+fetch resource` / Safari `Load failed` with React Router stacks
+  (`fetchAndDecodeViaTurboStream`, `fetchAndApplyManifestPatches`) and a
+  failing `.data` / `__manifest` breadcrumb **without** `status_code` are
+  browser network-layer failures during SPA nav (idle tab, offline, flaky
+  mobile) — not an app throw. Live endpoints often still return 200. Do not
+  broadly `ignoreErrors` these (KCD-XZ / KCD-QG family); optional product UX is
+  a hard-reload fallback on nav TypeError.
+- Blog `markAsRead()` (`routes/action/mark-as-read.tsx`) is best-effort read
+  tracking. Uncaught `fetch` rejections from that path are app noise: keep the
+  catch inside `markAsRead` (KCD-FY / KCD-1R / KCD-ZW / KCD-WV), do not filter
+  generic network strings in `sentry-noise.ts`.
 - Server: React Router `throwIfPotentialCSRFAttack` aborts (`…from a forwarded
 action request. Aborting the action.`, invalid/`missing host` Origin variants)
   are expected 400s for mismatched Origin probes. Skip Sentry in
@@ -75,12 +87,19 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   (DOCTYPE payload signature; turbo-stream / Safari pattern require RR stack
   or `.data`/`__manifest` breadcrumbs). Do not broaden to generic
   `Failed to fetch`.
+- Client `TypeError: … reading 'ok'|'status'` from React Router's
+  `fetchAndApplyManifestPatches` / `fetchAndDecodeViaTurboStream` means
+  `fetch` resolved to `undefined` (native `fetch` never does). That signature
+  alone is not enough to drop — a first-party broken wrapper would look the
+  same. Only filter via `isBrokenClientFetchContractError` when trailing
+  console breadcrumbs are the injected interceptor's adjacent `URL:` →
+  `Options:` sequence (KCD-ZY / KCD-ZX); otherwise retain for triage.
 - Client `<unknown>` unhandledrejection titles with empty stacks are often
   non-Error rejections. Inspect the event JSON `extra.__serialized__` before
-  filtering: EIP-1193 wallet disconnect uses code `4900` /
-  "The provider is disconnected from all chains." with
-  `chrome-extension://…/background.js` stacks (KCD-YX — extend
-  `isWalletUserRejection`); Safari/extension
+  filtering: EIP-1193 wallet disconnect uses codes `4900` /
+  "The provider is disconnected from all chains." and `4901` /
+  "…from the requested chain" with `chrome-extension://…/background.js`
+  stacks (KCD-YX — extend `isWalletUserRejection`); Safari/extension
   `Event \`CustomEvent\` (type=unhandledrejection) captured as promise rejection`
   is external CustomEvent wrapping (KCD-S8). Never drop bare
   "Object captured as promise rejection with keys…" without a provider signal.

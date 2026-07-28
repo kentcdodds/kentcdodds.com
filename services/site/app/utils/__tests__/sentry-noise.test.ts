@@ -2,7 +2,9 @@ import { expect, test } from 'vitest'
 import {
 	SENTRY_DENY_URLS,
 	SENTRY_IGNORE_ERRORS,
+	hasInjectedFetchInterceptorBreadcrumbs,
 	hasOnlyUnusableStackFrames,
+	isBrokenClientFetchContractError,
 	isBrowserExtensionError,
 	isCloudflareEdgeErrorHtml,
 	isCloudflareEdgeRouteError,
@@ -18,6 +20,25 @@ import {
 	isWalletUserRejection,
 	shouldDropSentryEvent,
 } from '../sentry-noise.ts'
+
+const injectedFetchInterceptorBreadcrumbs = [
+	{
+		category: 'console',
+		message:
+			'URL: https://kentcdodds.com/__manifest?paths=%2Fcourses&version=abc',
+		data: {
+			arguments: [
+				'URL:',
+				'https://kentcdodds.com/__manifest?paths=%2Fcourses&version=abc',
+			],
+		},
+	},
+	{
+		category: 'console',
+		message: 'Options: [object Object]',
+		data: { arguments: ['Options:', { headers: '[Object]' }] },
+	},
+]
 
 function matchesIgnoreError(message: string) {
 	return SENTRY_IGNORE_ERRORS.some((pattern) => {
@@ -956,4 +977,114 @@ test('recognizes React Router CSRF abort messages (KCD-YN)', () => {
 		false,
 	)
 	expect(isReactRouterCsrfAbortError('not an error')).toBe(false)
+})
+
+test('filters broken fetch monkey-patch crashing React Router (KCD-ZY / KCD-ZX)', () => {
+	expect(
+		hasInjectedFetchInterceptorBreadcrumbs({
+			breadcrumbs: injectedFetchInterceptorBreadcrumbs,
+		}),
+	).toBe(true)
+
+	expect(
+		isBrokenClientFetchContractError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'ok')",
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'../../../../../node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs',
+									function: 'fetchAndApplyManifestPatches',
+								},
+							],
+						},
+					},
+				],
+			},
+			breadcrumbs: injectedFetchInterceptorBreadcrumbs,
+		}),
+	).toBe(true)
+
+	expect(
+		isBrokenClientFetchContractError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'status')",
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'../../../../../node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs',
+									function: 'fetchAndDecodeViaTurboStream',
+								},
+							],
+						},
+					},
+				],
+			},
+			breadcrumbs: injectedFetchInterceptorBreadcrumbs,
+		}),
+	).toBe(true)
+
+	expect(
+		isBrokenClientFetchContractError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'ok')",
+						stacktrace: {
+							frames: [{ function: 'fetchAndApplyManifestPatches' }],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		isBrokenClientFetchContractError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'ok')",
+						stacktrace: {
+							frames: [{ function: 'fetchAndApplyManifestPatches' }],
+						},
+					},
+				],
+			},
+			breadcrumbs: [
+				...injectedFetchInterceptorBreadcrumbs,
+				...Array.from({ length: 8 }, (_, index) => ({
+					category: 'console',
+					message: `unrelated console ${index}`,
+				})),
+			],
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'ok')",
+						stacktrace: {
+							frames: [{ function: 'fetchAndApplyManifestPatches' }],
+						},
+					},
+				],
+			},
+			breadcrumbs: injectedFetchInterceptorBreadcrumbs,
+		}),
+	).toBe(true)
 })

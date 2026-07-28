@@ -75,9 +75,19 @@ export async function action({ request }: Route.ActionArgs) {
 	return json({ success: true })
 }
 
+/**
+ * Best-effort read tracking. Offline / tab-close / flaky mobile networks reject
+ * `fetch` with TypeError (Chrome "Failed to fetch", Safari "Load failed",
+ * Firefox "NetworkError…") — catch so callers' `void markAsRead()` does not
+ * surface as onunhandledrejection (KCD-FY / KCD-1R / KCD-ZW / KCD-WV).
+ */
 export async function markAsRead({ slug }: { slug: string }) {
-	return fetch('/action/mark-as-read', {
-		method: 'POST',
-		body: new URLSearchParams({ slug }),
-	})
+	try {
+		return await fetch('/action/mark-as-read', {
+			method: 'POST',
+			body: new URLSearchParams({ slug }),
+		})
+	} catch {
+		return undefined
+	}
 }

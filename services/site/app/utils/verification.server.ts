@@ -6,8 +6,25 @@ import { verificationTable } from '#app/utils/db/schema.server.ts'
 
 const VERIFICATION_CODE_DIGITS = 6
 const VERIFICATION_CODE_MAX_AGE_MS = 1000 * 60 * 10
+const UUID_RE = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i
 
 export type VerificationType = 'SIGNUP' | 'PASSWORD_RESET'
+
+/**
+ * Verification rows use UUID primary keys. Form/query values must stay Latin-1
+ * safe for `Location` / `Headers` (ByteString) — reject anything else before
+ * interpolating into redirect URLs (Sentry KCD-ZN).
+ */
+export function isUuid(value: string) {
+	return UUID_RE.test(value)
+}
+
+export function getSignupVerificationRedirectTo(verificationId: unknown) {
+	if (typeof verificationId === 'string' && isUuid(verificationId)) {
+		return `/signup?verification=${encodeURIComponent(verificationId)}`
+	}
+	return '/signup'
+}
 
 function generateVerificationCode() {
 	// 000000 - 999999 (left-padded)
@@ -64,7 +81,8 @@ export async function consumeVerification({
 
 	if (!verification) return null
 	if (verification.type !== type) return null
-	if (Date.now() > new Date(verification.expiresAt as Date).getTime()) return null
+	if (Date.now() > new Date(verification.expiresAt as Date).getTime())
+		return null
 
 	const isValid = await bcrypt.compare(code, verification.codeHash)
 	if (!isValid) return null
@@ -88,7 +106,11 @@ export async function consumeVerificationForTarget({
 	type: VerificationType
 }) {
 	const verification = await db.findOne(verificationTable, {
-		where: and(eq('target', target), eq('type', type), gt('expiresAt', new Date())),
+		where: and(
+			eq('target', target),
+			eq('type', type),
+			gt('expiresAt', new Date()),
+		),
 		orderBy: ['createdAt', 'desc'],
 	})
 	if (!verification) return null
