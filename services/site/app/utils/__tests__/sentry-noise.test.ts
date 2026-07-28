@@ -16,6 +16,7 @@ import {
 	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
 	isReactRouterEdgeHttpStatusError,
+	isReactSchedulerAlreadyWorkingNoise,
 	isTranslatorDomMutationNoise,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
@@ -261,6 +262,109 @@ test('filters injected elem.firstChild parsers (KCD-ZZ)', () => {
 			"undefined is not an object (evaluating 'elem.firstChild')",
 		),
 	).toBe(true)
+})
+
+test('filters React Firefox scheduler re-entrancy (KCD-YT)', () => {
+	const firefoxSchedulerEvent = {
+		exception: {
+			values: [
+				{
+					type: 'Error',
+					value: 'Should not already be working.',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../node_modules/scheduler/cjs/scheduler.production.js',
+								function: 'performWorkUntilDeadline',
+								inApp: false,
+							},
+							{
+								filename:
+									'../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+								function: 'performWorkOnRootViaSchedulerTask',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactSchedulerAlreadyWorkingNoise(firefoxSchedulerEvent)).toBe(true)
+	expect(shouldDropSentryEvent(firefoxSchedulerEvent)).toBe(true)
+
+	// Exact phrase alone (no scheduler/react-dom stack) must not drop.
+	expect(
+		isReactSchedulerAlreadyWorkingNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Should not already be working.',
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// Mixed stack with an unrelated non-app frame must stay reportable.
+	expect(
+		isReactSchedulerAlreadyWorkingNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Should not already be working.',
+						stacktrace: {
+							frames: [
+								{
+									filename: 'https://cdn.example.com/injected.js',
+									function: 'hijack',
+									inApp: false,
+								},
+								{
+									filename:
+										'../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+									function: 'performWorkOnRootViaSchedulerTask',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// In-app frames mean a real app re-entrancy bug — keep reporting.
+	expect(
+		isReactSchedulerAlreadyWorkingNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Should not already be working.',
+						stacktrace: {
+							frames: [
+								{
+									filename: '/app/routes/blog_/$slug.tsx',
+									function: 'Blog',
+									inApp: true,
+								},
+								{
+									filename:
+										'../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+									function: 'performWorkOnRootViaSchedulerTask',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)', () => {

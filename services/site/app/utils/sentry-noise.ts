@@ -177,6 +177,25 @@ const TRANSLATOR_DOM_MUTATION_MESSAGE =
 const REACT_DOM_MUTATION_STACK =
 	/react-dom|commitDeletionEffects|commitMutationEffects|removeChild|insertBefore/i
 
+/**
+ * React Fiber invariant when Firefox fires MessageChannel during a blocking
+ * API (`alert` / `confirm` / `prompt` / nested work) while the scheduler is
+ * already in render/commit (facebook/react#17355, Bugzilla 758004). KCD-YT.
+ */
+const REACT_SCHEDULER_ALREADY_WORKING = /^Should not already be working\.?$/i
+
+const REACT_SCHEDULER_REENTRANCY_FRAME =
+	/performWorkUntilDeadline|performWorkOnRootViaSchedulerTask|performSyncWorkOnRoot|scheduler(?:\.production)?(?:\.min)?\.js|react-dom(?:-client)?(?:\.production)?(?:\.min)?\.js/i
+
+function isReactSchedulerReentrancyFrame(frame: {
+	filename?: string | null
+	function?: string | null
+}): boolean {
+	return REACT_SCHEDULER_REENTRANCY_FRAME.test(
+		`${frame.filename ?? ''} ${frame.function ?? ''}`,
+	)
+}
+
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
 	return /chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:/i.test(
@@ -382,6 +401,47 @@ function exceptionMessage(exception: unknown): string {
 		return (exception as { message: string }).message
 	}
 	return ''
+}
+
+/**
+ * Drop React's "Should not already be working" invariant when the stack is
+ * exclusively the scheduler → react-dom work loop (Firefox MessageChannel
+ * re-entrancy during blocking APIs). Require the exact message plus that
+ * stack with no in-app frames — never the phrase alone (KCD-YT /
+ * facebook/react#17355).
+ */
+export function isReactSchedulerAlreadyWorkingNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const original = hint.originalException
+	const messageMatches = eventMessages(event).some((message) =>
+		REACT_SCHEDULER_ALREADY_WORKING.test(message.trim()),
+	)
+	if (
+		!messageMatches &&
+		!REACT_SCHEDULER_ALREADY_WORKING.test(exceptionMessage(original).trim())
+	) {
+		return false
+	}
+
+	const frames = (event.exception?.values ?? []).flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+	// Need attributed frames so we can prove exclusivity — message alone is
+	// not enough, and mixed third-party frames must stay reportable.
+	if (frames.length === 0) return false
+	if (frames.some((frame) => frame.inApp)) return false
+	if (!frames.every(isReactSchedulerReentrancyFrame)) return false
+
+	const blob = `${frames
+		.map((frame) => `${frame.filename ?? ''} ${frame.function ?? ''}`)
+		.join('\n')}\n${stackBlob(event, original)}`
+	// Bundled/minified stacks without sourcemaps still count when the only
+	// frames are scheduler / react-dom — reject app route paths.
+	if (/\/app\/|\/routes\/|components\//i.test(blob)) return false
+
+	return true
 }
 
 /**
@@ -716,6 +776,7 @@ export function shouldDropSentryEvent(
 ): boolean {
 	if (isBrowserExtensionError(hint.originalException)) return true
 	if (isTranslatorDomMutationNoise(event, hint)) return true
+	if (isReactSchedulerAlreadyWorkingNoise(event, hint)) return true
 	if (isWalletUserRejection(event, hint)) return true
 	if (isCustomEventUnhandledRejectionNoise(event, hint)) return true
 	if (isBrokenClientFetchContractError(event, hint)) return true
