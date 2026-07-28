@@ -64,6 +64,13 @@ fixes it.
   (DOCTYPE payload signature; turbo-stream / Safari pattern require RR stack
   or `.data`/`__manifest` breadcrumbs). Do not broaden to generic
   `Failed to fetch`.
+- Client `TypeError: … reading 'ok'|'status'` from React Router's
+  `fetchAndApplyManifestPatches` / `fetchAndDecodeViaTurboStream` means
+  `fetch` resolved to `undefined` (native `fetch` never does). That signature
+  alone is not enough to drop — a first-party broken wrapper would look the
+  same. Only filter via `isBrokenClientFetchContractError` when trailing
+  console breadcrumbs are the injected interceptor's adjacent `URL:` →
+  `Options:` sequence (KCD-ZY / KCD-ZX); otherwise retain for triage.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
