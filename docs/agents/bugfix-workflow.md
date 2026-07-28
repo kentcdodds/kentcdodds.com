@@ -29,6 +29,11 @@ fixes it.
   errors — those can hide real outages. Message/stack drop rules must establish
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
+- Server: React Router `throwIfPotentialCSRFAttack` aborts (`…from a forwarded
+  action request. Aborting the action.`, invalid/`missing host` Origin variants)
+  are expected 400s for mismatched Origin probes. Skip Sentry in
+  `entry.server.tsx` `handleError` via `isReactRouterCsrfAbortError` (KCD-YN);
+  do not weaken CSRF checks to silence the alert.
 - Page-translator DOM mutation (Google/Chrome Translate) often surfaces as
   `RangeError: Maximum call stack size exceeded` with an unattributed
   `filename: "undefined"` frame plus UI breadcrumbs like `a > font > font`, or

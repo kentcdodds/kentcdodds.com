@@ -210,3 +210,30 @@ test('worker pipeline still reaches the router for a normal path', async () => {
 	expect(response.status).toBe(200)
 	expect(await response.text()).toContain('splat')
 })
+
+test('worker pipeline CSRF-rejects POST with mismatched Origin (KCD-YN)', async () => {
+	const getServerBuild = vi.fn(async () => createMinimalSplatServerBuild())
+	const handler = createWorkerFetchHandler({
+		redirectsText: '',
+		ensureRuntimeBridges: async () => {},
+		getServerBuild,
+		requestHandlerMode: 'production',
+		errorLogLabel: 'test-csrf-abort',
+	})
+
+	const response = await handler.fetch(
+		new Request('https://kentcdodds.com/me', {
+			method: 'POST',
+			headers: {
+				Origin: 'https://evil.example',
+				Host: 'kentcdodds.com',
+			},
+		}),
+		{},
+		createTestExecutionContext(),
+	)
+
+	expect(getServerBuild).toHaveBeenCalledOnce()
+	expect(response.status).toBe(400)
+	expect(await response.text()).toBe('Bad Request')
+})
