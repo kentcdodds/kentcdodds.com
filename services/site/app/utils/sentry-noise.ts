@@ -163,8 +163,17 @@ const REACT_DOM_MUTATION_STACK =
  */
 const REACT_SCHEDULER_ALREADY_WORKING = /^Should not already be working\.?$/i
 
-const REACT_SCHEDULER_REENTRANCY_STACK =
+const REACT_SCHEDULER_REENTRANCY_FRAME =
 	/performWorkUntilDeadline|performWorkOnRootViaSchedulerTask|performSyncWorkOnRoot|scheduler(?:\.production)?(?:\.min)?\.js|react-dom(?:-client)?(?:\.production)?(?:\.min)?\.js/i
+
+function isReactSchedulerReentrancyFrame(frame: {
+	filename?: string | null
+	function?: string | null
+}): boolean {
+	return REACT_SCHEDULER_REENTRANCY_FRAME.test(
+		`${frame.filename ?? ''} ${frame.function ?? ''}`,
+	)
+}
 
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
@@ -398,14 +407,15 @@ export function isReactSchedulerAlreadyWorkingNoise(
 	const frames = (event.exception?.values ?? []).flatMap(
 		(value) => value.stacktrace?.frames ?? [],
 	)
+	// Need attributed frames so we can prove exclusivity — message alone is
+	// not enough, and mixed third-party frames must stay reportable.
+	if (frames.length === 0) return false
 	if (frames.some((frame) => frame.inApp)) return false
+	if (!frames.every(isReactSchedulerReentrancyFrame)) return false
 
-	const frameBlob = frames
+	const blob = `${frames
 		.map((frame) => `${frame.filename ?? ''} ${frame.function ?? ''}`)
-		.join('\n')
-	const blob = `${frameBlob}\n${stackBlob(event, original)}`
-	if (!REACT_SCHEDULER_REENTRANCY_STACK.test(blob)) return false
-
+		.join('\n')}\n${stackBlob(event, original)}`
 	// Bundled/minified stacks without sourcemaps still count when the only
 	// frames are scheduler / react-dom — reject app route paths.
 	if (/\/app\/|\/routes\/|components\//i.test(blob)) return false

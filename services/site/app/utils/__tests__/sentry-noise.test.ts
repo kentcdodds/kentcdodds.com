@@ -205,6 +205,35 @@ test('filters React Firefox scheduler re-entrancy (KCD-YT)', () => {
 		}),
 	).toBe(false)
 
+	// Mixed stack with an unrelated non-app frame must stay reportable.
+	expect(
+		isReactSchedulerAlreadyWorkingNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Should not already be working.',
+						stacktrace: {
+							frames: [
+								{
+									filename: 'https://cdn.example.com/injected.js',
+									function: 'hijack',
+									inApp: false,
+								},
+								{
+									filename:
+										'../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+									function: 'performWorkOnRootViaSchedulerTask',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
 	// In-app frames mean a real app re-entrancy bug — keep reporting.
 	expect(
 		isReactSchedulerAlreadyWorkingNoise({
