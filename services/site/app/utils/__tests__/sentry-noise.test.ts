@@ -11,6 +11,7 @@ import {
 	isInjectedBlobAddListenerError,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterEdgeHttpStatusError,
+	isTranslatorDomMutationNoise,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
 } from '../sentry-noise.ts'
@@ -134,6 +135,103 @@ test('filters injected elem.firstChild parsers (KCD-ZZ)', () => {
 			"undefined is not an object (evaluating 'elem.firstChild')",
 		),
 	).toBe(true)
+})
+
+test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)', () => {
+	const chromeRemoveChild = {
+		exception: {
+			values: [
+				{
+					type: 'NotFoundError',
+					value:
+						"Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.",
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+								function: 'commitDeletionEffectsOnFiber',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isTranslatorDomMutationNoise(chromeRemoveChild)).toBe(true)
+	expect(shouldDropSentryEvent(chromeRemoveChild)).toBe(true)
+
+	const safariObjectNotFound = {
+		exception: {
+			values: [
+				{
+					type: 'NotFoundError',
+					value: 'The object can not be found here.',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+								function: 'commitDeletionEffectsOnFiber',
+								inApp: false,
+							},
+							{
+								filename: '[native code]',
+								function: 'removeChild',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isTranslatorDomMutationNoise(safariObjectNotFound)).toBe(true)
+
+	// Safari phrase alone (no react-dom stack) must not drop — too generic.
+	expect(
+		isTranslatorDomMutationNoise({
+			exception: {
+				values: [
+					{
+						type: 'NotFoundError',
+						value: 'The object can not be found here.',
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// In-app frames mean a real app DOM bug — keep reporting.
+	expect(
+		isTranslatorDomMutationNoise({
+			exception: {
+				values: [
+					{
+						type: 'NotFoundError',
+						value:
+							"Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.",
+						stacktrace: {
+							frames: [
+								{
+									filename: '/app/routes/blog.tsx',
+									function: 'Blog',
+									inApp: true,
+								},
+								{
+									filename:
+										'../../../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+									function: 'commitDeletionEffectsOnFiber',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {

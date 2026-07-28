@@ -64,6 +64,7 @@ type SentryExceptionValue = {
 		frames?: Array<{
 			filename?: string | null
 			function?: string | null
+			inApp?: boolean | null
 		}> | null
 	} | null
 }
@@ -103,6 +104,18 @@ const CLOUDFLARE_EDGE_STATUSES = new Set([502, 503, 524])
 const REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE = /^5(?:02|03|24)\s*$/
 
 const REACT_ROUTER_MANIFEST_PATCH_STACK = /fetchAndApplyManifestPatches/
+
+/**
+ * Chrome / Chromium Google Translate (and similar DOM mutators) reparent text
+ * nodes so React's next removeChild/insertBefore throws NotFoundError.
+ * Safari Translate surfaces the same DOMException as a shorter message.
+ * Distinctive signatures from KCD-S5 / KCD-XQ / KCD-ZE (facebook/react#11538).
+ */
+const TRANSLATOR_DOM_MUTATION_MESSAGE =
+	/Failed to execute '(?:removeChild|insertBefore)' on 'Node': The node (?:to be removed|before which the new node is to be inserted) is not a child of this node\.|The object can not be found here\./i
+
+const REACT_DOM_MUTATION_STACK =
+	/react-dom|commitDeletionEffects|commitMutationEffects|removeChild|insertBefore/i
 
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
@@ -205,6 +218,68 @@ export function isReactRouterEdgeHttpStatusError(
 	}
 
 	return REACT_ROUTER_MANIFEST_PATCH_STACK.test(stackBlob(event, original))
+}
+
+function exceptionMessage(exception: unknown): string {
+	if (exception instanceof Error) return exception.message
+	if (
+		typeof exception === 'object' &&
+		exception &&
+		'message' in exception &&
+		typeof (exception as { message?: unknown }).message === 'string'
+	) {
+		return (exception as { message: string }).message
+	}
+	return ''
+}
+
+/**
+ * Drop React NotFoundError noise caused by in-page translators / extensions
+ * mutating the DOM under React. Require the distinctive message plus a
+ * react-dom/native mutation stack with no in-app frames — never the Safari
+ * phrase alone.
+ */
+export function isTranslatorDomMutationNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const original = hint.originalException
+	const exceptionValues = event.exception?.values ?? []
+	const messageMatches = eventMessages(event).some((message) =>
+		TRANSLATOR_DOM_MUTATION_MESSAGE.test(message),
+	)
+	if (
+		!messageMatches &&
+		!TRANSLATOR_DOM_MUTATION_MESSAGE.test(exceptionMessage(original))
+	) {
+		return false
+	}
+
+	const namedNotFound = exceptionValues.some(
+		(value) => value.type === 'NotFoundError' || value.type === 'DOMException',
+	)
+	const originalIsNotFound =
+		(original instanceof Error &&
+			(original.name === 'NotFoundError' || original.name === 'DOMException')) ||
+		(typeof DOMException !== 'undefined' && original instanceof DOMException)
+	if (!namedNotFound && !originalIsNotFound) return false
+
+	const frames = exceptionValues.flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+	if (frames.some((frame) => frame.inApp)) return false
+
+	const frameBlob = frames
+		.map((frame) => `${frame.filename ?? ''} ${frame.function ?? ''}`)
+		.join('\n')
+	const blob = `${frameBlob}\n${stackBlob(event, original)}`
+	if (!REACT_DOM_MUTATION_STACK.test(blob)) return false
+
+	// Bundled/minified stacks without sourcemaps still count when the only
+	// frames are entry.client / react-dom / native — reject app route paths.
+	if (/\/app\/|\/routes\/|components\//i.test(blob)) return false
+
+	return true
 }
 
 /**
@@ -346,6 +421,7 @@ export function shouldDropSentryEvent(
 	hint: { originalException?: unknown; pageTranslated?: boolean } = {},
 ): boolean {
 	if (isBrowserExtensionError(hint.originalException)) return true
+	if (isTranslatorDomMutationNoise(event, hint)) return true
 	if (isWalletUserRejection(event, hint)) return true
 	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
