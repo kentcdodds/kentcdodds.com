@@ -31,6 +31,10 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/document\.querySelector\("meta\[property='og:type'\]"\)\.content/,
 	// Injected HTML parsers / translators mutating the DOM (KCD-ZZ).
 	/evaluating 'elem\.firstChild'/,
+	// React Router SingleFetchNoResultError: client route tree / single-fetch
+	// response skew across deploys (stale tab). Distinctive framework message from
+	// unwrapSingleFetchResult — not an app missing-route bug (KCD-VP family).
+	/No result found for routeId "/,
 ]
 
 export const SENTRY_DENY_URLS: Array<RegExp> = [

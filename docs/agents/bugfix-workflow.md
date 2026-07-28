@@ -36,6 +36,13 @@ fixes it.
   fetch, not an app `throw` of status 502. Confirm via
   `extra.route_error_response.data` before treating it as a route bug. App code
   almost never throws 502 (exception: `resources/lookout`).
+- Client `Error: No result found for routeId "…"` is React Router's
+  `SingleFetchNoResultError` from `unwrapSingleFetchResult` when a stale client
+  route tree asks for a routeId missing from the server's single-fetch `.data`
+  response (tab held open across deploys). Stack is entirely in `react-router`;
+  the same signature appears for many still-existing routes (`routes/courses`,
+  `routes/blog_/$slug`, etc.). Filter via `sentry-noise.ts` — do not "fix" by
+  re-adding routes that already exist.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on

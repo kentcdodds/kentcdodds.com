@@ -129,6 +129,23 @@ test('filters injected elem.firstChild parsers (KCD-ZZ)', () => {
 	).toBe(true)
 })
 
+test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
+	expect(
+		matchesIgnoreError('No result found for routeId "routes/courses"'),
+	).toBe(true)
+	expect(
+		matchesIgnoreError(
+			'No result found for routeId "routes/blog_/$slug"',
+		),
+	).toBe(true)
+	expect(
+		matchesIgnoreError(
+			'No result found for routeId "routes/calls/$season/$episode/$slug"',
+		),
+	).toBe(true)
+	expect(matchesIgnoreError('No result found for route')).toBe(false)
+})
+
 test('keeps Module load timeout filter (KCD-ZS / KCD-ZT)', () => {
 	expect(matchesIgnoreError('Module load timeout: m_1001')).toBe(true)
 	expect(matchesIgnoreError('Module load timeout: m_1004')).toBe(true)
