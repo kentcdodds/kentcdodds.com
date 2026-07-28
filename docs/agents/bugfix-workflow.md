@@ -94,6 +94,13 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   same. Only filter via `isBrokenClientFetchContractError` when trailing
   console breadcrumbs are the injected interceptor's adjacent `URL:` →
   `Options:` sequence (KCD-ZY / KCD-ZX); otherwise retain for triage.
+- Client `Error: Should not already be working.` from React's scheduler →
+  `react-dom` work loop (`performWorkUntilDeadline` /
+  `performWorkOnRootViaSchedulerTask`) is Firefox MessageChannel re-entrancy
+  during blocking APIs (facebook/react#17355, Bugzilla 758004) — not an app
+  bug. Filter via `isReactSchedulerAlreadyWorkingNoise` only when the exact
+  message has an exclusively scheduler/react-dom stack (every frame) and no
+  in-app frames (KCD-YT). Do not ignore the phrase alone.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on

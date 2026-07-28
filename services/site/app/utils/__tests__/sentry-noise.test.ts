@@ -15,6 +15,7 @@ import {
 	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
 	isReactRouterEdgeHttpStatusError,
+	isReactSchedulerAlreadyWorkingNoise,
 	isTranslatorDomMutationNoise,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
@@ -160,6 +161,109 @@ test('filters injected elem.firstChild parsers (KCD-ZZ)', () => {
 	).toBe(true)
 })
 
+test('filters React Firefox scheduler re-entrancy (KCD-YT)', () => {
+	const firefoxSchedulerEvent = {
+		exception: {
+			values: [
+				{
+					type: 'Error',
+					value: 'Should not already be working.',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../node_modules/scheduler/cjs/scheduler.production.js',
+								function: 'performWorkUntilDeadline',
+								inApp: false,
+							},
+							{
+								filename:
+									'../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+								function: 'performWorkOnRootViaSchedulerTask',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactSchedulerAlreadyWorkingNoise(firefoxSchedulerEvent)).toBe(true)
+	expect(shouldDropSentryEvent(firefoxSchedulerEvent)).toBe(true)
+
+	// Exact phrase alone (no scheduler/react-dom stack) must not drop.
+	expect(
+		isReactSchedulerAlreadyWorkingNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Should not already be working.',
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// Mixed stack with an unrelated non-app frame must stay reportable.
+	expect(
+		isReactSchedulerAlreadyWorkingNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Should not already be working.',
+						stacktrace: {
+							frames: [
+								{
+									filename: 'https://cdn.example.com/injected.js',
+									function: 'hijack',
+									inApp: false,
+								},
+								{
+									filename:
+										'../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+									function: 'performWorkOnRootViaSchedulerTask',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// In-app frames mean a real app re-entrancy bug — keep reporting.
+	expect(
+		isReactSchedulerAlreadyWorkingNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Should not already be working.',
+						stacktrace: {
+							frames: [
+								{
+									filename: '/app/routes/blog_/$slug.tsx',
+									function: 'Blog',
+									inApp: true,
+								},
+								{
+									filename:
+										'../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+									function: 'performWorkOnRootViaSchedulerTask',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+})
+
 test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)', () => {
 	const chromeRemoveChild = {
 		exception: {
@@ -262,9 +366,7 @@ test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
 		matchesIgnoreError('No result found for routeId "routes/courses"'),
 	).toBe(true)
 	expect(
-		matchesIgnoreError(
-			'No result found for routeId "routes/blog_/$slug"',
-		),
+		matchesIgnoreError('No result found for routeId "routes/blog_/$slug"'),
 	).toBe(true)
 	expect(
 		matchesIgnoreError(
@@ -305,9 +407,11 @@ test('filters Sentry Replay cross-origin iframe Element probes (KCD-TF)', () => 
 })
 
 test('drops extension blob-script addListener noise (KCD-Z7)', () => {
-	expect(matchesIgnoreError("Cannot read properties of undefined (reading 'addListener')")).toBe(
-		false,
-	)
+	expect(
+		matchesIgnoreError(
+			"Cannot read properties of undefined (reading 'addListener')",
+		),
+	).toBe(false)
 
 	expect(
 		isInjectedBlobAddListenerError({
@@ -315,7 +419,8 @@ test('drops extension blob-script addListener noise (KCD-Z7)', () => {
 				values: [
 					{
 						type: 'TypeError',
-						value: "Cannot read properties of undefined (reading 'addListener')",
+						value:
+							"Cannot read properties of undefined (reading 'addListener')",
 						stacktrace: {
 							frames: [
 								{
@@ -340,7 +445,8 @@ test('drops extension blob-script addListener noise (KCD-Z7)', () => {
 				values: [
 					{
 						type: 'TypeError',
-						value: "Cannot read properties of undefined (reading 'addListener')",
+						value:
+							"Cannot read properties of undefined (reading 'addListener')",
 						stacktrace: {
 							frames: [{ filename: '/assets/app-abc123.js' }],
 						},
@@ -356,7 +462,8 @@ test('drops extension blob-script addListener noise (KCD-Z7)', () => {
 				values: [
 					{
 						type: 'TypeError',
-						value: "Cannot read properties of undefined (reading 'addListener')",
+						value:
+							"Cannot read properties of undefined (reading 'addListener')",
 						stacktrace: {
 							frames: [
 								{
@@ -499,7 +606,9 @@ test('filters React Router manifest-patch edge HTTP status errors (KCD-ZH/YD/YF)
 						type: 'Error',
 						value: '502 ',
 						stacktrace: {
-							frames: [{ filename: '/app/routes/blog.tsx', function: 'loader' }],
+							frames: [
+								{ filename: '/app/routes/blog.tsx', function: 'loader' },
+							],
 						},
 					},
 				],
