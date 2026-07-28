@@ -10,11 +10,8 @@ import {
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
 	isPageTranslatorCallStackOverflow,
-<<<<<<< HEAD
-	isReactRouterDataProtocolNoise,
-=======
 	isReactRouterCsrfAbortError,
->>>>>>> 01797435 (Filter React Router CSRF abort noise from Sentry (KCD-YN))
+	isReactRouterDataProtocolNoise,
 	isReactRouterEdgeHttpStatusError,
 	isWalletUserRejection,
 	shouldDropSentryEvent,

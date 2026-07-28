@@ -12,16 +12,6 @@
  * is wired from `entry.server.tsx` `handleError` (KCD-YN).
  */
 
-<<<<<<< HEAD
-const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
-const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
-const SAFARI_JSON_PATTERN_ERROR =
-	/^The string did not match the expected pattern\.?$/i
-const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
-const REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK =
-	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
-const DATA_PROTOCOL_REQUEST = /\/(?:__manifest|\S+\.data)(?:\?|$)/i
-=======
 /**
  * React Router `throwIfPotentialCSRFAttack` rejects cross-origin POSTs with
  * these exact messages, then `handleError` would otherwise report them.
@@ -40,7 +30,15 @@ export function isReactRouterCsrfAbortError(error: unknown): boolean {
 		error.message.includes(message),
 	)
 }
->>>>>>> 01797435 (Filter React Router CSRF abort noise from Sentry (KCD-YN))
+
+const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
+const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
+const SAFARI_JSON_PATTERN_ERROR =
+	/^The string did not match the expected pattern\.?$/i
+const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
+const REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK =
+	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
+const DATA_PROTOCOL_REQUEST = /\/(?:__manifest|\S+\.data)(?:\?|$)/i
 
 export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	// Tunnel / self-reporting
