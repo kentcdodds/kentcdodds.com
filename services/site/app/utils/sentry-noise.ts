@@ -46,17 +46,39 @@ export const SENTRY_DENY_URLS: Array<RegExp> = [
 type SentryExceptionValue = {
 	type?: string | null
 	value?: string | null
-	stacktrace?: { frames?: Array<{ filename?: string | null }> | null } | null
+	stacktrace?: {
+		frames?: Array<{
+			filename?: string | null
+			function?: string | null
+		}> | null
+	} | null
+}
+
+type RouteErrorResponseExtra = {
+	status?: number | null
+	statusText?: string | null
+	data?: unknown
 }
 
 type SentryEventLike = {
 	message?: string | null
 	request?: { url?: string | null } | null
 	exception?: { values?: Array<SentryExceptionValue> | null } | null
+	extra?: { route_error_response?: RouteErrorResponseExtra | null } | null
 }
 
 const WALLET_PROVIDER_STACK =
 	/metamask|coinbase|rainbow|walletconnect|phantom|ethereum|eip-1193|inpage\.js|nkbihfbeogaeaoehlefnkodbefgpgknn/i
+
+/** Cloudflare edge HTML error pages (502/503/524) seen on SPA .data fetches. */
+const CLOUDFLARE_EDGE_ERROR_TITLE =
+	/<\s*title[^>]*>[^<]*\|\s*5(?:02:\s*Bad gateway|03:\s*Service unavailable|24:\s*A timeout occurred)\s*<\s*\/\s*title\s*>/i
+
+const CLOUDFLARE_EDGE_STATUSES = new Set([502, 503, 524])
+
+const REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE = /^5(?:02|03|24)\s*$/
+
+const REACT_ROUTER_MANIFEST_PATCH_STACK = /fetchAndApplyManifestPatches/
 
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
@@ -94,6 +116,71 @@ function stackBlob(event: SentryEventLike, originalException: unknown): string {
 	const errorStack =
 		originalException instanceof Error ? (originalException.stack ?? '') : ''
 	return `${frameFiles}\n${errorStack}`
+}
+
+export function isCloudflareEdgeErrorHtml(data: string): boolean {
+	if (!CLOUDFLARE_EDGE_ERROR_TITLE.test(data)) return false
+	// Ray ID + "cloudflare" are stable markers on the generic edge HTML page.
+	return /Ray ID/i.test(data) || /cloudflare/i.test(data)
+}
+
+/**
+ * Client RouteErrorResponse for edge/origin 502/503/524 — not an app throw.
+ * Confirmed via Sentry `extra.route_error_response.data` (Cloudflare HTML) or
+ * bare empty-body statuses during SPA data/manifest fetches (KCD-VH family).
+ * App 502/503 responses carry a non-empty body (lookout string / search JSON).
+ */
+export function isCloudflareEdgeRouteError(error: {
+	status: number
+	statusText?: string | null
+	data?: unknown
+}): boolean {
+	if (!CLOUDFLARE_EDGE_STATUSES.has(error.status)) return false
+
+	if (typeof error.data === 'string' && isCloudflareEdgeErrorHtml(error.data)) {
+		return true
+	}
+
+	const statusText = error.statusText ?? ''
+	const emptyBody = error.data === '' || error.data == null
+	return statusText === '' && emptyBody
+}
+
+function routeErrorExtra(
+	event: SentryEventLike,
+): RouteErrorResponseExtra | null {
+	return event.extra?.route_error_response ?? null
+}
+
+export function isCloudflareEdgeRouteErrorEvent(event: SentryEventLike): boolean {
+	const route = routeErrorExtra(event)
+	if (!route || typeof route.status !== 'number') return false
+
+	return isCloudflareEdgeRouteError({
+		status: route.status,
+		statusText: route.statusText,
+		data: route.data,
+	})
+}
+
+/**
+ * React Router surfaces bare `Error: 502 ` / `503 ` / `524 ` from
+ * fetchAndApplyManifestPatches when `__manifest` hits an edge HTTP failure
+ * (KCD-ZH / KCD-YD / KCD-YF). Require the RR frame — never the status alone.
+ */
+export function isReactRouterEdgeHttpStatusError(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const messages = eventMessages(event)
+	const original = hint.originalException
+	if (original instanceof Error) messages.push(original.message)
+
+	if (!messages.some((message) => REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE.test(message))) {
+		return false
+	}
+
+	return REACT_ROUTER_MANIFEST_PATCH_STACK.test(stackBlob(event, original))
 }
 
 /**
@@ -136,6 +223,8 @@ export function shouldDropSentryEvent(
 	if (isBrowserExtensionError(hint.originalException)) return true
 	if (isWalletUserRejection(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
+	if (isCloudflareEdgeRouteErrorEvent(event)) return true
+	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true
 	return false
