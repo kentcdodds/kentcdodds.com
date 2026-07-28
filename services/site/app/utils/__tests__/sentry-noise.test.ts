@@ -2,11 +2,14 @@ import { expect, test } from 'vitest'
 import {
 	SENTRY_DENY_URLS,
 	SENTRY_IGNORE_ERRORS,
+	hasOnlyUnusableStackFrames,
 	isBrowserExtensionError,
 	isCloudflareEdgeErrorHtml,
 	isCloudflareEdgeRouteError,
 	isDegradedUiPerformanceEvent,
+	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
+	isPageTranslatorCallStackOverflow,
 	isReactRouterEdgeHttpStatusError,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
@@ -449,6 +452,114 @@ test('drops degraded UI performance noise and lookout/translate requests', () =>
 		shouldDropSentryEvent({
 			message: 'Real app bug',
 			request: { url: 'https://kentcdodds.com/blog' },
+		}),
+	).toBe(false)
+})
+
+test('filters page-translator call stack overflows with font breadcrumbs (KCD-QW)', () => {
+	const translatorEvent = {
+		exception: {
+			values: [
+				{
+					type: 'RangeError',
+					value: 'Maximum call stack size exceeded.',
+					stacktrace: {
+						frames: [{ filename: 'undefined' }],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'ui.click',
+				message: 'ul > li > a > font > font',
+			},
+		],
+	}
+
+	expect(hasOnlyUnusableStackFrames(translatorEvent)).toBe(true)
+	expect(
+		isPageTranslatorCallStackOverflow(translatorEvent, {
+			pageTranslated: false,
+		}),
+	).toBe(true)
+	expect(
+		shouldDropSentryEvent(translatorEvent, { pageTranslated: false }),
+	).toBe(true)
+
+	// Real app frames must still alert even if a translator mutated the DOM.
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [{ filename: '/assets/entry.client.js' }],
+							},
+						},
+					],
+				},
+				breadcrumbs: [
+					{
+						category: 'ui.click',
+						message: 'ul > li > a > font > font',
+					},
+				],
+			},
+			{ pageTranslated: true },
+		),
+	).toBe(false)
+
+	// Unattributed stack overflow without translator evidence stays reportable.
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [{ filename: 'undefined' }],
+							},
+						},
+					],
+				},
+			},
+			{ pageTranslated: false },
+		),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [{ filename: 'undefined' }],
+							},
+						},
+					],
+				},
+			},
+			{ pageTranslated: true },
+		),
+	).toBe(true)
+
+	expect(
+		isHtmlPageTranslated({
+			documentElement: { className: 'translated-ltr' },
+		}),
+	).toBe(true)
+	expect(
+		isHtmlPageTranslated({
+			documentElement: { className: 'dark' },
 		}),
 	).toBe(false)
 })
