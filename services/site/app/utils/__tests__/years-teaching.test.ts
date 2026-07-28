@@ -11,11 +11,11 @@ test('getYearsTeaching returns calendar years since teaching start', () => {
 })
 
 test('getYearsTeaching avoids date-fns constructFrom Date.constructor path (KCD-100)', () => {
-	const brokenDate = new Date(TEACHING_STARTED_YEAR, 0, 0)
+	const brokenDate = new Date('2026-07-28')
 	Object.defineProperty(brokenDate, 'constructor', { value: undefined })
 	expect(() => constructFrom(brokenDate, Date.now())).toThrow(
 		/not a constructor/,
 	)
 
-	expect(getYearsTeaching(new Date('2026-07-28'))).toBe(12)
+	expect(getYearsTeaching(brokenDate)).toBe(12)
 })
