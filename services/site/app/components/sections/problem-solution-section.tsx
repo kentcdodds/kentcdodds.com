@@ -6,13 +6,13 @@ import {
 	Tabs,
 	type TabProps,
 } from '@reach/tabs'
-import { differenceInYears } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
 import { Link } from 'react-router'
 import { getImgProps, images, type ImageBuilder } from '#app/images.tsx'
 import { type Team } from '#app/types.ts'
 import { teamTextColorClasses } from '#app/utils/misc.ts'
+import { getYearsTeaching } from '#app/utils/years-teaching.ts'
 import { ArrowLink } from '../arrow-button.tsx'
 import { Grid } from '../grid.tsx'
 import { ArrowIcon } from '../icons.tsx'
@@ -176,10 +176,7 @@ function ProblemSolutionSection({
 					<Paragraph className="mt-8">
 						{`
               I've been teaching people just like you how to build better
-              software for over ${differenceInYears(
-								Date.now(),
-								new Date(2014, 0, 0),
-							)}
+              software for over ${getYearsTeaching()}
               years. My current focus is `}
 						<a
 							href="https://www.epicproduct.engineer"
