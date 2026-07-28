@@ -30,7 +30,7 @@ fixes it.
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
 - Server: React Router `throwIfPotentialCSRFAttack` aborts (`…from a forwarded
-  action request. Aborting the action.`, invalid/`missing host` Origin variants)
+action request. Aborting the action.`, invalid/`missing host` Origin variants)
   are expected 400s for mismatched Origin probes. Skip Sentry in
   `entry.server.tsx` `handleError` via `isReactRouterCsrfAbortError` (KCD-YN);
   do not weaken CSRF checks to silence the alert.
@@ -82,6 +82,13 @@ fixes it.
   same. Only filter via `isBrokenClientFetchContractError` when trailing
   console breadcrumbs are the injected interceptor's adjacent `URL:` →
   `Options:` sequence (KCD-ZY / KCD-ZX); otherwise retain for triage.
+- Client `Error: Should not already be working.` from React's scheduler →
+  `react-dom` work loop (`performWorkUntilDeadline` /
+  `performWorkOnRootViaSchedulerTask`) is Firefox MessageChannel re-entrancy
+  during blocking APIs (facebook/react#17355, Bugzilla 758004) — not an app
+  bug. Filter via `isReactSchedulerAlreadyWorkingNoise` only when the exact
+  message has that scheduler/react-dom stack and no in-app frames (KCD-YT).
+  Do not ignore the phrase alone.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
