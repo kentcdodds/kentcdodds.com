@@ -12,8 +12,10 @@ import {
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
 	isPageTranslatorCallStackOverflow,
+	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
 	isReactRouterEdgeHttpStatusError,
+	isTranslatorDomMutationNoise,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
 } from '../sentry-noise.ts'
@@ -156,6 +158,103 @@ test('filters injected elem.firstChild parsers (KCD-ZZ)', () => {
 			"undefined is not an object (evaluating 'elem.firstChild')",
 		),
 	).toBe(true)
+})
+
+test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)', () => {
+	const chromeRemoveChild = {
+		exception: {
+			values: [
+				{
+					type: 'NotFoundError',
+					value:
+						"Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.",
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+								function: 'commitDeletionEffectsOnFiber',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isTranslatorDomMutationNoise(chromeRemoveChild)).toBe(true)
+	expect(shouldDropSentryEvent(chromeRemoveChild)).toBe(true)
+
+	const safariObjectNotFound = {
+		exception: {
+			values: [
+				{
+					type: 'NotFoundError',
+					value: 'The object can not be found here.',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+								function: 'commitDeletionEffectsOnFiber',
+								inApp: false,
+							},
+							{
+								filename: '[native code]',
+								function: 'removeChild',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isTranslatorDomMutationNoise(safariObjectNotFound)).toBe(true)
+
+	// Safari phrase alone (no react-dom stack) must not drop — too generic.
+	expect(
+		isTranslatorDomMutationNoise({
+			exception: {
+				values: [
+					{
+						type: 'NotFoundError',
+						value: 'The object can not be found here.',
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// In-app frames mean a real app DOM bug — keep reporting.
+	expect(
+		isTranslatorDomMutationNoise({
+			exception: {
+				values: [
+					{
+						type: 'NotFoundError',
+						value:
+							"Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.",
+						stacktrace: {
+							frames: [
+								{
+									filename: '/app/routes/blog.tsx',
+									function: 'Blog',
+									inApp: true,
+								},
+								{
+									filename:
+										'../../../../../node_modules/react-dom/cjs/react-dom-client.production.js',
+									function: 'commitDeletionEffectsOnFiber',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
@@ -737,6 +836,39 @@ test('filters page-translator call stack overflows with font breadcrumbs (KCD-QW
 			documentElement: { className: 'dark' },
 		}),
 	).toBe(false)
+})
+
+test('recognizes React Router CSRF abort messages (KCD-YN)', () => {
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error(
+				'host header does not match `origin` header from a forwarded action request. Aborting the action.',
+			),
+		),
+	).toBe(true)
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error(
+				'x-forwarded-host header does not match `origin` header from a forwarded action request. Aborting the action.',
+			),
+		),
+	).toBe(true)
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error('`origin` header is not a valid URL. Aborting the action.'),
+		),
+	).toBe(true)
+	expect(
+		isReactRouterCsrfAbortError(
+			new Error(
+				'`x-forwarded-host` or `host` headers are not provided. One of these is needed to compare the `origin` header from a forwarded action request. Aborting the action.',
+			),
+		),
+	).toBe(true)
+	expect(isReactRouterCsrfAbortError(new Error('Aborting the action.'))).toBe(
+		false,
+	)
+	expect(isReactRouterCsrfAbortError('not an error')).toBe(false)
 })
 
 test('filters broken fetch monkey-patch crashing React Router (KCD-ZY / KCD-ZX)', () => {

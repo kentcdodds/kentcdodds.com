@@ -29,11 +29,22 @@ fixes it.
   errors — those can hide real outages. Message/stack drop rules must establish
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
+- Server: React Router `throwIfPotentialCSRFAttack` aborts (`…from a forwarded
+  action request. Aborting the action.`, invalid/`missing host` Origin variants)
+  are expected 400s for mismatched Origin probes. Skip Sentry in
+  `entry.server.tsx` `handleError` via `isReactRouterCsrfAbortError` (KCD-YN);
+  do not weaken CSRF checks to silence the alert.
 - Page-translator DOM mutation (Google/Chrome Translate) often surfaces as
   `RangeError: Maximum call stack size exceeded` with an unattributed
   `filename: "undefined"` frame plus UI breadcrumbs like `a > font > font`, or
   `html.translated-ltr` / `translated-rtl`. Do not broadly ignore call-stack
   overflows — require that unusable stack plus translator evidence (KCD-QW).
+- The same translators also cause React `NotFoundError` on `removeChild` /
+  `insertBefore` (Chrome) or Safari `The object can not be found here.` during
+  `react-dom` deletion (facebook/react#11538). Filter via
+  `isTranslatorDomMutationNoise` only when the stack is react-dom/native with no
+  in-app frames — do not add `Node.prototype` monkey-patches for triage
+  (KCD-S5 / KCD-XQ / KCD-ZE).
 - Client `RouteErrorResponse: 502/503/524 Route Error` (from
   `useCapturedRouteError` / `getRouteErrorResponseException`) often wraps
   Cloudflare's generic edge HTML (`<title>… | 502: Bad gateway</title>`,

@@ -6,6 +6,7 @@ import {
 	type ServerBuild,
 } from 'react-router'
 import { expect, test, vi } from 'vitest'
+import { setEnv } from '#tests/env-disposable.ts'
 import {
 	createWorkerFetchHandler,
 	isMalformedRequestPath,
@@ -209,4 +210,36 @@ test('worker pipeline still reaches the router for a normal path', async () => {
 	expect(getServerBuild).toHaveBeenCalledOnce()
 	expect(response.status).toBe(200)
 	expect(await response.text()).toContain('splat')
+})
+
+test('worker pipeline CSRF-rejects POST with mismatched Origin (KCD-YN)', async () => {
+	// Test env defaults allowedActionOrigins to `**`; pin production-like hosts
+	// so React Router's CSRF check still rejects foreign Origins.
+	using _ignoredEnv = setEnv({
+		ALLOWED_ACTION_ORIGINS: 'kentcdodds.com',
+	})
+	const getServerBuild = vi.fn(async () => createMinimalSplatServerBuild())
+	const handler = createWorkerFetchHandler({
+		redirectsText: '',
+		ensureRuntimeBridges: async () => {},
+		getServerBuild,
+		requestHandlerMode: 'production',
+		errorLogLabel: 'test-csrf-abort',
+	})
+
+	const response = await handler.fetch(
+		new Request('https://kentcdodds.com/me', {
+			method: 'POST',
+			headers: {
+				Origin: 'https://evil.example',
+				Host: 'kentcdodds.com',
+			},
+		}),
+		{},
+		createTestExecutionContext(),
+	)
+
+	expect(getServerBuild).toHaveBeenCalledOnce()
+	expect(response.status).toBe(400)
+	expect(await response.text()).toBe('Bad Request')
 })
