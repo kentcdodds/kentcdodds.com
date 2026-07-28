@@ -31,6 +31,16 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/document\.querySelector\("meta\[property='og:type'\]"\)\.content/,
 	// Injected HTML parsers / translators mutating the DOM (KCD-ZZ).
 	/evaluating 'elem\.firstChild'/,
+	// Instagram / iOS in-app browser WKWebView bridge (KCD-ZR / KCD-ZC).
+	// Stack functions are sendDataToNative / sendPageHideMessage /
+	// setupIosCallbackHandler — not present in app code.
+	/window\.webkit\.messageHandlers/,
+	// javascript-obfuscator-style injected scripts (KCD-ZG).
+	/a0_0x[0-9a-f]+ is not defined/,
+	// WKWebView native bridge rejecting script into a missing frame (KCD-YV).
+	/WKErrorDomain Code=12/,
+	// Sentry Session Replay probing cross-origin iframes (KCD-TF).
+	/Failed to read a named property 'Element' from 'Window': Blocked a frame/,
 	// React Router SingleFetchNoResultError: client route tree / single-fetch
 	// response skew across deploys (stale tab). Distinctive framework message from
 	// unwrapSingleFetchResult — not an app missing-route bug (KCD-VP family).
@@ -220,12 +230,50 @@ export function isWalletUserRejection(
 	)
 }
 
+const STACK_SCRIPT_URL =
+	/\b(?:blob:|https?:\/\/|webkit-masked-url:|chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|iabjs:)[^\s)]+/gi
+
+function scriptUrlsFromStackBlob(stack: string): Array<string> {
+	return [...stack.matchAll(STACK_SCRIPT_URL)].map((match) => match[0] ?? '')
+}
+
+/**
+ * Extensions often inject executable blob: scripts. App createObjectURL usage
+ * is audio-only and never appears as JS stack frames, so a TypeError reading
+ * addListener with an exclusively-blob stack is external (KCD-Z7).
+ */
+export function isInjectedBlobAddListenerError(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const looksLikeAddListener = eventMessages(event).some((message) =>
+		/reading ['"]addListener['"]/.test(message),
+	)
+	if (!looksLikeAddListener) return false
+
+	const frames = (event.exception?.values ?? []).flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+	const filenames = frames
+		.map((frame) => frame.filename ?? '')
+		.filter(Boolean)
+	if (filenames.length > 0) {
+		return filenames.every((filename) => /^blob:/i.test(filename))
+	}
+
+	// No Sentry frame filenames — parse URLs out of Error.stack (stackBlob
+	// prefixes a newline, so ^blob: on the whole string would never match).
+	const urls = scriptUrlsFromStackBlob(stackBlob(event, hint.originalException))
+	return urls.length > 0 && urls.every((url) => /^blob:/i.test(url))
+}
+
 export function shouldDropSentryEvent(
 	event: SentryEventLike,
 	hint: { originalException?: unknown } = {},
 ): boolean {
 	if (isBrowserExtensionError(hint.originalException)) return true
 	if (isWalletUserRejection(event, hint)) return true
+	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true

@@ -6,6 +6,7 @@ import {
 	isCloudflareEdgeErrorHtml,
 	isCloudflareEdgeRouteError,
 	isDegradedUiPerformanceEvent,
+	isInjectedBlobAddListenerError,
 	isReactRouterEdgeHttpStatusError,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
@@ -147,6 +148,127 @@ test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
 		),
 	).toBe(true)
 	expect(matchesIgnoreError('No result found for route')).toBe(false)
+})
+
+test('filters Instagram WKWebView messageHandlers bridge (KCD-ZR / KCD-ZC)', () => {
+	expect(
+		matchesIgnoreError(
+			"undefined is not an object (evaluating 'window.webkit.messageHandlers')",
+		),
+	).toBe(true)
+})
+
+test('filters javascript-obfuscator a0_0x injectors (KCD-ZG)', () => {
+	expect(matchesIgnoreError('a0_0x3b27 is not defined')).toBe(true)
+	expect(matchesIgnoreError('a0_0xdeadbeef is not defined')).toBe(true)
+	expect(matchesIgnoreError('myHelper is not defined')).toBe(false)
+})
+
+test('filters WKWebView invalid-frame native errors (KCD-YV)', () => {
+	expect(
+		matchesIgnoreError(
+			'Error Domain=WKErrorDomain Code=12 "JavaScript execution targeted an invalid frame"',
+		),
+	).toBe(true)
+})
+
+test('filters Sentry Replay cross-origin iframe Element probes (KCD-TF)', () => {
+	expect(
+		matchesIgnoreError(
+			`Failed to read a named property 'Element' from 'Window': Blocked a frame with origin "https://kentcdodds.com" from accessing a cross-origin frame.`,
+		),
+	).toBe(true)
+})
+
+test('drops extension blob-script addListener noise (KCD-Z7)', () => {
+	expect(matchesIgnoreError("Cannot read properties of undefined (reading 'addListener')")).toBe(
+		false,
+	)
+
+	expect(
+		isInjectedBlobAddListenerError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'addListener')",
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1',
+								},
+								{
+									filename:
+										'blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	expect(
+		isInjectedBlobAddListenerError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'addListener')",
+						stacktrace: {
+							frames: [{ filename: '/assets/app-abc123.js' }],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'addListener')",
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	const blobStackError = new Error(
+		"Cannot read properties of undefined (reading 'addListener')",
+	)
+	blobStackError.stack =
+		"TypeError: Cannot read properties of undefined (reading 'addListener')\n    at blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1:14:11\n    at new s.bm (blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1:12:19003)"
+
+	expect(
+		isInjectedBlobAddListenerError(
+			{
+				exception: {
+					values: [
+						{
+							type: 'TypeError',
+							value:
+								"Cannot read properties of undefined (reading 'addListener')",
+						},
+					],
+				},
+			},
+			{ originalException: blobStackError },
+		),
+	).toBe(true)
 })
 
 test('keeps Module load timeout filter (KCD-ZS / KCD-ZT)', () => {
