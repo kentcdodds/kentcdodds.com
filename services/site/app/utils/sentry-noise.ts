@@ -41,6 +41,10 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/WKErrorDomain Code=12/,
 	// Sentry Session Replay probing cross-origin iframes (KCD-TF).
 	/Failed to read a named property 'Element' from 'Window': Blocked a frame/,
+	// React Router SingleFetchNoResultError: client route tree / single-fetch
+	// response skew across deploys (stale tab). Distinctive framework message from
+	// unwrapSingleFetchResult — not an app missing-route bug (KCD-VP family).
+	/No result found for routeId "/,
 ]
 
 export const SENTRY_DENY_URLS: Array<RegExp> = [
