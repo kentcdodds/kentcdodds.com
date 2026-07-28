@@ -3,8 +3,12 @@ import {
 	SENTRY_DENY_URLS,
 	SENTRY_IGNORE_ERRORS,
 	isBrowserExtensionError,
+	isCloudflareEdgeErrorHtml,
+	isCloudflareEdgeRouteError,
 	isDegradedUiPerformanceEvent,
+	isInjectedBlobAddListenerError,
 	isReactRouterDataProtocolNoise,
+	isReactRouterEdgeHttpStatusError,
 	isWalletUserRejection,
 	shouldDropSentryEvent,
 } from '../sentry-noise.ts'
@@ -130,6 +134,127 @@ test('filters injected elem.firstChild parsers (KCD-ZZ)', () => {
 	).toBe(true)
 })
 
+test('filters Instagram WKWebView messageHandlers bridge (KCD-ZR / KCD-ZC)', () => {
+	expect(
+		matchesIgnoreError(
+			"undefined is not an object (evaluating 'window.webkit.messageHandlers')",
+		),
+	).toBe(true)
+})
+
+test('filters javascript-obfuscator a0_0x injectors (KCD-ZG)', () => {
+	expect(matchesIgnoreError('a0_0x3b27 is not defined')).toBe(true)
+	expect(matchesIgnoreError('a0_0xdeadbeef is not defined')).toBe(true)
+	expect(matchesIgnoreError('myHelper is not defined')).toBe(false)
+})
+
+test('filters WKWebView invalid-frame native errors (KCD-YV)', () => {
+	expect(
+		matchesIgnoreError(
+			'Error Domain=WKErrorDomain Code=12 "JavaScript execution targeted an invalid frame"',
+		),
+	).toBe(true)
+})
+
+test('filters Sentry Replay cross-origin iframe Element probes (KCD-TF)', () => {
+	expect(
+		matchesIgnoreError(
+			`Failed to read a named property 'Element' from 'Window': Blocked a frame with origin "https://kentcdodds.com" from accessing a cross-origin frame.`,
+		),
+	).toBe(true)
+})
+
+test('drops extension blob-script addListener noise (KCD-Z7)', () => {
+	expect(matchesIgnoreError("Cannot read properties of undefined (reading 'addListener')")).toBe(
+		false,
+	)
+
+	expect(
+		isInjectedBlobAddListenerError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'addListener')",
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1',
+								},
+								{
+									filename:
+										'blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	expect(
+		isInjectedBlobAddListenerError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'addListener')",
+						stacktrace: {
+							frames: [{ filename: '/assets/app-abc123.js' }],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'addListener')",
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	const blobStackError = new Error(
+		"Cannot read properties of undefined (reading 'addListener')",
+	)
+	blobStackError.stack =
+		"TypeError: Cannot read properties of undefined (reading 'addListener')\n    at blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1:14:11\n    at new s.bm (blob:https://kentcdodds.com/28507230-8ee6-4834-abc8-6d4c103e04f1:12:19003)"
+
+	expect(
+		isInjectedBlobAddListenerError(
+			{
+				exception: {
+					values: [
+						{
+							type: 'TypeError',
+							value:
+								"Cannot read properties of undefined (reading 'addListener')",
+						},
+					],
+				},
+			},
+			{ originalException: blobStackError },
+		),
+	).toBe(true)
+})
+
 test('keeps Module load timeout filter (KCD-ZS / KCD-ZT)', () => {
 	expect(matchesIgnoreError('Module load timeout: m_1001')).toBe(true)
 	expect(matchesIgnoreError('Module load timeout: m_1004')).toBe(true)
@@ -143,10 +268,139 @@ test('does not broadly ignore generic Failed to fetch', () => {
 	).toBe(false)
 })
 
-test('filters React Router turbo-stream decode noise (KCD-XF family)', () => {
+test('filters Cloudflare edge RouteErrorResponse HTML (KCD-VH family)', () => {
+	const badGatewayHtml = `<!DOCTYPE html><html><head><title>kentcdodds.com | 502: Bad gateway</title></head><body>Ray ID: abc123 cloudflare</body></html>`
+	const timeoutHtml = `<!DOCTYPE html><html><head><title>kentcdodds.com | 524: A timeout occurred</title></head><body>Cloudflare Ray ID: xyz</body></html>`
+
+	expect(isCloudflareEdgeErrorHtml(badGatewayHtml)).toBe(true)
+	expect(isCloudflareEdgeErrorHtml(timeoutHtml)).toBe(true)
+	expect(isCloudflareEdgeErrorHtml('<title>App Error</title>')).toBe(false)
+
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 502,
+			statusText: '',
+			data: badGatewayHtml,
+		}),
+	).toBe(true)
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 503,
+			statusText: '',
+			data: '',
+		}),
+	).toBe(true)
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 502,
+			statusText: '',
+			data: 'Failed to proxy request to Sentry',
+		}),
+	).toBe(false)
+	expect(
+		isCloudflareEdgeRouteError({
+			status: 503,
+			statusText: '',
+			data: { error: 'Search temporarily unavailable' },
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [{ type: 'RouteErrorResponse', value: '502 Route Error' }],
+			},
+			extra: {
+				route_error_response: {
+					status: 502,
+					statusText: '',
+					data: badGatewayHtml,
+				},
+			},
+		}),
+	).toBe(true)
+})
+
+test('filters React Router manifest-patch edge HTTP status errors (KCD-ZH/YD/YF)', () => {
+	const original = new Error('502 ')
+	original.stack =
+		'Error: 502 \n    at fetchAndApplyManifestPatches (react-router/dist/chunk.js:1:1)'
+
+	expect(
+		isReactRouterEdgeHttpStatusError(
+			{
+				exception: {
+					values: [
+						{
+							type: 'Error',
+							value: '502 ',
+							stacktrace: {
+								frames: [
+									{
+										filename:
+											'../../../node_modules/react-router/dist/development/chunk.mjs',
+										function: 'fetchAndApplyManifestPatches',
+									},
+								],
+							},
+						},
+					],
+				},
+			},
+			{ originalException: original },
+		),
+	).toBe(true)
+
+	expect(
+		isReactRouterEdgeHttpStatusError({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: '502 ',
+						stacktrace: {
+							frames: [{ filename: '/app/routes/blog.tsx', function: 'loader' }],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'Error',
+							value: '503 ',
+							stacktrace: {
+								frames: [
+									{
+										filename: 'react-router/dist/chunk.mjs',
+										function: 'fetchAndApplyManifestPatches',
+									},
+								],
+							},
+						},
+					],
+				},
+			},
+			{
+				originalException: Object.assign(new Error('503 '), {
+					stack: 'Error: 503 \n    at fetchAndApplyManifestPatches (x:1:1)',
+				}),
+			},
+		),
+	).toBe(true)
+})
+
+test('filters React Router turbo-stream decode noise with protocol evidence (KCD-XF family)', () => {
 	expect(matchesIgnoreError('Unable to decode turbo-stream response')).toBe(
-		true,
+		false,
 	)
+
 	expect(
 		isReactRouterDataProtocolNoise({
 			exception: {
@@ -168,11 +422,49 @@ test('filters React Router turbo-stream decode noise (KCD-XF family)', () => {
 			},
 		}),
 	).toBe(true)
+
+	expect(
+		isReactRouterDataProtocolNoise({
+			exception: {
+				values: [
+					{ type: 'Error', value: 'Unable to decode turbo-stream response' },
+				],
+			},
+			breadcrumbs: [
+				{
+					category: 'fetch',
+					data: { url: 'https://kentcdodds.com/_root.data' },
+				},
+			],
+		}),
+	).toBe(true)
+
+	expect(
+		isReactRouterDataProtocolNoise({
+			exception: {
+				values: [
+					{ type: 'Error', value: 'Unable to decode turbo-stream response' },
+				],
+			},
+		}),
+	).toBe(false)
+
 	expect(
 		shouldDropSentryEvent({
 			exception: {
 				values: [
-					{ type: 'Error', value: 'Unable to decode turbo-stream response' },
+					{
+						type: 'Error',
+						value: 'Unable to decode turbo-stream response',
+						stacktrace: {
+							frames: [
+								{
+									filename: 'react-router/dist/chunk.mjs',
+									function: 'fetchAndDecodeViaTurboStream',
+								},
+							],
+						},
+					},
 				],
 			},
 		}),
@@ -180,8 +472,7 @@ test('filters React Router turbo-stream decode noise (KCD-XF family)', () => {
 })
 
 test('filters HTML-as-JSON manifest/data protocol noise (KCD-ZJ)', () => {
-	const message =
-		'Unexpected token \'<\', "<!DOCTYPE "... is not valid JSON'
+	const message = 'Unexpected token \'<\', "<!DOCTYPE "... is not valid JSON'
 	expect(matchesIgnoreError(message)).toBe(true)
 	expect(
 		isReactRouterDataProtocolNoise({
@@ -247,7 +538,9 @@ test('scopes Safari JSON pattern errors to manifest protocol (KCD-XG/X3)', () =>
 						type: 'SyntaxError',
 						value: 'The string did not match the expected pattern.',
 						stacktrace: {
-							frames: [{ filename: '/app/routes/search.tsx', function: 'loader' }],
+							frames: [
+								{ filename: '/app/routes/search.tsx', function: 'loader' },
+							],
 						},
 					},
 				],

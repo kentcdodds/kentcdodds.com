@@ -17,6 +17,7 @@ import { type OptionalTeam, type User } from '#app/types.ts'
 import { images } from '../images.tsx'
 import { buildMediaUrl } from './media.ts'
 import { getOptionalTeam } from './misc.ts'
+import { isCloudflareEdgeRouteError } from './sentry-noise.ts'
 
 export * from './misc.ts'
 
@@ -226,15 +227,19 @@ export function useCapturedRouteError() {
 	if (isRouteErrorResponse(error)) {
 		if (error.status < 500) return error
 
-		Sentry.captureException(getRouteErrorResponseException(error), {
-			extra: {
-				route_error_response: {
-					status: error.status,
-					statusText: error.statusText,
-					data: error.data,
+		// Cloudflare edge/origin HTML (or bare empty-body 502/503/524) is not an
+		// app throw — still render the boundary, but do not report to Sentry.
+		if (!isCloudflareEdgeRouteError(error)) {
+			Sentry.captureException(getRouteErrorResponseException(error), {
+				extra: {
+					route_error_response: {
+						status: error.status,
+						statusText: error.statusText,
+						data: error.data,
+					},
 				},
-			},
-		})
+			})
+		}
 		return error
 	}
 

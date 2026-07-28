@@ -70,6 +70,22 @@ describe('useCapturedRouteError', () => {
 		})
 	})
 
+	it('does not capture Cloudflare edge Bad Gateway route errors', async () => {
+		const routeErrorResponse = {
+			status: 502,
+			statusText: '',
+			data: `<!DOCTYPE html><html><head><title>kentcdodds.com | 502: Bad gateway</title></head><body>Ray ID: abc cloudflare</body></html>`,
+		}
+		mockUseRouteError.mockReturnValue(routeErrorResponse)
+		mockIsRouteErrorResponse.mockImplementation(
+			(error: unknown) => error === routeErrorResponse,
+		)
+
+		await render(<TestComponent />)
+
+		expect(mockCaptureException).not.toHaveBeenCalled()
+	})
+
 	it('does not capture non-5xx route error responses', async () => {
 		const routeErrorResponse = {
 			status: 404,

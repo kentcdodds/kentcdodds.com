@@ -8,6 +8,15 @@
  * not a generic phrase alone.
  */
 
+const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
+const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
+const SAFARI_JSON_PATTERN_ERROR =
+	/^The string did not match the expected pattern\.?$/i
+const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
+const REACT_ROUTER_MANIFEST_STACK =
+	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
+const DATA_PROTOCOL_REQUEST = /\/(?:__manifest|\S+\.data)(?:\?|$)/i
+
 export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	// Tunnel / self-reporting
 	'Request to /lookout failed',
@@ -31,12 +40,19 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/document\.querySelector\("meta\[property='og:type'\]"\)\.content/,
 	// Injected HTML parsers / translators mutating the DOM (KCD-ZZ).
 	/evaluating 'elem\.firstChild'/,
-	// React Router single-fetch decode when the body is not turbo-stream
-	// (edge/HTML/truncated responses). Exact library message only (KCD-XF family).
-	'Unable to decode turbo-stream response',
+	// Instagram / iOS in-app browser WKWebView bridge (KCD-ZR / KCD-ZC).
+	// Stack functions are sendDataToNative / sendPageHideMessage /
+	// setupIosCallbackHandler — not present in app code.
+	/window\.webkit\.messageHandlers/,
+	// javascript-obfuscator-style injected scripts (KCD-ZG).
+	/a0_0x[0-9a-f]+ is not defined/,
+	// WKWebView native bridge rejecting script into a missing frame (KCD-YV).
+	/WKErrorDomain Code=12/,
+	// Sentry Session Replay probing cross-origin iframes (KCD-TF).
+	/Failed to read a named property 'Element' from 'Window': Blocked a frame/,
 	// HTML document body parsed as JSON — distinctive "<!DOCTYPE" payload
 	// (KCD-ZJ / __manifest edge HTML).
-	/Unexpected token '<',\s*"<!DOCTYPE/i,
+	HTML_AS_JSON_ERROR,
 ]
 
 export const SENTRY_DENY_URLS: Array<RegExp> = [
@@ -60,6 +76,12 @@ type SentryExceptionValue = {
 	} | null
 }
 
+type RouteErrorResponseExtra = {
+	status?: number | null
+	statusText?: string | null
+	data?: unknown
+}
+
 type SentryBreadcrumbLike = {
 	category?: string | null
 	message?: string | null
@@ -70,11 +92,22 @@ type SentryEventLike = {
 	message?: string | null
 	request?: { url?: string | null } | null
 	exception?: { values?: Array<SentryExceptionValue> | null } | null
+	extra?: { route_error_response?: RouteErrorResponseExtra | null } | null
 	breadcrumbs?: Array<SentryBreadcrumbLike> | null
 }
 
 const WALLET_PROVIDER_STACK =
 	/metamask|coinbase|rainbow|walletconnect|phantom|ethereum|eip-1193|inpage\.js|nkbihfbeogaeaoehlefnkodbefgpgknn/i
+
+/** Cloudflare edge HTML error pages (502/503/524) seen on SPA .data fetches. */
+const CLOUDFLARE_EDGE_ERROR_TITLE =
+	/<\s*title[^>]*>[^<]*\|\s*5(?:02:\s*Bad gateway|03:\s*Service unavailable|24:\s*A timeout occurred)\s*<\s*\/\s*title\s*>/i
+
+const CLOUDFLARE_EDGE_STATUSES = new Set([502, 503, 524])
+
+const REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE = /^5(?:02|03|24)\s*$/
+
+const REACT_ROUTER_MANIFEST_PATCH_STACK = /fetchAndApplyManifestPatches/
 
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
@@ -123,29 +156,103 @@ function breadcrumbBlob(event: SentryEventLike): string {
 		.join('\n')
 }
 
-const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
-const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
-const SAFARI_JSON_PATTERN_ERROR =
-	/^The string did not match the expected pattern\.?$/i
-const REACT_ROUTER_MANIFEST_STACK =
-	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
-const MANIFEST_REQUEST = /\/__manifest(?:\?|$)/i
+export function isCloudflareEdgeErrorHtml(data: string): boolean {
+	if (!CLOUDFLARE_EDGE_ERROR_TITLE.test(data)) return false
+	// Ray ID + "cloudflare" are stable markers on the generic edge HTML page.
+	return /Ray ID/i.test(data) || /cloudflare/i.test(data)
+}
+
+/**
+ * Client RouteErrorResponse for edge/origin 502/503/524 — not an app throw.
+ * Confirmed via Sentry `extra.route_error_response.data` (Cloudflare HTML) or
+ * bare empty-body statuses during SPA data/manifest fetches (KCD-VH family).
+ * App 502/503 responses carry a non-empty body (lookout string / search JSON).
+ */
+export function isCloudflareEdgeRouteError(error: {
+	status: number
+	statusText?: string | null
+	data?: unknown
+}): boolean {
+	if (!CLOUDFLARE_EDGE_STATUSES.has(error.status)) return false
+
+	if (typeof error.data === 'string' && isCloudflareEdgeErrorHtml(error.data)) {
+		return true
+	}
+
+	const statusText = error.statusText ?? ''
+	const emptyBody = error.data === '' || error.data == null
+	return statusText === '' && emptyBody
+}
+
+function routeErrorExtra(
+	event: SentryEventLike,
+): RouteErrorResponseExtra | null {
+	return event.extra?.route_error_response ?? null
+}
+
+export function isCloudflareEdgeRouteErrorEvent(event: SentryEventLike): boolean {
+	const route = routeErrorExtra(event)
+	if (!route || typeof route.status !== 'number') return false
+
+	return isCloudflareEdgeRouteError({
+		status: route.status,
+		statusText: route.statusText,
+		data: route.data,
+	})
+}
+
+/**
+ * React Router surfaces bare `Error: 502 ` / `503 ` / `524 ` from
+ * fetchAndApplyManifestPatches when `__manifest` hits an edge HTTP failure
+ * (KCD-ZH / KCD-YD / KCD-YF). Require the RR frame — never the status alone.
+ */
+export function isReactRouterEdgeHttpStatusError(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const messages = eventMessages(event)
+	const original = hint.originalException
+	if (original instanceof Error) messages.push(original.message)
+
+	if (
+		!messages.some((message) =>
+			REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE.test(message),
+		)
+	) {
+		return false
+	}
+
+	return REACT_ROUTER_MANIFEST_PATCH_STACK.test(stackBlob(event, original))
+}
 
 /**
  * React Router client data-protocol failures when `.data` / `__manifest`
  * responses are HTML, empty, or truncated (edge/intermediary), not app throws.
- * Evidence: exact RR turbo-stream message; JSON parse of `<!DOCTYPE`; Safari
- * pattern SyntaxError scoped to manifest patch fetches (KCD-XF/XG/X3/ZJ/YY/Y8).
+ *
+ * - `<!DOCTYPE` in a JSON SyntaxError is the HTML payload signature (ignoreErrors).
+ * - Turbo-stream decode requires RR single-fetch stack or `.data`/`__manifest`
+ *   breadcrumb evidence — never the message alone (KCD-XF/YY/Y8).
+ * - Safari pattern SyntaxError is scoped to manifest patch fetches (KCD-XG/X3).
  */
 export function isReactRouterDataProtocolNoise(
 	event: SentryEventLike,
 	hint: { originalException?: unknown } = {},
 ): boolean {
 	const messages = eventMessages(event)
-	if (messages.some((message) => message.includes(TURBO_STREAM_DECODE_ERROR))) {
+	if (messages.some((message) => HTML_AS_JSON_ERROR.test(message))) {
 		return true
 	}
-	if (messages.some((message) => HTML_AS_JSON_ERROR.test(message))) {
+
+	const evidence = `${stackBlob(event, hint.originalException)}\n${breadcrumbBlob(event)}`
+	const protocolEvidence =
+		REACT_ROUTER_TURBO_STREAM_STACK.test(evidence) ||
+		REACT_ROUTER_MANIFEST_STACK.test(evidence) ||
+		DATA_PROTOCOL_REQUEST.test(evidence)
+
+	if (
+		messages.some((message) => message.includes(TURBO_STREAM_DECODE_ERROR)) &&
+		protocolEvidence
+	) {
 		return true
 	}
 
@@ -154,10 +261,9 @@ export function isReactRouterDataProtocolNoise(
 	)
 	if (!safariPattern) return false
 
-	const evidence = `${stackBlob(event, hint.originalException)}\n${breadcrumbBlob(event)}`
 	return (
 		REACT_ROUTER_MANIFEST_STACK.test(evidence) ||
-		MANIFEST_REQUEST.test(evidence)
+		DATA_PROTOCOL_REQUEST.test(evidence)
 	)
 }
 
@@ -194,13 +300,53 @@ export function isWalletUserRejection(
 	)
 }
 
+const STACK_SCRIPT_URL =
+	/\b(?:blob:|https?:\/\/|webkit-masked-url:|chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|iabjs:)[^\s)]+/gi
+
+function scriptUrlsFromStackBlob(stack: string): Array<string> {
+	return [...stack.matchAll(STACK_SCRIPT_URL)].map((match) => match[0] ?? '')
+}
+
+/**
+ * Extensions often inject executable blob: scripts. App createObjectURL usage
+ * is audio-only and never appears as JS stack frames, so a TypeError reading
+ * addListener with an exclusively-blob stack is external (KCD-Z7).
+ */
+export function isInjectedBlobAddListenerError(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const looksLikeAddListener = eventMessages(event).some((message) =>
+		/reading ['"]addListener['"]/.test(message),
+	)
+	if (!looksLikeAddListener) return false
+
+	const frames = (event.exception?.values ?? []).flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+	const filenames = frames
+		.map((frame) => frame.filename ?? '')
+		.filter(Boolean)
+	if (filenames.length > 0) {
+		return filenames.every((filename) => /^blob:/i.test(filename))
+	}
+
+	// No Sentry frame filenames — parse URLs out of Error.stack (stackBlob
+	// prefixes a newline, so ^blob: on the whole string would never match).
+	const urls = scriptUrlsFromStackBlob(stackBlob(event, hint.originalException))
+	return urls.length > 0 && urls.every((url) => /^blob:/i.test(url))
+}
+
 export function shouldDropSentryEvent(
 	event: SentryEventLike,
 	hint: { originalException?: unknown } = {},
 ): boolean {
 	if (isBrowserExtensionError(hint.originalException)) return true
 	if (isWalletUserRejection(event, hint)) return true
+	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
+	if (isCloudflareEdgeRouteErrorEvent(event)) return true
+	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
 	if (isReactRouterDataProtocolNoise(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true
