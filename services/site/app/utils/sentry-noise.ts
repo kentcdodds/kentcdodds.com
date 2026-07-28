@@ -80,6 +80,9 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	// HTML document body parsed as JSON — distinctive "<!DOCTYPE" payload
 	// (KCD-ZJ / __manifest edge HTML).
 	HTML_AS_JSON_ERROR,
+	// Safari / extension CustomEvent wrapping unhandledrejection (KCD-S8).
+	// Sentry serializes the Event itself when it is the rejection reason.
+	/Event `CustomEvent` \(type=unhandledrejection\) captured as promise rejection/,
 ]
 
 export const SENTRY_DENY_URLS: Array<RegExp> = [
@@ -116,11 +119,25 @@ type SentryBreadcrumbLike = {
 	data?: { url?: string | null } | null
 }
 
+type SerializedRejectionExtra = {
+	code?: unknown
+	message?: unknown
+	stack?: unknown
+	type?: unknown
+	isTrusted?: unknown
+	detail?: unknown
+	target?: unknown
+	currentTarget?: unknown
+}
+
 type SentryEventLike = {
 	message?: string | null
 	request?: { url?: string | null } | null
 	exception?: { values?: Array<SentryExceptionValue> | null } | null
-	extra?: { route_error_response?: RouteErrorResponseExtra | null } | null
+	extra?: {
+		route_error_response?: RouteErrorResponseExtra | null
+		__serialized__?: SerializedRejectionExtra | null
+	} | null
 	breadcrumbs?: Array<SentryBreadcrumbLike> | null
 }
 
@@ -234,7 +251,9 @@ function routeErrorExtra(
 	return event.extra?.route_error_response ?? null
 }
 
-export function isCloudflareEdgeRouteErrorEvent(event: SentryEventLike): boolean {
+export function isCloudflareEdgeRouteErrorEvent(
+	event: SentryEventLike,
+): boolean {
 	const route = routeErrorExtra(event)
 	if (!route || typeof route.status !== 'number') return false
 
@@ -258,7 +277,11 @@ export function isReactRouterEdgeHttpStatusError(
 	const original = hint.originalException
 	if (original instanceof Error) messages.push(original.message)
 
-	if (!messages.some((message) => REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE.test(message))) {
+	if (
+		!messages.some((message) =>
+			REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE.test(message),
+		)
+	) {
 		return false
 	}
 
@@ -305,7 +328,8 @@ export function isTranslatorDomMutationNoise(
 	)
 	const originalIsNotFound =
 		(original instanceof Error &&
-			(original.name === 'NotFoundError' || original.name === 'DOMException')) ||
+			(original.name === 'NotFoundError' ||
+				original.name === 'DOMException')) ||
 		(typeof DOMException !== 'undefined' && original instanceof DOMException)
 	if (!namedNotFound && !originalIsNotFound) return false
 
@@ -370,24 +394,77 @@ export function isReactRouterDataProtocolNoise(
 }
 
 /**
- * EIP-1193 wallet extensions reject with code 4001 / "user rejected the
- * request". Only drop when that provider signal is present — never on the
- * phrase alone.
+ * EIP-1193 wallet-extension ProviderRpcError codes that this site never emits.
+ * 4001 user-rejected (KCD-ZV); 4900/4901 provider/chain disconnected (KCD-YX)
+ * with chrome-extension stacks in `__serialized__.stack`.
+ */
+const WALLET_PROVIDER_DISCONNECT_MESSAGE =
+	/provider is disconnected from (?:all chains|the requested chain)/i
+
+function isEip1193ProviderNoiseCode(code: unknown): boolean {
+	return (
+		code === 4001 ||
+		code === '4001' ||
+		code === 4900 ||
+		code === '4900' ||
+		code === 4901 ||
+		code === '4901'
+	)
+}
+
+function providerCodeFrom(value: unknown): unknown {
+	if (!value || typeof value !== 'object' || !('code' in value))
+		return undefined
+	return (value as { code?: unknown }).code
+}
+
+function serializedRejection(
+	event: SentryEventLike,
+): SerializedRejectionExtra | null {
+	return event.extra?.__serialized__ ?? null
+}
+
+/**
+ * EIP-1193 wallet extensions reject with provider codes / phrases. Only drop
+ * when that provider signal is present — never on a generic non-Error object
+ * message alone.
  */
 export function isWalletUserRejection(
 	event: SentryEventLike,
 	hint: { originalException?: unknown } = {},
 ): boolean {
 	const original = hint.originalException
-	if (original && typeof original === 'object' && 'code' in original) {
-		const code = (original as { code?: unknown }).code
-		if (code === 4001 || code === '4001') return true
+	const serialized = serializedRejection(event)
+	const code = providerCodeFrom(original) ?? providerCodeFrom(serialized)
+	if (isEip1193ProviderNoiseCode(code)) {
+		return true
 	}
+
+	const originalMessage = exceptionMessage(original)
+	const serializedMessage =
+		typeof serialized?.message === 'string' ? serialized.message : ''
+	const serializedStack =
+		typeof serialized?.stack === 'string' ? serialized.stack : ''
 
 	const looksLikeUserRejection = eventMessages(event).some((message) =>
 		/user rejected the request/i.test(message),
 	)
-	if (!looksLikeUserRejection) return false
+	const looksLikeProviderDisconnect =
+		WALLET_PROVIDER_DISCONNECT_MESSAGE.test(originalMessage) ||
+		WALLET_PROVIDER_DISCONNECT_MESSAGE.test(serializedMessage) ||
+		eventMessages(event).some((message) =>
+			WALLET_PROVIDER_DISCONNECT_MESSAGE.test(message),
+		)
+
+	if (!looksLikeUserRejection && !looksLikeProviderDisconnect) return false
+
+	// Extension background stacks are conclusive even without event frames.
+	if (
+		WALLET_PROVIDER_STACK.test(serializedStack) ||
+		/chrome-extension:|moz-extension:/i.test(serializedStack)
+	) {
+		return true
+	}
 
 	// Non-Error wallet rejections often have zero frames; require a provider
 	// marker whenever any stack evidence exists.
@@ -398,7 +475,52 @@ export function isWalletUserRejection(
 	return (event.exception?.values ?? []).some(
 		(value) =>
 			value.type === 'UnhandledRejection' ||
-			/Non-Error promise rejection/i.test(value.value ?? ''),
+			/Non-Error promise rejection/i.test(value.value ?? '') ||
+			/Object captured as promise rejection with keys:/i.test(
+				value.value ?? '',
+			),
+	)
+}
+
+/**
+ * Safari / injected scripts sometimes reject with a CustomEvent whose type is
+ * `unhandledrejection` (detail often null, isTrusted false). Sentry titles
+ * these `<unknown>` with zero frames (KCD-S8). Distinctive SDK message +
+ * CustomEvent type — not a generic Event filter.
+ */
+export function isCustomEventUnhandledRejectionNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const customEventMessage =
+		/Event `CustomEvent` \(type=unhandledrejection\) captured as promise rejection/i
+	if (
+		eventMessages(event).some((message) => customEventMessage.test(message))
+	) {
+		return true
+	}
+
+	const namedCustomEvent = (event.exception?.values ?? []).some(
+		(value) => value.type === 'CustomEvent',
+	)
+	const original = hint.originalException
+	const originalIsCustomEvent =
+		(typeof CustomEvent !== 'undefined' && original instanceof CustomEvent) ||
+		(typeof original === 'object' &&
+			original != null &&
+			(original as { constructor?: { name?: string } }).constructor?.name ===
+				'CustomEvent')
+
+	if (!namedCustomEvent && !originalIsCustomEvent) return false
+
+	const serialized = serializedRejection(event)
+	const originalType =
+		original && typeof original === 'object' && 'type' in original
+			? (original as { type?: unknown }).type
+			: undefined
+	return (
+		originalType === 'unhandledrejection' ||
+		serialized?.type === 'unhandledrejection'
 	)
 }
 
@@ -426,9 +548,7 @@ export function isInjectedBlobAddListenerError(
 	const frames = (event.exception?.values ?? []).flatMap(
 		(value) => value.stacktrace?.frames ?? [],
 	)
-	const filenames = frames
-		.map((frame) => frame.filename ?? '')
-		.filter(Boolean)
+	const filenames = frames.map((frame) => frame.filename ?? '').filter(Boolean)
 	if (filenames.length > 0) {
 		return filenames.every((filename) => /^blob:/i.test(filename))
 	}
@@ -440,7 +560,9 @@ export function isInjectedBlobAddListenerError(
 }
 
 function isCallStackOverflow(event: SentryEventLike): boolean {
-	return eventMessages(event).some((message) => CALL_STACK_OVERFLOW.test(message))
+	return eventMessages(event).some((message) =>
+		CALL_STACK_OVERFLOW.test(message),
+	)
 }
 
 function exceptionFrames(event: SentryEventLike) {
@@ -478,8 +600,10 @@ function hasTranslatorFontBreadcrumb(event: SentryEventLike): boolean {
 
 /** Live marker Google/Chrome page translate adds to <html>. */
 export function isHtmlPageTranslated(
-	doc: { documentElement?: { className?: string } | null } | null | undefined =
-		typeof document === 'undefined' ? undefined : document,
+	doc:
+		| { documentElement?: { className?: string } | null }
+		| null
+		| undefined = typeof document === 'undefined' ? undefined : document,
 ): boolean {
 	const className = doc?.documentElement?.className
 	if (typeof className !== 'string') return false
@@ -510,6 +634,7 @@ export function shouldDropSentryEvent(
 	if (isBrowserExtensionError(hint.originalException)) return true
 	if (isTranslatorDomMutationNoise(event, hint)) return true
 	if (isWalletUserRejection(event, hint)) return true
+	if (isCustomEventUnhandledRejectionNoise(event, hint)) return true
 	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true

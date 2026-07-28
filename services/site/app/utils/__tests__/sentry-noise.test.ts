@@ -6,6 +6,7 @@ import {
 	isBrowserExtensionError,
 	isCloudflareEdgeErrorHtml,
 	isCloudflareEdgeRouteError,
+	isCustomEventUnhandledRejectionNoise,
 	isDegradedUiPerformanceEvent,
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
@@ -111,6 +112,108 @@ test('scopes EIP-1193 wallet user rejection (KCD-ZV)', () => {
 				originalException: { code: 4001, message: 'User rejected the request' },
 			},
 		),
+	).toBe(true)
+})
+
+test('filters EIP-1193 provider disconnect non-Error rejection (KCD-YX)', () => {
+	const objectCaptured =
+		'Object captured as promise rejection with keys: code, message, stack'
+	expect(matchesIgnoreError(objectCaptured)).toBe(false)
+
+	expect(
+		isWalletUserRejection({
+			exception: {
+				values: [{ type: 'UnhandledRejection', value: objectCaptured }],
+			},
+			extra: {
+				__serialized__: {
+					code: 4900,
+					message: 'The provider is disconnected from all chains.',
+					stack:
+						'Error: The provider is disconnected from all chains.\n    at chrome-extension://acmacodkjbdgmoleebolmdjonilkdbch/background.js:4:7655111',
+				},
+			},
+		}),
+	).toBe(true)
+
+	expect(
+		isWalletUserRejection(
+			{
+				exception: {
+					values: [{ type: 'UnhandledRejection', value: objectCaptured }],
+				},
+			},
+			{
+				originalException: {
+					code: 4900,
+					message: 'The provider is disconnected from all chains.',
+				},
+			},
+		),
+	).toBe(true)
+
+	// Generic object-captured noise without provider signal must stay.
+	expect(
+		isWalletUserRejection({
+			exception: {
+				values: [{ type: 'UnhandledRejection', value: objectCaptured }],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [{ type: 'UnhandledRejection', value: objectCaptured }],
+			},
+			extra: {
+				__serialized__: {
+					code: 4900,
+					message: 'The provider is disconnected from all chains.',
+					stack:
+						'Error: The provider is disconnected from all chains.\n    at chrome-extension://lgmpcpglpngdoalbgeoldeajfclnhafa/background.js:141:142584',
+				},
+			},
+		}),
+	).toBe(true)
+})
+
+test('filters Safari CustomEvent unhandledrejection noise (KCD-S8)', () => {
+	const customEventMessage =
+		'Event `CustomEvent` (type=unhandledrejection) captured as promise rejection'
+	expect(matchesIgnoreError(customEventMessage)).toBe(true)
+
+	expect(
+		isCustomEventUnhandledRejectionNoise({
+			exception: {
+				values: [{ type: 'CustomEvent', value: customEventMessage }],
+			},
+			extra: {
+				__serialized__: {
+					type: 'unhandledrejection',
+					isTrusted: false,
+					detail: null,
+					target: '[object Window]',
+					currentTarget: '[object Window]',
+				},
+			},
+		}),
+	).toBe(true)
+
+	expect(
+		isCustomEventUnhandledRejectionNoise({
+			exception: {
+				values: [{ type: 'Error', value: 'real app failure' }],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [{ type: 'CustomEvent', value: customEventMessage }],
+			},
+		}),
 	).toBe(true)
 })
 
@@ -241,9 +344,7 @@ test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
 		matchesIgnoreError('No result found for routeId "routes/courses"'),
 	).toBe(true)
 	expect(
-		matchesIgnoreError(
-			'No result found for routeId "routes/blog_/$slug"',
-		),
+		matchesIgnoreError('No result found for routeId "routes/blog_/$slug"'),
 	).toBe(true)
 	expect(
 		matchesIgnoreError(
@@ -284,9 +385,11 @@ test('filters Sentry Replay cross-origin iframe Element probes (KCD-TF)', () => 
 })
 
 test('drops extension blob-script addListener noise (KCD-Z7)', () => {
-	expect(matchesIgnoreError("Cannot read properties of undefined (reading 'addListener')")).toBe(
-		false,
-	)
+	expect(
+		matchesIgnoreError(
+			"Cannot read properties of undefined (reading 'addListener')",
+		),
+	).toBe(false)
 
 	expect(
 		isInjectedBlobAddListenerError({
@@ -294,7 +397,8 @@ test('drops extension blob-script addListener noise (KCD-Z7)', () => {
 				values: [
 					{
 						type: 'TypeError',
-						value: "Cannot read properties of undefined (reading 'addListener')",
+						value:
+							"Cannot read properties of undefined (reading 'addListener')",
 						stacktrace: {
 							frames: [
 								{
@@ -319,7 +423,8 @@ test('drops extension blob-script addListener noise (KCD-Z7)', () => {
 				values: [
 					{
 						type: 'TypeError',
-						value: "Cannot read properties of undefined (reading 'addListener')",
+						value:
+							"Cannot read properties of undefined (reading 'addListener')",
 						stacktrace: {
 							frames: [{ filename: '/assets/app-abc123.js' }],
 						},
@@ -335,7 +440,8 @@ test('drops extension blob-script addListener noise (KCD-Z7)', () => {
 				values: [
 					{
 						type: 'TypeError',
-						value: "Cannot read properties of undefined (reading 'addListener')",
+						value:
+							"Cannot read properties of undefined (reading 'addListener')",
 						stacktrace: {
 							frames: [
 								{
@@ -478,7 +584,9 @@ test('filters React Router manifest-patch edge HTTP status errors (KCD-ZH/YD/YF)
 						type: 'Error',
 						value: '502 ',
 						stacktrace: {
-							frames: [{ filename: '/app/routes/blog.tsx', function: 'loader' }],
+							frames: [
+								{ filename: '/app/routes/blog.tsx', function: 'loader' },
+							],
 						},
 					},
 				],

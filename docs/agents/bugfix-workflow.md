@@ -30,7 +30,7 @@ fixes it.
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
 - Server: React Router `throwIfPotentialCSRFAttack` aborts (`…from a forwarded
-  action request. Aborting the action.`, invalid/`missing host` Origin variants)
+action request. Aborting the action.`, invalid/`missing host` Origin variants)
   are expected 400s for mismatched Origin probes. Skip Sentry in
   `entry.server.tsx` `handleError` via `isReactRouterCsrfAbortError` (KCD-YN);
   do not weaken CSRF checks to silence the alert.
@@ -75,6 +75,15 @@ fixes it.
   (DOCTYPE payload signature; turbo-stream / Safari pattern require RR stack
   or `.data`/`__manifest` breadcrumbs). Do not broaden to generic
   `Failed to fetch`.
+- Client `<unknown>` unhandledrejection titles with empty stacks are often
+  non-Error rejections. Inspect the event JSON `extra.__serialized__` before
+  filtering: EIP-1193 wallet disconnect uses code `4900` /
+  "The provider is disconnected from all chains." with
+  `chrome-extension://…/background.js` stacks (KCD-YX — extend
+  `isWalletUserRejection`); Safari/extension
+  `Event \`CustomEvent\` (type=unhandledrejection) captured as promise rejection`
+  is external CustomEvent wrapping (KCD-S8). Never drop bare
+  "Object captured as promise rejection with keys…" without a provider signal.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
