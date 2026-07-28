@@ -40,6 +40,8 @@ import {
 	consumeVerification,
 	consumeVerificationForTarget,
 	createVerification,
+	getSignupVerificationRedirectTo,
+	isUuid,
 } from '#app/utils/verification.server.ts'
 import { type Route } from './+types/signup'
 
@@ -161,13 +163,17 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 
 		loginInfoSession.flashMessage(`Verification code sent to ${email}.`)
-		return redirect(`/signup?verification=${verification.id}`, {
+		return redirect(getSignupVerificationRedirectTo(verification.id), {
 			headers: await loginInfoSession.getHeaders(),
 		})
 	}
 
 	if (actionId === actionIds.verifyCode) {
 		const verificationId = form.get('verificationId')
+		const safeVerificationId =
+			typeof verificationId === 'string' && isUuid(verificationId)
+				? verificationId
+				: null
 		const code = form.get('code')
 		if (typeof code !== 'string' || !code) {
 			loginInfoSession.flashError('Verification code required')
@@ -176,34 +182,28 @@ export async function action({ request }: Route.ActionArgs) {
 			})
 		}
 
-		const result =
-			typeof verificationId === 'string' && verificationId
-				? await consumeVerification({
-						id: verificationId,
-						code,
-						type: 'SIGNUP',
-					})
-				: await consumeVerificationForTarget({
-						target: (form.get('email') ?? loginInfoSession.getEmail() ?? '')
-							.toString()
-							.trim()
-							.toLowerCase(),
-						code,
-						type: 'SIGNUP',
-					})
+		const result = safeVerificationId
+			? await consumeVerification({
+					id: safeVerificationId,
+					code,
+					type: 'SIGNUP',
+				})
+			: await consumeVerificationForTarget({
+					target: (form.get('email') ?? loginInfoSession.getEmail() ?? '')
+						.toString()
+						.trim()
+						.toLowerCase(),
+					code,
+					type: 'SIGNUP',
+				})
 
 		if (!result) {
 			loginInfoSession.flashError(
 				'Verification code invalid or expired. Please request a new one.',
 			)
-			return redirect(
-				typeof verificationId === 'string' && verificationId
-					? `/signup?verification=${verificationId}`
-					: '/signup',
-				{
-					headers: await loginInfoSession.getHeaders(),
-				},
-			)
+			return redirect(getSignupVerificationRedirectTo(safeVerificationId), {
+				headers: await loginInfoSession.getHeaders(),
+			})
 		}
 
 		loginInfoSession.setSignupEmail(result.target)
@@ -398,7 +398,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const loginInfoSession = await getLoginInfoSession(request)
 
 	const url = new URL(request.url)
-	const verificationId = url.searchParams.get('verification')
+	const rawVerificationId = url.searchParams.get('verification')
+	const verificationId =
+		rawVerificationId && isUuid(rawVerificationId) ? rawVerificationId : null
 	const code = url.searchParams.get('code')
 
 	// Support verification links in email.
