@@ -29,6 +29,11 @@ fixes it.
   errors — those can hide real outages. Message/stack drop rules must establish
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
+- Page-translator DOM mutation (Google/Chrome Translate) often surfaces as
+  `RangeError: Maximum call stack size exceeded` with an unattributed
+  `filename: "undefined"` frame plus UI breadcrumbs like `a > font > font`, or
+  `html.translated-ltr` / `translated-rtl`. Do not broadly ignore call-stack
+  overflows — require that unusable stack plus translator evidence (KCD-QW).
 - Client `RouteErrorResponse: 502/503/524 Route Error` (from
   `useCapturedRouteError` / `getRouteErrorResponseException`) often wraps
   Cloudflare's generic edge HTML (`<title>… | 502: Bad gateway</title>`,
@@ -41,6 +46,13 @@ fixes it.
   (`isCloudflareEdgeRouteError` / `isReactRouterEdgeHttpStatusError`). App
   502/503 responses carry a non-empty body (`resources/lookout`, search) and
   must not be filtered.
+- Client `Error: No result found for routeId "…"` is React Router's
+  `SingleFetchNoResultError` from `unwrapSingleFetchResult` when a stale client
+  route tree asks for a routeId missing from the server's single-fetch `.data`
+  response (tab held open across deploys). Stack is entirely in `react-router`;
+  the same signature appears for many still-existing routes (`routes/courses`,
+  `routes/blog_/$slug`, etc.). Filter via `sentry-noise.ts` — do not "fix" by
+  re-adding routes that already exist.
 - Client React Router data-protocol noise (KCD-XF family):
   `Unable to decode turbo-stream response` (`.data` single-fetch) and
   `__manifest` JSON parse failures (`Unexpected token '<', "<!DOCTYPE"…` or
@@ -49,8 +61,8 @@ fixes it.
   bodies instead of turbo-stream/JSON. Healthy origin returns
   `text/x-script` / `application/json` (or manifest `204` +
   `X-Remix-Reload-Document`). Filter via `isReactRouterDataProtocolNoise`
-  (DOCTYPE payload signature; turbo-stream / Safari pattern require RR
-  stack or `.data`/`__manifest` breadcrumbs). Do not broaden to generic
+  (DOCTYPE payload signature; turbo-stream / Safari pattern require RR stack
+  or `.data`/`__manifest` breadcrumbs). Do not broaden to generic
   `Failed to fetch`.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current

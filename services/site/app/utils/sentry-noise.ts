@@ -13,7 +13,7 @@ const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
 const SAFARI_JSON_PATTERN_ERROR =
 	/^The string did not match the expected pattern\.?$/i
 const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
-const REACT_ROUTER_MANIFEST_STACK =
+const REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK =
 	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
 const DATA_PROTOCOL_REQUEST = /\/(?:__manifest|\S+\.data)(?:\?|$)/i
 
@@ -50,6 +50,10 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/WKErrorDomain Code=12/,
 	// Sentry Session Replay probing cross-origin iframes (KCD-TF).
 	/Failed to read a named property 'Element' from 'Window': Blocked a frame/,
+	// React Router SingleFetchNoResultError: client route tree / single-fetch
+	// response skew across deploys (stale tab). Distinctive framework message from
+	// unwrapSingleFetchResult — not an app missing-route bug (KCD-VP family).
+	/No result found for routeId "/,
 	// HTML document body parsed as JSON — distinctive "<!DOCTYPE" payload
 	// (KCD-ZJ / __manifest edge HTML).
 	HTML_AS_JSON_ERROR,
@@ -95,6 +99,10 @@ type SentryEventLike = {
 	extra?: { route_error_response?: RouteErrorResponseExtra | null } | null
 	breadcrumbs?: Array<SentryBreadcrumbLike> | null
 }
+
+// Google Translate / browser page-translate wraps text in nested <font> tags.
+const TRANSLATOR_FONT_SELECTOR = /(?:^|>)\s*font\s*>\s*font\b/i
+const CALL_STACK_OVERFLOW = /Maximum call stack size exceeded/i
 
 const WALLET_PROVIDER_STACK =
 	/metamask|coinbase|rainbow|walletconnect|phantom|ethereum|eip-1193|inpage\.js|nkbihfbeogaeaoehlefnkodbefgpgknn/i
@@ -214,11 +222,7 @@ export function isReactRouterEdgeHttpStatusError(
 	const original = hint.originalException
 	if (original instanceof Error) messages.push(original.message)
 
-	if (
-		!messages.some((message) =>
-			REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE.test(message),
-		)
-	) {
+	if (!messages.some((message) => REACT_ROUTER_EDGE_HTTP_STATUS_MESSAGE.test(message))) {
 		return false
 	}
 
@@ -246,7 +250,7 @@ export function isReactRouterDataProtocolNoise(
 	const evidence = `${stackBlob(event, hint.originalException)}\n${breadcrumbBlob(event)}`
 	const protocolEvidence =
 		REACT_ROUTER_TURBO_STREAM_STACK.test(evidence) ||
-		REACT_ROUTER_MANIFEST_STACK.test(evidence) ||
+		REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK.test(evidence) ||
 		DATA_PROTOCOL_REQUEST.test(evidence)
 
 	if (
@@ -262,7 +266,7 @@ export function isReactRouterDataProtocolNoise(
 	if (!safariPattern) return false
 
 	return (
-		REACT_ROUTER_MANIFEST_STACK.test(evidence) ||
+		REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK.test(evidence) ||
 		DATA_PROTOCOL_REQUEST.test(evidence)
 	)
 }
@@ -337,9 +341,73 @@ export function isInjectedBlobAddListenerError(
 	return urls.length > 0 && urls.every((url) => /^blob:/i.test(url))
 }
 
+function isCallStackOverflow(event: SentryEventLike): boolean {
+	return eventMessages(event).some((message) => CALL_STACK_OVERFLOW.test(message))
+}
+
+function exceptionFrames(event: SentryEventLike) {
+	return (event.exception?.values ?? []).flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+}
+
+/**
+ * Real app recursion still attributes frames to bundle URLs. Translator and
+ * other injected scripts often report a single unusable "undefined" filename
+ * via window.onerror (KCD-QW).
+ */
+export function hasOnlyUnusableStackFrames(event: SentryEventLike): boolean {
+	const frames = exceptionFrames(event)
+	if (frames.length === 0) return true
+	return frames.every((frame) => {
+		const filename = frame.filename
+		return (
+			filename == null ||
+			filename === '' ||
+			filename === 'undefined' ||
+			filename === 'null'
+		)
+	})
+}
+
+function hasTranslatorFontBreadcrumb(event: SentryEventLike): boolean {
+	return (event.breadcrumbs ?? []).some(
+		(breadcrumb) =>
+			breadcrumb.category === 'ui.click' &&
+			TRANSLATOR_FONT_SELECTOR.test(breadcrumb.message ?? ''),
+	)
+}
+
+/** Live marker Google/Chrome page translate adds to <html>. */
+export function isHtmlPageTranslated(
+	doc: { documentElement?: { className?: string } | null } | null | undefined =
+		typeof document === 'undefined' ? undefined : document,
+): boolean {
+	const className = doc?.documentElement?.className
+	if (typeof className !== 'string') return false
+	return /\btranslated-(?:ltr|rtl)\b/.test(className)
+}
+
+/**
+ * Page translators (Google Translate / Chrome Translate) mutate React's DOM
+ * with nested <font> tags and can recurse until RangeError. Only drop when the
+ * stack is unattributed and translator evidence is present (KCD-QW).
+ */
+export function isPageTranslatorCallStackOverflow(
+	event: SentryEventLike,
+	options: { pageTranslated?: boolean } = {},
+): boolean {
+	if (!isCallStackOverflow(event)) return false
+	if (!hasOnlyUnusableStackFrames(event)) return false
+	if (hasTranslatorFontBreadcrumb(event)) return true
+	if (options.pageTranslated === true) return true
+	if (options.pageTranslated === false) return false
+	return isHtmlPageTranslated()
+}
+
 export function shouldDropSentryEvent(
 	event: SentryEventLike,
-	hint: { originalException?: unknown } = {},
+	hint: { originalException?: unknown; pageTranslated?: boolean } = {},
 ): boolean {
 	if (isBrowserExtensionError(hint.originalException)) return true
 	if (isWalletUserRejection(event, hint)) return true
@@ -350,5 +418,12 @@ export function shouldDropSentryEvent(
 	if (isReactRouterDataProtocolNoise(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true
+	if (
+		isPageTranslatorCallStackOverflow(event, {
+			pageTranslated: hint.pageTranslated,
+		})
+	) {
+		return true
+	}
 	return false
 }
