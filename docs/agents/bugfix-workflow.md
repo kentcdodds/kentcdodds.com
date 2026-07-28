@@ -34,6 +34,12 @@ fixes it.
   `filename: "undefined"` frame plus UI breadcrumbs like `a > font > font`, or
   `html.translated-ltr` / `translated-rtl`. Do not broadly ignore call-stack
   overflows — require that unusable stack plus translator evidence (KCD-QW).
+- The same translators also cause React `NotFoundError` on `removeChild` /
+  `insertBefore` (Chrome) or Safari `The object can not be found here.` during
+  `react-dom` deletion (facebook/react#11538). Filter via
+  `isTranslatorDomMutationNoise` only when the stack is react-dom/native with no
+  in-app frames — do not add `Node.prototype` monkey-patches for triage
+  (KCD-S5 / KCD-XQ / KCD-ZE).
 - Client `RouteErrorResponse: 502/503/524 Route Error` (from
   `useCapturedRouteError` / `getRouteErrorResponseException`) often wraps
   Cloudflare's generic edge HTML (`<title>… | 502: Bad gateway</title>`,
