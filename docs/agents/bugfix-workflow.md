@@ -101,6 +101,15 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   bug. Filter via `isReactSchedulerAlreadyWorkingNoise` only when the exact
   message has an exclusively scheduler/react-dom stack (every frame) and no
   in-app frames (KCD-YT). Do not ignore the phrase alone.
+- Client `<unknown>` unhandledrejection titles with empty stacks are often
+  non-Error rejections. Inspect the event JSON `extra.__serialized__` before
+  filtering: EIP-1193 wallet disconnect uses codes `4900` /
+  "The provider is disconnected from all chains." and `4901` /
+  "…from the requested chain" with `chrome-extension://…/background.js`
+  stacks (KCD-YX — extend `isWalletUserRejection`); Safari/extension
+  `Event \`CustomEvent\` (type=unhandledrejection) captured as promise rejection`
+  is external CustomEvent wrapping (KCD-S8). Never drop bare
+  "Object captured as promise rejection with keys…" without a provider signal.
 - A stack trace that predates a platform migration may still describe a live
   bug. Before writing an issue off as stale, reproduce it against the current
   runtime (Sentry KCD-XP looked like dead Fly/Express noise but reproduced on
