@@ -29,8 +29,20 @@ fixes it.
   errors — those can hide real outages. Message/stack drop rules must establish
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
+- Client `TypeError: Failed to fetch` / Firefox `NetworkError when attempting to
+fetch resource` / Safari `Load failed` with React Router stacks
+  (`fetchAndDecodeViaTurboStream`, `fetchAndApplyManifestPatches`) and a
+  failing `.data` / `__manifest` breadcrumb **without** `status_code` are
+  browser network-layer failures during SPA nav (idle tab, offline, flaky
+  mobile) — not an app throw. Live endpoints often still return 200. Do not
+  broadly `ignoreErrors` these (KCD-XZ / KCD-QG family); optional product UX is
+  a hard-reload fallback on nav TypeError.
+- Blog `markAsRead()` (`routes/action/mark-as-read.tsx`) is best-effort read
+  tracking. Uncaught `fetch` rejections from that path are app noise: keep the
+  catch inside `markAsRead` (KCD-FY / KCD-1R / KCD-ZW / KCD-WV), do not filter
+  generic network strings in `sentry-noise.ts`.
 - Server: React Router `throwIfPotentialCSRFAttack` aborts (`…from a forwarded
-  action request. Aborting the action.`, invalid/`missing host` Origin variants)
+action request. Aborting the action.`, invalid/`missing host` Origin variants)
   are expected 400s for mismatched Origin probes. Skip Sentry in
   `entry.server.tsx` `handleError` via `isReactRouterCsrfAbortError` (KCD-YN);
   do not weaken CSRF checks to silence the alert.
