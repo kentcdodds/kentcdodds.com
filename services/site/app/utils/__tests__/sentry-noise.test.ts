@@ -493,6 +493,15 @@ test('filters javascript-obfuscator a0_0x injectors (KCD-ZG)', () => {
 	expect(matchesIgnoreError('myHelper is not defined')).toBe(false)
 })
 
+test('filters Check Point Zero Phishing zp_token inject (KCD-102)', () => {
+	expect(matchesIgnoreError('zp_token is not defined')).toBe(true)
+	expect(matchesIgnoreError("Can't find variable: zp_token")).toBe(true)
+	expect(matchesIgnoreError('auth_token is not defined')).toBe(false)
+	expect(
+		matchesDenyUrl('https://zerophishing.iaas.checkpoint.com/3/zp.js'),
+	).toBe(true)
+})
+
 test('filters WKWebView invalid-frame native errors (KCD-YV)', () => {
 	expect(
 		matchesIgnoreError(

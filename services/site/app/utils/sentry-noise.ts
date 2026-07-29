@@ -73,6 +73,10 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/window\.webkit\.messageHandlers/,
 	// javascript-obfuscator-style injected scripts (KCD-ZG).
 	/a0_0x[0-9a-f]+ is not defined/,
+	// Check Point Zero Phishing injected zp.js (KCD-102). Distinctive
+	// undefined token from zerophishing.iaas.checkpoint.com — not app code.
+	/Can't find variable: zp_token/,
+	/zp_token is not defined/,
 	// WKWebView native bridge rejecting script into a missing frame (KCD-YV).
 	/WKErrorDomain Code=12/,
 	// Sentry Session Replay probing cross-origin iframes (KCD-TF).
@@ -97,6 +101,8 @@ export const SENTRY_DENY_URLS: Array<RegExp> = [
 	/webkit-masked-url:\/\//i,
 	// Android in-app browser injected scripts (Instagram, etc.).
 	/iabjs:/i,
+	// Check Point Zero Phishing corporate security inject (KCD-102).
+	/zerophishing\.iaas\.checkpoint\.com/i,
 ]
 
 type SentryExceptionValue = {
