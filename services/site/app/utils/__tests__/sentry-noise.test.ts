@@ -500,6 +500,11 @@ test('filters Check Point Zero Phishing zp_token inject (KCD-102)', () => {
 	expect(
 		matchesDenyUrl('https://zerophishing.iaas.checkpoint.com/3/zp.js'),
 	).toBe(true)
+	expect(
+		matchesDenyUrl(
+			'https://evil.example/zerophishing.iaas.checkpoint.com/payload.js',
+		),
+	).toBe(false)
 })
 
 test('filters WKWebView invalid-frame native errors (KCD-YV)', () => {

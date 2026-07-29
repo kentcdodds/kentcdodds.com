@@ -102,7 +102,7 @@ export const SENTRY_DENY_URLS: Array<RegExp> = [
 	// Android in-app browser injected scripts (Instagram, etc.).
 	/iabjs:/i,
 	// Check Point Zero Phishing corporate security inject (KCD-102).
-	/zerophishing\.iaas\.checkpoint\.com/i,
+	/(?:^|\/\/)zerophishing\.iaas\.checkpoint\.com(?::\d+)?(?:\/|$|\?)/i,
 ]
 
 type SentryExceptionValue = {
