@@ -121,3 +121,7 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   `ProblemSolutionSection` via `differenceInYears`. Prefer plain calendar-year
   math (`getYearsTeaching` in `utils/years-teaching.ts`) for static marketing
   copy — do not filter the generic constructor TypeError (KCD-100).
+- Client `ReferenceError: zp_token is not defined` from `/3/zp.js` is Check
+  Point Zero Phishing (`zerophishing.iaas.checkpoint.com`) injected into the
+  visitor's browser — not site code. Filter via `denyUrls` for that host plus
+  the distinctive `zp_token` ignoreErrors (KCD-102); do not chase app fixes.
