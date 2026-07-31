@@ -2,7 +2,10 @@ import { cachified, verboseReporter } from '@epic-web/cachified'
 import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { cache, shouldForceFresh } from './cache.server.ts'
-import { getContentDataFile } from './content-data.server.ts'
+import {
+	getContentDataCacheKey,
+	getContentDataFile,
+} from './content-data.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.ts'
 
 export type Person = {
@@ -138,7 +141,7 @@ async function getPeople({
 	request?: Request
 	forceFresh?: boolean
 }) {
-	const key = 'content:data:credits.yml'
+	const key = getContentDataCacheKey('credits.yml')
 	try {
 		const allPeople = await cachified(
 			{

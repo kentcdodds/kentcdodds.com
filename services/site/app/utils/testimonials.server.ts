@@ -2,7 +2,10 @@ import slugify from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { pick } from '#app/utils/cjs/lodash.ts'
 import { cache, cachified } from './cache.server.ts'
-import { getContentDataFile } from './content-data.server.ts'
+import {
+	getContentDataCacheKey,
+	getContentDataFile,
+} from './content-data.server.ts'
 import { markdownToHtml } from './markdown.server.ts'
 import { getErrorMessage, typedBoolean } from './misc.ts'
 import { type Timings } from './timing.server.ts'
@@ -201,7 +204,7 @@ async function getAllTestimonials({
 	forceFresh?: boolean
 	timings?: Timings
 }) {
-	const key = 'content:data:testimonials.yml'
+	const key = getContentDataCacheKey('testimonials.yml')
 	try {
 		return await cachified({
 			cache,

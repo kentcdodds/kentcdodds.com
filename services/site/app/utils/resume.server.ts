@@ -1,7 +1,10 @@
 import * as YAML from 'yaml'
 import { z } from 'zod'
 import { cache, cachified } from '#app/utils/cache.server.ts'
-import { getContentDataFile } from '#app/utils/content-data.server.ts'
+import {
+	getContentDataCacheKey,
+	getContentDataFile,
+} from '#app/utils/content-data.server.ts'
 import { type Timings } from '#app/utils/timing.server.ts'
 
 const resumeLinkSchema = z.object({
@@ -63,7 +66,7 @@ async function getResumeData({
 	forceFresh?: boolean
 	timings?: Timings
 }) {
-	const key = 'content:data:resume.yml'
+	const key = getContentDataCacheKey('resume.yml')
 	try {
 		return await cachified({
 			cache,

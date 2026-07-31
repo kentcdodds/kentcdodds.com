@@ -2,7 +2,10 @@
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { publishViaEndpoint as publishViaEndpointImpl } from "../services/site-worker/scripts/publish-artifacts-lib.mjs";
-import { getContentPrewarmUrls } from "./content-prewarm-urls.ts";
+import {
+  getContentCacheKeys,
+  getContentPrewarmUrls,
+} from "./content-prewarm-urls.ts";
 import { getChangedFiles, fetchJson } from "./get-changed-files.js";
 import { prewarmPageCache } from "./prewarm-page-cache.ts";
 import { resolveCompareCommitSha } from "./resolve-compare-commit-sha.ts";
@@ -200,10 +203,14 @@ export async function refreshChangedContent({
   }
 
   // Refresh the same host the artifacts were published to.
+  // Delete long-lived content:data:* keys for changed YAML so prewarm does not
+  // rebuild pages from stale parsed content.
+  const cacheKeys = getContentCacheKeys(contentChanges);
   const refreshResult = await postRefreshCacheWithRetry({
     postRefreshCacheImpl,
     postData: {
       commitSha: currentCommitSha,
+      ...(cacheKeys.length > 0 ? { keys: cacheKeys } : {}),
     },
     hostname: new URL(workerUrl).hostname,
     log,

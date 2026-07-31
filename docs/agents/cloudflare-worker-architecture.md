@@ -143,6 +143,12 @@ publishes the artifact bundle via `POST /resources/mdx-artifacts`, and records
 the commit via `POST /action/refresh-cache`. Compare SHA resolution prefers
 `/refresh-commit-sha.json`, then falls back to `/__meta.buildSha`.
 
+Sharp edge: YAML under `services/site/content/data/` is also cached in the
+application KV cache (`content:data:*`, multi-day TTL). Content refresh must
+delete those keys for changed data files before prewarming, and runtime cache
+keys are scoped by artifact `contentVersion` so a republished bundle cannot
+keep serving stale parsed YAML.
+
 ## Bootstrap ↔ app bridge (globals contract)
 
 The dynamic worker's main module (`app-worker.js`) is an esbuild bundle of

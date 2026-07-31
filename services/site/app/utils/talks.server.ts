@@ -4,7 +4,10 @@ import {
 } from '@sindresorhus/slugify'
 import * as YAML from 'yaml'
 import { cache, cachified } from '#app/utils/cache.server.ts'
-import { getContentDataFile } from '#app/utils/content-data.server.ts'
+import {
+	getContentDataCacheKey,
+	getContentDataFile,
+} from '#app/utils/content-data.server.ts'
 import {
 	markdownToHtml,
 	markdownToHtmlUnwrapped,
@@ -126,7 +129,7 @@ async function getTalksAndTags({
 	const slugify = await getSlugify()
 	slugify.reset()
 
-	const key = 'content:data:talks.yml'
+	const key = getContentDataCacheKey('talks.yml')
 	try {
 		return await cachified({
 			cache,

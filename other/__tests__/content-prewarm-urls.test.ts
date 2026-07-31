@@ -1,5 +1,8 @@
 import { expect, test } from "vitest";
-import { getContentPrewarmUrls } from "../content-prewarm-urls.ts";
+import {
+  getContentCacheKeys,
+  getContentPrewarmUrls,
+} from "../content-prewarm-urls.ts";
 
 const blogSharedUrls = [
   "/",
@@ -83,4 +86,39 @@ test("ignores content without a corresponding public route", () => {
       },
     ]),
   ).toEqual(blogSharedUrls);
+});
+
+test("maps changed data YAML files to application cache keys", () => {
+  expect(
+    getContentCacheKeys([
+      {
+        changeType: "modified",
+        filename: "services/site/content/data/talks.yml",
+      },
+      {
+        changeType: "modified",
+        filename: "services/site/content/blog/some-post.mdx",
+      },
+      {
+        changeType: "moved",
+        filename: "services/site/content/data/resume.yml",
+        previousFilename: "services/site/content/data/credits.yml",
+      },
+    ]),
+  ).toEqual([
+    "content:data:credits.yml",
+    "content:data:resume.yml",
+    "content:data:talks.yml",
+  ]);
+});
+
+test("returns no cache keys for non-data content changes", () => {
+  expect(
+    getContentCacheKeys([
+      {
+        changeType: "modified",
+        filename: "services/site/content/blog/some-post.mdx",
+      },
+    ]),
+  ).toEqual([]);
 });
