@@ -172,6 +172,61 @@ describe("refreshChangedContent", () => {
     expect(log.warn).toHaveBeenCalledTimes(1);
   });
 
+  test("deletes content data cache keys before prewarming data YAML changes", async () => {
+    const fetchJsonImpl = vi.fn(async () => ({ sha: "compare-sha" }));
+    const getChangedFilesImpl = vi.fn(async () => [
+      {
+        changeType: "modified",
+        filename: "services/site/content/data/talks.yml",
+      },
+    ]);
+    const postRefreshCacheImpl = vi.fn(async () => ({
+      ok: true,
+      pageCacheGeneration: "generation-2",
+      contentVersion: "content-v2",
+    }));
+    const prewarmPageCacheImpl = vi.fn(async () => ({
+      attempted: 2,
+      warmed: 2,
+      failed: 0,
+      results: [],
+    }));
+    const log = createLogger();
+
+    const result = await refreshChangedContent({
+      currentCommitSha: "current-sha",
+      baseUrl: "https://example.test",
+      fetchJsonImpl,
+      getChangedFilesImpl,
+      postRefreshCacheImpl,
+      prewarmPageCacheImpl,
+      prewarmBaseUrl: "https://kentcdodds.com",
+      log,
+      skipPublish: true,
+      skipPrewarm: false,
+    });
+
+    expect(postRefreshCacheImpl).toHaveBeenCalledWith({
+      http: undefined,
+      postData: {
+        commitSha: "current-sha",
+        keys: ["content:data:talks.yml"],
+      },
+      options: { hostname: "kentcdodds-com.kentcdodds.workers.dev" },
+    });
+    expect(prewarmPageCacheImpl).toHaveBeenCalledWith({
+      baseUrl: "https://kentcdodds.com",
+      paths: ["/sitemap.xml", "/talks"],
+      expectedGeneration: "generation-2",
+      expectedContentVersion: "content-v2",
+      log,
+    });
+    expect(result).toMatchObject({
+      status: "refreshed",
+      contentPaths: ["data/talks.yml"],
+    });
+  });
+
   test("prewarms affected public URLs after the final cache refresh", async () => {
     const fetchJsonImpl = vi.fn(async () => ({ sha: "compare-sha" }));
     const getChangedFilesImpl = vi.fn(async () => [

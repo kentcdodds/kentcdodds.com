@@ -25,6 +25,9 @@ vi.mock('../cache.server.ts', () => ({
 
 vi.mock('../content-data.server.ts', () => ({
 	getContentDataFile: vi.fn(async () => ''),
+	getContentDataCacheKey: vi.fn(
+		(dataFilename: string) => `content:data:${dataFilename}`,
+	),
 }))
 
 import { getPeople } from '../credits.server.ts'

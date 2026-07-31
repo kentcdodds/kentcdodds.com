@@ -15,6 +15,14 @@ const dataUrlsByFilename: Record<string, ReadonlyArray<string>> = {
   "testimonials.yml": ["/testimonials"],
 };
 
+/** Legacy/unversioned app-cache keys for YAML content data files. */
+const dataCacheKeyByFilename: Record<string, string> = {
+  "credits.yml": "content:data:credits.yml",
+  "resume.yml": "content:data:resume.yml",
+  "talks.yml": "content:data:talks.yml",
+  "testimonials.yml": "content:data:testimonials.yml",
+};
+
 export type ContentChange = {
   changeType: "added" | "deleted" | "modified" | "moved";
   filename: string;
@@ -90,4 +98,32 @@ export function getContentPrewarmUrls(changes: ReadonlyArray<ContentChange>) {
   }
 
   return Array.from(urls).sort();
+}
+
+function addDataCacheKey(keys: Set<string>, contentPath: string) {
+  if (!contentPath.startsWith("data/")) return;
+  const filename = contentPath.slice("data/".length);
+  const key = dataCacheKeyByFilename[filename];
+  if (key) keys.add(key);
+}
+
+/**
+ * Application-cache keys that must be deleted when content data YAML changes.
+ * Without this, long-TTL `content:data:*` entries can outlive republished
+ * artifacts and prewarm stale pages into a fresh page-cache generation.
+ */
+export function getContentCacheKeys(changes: ReadonlyArray<ContentChange>) {
+  const keys = new Set<string>();
+
+  for (const change of changes) {
+    const contentPath = getContentPath(change.filename);
+    if (contentPath) addDataCacheKey(keys, contentPath);
+
+    if (change.changeType === "moved" && change.previousFilename) {
+      const previousContentPath = getContentPath(change.previousFilename);
+      if (previousContentPath) addDataCacheKey(keys, previousContentPath);
+    }
+  }
+
+  return Array.from(keys).sort();
 }
