@@ -9,6 +9,38 @@
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2026-11-17
 
+- title: 'I Built Your Personal Software Ecosystem'
+  deliveries:
+    - event: '[Cloudflare Connect](https://www.cloudflare.com/connect/)'
+      date: 2026-10-19
+  tags:
+    - cloudflare
+    - ai
+    - architecture
+  description: >-
+    What if you had your own npm registry, your own GitHub, your own cron
+    system, your own email address, and your own database? And what if your
+    favorite AI assistant could build software with all of it on your behalf?
+
+
+    That's Kody: a personal assistant platform where every user gets a fully
+    isolated software ecosystem. Your AI writes packages into your own git
+    repos, publishes them to your personal package registry with real versioned
+    imports, schedules your jobs, runs your long-lived services and workflows,
+    receives email at your own address, and stores everything in storage only
+    you can touch.
+
+
+    I built this entirely on Cloudflare, because Cloudflare is the only place it
+    could be built. This is a technical deep dive into what happens when you
+    take the newest parts of the developer platform to their limits: sandboxing
+    AI-authored user code with Worker Loaders, per-user git hosting with
+    Artifacts, modeling "one of everything per user" with namespaced Durable
+    Objects, and composing D1, KV, R2, Vectorize, Queues, Workflows, and Email
+    Routing into a true multi-tenant platform. If AI agents are going to build
+    and run software for everyone, this is what the infrastructure underneath
+    looks like. You can start building it today.
+
 - title: 'The Last Software Engineer'
   resources:
     - '[article](https://www.epicproduct.engineer/the-last-software-engineer)'
