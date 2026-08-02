@@ -112,4 +112,15 @@ describe('useCapturedRouteError', () => {
 		await expect.poll(() => mockCaptureException.mock.calls.length).toBe(1)
 		expect(mockCaptureException).toHaveBeenCalledWith(thrownError)
 	})
+
+	it('does not capture React Router sanitized Unexpected Server Error', async () => {
+		const sanitized = new Error('Unexpected Server Error')
+		sanitized.stack = undefined
+		mockUseRouteError.mockReturnValue(sanitized)
+		mockIsRouteErrorResponse.mockReturnValue(false)
+
+		await render(<TestComponent />)
+
+		expect(mockCaptureException).not.toHaveBeenCalled()
+	})
 })

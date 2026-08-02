@@ -739,6 +739,42 @@ export function hasOnlyUnusableStackFrames(event: SentryEventLike): boolean {
 	})
 }
 
+/**
+ * React Router production `sanitizeError` replaces thrown Errors with
+ * `new Error("Unexpected Server Error")` and clears `stack` before they reach
+ * the client (see react-router `sanitizeError` / turbo-stream `SanitizedError`).
+ * Sentry then gets a useless empty-stack client event (KCD-SE) while
+ * `entry.server` `handleError` already has the real server error.
+ *
+ * Require the exact message plus no usable frames / falsy Error.stack — never
+ * the phrase alone (an app could throw the same text with a real stack).
+ */
+export function isReactRouterSanitizedServerErrorInstance(
+	error: unknown,
+): boolean {
+	return (
+		error instanceof Error &&
+		error.message === 'Unexpected Server Error' &&
+		!error.stack
+	)
+}
+
+export function isReactRouterSanitizedServerError(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	if (isReactRouterSanitizedServerErrorInstance(hint.originalException)) {
+		return true
+	}
+
+	const messageMatches = eventMessages(event).some(
+		(message) => message.trim() === 'Unexpected Server Error',
+	)
+	if (!messageMatches) return false
+
+	return hasOnlyUnusableStackFrames(event)
+}
+
 function hasTranslatorFontBreadcrumb(event: SentryEventLike): boolean {
 	return (event.breadcrumbs ?? []).some(
 		(breadcrumb) =>
@@ -791,6 +827,7 @@ export function shouldDropSentryEvent(
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
 	if (isReactRouterDataProtocolNoise(event, hint)) return true
+	if (isReactRouterSanitizedServerError(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true
 	if (
