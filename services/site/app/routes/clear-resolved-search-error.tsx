@@ -23,7 +23,9 @@ export function ClearResolvedSearchError({
 	message: string
 	setResolved: React.Dispatch<React.SetStateAction<ResolvedSearch | null>>
 }) {
-	React.useEffect(() => {
+	// Layout effect so prior hits are cleared before paint — a useEffect would
+	// leave stale SearchResults visible for one frame beside the error panel.
+	React.useLayoutEffect(() => {
 		setResolved(null)
 	}, [q, setResolved])
 

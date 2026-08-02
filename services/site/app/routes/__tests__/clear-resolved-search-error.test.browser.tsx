@@ -1,16 +1,14 @@
 import { expect, test } from 'vitest'
 import { render } from 'vitest-browser-react'
 import * as React from 'react'
-import { ClearResolvedSearchError } from '../clear-resolved-search-error.tsx'
+import {
+	ClearResolvedSearchError,
+	type ResolvedSearch,
+} from '../clear-resolved-search-error.tsx'
 
 test('clears stale resolved results when the current query soft-errors', async () => {
 	function Harness() {
-		const [resolved, setResolved] = React.useState<{
-			q: string
-			results: Array<never>
-			lowRankingResults: Array<never>
-			noCloseMatches: boolean
-		} | null>({
+		const [resolved, setResolved] = React.useState<ResolvedSearch | null>({
 			q: 'micro',
 			results: [],
 			lowRankingResults: [],
@@ -34,6 +32,10 @@ test('clears stale resolved results when the current query soft-errors', async (
 		.element(screen.getByTestId('resolved-q'))
 		.toHaveTextContent('none')
 	await expect
-		.element(screen.getByText('Search is temporarily unavailable. Please try again.'))
+		.element(
+			screen.getByText(
+				'Search is temporarily unavailable. Please try again.',
+			),
+		)
 		.toBeInTheDocument()
 })
