@@ -16,6 +16,8 @@ import {
 	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
 	isReactRouterEdgeHttpStatusError,
+	isReactRouterSanitizedServerError,
+	isReactRouterSanitizedServerErrorInstance,
 	isReactSchedulerAlreadyWorkingNoise,
 	isTranslatorDomMutationNoise,
 	isWalletUserRejection,
@@ -477,6 +479,80 @@ test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
 		),
 	).toBe(true)
 	expect(matchesIgnoreError('No result found for route')).toBe(false)
+})
+
+test('filters React Router sanitized Unexpected Server Error (KCD-SE)', () => {
+	// Phrase alone must not be an ignoreErrors match — require empty stack.
+	expect(matchesIgnoreError('Unexpected Server Error')).toBe(false)
+
+	const sanitized = new Error('Unexpected Server Error')
+	sanitized.stack = undefined
+	expect(isReactRouterSanitizedServerErrorInstance(sanitized)).toBe(true)
+	expect(isReactRouterSanitizedServerErrorInstance(new Error('boom'))).toBe(
+		false,
+	)
+
+	const withStack = new Error('Unexpected Server Error')
+	expect(isReactRouterSanitizedServerErrorInstance(withStack)).toBe(false)
+
+	const emptyStackEvent = {
+		exception: {
+			values: [{ type: 'Error', value: 'Unexpected Server Error' }],
+		},
+	}
+	expect(isReactRouterSanitizedServerError(emptyStackEvent)).toBe(true)
+	expect(shouldDropSentryEvent(emptyStackEvent)).toBe(true)
+	expect(
+		isReactRouterSanitizedServerError(
+			{},
+			{ originalException: sanitized },
+		),
+	).toBe(true)
+
+	expect(
+		isReactRouterSanitizedServerError({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Unexpected Server Error',
+						stacktrace: {
+							frames: [
+								{
+									filename: '/assets/app-routes.js',
+									function: 'loader',
+									inApp: true,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// Filename omitted but still marked in-app — retain for triage.
+	expect(
+		isReactRouterSanitizedServerError({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Unexpected Server Error',
+						stacktrace: {
+							frames: [
+								{
+									filename: null,
+									function: 'loader',
+									inApp: true,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('filters Instagram WKWebView messageHandlers bridge (KCD-ZR / KCD-ZC)', () => {

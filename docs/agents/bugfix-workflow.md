@@ -76,6 +76,19 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   the same signature appears for many still-existing routes (`routes/courses`,
   `routes/blog_/$slug`, etc.). Filter via `sentry-noise.ts` — do not "fix" by
   re-adding routes that already exist.
+- Client `Error: Unexpected Server Error` with an empty / unusable stack is
+  React Router production `sanitizeError` (and turbo-stream `SanitizedError`):
+  the real Error was stripped before leaving the server. `entry.server`
+  `handleError` already reports the actionable server event — the client echo
+  is noise (KCD-SE). Filter via `isReactRouterSanitizedServerError` / skip
+  capture in `useCapturedRouteError` only when the message is exact and stack
+  frames are unusable / `Error.stack` is falsy. Do not ignore the phrase alone.
+  Keep events that still have an `inApp: true` frame even if Sentry omitted
+  `filename`. Soft-degrade known transient search timeouts on `/search` the
+  same way as `resources/search` (`SearchWorkerTimeoutError` → user-facing
+  unavailable message) so they never become sanitized client 500s; when that
+  soft-error resolves, clear any prior deferred `resolved` results so a new
+  timed-out query cannot keep showing hits from the previous successful query.
 - Client React Router data-protocol noise (KCD-XF family):
   `Unable to decode turbo-stream response` (`.data` single-fetch) and
   `__manifest` JSON parse failures (`Unexpected token '<', "<!DOCTYPE"…` or

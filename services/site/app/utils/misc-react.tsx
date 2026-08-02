@@ -17,7 +17,10 @@ import { type OptionalTeam, type User } from '#app/types.ts'
 import { images } from '../images.tsx'
 import { buildMediaUrl } from './media.ts'
 import { getOptionalTeam } from './misc.ts'
-import { isCloudflareEdgeRouteError } from './sentry-noise.ts'
+import {
+	isCloudflareEdgeRouteError,
+	isReactRouterSanitizedServerErrorInstance,
+} from './sentry-noise.ts'
 
 export * from './misc.ts'
 
@@ -243,7 +246,11 @@ export function useCapturedRouteError() {
 		return error
 	}
 
-	Sentry.captureException(error)
+	// React Router production sanitizeError — empty-stack client echo of a
+	// server Error already reported via entry.server handleError (KCD-SE).
+	if (!isReactRouterSanitizedServerErrorInstance(error)) {
+		Sentry.captureException(error)
+	}
 	return error
 }
 

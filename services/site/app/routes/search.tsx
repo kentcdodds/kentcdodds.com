@@ -24,21 +24,38 @@ import {
 } from '#app/utils/misc-react.tsx'
 import {
 	SEARCH_MAX_QUERY_CHARS,
+	SearchWorkerTimeoutError,
 	type SearchResult,
 } from '@kcd-internal/search-shared'
 import { searchKCD } from '#app/utils/search.server.ts'
+import { ClearResolvedSearchError } from './clear-resolved-search-error.tsx'
 import { type Route } from './+types/search'
+
+const SEARCH_UNAVAILABLE_MESSAGE =
+	'Search is temporarily unavailable. Please try again.'
+
+type SearchPayload = {
+	results: Array<SearchResult>
+	lowRankingResults: Array<SearchResult>
+	noCloseMatches: boolean
+	error?: string
+}
+
+function emptySearchPayload(error?: string): SearchPayload {
+	return {
+		results: [],
+		lowRankingResults: [],
+		noCloseMatches: false,
+		error,
+	}
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const q = (url.searchParams.get('q') ?? '').trim()
 	const headers = { 'Cache-Control': 'no-store' }
 
-	const emptyPayload = Promise.resolve({
-		results: [] as Array<SearchResult>,
-		lowRankingResults: [] as Array<SearchResult>,
-		noCloseMatches: false,
-	})
+	const emptyPayload = Promise.resolve(emptySearchPayload())
 
 	if (!q) {
 		return defer(
@@ -64,14 +81,23 @@ export async function loader({ request }: Route.LoaderArgs) {
 		)
 	}
 
+	// Match resources/search: soft-degrade worker timeouts instead of letting
+	// React Router sanitize them into client "Unexpected Server Error" (KCD-SE).
 	const searchPayload = searchKCD({
 		query: normalizedQ,
 		topK: 8,
 		request,
-	}).catch((e) => {
-		console.error(e)
-		throw e
-	})
+	}).then(
+		(payload): SearchPayload => ({ ...payload, error: undefined }),
+		(e: unknown): SearchPayload => {
+			if (e instanceof SearchWorkerTimeoutError) {
+				console.warn(e)
+				return emptySearchPayload(SEARCH_UNAVAILABLE_MESSAGE)
+			}
+			console.error(e)
+			throw e
+		},
+	)
 	return defer(
 		{
 			q,
@@ -241,17 +267,25 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 										resolve={searchPayloadPromise}
 										errorElement={<SearchResultsError />}
 									>
-										{(payload) => (
-											<ResolveResults
-												q={requestedQuery}
-												results={payload.results}
-												lowRankingResults={payload.lowRankingResults}
-												noCloseMatches={payload.noCloseMatches}
-												setResolved={setResolved}
-												renderResults={!resolved}
-												resultsContainerClassName={resultsContainerClassName}
-											/>
-										)}
+										{(payload) =>
+											payload.error ? (
+												<ClearResolvedSearchError
+													q={requestedQuery}
+													message={payload.error}
+													setResolved={setResolved}
+												/>
+											) : (
+												<ResolveResults
+													q={requestedQuery}
+													results={payload.results}
+													lowRankingResults={payload.lowRankingResults}
+													noCloseMatches={payload.noCloseMatches}
+													setResolved={setResolved}
+													renderResults={!resolved}
+													resultsContainerClassName={resultsContainerClassName}
+												/>
+											)
+										}
 									</Await>
 								</Suspense>
 							) : !resolved ? (
