@@ -772,6 +772,12 @@ export function isReactRouterSanitizedServerError(
 	)
 	if (!messageMatches) return false
 
+	// Filename-less frames are usually unusable, but an explicit in-app frame
+	// still counts as attributed app code — keep those events for triage.
+	if (exceptionFrames(event).some((frame) => frame.inApp === true)) {
+		return false
+	}
+
 	return hasOnlyUnusableStackFrames(event)
 }
 

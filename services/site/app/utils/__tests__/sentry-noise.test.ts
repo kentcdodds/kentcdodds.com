@@ -530,6 +530,29 @@ test('filters React Router sanitized Unexpected Server Error (KCD-SE)', () => {
 			},
 		}),
 	).toBe(false)
+
+	// Filename omitted but still marked in-app — retain for triage.
+	expect(
+		isReactRouterSanitizedServerError({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: 'Unexpected Server Error',
+						stacktrace: {
+							frames: [
+								{
+									filename: null,
+									function: 'loader',
+									inApp: true,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('filters Instagram WKWebView messageHandlers bridge (KCD-ZR / KCD-ZC)', () => {

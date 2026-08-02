@@ -28,6 +28,7 @@ import {
 	type SearchResult,
 } from '@kcd-internal/search-shared'
 import { searchKCD } from '#app/utils/search.server.ts'
+import { ClearResolvedSearchError } from './clear-resolved-search-error.tsx'
 import { type Route } from './+types/search'
 
 const SEARCH_UNAVAILABLE_MESSAGE =
@@ -268,7 +269,11 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
 									>
 										{(payload) =>
 											payload.error ? (
-												<ErrorPanel>{payload.error}</ErrorPanel>
+												<ClearResolvedSearchError
+													q={requestedQuery}
+													message={payload.error}
+													setResolved={setResolved}
+												/>
 											) : (
 												<ResolveResults
 													q={requestedQuery}
