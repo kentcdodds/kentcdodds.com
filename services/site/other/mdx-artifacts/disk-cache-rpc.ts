@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { totalTtl, type CacheEntry } from '@epic-web/cachified'
@@ -81,10 +81,15 @@ export function createDiskCacheRpc(dir: string): DiskCacheRpc {
 			const stored: StoredDiskCacheEntry = { key, ...encodeCacheEntry(entry) }
 			// Write-then-rename so an interrupted write (e.g. a background
 			// stale-while-revalidate refresh cut off at process exit) never leaves
-			// a truncated JSON file behind.
-			const tempPath = `${filePath}.${process.pid}.tmp`
-			await fs.writeFile(tempPath, JSON.stringify(stored), 'utf8')
-			await fs.rename(tempPath, filePath)
+			// a truncated JSON file behind. The temp name is unique per call so
+			// concurrent sets for the same key never race on the same temp file.
+			const tempPath = `${filePath}.${randomUUID()}.tmp`
+			try {
+				await fs.writeFile(tempPath, JSON.stringify(stored), 'utf8')
+				await fs.rename(tempPath, filePath)
+			} finally {
+				await fs.rm(tempPath, { force: true })
+			}
 		},
 		async delete(key) {
 			await fs.rm(entryFilePath(dir, key), { force: true })

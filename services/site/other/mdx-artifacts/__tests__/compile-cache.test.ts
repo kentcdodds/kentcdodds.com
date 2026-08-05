@@ -4,6 +4,7 @@ import path from 'node:path'
 import { expect, test } from 'vitest'
 import { type MdxArtifactDocument } from '../../../types/mdx-artifacts.ts'
 import {
+	getOrCompileCachedDocument,
 	pruneCompiledDocumentCache,
 	readCachedCompiledDocument,
 	writeCachedCompiledDocument,
@@ -72,6 +73,48 @@ test('compile cache misses when nothing was written', async () => {
 		inputHash: 'hash-1',
 	})
 	expect(cached).toBeNull()
+})
+
+test('embed-fallback compiles are not written to the document cache', async () => {
+	await using cache = createTempCacheDir()
+	const fallbackResult = await getOrCompileCachedDocument({
+		cacheDir: cache.dir,
+		key: 'blog/my-post',
+		inputHash: 'hash-1',
+		allowCacheWrite: false,
+		compile: async () => createDocument('my-post'),
+	})
+	expect(fallbackResult.reused).toBe(false)
+
+	// A later strict run must not reuse fallback-mode output.
+	const cached = await readCachedCompiledDocument({
+		cacheDir: cache.dir,
+		key: 'blog/my-post',
+		inputHash: 'hash-1',
+	})
+	expect(cached).toBeNull()
+})
+
+test('strict compiles are reused by later runs, including fallback runs', async () => {
+	await using cache = createTempCacheDir()
+	const document = createDocument('my-post')
+	await getOrCompileCachedDocument({
+		cacheDir: cache.dir,
+		key: 'blog/my-post',
+		inputHash: 'hash-1',
+		allowCacheWrite: true,
+		compile: async () => document,
+	})
+	const rerun = await getOrCompileCachedDocument({
+		cacheDir: cache.dir,
+		key: 'blog/my-post',
+		inputHash: 'hash-1',
+		allowCacheWrite: false,
+		compile: async () => {
+			throw new Error('should not recompile a cached document')
+		},
+	})
+	expect(rerun).toEqual({ document, reused: true })
 })
 
 test('prune removes documents whose keys no longer exist', async () => {

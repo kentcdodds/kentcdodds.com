@@ -113,6 +113,10 @@ provider change only shows up when the document's input hash changes. Bump
 `ARTIFACT_COMPILER_VERSION` when the compile pipeline changes — that already
 invalidates this cache (the input hash includes it).
 
+Sharp edge: `--allow-embed-fallback` runs read the document cache but never
+write to it — a fallback compile can bake plain links in place of failed
+embeds, and a strict run must never reuse that degraded output.
+
 ```jsonc
 {
 	"schemaVersion": 1,

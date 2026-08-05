@@ -74,6 +74,19 @@ test('disk cache keys filters by prefix', async () => {
 	])
 })
 
+test('disk cache handles concurrent sets for the same key', async () => {
+	await using store = createTempStore()
+	const metadata = { createdTime: Date.now(), ttl: 60_000, swr: 0 }
+	await Promise.all(
+		Array.from({ length: 10 }, (_, index) =>
+			store.rpc.set('tweet:embed:contended', { value: index, metadata }),
+		),
+	)
+	const cached = await store.rpc.get('tweet:embed:contended')
+	expect(cached).not.toBeNull()
+	expect(typeof cached?.value).toBe('number')
+})
+
 test('disk cache survives a corrupt entry file', async () => {
 	await using store = createTempStore()
 	await fs.mkdir(store.dir, { recursive: true })

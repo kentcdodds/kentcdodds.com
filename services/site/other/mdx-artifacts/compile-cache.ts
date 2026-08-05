@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { type MdxArtifactDocument } from '../../types/mdx-artifacts.ts'
@@ -62,9 +63,42 @@ export async function writeCachedCompiledDocument({
 	const filePath = documentCachePath(cacheDir, key)
 	await fs.mkdir(path.dirname(filePath), { recursive: true })
 	const stored: CachedCompiledDocument = { inputHash, document }
-	const tempPath = `${filePath}.${process.pid}.tmp`
-	await fs.writeFile(tempPath, JSON.stringify(stored), 'utf8')
-	await fs.rename(tempPath, filePath)
+	const tempPath = `${filePath}.${randomUUID()}.tmp`
+	try {
+		await fs.writeFile(tempPath, JSON.stringify(stored), 'utf8')
+		await fs.rename(tempPath, filePath)
+	} finally {
+		await fs.rm(tempPath, { force: true })
+	}
+}
+
+/**
+ * Cache-or-compile for one document. Cache writes are skipped in embed
+ * fallback mode: a fallback compile can bake plain links in place of failed
+ * embeds, and a later strict run must never reuse that degraded output.
+ * Reads stay enabled — everything already in the cache was written by a
+ * strict compile.
+ */
+export async function getOrCompileCachedDocument({
+	cacheDir,
+	key,
+	inputHash,
+	allowCacheWrite,
+	compile,
+}: {
+	cacheDir: string
+	key: string
+	inputHash: string
+	allowCacheWrite: boolean
+	compile: () => Promise<MdxArtifactDocument>
+}): Promise<{ document: MdxArtifactDocument; reused: boolean }> {
+	const cached = await readCachedCompiledDocument({ cacheDir, key, inputHash })
+	if (cached) return { document: cached, reused: true }
+	const document = await compile()
+	if (allowCacheWrite) {
+		await writeCachedCompiledDocument({ cacheDir, key, inputHash, document })
+	}
+	return { document, reused: false }
 }
 
 /** Remove cached documents whose keys no longer exist (deleted posts). */

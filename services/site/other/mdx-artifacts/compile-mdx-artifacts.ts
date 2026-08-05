@@ -14,9 +14,8 @@ import {
 import { setRuntimeBindingSource } from '#app/utils/runtime-bindings.server.ts'
 import { type MdxArtifactBundle } from '../../types/mdx-artifacts.ts'
 import {
+	getOrCompileCachedDocument,
 	pruneCompiledDocumentCache,
-	readCachedCompiledDocument,
-	writeCachedCompiledDocument,
 } from './compile-cache.ts'
 import { compileMdxArtifactDocument } from './compile-document.ts'
 import { computeContentVersion } from './content-version.ts'
@@ -120,9 +119,11 @@ function filterDocuments(
 async function compileDocumentWithCache({
 	document,
 	cacheDir,
+	allowEmbedFallback,
 }: {
 	document: MdxDocumentRef
 	cacheDir: string | null
+	allowEmbedFallback: boolean
 }) {
 	if (!cacheDir) {
 		return {
@@ -131,20 +132,13 @@ async function compileDocumentWithCache({
 		}
 	}
 	const inputHash = await computeDocumentInputHash(document)
-	const cached = await readCachedCompiledDocument({
+	return getOrCompileCachedDocument({
 		cacheDir,
 		key: document.key,
 		inputHash,
+		allowCacheWrite: !allowEmbedFallback,
+		compile: () => compileMdxArtifactDocument(document),
 	})
-	if (cached) return { document: cached, reused: true }
-	const compiled = await compileMdxArtifactDocument(document)
-	await writeCachedCompiledDocument({
-		cacheDir,
-		key: document.key,
-		inputHash,
-		document: compiled,
-	})
-	return { document: compiled, reused: false }
 }
 
 async function main() {
@@ -174,7 +168,11 @@ async function main() {
 			limit(async () => {
 				try {
 					const { document: compiled, reused } = await compileDocumentWithCache(
-						{ document, cacheDir: options.cacheDir },
+						{
+							document,
+							cacheDir: options.cacheDir,
+							allowEmbedFallback: options.allowEmbedFallback,
+						},
 					)
 					if (reused) reusedCount++
 					return [document.key, compiled] as const
