@@ -318,21 +318,19 @@ html.light .resume-bullets li::marker {
 		margin: 0.6in;
 	}
 
-	body * {
-		visibility: hidden;
+	/* Remove the site chrome (navbar, spacer, footer) from the layout entirely.
+	   Hiding it with `visibility: hidden` kept its height in the document flow,
+	   which produced blank trailing pages in the printout. */
+	body > :not(.resume-page) {
+		display: none;
 	}
 
-	main.resume-main,
-	main.resume-main * {
-		visibility: visible;
+	.resume-page {
+		max-width: none;
+		padding: 0;
 	}
 
 	main.resume-main {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 100%;
-		padding: 0;
 		color: #000000;
 	}
 
