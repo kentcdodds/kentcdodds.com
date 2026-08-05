@@ -5,6 +5,7 @@ import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 import { cache, lruCache } from './cache.server.ts'
+import { recordEmbedDegradation } from './embed-degradation.server.ts'
 import { getEnv } from './env.server.ts'
 import { fetchWithTimeout } from './fetch-with-timeout.server.ts'
 import { formatDate, formatNumber, typedBoolean } from './misc.ts'
@@ -423,16 +424,29 @@ async function buildTweetHTML(tweet: Tweet, expandQuotedTweet: boolean) {
 }
 
 async function getTweetEmbedHTML(urlString: string) {
-	return cachified(
-		{
-			key: `tweet:embed:${urlString}`,
-			ttl: 1000 * 60 * 60 * 24,
-			cache,
-			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30 * 6,
-			getFreshValue: () => getTweetEmbedHTMLImpl(urlString),
-		},
-		verboseReporter(),
-	)
+	try {
+		return await cachified(
+			{
+				key: `tweet:embed:${urlString}`,
+				ttl: 1000 * 60 * 60 * 24,
+				cache,
+				staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30 * 6,
+				// Failure placeholders must never be cached (or reused from older
+				// cache entries): a transient 𝕏 API failure would otherwise be
+				// served from the persistent cache until the entry expires.
+				checkValue: (value) =>
+					typeof value === 'string' &&
+					value.length > 0 &&
+					!value.includes('<callout-danger'),
+				getFreshValue: () => getTweetEmbedHTMLImpl(urlString),
+			},
+			verboseReporter(),
+		)
+	} catch (error: unknown) {
+		console.error('Error processing tweet', { urlString, error })
+		recordEmbedDegradation(urlString, '𝕏 post data not available')
+		return `<callout-danger>𝕏 post data not available: <a href="${urlString}">${urlString}</a></callout-danger>`
+	}
 }
 
 async function getTweetEmbedHTMLImpl(urlString: string) {
@@ -440,27 +454,13 @@ async function getTweetEmbedHTMLImpl(urlString: string) {
 	const tweetId = url.pathname.split('/').pop()
 
 	if (!tweetId) {
-		console.error('TWEET ID NOT FOUND', urlString, tweetId)
-		return ''
+		throw new Error(`Tweet ID not found in ${urlString}`)
 	}
-	let tweet: Awaited<ReturnType<typeof getTweet>> = null
-	const failureHtml = `<callout-danger>𝕏 post data not available: <a href="${urlString}">${urlString}</a></callout-danger>`
-	try {
-		tweet = await getTweetCached(tweetId)
-		if (!tweet) {
-			return failureHtml
-		}
-		const html = await buildTweetHTML(tweet, true)
-		return html
-	} catch (error: unknown) {
-		console.error('Error processing tweet', {
-			urlString,
-			tweetId,
-			error,
-			tweet,
-		})
-		return failureHtml
+	const tweet = await getTweetCached(tweetId)
+	if (!tweet) {
+		throw new Error(`𝕏 post data not available: ${urlString}`)
 	}
+	return buildTweetHTML(tweet, true)
 }
 
 function isXUrl(urlString: string) {

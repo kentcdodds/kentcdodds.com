@@ -73,29 +73,28 @@ export async function writeCachedCompiledDocument({
 }
 
 /**
- * Cache-or-compile for one document. Cache writes are skipped in embed
- * fallback mode: a fallback compile can bake plain links in place of failed
- * embeds, and a later strict run must never reuse that degraded output.
- * Reads stay enabled — everything already in the cache was written by a
- * strict compile.
+ * Cache-or-compile for one document. The compile callback reports whether its
+ * output is safe to persist (`cacheable: false` when any embed degraded
+ * during the compile — failed tweet callout, remark-embedder error HTML,
+ * mermaid render failure, fallback plain link — or when the document's inputs
+ * changed mid-compile). Degraded output is still used for this run's bundle
+ * (pre-existing behavior) but is recompiled next run so it can heal.
  */
 export async function getOrCompileCachedDocument({
 	cacheDir,
 	key,
 	inputHash,
-	allowCacheWrite,
 	compile,
 }: {
 	cacheDir: string
 	key: string
 	inputHash: string
-	allowCacheWrite: boolean
-	compile: () => Promise<MdxArtifactDocument>
+	compile: () => Promise<{ document: MdxArtifactDocument; cacheable: boolean }>
 }): Promise<{ document: MdxArtifactDocument; reused: boolean }> {
 	const cached = await readCachedCompiledDocument({ cacheDir, key, inputHash })
 	if (cached) return { document: cached, reused: true }
-	const document = await compile()
-	if (allowCacheWrite) {
+	const { document, cacheable } = await compile()
+	if (cacheable) {
 		await writeCachedCompiledDocument({ cacheDir, key, inputHash, document })
 	}
 	return { document, reused: false }

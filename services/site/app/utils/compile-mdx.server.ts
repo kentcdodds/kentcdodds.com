@@ -22,6 +22,7 @@ import { v4 as uuid } from 'uuid'
 import { type GitHubFile } from '#app/types.ts'
 import { buildMediaUrl } from '#app/utils/media.ts'
 import { cache, cachified } from './cache.server.ts'
+import { recordEmbedDegradation } from './embed-degradation.server.ts'
 import * as x from './x.server.ts'
 
 const MDX_ESM_EXTERNALS = [
@@ -67,7 +68,7 @@ export function getEmbedFallbackCount() {
 
 function recordEmbedFallback(url: string, reason: string) {
 	embedFallbackCount++
-	console.warn(`[mdx:embed-fallback] ${url} (${reason})`)
+	recordEmbedDegradation(url, `fallback: ${reason}`)
 }
 
 function wrapEmbedTransformer<T extends EmbedTransformer>(transformer: T): T {
@@ -107,6 +108,8 @@ type MdxJsxFlowElement = {
 function handleEmbedderError({ url }: { url: string }) {
 	if (allowEmbedFallback) {
 		recordEmbedFallback(url, 'remark-embedder handleError')
+	} else {
+		recordEmbedDegradation(url, 'remark-embedder handleError')
 	}
 	return `<p>Error embedding <a href="${url}">${url}</a></p>.`
 }
@@ -332,9 +335,13 @@ async function getMermaidSvg({
 				typeof value === 'string' && value.startsWith('<svg'),
 			getFreshValue: () => fetchMermaidSvg({ code: trimmed, theme }),
 		})
-	} catch {
+	} catch (error: unknown) {
 		// If we can't render at compile time, the caller keeps the original code
 		// block so it still shows up as text (and nothing gets cached).
+		recordEmbedDegradation(
+			`mermaid:${theme}:${codeHash}`,
+			error instanceof Error ? error.message : String(error),
+		)
 		return null
 	}
 }

@@ -113,9 +113,14 @@ provider change only shows up when the document's input hash changes. Bump
 `ARTIFACT_COMPILER_VERSION` when the compile pipeline changes — that already
 invalidates this cache (the input hash includes it).
 
-Sharp edge: `--allow-embed-fallback` runs read the document cache but never
-write to it — a fallback compile can bake plain links in place of failed
-embeds, and a strict run must never reuse that degraded output.
+Sharp edge: degraded compiles never enter the caches. A document whose compile
+hit any embed degradation (failed tweet callout, remark-embedder error HTML,
+mermaid render failure, `--allow-embed-fallback` plain link) is used for that
+run's bundle (pre-existing behavior) but is not written to the document cache,
+and `tweet:embed:*` failure placeholders are never stored in the cachified
+store (`checkValue` + throw-on-failure in `x.server.ts`), so transient
+provider failures heal on the next compile instead of persisting for months.
+Track degradations via `embedDegradations` in the compile summary output.
 
 ```jsonc
 {

@@ -75,18 +75,20 @@ test('compile cache misses when nothing was written', async () => {
 	expect(cached).toBeNull()
 })
 
-test('embed-fallback compiles are not written to the document cache', async () => {
+test('degraded compiles are not written to the document cache', async () => {
 	await using cache = createTempCacheDir()
-	const fallbackResult = await getOrCompileCachedDocument({
+	const degradedResult = await getOrCompileCachedDocument({
 		cacheDir: cache.dir,
 		key: 'blog/my-post',
 		inputHash: 'hash-1',
-		allowCacheWrite: false,
-		compile: async () => createDocument('my-post'),
+		compile: async () => ({
+			document: createDocument('my-post'),
+			cacheable: false,
+		}),
 	})
-	expect(fallbackResult.reused).toBe(false)
+	expect(degradedResult.reused).toBe(false)
 
-	// A later strict run must not reuse fallback-mode output.
+	// A later run must not reuse degraded output — it recompiles so it heals.
 	const cached = await readCachedCompiledDocument({
 		cacheDir: cache.dir,
 		key: 'blog/my-post',
@@ -95,21 +97,19 @@ test('embed-fallback compiles are not written to the document cache', async () =
 	expect(cached).toBeNull()
 })
 
-test('strict compiles are reused by later runs, including fallback runs', async () => {
+test('clean compiles are written and reused by later runs', async () => {
 	await using cache = createTempCacheDir()
 	const document = createDocument('my-post')
 	await getOrCompileCachedDocument({
 		cacheDir: cache.dir,
 		key: 'blog/my-post',
 		inputHash: 'hash-1',
-		allowCacheWrite: true,
-		compile: async () => document,
+		compile: async () => ({ document, cacheable: true }),
 	})
 	const rerun = await getOrCompileCachedDocument({
 		cacheDir: cache.dir,
 		key: 'blog/my-post',
 		inputHash: 'hash-1',
-		allowCacheWrite: false,
 		compile: async () => {
 			throw new Error('should not recompile a cached document')
 		},

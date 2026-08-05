@@ -7,6 +7,7 @@ import {
 	configureMdxCompileOptions,
 	getEmbedFallbackCount,
 } from '#app/utils/compile-mdx.server.ts'
+import { getEmbedDegradationCount } from '#app/utils/embed-degradation.server.ts'
 import {
 	getLocalBlogMdxListItemsUncached,
 	getLocalMdxDirList,
@@ -119,11 +120,9 @@ function filterDocuments(
 async function compileDocumentWithCache({
 	document,
 	cacheDir,
-	allowEmbedFallback,
 }: {
 	document: MdxDocumentRef
 	cacheDir: string | null
-	allowEmbedFallback: boolean
 }) {
 	if (!cacheDir) {
 		return {
@@ -136,8 +135,29 @@ async function compileDocumentWithCache({
 		cacheDir,
 		key: document.key,
 		inputHash,
-		allowCacheWrite: !allowEmbedFallback,
-		compile: () => compileMdxArtifactDocument(document),
+		compile: async () => {
+			// The degradation counter is global, so under --concurrency > 1 a
+			// degradation in an overlapping compile can also mark this document
+			// uncacheable. That only causes a recompile next run — never a
+			// degraded document persisted in the cache.
+			const degradationsBefore = getEmbedDegradationCount()
+			const compiled = await compileMdxArtifactDocument(document)
+			const degraded = getEmbedDegradationCount() > degradationsBefore
+			// Guard against inputs changing mid-compile (mirrors the dev
+			// watcher): never store output under a hash it may not match.
+			const inputsChanged =
+				(await computeDocumentInputHash(document)) !== inputHash
+			if (degraded || inputsChanged) {
+				console.warn(
+					`[mdx:compile-cache] not caching ${document.key} (${
+						degraded
+							? 'embeds degraded during compile'
+							: 'inputs changed mid-compile'
+					})`,
+				)
+			}
+			return { document: compiled, cacheable: !degraded && !inputsChanged }
+		},
 	})
 }
 
@@ -168,11 +188,7 @@ async function main() {
 			limit(async () => {
 				try {
 					const { document: compiled, reused } = await compileDocumentWithCache(
-						{
-							document,
-							cacheDir: options.cacheDir,
-							allowEmbedFallback: options.allowEmbedFallback,
-						},
+						{ document, cacheDir: options.cacheDir },
 					)
 					if (reused) reusedCount++
 					return [document.key, compiled] as const
@@ -248,6 +264,7 @@ async function main() {
 				compiled: documents.length - reusedCount,
 				failures: failures.length,
 				embedFallbacks: getEmbedFallbackCount(),
+				embedDegradations: getEmbedDegradationCount(),
 				bundleBytes: Buffer.byteLength(serialized, 'utf8'),
 				elapsedMs,
 				largestDocs: docSizes.slice(0, 10),
