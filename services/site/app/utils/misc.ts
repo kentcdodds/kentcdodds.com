@@ -143,6 +143,33 @@ export function getDiscordAuthorizeURL(domainUrl: string) {
 }
 
 /**
+ * Build a mailto: href with RFC 3986 percent-encoding.
+ *
+ * Do not use URLSearchParams here: it encodes spaces as `+` (form-urlencoded),
+ * and many email clients treat those as literal plus signs in subject/body.
+ */
+export function createMailtoHref({
+	email,
+	subject,
+	body,
+}: {
+	email: string
+	subject?: string
+	body?: string
+}) {
+	const params: Array<string> = []
+	if (subject !== undefined) {
+		params.push(`subject=${encodeURIComponent(subject)}`)
+	}
+	if (body !== undefined) {
+		params.push(`body=${encodeURIComponent(body)}`)
+	}
+	return params.length > 0
+		? `mailto:${email}?${params.join('&')}`
+		: `mailto:${email}`
+}
+
+/**
  * @returns domain URL (without a ending slash, like: https://kentcdodds.com)
  */
 export function getDomainUrl(request: Request) {

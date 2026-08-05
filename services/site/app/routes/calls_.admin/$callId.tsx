@@ -20,6 +20,7 @@ import { MailIcon } from '#app/components/icons.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
 import { H4, H6, Paragraph } from '#app/components/typography.tsx'
 import { type KCDHandle } from '#app/types.ts'
+import { createMailtoHref } from '#app/utils/misc.ts'
 import { formatDate, useDoubleCheck } from '#app/utils/misc-react.tsx'
 import { db } from '#app/utils/db.server.ts'
 import {
@@ -97,10 +98,11 @@ function CallListing({ call }: { call: SerializeFrom<typeof loader>['call'] }) {
 		React.useState(callerTranscript)
 	const callerTranscriptLocked = Boolean(call.episodeDraft)
 	const callerTranscriptError = call.callerTranscriptErrorMessage
-	const mailtoHref = `mailto:${call.user.email}?${new URLSearchParams({
+	const mailtoHref = createMailtoHref({
+		email: call.user.email,
 		subject: `Re: Call Kent - ${call.title}`,
 		body: `I just wanted to talk about your call on the Call Kent podcast`,
-	}).toString()}`
+	})
 
 	React.useEffect(() => {
 		if (!audioEl) return
