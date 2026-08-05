@@ -149,6 +149,18 @@ jobs:
       - name: 🏗️ Build site client + server bundles
         run: npm run build --workspace kentcdodds.com
 
+      # Persistent MDX compile cache: unchanged documents are reused instead of
+      # recompiled, and resolved embeds (tweets, oEmbed, mermaid SVGs) persist
+      # across runs. Keyed by sha so every run saves an updated cache; restore
+      # falls back to the most recent previous run.
+      - name: 🧰 Cache MDX compile artifacts
+        uses: actions/cache@v5
+        with:
+          path: services/site/node_modules/.cache/mdx-artifacts
+          key: mdx-artifacts-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            mdx-artifacts-${{ runner.os }}-
+
       - name: 📦 Compile MDX artifacts
         run: npm run mdx:compile --workspace kentcdodds.com -- --out /tmp/mdx-bundle.json
 

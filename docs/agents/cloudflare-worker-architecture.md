@@ -89,6 +89,39 @@ Produced by `npm run mdx:compile --workspace kentcdodds.com` (Node), published
 by CI to R2 + KV. Format (JSON, schema in
 `services/site/types/mdx-artifacts.ts`):
 
+### Persistent compile cache
+
+`mdx:compile` keeps a persistent cache in `node_modules/.cache/mdx-artifacts`
+(override with `--cache-dir`, disable with `--no-cache`); CI restores/saves it
+via `actions/cache` (`mdx-artifacts-*` key family, shared by `deploy-site.yml`
+and `refresh-content.yml`):
+
+- `documents/{contentDir}/{slug}.json` — full compiled documents keyed by the
+  per-document input hash (`document-input-hash.ts`: compiler version + the
+  document's files + parent dir listing — the same hash the dev watcher uses).
+  Unchanged documents are reused without recompiling; a warm full compile takes
+  ~1s instead of ~90s.
+- `cachified/` — a disk-backed cachified store (`disk-cache-rpc.ts`) registered
+  as the `CACHE_RPC` runtime binding in `compile-mdx-artifacts.ts` and
+  `dev-watcher.ts`. Tweet embed HTML (`tweet:embed:*`), oEmbed responses, and
+  mermaid SVGs (`mermaid:svg:*`) persist across runs, so recompiling a changed
+  document reuses resolved embeds instead of re-fetching them (normal cachified
+  TTL/SWR semantics still refresh stale entries).
+
+Sharp edge: cached documents bake in their resolved embed HTML, so an embed
+provider change only shows up when the document's input hash changes. Bump
+`ARTIFACT_COMPILER_VERSION` when the compile pipeline changes — that already
+invalidates this cache (the input hash includes it).
+
+Sharp edge: degraded compiles never enter the caches. A document whose compile
+hit any embed degradation (failed tweet callout, remark-embedder error HTML,
+mermaid render failure, `--allow-embed-fallback` plain link) is used for that
+run's bundle (pre-existing behavior) but is not written to the document cache,
+and `tweet:embed:*` failure placeholders are never stored in the cachified
+store (`checkValue` + throw-on-failure in `x.server.ts`), so transient
+provider failures heal on the next compile instead of persisting for months.
+Track degradations via `embedDegradations` in the compile summary output.
+
 ```jsonc
 {
 	"schemaVersion": 1,
