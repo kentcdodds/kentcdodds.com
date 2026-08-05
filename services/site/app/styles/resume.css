@@ -332,6 +332,11 @@ html.light .resume-bullets li::marker {
 
 	main.resume-main {
 		color: #000000;
+		/* Pin metric-compatible fonts (Arial on Windows, Helvetica on macOS,
+		   Liberation Sans on Linux) so pagination is stable across machines.
+		   Wider system-font fallbacks (e.g. DejaVu Sans) push the one-page
+		   view onto a second page. */
+		font-family: Arial, Helvetica, 'Liberation Sans', sans-serif;
 	}
 
 	.resume-photo {
