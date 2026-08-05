@@ -49,6 +49,16 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci --workspace=kentcdodds.com --include-workspace-root
 
+      # Shares the mdx-artifacts-* cache family with deploy-site.yml so a
+      # content-only refresh reuses documents compiled during the last deploy.
+      - name: 🧰 Cache MDX compile artifacts
+        uses: actions/cache@v5
+        with:
+          path: services/site/node_modules/.cache/mdx-artifacts
+          key: mdx-artifacts-${{ runner.os }}-refresh-${{ inputs.current_commit_sha || github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            mdx-artifacts-${{ runner.os }}-
+
       - name: 🥬 Refresh changed content
         run:
           node ./other/refresh-changed-content.ts ${{ inputs.current_commit_sha

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { NodeResolvePlugin } from '@esbuild-plugins/node-resolve'
 import { rehypeCodeBlocksShiki } from '@kentcdodds/md-temp'
@@ -20,6 +21,7 @@ import { visit } from 'unist-util-visit'
 import { v4 as uuid } from 'uuid'
 import { type GitHubFile } from '#app/types.ts'
 import { buildMediaUrl } from '#app/utils/media.ts'
+import { cache, cachified } from './cache.server.ts'
 import * as x from './x.server.ts'
 
 const MDX_ESM_EXTERNALS = [
@@ -164,7 +166,6 @@ function trimCodeBlocks() {
 	}
 }
 
-
 const twitterTransformer = {
 	shouldTransform: x.isXUrl,
 	getHTML: x.getTweetEmbedHTML,
@@ -282,6 +283,31 @@ function mdxStringExpressionAttribute(
 	}
 }
 
+async function fetchMermaidSvg({
+	code,
+	theme,
+}: {
+	code: string
+	theme: MermaidTheme
+}): Promise<string> {
+	const compressed = lz.compressToEncodedURIComponent(code)
+	if (!compressed) throw new Error('mermaid code could not be compressed')
+
+	const url = new URL('https://mermaid-to-svg.kentcdodds.workers.dev/svg')
+	url.searchParams.set('mermaid', compressed)
+	url.searchParams.set('theme', theme)
+
+	const response = await fetch(url)
+	if (!response.ok) {
+		throw new Error(`mermaid render failed with status ${response.status}`)
+	}
+	const svgText = await response.text()
+	if (!svgText.startsWith('<svg')) {
+		throw new Error('mermaid render returned non-svg output')
+	}
+	return svgText
+}
+
 async function getMermaidSvg({
 	code,
 	theme,
@@ -292,20 +318,23 @@ async function getMermaidSvg({
 	const trimmed = code.trim()
 	if (!trimmed) return null
 
-	const compressed = lz.compressToEncodedURIComponent(trimmed)
-	if (!compressed) return null
-
-	const url = new URL('https://mermaid-to-svg.kentcdodds.workers.dev/svg')
-	url.searchParams.set('mermaid', compressed)
-	url.searchParams.set('theme', theme)
-
+	const codeHash = createHash('sha256')
+		.update(trimmed)
+		.digest('hex')
+		.slice(0, 16)
 	try {
-		const response = await fetch(url)
-		if (!response.ok) return null
-		const svgText = await response.text()
-		if (!svgText || !svgText.startsWith('<svg')) return null
-		return svgText
+		return await cachified({
+			key: `mermaid:svg:${theme}:${codeHash}`,
+			cache,
+			ttl: 1000 * 60 * 60 * 24 * 30,
+			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30 * 6,
+			checkValue: (value) =>
+				typeof value === 'string' && value.startsWith('<svg'),
+			getFreshValue: () => fetchMermaidSvg({ code: trimmed, theme }),
+		})
 	} catch {
+		// If we can't render at compile time, the caller keeps the original code
+		// block so it still shows up as text (and nothing gets cached).
 		return null
 	}
 }

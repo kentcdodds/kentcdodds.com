@@ -14,17 +14,15 @@ import {
 	getLocalBlogMdxListItemsUncached,
 	getLocalMdxDirList,
 } from '#app/utils/mdx.server.ts'
+import { setRuntimeBindingSource } from '#app/utils/runtime-bindings.server.ts'
 import { type MdxArtifactBundle } from '../../types/mdx-artifacts.ts'
 import { compileMdxArtifactDocument } from './compile-document.ts'
-import {
-	ARTIFACT_COMPILER_VERSION,
-	computeContentVersion,
-} from './content-version.ts'
+import { computeContentVersion } from './content-version.ts'
+import { createDiskCacheRpc } from './disk-cache-rpc.ts'
+import { computeDocumentInputHash } from './document-input-hash.ts'
 import {
 	collectContentInputFiles,
 	discoverLocalMdxDocuments,
-	readLocalMdxFiles,
-	readLocalMdxParentDirList,
 	readLocalDataFiles,
 	type MdxDocumentRef,
 } from './local-content.ts'
@@ -178,41 +176,6 @@ async function writeManifest(
 		`export default ${JSON.stringify(manifest)}`,
 		'utf8',
 	)
-}
-
-async function computeDocumentInputHash(document: MdxDocumentRef) {
-	const [download, parentDirList] = await Promise.all([
-		readLocalMdxFiles(document.contentDir, document.slug),
-		readLocalMdxParentDirList(document.contentDir),
-	])
-	if (!download) {
-		throw new Error(`Missing local MDX content for ${document.key}`)
-	}
-
-	const hash = createHash('sha256')
-	hash.update(`compiler:${ARTIFACT_COMPILER_VERSION}`)
-	hash.update('\0')
-	hash.update(document.key)
-	hash.update('\0')
-	hash.update(download.entry)
-	hash.update('\0')
-	for (const file of [...download.files].sort((a, b) =>
-		a.path.localeCompare(b.path),
-	)) {
-		hash.update(file.path)
-		hash.update('\0')
-		hash.update(file.content)
-		hash.update('\0')
-	}
-	for (const entry of [...parentDirList].sort((a, b) =>
-		a.name.localeCompare(b.name),
-	)) {
-		hash.update(entry.name)
-		hash.update('\0')
-		hash.update(entry.type)
-		hash.update('\0')
-	}
-	return hash.digest('hex')
 }
 
 async function compileDocument(document: MdxDocumentRef) {
@@ -488,6 +451,11 @@ async function startSidecarServer() {
 
 async function main() {
 	const startedAt = Date.now()
+	// Persist cachified values (tweet embed HTML, oEmbed responses, mermaid
+	// SVGs) to disk so recompiling a changed document reuses resolved embeds.
+	setRuntimeBindingSource({
+		CACHE_RPC: createDiskCacheRpc(path.join(CACHE_ROOT, 'cachified')),
+	})
 	const server = await startSidecarServer()
 	if (compileOnce) {
 		try {
