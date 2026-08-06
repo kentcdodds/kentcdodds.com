@@ -9,6 +9,33 @@
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2026-11-17
 
+- title: 'Closing the Agentic Loop'
+  deliveries:
+    - event: '[AI DevCraft](https://ai-devcraft.com/)'
+      date: 2026-10-27
+  tags:
+    - ai
+    - agent
+    - mcp
+    - workflows
+  description: >-
+    Agents get a lot more useful when they can finish the job without you
+    sitting in the middle of every step. The missing piece is usually the loop:
+    act, observe, verify, and only stop when the work is actually done.
+
+
+    In this talk, I'll show how to close that agentic loop. We'll look at how
+    agents can verify their own work, how good system design shows up in the
+    diffs they produce, and which primitives you can compose so they operate
+    with real autonomy. I'll also share how Kody MCP fits into this picture:
+    searchable capabilities, sandboxed execution, memory, and the surfaces
+    agents need to check their work before they hand it back to you.
+
+
+    You'll leave with a practical model for widening the loop—trading a bit of
+    compute for a lot less babysitting—so your agents ship work you're willing
+    to trust.
+
 - title: 'I Built Your Personal Software Ecosystem'
   deliveries:
     - event: '[Cloudflare Connect](https://www.cloudflare.com/connect/)'
