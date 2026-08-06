@@ -4,6 +4,10 @@
       date: 2026-09-24
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2026-11-17
+    - event: '[React Summit Asia](https://reactsummit.asia/)'
+      date: 2027-04-15
+    - event: '[AI Coding Summit Asia](https://aicodingsummit.com/asia/)'
+      date: 2027-04-16
 
 - title: 'Closing the Agentic Loop'
   deliveries:
