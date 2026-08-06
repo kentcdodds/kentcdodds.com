@@ -100,6 +100,14 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   (DOCTYPE payload signature; turbo-stream / Safari pattern require RR stack
   or `.data`/`__manifest` breadcrumbs). Do not broaden to generic
   `Failed to fetch`.
+- Client Firefox `SyntaxError: illegal character U+XXXX` with the HTML page
+  URL as the script filename (often `<!DOCTYPE` in frame context) is the same
+  HTML-where-JS-expected class as Chrome's DOCTYPE JSON SyntaxError, but
+  Firefox reports a C1/control codepoint instead of `Unexpected token '<'`
+  (KCD-105). Filter via `isHtmlDocumentAsScriptNoise` only with that message
+  plus HTML-document evidence (document-path filename or DOCTYPE context) —
+  never the illegal-character phrase alone (a real `.js` bundle with C1
+  controls should still alert).
 - Client `TypeError: … reading 'ok'|'status'` from React Router's
   `fetchAndApplyManifestPatches` / `fetchAndDecodeViaTurboStream` means
   `fetch` resolved to `undefined` (native `fetch` never does). That signature
