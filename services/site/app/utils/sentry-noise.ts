@@ -35,6 +35,16 @@ const TURBO_STREAM_DECODE_ERROR = 'Unable to decode turbo-stream response'
 const HTML_AS_JSON_ERROR = /Unexpected token '<',\s*"<!DOCTYPE/i
 const SAFARI_JSON_PATTERN_ERROR =
 	/^The string did not match the expected pattern\.?$/i
+/**
+ * Firefox reports C1/control codepoints this way when an HTML document is
+ * parsed as a script (KCD-105). Chrome's sibling is HTML_AS_JSON_ERROR.
+ */
+const FIREFOX_ILLEGAL_CHARACTER_SYNTAX =
+	/^illegal character U\+[0-9A-Fa-f]+$/i
+const HTML_DOCTYPE_SOURCE_LINE = /^\s*<!DOCTYPE\b/i
+/** Real script/module/asset filenames — never treat these as HTML documents. */
+const SCRIPT_OR_ASSET_FILENAME =
+	/\.(?:m?[jt]sx?|cjs|css|json|map|wasm)(?:\?|#|$)/i
 const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
 const REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK =
 	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
@@ -111,8 +121,11 @@ type SentryExceptionValue = {
 	stacktrace?: {
 		frames?: Array<{
 			filename?: string | null
+			absPath?: string | null
 			function?: string | null
 			inApp?: boolean | null
+			/** Sentry source context: [lineNo, lineText] pairs when available. */
+			context?: Array<[number, string] | { line?: number; value?: string }> | null
 		}> | null
 	} | null
 }
@@ -500,6 +513,89 @@ export function isTranslatorDomMutationNoise(
 	return true
 }
 
+function frameContextLines(
+	frame: NonNullable<
+		NonNullable<SentryExceptionValue['stacktrace']>['frames']
+	>[number],
+): Array<string> {
+	const lines: Array<string> = []
+	for (const entry of frame.context ?? []) {
+		if (Array.isArray(entry)) {
+			const line = entry[1]
+			if (typeof line === 'string') lines.push(line)
+			continue
+		}
+		if (entry && typeof entry.value === 'string') lines.push(entry.value)
+	}
+	return lines
+}
+
+/**
+ * True when a stack filename is a document URL (HTML route) rather than a
+ * bundled script/module asset. Used to prove HTML-was-parsed-as-JS.
+ */
+export function isHtmlDocumentScriptFilename(filename: string): boolean {
+	const value = filename.trim()
+	if (!value) return false
+	if (
+		/^(?:blob:|data:|webpack:|chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:)/i.test(
+			value,
+		)
+	) {
+		return false
+	}
+	if (value === '[native code]' || value === '<anonymous>') return false
+	if (SCRIPT_OR_ASSET_FILENAME.test(value)) return false
+	if (/\/assets\//i.test(value)) return false
+	// Document paths: "/blog/...", "https://host/blog/...", sometimes bare host URLs.
+	return /^(?:https?:\/\/[^/]+)?\/(?!node_modules\/)/i.test(value)
+}
+
+/**
+ * Firefox HTML-document-as-script SyntaxError (KCD-105).
+ *
+ * When a browser loads an HTML page URL as a script, Chrome surfaces
+ * `Unexpected token '<', "<!DOCTYPE"` (ignoreErrors). Firefox instead throws
+ * `illegal character U+XXXX` for a C1/control codepoint in that HTML, with the
+ * document URL as the only stack filename and often `<!DOCTYPE` in frame
+ * context. Require the Firefox message plus HTML-document evidence — never the
+ * illegal-character phrase alone (a real bundle containing C1 controls should
+ * still alert).
+ */
+export function isHtmlDocumentAsScriptNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const original = hint.originalException
+	const messages = eventMessages(event)
+	if (original instanceof Error) messages.push(original.message)
+
+	const firefoxIllegal = messages.some((message) =>
+		FIREFOX_ILLEGAL_CHARACTER_SYNTAX.test(message.trim()),
+	)
+	if (!firefoxIllegal) return false
+
+	const namedSyntaxError = (event.exception?.values ?? []).some(
+		(value) => value.type === 'SyntaxError',
+	)
+	const originalIsSyntaxError =
+		original instanceof Error && original.name === 'SyntaxError'
+	if (!namedSyntaxError && !originalIsSyntaxError) return false
+
+	const frames = (event.exception?.values ?? []).flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+	if (frames.length === 0) return false
+
+	return frames.some((frame) => {
+		if (frameContextLines(frame).some((line) => HTML_DOCTYPE_SOURCE_LINE.test(line))) {
+			return true
+		}
+		const filename = frame.filename ?? frame.absPath ?? ''
+		return isHtmlDocumentScriptFilename(filename)
+	})
+}
+
 /**
  * React Router client data-protocol failures when `.data` / `__manifest`
  * responses are HTML, empty, or truncated (edge/intermediary), not app throws.
@@ -508,6 +604,8 @@ export function isTranslatorDomMutationNoise(
  * - Turbo-stream decode requires RR single-fetch stack or `.data`/`__manifest`
  *   breadcrumb evidence — never the message alone (KCD-XF/YY/Y8).
  * - Safari pattern SyntaxError is scoped to manifest patch fetches (KCD-XG/X3).
+ * - Firefox `illegal character U+XXXX` when an HTML document URL is the script
+ *   source is handled by `isHtmlDocumentAsScriptNoise` (KCD-105).
  */
 export function isReactRouterDataProtocolNoise(
 	event: SentryEventLike,
@@ -833,6 +931,7 @@ export function shouldDropSentryEvent(
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
 	if (isReactRouterDataProtocolNoise(event, hint)) return true
+	if (isHtmlDocumentAsScriptNoise(event, hint)) return true
 	if (isReactRouterSanitizedServerError(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true
 	if (event.request?.url?.includes('translate-pa.googleapis.com')) return true

@@ -10,6 +10,8 @@ import {
 	isCloudflareEdgeRouteError,
 	isCustomEventUnhandledRejectionNoise,
 	isDegradedUiPerformanceEvent,
+	isHtmlDocumentAsScriptNoise,
+	isHtmlDocumentScriptFilename,
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
 	isPageTranslatorCallStackOverflow,
@@ -921,6 +923,171 @@ test('filters HTML-as-JSON manifest/data protocol noise (KCD-ZJ)', () => {
 			exception: { values: [{ type: 'SyntaxError', value: message }] },
 		}),
 	).toBe(true)
+})
+
+test('filters Firefox HTML-document-as-script illegal character (KCD-105)', () => {
+	const message = 'illegal character U+009E'
+	expect(matchesIgnoreError(message)).toBe(false)
+	expect(isHtmlDocumentScriptFilename('/blog/how-i-built-a-modern-website-in-2021')).toBe(
+		true,
+	)
+	expect(
+		isHtmlDocumentScriptFilename(
+			'https://kentcdodds.com/assets/entry.client-abc123.js',
+		),
+	).toBe(false)
+
+	const htmlDocumentEvent = {
+		exception: {
+			values: [
+				{
+					type: 'SyntaxError',
+					value: message,
+					stacktrace: {
+						frames: [
+							{
+								filename: '/blog/how-i-built-a-modern-website-in-2021',
+								absPath:
+									'https://kentcdodds.com/blog/how-i-built-a-modern-website-in-2021',
+								inApp: true,
+								context: [
+									[
+										1,
+										'<!DOCTYPE html><html lang="en"><head><meta name="viewport"',
+									] as [number, string],
+									[2, '// client hints check'] as [number, string],
+								],
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+
+	expect(isHtmlDocumentAsScriptNoise(htmlDocumentEvent)).toBe(true)
+	expect(shouldDropSentryEvent(htmlDocumentEvent)).toBe(true)
+
+	// Filename alone (no context) is enough when it is clearly an HTML route.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: 'illegal character U+009F',
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'https://kentcdodds.com/blog/how-i-built-a-modern-website-in-2021',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	// absPath fallback when filename is missing.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: message,
+						stacktrace: {
+							frames: [
+								{
+									absPath:
+										'https://kentcdodds.com/blog/how-i-built-a-modern-website-in-2021',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	// DOCTYPE context alone is enough even if filename looks like an asset.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: message,
+						stacktrace: {
+							frames: [
+								{
+									filename: '/assets/entry.client-abc123.js',
+									context: [
+										[
+											1,
+											'<!DOCTYPE html><html lang="en"><head>',
+										] as [number, string],
+									],
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	// Real bundle SyntaxError with the same message must still alert.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: message,
+						stacktrace: {
+							frames: [
+								{
+									filename: '/assets/entry.client-abc123.js',
+									function: 'moduleEvaluation',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// Message alone / no frames — not enough.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [{ type: 'SyntaxError', value: message }],
+			},
+		}),
+	).toBe(false)
+
+	// Non-SyntaxError must not match.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [
+					{
+						type: 'Error',
+						value: message,
+						stacktrace: {
+							frames: [
+								{ filename: '/blog/how-i-built-a-modern-website-in-2021' },
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('scopes Safari JSON pattern errors to manifest protocol (KCD-XG/X3)', () => {
