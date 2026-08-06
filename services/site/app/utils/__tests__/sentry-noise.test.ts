@@ -954,8 +954,8 @@ test('filters Firefox HTML-document-as-script illegal character (KCD-105)', () =
 									[
 										1,
 										'<!DOCTYPE html><html lang="en"><head><meta name="viewport"',
-									],
-									[2, '// client hints check'],
+									] as [number, string],
+									[2, '// client hints check'] as [number, string],
 								],
 							},
 						],
@@ -981,6 +981,55 @@ test('filters Firefox HTML-document-as-script illegal character (KCD-105)', () =
 								{
 									filename:
 										'https://kentcdodds.com/blog/how-i-built-a-modern-website-in-2021',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	// absPath fallback when filename is missing.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: message,
+						stacktrace: {
+							frames: [
+								{
+									absPath:
+										'https://kentcdodds.com/blog/how-i-built-a-modern-website-in-2021',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	// DOCTYPE context alone is enough even if filename looks like an asset.
+	expect(
+		isHtmlDocumentAsScriptNoise({
+			exception: {
+				values: [
+					{
+						type: 'SyntaxError',
+						value: message,
+						stacktrace: {
+							frames: [
+								{
+									filename: '/assets/entry.client-abc123.js',
+									context: [
+										[
+											1,
+											'<!DOCTYPE html><html lang="en"><head>',
+										] as [number, string],
+									],
 								},
 							],
 						},
