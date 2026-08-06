@@ -1,9 +1,5 @@
 - title: TBD
   deliveries:
-    - event: '[Laracon 2026](https://laracon.us/)'
-      date: 2026-07-28
-    - event: '[AgentConf 2026](https://agent.sh/)'
-      date: 2026-09-17
     - event: '[Nerdearla Argentina 2026](https://nerdearla.com/en/argentina/)'
       date: 2026-09-24
     - event: '[React Summit US](https://reactsummit.us/)'
@@ -38,6 +34,8 @@
 
 - title: 'I Built Your Personal Software Ecosystem'
   deliveries:
+    - event: '[AgentConf 2026](https://agent.sh/)'
+      date: 2026-09-17
     - event: '[Cloudflare Connect](https://www.cloudflare.com/connect/)'
       date: 2026-10-19
     - event: '[AI Coding Summit NYC](https://aicodingsummit.com/nyc/)'
@@ -83,6 +81,8 @@
         '[WeAreDevelopers World
         Congress](https://www.wearedevelopers.com/world-congress)'
       date: 2026-07-09
+    - event: '[Laracon 2026](https://laracon.us/)'
+      date: 2026-07-28
   tags:
     - ai
     - product engineering
