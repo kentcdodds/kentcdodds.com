@@ -40,10 +40,15 @@
   deliveries:
     - event: '[Cloudflare Connect](https://www.cloudflare.com/connect/)'
       date: 2026-10-19
+    - event: '[AI Coding Summit NYC](https://aicodingsummit.com/nyc/)'
+      date: 2026-11-16
   tags:
     - cloudflare
     - ai
     - architecture
+    - assistant
+    - agent
+    - infrastructure
   description: >-
     What if you had your own npm registry, your own GitHub, your own cron
     system, your own email address, and your own database? And what if your
