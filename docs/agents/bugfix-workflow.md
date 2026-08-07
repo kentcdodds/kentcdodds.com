@@ -48,9 +48,11 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   do not weaken CSRF checks to silence the alert.
 - Page-translator DOM mutation (Google/Chrome Translate) often surfaces as
   `RangeError: Maximum call stack size exceeded` with an unattributed
-  `filename: "undefined"` frame plus UI breadcrumbs like `a > font > font`, or
-  `html.translated-ltr` / `translated-rtl`. Do not broadly ignore call-stack
-  overflows — require that unusable stack plus translator evidence (KCD-QW).
+  `filename: "undefined"` frame **or** HTML-document-path frames
+  (`https://kentcdodds.com/`, `/clubs`) plus UI breadcrumbs like
+  `a > font > font` / `font > font`, or `html.translated-ltr` /
+  `translated-rtl`. Do not broadly ignore call-stack overflows — require that
+  unusable/HTML-document stack plus translator evidence (KCD-QW / KCD-108).
 - The same translators also cause React `NotFoundError` on `removeChild` /
   `insertBefore` (Chrome) or Safari `The object can not be found here.` during
   `react-dom` deletion (facebook/react#11538). Filter via
