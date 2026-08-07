@@ -1443,6 +1443,57 @@ test('filters translator call stack overflows with HTML-document frames (KCD-108
 			{ pageTranslated: true },
 		),
 	).toBe(false)
+
+	// Placeholder filename must not hide a real bundle URL in absPath.
+	expect(
+		hasOnlyUnusableOrHtmlDocumentStackFrames({
+			exception: {
+				values: [
+					{
+						type: 'RangeError',
+						value: 'Maximum call stack size exceeded.',
+						stacktrace: {
+							frames: [
+								{
+									filename: 'undefined',
+									absPath: '/assets/entry.client-AbCd1234.js',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [
+									{
+										filename: 'undefined',
+										absPath: '/assets/entry.client-AbCd1234.js',
+									},
+								],
+							},
+						},
+					],
+				},
+				breadcrumbs: [
+					{
+						category: 'ui.click',
+						message: 'font > font',
+					},
+				],
+			},
+			{ pageTranslated: true },
+		),
+	).toBe(false)
 })
 
 test('recognizes React Router CSRF abort messages (KCD-YN)', () => {

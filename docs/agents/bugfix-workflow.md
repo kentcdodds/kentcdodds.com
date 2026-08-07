@@ -53,6 +53,8 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   `a > font > font` / `font > font`, or `html.translated-ltr` /
   `translated-rtl`. Do not broadly ignore call-stack overflows — require that
   unusable/HTML-document stack plus translator evidence (KCD-QW / KCD-108).
+  Check both Sentry `filename` and `absPath`: a placeholder in one field is not
+  enough when the other identifies a first-party bundle URL.
 - The same translators also cause React `NotFoundError` on `removeChild` /
   `insertBefore` (Chrome) or Safari `The object can not be found here.` during
   `react-dom` deletion (facebook/react#11538). Filter via

@@ -845,11 +845,22 @@ export function hasOnlyUnusableStackFrames(event: SentryEventLike): boolean {
 	return frames.every((frame) => isUnattributedStackFilename(frame.filename))
 }
 
+function isUnusableOrHtmlDocumentAttribution(
+	value: string | null | undefined,
+): boolean {
+	if (isUnattributedStackFilename(value)) return true
+	if (typeof value !== 'string') return false
+	return isHtmlDocumentScriptFilename(value)
+}
+
 /**
  * Translator overflows on iOS Chrome sometimes attribute minified React frames
  * to the HTML document URL (inline script / document path) instead of
  * `filename: "undefined"` (KCD-108 / KCD-107 / KCD-106). Those are still not
  * first-party bundle frames — treat them like unusable attribution here.
+ *
+ * Inspect both `filename` and `absPath`: a placeholder in one field must not
+ * hide a real bundle URL in the other.
  */
 export function hasOnlyUnusableOrHtmlDocumentStackFrames(
 	event: SentryEventLike,
@@ -857,10 +868,13 @@ export function hasOnlyUnusableOrHtmlDocumentStackFrames(
 	const frames = exceptionFrames(event)
 	if (frames.length === 0) return true
 	return frames.every((frame) => {
-		const filename = frame.filename ?? frame.absPath
-		if (isUnattributedStackFilename(filename)) return true
-		if (typeof filename !== 'string') return false
-		return isHtmlDocumentScriptFilename(filename)
+		const candidates = [frame.filename, frame.absPath].filter(
+			(value, index, values) => values.indexOf(value) === index,
+		)
+		if (candidates.length === 0) return true
+		return candidates.every((value) =>
+			isUnusableOrHtmlDocumentAttribution(value),
+		)
 	})
 }
 
