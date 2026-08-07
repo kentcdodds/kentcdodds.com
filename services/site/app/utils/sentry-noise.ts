@@ -39,8 +39,7 @@ const SAFARI_JSON_PATTERN_ERROR =
  * Firefox reports C1/control codepoints this way when an HTML document is
  * parsed as a script (KCD-105). Chrome's sibling is HTML_AS_JSON_ERROR.
  */
-const FIREFOX_ILLEGAL_CHARACTER_SYNTAX =
-	/^illegal character U\+[0-9A-Fa-f]+$/i
+const FIREFOX_ILLEGAL_CHARACTER_SYNTAX = /^illegal character U\+[0-9A-Fa-f]+$/i
 const HTML_DOCTYPE_SOURCE_LINE = /^\s*<!DOCTYPE\b/i
 /** Real script/module/asset filenames — never treat these as HTML documents. */
 const SCRIPT_OR_ASSET_FILENAME =
@@ -125,7 +124,9 @@ type SentryExceptionValue = {
 			function?: string | null
 			inApp?: boolean | null
 			/** Sentry source context: [lineNo, lineText] pairs when available. */
-			context?: Array<[number, string] | { line?: number; value?: string }> | null
+			context?: Array<
+				[number, string] | { line?: number; value?: string }
+			> | null
 		}> | null
 	} | null
 }
@@ -588,7 +589,11 @@ export function isHtmlDocumentAsScriptNoise(
 	if (frames.length === 0) return false
 
 	return frames.some((frame) => {
-		if (frameContextLines(frame).some((line) => HTML_DOCTYPE_SOURCE_LINE.test(line))) {
+		if (
+			frameContextLines(frame).some((line) =>
+				HTML_DOCTYPE_SOURCE_LINE.test(line),
+			)
+		) {
 			return true
 		}
 		const filename = frame.filename ?? frame.absPath ?? ''
@@ -818,6 +823,17 @@ function exceptionFrames(event: SentryEventLike) {
 	)
 }
 
+function isUnattributedStackFilename(
+	filename: string | null | undefined,
+): boolean {
+	return (
+		filename == null ||
+		filename === '' ||
+		filename === 'undefined' ||
+		filename === 'null'
+	)
+}
+
 /**
  * Real app recursion still attributes frames to bundle URLs. Translator and
  * other injected scripts often report a single unusable "undefined" filename
@@ -826,13 +842,38 @@ function exceptionFrames(event: SentryEventLike) {
 export function hasOnlyUnusableStackFrames(event: SentryEventLike): boolean {
 	const frames = exceptionFrames(event)
 	if (frames.length === 0) return true
+	return frames.every((frame) => isUnattributedStackFilename(frame.filename))
+}
+
+function isUnusableOrHtmlDocumentAttribution(
+	value: string | null | undefined,
+): boolean {
+	if (isUnattributedStackFilename(value)) return true
+	if (typeof value !== 'string') return false
+	return isHtmlDocumentScriptFilename(value)
+}
+
+/**
+ * Translator overflows on iOS Chrome sometimes attribute minified React frames
+ * to the HTML document URL (inline script / document path) instead of
+ * `filename: "undefined"` (KCD-108 / KCD-107 / KCD-106). Those are still not
+ * first-party bundle frames — treat them like unusable attribution here.
+ *
+ * Inspect both `filename` and `absPath`: a placeholder in one field must not
+ * hide a real bundle URL in the other.
+ */
+export function hasOnlyUnusableOrHtmlDocumentStackFrames(
+	event: SentryEventLike,
+): boolean {
+	const frames = exceptionFrames(event)
+	if (frames.length === 0) return true
 	return frames.every((frame) => {
-		const filename = frame.filename
-		return (
-			filename == null ||
-			filename === '' ||
-			filename === 'undefined' ||
-			filename === 'null'
+		const candidates = [frame.filename, frame.absPath].filter(
+			(value, index, values) => values.indexOf(value) === index,
+		)
+		if (candidates.length === 0) return true
+		return candidates.every((value) =>
+			isUnusableOrHtmlDocumentAttribution(value),
 		)
 	})
 }
@@ -902,14 +943,15 @@ export function isHtmlPageTranslated(
 /**
  * Page translators (Google Translate / Chrome Translate) mutate React's DOM
  * with nested <font> tags and can recurse until RangeError. Only drop when the
- * stack is unattributed and translator evidence is present (KCD-QW).
+ * stack is unattributed (or HTML-document-attributed) and translator evidence
+ * is present (KCD-QW / KCD-108).
  */
 export function isPageTranslatorCallStackOverflow(
 	event: SentryEventLike,
 	options: { pageTranslated?: boolean } = {},
 ): boolean {
 	if (!isCallStackOverflow(event)) return false
-	if (!hasOnlyUnusableStackFrames(event)) return false
+	if (!hasOnlyUnusableOrHtmlDocumentStackFrames(event)) return false
 	if (hasTranslatorFontBreadcrumb(event)) return true
 	if (options.pageTranslated === true) return true
 	if (options.pageTranslated === false) return false

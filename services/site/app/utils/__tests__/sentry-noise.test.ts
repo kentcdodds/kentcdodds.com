@@ -3,6 +3,7 @@ import {
 	SENTRY_DENY_URLS,
 	SENTRY_IGNORE_ERRORS,
 	hasInjectedFetchInterceptorBreadcrumbs,
+	hasOnlyUnusableOrHtmlDocumentStackFrames,
 	hasOnlyUnusableStackFrames,
 	isBrokenClientFetchContractError,
 	isBrowserExtensionError,
@@ -505,10 +506,7 @@ test('filters React Router sanitized Unexpected Server Error (KCD-SE)', () => {
 	expect(isReactRouterSanitizedServerError(emptyStackEvent)).toBe(true)
 	expect(shouldDropSentryEvent(emptyStackEvent)).toBe(true)
 	expect(
-		isReactRouterSanitizedServerError(
-			{},
-			{ originalException: sanitized },
-		),
+		isReactRouterSanitizedServerError({}, { originalException: sanitized }),
 	).toBe(true)
 
 	expect(
@@ -928,9 +926,9 @@ test('filters HTML-as-JSON manifest/data protocol noise (KCD-ZJ)', () => {
 test('filters Firefox HTML-document-as-script illegal character (KCD-105)', () => {
 	const message = 'illegal character U+009E'
 	expect(matchesIgnoreError(message)).toBe(false)
-	expect(isHtmlDocumentScriptFilename('/blog/how-i-built-a-modern-website-in-2021')).toBe(
-		true,
-	)
+	expect(
+		isHtmlDocumentScriptFilename('/blog/how-i-built-a-modern-website-in-2021'),
+	).toBe(true)
 	expect(
 		isHtmlDocumentScriptFilename(
 			'https://kentcdodds.com/assets/entry.client-abc123.js',
@@ -1025,10 +1023,10 @@ test('filters Firefox HTML-document-as-script illegal character (KCD-105)', () =
 								{
 									filename: '/assets/entry.client-abc123.js',
 									context: [
-										[
-											1,
-											'<!DOCTYPE html><html lang="en"><head>',
-										] as [number, string],
+										[1, '<!DOCTYPE html><html lang="en"><head>'] as [
+											number,
+											string,
+										],
 									],
 								},
 							],
@@ -1304,6 +1302,197 @@ test('filters page-translator call stack overflows with font breadcrumbs (KCD-QW
 		isHtmlPageTranslated({
 			documentElement: { className: 'dark' },
 		}),
+	).toBe(false)
+})
+
+test('filters translator call stack overflows with HTML-document frames (KCD-108)', () => {
+	// iOS Chrome Translate attributes minified React frames to the HTML
+	// document URL instead of filename: "undefined" (KCD-108 / KCD-107 / KCD-106).
+	const htmlDocumentTranslatorEvent = {
+		exception: {
+			values: [
+				{
+					type: 'RangeError',
+					value: 'Maximum call stack size exceeded.',
+					stacktrace: {
+						frames: [
+							{
+								function: 'Hk',
+								filename: 'https://kentcdodds.com/',
+								inApp: true,
+							},
+							{
+								function: 'Fk',
+								filename: 'https://kentcdodds.com/',
+								inApp: true,
+							},
+							{
+								filename: 'https://kentcdodds.com/',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'ui.click',
+				message: 'a.underline > font > font',
+			},
+			{
+				category: 'ui.click',
+				message: 'font > font',
+			},
+		],
+	}
+
+	expect(hasOnlyUnusableStackFrames(htmlDocumentTranslatorEvent)).toBe(false)
+	expect(
+		hasOnlyUnusableOrHtmlDocumentStackFrames(htmlDocumentTranslatorEvent),
+	).toBe(true)
+	expect(
+		isPageTranslatorCallStackOverflow(htmlDocumentTranslatorEvent, {
+			pageTranslated: false,
+		}),
+	).toBe(true)
+	expect(
+		shouldDropSentryEvent(htmlDocumentTranslatorEvent, {
+			pageTranslated: false,
+		}),
+	).toBe(true)
+
+	// Relative document paths (KCD-106) are the same class of noise.
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [
+									{ function: 'Fk', filename: '/clubs', inApp: true },
+									{
+										filename: 'https://kentcdodds.com/',
+										absPath: 'https://kentcdodds.com/',
+										inApp: true,
+									},
+								],
+							},
+						},
+					],
+				},
+				breadcrumbs: [
+					{
+						category: 'ui.click',
+						message: 'font > font',
+					},
+				],
+			},
+			{ pageTranslated: false },
+		),
+	).toBe(true)
+
+	// HTML-document frames without translator evidence stay reportable.
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [{ filename: 'https://kentcdodds.com/' }],
+							},
+						},
+					],
+				},
+			},
+			{ pageTranslated: false },
+		),
+	).toBe(false)
+
+	// Real bundle frames must still alert even with translator breadcrumbs.
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [
+									{ filename: 'https://kentcdodds.com/' },
+									{ filename: '/assets/entry.client-AbCd1234.js' },
+								],
+							},
+						},
+					],
+				},
+				breadcrumbs: [
+					{
+						category: 'ui.click',
+						message: 'font > font',
+					},
+				],
+			},
+			{ pageTranslated: true },
+		),
+	).toBe(false)
+
+	// Placeholder filename must not hide a real bundle URL in absPath.
+	expect(
+		hasOnlyUnusableOrHtmlDocumentStackFrames({
+			exception: {
+				values: [
+					{
+						type: 'RangeError',
+						value: 'Maximum call stack size exceeded.',
+						stacktrace: {
+							frames: [
+								{
+									filename: 'undefined',
+									absPath: '/assets/entry.client-AbCd1234.js',
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [
+						{
+							type: 'RangeError',
+							value: 'Maximum call stack size exceeded.',
+							stacktrace: {
+								frames: [
+									{
+										filename: 'undefined',
+										absPath: '/assets/entry.client-AbCd1234.js',
+									},
+								],
+							},
+						},
+					],
+				},
+				breadcrumbs: [
+					{
+						category: 'ui.click',
+						message: 'font > font',
+					},
+				],
+			},
+			{ pageTranslated: true },
+		),
 	).toBe(false)
 })
 
