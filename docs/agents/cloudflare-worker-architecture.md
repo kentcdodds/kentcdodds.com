@@ -148,10 +148,23 @@ Track degradations via `embedDegradations` in the compile summary output.
 
 Storage:
 
-- R2 bucket object: `mdx-artifacts/{version}.json` (bucket binding
-  `MDX_ARTIFACTS` on the parent worker)
-- KV (`CONTENT_KV`): key `mdx-manifest:current` →
-  `{ "version": "...", "r2Key": "mdx-artifacts/{version}.json" }`
+- R2 bucket object: `mdx-artifacts/{version}.json` — the full bundle, source
+  of truth (bucket binding `MDX_ARTIFACTS` on the parent worker)
+- KV (`CONTENT_KV`), key formats in
+  `services/site-worker/src/artifact-kv-mirror.ts`:
+  - `mdx-bundle:{r2Key}` — code-stripped mirror of the bundle (per-doc client
+    `code` removed, `esm` + metadata kept) so cold parents skip both the
+    ~300ms R2 read and JSON.parsing ~8MB of hydration code they don't need
+    upfront
+  - `mdx-code:{version}:{contentDir}/{slug}` — one key per document's client
+    IIFE string, written (bounded concurrency) before the manifest flips so a
+    manifest never races ahead of its code keys
+  - `mdx-manifest:current` →
+    `{ "version": "...", "r2Key": "mdx-artifacts/{version}.json" }`
+
+Legacy mirrors written before the code split still carry inline `code`; the
+read path accepts both formats, and `getDocumentCode` falls back to the full
+R2 bundle when a per-doc key is missing (deploy/publish races).
 
 The parent worker re-reads the manifest pointer with a short in-memory TTL and
 whenever `POST /action/refresh-cache` is received, so newly published content
@@ -232,8 +245,11 @@ below.
 encoding from `cache-encoding.server.ts` (Buffer values base64-encoded).
 
 `ContentRpc.getDocumentCode(contentDir, slug)` returns the mdx-bundler IIFE
-string for client hydration, or `null` if the document is missing. Reads from
-the parent's in-memory artifact bundle cache (populated from R2/KV).
+string for client hydration, or `null` if the document is missing. Resolution
+order: inline `code` on the parent-memory bundle (legacy full mirror) →
+per-doc `mdx-code:{version}:{contentDir}/{slug}` KV key (edge-cached via
+`cacheTtl`, result kept in a small parent-memory LRU) → full bundle straight
+from R2 (source of truth, covers deploy/publish races).
 
 ## Outbound routing
 
@@ -415,9 +431,10 @@ persisted on the row before dispatch.
   transfer + app bundle eval, plus first-request work. Mitigations in place:
   minified app bundle (9.4 → 4.1MB), per-document `code` served via
   `CONTENT_RPC` instead of shipping ~8.6MB in `site-content-data.json`,
-  parent-memory bundle/module-map caches, KV mirror of the artifact bundle
-  (`mdx-bundle:{r2Key}`, edge-cached with `cacheTtl`) so cold parents skip the
-  ~300ms R2 read, cached worker stubs, and the warmup cron above.
+  parent-memory bundle/module-map caches, code-stripped KV mirror of the
+  artifact bundle (`mdx-bundle:{r2Key}`, edge-cached with `cacheTtl`) so cold
+  parents skip the ~300ms R2 read and ~8MB of per-doc `code` JSON, cached
+  worker stubs, and the warmup cron above.
 - Cloudflare rotates dynamic isolates aggressively at low traffic, so
   low-traffic previews still see the cold tail on a fraction of requests;
   sustained traffic keeps the pool warm.
