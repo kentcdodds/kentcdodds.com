@@ -7,7 +7,7 @@ export type {
 	MdxArtifactDocument,
 } from '../../site/types/mdx-artifacts.ts'
 
-import type { MdxArtifactBundle } from '../../site/types/mdx-artifacts.ts'
+import type { MirroredMdxArtifactBundle } from './artifact-kv-mirror.ts'
 
 type WorkerLoaderModule =
 	| string
@@ -17,7 +17,9 @@ type WorkerLoaderModule =
 
 export type WorkerLoaderModuleMap = Record<string, WorkerLoaderModule>
 
-export function buildSiteContentData(bundle: MdxArtifactBundle) {
+// Accepts the mirrored (possibly code-stripped) bundle: the module map and
+// content data only need `esm` + metadata, never per-document `code`.
+export function buildSiteContentData(bundle: MirroredMdxArtifactBundle) {
 	const { documents, ...rest } = bundle
 	const contentDocuments: Record<string, unknown> = {}
 
@@ -47,7 +49,7 @@ function addNestedReactShimAliases(
 }
 
 export function buildDynamicWorkerModuleMap(
-	bundle: MdxArtifactBundle,
+	bundle: MirroredMdxArtifactBundle,
 ): WorkerLoaderModuleMap {
 	const modules: WorkerLoaderModuleMap = {
 		'app-worker.js': appWorkerSource,

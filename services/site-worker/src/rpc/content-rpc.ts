@@ -1,8 +1,5 @@
 import { WorkerEntrypoint } from 'cloudflare:workers'
-import {
-	getDocumentCodeFromBundle,
-	getOrFetchArtifactBundle,
-} from '../artifact-bundle-cache.ts'
+import { resolveDocumentCode } from '../artifact-bundle-cache.ts'
 import { readMdxManifest } from '../manifest.ts'
 import type { ParentWorkerEnv } from './types.ts'
 
@@ -11,16 +8,9 @@ export class ContentRpc extends WorkerEntrypoint<ParentWorkerEnv> {
 		const manifest = await readMdxManifest(this.env.CONTENT_KV)
 		if (!manifest) return null
 
-		// Falls back to KV/R2 when the parent-memory cache is cold (e.g. right
-		// after an artifact publish cleared it) so in-flight MDX requests keep
-		// working.
-		const bundle = await getOrFetchArtifactBundle(
-			this.env,
-			manifest.version,
-			manifest.r2Key,
-		)
-		if (!bundle) return null
-
-		return getDocumentCodeFromBundle(bundle, contentDir, slug)
+		// Legacy full bundles serve code straight from parent memory; stripped
+		// mirrors read the per-doc `mdx-code:` KV key, with the full R2 bundle
+		// as the final fallback for deploy/publish races.
+		return resolveDocumentCode(this.env, manifest, contentDir, slug)
 	}
 }

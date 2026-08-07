@@ -4,7 +4,6 @@ import {
 	browserSupportsWebAuthnAutofill,
 	startAuthentication,
 } from '@simplewebauthn/browser'
-import { type PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server'
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import * as React from 'react'
@@ -29,10 +28,7 @@ import { images } from '#app/images.tsx'
 import { type KCDHandle } from '#app/types.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
-import {
-	getOrigin,
-	reuseUsefulLoaderHeaders,
-} from '#app/utils/misc.ts'
+import { getOrigin, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
 import {
 	DUMMY_PASSWORD_HASH,
 	verifyPassword,
@@ -46,6 +42,9 @@ import {
 import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/login'
+
+type PublicKeyCredentialRequestOptionsJSON =
+	import('@simplewebauthn/server').PublicKeyCredentialRequestOptionsJSON
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -62,7 +61,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		Vary: 'Cookie',
 	})
 	await loginSession.getHeaders(headers)
-	const domain = new URL(getOrigin({ origin: new URL(request.url).origin, path: '' })).host
+	const domain = new URL(
+		getOrigin({ origin: new URL(request.url).origin, path: '' }),
+	).host
 	const socialMetas = (
 		await import('#app/og/page-meta.server.ts')
 	).buildPageSocialMetasForRequest(request, {

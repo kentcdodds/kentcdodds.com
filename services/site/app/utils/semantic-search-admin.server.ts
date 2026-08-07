@@ -1,11 +1,5 @@
-import { Readable } from 'node:stream'
-import {
-	GetObjectCommand,
-	ListObjectsV2Command,
-	type ListObjectsV2CommandOutput,
-	PutObjectCommand,
-	S3Client,
-} from '@aws-sdk/client-s3'
+import { AwsClient } from 'aws4fetch'
+import { XMLParser } from 'fast-xml-parser'
 import { getEnv } from '#app/utils/env.server.ts'
 import {
 	isDocIdIgnored,
@@ -27,7 +21,7 @@ export type SemanticSearchManifestDoc = {
 	type: string
 	url: string
 	title: string
-	chunks: SemanticSearchManifestChunk[]
+	chunks: Array<SemanticSearchManifestChunk>
 	sourceUpdatedAt?: string
 	transcriptSource?: string
 }
@@ -50,6 +44,17 @@ export type SemanticSearchAdminStore = {
 	putIgnoreList: (value: SemanticSearchIgnoreList) => Promise<void>
 }
 
+type R2ClientHandle = {
+	client: AwsClient
+	endpoint: string
+}
+
+const listObjectsXmlParser = new XMLParser({
+	ignoreAttributes: true,
+	processEntities: true,
+	trimValues: true,
+})
+
 function getR2Bucket() {
 	return getEnv().R2_BUCKET
 }
@@ -62,14 +67,14 @@ function getR2ConfigFromEnv() {
 	return { endpoint, accessKeyId, secretAccessKey }
 }
 
-let _r2Client: S3Client | null = null
+let _r2Client: AwsClient | null = null
 let _r2ClientConfig: {
 	endpoint: string
 	accessKeyId: string
 	secretAccessKey: string
 } | null = null
 
-function getR2Client() {
+function getR2Client(): R2ClientHandle {
 	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()
 
 	if (
@@ -79,124 +84,177 @@ function getR2Client() {
 		_r2ClientConfig.accessKeyId === accessKeyId &&
 		_r2ClientConfig.secretAccessKey === secretAccessKey
 	) {
-		return _r2Client
+		return { client: _r2Client, endpoint }
 	}
 
 	_r2ClientConfig = { endpoint, accessKeyId, secretAccessKey }
-	_r2Client = new S3Client({
+	_r2Client = new AwsClient({
+		accessKeyId,
+		secretAccessKey,
+		service: 's3',
 		region: 'auto',
-		endpoint,
-		forcePathStyle: true,
-		credentials: { accessKeyId, secretAccessKey },
 	})
-	return _r2Client
+	return { client: _r2Client, endpoint }
 }
 
-async function streamToString(body: unknown) {
-	if (!body) return ''
-	if (typeof body === 'string') return body
-	if (body instanceof Uint8Array) return Buffer.from(body).toString('utf8')
-	// AWS SDK v3 SdkStream mixin for Node adds transformToString.
-	if (
-		typeof body === 'object' &&
-		body !== null &&
-		'transformToString' in body &&
-		typeof (body as any).transformToString === 'function'
-	) {
-		return await (body as any).transformToString('utf-8')
-	}
+function encodeS3PathSegment(segment: string) {
+	return encodeURIComponent(segment).replace(
+		/[!'()*]/g,
+		(char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+	)
+}
 
-	if (body instanceof Readable) {
-		const chunks: Buffer[] = []
-		for await (const chunk of body) {
-			chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+function r2ObjectUrl({
+	endpoint,
+	bucket,
+	key,
+}: {
+	endpoint: string
+	bucket: string
+	key: string
+}) {
+	const base = endpoint.replace(/\/+$/, '')
+	const encodedKey = key.split('/').map(encodeS3PathSegment).join('/')
+	return `${base}/${encodeS3PathSegment(bucket)}/${encodedKey}`
+}
+
+function r2BucketUrl({
+	endpoint,
+	bucket,
+}: {
+	endpoint: string
+	bucket: string
+}) {
+	const base = endpoint.replace(/\/+$/, '')
+	return `${base}/${encodeS3PathSegment(bucket)}`
+}
+
+async function throwIfR2Failed(response: Response, operation: string) {
+	if (response.ok) return
+	const detail = (await response.text().catch(() => '')).trim()
+	throw new Error(
+		detail
+			? `R2 ${operation} failed: ${response.status} ${detail}`
+			: `R2 ${operation} failed: ${response.status}`,
+	)
+}
+
+function asArray<T>(value: T | Array<T> | undefined | null): Array<T> {
+	if (value == null) return []
+	return Array.isArray(value) ? value : [value]
+}
+
+function isTruthyXmlBoolean(value: unknown) {
+	return value === true || value === 'true' || value === 1 || value === '1'
+}
+
+export function parseListObjectsV2Xml(xml: string): {
+	keys: Array<string>
+	isTruncated: boolean
+	nextContinuationToken: string | undefined
+} {
+	const parsed = listObjectsXmlParser.parse(xml) as {
+		ListBucketResult?: {
+			Contents?: { Key?: unknown } | Array<{ Key?: unknown }>
+			IsTruncated?: unknown
+			NextContinuationToken?: unknown
 		}
-		return Buffer.concat(chunks).toString('utf8')
+	}
+	const result = parsed.ListBucketResult
+	if (!result) {
+		return {
+			keys: [],
+			isTruncated: false,
+			nextContinuationToken: undefined,
+		}
 	}
 
-	return String(body)
-}
+	const keys = asArray(result.Contents)
+		.map((item) => item?.Key)
+		.filter((key): key is string => typeof key === 'string' && key.length > 0)
 
-function isNotFoundError(error: unknown) {
-	if (!error || typeof error !== 'object') return false
-	const anyErr = error as any
-	const name = typeof anyErr.name === 'string' ? anyErr.name : ''
-	const status = anyErr?.$metadata?.httpStatusCode
-	if (name === 'NoSuchKey' || name === 'NotFound') return true
-	if (status === 404) return true
-	const message = typeof anyErr.message === 'string' ? anyErr.message : ''
-	return /NoSuchKey|not found/i.test(message)
+	const nextContinuationToken =
+		typeof result.NextContinuationToken === 'string' &&
+		result.NextContinuationToken.trim()
+			? result.NextContinuationToken.trim()
+			: undefined
+
+	return {
+		keys,
+		isTruncated: isTruthyXmlBoolean(result.IsTruncated),
+		nextContinuationToken,
+	}
 }
 
 async function getJsonFromR2<T>({
 	client,
+	endpoint,
 	bucket,
 	key,
 }: {
-	client: S3Client
+	client: AwsClient
+	endpoint: string
 	bucket: string
 	key: string
 }): Promise<T | null> {
-	try {
-		const res = await client.send(
-			new GetObjectCommand({ Bucket: bucket, Key: key }),
-		)
-		const text = await streamToString(res.Body)
-		if (!text.trim()) return null
-		return JSON.parse(text) as T
-	} catch (error: unknown) {
-		if (isNotFoundError(error)) return null
-		throw error
-	}
+	const response = await client.fetch(r2ObjectUrl({ endpoint, bucket, key }), {
+		method: 'GET',
+	})
+	if (response.status === 404) return null
+	await throwIfR2Failed(response, 'GetObject')
+	const text = await response.text()
+	if (!text.trim()) return null
+	return JSON.parse(text) as T
 }
 
 async function putJsonToR2({
 	client,
+	endpoint,
 	bucket,
 	key,
 	value,
 }: {
-	client: S3Client
+	client: AwsClient
+	endpoint: string
 	bucket: string
 	key: string
 	value: unknown
 }) {
 	const body = JSON.stringify(value, null, 2)
-	await client.send(
-		new PutObjectCommand({
-			Bucket: bucket,
-			Key: key,
-			Body: body,
-			ContentType: 'application/json; charset=utf-8',
-		}),
-	)
+	const response = await client.fetch(r2ObjectUrl({ endpoint, bucket, key }), {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json; charset=utf-8' },
+		body,
+	})
+	await throwIfR2Failed(response, 'PutObject')
 }
 
 async function listKeysFromR2({
 	client,
+	endpoint,
 	bucket,
 	prefix,
 }: {
-	client: S3Client
+	client: AwsClient
+	endpoint: string
 	bucket: string
 	prefix: string
 }) {
-	const keys: string[] = []
+	const keys: Array<string> = []
 	let token: string | undefined = undefined
 	for (let page = 0; page < 25; page++) {
-		const res: ListObjectsV2CommandOutput = await client.send(
-			new ListObjectsV2Command({
-				Bucket: bucket,
-				Prefix: prefix,
-				ContinuationToken: token,
-			}),
-		)
-		for (const item of res.Contents ?? []) {
-			const key = item.Key
-			if (typeof key === 'string') keys.push(key)
-		}
-		if (!res.IsTruncated) break
-		token = res.NextContinuationToken
+		const url = new URL(r2BucketUrl({ endpoint, bucket }))
+		url.searchParams.set('list-type', '2')
+		url.searchParams.set('prefix', prefix)
+		if (token) url.searchParams.set('continuation-token', token)
+
+		const response = await client.fetch(url, { method: 'GET' })
+		await throwIfR2Failed(response, 'ListObjectsV2')
+		const xml = await response.text()
+		const pageResult = parseListObjectsV2Xml(xml)
+		keys.push(...pageResult.keys)
+		if (!pageResult.isTruncated) break
+		token = pageResult.nextContinuationToken
 		if (!token) break
 	}
 	return keys
@@ -207,7 +265,7 @@ function getDefaultIgnoreList(): SemanticSearchIgnoreList {
 }
 
 function createR2AdminStore(): SemanticSearchAdminStore {
-	const client = getR2Client()
+	const { client, endpoint } = getR2Client()
 	const bucket = getR2Bucket()
 	const ignoreListKey = getEnv().SEMANTIC_SEARCH_IGNORE_LIST_KEY
 
@@ -218,6 +276,7 @@ function createR2AdminStore(): SemanticSearchAdminStore {
 		listManifestKeys: async () => {
 			const keys = await listKeysFromR2({
 				client,
+				endpoint,
 				bucket,
 				prefix: DEFAULT_MANIFEST_PREFIX,
 			})
@@ -229,24 +288,26 @@ function createR2AdminStore(): SemanticSearchAdminStore {
 		getManifest: async (key) => {
 			return await getJsonFromR2<SemanticSearchManifest>({
 				client,
+				endpoint,
 				bucket,
 				key,
 			})
 		},
 		putManifest: async (key, value) => {
-			await putJsonToR2({ client, bucket, key, value })
+			await putJsonToR2({ client, endpoint, bucket, key, value })
 		},
 		getIgnoreList: async () => {
 			return (
 				(await getJsonFromR2<SemanticSearchIgnoreList>({
 					client,
+					endpoint,
 					bucket,
 					key: ignoreListKey,
 				})) ?? getDefaultIgnoreList()
 			)
 		},
 		putIgnoreList: async (value) => {
-			await putJsonToR2({ client, bucket, key: ignoreListKey, value })
+			await putJsonToR2({ client, endpoint, bucket, key: ignoreListKey, value })
 		},
 	}
 }

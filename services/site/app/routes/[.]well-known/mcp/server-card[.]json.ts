@@ -1,8 +1,8 @@
-import { createMcpServerCard } from '#app/routes/mcp/server-card.ts'
+import { createMcpServerCard } from '#app/routes/mcp/create-mcp-server-card.server.ts'
 import { type Route } from './+types/server-card[.]json'
 
-export function loader({ request }: Route.LoaderArgs) {
-	const data = createMcpServerCard(request)
+export async function loader({ request }: Route.LoaderArgs) {
+	const data = await createMcpServerCard(request)
 	const string = JSON.stringify(data)
 
 	return new Response(string, {

@@ -14,10 +14,16 @@ import {
 import {
 	cacheArtifactBundle,
 	clearArtifactBundleCache,
+	fetchArtifactBundle,
 	getCachedArtifactBundle,
 	getDocumentCodeFromBundle,
 	getOrBuildModuleMap,
 } from './artifact-bundle-cache.ts'
+import {
+	getMdxBundleMirrorKey,
+	getMdxCodeKey,
+	stripBundleDocumentCode,
+} from './artifact-kv-mirror.ts'
 import {
 	clearManifestCache,
 	readMdxManifest,
@@ -28,6 +34,9 @@ import {
 	buildSiteContentData,
 	type MdxArtifactBundle,
 } from './module-map.ts'
+import { clearPageCacheGenerationCache } from './page-cache.ts'
+import { handlePublishArtifacts } from './publish-artifacts.ts'
+import { ContentRpc } from './rpc/content-rpc.ts'
 import { PASSTHROUGH_HOSTS } from './rpc/outbound-mock-routes.ts'
 import { OutboundProxy } from './rpc/outbound-proxy.ts'
 import { maybeHandleOutboundMockFetch } from '../../site/app/utils/outbound-mock-handler.server.ts'
@@ -42,8 +51,78 @@ import { getAssetCacheControl, isHard404AssetPath } from './static-assets.ts'
 afterEach(() => {
 	clearManifestCache()
 	clearArtifactBundleCache()
+	clearPageCacheGenerationCache()
 	vi.useRealTimers()
 })
+
+function createMemoryContentKv() {
+	const store = new Map<string, string>()
+	const putOrder: Array<string> = []
+	return {
+		store,
+		putOrder,
+		async get(key: string, options?: 'text' | 'json' | { type?: string }) {
+			const value = store.get(key) ?? null
+			if (value === null) return null
+			const type = typeof options === 'string' ? options : options?.type
+			return type === 'json' ? JSON.parse(value) : value
+		},
+		async put(key: string, value: string) {
+			store.set(key, value)
+			putOrder.push(key)
+		},
+	}
+}
+
+function createMemoryR2(initial: Record<string, string> = {}) {
+	const store = new Map<string, string>(Object.entries(initial))
+	return {
+		store,
+		async get(key: string) {
+			const value = store.get(key)
+			if (value === undefined) return null
+			return { json: async () => JSON.parse(value) }
+		},
+		async put(key: string, value: string) {
+			store.set(key, value)
+		},
+	}
+}
+
+function makeArtifactBundle(version: string): MdxArtifactBundle {
+	return {
+		schemaVersion: 1,
+		version,
+		generatedAt: '2026-07-03T00:00:00.000Z',
+		documents: {
+			'blog/example': {
+				contentDir: 'blog',
+				slug: 'example',
+				code: `client-code-${version}`,
+				esm: 'export default function Example() { return null }',
+				githubResolvable: true,
+				editLink:
+					'https://github.com/kentcdodds/kentcdodds.com/edit/main/services/site/content/blog/example.mdx',
+				frontmatter: { title: 'Example' },
+			},
+		},
+		blogList: [],
+		dirLists: { blog: [], pages: [] },
+		dataFiles: {},
+	}
+}
+
+function makeArtifactEnv(
+	contentKv: ReturnType<typeof createMemoryContentKv>,
+	r2: ReturnType<typeof createMemoryR2>,
+	overrides: Record<string, unknown> = {},
+) {
+	return {
+		CONTENT_KV: contentKv,
+		MDX_ARTIFACTS: r2,
+		...overrides,
+	} as unknown as ParentWorkerEnv
+}
 
 describe('manifest ttl', () => {
 	test('caches manifest reads for ~15 seconds', async () => {
@@ -167,6 +246,164 @@ describe('module map assembly', () => {
 		const firstMap = getOrBuildModuleMap(bundle.version, bundle)
 		const secondMap = getOrBuildModuleMap(bundle.version, bundle)
 		expect(secondMap).toBe(firstMap)
+	})
+})
+
+describe('artifact kv mirror', () => {
+	test('publish writes stripped mirror and per-doc code keys before flipping the manifest', async () => {
+		const contentKv = createMemoryContentKv()
+		const r2 = createMemoryR2()
+		const env = makeArtifactEnv(contentKv, r2, {
+			REFRESH_CACHE_SECRET: 'test-secret',
+		})
+		const bundle = makeArtifactBundle('v1')
+
+		const response = await handlePublishArtifacts(
+			new Request('https://example.com/resources/mdx-artifacts', {
+				method: 'POST',
+				headers: { auth: 'test-secret' },
+				body: JSON.stringify(bundle),
+			}),
+			env,
+		)
+		expect(response.status).toBe(200)
+
+		const r2Key = 'mdx-artifacts/v1.json'
+		expect(JSON.parse(r2.store.get(r2Key) ?? '')).toEqual(bundle)
+
+		const mirror = JSON.parse(
+			contentKv.store.get(getMdxBundleMirrorKey(r2Key)) ?? '',
+		)
+		expect(mirror.documents['blog/example']).not.toHaveProperty('code')
+		expect(mirror.documents['blog/example'].esm).toBe(
+			bundle.documents['blog/example']?.esm,
+		)
+
+		const codeKey = getMdxCodeKey('v1', 'blog', 'example')
+		expect(contentKv.store.get(codeKey)).toBe('client-code-v1')
+
+		const manifestIndex = contentKv.putOrder.indexOf('mdx-manifest:current')
+		expect(manifestIndex).toBeGreaterThan(-1)
+		expect(contentKv.putOrder.indexOf(codeKey)).toBeLessThan(manifestIndex)
+		expect(
+			contentKv.putOrder.indexOf(getMdxBundleMirrorKey(r2Key)),
+		).toBeLessThan(manifestIndex)
+	})
+
+	test('fetchArtifactBundle serves a legacy full mirror unchanged', async () => {
+		const contentKv = createMemoryContentKv()
+		const r2 = createMemoryR2()
+		const env = makeArtifactEnv(contentKv, r2)
+		const bundle = makeArtifactBundle('v2')
+		const r2Key = 'mdx-artifacts/v2.json'
+		contentKv.store.set(getMdxBundleMirrorKey(r2Key), JSON.stringify(bundle))
+
+		const fetched = await fetchArtifactBundle(env, r2Key)
+		expect(fetched?.documents['blog/example']?.code).toBe('client-code-v2')
+		expect(contentKv.putOrder).toEqual([])
+	})
+
+	test('fetchArtifactBundle R2 fallback writes the stripped mirror and per-doc code keys', async () => {
+		const contentKv = createMemoryContentKv()
+		const bundle = makeArtifactBundle('v3')
+		const r2Key = 'mdx-artifacts/v3.json'
+		const r2 = createMemoryR2({ [r2Key]: JSON.stringify(bundle) })
+		const env = makeArtifactEnv(contentKv, r2)
+
+		const fetched = await fetchArtifactBundle(env, r2Key)
+		expect(fetched?.documents['blog/example']?.code).toBe('client-code-v3')
+
+		expect(contentKv.store.get(getMdxCodeKey('v3', 'blog', 'example'))).toBe(
+			'client-code-v3',
+		)
+		const mirror = JSON.parse(
+			contentKv.store.get(getMdxBundleMirrorKey(r2Key)) ?? '',
+		)
+		expect(mirror.documents['blog/example']).not.toHaveProperty('code')
+	})
+})
+
+describe('document code resolution', () => {
+	function makeContentRpc(env: ParentWorkerEnv) {
+		return new ContentRpc({} as ExecutionContext, env)
+	}
+
+	function setManifest(
+		contentKv: ReturnType<typeof createMemoryContentKv>,
+		version: string,
+	) {
+		contentKv.store.set(
+			'mdx-manifest:current',
+			JSON.stringify({ version, r2Key: `mdx-artifacts/${version}.json` }),
+		)
+	}
+
+	test('serves code inline from a legacy full bundle in parent memory', async () => {
+		const contentKv = createMemoryContentKv()
+		const r2 = createMemoryR2()
+		setManifest(contentKv, 'legacy-v')
+		cacheArtifactBundle('legacy-v', makeArtifactBundle('legacy-v'))
+		const rpc = makeContentRpc(makeArtifactEnv(contentKv, r2))
+
+		await expect(rpc.getDocumentCode('blog', 'example')).resolves.toBe(
+			'client-code-legacy-v',
+		)
+	})
+
+	test('reads the per-doc code key when the bundle is stripped', async () => {
+		const contentKv = createMemoryContentKv()
+		const r2 = createMemoryR2()
+		setManifest(contentKv, 'stripped-v')
+		cacheArtifactBundle(
+			'stripped-v',
+			stripBundleDocumentCode(makeArtifactBundle('stripped-v')),
+		)
+		contentKv.store.set(
+			getMdxCodeKey('stripped-v', 'blog', 'example'),
+			'client-code-stripped-v',
+		)
+		const rpc = makeContentRpc(makeArtifactEnv(contentKv, r2))
+
+		await expect(rpc.getDocumentCode('blog', 'example')).resolves.toBe(
+			'client-code-stripped-v',
+		)
+	})
+
+	test('falls back to the full R2 bundle when the code key is missing, then serves from memory', async () => {
+		const contentKv = createMemoryContentKv()
+		const bundle = makeArtifactBundle('race-v')
+		const r2 = createMemoryR2({
+			'mdx-artifacts/race-v.json': JSON.stringify(bundle),
+		})
+		setManifest(contentKv, 'race-v')
+		cacheArtifactBundle('race-v', stripBundleDocumentCode(bundle))
+		const rpc = makeContentRpc(makeArtifactEnv(contentKv, r2))
+
+		await expect(rpc.getDocumentCode('blog', 'example')).resolves.toBe(
+			'client-code-race-v',
+		)
+
+		// Served from the parent-memory code cache on repeat requests: no
+		// refetch even when the R2 object disappears.
+		r2.store.delete('mdx-artifacts/race-v.json')
+		await expect(rpc.getDocumentCode('blog', 'example')).resolves.toBe(
+			'client-code-race-v',
+		)
+	})
+
+	test('returns null for unknown documents without hitting R2 code fallback', async () => {
+		const contentKv = createMemoryContentKv()
+		const bundle = makeArtifactBundle('null-v')
+		const r2 = createMemoryR2({
+			'mdx-artifacts/null-v.json': JSON.stringify(bundle),
+		})
+		const r2Get = vi.spyOn(r2, 'get')
+		setManifest(contentKv, 'null-v')
+		cacheArtifactBundle('null-v', stripBundleDocumentCode(bundle))
+		const rpc = makeContentRpc(makeArtifactEnv(contentKv, r2))
+
+		await expect(rpc.getDocumentCode('blog', 'missing')).resolves.toBeNull()
+		expect(r2Get).not.toHaveBeenCalled()
 	})
 })
 

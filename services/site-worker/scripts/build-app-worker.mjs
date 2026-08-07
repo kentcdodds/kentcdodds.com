@@ -17,6 +17,8 @@ const reactPublicExports = Object.keys(require('react'))
 	.sort()
 const jsxRuntimeExports = Object.keys(require('react/jsx-runtime')).sort()
 
+const zodLocalesStubPath = path.join(stubsDir, 'zod-locales.ts')
+
 const stubAliases = {
 	bcrypt: path.join(stubsDir, 'bcrypt.ts'),
 	'node:sqlite': path.join(stubsDir, 'node-sqlite.ts'),
@@ -177,6 +179,20 @@ async function buildAppWorkerBundle() {
 		sourcemap: false,
 		logLevel: 'info',
 		plugins: [
+			{
+				// zod's locales barrel is imported with a relative specifier
+				// (`../locales/index.js`), which `alias` cannot match, so this
+				// plugin redirects it to the en-only stub. See the stub for why.
+				name: 'zod-locales-stub',
+				setup(build) {
+					build.onResolve({ filter: /locales[/\\]index\.js$/ }, (args) => {
+						if (!args.importer.includes(`node_modules${path.sep}zod${path.sep}`)) {
+							return null
+						}
+						return { path: zodLocalesStubPath }
+					})
+				},
+			},
 			{
 				name: 'redirects-text',
 				setup(build) {

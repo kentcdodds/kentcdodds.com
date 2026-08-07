@@ -52,7 +52,6 @@
     "setup": "npm run db:reset && npm run validate && npm run test:e2e:install && npm run test:e2e:run"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.995.0",
     "@conform-to/react": "^1.17.1",
     "@conform-to/zod": "^1.17.1",
     "@epic-web/cachified": "^5.6.1",
@@ -83,6 +82,7 @@
     "@tanstack/react-hotkeys": "^0.4.1",
     "@vitejs/plugin-react": "^5.2.0",
     "@xstate/react": "^6.0.0",
+    "aws4fetch": "^1.0.20",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "chalk": "^5.6.2",
@@ -96,6 +96,7 @@
     "error-stack-parser": "^2.1.4",
     "esbuild": "^0.27.4",
     "execa": "^9.6.1",
+    "fast-xml-parser": "^5.4.1",
     "framer-motion": "^12.34.2",
     "fs-extra": "^11.3.3",
     "gsap": "^3.14.2",

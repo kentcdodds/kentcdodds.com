@@ -6,6 +6,7 @@ import {
 	getCachedModuleMap,
 	getOrBuildModuleMap,
 } from './artifact-bundle-cache.ts'
+import type { MirroredMdxArtifactBundle } from './artifact-kv-mirror.ts'
 import {
 	consumeCallKentTranscriptionBatch,
 	reenqueueStaleCallKentTranscriptionJobs,
@@ -17,16 +18,16 @@ import {
 	mergeColdStartTimingHeaders,
 } from './cold-start-timing.ts'
 import { deleteExpiredSessionsAndVerifications } from './expired-cleanup.ts'
-import {
-	getAppCodeHash,
-	getDynamicWorkerId,
-	type MdxArtifactBundle,
-} from './module-map.ts'
+import { getAppCodeHash, getDynamicWorkerId } from './module-map.ts'
 import {
 	clearManifestCache,
 	readMdxManifest,
 	shouldBypassManifestCache,
 } from './manifest.ts'
+import {
+	ARTIFACT_PUBLISH_PATH,
+	handlePublishArtifacts,
+} from './publish-artifacts.ts'
 import { CacheRpc } from './rpc/cache-rpc.ts'
 import { CallKentTranscriptionQueueRpc } from './rpc/call-kent-transcription-queue-rpc.ts'
 import { ContentRpc } from './rpc/content-rpc.ts'
@@ -82,76 +83,7 @@ function getStringEnvBindings(env: ParentWorkerEnv) {
 	)
 }
 
-const ARTIFACT_PUBLISH_PATH = '/resources/mdx-artifacts'
 const CONTENT_VERSION_HEADER = 'X-Content-Version'
-
-async function handlePublishArtifacts(request: Request, env: ParentWorkerEnv) {
-	// Publishing MDX artifacts is effectively a code deploy (the bundles run
-	// in Worker Loader isolates with full bindings), so the auth check is
-	// constant-time to avoid leaking the secret via timing.
-	if (
-		!isParentSecretAuthorized(
-			request.headers.get('auth'),
-			env.REFRESH_CACHE_SECRET,
-		)
-	) {
-		return new Response(null, { status: 404 })
-	}
-
-	const bodyText = await request.text()
-	let bundle: MdxArtifactBundle
-	try {
-		bundle = JSON.parse(bodyText) as MdxArtifactBundle
-	} catch {
-		return Response.json(
-			{ ok: false, error: 'Invalid JSON body' },
-			{ status: 400 },
-		)
-	}
-
-	if (!bundle.version || typeof bundle.version !== 'string') {
-		return Response.json(
-			{ ok: false, error: 'Bundle JSON must include a string "version" field' },
-			{ status: 400 },
-		)
-	}
-
-	// The runtime loader only understands schemaVersion 1; accepting anything
-	// else would poison the manifest with a bundle isolates cannot load.
-	if (bundle.schemaVersion !== 1) {
-		return Response.json(
-			{ ok: false, error: 'Unsupported bundle schemaVersion (expected 1)' },
-			{ status: 400 },
-		)
-	}
-
-	const r2Key = `mdx-artifacts/${bundle.version}.json`
-	await env.MDX_ARTIFACTS.put(r2Key, bodyText, {
-		httpMetadata: { contentType: 'application/json' },
-	})
-
-	// Overwrite the KV mirror too: fetchArtifactBundle prefers the mirror, so
-	// a republish with an unchanged version/r2Key must not keep serving the
-	// previously mirrored artifact JSON.
-	try {
-		await env.CONTENT_KV.put(`mdx-bundle:${r2Key}`, bodyText)
-	} catch {
-		// KV values cap at 25 MiB; R2 remains the source of truth.
-	}
-
-	const manifest = JSON.stringify({ version: bundle.version, r2Key })
-	await env.CONTENT_KV.put('mdx-manifest:current', manifest)
-	clearManifestCache()
-	clearArtifactBundleCache()
-	const pageCacheGeneration = await bumpPageCacheGeneration(env.CONTENT_KV)
-
-	return Response.json({
-		ok: true,
-		version: bundle.version,
-		r2Key,
-		pageCacheGeneration,
-	})
-}
 
 async function handleMetaRequest(env: ParentWorkerEnv) {
 	const manifest = await readMdxManifest(env.CONTENT_KV)
@@ -180,7 +112,15 @@ async function warmDynamicWorker(
 	env: ParentWorkerEnv,
 	ctx: ParentExecutionContext,
 ) {
-	const paths = ['/', '/blog', '/healthcheck']
+	// The blog-post path matters: '/' and '/blog' never import an MDX module,
+	// so without it even a "warm" isolate pays the first `import('mdx/...')`
+	// (plus its cachified misses) on the first real blog-post request.
+	const paths = [
+		'/',
+		'/blog',
+		'/blog/javascript-to-know-for-react',
+		'/healthcheck',
+	]
 	for (const path of paths) {
 		try {
 			const request = new Request(`https://warmup.internal${path}`, {
@@ -227,7 +167,7 @@ async function handleDynamicRequest(
 	}
 
 	const bundleFetchStartedAt = performance.now()
-	let bundle: MdxArtifactBundle | undefined = getCachedArtifactBundle(
+	let bundle: MirroredMdxArtifactBundle | undefined = getCachedArtifactBundle(
 		manifest.version,
 	)
 	let bundleCacheHit = true

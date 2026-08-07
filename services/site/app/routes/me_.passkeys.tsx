@@ -1,5 +1,4 @@
 import { startRegistration } from '@simplewebauthn/browser'
-import { type PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server'
 import { data as json, Form, useRevalidator } from 'react-router'
 import { z } from 'zod'
 import { Button } from '#app/components/button.tsx'
@@ -8,6 +7,9 @@ import { db } from '#app/utils/db.server.ts'
 import { passkeyTable, type Passkey } from '#app/utils/db/schema.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
 import { type Route } from './+types/me_.passkeys'
+
+type PublicKeyCredentialCreationOptionsJSON =
+	import('@simplewebauthn/server').PublicKeyCredentialCreationOptionsJSON
 
 export const handle: KCDHandle = {
 	getSitemapEntries: () => null,
@@ -18,9 +20,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const passkeys = (await db.findMany(passkeyTable, {
 		where: { userId: user.id },
 		orderBy: ['createdAt', 'desc'],
-	})) as Array<
-		Pick<Passkey, 'id' | 'createdAt' | 'deviceType' | 'transports'>
-	>
+	})) as Array<Pick<Passkey, 'id' | 'createdAt' | 'deviceType' | 'transports'>>
 
 	return json({ passkeys })
 }

@@ -1,11 +1,5 @@
 import { Readable } from 'node:stream'
-import {
-	DeleteObjectCommand,
-	GetObjectCommand,
-	HeadObjectCommand,
-	PutObjectCommand,
-	S3Client,
-} from '@aws-sdk/client-s3'
+import { AwsClient } from 'aws4fetch'
 import { getEnv } from '#app/utils/env.server.ts'
 
 type PutAudioResult = {
@@ -35,6 +29,11 @@ type AudioStore = {
 	}) => Promise<GetAudioStreamResult>
 	head: (args: { key: string }) => Promise<HeadAudioResult>
 	delete: (args: { key: string }) => Promise<void>
+}
+
+type R2ClientHandle = {
+	client: AwsClient
+	endpoint: string
 }
 
 export function parseHttpByteRangeHeader(rangeHeader: string, size: number) {
@@ -130,14 +129,52 @@ export function toAudioReadable(body: unknown): Readable {
 	throw new Error('Unexpected R2 response body type')
 }
 
-let _r2Client: S3Client | null = null
+function encodeS3PathSegment(segment: string) {
+	return encodeURIComponent(segment).replace(
+		/[!'()*]/g,
+		(char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+	)
+}
+
+function r2ObjectUrl({
+	endpoint,
+	bucket,
+	key,
+}: {
+	endpoint: string
+	bucket: string
+	key: string
+}) {
+	const base = endpoint.replace(/\/+$/, '')
+	const encodedKey = key.split('/').map(encodeS3PathSegment).join('/')
+	return `${base}/${encodeS3PathSegment(bucket)}/${encodedKey}`
+}
+
+function bodyInitFromBytes(bytes: Uint8Array): BodyInit {
+	return bytes.buffer.slice(
+		bytes.byteOffset,
+		bytes.byteOffset + bytes.byteLength,
+	) as ArrayBuffer
+}
+
+async function throwIfR2Failed(response: Response, operation: string) {
+	if (response.ok) return
+	const detail = (await response.text().catch(() => '')).trim()
+	throw new Error(
+		detail
+			? `R2 ${operation} failed: ${response.status} ${detail}`
+			: `R2 ${operation} failed: ${response.status}`,
+	)
+}
+
+let _r2Client: AwsClient | null = null
 let _r2ClientConfig: {
 	endpoint: string
 	accessKeyId: string
 	secretAccessKey: string
 } | null = null
 
-function getR2Client() {
+function getR2Client(): R2ClientHandle {
 	const { endpoint, accessKeyId, secretAccessKey } = getR2ConfigFromEnv()
 	if (!isNonEmptyString(endpoint)) throw new Error('R2_ENDPOINT is required')
 	if (!isNonEmptyString(accessKeyId))
@@ -152,63 +189,71 @@ function getR2Client() {
 		_r2ClientConfig.accessKeyId === accessKeyId &&
 		_r2ClientConfig.secretAccessKey === secretAccessKey
 	) {
-		return _r2Client
+		return { client: _r2Client, endpoint }
 	}
 
 	_r2ClientConfig = { endpoint, accessKeyId, secretAccessKey }
-	_r2Client = new S3Client({
+	_r2Client = new AwsClient({
+		accessKeyId,
+		secretAccessKey,
+		service: 's3',
 		region: 'auto',
-		endpoint,
-		forcePathStyle: true,
-		credentials: { accessKeyId, secretAccessKey },
 	})
-	return _r2Client
+	return { client: _r2Client, endpoint }
 }
 
 function createR2Store({ bucket }: { bucket: string }): AudioStore {
-	const client = getR2Client()
+	const { client, endpoint } = getR2Client()
 	return {
 		async put({ key, body, contentType }) {
-			await client.send(
-				new PutObjectCommand({
-					Bucket: bucket,
-					Key: key,
-					Body: body,
-					ContentType: contentType,
-				}),
+			const response = await client.fetch(
+				r2ObjectUrl({ endpoint, bucket, key }),
+				{
+					method: 'PUT',
+					headers: { 'Content-Type': contentType },
+					body: bodyInitFromBytes(body),
+				},
 			)
+			await throwIfR2Failed(response, 'PutObject')
 			return { key, contentType, size: body.byteLength }
 		},
 		async getStream({ key, range }) {
-			const res = await client.send(
-				new GetObjectCommand({
-					Bucket: bucket,
-					Key: key,
-					Range: range ? `bytes=${range.start}-${range.end}` : undefined,
-				}),
+			const headers: Record<string, string> = {}
+			if (range) headers.Range = `bytes=${range.start}-${range.end}`
+			const response = await client.fetch(
+				r2ObjectUrl({ endpoint, bucket, key }),
+				{
+					method: 'GET',
+					headers,
+				},
 			)
-			const body = res.Body
-			return { body: toAudioReadable(body) }
+			await throwIfR2Failed(response, 'GetObject')
+			if (!response.body) throw new Error('Unexpected R2 response body type')
+			return { body: toAudioReadable(response.body) }
 		},
 		async head({ key }) {
-			const res = await client.send(
-				new HeadObjectCommand({
-					Bucket: bucket,
-					Key: key,
-				}),
+			const response = await client.fetch(
+				r2ObjectUrl({ endpoint, bucket, key }),
+				{ method: 'HEAD' },
 			)
-			const size = res.ContentLength
-			if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
+			await throwIfR2Failed(response, 'HeadObject')
+			const size = Number(response.headers.get('content-length'))
+			if (!Number.isFinite(size) || size <= 0) {
 				throw new Error('Unexpected audio ContentLength')
 			}
+			const rawContentType = response.headers.get('content-type')
 			const contentType =
-				typeof res.ContentType === 'string' && res.ContentType.trim()
-					? res.ContentType.trim()
+				typeof rawContentType === 'string' && rawContentType.trim()
+					? rawContentType.trim()
 					: null
 			return { size, contentType }
 		},
 		async delete({ key }) {
-			await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+			const response = await client.fetch(
+				r2ObjectUrl({ endpoint, bucket, key }),
+				{ method: 'DELETE' },
+			)
+			await throwIfR2Failed(response, 'DeleteObject')
 		},
 	}
 }
@@ -347,7 +392,7 @@ export async function deleteAudioObject({ key }: { key: string }) {
 
 export async function getAudioBuffer({ key }: { key: string }) {
 	const { body } = await getAudioStream({ key })
-	const chunks: Buffer[] = []
+	const chunks: Array<Buffer> = []
 	for await (const chunk of body) {
 		chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
 	}

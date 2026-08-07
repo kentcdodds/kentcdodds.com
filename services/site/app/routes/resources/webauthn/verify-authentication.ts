@@ -1,15 +1,15 @@
-import {
-	type AuthenticationResponseJSON,
-	verifyAuthenticationResponse,
-} from '@simplewebauthn/server'
 import { data as json } from 'react-router'
 import { z } from 'zod'
 import { db } from '#app/utils/db.server.ts'
 import { passkeyTable, userTable } from '#app/utils/db/schema.server.ts'
 import { getLoginInfoSession } from '#app/utils/login.server.ts'
 import { getSession } from '#app/utils/session.server.ts'
+import { getWebAuthnSdk } from '#app/utils/webauthn-lazy.server.ts'
 import { getWebAuthnConfig, passkeyCookie } from '#app/utils/webauthn.server.ts'
 import { type Route } from './+types/verify-authentication'
+
+type AuthenticationResponseJSON =
+	import('@simplewebauthn/server').AuthenticationResponseJSON
 
 const AuthenticationResponseSchema = z.object({
 	id: z.string(),
@@ -33,6 +33,7 @@ const AuthenticationResponseSchema = z.object({
 }) satisfies z.ZodType<AuthenticationResponseJSON>
 
 export async function action({ request }: Route.ActionArgs) {
+	const { verifyAuthenticationResponse } = await getWebAuthnSdk()
 	const cookieHeader = request.headers.get('Cookie')
 	const cookie = await passkeyCookie.parse(cookieHeader)
 	const deletePasskeyCookie = await passkeyCookie.serialize('', { maxAge: 0 })
