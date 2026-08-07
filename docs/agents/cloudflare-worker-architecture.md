@@ -166,6 +166,12 @@ Legacy mirrors written before the code split still carry inline `code`; the
 read path accepts both formats, and `getDocumentCode` falls back to the full
 R2 bundle when a per-doc key is missing (deploy/publish races).
 
+Sharp edge: artifact versions are content hashes and every version-keyed
+consumer (parent bundle/module-map caches, `mdx-code:` keys with edge
+`cacheTtl`, dynamic worker ids) treats them as immutable. A changed payload
+must publish under a new `version`; republishing the same version is only for
+byte-identical retries.
+
 The parent worker re-reads the manifest pointer with a short in-memory TTL and
 whenever `POST /action/refresh-cache` is received, so newly published content
 flips the loader id (`app:{BUILD_SHA}:content:{version}`) and a fresh isolate

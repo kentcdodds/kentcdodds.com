@@ -7,14 +7,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 	if (request.headers.get('accept')?.includes('text/html')) {
 		throw redirect('/about-mcp')
 	}
+	// right now, we have to block all requests that are not authenticated
+	// Eventually the spec will allow for public tools, but we're not there yet.
+	// Auth runs before getMcpRuntime so unauthenticated traffic never triggers
+	// the deferred MCP SDK evaluation.
+	const authInfo = await requireAuth(request)
+
 	const { requestStorage, connect } = await getMcpRuntime()
 	const response = await requestStorage.run(request, async () => {
 		const sessionId = request.headers.get('mcp-session-id') ?? undefined
-
-		// right now, we have to block all requests that are not authenticated
-		// Eventually the spec will allow for public tools, but we're not there yet
-		const authInfo = await requireAuth(request)
-
 		const transport = await connect(sessionId)
 		return transport.handleRequest(request, { authInfo })
 	})
@@ -23,14 +24,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+	// right now, we have to block all requests that are not authenticated
+	// Eventually the spec will allow for public tools, but we're not there yet.
+	// Auth runs before getMcpRuntime so unauthenticated traffic never triggers
+	// the deferred MCP SDK evaluation.
+	const authInfo = await requireAuth(request)
+
 	const { requestStorage, connect } = await getMcpRuntime()
 	const response = await requestStorage.run(request, async () => {
 		const sessionId = request.headers.get('mcp-session-id') ?? undefined
-
-		// right now, we have to block all requests that are not authenticated
-		// Eventually the spec will allow for public tools, but we're not there yet
-		const authInfo = await requireAuth(request)
-
 		const transport = await connect(sessionId)
 
 		return transport.handleRequest(request, { authInfo })
