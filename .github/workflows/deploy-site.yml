@@ -148,6 +148,12 @@ jobs:
 
       - name: 🏗️ Build site client + server bundles
         run: npm run build --workspace kentcdodds.com
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: kent-c-dodds-tech-llc
+          SENTRY_PROJECT: kcd
+          SENTRY_UPLOAD: ${{ secrets.SENTRY_AUTH_TOKEN != '' && 'true' || 'false' }}
+          COMMIT_SHA: ${{ github.sha }}
 
       # Persistent MDX compile cache: unchanged documents are reused instead of
       # recompiled, and resolved embeds (tweets, oEmbed, mermaid SVGs) persist

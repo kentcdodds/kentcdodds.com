@@ -627,6 +627,11 @@ writes `generated-wrangler.jsonc` with production bindings + `BUILD_SHA`.
 The repo `CLOUDFLARE_API_TOKEN` can deploy worker scripts and upload secrets
 but **cannot** list/create D1/KV/R2 (auth error 10000). Therefore:
 
+Production site builds upload source maps to Sentry when the repo secret
+`SENTRY_AUTH_TOKEN` is set (org auth token with `sntrys_` prefix from Sentry
+**Settings → Auth Tokens**). Until that secret exists, `SENTRY_UPLOAD` stays
+off and deploys continue without upload.
+
 - Resource IDs are committed in `services/site-worker/wrangler.jsonc`; `npm run
 provision:production` skips Cloudflare API calls when IDs are present (use
   `--force-ensure` for fresh environments with a privileged token).
