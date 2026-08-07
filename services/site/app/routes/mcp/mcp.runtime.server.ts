@@ -1,8 +1,10 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { invariant } from '@epic-web/invariant'
-import { type AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
+import {
+	type AuthInfo,
+	McpServer,
+	WebStandardStreamableHTTPServerTransport,
+} from './mcp-sdk.server.ts'
 import { type SearchResult } from '@kcd-internal/search-shared'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
@@ -120,9 +122,7 @@ function createServer() {
 			const posts = Object.entries(groupedBySlug).map(([postSlug, reads]) => ({
 				url: `${domainUrl}/blog/${postSlug}`,
 				readCount: reads.length,
-				reads: reads.map(({ createdAt }) =>
-					(createdAt as Date).toISOString(),
-				),
+				reads: reads.map(({ createdAt }) => (createdAt as Date).toISOString()),
 			}))
 
 			return {

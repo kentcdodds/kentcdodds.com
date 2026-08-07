@@ -1,8 +1,8 @@
-import { generateRegistrationOptions } from '@simplewebauthn/server'
 import { data as json } from 'react-router'
 import { db } from '#app/utils/db.server.ts'
 import { passkeyTable } from '#app/utils/db/schema.server.ts'
 import { requireUser } from '#app/utils/session.server.ts'
+import { getWebAuthnSdk } from '#app/utils/webauthn-lazy.server.ts'
 import {
 	PasskeyCookieSchema,
 	passkeyCookie,
@@ -11,6 +11,7 @@ import {
 import { type Route } from './+types/generate-registration-options'
 
 export async function loader({ request }: Route.LoaderArgs) {
+	const { generateRegistrationOptions } = await getWebAuthnSdk()
 	const user = await requireUser(request)
 	const passkeys = await db.findMany(passkeyTable, {
 		where: { userId: user.id },

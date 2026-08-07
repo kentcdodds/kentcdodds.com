@@ -1,17 +1,17 @@
 import { expect, test } from 'vitest'
+import { createMcpServerCard } from '../create-mcp-server-card.server.ts'
 import {
-	createMcpServerCard,
 	mcpServerName,
 	mcpServerTransportPath,
 	mcpServerVersion,
 } from '../server-card.ts'
 
-test('createMcpServerCard returns discovery metadata for the local MCP transport', () => {
+test('createMcpServerCard returns discovery metadata for the local MCP transport', async () => {
 	const request = new Request(
 		'https://kentcdodds.com/.well-known/mcp/server-card.json',
 		{ headers: { host: 'kentcdodds.com' } },
 	)
-	const card = createMcpServerCard(request)
+	const card = await createMcpServerCard(request)
 
 	expect(card.serverInfo).toEqual({
 		name: mcpServerName,

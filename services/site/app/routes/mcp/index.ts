@@ -1,12 +1,13 @@
 import { redirect } from 'react-router'
 import { getAuthInfoFromOAuthFromRequest } from '#app/utils/session.server.js'
 import { type Route } from './+types/index'
-import { connect, requestStorage } from './mcp.server.ts'
+import { getMcpRuntime } from './mcp-lazy.server.ts'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	if (request.headers.get('accept')?.includes('text/html')) {
 		throw redirect('/about-mcp')
 	}
+	const { requestStorage, connect } = await getMcpRuntime()
 	const response = await requestStorage.run(request, async () => {
 		const sessionId = request.headers.get('mcp-session-id') ?? undefined
 
@@ -22,6 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+	const { requestStorage, connect } = await getMcpRuntime()
 	const response = await requestStorage.run(request, async () => {
 		const sessionId = request.headers.get('mcp-session-id') ?? undefined
 
