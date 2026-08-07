@@ -180,7 +180,15 @@ async function warmDynamicWorker(
 	env: ParentWorkerEnv,
 	ctx: ParentExecutionContext,
 ) {
-	const paths = ['/', '/blog', '/healthcheck']
+	// The blog-post path matters: '/' and '/blog' never import an MDX module,
+	// so without it even a "warm" isolate pays the first `import('mdx/...')`
+	// (plus its cachified misses) on the first real blog-post request.
+	const paths = [
+		'/',
+		'/blog',
+		'/blog/javascript-to-know-for-react',
+		'/healthcheck',
+	]
 	for (const path of paths) {
 		try {
 			const request = new Request(`https://warmup.internal${path}`, {
