@@ -226,7 +226,10 @@ async function getBlogPostReadCounts({
 		key: `blog:post-read-counts`,
 		ttl: 1000 * 60 * 30,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
-		cache: lruCache,
+		// Must be the shared KV cache: getFreshValue scans the whole PostRead
+		// table (D1 bills rows read) and lruCache is per-isolate, so isolate
+		// churn would re-run the full scan far more often than the TTL implies.
+		cache,
 		request,
 		timings,
 		checkValue: (value: unknown) =>
@@ -307,8 +310,12 @@ async function getReaderCount({
 	const key = 'total-reader-count'
 	return cachified({
 		key,
-		cache: lruCache,
-		ttl: 1000 * 60 * 5,
+		// Must be the shared KV cache: the COUNT(DISTINCT ...) below scans the
+		// whole PostRead table (D1 bills rows read), so per-isolate lruCache
+		// would re-run it on every isolate churn. The count moves slowly, so an
+		// hour of staleness is fine.
+		cache,
+		ttl: 1000 * 60 * 60,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		request,
 		timings,

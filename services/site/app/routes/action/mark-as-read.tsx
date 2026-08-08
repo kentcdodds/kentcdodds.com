@@ -22,8 +22,9 @@ export async function action({ request }: Route.ActionArgs) {
 		getBlogReadRankings({ request, slug }).then(getRankingLeader),
 		getBlogReadRankings({ request }).then(getRankingLeader),
 	])
+	let createdPostRead = null
 	if (user) {
-		await addPostRead({
+		createdPostRead = await addPostRead({
 			slug,
 			userId: user.id,
 		})
@@ -31,8 +32,17 @@ export async function action({ request }: Route.ActionArgs) {
 		const client = await getClientSession(request, user)
 		const clientId = client.getClientId()
 		if (clientId) {
-			await addPostRead({ slug, clientId })
+			createdPostRead = await addPostRead({ slug, clientId })
 		}
+	}
+
+	// Rankings only change when a new PostRead row was actually created
+	// (addPostRead dedupes repeat reads within a week). Skip the forceFresh
+	// recompute otherwise: it bypasses the shared cache and re-runs 9 heavy
+	// PostRead aggregate queries per ranking, which is the expensive part of
+	// D1's rows-read billing.
+	if (!createdPostRead) {
+		return json({ success: true })
 	}
 
 	// trigger an update to the ranking cache and notify when the leader changed
