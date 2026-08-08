@@ -4,6 +4,28 @@ Runtime DB access uses `@remix-run/data-table`. SQL migrations live in
 `services/site/migrations/`. User/session helpers live in
 `app/utils/user-data.server.ts`.
 
+## D1 billing sharp edge: rows read
+
+D1 bills **rows scanned**, not rows returned. A `GROUP BY` or
+`COUNT(DISTINCT ...)` over `PostRead` (~1M rows) scans the whole table on every
+execution, so where a query's result is cached matters as much as the query:
+
+- `lruCache` (`app/utils/cache.server.ts`) is **per-isolate memory**. Isolates
+  churn constantly (deploys, eviction, the warmup cron), so an `lruCache`-only
+  cachified value re-runs its `getFreshValue` on every new isolate regardless
+  of TTL. In Aug 2026 this made two full-table `PostRead` aggregates
+  (`blog:post-read-counts`, `total-reader-count` in `app/utils/blog.server.ts`)
+  run ~53k times/week ≈ 51B rows read/week ≈ a $195/month D1 line item.
+- `cache` (KV-backed via `CACHE_RPC`) is shared across isolates. Any cachified
+  value whose `getFreshValue` scans a large table MUST use `cache`, not
+  `lruCache`. Reserve `lruCache` for values that are cheap to recompute.
+- Also avoid `forceFresh: true` on request paths (e.g. actions) unless the
+  underlying data actually changed; it bypasses the shared cache and re-runs
+  the aggregate queries.
+- To verify what is burning reads, query GraphQL
+  `d1QueriesAdaptiveGroups` ordered by `sum_rowsRead_DESC` (or
+  `wrangler d1 insights`).
+
 Do **not** import the `remix` umbrella package; use `@remix-run/data-table` and
 `@remix-run/data-table-sqlite` directly.
 
