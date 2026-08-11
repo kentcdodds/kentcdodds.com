@@ -15,6 +15,7 @@ import {
 	isHtmlDocumentScriptFilename,
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
+	isInjectedInputOnchangeLocationError,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
@@ -693,6 +694,98 @@ test('drops extension blob-script addListener noise (KCD-Z7)', () => {
 			{ originalException: blobStackError },
 		),
 	).toBe(true)
+})
+
+test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => {
+	const injectedEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: "Cannot read properties of undefined (reading 'location')",
+					stacktrace: {
+						frames: [
+							{
+								filename: 'https://kentcdodds.com/',
+								absPath: 'https://kentcdodds.com/',
+								function: 'HTMLInputElement.onchange',
+								inApp: true,
+							},
+							{
+								filename: 'https://kentcdodds.com/',
+								absPath: 'https://kentcdodds.com/',
+								function: null,
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+
+	expect(isInjectedInputOnchangeLocationError(injectedEvent)).toBe(true)
+	expect(shouldDropSentryEvent(injectedEvent)).toBe(true)
+
+	// App bundle stacks that read `.location` must still alert.
+	expect(
+		isInjectedInputOnchangeLocationError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'location')",
+						stacktrace: {
+							frames: [
+								{
+									filename: '/assets/root-j32IyX5o.js',
+									function: 'HTMLInputElement.onchange',
+									inApp: true,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// HTML-document stacks without the native onchange frame are not enough.
+	expect(
+		isInjectedInputOnchangeLocationError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'location')",
+						stacktrace: {
+							frames: [
+								{
+									filename: 'https://kentcdodds.com/',
+									function: 'anonymous',
+									inApp: true,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// Message alone (no frames) must not drop.
+	expect(
+		isInjectedInputOnchangeLocationError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: "Cannot read properties of undefined (reading 'location')",
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('keeps Module load timeout filter (KCD-ZS / KCD-ZT)', () => {
