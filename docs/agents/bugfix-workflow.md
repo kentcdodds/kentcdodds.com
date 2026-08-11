@@ -151,9 +151,10 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   visitor's browser — not site code. Filter via `denyUrls` for that host plus
   the distinctive `zp_token` ignoreErrors (KCD-102); do not chase app fixes.
 - Client `TypeError: … reading 'location'` with function
-  `HTMLInputElement.onchange` and exclusively HTML-document stack frames
-  (`https://kentcdodds.com/…`, source context that is page HTML / route
+  `HTMLInputElement.onchange` and exclusively unusable or HTML-document stack
+  frames (`https://kentcdodds.com/…`, source context that is page HTML / route
   manifest JSON) is password-manager / autofill extension noise — not app
   `navigation.location` (KCD-109). Filter via
-  `isInjectedInputOnchangeLocationError`; never drop the location TypeError
-  from first-party `/assets/` bundles.
+  `isInjectedInputOnchangeLocationError` (uses
+  `hasOnlyUnusableOrHtmlDocumentStackFrames`); never drop the location
+  TypeError from first-party `/assets/` bundles.
