@@ -879,6 +879,39 @@ export function hasOnlyUnusableOrHtmlDocumentStackFrames(
 }
 
 /**
+ * Password managers / autofill extensions attach native `onchange` handlers
+ * that sometimes read `.location` off an undefined object. Chrome attributes
+ * those throws to the HTML document URL with function
+ * `HTMLInputElement.onchange` and source context that is page HTML / route
+ * manifest JSON — never a first-party `/assets/` bundle (KCD-109).
+ *
+ * Require the native input onchange frame plus exclusively
+ * unusable/HTML-document attribution. Do not drop a generic "reading
+ * 'location'" TypeError from app bundles (e.g. `navigation.location`).
+ */
+const UNDEFINED_LOCATION_PROP =
+	/Cannot read properties of undefined \(reading 'location'\)|undefined is not an object \(evaluating ['"][^'"]*\.location['"]\)|can't access property "location"/i
+
+const HTML_INPUT_ONCHANGE = /^HTMLInputElement\.onchange$/
+
+export function isInjectedInputOnchangeLocationError(
+	event: SentryEventLike,
+): boolean {
+	if (
+		!eventMessages(event).some((message) => UNDEFINED_LOCATION_PROP.test(message))
+	) {
+		return false
+	}
+
+	const frames = exceptionFrames(event)
+	if (frames.length === 0) return false
+	if (!frames.some((frame) => HTML_INPUT_ONCHANGE.test(frame.function ?? ''))) {
+		return false
+	}
+	return hasOnlyUnusableOrHtmlDocumentStackFrames(event)
+}
+
+/**
  * React Router production `sanitizeError` replaces thrown Errors with
  * `new Error("Unexpected Server Error")` and clears `stack` before they reach
  * the client (see react-router `sanitizeError` / turbo-stream `SanitizedError`).
@@ -969,6 +1002,7 @@ export function shouldDropSentryEvent(
 	if (isCustomEventUnhandledRejectionNoise(event, hint)) return true
 	if (isBrokenClientFetchContractError(event, hint)) return true
 	if (isInjectedBlobAddListenerError(event, hint)) return true
+	if (isInjectedInputOnchangeLocationError(event)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
