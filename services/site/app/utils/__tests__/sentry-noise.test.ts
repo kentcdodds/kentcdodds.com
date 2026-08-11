@@ -710,21 +710,12 @@ test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => 
 								absPath: 'https://kentcdodds.com/',
 								function: 'HTMLInputElement.onchange',
 								inApp: true,
-								context: [
-									[107, '      "hasDefaultExport": true,'],
-								],
 							},
 							{
 								filename: 'https://kentcdodds.com/',
 								absPath: 'https://kentcdodds.com/',
 								function: null,
 								inApp: true,
-								context: [
-									[
-										68,
-										"            I'm also a big extreme sports enthusiast. When I'm not hanging out",
-									],
-								],
 							},
 						],
 					},
