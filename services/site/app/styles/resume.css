@@ -279,7 +279,7 @@
 	}
 }
 
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
 	.resume-page {
 		color: #e2e8f0;
 	}
@@ -308,61 +308,63 @@
 	}
 }
 
-html.dark .resume-page {
-	color: #e2e8f0;
-}
+@media screen {
+	html.dark .resume-page {
+		color: #e2e8f0;
+	}
 
-html.dark .resume-toggle__link,
-html.dark .resume-toggle__button {
-	border-color: #475569;
-}
+	html.dark .resume-toggle__link,
+	html.dark .resume-toggle__button {
+		border-color: #475569;
+	}
 
-html.dark .resume-toggle__link.is-active {
-	border-color: #e2e8f0;
-}
+	html.dark .resume-toggle__link.is-active {
+		border-color: #e2e8f0;
+	}
 
-html.dark .resume-location,
-html.dark .resume-links,
-html.dark .resume-job__dates,
-html.dark .resume-job__context,
-html.dark .resume-credit__role,
-html.dark .resume-credit__company,
-html.dark .resume-credit__dates {
-	color: #cbd5f5;
-}
+	html.dark .resume-location,
+	html.dark .resume-links,
+	html.dark .resume-job__dates,
+	html.dark .resume-job__context,
+	html.dark .resume-credit__role,
+	html.dark .resume-credit__company,
+	html.dark .resume-credit__dates {
+		color: #cbd5f5;
+	}
 
-html.dark .resume-bullets li::marker {
-	color: #94a3b8;
-}
+	html.dark .resume-bullets li::marker {
+		color: #94a3b8;
+	}
 
-html.light .resume-page {
-	color: #222222;
-}
+	html.light .resume-page {
+		color: #222222;
+	}
 
-html.light .resume-toggle__link,
-html.light .resume-toggle__button {
-	border-color: #bdbdbd;
-}
+	html.light .resume-toggle__link,
+	html.light .resume-toggle__button {
+		border-color: #bdbdbd;
+	}
 
-html.light .resume-toggle__link.is-active {
-	border-color: #333333;
-}
+	html.light .resume-toggle__link.is-active {
+		border-color: #333333;
+	}
 
-html.light .resume-location,
-html.light .resume-job__dates,
-html.light .resume-job__context,
-html.light .resume-credit__role,
-html.light .resume-credit__company,
-html.light .resume-credit__dates {
-	color: #555555;
-}
+	html.light .resume-location,
+	html.light .resume-job__dates,
+	html.light .resume-job__context,
+	html.light .resume-credit__role,
+	html.light .resume-credit__company,
+	html.light .resume-credit__dates {
+		color: #555555;
+	}
 
-html.light .resume-links {
-	color: #444444;
-}
+	html.light .resume-links {
+		color: #444444;
+	}
 
-html.light .resume-bullets li::marker {
-	color: #888888;
+	html.light .resume-bullets li::marker {
+		color: #888888;
+	}
 }
 
 @media print {
@@ -378,18 +380,52 @@ html.light .resume-bullets li::marker {
 		display: none;
 	}
 
+	/* Print must stay light even when the site or OS is in dark mode.
+	   `html.dark` / prefers-color-scheme otherwise keep slate text and a dark
+	   canvas (`color-scheme: dark` on `.dark`). */
+	html,
+	html.dark,
+	html.light,
+	body {
+		color-scheme: only light !important;
+		background: #ffffff !important;
+		color: #000000 !important;
+		print-color-adjust: exact;
+		-webkit-print-color-adjust: exact;
+	}
+
 	.resume-page {
 		max-width: none;
 		padding: 0;
+		background: #ffffff !important;
+		color: #222222 !important;
 	}
 
 	main.resume-main {
-		color: #000000;
+		color: #000000 !important;
+		background: #ffffff !important;
 		/* Pin metric-compatible fonts (Arial on Windows, Helvetica on macOS,
 		   Liberation Sans on Linux) so pagination is stable across machines.
 		   Wider system-font fallbacks (e.g. DejaVu Sans) push the one-page
 		   view onto a second page. */
 		font-family: Arial, Helvetica, 'Liberation Sans', sans-serif;
+	}
+
+	.resume-location,
+	.resume-job__dates,
+	.resume-job__context,
+	.resume-credit__role,
+	.resume-credit__company,
+	.resume-credit__dates {
+		color: #555555 !important;
+	}
+
+	.resume-links {
+		color: #444444 !important;
+	}
+
+	.resume-bullets li::marker {
+		color: #888888 !important;
 	}
 
 	.resume-photo {
