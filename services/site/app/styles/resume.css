@@ -73,6 +73,44 @@
 	flex-shrink: 0;
 }
 
+.resume-photo-button {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	cursor: pointer;
+	flex-shrink: 0;
+	border-radius: 999px;
+}
+
+.resume-credits {
+	display: grid;
+	gap: 8px;
+}
+
+.resume-credit {
+	display: grid;
+	grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr) minmax(0, 1.3fr) auto;
+	gap: 8px 12px;
+	align-items: baseline;
+	font-size: 0.95rem;
+}
+
+.resume-credit__show a {
+	color: inherit;
+}
+
+.resume-credit__role,
+.resume-credit__company,
+.resume-credit__dates {
+	font-size: 0.85rem;
+	color: #555555;
+}
+
+.resume-credit__dates {
+	white-space: nowrap;
+	text-align: right;
+}
+
 .resume-name {
 	font-size: 1.6rem;
 	margin: 0;
@@ -209,6 +247,16 @@
 		white-space: normal;
 	}
 
+	.resume-credit {
+		grid-template-columns: 1fr;
+		gap: 2px;
+	}
+
+	.resume-credit__dates {
+		text-align: left;
+		white-space: normal;
+	}
+
 	.resume-bullets {
 		padding-left: 16px;
 	}
@@ -252,7 +300,10 @@
 	.resume-location,
 	.resume-links,
 	.resume-job__dates,
-	.resume-job__context {
+	.resume-job__context,
+	.resume-credit__role,
+	.resume-credit__company,
+	.resume-credit__dates {
 		color: #cbd5f5;
 	}
 
@@ -277,7 +328,10 @@ html.dark .resume-toggle__link.is-active {
 html.dark .resume-location,
 html.dark .resume-links,
 html.dark .resume-job__dates,
-html.dark .resume-job__context {
+html.dark .resume-job__context,
+html.dark .resume-credit__role,
+html.dark .resume-credit__company,
+html.dark .resume-credit__dates {
 	color: #cbd5f5;
 }
 
@@ -300,7 +354,10 @@ html.light .resume-toggle__link.is-active {
 
 html.light .resume-location,
 html.light .resume-job__dates,
-html.light .resume-job__context {
+html.light .resume-job__context,
+html.light .resume-credit__role,
+html.light .resume-credit__company,
+html.light .resume-credit__dates {
 	color: #555555;
 }
 
@@ -339,7 +396,8 @@ html.light .resume-bullets li::marker {
 		font-family: Arial, Helvetica, 'Liberation Sans', sans-serif;
 	}
 
-	.resume-photo {
+	.resume-photo,
+	.resume-photo-button {
 		display: none;
 	}
 

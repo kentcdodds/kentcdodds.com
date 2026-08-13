@@ -1,0 +1,53 @@
+header:
+  name: 'Kent C. Dodds'
+  location: 'Utah, USA'
+  stats:
+    voice: 'Tenor'
+    height: '5''9"'
+    hair: 'Brown'
+    eyes: 'Blue'
+  links:
+    - label: 'kentcdodds.com'
+      href: 'https://kentcdodds.com'
+      includeInPrint: true
+    - label: 'me@kentcdodds.com'
+      href: 'mailto:me@kentcdodds.com'
+      includeInPrint: true
+sections:
+  - heading: 'Theater'
+    credits:
+      - show: 'Finding Neverland'
+        role: 'Elliot'
+        company: 'Alpine Community Theater'
+        dates: '2026'
+        href: 'https://alpinecommunitytheater.org/2026/07/09/finding-neverland-playing-now/'
+      - show: 'Les Misérables'
+        role: 'Chorus'
+        dates: '2006'
+      - show: 'The Sound of Music'
+        role: 'Rolf / Herr Zeller'
+        dates: '2005'
+  - heading: 'Show Choir'
+    credits:
+      - show: 'Twin Falls High School Jive!'
+        role: 'Tenor I and Tenor II'
+        dates: '2004–2007'
+  - heading: 'Choir'
+    credits:
+      - show: 'The BYU Men’s Chorus'
+        role: 'Tenor I'
+        dates: '2007, 2010'
+      - show: 'Twin Falls High School Chamber Singers'
+        role: 'Tenor I and Tenor II'
+        dates: '2005–2007'
+      - show: 'Twin Falls High School Concert Choir'
+        role: 'Tenor I, Tenor II, and Baritone'
+        dates: '2004–2005'
+  - heading: 'Training'
+    credits:
+      - show: 'Voice lessons'
+        dates: '2006'
+      - show: 'Piano lessons'
+        dates: '1994–2004'
+skills:
+  - 'Gymnastics'

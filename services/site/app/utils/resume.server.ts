@@ -55,18 +55,69 @@ const resumeDataSchema = z.object({
 	recognitionByLength: resumeSectionSchema.optional(),
 })
 
-export type ResumeData = z.infer<typeof resumeDataSchema>
+const theaterCreditSchema = z.object({
+	show: z.string(),
+	role: z.string().optional(),
+	company: z.string().optional(),
+	dates: z.string(),
+	href: z.string().optional(),
+})
 
-async function getResumeData({
+const theaterResumeDataSchema = z.object({
+	header: z.object({
+		name: z.string(),
+		location: z.string(),
+		stats: z.object({
+			voice: z.string(),
+			height: z.string(),
+			hair: z.string(),
+			eyes: z.string(),
+		}),
+		links: z.array(resumeLinkSchema),
+	}),
+	sections: z.array(
+		z.object({
+			heading: z.string(),
+			credits: z.array(theaterCreditSchema),
+		}),
+	),
+	skills: z.array(z.string()),
+})
+
+export type ResumeData = z.infer<typeof resumeDataSchema>
+export type TheaterResumeData = z.infer<typeof theaterResumeDataSchema>
+export type TheaterResumeCredit = z.infer<typeof theaterCreditSchema>
+
+function parseYamlData<T>(raw: string, schema: z.ZodType<T>, label: string) {
+	const parsed = YAML.parse(raw)
+	const result = schema.safeParse(parsed)
+	if (!result.success) {
+		console.error(`${label} data is invalid`, result.error.flatten())
+		throw new Error(`${label} data is invalid.`)
+	}
+	return result.data
+}
+
+export function parseTheaterResumeData(raw: string) {
+	return parseYamlData(raw, theaterResumeDataSchema, 'Theater resume')
+}
+
+async function getCachedYamlData<T>({
+	filename,
+	schema,
+	label,
 	request,
 	forceFresh,
 	timings,
 }: {
+	filename: string
+	schema: z.ZodType<T>
+	label: string
 	request?: Request
 	forceFresh?: boolean
 	timings?: Timings
 }) {
-	const key = getContentDataCacheKey('resume.yml')
+	const key = getContentDataCacheKey(filename)
 	try {
 		return await cachified({
 			cache,
@@ -77,24 +128,56 @@ async function getResumeData({
 			staleWhileRevalidate: 1000 * 60 * 60 * 24 * 30,
 			forceFresh,
 			getFreshValue: async () => {
-				const resumeString = await getContentDataFile('data/resume.yml')
-				if (!resumeString) {
-					throw new Error('resume.yml is unavailable')
+				const raw = await getContentDataFile(`data/${filename}`)
+				if (!raw) {
+					throw new Error(`${filename} is unavailable`)
 				}
-				const parsed = YAML.parse(resumeString)
-				const result = resumeDataSchema.safeParse(parsed)
-				if (!result.success) {
-					console.error('Resume data is invalid', result.error.flatten())
-					throw new Error('Resume data is invalid.')
-				}
-				return result.data
+				return parseYamlData(raw, schema, label)
 			},
-			checkValue: (value: unknown) => resumeDataSchema.safeParse(value).success,
+			checkValue: (value: unknown) => schema.safeParse(value).success,
 		})
 	} catch (error: unknown) {
-		console.error(`resume: failed to load resume data, returning null`, error)
+		console.error(`${label}: failed to load data, returning null`, error)
 		return null
 	}
 }
 
-export { getResumeData }
+async function getResumeData({
+	request,
+	forceFresh,
+	timings,
+}: {
+	request?: Request
+	forceFresh?: boolean
+	timings?: Timings
+}) {
+	return getCachedYamlData({
+		filename: 'resume.yml',
+		schema: resumeDataSchema,
+		label: 'Resume',
+		request,
+		forceFresh,
+		timings,
+	})
+}
+
+async function getTheaterResumeData({
+	request,
+	forceFresh,
+	timings,
+}: {
+	request?: Request
+	forceFresh?: boolean
+	timings?: Timings
+}) {
+	return getCachedYamlData({
+		filename: 'theater-resume.yml',
+		schema: theaterResumeDataSchema,
+		label: 'Theater resume',
+		request,
+		forceFresh,
+		timings,
+	})
+}
+
+export { getResumeData, getTheaterResumeData }
