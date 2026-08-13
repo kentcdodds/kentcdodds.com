@@ -7,11 +7,8 @@ header:
     hair: 'Brown'
     eyes: 'Blue'
   links:
-    - label: 'kentcdodds.com'
-      href: 'https://kentcdodds.com'
-      includeInPrint: true
-    - label: 'me@kentcdodds.com'
-      href: 'mailto:me@kentcdodds.com'
+    - label: 'kentcdodds@gmail.com'
+      href: 'mailto:kentcdodds@gmail.com'
       includeInPrint: true
 sections:
   - heading: 'Theater'

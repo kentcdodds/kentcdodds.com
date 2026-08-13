@@ -40,5 +40,15 @@ test('theater resume YAML includes the performing arts credits', () => {
 		dates: '2026',
 		href: 'https://alpinecommunitytheater.org/2026/07/09/finding-neverland-playing-now/',
 	})
+	expect(data.header.links).toEqual([
+		{
+			label: 'kentcdodds@gmail.com',
+			href: 'mailto:kentcdodds@gmail.com',
+			includeInPrint: true,
+		},
+	])
+	expect(data.header.links.map((link) => link.href).join(' ')).not.toMatch(
+		/https?:\/\/kentcdodds\.com/i,
+	)
 	expect(JSON.stringify(data)).not.toMatch(/801-|phone/i)
 })
