@@ -41,11 +41,6 @@ test('resume print uses light colors when the page is in dark mode', async ({
 	await expect(page.locator('main.resume-main')).toBeVisible()
 	await page.evaluate(() => document.documentElement.classList.add('dark'))
 	await page.emulateMedia({ media: 'print', colorScheme: 'dark' })
-	await page.evaluate(() => {
-		for (const animation of document.getAnimations()) {
-			animation.finish()
-		}
-	})
 
 	const colors = await page.evaluate(() => {
 		const pageEl = document.querySelector('.resume-page')
