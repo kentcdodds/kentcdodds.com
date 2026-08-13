@@ -197,10 +197,12 @@ function ResumeUnavailable() {
 	)
 }
 
-function ResumePhoto({ onSecretClick }: { onSecretClick: () => void }) {
+function ResumePhoto({ onSecretClick }: { onSecretClick?: () => void }) {
 	return (
 		<img
-			className="resume-photo resume-photo--secret"
+			className={
+				onSecretClick ? 'resume-photo resume-photo--secret' : 'resume-photo'
+			}
 			src={buildMediaUrl('kent/profile', {
 				height: 200,
 				aspectRatio: '1:1',
@@ -478,12 +480,15 @@ function TheaterResumePage({
 			<main className="resume-main">
 				<header className="resume-header">
 					<div className="resume-header__identity">
-						<h1 className="resume-name">{header.name}</h1>
-						<p className="resume-title">
-							Voice: {stats.voice} · Height: {stats.height} · Hair: {stats.hair}{' '}
-							· Eyes: {stats.eyes}
-						</p>
-						<p className="resume-location">{header.location}</p>
+						<ResumePhoto />
+						<div>
+							<h1 className="resume-name">{header.name}</h1>
+							<p className="resume-title">
+								Voice: {stats.voice} · Height: {stats.height} · Hair:{' '}
+								{stats.hair} · Eyes: {stats.eyes}
+							</p>
+							<p className="resume-location">{header.location}</p>
+						</div>
 					</div>
 					<ResumeLinks links={header.links} />
 				</header>
