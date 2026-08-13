@@ -32,3 +32,41 @@ test('full resume prints without trailing blank pages', async ({ page }) => {
 	// the expected count.
 	expect(getPdfPageCount(pdf)).toBe(2)
 })
+
+test('resume print uses light colors when the page is in dark mode', async ({
+	page,
+}) => {
+	await page.emulateMedia({ colorScheme: 'dark' })
+	await page.goto('/resume')
+	await expect(page.locator('main.resume-main')).toBeVisible()
+	await page.evaluate(() => document.documentElement.classList.add('dark'))
+	await page.emulateMedia({ media: 'print', colorScheme: 'dark' })
+
+	const colors = await page.evaluate(() => {
+		const pageEl = document.querySelector('.resume-page')
+		const mainEl = document.querySelector('main.resume-main')
+		const locationEl = document.querySelector('.resume-location')
+		if (!pageEl || !mainEl || !locationEl) {
+			throw new Error('Resume print elements were not found')
+		}
+		const htmlStyle = getComputedStyle(document.documentElement)
+		const bodyStyle = getComputedStyle(document.body)
+		const pageStyle = getComputedStyle(pageEl)
+		const mainStyle = getComputedStyle(mainEl)
+		const locationStyle = getComputedStyle(locationEl)
+		return {
+			htmlBackground: htmlStyle.backgroundColor,
+			bodyBackground: bodyStyle.backgroundColor,
+			pageColor: pageStyle.color,
+			pageBackground: pageStyle.backgroundColor,
+			mainColor: mainStyle.color,
+			locationColor: locationStyle.color,
+		}
+	})
+
+	expect(colors.htmlBackground).toBe('rgb(255, 255, 255)')
+	expect(colors.bodyBackground).toBe('rgb(255, 255, 255)')
+	expect(colors.pageBackground).toBe('rgb(255, 255, 255)')
+	expect(colors.mainColor).toBe('rgb(0, 0, 0)')
+	expect(colors.locationColor).toBe('rgb(85, 85, 85)')
+})
