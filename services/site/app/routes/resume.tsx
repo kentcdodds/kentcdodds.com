@@ -52,11 +52,21 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const view = getResumeView(new URL(request.url).searchParams.get('view'))
-	const [resumeData, theaterResumeData] = await Promise.all([
-		getResumeData({ request }),
-		getTheaterResumeData({ request }),
-	])
-	return json({ resumeData, theaterResumeData, view })
+	switch (view) {
+		case 'theater': {
+			const theaterResumeData = await getTheaterResumeData({ request })
+			return json({ resumeData: null, theaterResumeData, view })
+		}
+		case 'short':
+		case 'full': {
+			const resumeData = await getResumeData({ request })
+			return json({ resumeData, theaterResumeData: null, view })
+		}
+		default: {
+			const exhaustive: never = view
+			throw new Error(`Unknown resume view: ${String(exhaustive)}`)
+		}
+	}
 }
 
 function getViewKey(isShort: boolean) {
@@ -188,28 +198,19 @@ function ResumeUnavailable() {
 }
 
 function ResumePhoto({ onSecretClick }: { onSecretClick?: () => void }) {
-	const image = (
+	return (
 		<img
-			className="resume-photo"
+			className={
+				onSecretClick ? 'resume-photo resume-photo--secret' : 'resume-photo'
+			}
 			src={buildMediaUrl('kent/profile', {
 				height: 200,
 				aspectRatio: '1:1',
 				fit: 'cover',
 			})}
 			alt="Photo of Kent C. Dodds"
-		/>
-	)
-
-	if (!onSecretClick) return image
-
-	return (
-		<button
-			type="button"
-			className="resume-photo-button"
 			onClick={onSecretClick}
-		>
-			{image}
-		</button>
+		/>
 	)
 }
 

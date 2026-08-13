@@ -73,13 +73,8 @@
 	flex-shrink: 0;
 }
 
-.resume-photo-button {
-	border: 0;
-	padding: 0;
-	background: transparent;
+.resume-photo--secret {
 	cursor: pointer;
-	flex-shrink: 0;
-	border-radius: 999px;
 }
 
 .resume-credits {
@@ -97,6 +92,7 @@
 
 .resume-credit__show a {
 	color: inherit;
+	text-decoration: underline;
 }
 
 .resume-credit__role,
@@ -396,8 +392,7 @@ html.light .resume-bullets li::marker {
 		font-family: Arial, Helvetica, 'Liberation Sans', sans-serif;
 	}
 
-	.resume-photo,
-	.resume-photo-button {
+	.resume-photo {
 		display: none;
 	}
 
