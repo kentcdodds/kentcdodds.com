@@ -382,13 +382,26 @@
 
 	/* Print must stay light even when the site or OS is in dark mode.
 	   `html.dark` / prefers-color-scheme otherwise keep slate text and a dark
-	   canvas (`color-scheme: dark` on `.dark`). */
+	   canvas (`color-scheme: dark` on `.dark`). Body also has
+	   `dark:bg-gray-900` plus `transition duration-500`, so disable
+	   transitions or computed print colors stay on the dark interpolated
+	   value. */
+	*,
+	*::before,
+	*::after {
+		transition: none !important;
+		animation: none !important;
+	}
+
 	html,
 	html.dark,
 	html.light,
+	html.dark body,
+	html.light body,
 	body {
 		color-scheme: only light !important;
-		background: #ffffff !important;
+		background-color: #ffffff !important;
+		background-image: none !important;
 		color: #000000 !important;
 		print-color-adjust: exact;
 		-webkit-print-color-adjust: exact;
