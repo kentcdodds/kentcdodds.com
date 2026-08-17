@@ -166,6 +166,13 @@ user against the local Miniflare D1 database: `me@kentcdodds.com` / `iliketwix`
 After `npm run db:reset --workspace kentcdodds.com`, verify the seed ran.
 Unit tests apply committed SQL migrations via `app/utils/db/test-helpers.server.ts`.
 
+## Cursor Cloud PR ownership
+
+Code-changing agents push their branch and create or update the pull request
+with Cursor Cloud `ManagePullRequest` (Kent C. Dodds account) before finishing.
+`@kentcdodds/cursor` `createAgent` always enables those tools. Never have
+Kody/workflows/GitHub create the initial PR as a substitute.
+
 ## Cloud / headless manual testing
 
 - The Cursor Cloud VM snapshot's default nvm Node is older than the required

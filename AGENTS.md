@@ -27,4 +27,4 @@ project-specific guidance over generic advice.
 ## Cursor Cloud specific instructions
 
 - See `docs/agents/project-context.md` for setup, commands, seed data, VM
-  snapshot details, and caveats.
+  snapshot details, caveats, and Cursor Cloud PR ownership.
