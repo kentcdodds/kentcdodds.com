@@ -5,7 +5,7 @@
  * Prefer message/URL signatures over broad network-error filters so real
  * outages still alert. Drop rules must establish an external source via a
  * distinctive payload signature, extension/IAB URL, provider error code, or
- * framework CSRF-abort text — not a generic phrase alone.
+ * framework CSRF-abort text â not a generic phrase alone.
  *
  * Client SDK: wired from `monitoring.client.tsx` via `ignoreErrors` /
  * `denyUrls` / `shouldDropSentryEvent`. Server: `isReactRouterCsrfAbortError`
@@ -16,7 +16,7 @@
  * React Router `throwIfPotentialCSRFAttack` rejects cross-origin POSTs with
  * these exact messages, then `handleError` would otherwise report them.
  * That is expected security behavior (attacker probes / mismatched Origin),
- * not an app bug — skip Sentry capture.
+ * not an app bug â skip Sentry capture.
  */
 const REACT_ROUTER_CSRF_ABORT_MESSAGES = [
 	'header does not match `origin` header from a forwarded action request. Aborting the action.',
@@ -41,7 +41,7 @@ const SAFARI_JSON_PATTERN_ERROR =
  */
 const FIREFOX_ILLEGAL_CHARACTER_SYNTAX = /^illegal character U\+[0-9A-Fa-f]+$/i
 const HTML_DOCTYPE_SOURCE_LINE = /^\s*<!DOCTYPE\b/i
-/** Real script/module/asset filenames — never treat these as HTML documents. */
+/** Real script/module/asset filenames â never treat these as HTML documents. */
 const SCRIPT_OR_ASSET_FILENAME =
 	/\.(?:m?[jt]sx?|cjs|css|json|map|wasm)(?:\?|#|$)/i
 const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
@@ -78,12 +78,12 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/evaluating 'elem\.firstChild'/,
 	// Instagram / iOS in-app browser WKWebView bridge (KCD-ZR / KCD-ZC).
 	// Stack functions are sendDataToNative / sendPageHideMessage /
-	// setupIosCallbackHandler — not present in app code.
+	// setupIosCallbackHandler â not present in app code.
 	/window\.webkit\.messageHandlers/,
 	// javascript-obfuscator-style injected scripts (KCD-ZG).
 	/a0_0x[0-9a-f]+ is not defined/,
 	// Check Point Zero Phishing injected zp.js (KCD-102). Distinctive
-	// undefined token from zerophishing.iaas.checkpoint.com — not app code.
+	// undefined token from zerophishing.iaas.checkpoint.com â not app code.
 	/Can't find variable: zp_token/,
 	/zp_token is not defined/,
 	// WKWebView native bridge rejecting script into a missing frame (KCD-YV).
@@ -92,9 +92,9 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/Failed to read a named property 'Element' from 'Window': Blocked a frame/,
 	// React Router SingleFetchNoResultError: client route tree / single-fetch
 	// response skew across deploys (stale tab). Distinctive framework message from
-	// unwrapSingleFetchResult — not an app missing-route bug (KCD-VP family).
+	// unwrapSingleFetchResult â not an app missing-route bug (KCD-VP family).
 	/No result found for routeId "/,
-	// HTML document body parsed as JSON — distinctive "<!DOCTYPE" payload
+	// HTML document body parsed as JSON â distinctive "<!DOCTYPE" payload
 	// (KCD-ZJ / __manifest edge HTML).
 	HTML_AS_JSON_ERROR,
 	// Safari / extension CustomEvent wrapping unhandledrejection (KCD-S8).
@@ -265,9 +265,9 @@ function breadcrumbBlob(event: SentryEventLike): string {
 
 /**
  * Native `fetch` never resolves to `undefined`. When React Router then reads
- * `.ok` / `.status`, that alone is not enough to drop — a first-party broken
+ * `.ok` / `.status`, that alone is not enough to drop â a first-party broken
  * wrapper would look the same. Require the injected interceptor's adjacent
- * trailing `URL:` → `Options:` console breadcrumbs (not in app/RR source)
+ * trailing `URL:` â `Options:` console breadcrumbs (not in app/RR source)
  * before classifying as extension noise (KCD-ZY / KCD-ZX).
  */
 const UNDEFINED_FETCH_RESPONSE_PROP =
@@ -346,7 +346,7 @@ export function isCloudflareEdgeErrorHtml(data: string): boolean {
 }
 
 /**
- * Client RouteErrorResponse for edge/origin 502/503/524 — not an app throw.
+ * Client RouteErrorResponse for edge/origin 502/503/524 â not an app throw.
  * Confirmed via Sentry `extra.route_error_response.data` (Cloudflare HTML) or
  * bare empty-body statuses during SPA data/manifest fetches (KCD-VH family).
  * App 502/503 responses carry a non-empty body (lookout string / search JSON).
@@ -389,7 +389,7 @@ export function isCloudflareEdgeRouteErrorEvent(
 /**
  * React Router surfaces bare `Error: 502 ` / `503 ` / `524 ` from
  * fetchAndApplyManifestPatches when `__manifest` hits an edge HTTP failure
- * (KCD-ZH / KCD-YD / KCD-YF). Require the RR frame — never the status alone.
+ * (KCD-ZH / KCD-YD / KCD-YF). Require the RR frame â never the status alone.
  */
 export function isReactRouterEdgeHttpStatusError(
 	event: SentryEventLike,
@@ -425,9 +425,9 @@ function exceptionMessage(exception: unknown): string {
 
 /**
  * Drop React's "Should not already be working" invariant when the stack is
- * exclusively the scheduler → react-dom work loop (Firefox MessageChannel
+ * exclusively the scheduler â react-dom work loop (Firefox MessageChannel
  * re-entrancy during blocking APIs). Require the exact message plus that
- * stack with no in-app frames — never the phrase alone (KCD-YT /
+ * stack with no in-app frames â never the phrase alone (KCD-YT /
  * facebook/react#17355).
  */
 export function isReactSchedulerAlreadyWorkingNoise(
@@ -448,7 +448,7 @@ export function isReactSchedulerAlreadyWorkingNoise(
 	const frames = (event.exception?.values ?? []).flatMap(
 		(value) => value.stacktrace?.frames ?? [],
 	)
-	// Need attributed frames so we can prove exclusivity — message alone is
+	// Need attributed frames so we can prove exclusivity â message alone is
 	// not enough, and mixed third-party frames must stay reportable.
 	if (frames.length === 0) return false
 	if (frames.some((frame) => frame.inApp)) return false
@@ -458,7 +458,7 @@ export function isReactSchedulerAlreadyWorkingNoise(
 		.map((frame) => `${frame.filename ?? ''} ${frame.function ?? ''}`)
 		.join('\n')}\n${stackBlob(event, original)}`
 	// Bundled/minified stacks without sourcemaps still count when the only
-	// frames are scheduler / react-dom — reject app route paths.
+	// frames are scheduler / react-dom â reject app route paths.
 	if (/\/app\/|\/routes\/|components\//i.test(blob)) return false
 
 	return true
@@ -467,7 +467,7 @@ export function isReactSchedulerAlreadyWorkingNoise(
 /**
  * Drop React NotFoundError noise caused by in-page translators / extensions
  * mutating the DOM under React. Require the distinctive message plus a
- * react-dom/native mutation stack with no in-app frames — never the Safari
+ * react-dom/native mutation stack with no in-app frames â never the Safari
  * phrase alone.
  */
 export function isTranslatorDomMutationNoise(
@@ -508,7 +508,7 @@ export function isTranslatorDomMutationNoise(
 	if (!REACT_DOM_MUTATION_STACK.test(blob)) return false
 
 	// Bundled/minified stacks without sourcemaps still count when the only
-	// frames are entry.client / react-dom / native — reject app route paths.
+	// frames are entry.client / react-dom / native â reject app route paths.
 	if (/\/app\/|\/routes\/|components\//i.test(blob)) return false
 
 	return true
@@ -559,7 +559,7 @@ export function isHtmlDocumentScriptFilename(filename: string): boolean {
  * `Unexpected token '<', "<!DOCTYPE"` (ignoreErrors). Firefox instead throws
  * `illegal character U+XXXX` for a C1/control codepoint in that HTML, with the
  * document URL as the only stack filename and often `<!DOCTYPE` in frame
- * context. Require the Firefox message plus HTML-document evidence — never the
+ * context. Require the Firefox message plus HTML-document evidence â never the
  * illegal-character phrase alone (a real bundle containing C1 controls should
  * still alert).
  */
@@ -607,7 +607,7 @@ export function isHtmlDocumentAsScriptNoise(
  *
  * - `<!DOCTYPE` in a JSON SyntaxError is the HTML payload signature (ignoreErrors).
  * - Turbo-stream decode requires RR single-fetch stack or `.data`/`__manifest`
- *   breadcrumb evidence — never the message alone (KCD-XF/YY/Y8).
+ *   breadcrumb evidence â never the message alone (KCD-XF/YY/Y8).
  * - Safari pattern SyntaxError is scoped to manifest patch fetches (KCD-XG/X3).
  * - Firefox `illegal character U+XXXX` when an HTML document URL is the script
  *   source is handled by `isHtmlDocumentAsScriptNoise` (KCD-105).
@@ -678,7 +678,7 @@ function serializedRejection(
 
 /**
  * EIP-1193 wallet extensions reject with provider codes / phrases. Only drop
- * when that provider signal is present — never on a generic non-Error object
+ * when that provider signal is present â never on a generic non-Error object
  * message alone.
  */
 export function isWalletUserRejection(
@@ -738,7 +738,7 @@ export function isWalletUserRejection(
  * Safari / injected scripts sometimes reject with a CustomEvent whose type is
  * `unhandledrejection` (detail often null, isTrusted false). Sentry titles
  * these `<unknown>` with zero frames (KCD-S8). Distinctive SDK message +
- * CustomEvent type — not a generic Event filter.
+ * CustomEvent type â not a generic Event filter.
  */
 export function isCustomEventUnhandledRejectionNoise(
 	event: SentryEventLike,
@@ -805,7 +805,7 @@ export function isInjectedBlobAddListenerError(
 		return filenames.every((filename) => /^blob:/i.test(filename))
 	}
 
-	// No Sentry frame filenames — parse URLs out of Error.stack (stackBlob
+	// No Sentry frame filenames â parse URLs out of Error.stack (stackBlob
 	// prefixes a newline, so ^blob: on the whole string would never match).
 	const urls = scriptUrlsFromStackBlob(stackBlob(event, hint.originalException))
 	return urls.length > 0 && urls.every((url) => /^blob:/i.test(url))
@@ -857,7 +857,7 @@ function isUnusableOrHtmlDocumentAttribution(
  * Translator overflows on iOS Chrome sometimes attribute minified React frames
  * to the HTML document URL (inline script / document path) instead of
  * `filename: "undefined"` (KCD-108 / KCD-107 / KCD-106). Those are still not
- * first-party bundle frames — treat them like unusable attribution here.
+ * first-party bundle frames â treat them like unusable attribution here.
  *
  * Inspect both `filename` and `absPath`: a placeholder in one field must not
  * hide a real bundle URL in the other.
@@ -883,7 +883,7 @@ export function hasOnlyUnusableOrHtmlDocumentStackFrames(
  * that sometimes read `.location` off an undefined object. Chrome attributes
  * those throws to the HTML document URL with function
  * `HTMLInputElement.onchange` and source context that is page HTML / route
- * manifest JSON — never a first-party `/assets/` bundle (KCD-109).
+ * manifest JSON â never a first-party `/assets/` bundle (KCD-109).
  *
  * Require the native input onchange frame plus exclusively
  * unusable/HTML-document attribution. Do not drop a generic "reading
@@ -912,13 +912,81 @@ export function isInjectedInputOnchangeLocationError(
 }
 
 /**
+ * Injected third-party scripts sometimes expose `Object.postUserData` /
+ * `Object.init` and reject with a browser network TypeError. Chrome attributes
+ * those stacks to `<anonymous>` plus the HTML document URL (page markup /
+ * inline RR bootstrap as source context) — never a first-party `/assets/`
+ * bundle (KCD-10A).
+ *
+ * Require the distinctive `postUserData` frame plus exclusively
+ * anonymous/unusable/HTML-document attribution. Do not drop generic
+ * `Failed to fetch` / SPA-nav network errors (KCD-XZ / KCD-QG family).
+ */
+const BROWSER_NETWORK_FETCH_TYPEERROR =
+	/^(?:Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?)(?:\s*\([^)]*\))?$/i
+
+const POST_USER_DATA_FUNCTION = /(?:^|\.)postUserData$/
+
+function isAnonymousStackFilename(value: string | null | undefined): boolean {
+	if (typeof value !== 'string') return false
+	const trimmed = value.trim()
+	return trimmed === '<anonymous>' || trimmed === 'anonymous'
+}
+
+function isInjectedAnonymousOrHtmlDocumentAttribution(
+	value: string | null | undefined,
+): boolean {
+	if (isUnattributedStackFilename(value)) return true
+	if (isAnonymousStackFilename(value)) return true
+	if (typeof value !== 'string') return false
+	return isHtmlDocumentScriptFilename(value)
+}
+
+export function hasOnlyInjectedAnonymousOrHtmlDocumentStackFrames(
+	event: SentryEventLike,
+): boolean {
+	const frames = exceptionFrames(event)
+	if (frames.length === 0) return true
+	return frames.every((frame) => {
+		const candidates = [frame.filename, frame.absPath].filter(
+			(value, index, values) => values.indexOf(value) === index,
+		)
+		if (candidates.length === 0) return true
+		return candidates.every((value) =>
+			isInjectedAnonymousOrHtmlDocumentAttribution(value),
+		)
+	})
+}
+
+export function isInjectedPostUserDataFetchError(
+	event: SentryEventLike,
+): boolean {
+	if (
+		!eventMessages(event).some((message) =>
+			BROWSER_NETWORK_FETCH_TYPEERROR.test(message.trim()),
+		)
+	) {
+		return false
+	}
+
+	const frames = exceptionFrames(event)
+	if (frames.length === 0) return false
+	if (
+		!frames.some((frame) => POST_USER_DATA_FUNCTION.test(frame.function ?? ''))
+	) {
+		return false
+	}
+	return hasOnlyInjectedAnonymousOrHtmlDocumentStackFrames(event)
+}
+
+/**
  * React Router production `sanitizeError` replaces thrown Errors with
  * `new Error("Unexpected Server Error")` and clears `stack` before they reach
  * the client (see react-router `sanitizeError` / turbo-stream `SanitizedError`).
  * Sentry then gets a useless empty-stack client event (KCD-SE) while
  * `entry.server` `handleError` already has the real server error.
  *
- * Require the exact message plus no usable frames / falsy Error.stack — never
+ * Require the exact message plus no usable frames / falsy Error.stack â never
  * the phrase alone (an app could throw the same text with a real stack).
  */
 export function isReactRouterSanitizedServerErrorInstance(
@@ -945,7 +1013,7 @@ export function isReactRouterSanitizedServerError(
 	if (!messageMatches) return false
 
 	// Filename-less frames are usually unusable, but an explicit in-app frame
-	// still counts as attributed app code — keep those events for triage.
+	// still counts as attributed app code â keep those events for triage.
 	if (exceptionFrames(event).some((frame) => frame.inApp === true)) {
 		return false
 	}
@@ -1003,6 +1071,7 @@ export function shouldDropSentryEvent(
 	if (isBrokenClientFetchContractError(event, hint)) return true
 	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isInjectedInputOnchangeLocationError(event)) return true
+	if (isInjectedPostUserDataFetchError(event)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
