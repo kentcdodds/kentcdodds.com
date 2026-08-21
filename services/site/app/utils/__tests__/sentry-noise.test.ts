@@ -16,6 +16,7 @@ import {
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
 	isInjectedInputOnchangeLocationError,
+	isInjectedPostUserDataFetchError,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
@@ -343,7 +344,7 @@ test('filters React Firefox scheduler re-entrancy (KCD-YT)', () => {
 		}),
 	).toBe(false)
 
-	// In-app frames mean a real app re-entrancy bug — keep reporting.
+	// In-app frames mean a real app re-entrancy bug â keep reporting.
 	expect(
 		isReactSchedulerAlreadyWorkingNoise({
 			exception: {
@@ -425,7 +426,7 @@ test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)',
 	}
 	expect(isTranslatorDomMutationNoise(safariObjectNotFound)).toBe(true)
 
-	// Safari phrase alone (no react-dom stack) must not drop — too generic.
+	// Safari phrase alone (no react-dom stack) must not drop â too generic.
 	expect(
 		isTranslatorDomMutationNoise({
 			exception: {
@@ -439,7 +440,7 @@ test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)',
 		}),
 	).toBe(false)
 
-	// In-app frames mean a real app DOM bug — keep reporting.
+	// In-app frames mean a real app DOM bug â keep reporting.
 	expect(
 		isTranslatorDomMutationNoise({
 			exception: {
@@ -486,7 +487,7 @@ test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
 })
 
 test('filters React Router sanitized Unexpected Server Error (KCD-SE)', () => {
-	// Phrase alone must not be an ignoreErrors match — require empty stack.
+	// Phrase alone must not be an ignoreErrors match â require empty stack.
 	expect(matchesIgnoreError('Unexpected Server Error')).toBe(false)
 
 	const sanitized = new Error('Unexpected Server Error')
@@ -532,7 +533,7 @@ test('filters React Router sanitized Unexpected Server Error (KCD-SE)', () => {
 		}),
 	).toBe(false)
 
-	// Filename omitted but still marked in-app — retain for triage.
+	// Filename omitted but still marked in-app â retain for triage.
 	expect(
 		isReactRouterSanitizedServerError({
 			exception: {
@@ -781,6 +782,134 @@ test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => 
 					{
 						type: 'TypeError',
 						value: "Cannot read properties of undefined (reading 'location')",
+					},
+				],
+			},
+		}),
+	).toBe(false)
+})
+
+test('drops injected Object.postUserData Failed to fetch noise (KCD-10A)', () => {
+	const injectedEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/blog/aha-programming',
+								absPath: 'https://kentcdodds.com/blog/aha-programming',
+								function: 'e',
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: null,
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: 'Object.init',
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: 'Object.postUserData',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+
+	expect(isInjectedPostUserDataFetchError(injectedEvent)).toBe(true)
+	expect(shouldDropSentryEvent(injectedEvent)).toBe(true)
+
+	// Generic Failed to fetch without postUserData must still alert.
+	expect(
+		isInjectedPostUserDataFetchError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: 'Failed to fetch',
+						stacktrace: {
+							frames: [
+								{
+									filename: '/blog/aha-programming',
+									function: 'anonymous',
+									inApp: true,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// React Router SPA-nav Failed to fetch must still alert (KCD-XZ family).
+	expect(
+		isInjectedPostUserDataFetchError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: 'Failed to fetch (kentcdodds.com)',
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'../../../../../node_modules/react-router/dist/development/chunk.mjs',
+									function: 'fetchAndDecodeViaTurboStream',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// First-party /assets/ stacks must still alert even with postUserData.
+	expect(
+		isInjectedPostUserDataFetchError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: 'Failed to fetch',
+						stacktrace: {
+							frames: [
+								{
+									filename: '/assets/root-j32IyX5o.js',
+									function: 'Object.postUserData',
+									inApp: true,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// Message alone (no frames) must not drop.
+	expect(
+		isInjectedPostUserDataFetchError({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: 'Failed to fetch',
 					},
 				],
 			},
@@ -1152,7 +1281,7 @@ test('filters Firefox HTML-document-as-script illegal character (KCD-105)', () =
 		}),
 	).toBe(false)
 
-	// Message alone / no frames — not enough.
+	// Message alone / no frames â not enough.
 	expect(
 		isHtmlDocumentAsScriptNoise({
 			exception: {
