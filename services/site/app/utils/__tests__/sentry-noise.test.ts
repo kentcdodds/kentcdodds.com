@@ -344,7 +344,7 @@ test('filters React Firefox scheduler re-entrancy (KCD-YT)', () => {
 		}),
 	).toBe(false)
 
-	// In-app frames mean a real app re-entrancy bug â keep reporting.
+	// In-app frames mean a real app re-entrancy bug — keep reporting.
 	expect(
 		isReactSchedulerAlreadyWorkingNoise({
 			exception: {
@@ -426,7 +426,7 @@ test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)',
 	}
 	expect(isTranslatorDomMutationNoise(safariObjectNotFound)).toBe(true)
 
-	// Safari phrase alone (no react-dom stack) must not drop â too generic.
+	// Safari phrase alone (no react-dom stack) must not drop — too generic.
 	expect(
 		isTranslatorDomMutationNoise({
 			exception: {
@@ -440,7 +440,7 @@ test('filters translator DOM mutation NotFoundError (KCD-S5 / KCD-XQ / KCD-ZE)',
 		}),
 	).toBe(false)
 
-	// In-app frames mean a real app DOM bug â keep reporting.
+	// In-app frames mean a real app DOM bug — keep reporting.
 	expect(
 		isTranslatorDomMutationNoise({
 			exception: {
@@ -487,7 +487,7 @@ test('filters React Router single-fetch routeId skew (KCD-VP family)', () => {
 })
 
 test('filters React Router sanitized Unexpected Server Error (KCD-SE)', () => {
-	// Phrase alone must not be an ignoreErrors match â require empty stack.
+	// Phrase alone must not be an ignoreErrors match — require empty stack.
 	expect(matchesIgnoreError('Unexpected Server Error')).toBe(false)
 
 	const sanitized = new Error('Unexpected Server Error')
@@ -533,7 +533,7 @@ test('filters React Router sanitized Unexpected Server Error (KCD-SE)', () => {
 		}),
 	).toBe(false)
 
-	// Filename omitted but still marked in-app â retain for triage.
+	// Filename omitted but still marked in-app — retain for triage.
 	expect(
 		isReactRouterSanitizedServerError({
 			exception: {
@@ -1281,7 +1281,7 @@ test('filters Firefox HTML-document-as-script illegal character (KCD-105)', () =
 		}),
 	).toBe(false)
 
-	// Message alone / no frames â not enough.
+	// Message alone / no frames — not enough.
 	expect(
 		isHtmlDocumentAsScriptNoise({
 			exception: {
