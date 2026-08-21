@@ -912,6 +912,93 @@ export function isInjectedInputOnchangeLocationError(
 }
 
 /**
+ * Injected third-party scripts sometimes expose `Object.postUserData` /
+ * `Object.init` and reject with a browser network TypeError. Chrome attributes
+ * those stacks to `<anonymous>` plus the HTML document URL (page markup /
+ * inline RR bootstrap as source context) — never a first-party `/assets/`
+ * bundle (KCD-10A).
+ *
+ * Require the distinctive `postUserData` frame plus exclusively
+ * anonymous/unusable/HTML-document attribution. Do not drop generic
+ * `Failed to fetch` / SPA-nav network errors (KCD-XZ / KCD-QG family).
+ */
+const BROWSER_NETWORK_FETCH_TYPEERROR =
+	/^(?:Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?)(?:\s*\([^)]*\))?$/i
+
+const POST_USER_DATA_FUNCTION = /(?:^|\.)postUserData$/
+
+function isAnonymousStackFilename(value: string | null | undefined): boolean {
+	if (typeof value !== 'string') return false
+	const trimmed = value.trim()
+	return trimmed === '<anonymous>' || trimmed === 'anonymous'
+}
+
+function isInjectedAnonymousOrHtmlDocumentAttribution(
+	value: string | null | undefined,
+): boolean {
+	if (isUnattributedStackFilename(value)) return true
+	if (isAnonymousStackFilename(value)) return true
+	if (typeof value !== 'string') return false
+	return isHtmlDocumentScriptFilename(value)
+}
+
+export function hasOnlyInjectedAnonymousOrHtmlDocumentStackFrames(
+	event: SentryEventLike,
+): boolean {
+	const frames = exceptionFrames(event)
+	if (frames.length === 0) return true
+	return frames.every((frame) => {
+		const candidates = [frame.filename, frame.absPath].filter(
+			(value, index, values) => values.indexOf(value) === index,
+		)
+		if (candidates.length === 0) return true
+		return candidates.every((value) =>
+			isInjectedAnonymousOrHtmlDocumentAttribution(value),
+		)
+	})
+}
+
+function exceptionValueHasOnlyInjectedAttribution(
+	frames: NonNullable<
+		NonNullable<SentryExceptionValue['stacktrace']>['frames']
+	>,
+): boolean {
+	if (frames.length === 0) return true
+	return frames.every((frame) => {
+		const candidates = [frame.filename, frame.absPath].filter(
+			(value, index, values) => values.indexOf(value) === index,
+		)
+		if (candidates.length === 0) return true
+		return candidates.every((value) =>
+			isInjectedAnonymousOrHtmlDocumentAttribution(value),
+		)
+	})
+}
+
+export function isInjectedPostUserDataFetchError(
+	event: SentryEventLike,
+): boolean {
+	// Require the network TypeError message, postUserData frame, and injected
+	// attribution on the *same* exception value so chained events cannot mix
+	// signatures across values.
+	return (event.exception?.values ?? []).some((value) => {
+		const message = value.value?.trim() ?? ''
+		if (!BROWSER_NETWORK_FETCH_TYPEERROR.test(message)) return false
+		if (value.type != null && value.type !== 'TypeError') return false
+
+		const frames = value.stacktrace?.frames ?? []
+		if (frames.length === 0) return false
+		if (
+			!frames.some((frame) =>
+				POST_USER_DATA_FUNCTION.test(frame.function ?? ''),
+			)
+		) {
+			return false
+		}
+		return exceptionValueHasOnlyInjectedAttribution(frames)
+	})
+}
+/**
  * React Router production `sanitizeError` replaces thrown Errors with
  * `new Error("Unexpected Server Error")` and clears `stack` before they reach
  * the client (see react-router `sanitizeError` / turbo-stream `SanitizedError`).
@@ -1003,6 +1090,7 @@ export function shouldDropSentryEvent(
 	if (isBrokenClientFetchContractError(event, hint)) return true
 	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isInjectedInputOnchangeLocationError(event)) return true
+	if (isInjectedPostUserDataFetchError(event)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true

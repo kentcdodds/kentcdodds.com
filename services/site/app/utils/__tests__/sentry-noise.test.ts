@@ -16,6 +16,7 @@ import {
 	isHtmlPageTranslated,
 	isInjectedBlobAddListenerError,
 	isInjectedInputOnchangeLocationError,
+	isInjectedPostUserDataFetchError,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
@@ -788,6 +789,136 @@ test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => 
 	).toBe(false)
 })
 
+
+test('drops injected Object.postUserData Failed to fetch noise (KCD-10A)', () => {
+	const injectedEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/blog/aha-programming',
+								absPath: 'https://kentcdodds.com/blog/aha-programming',
+								function: 'e',
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: null,
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: 'Object.init',
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: 'Object.postUserData',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+
+	expect(isInjectedPostUserDataFetchError(injectedEvent)).toBe(true)
+	expect(shouldDropSentryEvent(injectedEvent)).toBe(true)
+
+	// Generic Failed to fetch without postUserData must still alert.
+	const genericFetchEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/blog/aha-programming',
+								function: 'anonymous',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedPostUserDataFetchError(genericFetchEvent)).toBe(false)
+	expect(shouldDropSentryEvent(genericFetchEvent)).toBe(false)
+
+	// React Router SPA-nav Failed to fetch must still alert (KCD-XZ family).
+	const reactRouterFetchEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../../../node_modules/react-router/dist/development/chunk.mjs',
+								function: 'fetchAndDecodeViaTurboStream',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedPostUserDataFetchError(reactRouterFetchEvent)).toBe(false)
+	expect(shouldDropSentryEvent(reactRouterFetchEvent)).toBe(false)
+
+	// First-party /assets/ stacks must still alert even with postUserData.
+	const firstPartyPostUserDataEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/assets/root-j32IyX5o.js',
+								function: 'Object.postUserData',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedPostUserDataFetchError(firstPartyPostUserDataEvent)).toBe(
+		false,
+	)
+	expect(shouldDropSentryEvent(firstPartyPostUserDataEvent)).toBe(false)
+
+	// Message alone (no frames) must not drop.
+	const messageOnlyFetchEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+				},
+			],
+		},
+	}
+	expect(isInjectedPostUserDataFetchError(messageOnlyFetchEvent)).toBe(false)
+	expect(shouldDropSentryEvent(messageOnlyFetchEvent)).toBe(false)
+})
 test('keeps Module load timeout filter (KCD-ZS / KCD-ZT)', () => {
 	expect(matchesIgnoreError('Module load timeout: m_1001')).toBe(true)
 	expect(matchesIgnoreError('Module load timeout: m_1004')).toBe(true)

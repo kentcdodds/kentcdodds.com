@@ -158,3 +158,10 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   `isInjectedInputOnchangeLocationError` (uses
   `hasOnlyUnusableOrHtmlDocumentStackFrames`); never drop the location
   TypeError from first-party `/assets/` bundles.
+- Client `TypeError: Failed to fetch` (also Safari `Load failed` / Firefox
+  `NetworkError when attempting to fetch resource`) with stack function
+  `Object.postUserData` / `postUserData` and exclusively `<anonymous>` or
+  HTML-document frames (page markup / inline bootstrap as source context) is
+  injected third-party script noise — not app or React Router SPA-nav fetch
+  failures (KCD-10A). Filter via `isInjectedPostUserDataFetchError`; never
+  broadly `ignoreErrors` generic network TypeErrors (KCD-XZ / KCD-QG).
