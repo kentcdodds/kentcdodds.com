@@ -20,7 +20,94 @@ import { getOptionalTeam } from './misc.ts'
 import {
 	isCloudflareEdgeRouteError,
 	isReactRouterSanitizedServerErrorInstance,
+	isReactRouterSpaNavNetworkError,
 } from './sentry-noise.ts'
+
+const SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX = 'kcd:spa-nav-network-reload:'
+
+function spaNavNetworkReloadStorageKey(locationKey: string): string {
+	return `${SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX}${locationKey}`
+}
+
+/**
+ * `window.sessionStorage` access itself can throw (SecurityError) before
+ * getItem/setItem — catch that and treat storage as unavailable.
+ */
+export function getSessionStorageSafely(
+	win: Pick<Window, 'sessionStorage'> | null | undefined = typeof window ===
+	'undefined'
+		? undefined
+		: window,
+): Storage | null {
+	if (win == null) return null
+	try {
+		return win.sessionStorage
+	} catch {
+		return null
+	}
+}
+
+export function getSpaNavNetworkLocationKey(
+	win: Pick<Window, 'location'> | null | undefined = typeof window ===
+	'undefined'
+		? undefined
+		: window,
+): string {
+	if (win == null) return ''
+	return `${win.location.pathname}${win.location.search}`
+}
+
+/**
+ * One-shot document reload for React Router SPA-nav network TypeErrors
+ * (KCD-XZ / KCD-QG / KCD-10B). Returns whether a reload should run; marks the
+ * current location so a failed second pass does not loop.
+ *
+ * If sessionStorage is unavailable, returns false (no reload) so a missing
+ * persistence guard cannot loop document reloads — fall through to the normal
+ * error UI instead.
+ */
+export function shouldHardReloadSpaNavNetworkError(
+	error: unknown,
+	storage: Pick<Storage, 'getItem' | 'setItem'> | null,
+	locationKey: string,
+): boolean {
+	if (storage == null) return false
+	if (!isReactRouterSpaNavNetworkError(error)) return false
+	const key = spaNavNetworkReloadStorageKey(locationKey)
+	try {
+		if (storage.getItem(key) === '1') return false
+		storage.setItem(key, '1')
+		return true
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Show the brief "Reconnecting…" boundary only when a hard-reload will still
+ * be attempted. After the one-shot marker is set (or when storage reads/writes
+ * fail), fall through to the normal error UI instead of a stuck reconnecting
+ * state. Probes `setItem` so a read-only / write-failing store does not leave
+ * the UI on “Reconnecting…” with no reload.
+ */
+export function shouldShowSpaNavNetworkReconnecting(
+	error: unknown,
+	storage: Pick<Storage, 'getItem' | 'setItem'> | null,
+	locationKey: string,
+): boolean {
+	if (storage == null) return false
+	if (!isReactRouterSpaNavNetworkError(error)) return false
+	const key = spaNavNetworkReloadStorageKey(locationKey)
+	try {
+		if (storage.getItem(key) === '1') return false
+		// Prove writes work before promising a reconnecting UI. A successful
+		// getItem alone is not enough — setItem can still throw (Bugbot).
+		storage.setItem('kcd:spa-nav-network-write-probe', '1')
+		return true
+	} catch {
+		return false
+	}
+}
 
 export * from './misc.ts'
 
@@ -227,6 +314,24 @@ export function useDoubleCheck() {
 
 export function useCapturedRouteError() {
 	const error = useRouteError()
+
+	// SPA-nav browser network TypeError (idle tab / flaky mobile): document
+	// reload usually succeeds where the client `.data` / `__manifest` fetch
+	// did not (KCD-XZ / KCD-QG / KCD-10B). Guard against reload loops.
+	React.useEffect(() => {
+		if (typeof window === 'undefined') return
+		if (
+			!shouldHardReloadSpaNavNetworkError(
+				error,
+				getSessionStorageSafely(window),
+				getSpaNavNetworkLocationKey(window),
+			)
+		) {
+			return
+		}
+		window.location.reload()
+	}, [error])
+
 	if (isRouteErrorResponse(error)) {
 		if (error.status < 500) return error
 
@@ -248,7 +353,12 @@ export function useCapturedRouteError() {
 
 	// React Router production sanitizeError — empty-stack client echo of a
 	// server Error already reported via entry.server handleError (KCD-SE).
-	if (!isReactRouterSanitizedServerErrorInstance(error)) {
+	// SPA-nav network TypeErrors are recovered via hard-reload above — not
+	// app throws (KCD-XZ / KCD-QG / KCD-10B).
+	if (
+		!isReactRouterSanitizedServerErrorInstance(error) &&
+		!isReactRouterSpaNavNetworkError(error)
+	) {
 		Sentry.captureException(error)
 	}
 	return error

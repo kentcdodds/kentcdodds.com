@@ -5,6 +5,9 @@ import {
 } from 'react-router'
 import {
 	getErrorMessage,
+	getSessionStorageSafely,
+	getSpaNavNetworkLocationKey,
+	shouldShowSpaNavNetworkReconnecting,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
 
@@ -28,6 +31,21 @@ export function GeneralErrorBoundary({
 }) {
 	const error = useCapturedRouteError()
 	const params = useParams()
+
+	if (
+		typeof window !== 'undefined' &&
+		shouldShowSpaNavNetworkReconnecting(
+			error,
+			getSessionStorageSafely(window),
+			getSpaNavNetworkLocationKey(window),
+		)
+	) {
+		return (
+			<div className="container mx-auto flex items-center justify-center p-4 lg:p-20">
+				<p>Reconnecting…</p>
+			</div>
+		)
+	}
 
 	if (typeof document !== 'undefined') {
 		console.error(error)

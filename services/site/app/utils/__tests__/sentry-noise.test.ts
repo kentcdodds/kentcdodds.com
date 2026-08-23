@@ -23,6 +23,7 @@ import {
 	isReactRouterEdgeHttpStatusError,
 	isReactRouterSanitizedServerError,
 	isReactRouterSanitizedServerErrorInstance,
+	isReactRouterSpaNavNetworkError,
 	isReactSchedulerAlreadyWorkingNoise,
 	isTranslatorDomMutationNoise,
 	isWalletUserRejection,
@@ -789,7 +790,6 @@ test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => 
 	).toBe(false)
 })
 
-
 test('drops injected Object.postUserData Failed to fetch noise (KCD-10A)', () => {
 	const injectedEvent = {
 		exception: {
@@ -930,6 +930,38 @@ test('does not broadly ignore generic Failed to fetch', () => {
 	expect(
 		matchesIgnoreError('NetworkError when attempting to fetch resource.'),
 	).toBe(false)
+})
+
+test('detects React Router SPA-nav browser network TypeErrors (KCD-10B)', () => {
+	const spaNavError = new TypeError('Failed to fetch (kentcdodds.com)')
+	spaNavError.stack = `TypeError: Failed to fetch (kentcdodds.com)
+    at fetchAndApplyManifestPatches (react-router/dist/chunk.js:1:1)
+    at discoverRoutes (react-router/dist/chunk.js:1:1)`
+	expect(isReactRouterSpaNavNetworkError(spaNavError)).toBe(true)
+
+	const safariLoadFailed = new TypeError('Load failed (kentcdodds.com)')
+	safariLoadFailed.stack = `TypeError: Load failed (kentcdodds.com)
+    at fetchAndDecodeViaTurboStream (react-router/dist/chunk.js:1:1)`
+	expect(isReactRouterSpaNavNetworkError(safariLoadFailed)).toBe(true)
+
+	const firefoxNetworkError = new TypeError(
+		'NetworkError when attempting to fetch resource.',
+	)
+	firefoxNetworkError.stack = `TypeError: NetworkError when attempting to fetch resource.
+    at fetchAndDecodeViaTurboStream (react-router/dist/chunk.js:1:1)`
+	expect(isReactRouterSpaNavNetworkError(firefoxNetworkError)).toBe(true)
+
+	// Same message without a React Router SPA-nav stack must not match.
+	const bareFetch = new TypeError('Failed to fetch')
+	bareFetch.stack = `TypeError: Failed to fetch\n    at doStuff (app.js:1:1)`
+	expect(isReactRouterSpaNavNetworkError(bareFetch)).toBe(false)
+
+	// Non-TypeError must not match.
+	const plainError = new Error('Failed to fetch')
+	plainError.stack = `Error: Failed to fetch\n    at fetchAndDecodeViaTurboStream (x:1:1)`
+	expect(isReactRouterSpaNavNetworkError(plainError)).toBe(false)
+
+	expect(isReactRouterSpaNavNetworkError('Failed to fetch')).toBe(false)
 })
 
 test('filters Cloudflare edge RouteErrorResponse HTML (KCD-VH family)', () => {
