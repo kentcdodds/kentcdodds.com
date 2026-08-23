@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 const { mockCaptureException, mockIsRouteErrorResponse, mockUseRouteError } =
@@ -25,11 +25,24 @@ vi.mock('react-router', async () => {
 	}
 })
 
-import { useCapturedRouteError } from '../misc-react.tsx'
+import {
+	shouldHardReloadSpaNavNetworkError,
+	useCapturedRouteError,
+} from '../misc-react.tsx'
 
 function TestComponent() {
 	useCapturedRouteError()
 	return <div>hook called</div>
+}
+
+function spaNavNetworkTypeError(
+	message = 'Failed to fetch (kentcdodds.com)',
+): TypeError {
+	const error = new TypeError(message)
+	error.stack = `${error.name}: ${message}
+    at fetchAndApplyManifestPatches (react-router/dist/chunk.js:1:1)
+    at discoverRoutes (react-router/dist/chunk.js:1:1)`
+	return error
 }
 
 describe('useCapturedRouteError', () => {
@@ -123,4 +136,49 @@ describe('useCapturedRouteError', () => {
 
 		expect(mockCaptureException).not.toHaveBeenCalled()
 	})
+
+	it('does not capture React Router SPA-nav network TypeErrors (KCD-10B)', async () => {
+		const spaNavError = spaNavNetworkTypeError()
+		mockUseRouteError.mockReturnValue(spaNavError)
+		mockIsRouteErrorResponse.mockReturnValue(false)
+
+		// Pre-mark this location so the hard-reload effect does not call
+		// location.reload() (non-configurable in Playwright).
+		const locationKey = `${window.location.pathname}${window.location.search}`
+		window.sessionStorage.setItem(
+			`kcd:spa-nav-network-reload:${locationKey}`,
+			'1',
+		)
+
+		await render(<TestComponent />)
+
+		expect(mockCaptureException).not.toHaveBeenCalled()
+	})
+})
+
+test('shouldHardReloadSpaNavNetworkError is one-shot per location', () => {
+	const storage = new Map<string, string>()
+	const sessionStorageLike = {
+		getItem: (key: string) => storage.get(key) ?? null,
+		setItem: (key: string, value: string) => {
+			storage.set(key, value)
+		},
+	}
+	const error = spaNavNetworkTypeError('Load failed')
+
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog/post'),
+	).toBe(true)
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog/post'),
+	).toBe(false)
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/about'),
+	).toBe(true)
+
+	const unrelated = new TypeError('Failed to fetch')
+	unrelated.stack = 'TypeError: Failed to fetch\n    at app.js:1:1'
+	expect(
+		shouldHardReloadSpaNavNetworkError(unrelated, sessionStorageLike, '/other'),
+	).toBe(false)
 })

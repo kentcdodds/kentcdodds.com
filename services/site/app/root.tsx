@@ -26,6 +26,7 @@ import {
 	getUrl,
 	removeTrailingSlash,
 } from '#app/utils/misc-react.tsx'
+import { isReactRouterSpaNavNetworkError } from '#app/utils/sentry-noise.ts'
 import { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
@@ -109,10 +110,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const requestPath = new URL(request.url).pathname
 	const session = await getSession(request)
 	const [user, clientSession, loginInfoSession] = await Promise.all([
-			session.getUser({ timings }),
-			getClientSession(request, session.getUser({ timings })),
-			getLoginInfoSession(request),
-		])
+		session.getUser({ timings }),
+		getClientSession(request, session.getUser({ timings })),
+		getLoginInfoSession(request),
+	])
 
 	const randomFooterImageKeys = Object.keys(illustrationImages)
 	const randomFooterImageKey = randomFooterImageKeys[
@@ -464,6 +465,15 @@ export function ErrorBoundary() {
 			)
 		}
 		throw new Error(`Unhandled error: ${error.status}`)
+	}
+
+	// SPA-nav network TypeError: useCapturedRouteError hard-reloads once.
+	if (isReactRouterSpaNavNetworkError(error)) {
+		return (
+			<ErrorDoc title="Reconnecting">
+				<p className="text-primary p-8 text-center">Reconnecting…</p>
+			</ErrorDoc>
+		)
 	}
 
 	console.error(error)

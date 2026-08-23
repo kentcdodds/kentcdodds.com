@@ -898,7 +898,9 @@ export function isInjectedInputOnchangeLocationError(
 	event: SentryEventLike,
 ): boolean {
 	if (
-		!eventMessages(event).some((message) => UNDEFINED_LOCATION_PROP.test(message))
+		!eventMessages(event).some((message) =>
+			UNDEFINED_LOCATION_PROP.test(message),
+		)
 	) {
 		return false
 	}
@@ -925,7 +927,30 @@ export function isInjectedInputOnchangeLocationError(
 const BROWSER_NETWORK_FETCH_TYPEERROR =
 	/^(?:Failed to fetch|Load failed|NetworkError when attempting to fetch resource\.?)(?:\s*\([^)]*\))?$/i
 
+/**
+ * React Router client data/manifest fetches that fail at the browser network
+ * layer (no HTTP status) during SPA navigation / revalidation (KCD-XZ /
+ * KCD-QG / KCD-10B). Require a RR stack signature so a first-party
+ * `TypeError: Failed to fetch` still alerts.
+ */
+const REACT_ROUTER_SPA_NAV_NETWORK_STACK =
+	/fetchAndApplyManifestPatches|fetchAndDecodeViaTurboStream|Failed to fetch manifest patches/i
+
 const POST_USER_DATA_FUNCTION = /(?:^|\.)postUserData$/
+
+/**
+ * Browser network-layer TypeError during React Router SPA navigation.
+ * Live endpoints often still return 200; do not broadly `ignoreErrors` —
+ * prefer a one-shot document hard-reload in the route error boundary.
+ */
+export function isReactRouterSpaNavNetworkError(error: unknown): boolean {
+	if (!(error instanceof TypeError)) return false
+	if (!BROWSER_NETWORK_FETCH_TYPEERROR.test(error.message.trim())) {
+		return false
+	}
+	const stack = error.stack ?? ''
+	return REACT_ROUTER_SPA_NAV_NETWORK_STACK.test(stack)
+}
 
 function isAnonymousStackFilename(value: string | null | undefined): boolean {
 	if (typeof value !== 'string') return false

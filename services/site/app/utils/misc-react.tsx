@@ -20,7 +20,31 @@ import { getOptionalTeam } from './misc.ts'
 import {
 	isCloudflareEdgeRouteError,
 	isReactRouterSanitizedServerErrorInstance,
+	isReactRouterSpaNavNetworkError,
 } from './sentry-noise.ts'
+
+const SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX = 'kcd:spa-nav-network-reload:'
+
+/**
+ * One-shot document reload for React Router SPA-nav network TypeErrors
+ * (KCD-XZ / KCD-QG / KCD-10B). Returns whether a reload should run; marks the
+ * current location so a failed second pass does not loop.
+ */
+export function shouldHardReloadSpaNavNetworkError(
+	error: unknown,
+	storage: Pick<Storage, 'getItem' | 'setItem'>,
+	locationKey: string,
+): boolean {
+	if (!isReactRouterSpaNavNetworkError(error)) return false
+	const key = `${SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX}${locationKey}`
+	try {
+		if (storage.getItem(key) === '1') return false
+		storage.setItem(key, '1')
+	} catch {
+		// sessionStorage may be blocked (private mode / iframe); still reload once.
+	}
+	return true
+}
 
 export * from './misc.ts'
 
@@ -227,6 +251,24 @@ export function useDoubleCheck() {
 
 export function useCapturedRouteError() {
 	const error = useRouteError()
+
+	// SPA-nav browser network TypeError (idle tab / flaky mobile): document
+	// reload usually succeeds where the client `.data` / `__manifest` fetch
+	// did not (KCD-XZ / KCD-QG / KCD-10B). Guard against reload loops.
+	React.useEffect(() => {
+		if (typeof window === 'undefined') return
+		if (
+			!shouldHardReloadSpaNavNetworkError(
+				error,
+				window.sessionStorage,
+				`${window.location.pathname}${window.location.search}`,
+			)
+		) {
+			return
+		}
+		window.location.reload()
+	}, [error])
+
 	if (isRouteErrorResponse(error)) {
 		if (error.status < 500) return error
 
@@ -248,7 +290,12 @@ export function useCapturedRouteError() {
 
 	// React Router production sanitizeError — empty-stack client echo of a
 	// server Error already reported via entry.server handleError (KCD-SE).
-	if (!isReactRouterSanitizedServerErrorInstance(error)) {
+	// SPA-nav network TypeErrors are recovered via hard-reload above — not
+	// app throws (KCD-XZ / KCD-QG / KCD-10B).
+	if (
+		!isReactRouterSanitizedServerErrorInstance(error) &&
+		!isReactRouterSpaNavNetworkError(error)
+	) {
 		Sentry.captureException(error)
 	}
 	return error

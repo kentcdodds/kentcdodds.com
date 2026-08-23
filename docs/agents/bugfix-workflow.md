@@ -35,8 +35,10 @@ fetch resource` / Safari `Load failed` with React Router stacks
   failing `.data` / `__manifest` breadcrumb **without** `status_code` are
   browser network-layer failures during SPA nav (idle tab, offline, flaky
   mobile) — not an app throw. Live endpoints often still return 200. Do not
-  broadly `ignoreErrors` these (KCD-XZ / KCD-QG family); optional product UX is
-  a hard-reload fallback on nav TypeError.
+  broadly `ignoreErrors` these (KCD-XZ / KCD-QG / KCD-10B family). Product UX:
+  `useCapturedRouteError` hard-reloads the document once per location
+  (`isReactRouterSpaNavNetworkError` + `shouldHardReloadSpaNavNetworkError`)
+  and skips Sentry capture for that signature.
 - Blog `markAsRead()` (`routes/action/mark-as-read.tsx`) is best-effort read
   tracking. Uncaught `fetch` rejections from that path are app noise: keep the
   catch inside `markAsRead` (KCD-FY / KCD-1R / KCD-ZW / KCD-WV), do not filter

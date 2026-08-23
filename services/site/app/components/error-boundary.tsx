@@ -7,6 +7,7 @@ import {
 	getErrorMessage,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
+import { isReactRouterSpaNavNetworkError } from '#app/utils/sentry-noise.ts'
 
 type StatusHandler = (info: {
 	error: ErrorResponse
@@ -28,6 +29,14 @@ export function GeneralErrorBoundary({
 }) {
 	const error = useCapturedRouteError()
 	const params = useParams()
+
+	if (isReactRouterSpaNavNetworkError(error)) {
+		return (
+			<div className="container mx-auto flex items-center justify-center p-4 lg:p-20">
+				<p>Reconnecting…</p>
+			</div>
+		)
+	}
 
 	if (typeof document !== 'undefined') {
 		console.error(error)
