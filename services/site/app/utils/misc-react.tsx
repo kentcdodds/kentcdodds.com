@@ -56,18 +56,24 @@ export function shouldHardReloadSpaNavNetworkError(
 
 /**
  * Show the brief "Reconnecting…" boundary only when a hard-reload will still
- * be attempted. After the one-shot marker is set (or when storage is blocked),
- * fall through to the normal error UI instead of a stuck reconnecting state.
+ * be attempted. After the one-shot marker is set (or when storage reads/writes
+ * fail), fall through to the normal error UI instead of a stuck reconnecting
+ * state. Probes `setItem` so a read-only / write-failing store does not leave
+ * the UI on “Reconnecting…” with no reload.
  */
 export function shouldShowSpaNavNetworkReconnecting(
 	error: unknown,
-	storage: Pick<Storage, 'getItem'>,
+	storage: Pick<Storage, 'getItem' | 'setItem'>,
 	locationKey: string,
 ): boolean {
 	if (!isReactRouterSpaNavNetworkError(error)) return false
 	const key = spaNavNetworkReloadStorageKey(locationKey)
 	try {
-		return storage.getItem(key) !== '1'
+		if (storage.getItem(key) === '1') return false
+		// Prove writes work before promising a reconnecting UI. A successful
+		// getItem alone is not enough — setItem can still throw (Bugbot).
+		storage.setItem('kcd:spa-nav-network-write-probe', '1')
+		return true
 	} catch {
 		return false
 	}

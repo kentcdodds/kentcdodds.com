@@ -215,3 +215,19 @@ test('shouldHardReloadSpaNavNetworkError skips reload when storage throws', () =
 		shouldShowSpaNavNetworkReconnecting(error, brokenStorage, '/blog'),
 	).toBe(false)
 })
+
+test('shouldShowSpaNavNetworkReconnecting is false when setItem throws', () => {
+	const error = spaNavNetworkTypeError('Failed to fetch')
+	const readOkWriteFails = {
+		getItem: () => null,
+		setItem: () => {
+			throw new Error('quota')
+		},
+	}
+	expect(
+		shouldShowSpaNavNetworkReconnecting(error, readOkWriteFails, '/blog'),
+	).toBe(false)
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, readOkWriteFails, '/blog'),
+	).toBe(false)
+})
