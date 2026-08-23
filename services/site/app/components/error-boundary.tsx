@@ -5,6 +5,8 @@ import {
 } from 'react-router'
 import {
 	getErrorMessage,
+	getSessionStorageSafely,
+	getSpaNavNetworkLocationKey,
 	shouldShowSpaNavNetworkReconnecting,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
@@ -34,8 +36,8 @@ export function GeneralErrorBoundary({
 		typeof window !== 'undefined' &&
 		shouldShowSpaNavNetworkReconnecting(
 			error,
-			window.sessionStorage,
-			`${window.location.pathname}${window.location.search}`,
+			getSessionStorageSafely(window),
+			getSpaNavNetworkLocationKey(window),
 		)
 	) {
 		return (

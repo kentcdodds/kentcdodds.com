@@ -25,6 +25,8 @@ import {
 	getDomainUrl,
 	getUrl,
 	removeTrailingSlash,
+	getSessionStorageSafely,
+	getSpaNavNetworkLocationKey,
 	shouldShowSpaNavNetworkReconnecting,
 } from '#app/utils/misc-react.tsx'
 import { type Route } from './+types/root'
@@ -472,8 +474,8 @@ export function ErrorBoundary() {
 		typeof window !== 'undefined' &&
 		shouldShowSpaNavNetworkReconnecting(
 			error,
-			window.sessionStorage,
-			`${window.location.pathname}${window.location.search}`,
+			getSessionStorageSafely(window),
+			getSpaNavNetworkLocationKey(window),
 		)
 	) {
 		return (

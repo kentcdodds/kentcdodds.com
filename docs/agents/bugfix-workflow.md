@@ -39,8 +39,10 @@ fetch resource` / Safari `Load failed` with React Router stacks
   `useCapturedRouteError` hard-reloads the document once per location
   (`isReactRouterSpaNavNetworkError` + `shouldHardReloadSpaNavNetworkError`)
   and skips Sentry capture for that signature. If `sessionStorage` is
-  unavailable, skip the hard-reload (avoid loops) and show the normal error
-  UI; `shouldShowSpaNavNetworkReconnecting` only renders “Reconnecting…” when
+  unavailable (including when accessing `window.sessionStorage` itself throws),
+  skip the hard-reload (avoid loops) and show the normal error UI;
+  `getSessionStorageSafely` returns null in that case.
+  `shouldShowSpaNavNetworkReconnecting` only renders “Reconnecting…” when
   storage reads show the one-shot is unused **and** a `setItem` write probe
   succeeds (so a write failure cannot leave a stuck reconnecting state).
 - Blog `markAsRead()` (`routes/action/mark-as-read.tsx`) is best-effort read

@@ -30,6 +30,34 @@ function spaNavNetworkReloadStorageKey(locationKey: string): string {
 }
 
 /**
+ * `window.sessionStorage` access itself can throw (SecurityError) before
+ * getItem/setItem — catch that and treat storage as unavailable.
+ */
+export function getSessionStorageSafely(
+	win: Pick<Window, 'sessionStorage'> | null | undefined = typeof window ===
+	'undefined'
+		? undefined
+		: window,
+): Storage | null {
+	if (win == null) return null
+	try {
+		return win.sessionStorage
+	} catch {
+		return null
+	}
+}
+
+export function getSpaNavNetworkLocationKey(
+	win: Pick<Window, 'location'> | null | undefined = typeof window ===
+	'undefined'
+		? undefined
+		: window,
+): string {
+	if (win == null) return ''
+	return `${win.location.pathname}${win.location.search}`
+}
+
+/**
  * One-shot document reload for React Router SPA-nav network TypeErrors
  * (KCD-XZ / KCD-QG / KCD-10B). Returns whether a reload should run; marks the
  * current location so a failed second pass does not loop.
@@ -40,9 +68,10 @@ function spaNavNetworkReloadStorageKey(locationKey: string): string {
  */
 export function shouldHardReloadSpaNavNetworkError(
 	error: unknown,
-	storage: Pick<Storage, 'getItem' | 'setItem'>,
+	storage: Pick<Storage, 'getItem' | 'setItem'> | null,
 	locationKey: string,
 ): boolean {
+	if (storage == null) return false
 	if (!isReactRouterSpaNavNetworkError(error)) return false
 	const key = spaNavNetworkReloadStorageKey(locationKey)
 	try {
@@ -63,9 +92,10 @@ export function shouldHardReloadSpaNavNetworkError(
  */
 export function shouldShowSpaNavNetworkReconnecting(
 	error: unknown,
-	storage: Pick<Storage, 'getItem' | 'setItem'>,
+	storage: Pick<Storage, 'getItem' | 'setItem'> | null,
 	locationKey: string,
 ): boolean {
+	if (storage == null) return false
 	if (!isReactRouterSpaNavNetworkError(error)) return false
 	const key = spaNavNetworkReloadStorageKey(locationKey)
 	try {
@@ -293,8 +323,8 @@ export function useCapturedRouteError() {
 		if (
 			!shouldHardReloadSpaNavNetworkError(
 				error,
-				window.sessionStorage,
-				`${window.location.pathname}${window.location.search}`,
+				getSessionStorageSafely(window),
+				getSpaNavNetworkLocationKey(window),
 			)
 		) {
 			return

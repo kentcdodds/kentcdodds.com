@@ -26,6 +26,7 @@ vi.mock('react-router', async () => {
 })
 
 import {
+	getSessionStorageSafely,
 	shouldHardReloadSpaNavNetworkError,
 	shouldShowSpaNavNetworkReconnecting,
 	useCapturedRouteError,
@@ -229,5 +230,29 @@ test('shouldShowSpaNavNetworkReconnecting is false when setItem throws', () => {
 	).toBe(false)
 	expect(
 		shouldHardReloadSpaNavNetworkError(error, readOkWriteFails, '/blog'),
+	).toBe(false)
+})
+
+test('getSessionStorageSafely returns null when the getter throws', () => {
+	const throwingWindow = {
+		get sessionStorage(): Storage {
+			throw new Error('SecurityError')
+		},
+	}
+	expect(getSessionStorageSafely(throwingWindow)).toBe(null)
+	const error = spaNavNetworkTypeError('Failed to fetch')
+	expect(
+		shouldHardReloadSpaNavNetworkError(
+			error,
+			getSessionStorageSafely(throwingWindow),
+			'/blog',
+		),
+	).toBe(false)
+	expect(
+		shouldShowSpaNavNetworkReconnecting(
+			error,
+			getSessionStorageSafely(throwingWindow),
+			'/blog',
+		),
 	).toBe(false)
 })
