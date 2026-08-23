@@ -25,10 +25,18 @@ import {
 
 const SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX = 'kcd:spa-nav-network-reload:'
 
+function spaNavNetworkReloadStorageKey(locationKey: string): string {
+	return `${SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX}${locationKey}`
+}
+
 /**
  * One-shot document reload for React Router SPA-nav network TypeErrors
  * (KCD-XZ / KCD-QG / KCD-10B). Returns whether a reload should run; marks the
  * current location so a failed second pass does not loop.
+ *
+ * If sessionStorage is unavailable, returns false (no reload) so a missing
+ * persistence guard cannot loop document reloads — fall through to the normal
+ * error UI instead.
  */
 export function shouldHardReloadSpaNavNetworkError(
 	error: unknown,
@@ -36,14 +44,33 @@ export function shouldHardReloadSpaNavNetworkError(
 	locationKey: string,
 ): boolean {
 	if (!isReactRouterSpaNavNetworkError(error)) return false
-	const key = `${SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX}${locationKey}`
+	const key = spaNavNetworkReloadStorageKey(locationKey)
 	try {
 		if (storage.getItem(key) === '1') return false
 		storage.setItem(key, '1')
+		return true
 	} catch {
-		// sessionStorage may be blocked (private mode / iframe); still reload once.
+		return false
 	}
-	return true
+}
+
+/**
+ * Show the brief "Reconnecting…" boundary only when a hard-reload will still
+ * be attempted. After the one-shot marker is set (or when storage is blocked),
+ * fall through to the normal error UI instead of a stuck reconnecting state.
+ */
+export function shouldShowSpaNavNetworkReconnecting(
+	error: unknown,
+	storage: Pick<Storage, 'getItem'>,
+	locationKey: string,
+): boolean {
+	if (!isReactRouterSpaNavNetworkError(error)) return false
+	const key = spaNavNetworkReloadStorageKey(locationKey)
+	try {
+		return storage.getItem(key) !== '1'
+	} catch {
+		return false
+	}
 }
 
 export * from './misc.ts'

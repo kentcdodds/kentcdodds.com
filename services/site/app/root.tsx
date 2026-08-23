@@ -25,8 +25,8 @@ import {
 	getDomainUrl,
 	getUrl,
 	removeTrailingSlash,
+	shouldShowSpaNavNetworkReconnecting,
 } from '#app/utils/misc-react.tsx'
-import { isReactRouterSpaNavNetworkError } from '#app/utils/sentry-noise.ts'
 import { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
@@ -468,7 +468,14 @@ export function ErrorBoundary() {
 	}
 
 	// SPA-nav network TypeError: useCapturedRouteError hard-reloads once.
-	if (isReactRouterSpaNavNetworkError(error)) {
+	if (
+		typeof window !== 'undefined' &&
+		shouldShowSpaNavNetworkReconnecting(
+			error,
+			window.sessionStorage,
+			`${window.location.pathname}${window.location.search}`,
+		)
+	) {
 		return (
 			<ErrorDoc title="Reconnecting">
 				<p className="text-primary p-8 text-center">Reconnecting…</p>

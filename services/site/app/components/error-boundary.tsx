@@ -5,9 +5,9 @@ import {
 } from 'react-router'
 import {
 	getErrorMessage,
+	shouldShowSpaNavNetworkReconnecting,
 	useCapturedRouteError,
 } from '#app/utils/misc-react.tsx'
-import { isReactRouterSpaNavNetworkError } from '#app/utils/sentry-noise.ts'
 
 type StatusHandler = (info: {
 	error: ErrorResponse
@@ -30,7 +30,14 @@ export function GeneralErrorBoundary({
 	const error = useCapturedRouteError()
 	const params = useParams()
 
-	if (isReactRouterSpaNavNetworkError(error)) {
+	if (
+		typeof window !== 'undefined' &&
+		shouldShowSpaNavNetworkReconnecting(
+			error,
+			window.sessionStorage,
+			`${window.location.pathname}${window.location.search}`,
+		)
+	) {
 		return (
 			<div className="container mx-auto flex items-center justify-center p-4 lg:p-20">
 				<p>Reconnecting…</p>

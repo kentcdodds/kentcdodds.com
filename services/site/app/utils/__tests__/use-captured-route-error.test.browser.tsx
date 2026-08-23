@@ -27,6 +27,7 @@ vi.mock('react-router', async () => {
 
 import {
 	shouldHardReloadSpaNavNetworkError,
+	shouldShowSpaNavNetworkReconnecting,
 	useCapturedRouteError,
 } from '../misc-react.tsx'
 
@@ -167,8 +168,22 @@ test('shouldHardReloadSpaNavNetworkError is one-shot per location', () => {
 	const error = spaNavNetworkTypeError('Load failed')
 
 	expect(
+		shouldShowSpaNavNetworkReconnecting(
+			error,
+			sessionStorageLike,
+			'/blog/post',
+		),
+	).toBe(true)
+	expect(
 		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog/post'),
 	).toBe(true)
+	expect(
+		shouldShowSpaNavNetworkReconnecting(
+			error,
+			sessionStorageLike,
+			'/blog/post',
+		),
+	).toBe(false)
 	expect(
 		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog/post'),
 	).toBe(false)
@@ -180,5 +195,23 @@ test('shouldHardReloadSpaNavNetworkError is one-shot per location', () => {
 	unrelated.stack = 'TypeError: Failed to fetch\n    at app.js:1:1'
 	expect(
 		shouldHardReloadSpaNavNetworkError(unrelated, sessionStorageLike, '/other'),
+	).toBe(false)
+})
+
+test('shouldHardReloadSpaNavNetworkError skips reload when storage throws', () => {
+	const error = spaNavNetworkTypeError('Failed to fetch')
+	const brokenStorage = {
+		getItem: () => {
+			throw new Error('blocked')
+		},
+		setItem: () => {
+			throw new Error('blocked')
+		},
+	}
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, brokenStorage, '/blog'),
+	).toBe(false)
+	expect(
+		shouldShowSpaNavNetworkReconnecting(error, brokenStorage, '/blog'),
 	).toBe(false)
 })
