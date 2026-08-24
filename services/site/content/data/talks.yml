@@ -2,8 +2,6 @@
   deliveries:
     - event: '[Nerdearla Argentina 2026](https://nerdearla.com/en/argentina/)'
       date: 2026-09-24
-    - event: '[React Summit US](https://reactsummit.us/)'
-      date: 2026-11-17
     - event: '[React Summit Asia](https://reactsummit.asia/)'
       date: 2027-04-15
     - event: '[AI Coding Summit Asia](https://aicodingsummit.com/asia/)'
@@ -13,6 +11,8 @@
   deliveries:
     - event: '[AI DevCraft](https://ai-devcraft.com/)'
       date: 2026-10-27
+    - event: '[All Things Open](https://allthingsopen.org/)'
+      date: 2026-10-19
   tags:
     - ai
     - agent
@@ -87,6 +87,10 @@
       date: 2026-07-09
     - event: '[Laracon 2026](https://laracon.us/)'
       date: 2026-07-28
+    - event: '[All Things Open](https://allthingsopen.org/)'
+      date: 2026-10-19
+    - event: '[React Summit US](https://reactsummit.us/)'
+      date: 2026-11-17
   tags:
     - ai
     - product engineering
