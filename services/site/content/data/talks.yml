@@ -87,6 +87,7 @@
       date: 2026-07-09
     - event: '[Laracon 2026](https://laracon.us/)'
       date: 2026-07-28
+      recording: https://www.youtube.com/watch?v=zZPV_ggx5F8&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
     - event: '[All Things Open](https://allthingsopen.org/)'
       date: 2026-10-19
     - event: '[React Summit US](https://reactsummit.us/)'
