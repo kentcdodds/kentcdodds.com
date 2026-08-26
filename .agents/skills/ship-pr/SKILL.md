@@ -32,14 +32,29 @@ without `gh`, and `request` / `graphql` (`kody:@kentcdodds/github/request`,
 
 ## Done → Discord
 
-When finished (whether merged or not), send a discord summary with relevant links.
+Always summarize (merged or not) by calling
+`kody:@kentcdodds/discord/send-shipped-pr` with structured fields. Do **not**
+use raw `post-message` and do **not** compute or guess token cost — the export
+fetches the billed Cursor Cloud Agent usage and formats the cost line.
+
+**agentId (required):**
+- In a Cursor Cloud Agent VM, read it from the metadata socket:
+  curl -fsS --unix-socket "${CURSOR_AGENT_SOCKET:-/run/cursor/api.sock}" http://cursor-agent/v1/meta-data/agent/id
+- Otherwise pass the `bc-` id from the agent URL you were launched as
+  (https://cursor.com/agents/{id}).
 
 ```javascript
-import postMessage from 'kody:@kentcdodds/discord/post-message'
+import sendShippedPr from 'kody:@kentcdodds/discord/send-shipped-pr'
 
 export default async function main() {
-	const content = ` ... `
-	const shipPrChannelId = '1491568683737157683'
-	return postMessage({ channelId: shipPrChannelId, content })
+	return sendShippedPr({
+		agentId, // bc- id from the metadata socket or launch URL
+		title: 'PR title',
+		summary: 'What shipped / parked / blocked and why.',
+		prUrl: 'https://github.com/owner/repo/pull/1',
+		repo: 'owner/repo',
+		extras: ['CI green', 'preview verified'],
+		status: 'Shipped', // or 'Parked' | 'Blocked'
+	})
 }
 ```
