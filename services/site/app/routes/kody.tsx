@@ -157,8 +157,8 @@ export default function KodyPage() {
 				<section className="prose dark:prose-dark">
 					<p className="bg-secondary mb-8 rounded-lg p-6 text-lg">
 						Looking for Kody, Kent's personal AI assistant platform? Head to{' '}
-						<a className="underlined" href="https://heykody.dev">
-							heykody.dev
+						<a className="underlined" href="https://kody.codes">
+							kody.codes
 						</a>
 						.
 					</p>
