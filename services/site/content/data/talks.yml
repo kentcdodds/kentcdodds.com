@@ -118,6 +118,34 @@
     accountability, trade-offs, constraints, evaluation, and how to keep making
     software worth having in an AI era.
 
+- title: >-
+    Thinking in Primitives: How to make your agents produce better results with
+    looser specs
+  resources:
+    - '[slides](https://kcd-slides-event-mega-its-time.pages.dev/)'
+  deliveries:
+    - event:
+        "[It's Time: The Work Changed (MEGA.dev
+        LIVE)](https://luma.com/mega-its-time)"
+      date: 2026-08-25
+      recording: https://www.youtube.com/watch?v=QMi8UHhTZgs&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+  tags:
+    - ai
+    - agent
+    - primitives
+    - workflows
+  description: >-
+    The tighter you have to specify, the worse or less findable your primitives
+    are. A good playground lets you give a job, not a massive spec.
+
+
+    In this talk, I'll show what a primitive actually is, how to design ones
+    agents can find and compose, and how to make sure they use them instead of
+    inventing one-offs. We'll look at create / combine / delete / expand moves
+    for shaping the playground, and why looser specs are the scoreboard that
+    your system is designed for agents—not just a hope that prompting harder
+    will fix missing building blocks.
+
 - title: 'Building with Remix 3'
   resources:
     - '[Remix](https://remix.run)'
