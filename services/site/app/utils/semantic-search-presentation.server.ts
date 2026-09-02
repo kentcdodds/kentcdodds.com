@@ -59,16 +59,16 @@ function getRepoRootDir() {
 	return process.cwd()
 }
 
-function buildThumbFromCloudinaryId({
-	cloudinaryId,
+function buildThumbFromMediaId({
+	mediaId,
 	alt,
 	size,
 }: {
-	cloudinaryId: string
+	mediaId: string
 	alt: string
 	size: number
 }) {
-	const builder = getImageBuilder(cloudinaryId, alt)
+	const builder = getImageBuilder(mediaId, alt)
 	return builder({
 		background: 'e6e9ee',
 		fit: 'cover',
@@ -238,7 +238,7 @@ async function readMdxSourceForSlug(type: 'blog' | 'page', slug: string) {
 type RepoDocMeta = {
 	title?: string
 	summary?: string
-	cloudinaryId?: string
+	mediaId?: string
 	imageAlt?: string
 }
 
@@ -263,7 +263,7 @@ async function getMdxDocMeta({
 			const meta: RepoDocMeta = {
 				title: asNonEmptyString(fm.title),
 				summary: asNonEmptyString(fm.description),
-				cloudinaryId: asNonEmptyString(fm.bannerCloudinaryId),
+				mediaId: asNonEmptyString(fm.bannerMediaId),
 				imageAlt:
 					typeof fm.bannerAlt === 'string'
 						? normalizeText(fm.bannerAlt)
@@ -277,7 +277,7 @@ async function getMdxDocMeta({
 		const fm = parseYamlFrontmatter(source)
 		const title = asNonEmptyString(fm?.title)
 		const description = asNonEmptyString(fm?.description)
-		const bannerCloudinaryId = asNonEmptyString(fm?.bannerCloudinaryId)
+		const bannerMediaId = asNonEmptyString(fm?.bannerMediaId)
 		const bannerAltRaw = fm?.bannerAlt
 		const bannerAlt =
 			typeof bannerAltRaw === 'string' ? normalizeText(bannerAltRaw) : undefined
@@ -285,7 +285,7 @@ async function getMdxDocMeta({
 		const meta: RepoDocMeta = {
 			title,
 			summary: description,
-			cloudinaryId: bannerCloudinaryId,
+			mediaId: bannerMediaId,
 			imageAlt: bannerAlt,
 		}
 		mdxMetaCache.set(cacheKey, meta)
@@ -314,7 +314,8 @@ async function loadTalksBySlug() {
 					const description = asNonEmptyString(
 						(talk as { description?: string }).description,
 					)
-					const slug = asNonEmptyString((talk as { slug?: string }).slug) ?? title
+					const slug =
+						asNonEmptyString((talk as { slug?: string }).slug) ?? title
 					return [slug, { title, description }] satisfies [string, TalkMeta]
 				}),
 		)
@@ -347,7 +348,7 @@ type CreditMeta = {
 	name: string
 	role?: string
 	description?: string
-	cloudinaryId?: string
+	mediaId?: string
 }
 let creditsBySlug: Map<string, CreditMeta> | null = null
 async function loadCreditsBySlug() {
@@ -374,10 +375,7 @@ async function loadCreditsBySlug() {
 				typeof person?.description === 'string'
 					? person.description
 					: undefined,
-			cloudinaryId:
-				typeof person?.cloudinaryId === 'string'
-					? person.cloudinaryId
-					: undefined,
+			mediaId: typeof person?.mediaId === 'string' ? person.mediaId : undefined,
 		})
 	}
 	creditsBySlug = map
@@ -388,7 +386,7 @@ type TestimonialMeta = {
 	author: string
 	company?: string
 	testimonial?: string
-	cloudinaryId?: string
+	mediaId?: string
 }
 let testimonialsBySlug: Map<string, TestimonialMeta> | null = null
 async function loadTestimonialsBySlug() {
@@ -413,8 +411,7 @@ async function loadTestimonialsBySlug() {
 			company: typeof t?.company === 'string' ? t.company : undefined,
 			testimonial:
 				typeof t?.testimonial === 'string' ? t.testimonial : undefined,
-			cloudinaryId:
-				typeof t?.cloudinaryId === 'string' ? t.cloudinaryId : undefined,
+			mediaId: typeof t?.mediaId === 'string' ? t.mediaId : undefined,
 		})
 	}
 	testimonialsBySlug = map
@@ -492,9 +489,9 @@ export async function getSemanticSearchPresentation(
 		if (!meta) return base
 		const summary = meta.summary ? truncate(meta.summary, 220) : base.summary
 		const alt = meta.imageAlt ?? meta.title ?? result.title ?? fallback.imageAlt
-		const imageUrl = meta.cloudinaryId
-			? buildThumbFromCloudinaryId({
-					cloudinaryId: meta.cloudinaryId,
+		const imageUrl = meta.mediaId
+			? buildThumbFromMediaId({
+					mediaId: meta.mediaId,
 					alt,
 					size: 96,
 				})
@@ -532,9 +529,9 @@ export async function getSemanticSearchPresentation(
 					? truncate(person.role, 220)
 					: base.summary
 			const alt = person.name || fallbackImageAlt
-			const imageUrl = person.cloudinaryId
-				? buildThumbFromCloudinaryId({
-						cloudinaryId: person.cloudinaryId,
+			const imageUrl = person.mediaId
+				? buildThumbFromMediaId({
+						mediaId: person.mediaId,
 						alt,
 						size: 96,
 					})
@@ -555,9 +552,9 @@ export async function getSemanticSearchPresentation(
 				? truncate(t.testimonial, 220)
 				: base.summary
 			const alt = t.author || fallbackImageAlt
-			const imageUrl = t.cloudinaryId
-				? buildThumbFromCloudinaryId({
-						cloudinaryId: t.cloudinaryId,
+			const imageUrl = t.mediaId
+				? buildThumbFromMediaId({
+						mediaId: t.mediaId,
 						alt,
 						size: 96,
 					})

@@ -16,11 +16,7 @@ function ArticleCard({
 		dateDisplay,
 		slug,
 		frontmatter,
-		frontmatter: {
-			title = 'Untitled Post',
-			bannerCloudinaryId,
-			bannerBlurDataUrl,
-		},
+		frontmatter: { title = 'Untitled Post', bannerMediaId, bannerBlurDataUrl },
 	},
 }: {
 	article: MdxListItem
@@ -43,19 +39,16 @@ function ArticleCard({
 				className="group peer relative block w-full focus:outline-none"
 				to={`/blog/${slug}`}
 			>
-				{bannerCloudinaryId ? (
+				{bannerMediaId ? (
 					<BlurrableImage
-						key={bannerCloudinaryId}
+						key={bannerMediaId}
 						blurDataUrl={bannerBlurDataUrl}
 						className="aspect-[3/4] rounded-lg"
 						img={
 							<img
 								title={frontmatter.title ?? getBannerTitleProp(frontmatter)}
 								{...getImgProps(
-									getImageBuilder(
-										bannerCloudinaryId,
-										getBannerAltProp(frontmatter),
-									),
+									getImageBuilder(bannerMediaId, getBannerAltProp(frontmatter)),
 									{
 										widths: [280, 560, 840, 1100, 1300, 1650],
 										sizes: [

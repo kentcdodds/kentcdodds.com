@@ -31,7 +31,7 @@ export function buildMdxPageSocialMetas(
 			socialImage: {
 				kind: 'social-preview',
 				featuredImage:
-					page.frontmatter.bannerCloudinaryId ??
+					page.frontmatter.bannerMediaId ??
 					'kentcdodds.com/illustrations/kody-flying_blue',
 				title:
 					page.frontmatter.socialImageTitle ??

@@ -40,7 +40,7 @@ type MdxPage = {
 		categories?: Array<string>
 		date?: string
 		bannerBlurDataUrl?: string
-		bannerCloudinaryId?: string
+		bannerMediaId?: string
 		bannerCredit?: string
 		bannerAlt?: string
 		bannerTitle?: string

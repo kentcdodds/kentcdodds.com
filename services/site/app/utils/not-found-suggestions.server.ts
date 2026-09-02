@@ -60,16 +60,16 @@ function humanizeSlug(slug: string) {
 		.trim()
 }
 
-function buildThumbFromCloudinaryId({
-	cloudinaryId,
+function buildThumbFromMediaId({
+	mediaId,
 	alt,
 	size,
 }: {
-	cloudinaryId: string
+	mediaId: string
 	alt: string
 	size: number
 }) {
-	const builder = getImageBuilder(cloudinaryId, alt)
+	const builder = getImageBuilder(mediaId, alt)
 	return builder({
 		background: 'e6e9ee',
 		fit: 'cover',
@@ -110,7 +110,7 @@ async function getMdxMeta(filePath: string): Promise<MdxMeta | null> {
 		const fm = parseYamlFrontmatter(source) ?? {}
 		const title = asNonEmptyString(fm.title)
 		const description = asNonEmptyString(fm.description)
-		const bannerCloudinaryId = asNonEmptyString(fm.bannerCloudinaryId)
+		const bannerMediaId = asNonEmptyString(fm.bannerMediaId)
 		const bannerAltRaw = fm.bannerAlt
 		const bannerAlt =
 			typeof bannerAltRaw === 'string' ? normalizeText(bannerAltRaw) : undefined
@@ -119,9 +119,9 @@ async function getMdxMeta(filePath: string): Promise<MdxMeta | null> {
 
 		const effectiveTitle = title
 		const effectiveAlt = bannerAlt ?? effectiveTitle ?? 'Thumbnail'
-		const imageUrl = bannerCloudinaryId
-			? buildThumbFromCloudinaryId({
-					cloudinaryId: bannerCloudinaryId,
+		const imageUrl = bannerMediaId
+			? buildThumbFromMediaId({
+					mediaId: bannerMediaId,
 					alt: effectiveAlt,
 					size: 96,
 				})
@@ -131,7 +131,7 @@ async function getMdxMeta(filePath: string): Promise<MdxMeta | null> {
 			title: effectiveTitle,
 			summary: description ? normalizeText(description) : undefined,
 			imageUrl,
-			imageAlt: bannerCloudinaryId ? effectiveAlt : undefined,
+			imageAlt: bannerMediaId ? effectiveAlt : undefined,
 			draft,
 			unlisted,
 		}

@@ -11,10 +11,7 @@ export function TestimonialCard({
 	const img = (
 		<img
 			{...getImgProps(
-				getImageBuilder(
-					testimonial.cloudinaryId,
-					`${testimonial.author} profile`,
-				),
+				getImageBuilder(testimonial.mediaId, `${testimonial.author} profile`),
 				{
 					className: 'mr-8 h-16 w-16 flex-none rounded-full object-cover',
 					widths: [64, 128, 256],

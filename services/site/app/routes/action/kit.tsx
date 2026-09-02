@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { CloudinaryVideo } from '#app/components/media-video.tsx'
+import { MediaVideo } from '#app/components/media-video.tsx'
 import { Grid } from '#app/components/grid.tsx'
 import { HeroSection } from '#app/components/sections/hero-section.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
@@ -18,8 +18,8 @@ export default function Kit() {
 				title="Huzzah!"
 				subtitle="You've signed up"
 				image={
-					<CloudinaryVideo
-						cloudinaryId="kentcdodds.com/misc/approve"
+					<MediaVideo
+						mediaId="kentcdodds.com/misc/approve"
 						className="rounded-lg"
 						aspectRatio="3:4"
 					/>

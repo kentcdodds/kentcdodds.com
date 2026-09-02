@@ -344,8 +344,8 @@ parent worker serves them at `/media/<transform-segment>/<id>`
 - **Edge cache**: `caches.default`, 1-year immutable; media is excluded from
   dynamic rate limiting (asset tier).
 - URL building in the app goes exclusively through `buildMediaUrl` /
-  `getImgProps` (`app/images.tsx`); `bannerCloudinaryId` frontmatter and
-  `cloudinaryId` YAML/MDX prop names are retained as content contracts.
+  `getImgProps` (`app/images.tsx`); `bannerMediaId` frontmatter and
+  `mediaId` YAML/MDX prop names are the content contracts.
 - OG rendering resolves R2 assets directly via the `MEDIA_BUCKET` + `IMAGES`
   bindings (no HTTP hop); Node scripts and dev fall back to the deployed
   `/media` endpoint.
