@@ -47,8 +47,11 @@ jobs:
           restore-keys: |
             playwright-${{ runner.os }}-
 
+      # Playwright <1.60 hangs on Node 26 after the zip hits 100% (extract-zip).
+      # Keep @playwright/test >=1.60 and fail this step fast if install ever stalls.
       - name: 🌐 Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
         run: npm run test:e2e:install --workspace kentcdodds.com
 
       - name: 🔬 Verify site
@@ -93,6 +96,7 @@ jobs:
 
       - name: 🌐 Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
         run: npm run test:e2e:install --workspace kentcdodds.com
 
       - name: 🧰 Cache MDX dev artifacts
