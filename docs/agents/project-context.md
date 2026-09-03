@@ -192,16 +192,12 @@ Kody/workflows/GitHub create the initial PR as a substitute.
   via the sidecar watcher and can take ~30 s; subsequent loads are fast.
 - Playwright browsers (needed for `npm run test:browser` and `test:e2e:*`) are
   pre-installed in the VM snapshot under `~/.cache/ms-playwright`, so you should
-  not normally need to reinstall them. On Node 26, `npm run test:e2e:install`
-  (i.e. `npx playwright install`) hangs during archive extraction (the download
-  reaches 100% but never finishes unpacking). If a browser is missing or its
-  revision changed, install it manually instead: `curl` the build zips from
-  `https://cdn.playwright.dev/builds/...` and unzip them into the matching
-  `~/.cache/ms-playwright/<name>-<revision>/` directory, then `touch` an
-  `INSTALLATION_COMPLETE` marker in each so Playwright treats them as installed.
-  Both `chrome-linux64` (chromium) and `chrome-headless-shell-linux64`
-  (chromium-headless-shell) come from the `builds/cft/<version>/linux64/` path;
-  ffmpeg comes from `builds/ffmpeg/<rev>/ffmpeg-linux.zip`.
+  not normally need to reinstall them. If a browser is missing or its revision
+  changed, run `npm run test:e2e:install`. Keep `@playwright/test` at `^1.60`
+  or newer: Playwright `<1.60` hangs on Node 26 after the zip download reaches
+  100% (`extract-zip` / `yauzl` — microsoft/playwright#40998). Site Gate and
+  the Playwright job install browsers with a 10-minute step timeout so a
+  stalled extract fails the check instead of sitting `in_progress`.
 - Run the Playwright e2e suite with `npm run test:e2e:run` (CI mode, its own
   server on port 8811). It fails to start if a dev server is already bound to
   port 3000/3099 (the MDX sidecar), so stop `npm run dev` first, or set

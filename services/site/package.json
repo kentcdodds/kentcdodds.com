@@ -148,7 +148,7 @@
     "@cloudflare/workers-types": "^4.20260306.1",
     "@epic-web/config": "^2.0.0",
     "@faker-js/faker": "^10.3.0",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.62.1",
     "@react-router/dev": "^7.0.0",
     "@types/bcrypt": "^6.0.0",
     "@types/dom-mediacapture-record": "^1.0.22",
