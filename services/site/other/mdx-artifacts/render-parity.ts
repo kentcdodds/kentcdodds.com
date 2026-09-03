@@ -20,7 +20,7 @@ const stubComponents = {
 		light?: React.ReactNode
 		dark?: React.ReactNode
 	}) => light ?? dark ?? null,
-	CloudinaryVideo: () => null,
+	MediaVideo: () => null,
 	MermaidDiagram: ({
 		lightSvg,
 		darkSvg,
@@ -36,29 +36,29 @@ const stubComponents = {
 			lightSvg ?? darkSvg ?? code ?? null,
 		),
 	ThemedBlogImage: ({
-		lightCloudinaryId,
-		darkCloudinaryId,
+		lightMediaId,
+		darkMediaId,
 		imgProps,
 	}: {
-		lightCloudinaryId?: string
-		darkCloudinaryId?: string
+		lightMediaId?: string
+		darkMediaId?: string
 		imgProps?: React.ComponentProps<'img'>
 	}) =>
 		React.createElement('img', {
 			...imgProps,
-			'data-light': lightCloudinaryId,
-			'data-dark': darkCloudinaryId,
+			'data-light': lightMediaId,
+			'data-dark': darkMediaId,
 		}),
 	BlogImage: ({
-		cloudinaryId,
+		mediaId,
 		imgProps,
 	}: {
-		cloudinaryId?: string
+		mediaId?: string
 		imgProps?: React.ComponentProps<'img'>
 	}) =>
 		React.createElement('img', {
 			...imgProps,
-			'data-cloudinary-id': cloudinaryId,
+			'data-media-id': mediaId,
 		}),
 	SubscribeForm: () => null,
 	OptionalUser: ({

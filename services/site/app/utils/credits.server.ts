@@ -11,7 +11,7 @@ import { getErrorMessage, typedBoolean } from './misc.ts'
 export type Person = {
 	id: string
 	name: string
-	cloudinaryId: string
+	mediaId: string
 	role: string
 	description: string
 	github: string
@@ -70,7 +70,7 @@ function mapPerson(rawPerson: UnknownObj) {
 		return {
 			id,
 			name,
-			cloudinaryId: getValueWithFallback(rawPerson, 'cloudinaryId', {
+			mediaId: getValueWithFallback(rawPerson, 'mediaId', {
 				fallback: 'kentcdodds.com/illustrations/kody_profile_white',
 				validateType: isString,
 			}),

@@ -2,12 +2,9 @@ import { LRUCache } from 'lru-cache'
 import * as mdxBundler from 'mdx-bundler/client/index.js'
 import * as React from 'react'
 import { type ComponentType } from 'react'
-import { CloudinaryVideo } from '#app/components/media-video.tsx'
+import { MediaVideo } from '#app/components/media-video.tsx'
 import { MermaidDiagram } from '#app/components/mermaid.tsx'
-import {
-	getImageBuilder,
-	getImgProps,
-} from '#app/images.tsx'
+import { getImageBuilder, getImgProps } from '#app/images.tsx'
 import { KitForm } from '#app/kit/form.tsx'
 import { type MdxPage } from '#app/types.ts'
 import {
@@ -57,7 +54,7 @@ const mdxComponents = {
 	a: AnchorOrLink,
 	table: MdxTable,
 	Themed,
-	CloudinaryVideo,
+	MediaVideo,
 	MermaidDiagram,
 	ThemedBlogImage,
 	BlogImage,
@@ -125,11 +122,11 @@ function getMdxComponent(code: string) {
 }
 
 function BlogImage({
-	cloudinaryId,
+	mediaId,
 	imgProps,
 	transparentBackground,
 }: {
-	cloudinaryId: string
+	mediaId: string
 	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
@@ -137,7 +134,7 @@ function BlogImage({
 		<img
 			// @ts-expect-error classname is overridden by getImgProps
 			className="w-full rounded-lg object-cover py-8"
-			{...getImgProps(getImageBuilder(cloudinaryId, imgProps.alt), {
+			{...getImgProps(getImageBuilder(mediaId, imgProps.alt), {
 				widths: [350, 550, 700, 845, 1250, 1700, 2550],
 				sizes: [
 					'(max-width:1023px) 80vw',
@@ -154,13 +151,13 @@ function BlogImage({
 }
 
 function ThemedBlogImage({
-	darkCloudinaryId,
-	lightCloudinaryId,
+	darkMediaId,
+	lightMediaId,
 	imgProps,
 	transparentBackground,
 }: {
-	darkCloudinaryId: string
-	lightCloudinaryId: string
+	darkMediaId: string
+	lightMediaId: string
 	imgProps: React.ComponentProps<'img'>
 	transparentBackground?: boolean
 }) {
@@ -168,14 +165,14 @@ function ThemedBlogImage({
 		<Themed
 			light={
 				<BlogImage
-					cloudinaryId={lightCloudinaryId}
+					mediaId={lightMediaId}
 					imgProps={imgProps}
 					transparentBackground={transparentBackground}
 				/>
 			}
 			dark={
 				<BlogImage
-					cloudinaryId={darkCloudinaryId}
+					mediaId={darkMediaId}
 					imgProps={imgProps}
 					transparentBackground={transparentBackground}
 				/>

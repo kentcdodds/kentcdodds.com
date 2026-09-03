@@ -1,23 +1,15 @@
-import { CloudinaryVideo } from './media-video.tsx'
+import { MediaVideo } from './media-video.tsx'
 
-type MediaVideoProps = Parameters<typeof CloudinaryVideo>[0]
+type MediaVideoProps = Parameters<typeof MediaVideo>[0]
 
-export function MissingSomething(
-	props: Omit<MediaVideoProps, 'cloudinaryId'>,
-) {
-	return (
-		<CloudinaryVideo cloudinaryId="kentcdodds.com/misc/where_am_i" {...props} />
-	)
+export function MissingSomething(props: Omit<MediaVideoProps, 'mediaId'>) {
+	return <MediaVideo mediaId="kentcdodds.com/misc/where_am_i" {...props} />
 }
 
-export function Grimmacing(props: Omit<MediaVideoProps, 'cloudinaryId'>) {
-	return (
-		<CloudinaryVideo cloudinaryId="kentcdodds.com/misc/grimmace" {...props} />
-	)
+export function Grimmacing(props: Omit<MediaVideoProps, 'mediaId'>) {
+	return <MediaVideo mediaId="kentcdodds.com/misc/grimmace" {...props} />
 }
 
-export function Facepalm(props: Omit<MediaVideoProps, 'cloudinaryId'>) {
-	return (
-		<CloudinaryVideo cloudinaryId="kentcdodds.com/misc/facepalm" {...props} />
-	)
+export function Facepalm(props: Omit<MediaVideoProps, 'mediaId'>) {
+	return <MediaVideo mediaId="kentcdodds.com/misc/facepalm" {...props} />
 }

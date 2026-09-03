@@ -17,7 +17,11 @@ import { pathedRoutes } from '#app/other-routes.server.ts'
 import { type KCDHandle } from '#app/types.ts'
 import { getBlogRecommendations } from '#app/utils/blog.server.ts'
 import { getMdxPage, getMdxPagesInDirectory } from '#app/utils/mdx.server'
-import { getDomainUrl, requireValidSlug, reuseUsefulLoaderHeaders } from '#app/utils/misc.ts'
+import {
+	getDomainUrl,
+	requireValidSlug,
+	reuseUsefulLoaderHeaders,
+} from '#app/utils/misc.ts'
 import {
 	getBannerAltProp,
 	getBannerTitleProp,
@@ -178,10 +182,10 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 						</H6>
 					) : null}
 				</div>
-				{frontmatter.bannerCloudinaryId ? (
+				{frontmatter.bannerMediaId ? (
 					<div className="col-span-full mt-10 lg:col-span-10 lg:col-start-2 lg:mt-16">
 						<BlurrableImage
-							key={frontmatter.bannerCloudinaryId}
+							key={frontmatter.bannerMediaId}
 							blurDataUrl={frontmatter.bannerBlurDataUrl}
 							className="md:aspect-1 aspect-[3/4] md:aspect-[3/2]"
 							img={
@@ -189,7 +193,7 @@ export default function MdxScreen({ loaderData: data }: Route.ComponentProps) {
 									title={getBannerTitleProp(frontmatter)}
 									{...getImgProps(
 										getImageBuilder(
-											frontmatter.bannerCloudinaryId,
+											frontmatter.bannerMediaId,
 											getBannerAltProp(frontmatter),
 										),
 										{

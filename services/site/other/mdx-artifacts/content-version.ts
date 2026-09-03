@@ -9,11 +9,11 @@ import { type ContentInputFile } from './local-content.ts'
  * a compiler change with unchanged content would silently keep serving
  * stale artifacts.
  *
- * v3: Cloudinary body URLs rewritten to /media (Cloudflare-hosted assets),
+ * v3: legacy image-CDN body URLs rewritten to /media (Cloudflare-hosted assets),
  * including JSX expression attributes and link/poster/source attributes.
  * v4: body /media URLs are host-relative (work on the workers.dev preview
  * pre-flip and on kentcdodds.com post-flip).
- * v5: layered Cloudinary composite URLs (l_, fl_layer_apply, etc.) are left
+ * v5: layered legacy composite URLs (l_, fl_layer_apply, etc.) are left
  * untouched instead of being rewritten to broken /media IDs.
  */
 export const ARTIFACT_COMPILER_VERSION = 8

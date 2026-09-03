@@ -69,7 +69,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) =>
 type Person = SerializeFrom<typeof loader>['people'][number]
 type Socials = keyof Omit<
 	Person,
-	'id' | 'name' | 'role' | 'cloudinaryId' | 'description'
+	'id' | 'name' | 'role' | 'mediaId' | 'description'
 >
 
 const icons = {
@@ -89,7 +89,7 @@ function ProfileCard({ person }: { person: Person }) {
 		<div id={person.id} className="relative flex w-full scroll-mt-24 flex-col">
 			<div className="mb-8 aspect-square w-full flex-none">
 				<img
-					{...getImgProps(getImageBuilder(person.cloudinaryId, person.name), {
+					{...getImgProps(getImageBuilder(person.mediaId, person.name), {
 						className: 'rounded-lg object-contain',
 						widths: [280, 560, 840, 1100, 1300, 1650],
 						sizes: [

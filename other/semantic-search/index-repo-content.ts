@@ -304,7 +304,7 @@ async function loadCreditsIndex() {
 				([key, value]) =>
 					typeof value === 'string' &&
 					/^(https?:\/\/|mailto:)/.test(value) &&
-					key !== 'cloudinaryId',
+					key !== 'mediaId',
 			)
 			.map(([key, value]) => `${key}: ${value}`)
 

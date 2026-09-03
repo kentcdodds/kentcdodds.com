@@ -5,19 +5,19 @@ type MediaVideoProps = {
 	width?: number
 	height?: number
 	aspectRatio?: `${number}:${number}`
-	cloudinaryId: string
+	mediaId: string
 }
 
 export function MediaVideo({
 	className,
 	aspectRatio,
-	cloudinaryId,
+	mediaId,
 }: MediaVideoProps) {
 	return (
 		<video
 			className={className}
 			autoPlay
-			src={buildMediaUrl(cloudinaryId)}
+			src={buildMediaUrl(mediaId)}
 			muted
 			loop
 			controls={false}
@@ -29,6 +29,3 @@ export function MediaVideo({
 		/>
 	)
 }
-
-/** MDX content contract alias — existing posts use `<CloudinaryVideo>`. */
-export const CloudinaryVideo = MediaVideo

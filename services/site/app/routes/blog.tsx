@@ -26,11 +26,7 @@ import { Spacer } from '#app/components/spacer.tsx'
 import { Tag } from '#app/components/tag.tsx'
 import { TeamStats } from '#app/components/team-stats.tsx'
 import { H2, H3, H4, H6, Paragraph } from '#app/components/typography.tsx'
-import {
-	getImageBuilder,
-	getImgProps,
-	images,
-} from '#app/images.tsx'
+import { getImageBuilder, getImgProps, images } from '#app/images.tsx'
 import { externalLinks } from '#app/external-links.tsx'
 import { type RootLoaderType } from '#app/root.tsx'
 import { type KCDHandle, type Team } from '#app/types.ts'
@@ -750,9 +746,9 @@ function BlogHome({ loaderData: data }: Route.ComponentProps) {
 							title={data.recommended.frontmatter.title}
 							blurDataUrl={data.recommended.frontmatter.bannerBlurDataUrl}
 							imageBuilder={
-								data.recommended.frontmatter.bannerCloudinaryId
+								data.recommended.frontmatter.bannerMediaId
 									? getImageBuilder(
-											data.recommended.frontmatter.bannerCloudinaryId,
+											data.recommended.frontmatter.bannerMediaId,
 											getBannerAltProp(data.recommended.frontmatter),
 										)
 									: undefined

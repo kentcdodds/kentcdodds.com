@@ -58,7 +58,7 @@ export type TestimonialSubject = (typeof allSubjects)[number]
 export type Testimonial = {
 	id: string
 	author: string
-	cloudinaryId: string
+	mediaId: string
 	company: string
 	testimonial: string
 	link: string | null
@@ -180,7 +180,7 @@ async function mapTestimonial(rawTestimonial: UnknownObj) {
 				fallback: 0,
 				validateType: isOneOf([0, 1, 2, 3, 4, 5]),
 			}),
-			cloudinaryId: getValueWithFallback(rawTestimonial, 'cloudinaryId', {
+			mediaId: getValueWithFallback(rawTestimonial, 'mediaId', {
 				validateType: isString,
 			}),
 			company: getValueWithFallback(rawTestimonial, 'company', {
@@ -253,7 +253,7 @@ function mapOutMetadata(
 	return pick(testimonialWithMetadata, [
 		'id',
 		'author',
-		'cloudinaryId',
+		'mediaId',
 		'company',
 		'testimonial',
 		'link',

@@ -267,13 +267,10 @@ export async function enrichCompiledMdxPage({
 		editLink: `https://github.com/kentcdodds/kentcdodds.com/edit/main/${entry}`,
 	}
 
-	if (
-		page.frontmatter.bannerCloudinaryId &&
-		!page.frontmatter.bannerBlurDataUrl
-	) {
+	if (page.frontmatter.bannerMediaId && !page.frontmatter.bannerBlurDataUrl) {
 		try {
 			page.frontmatter.bannerBlurDataUrl = await getBlurDataUrl(
-				page.frontmatter.bannerCloudinaryId,
+				page.frontmatter.bannerMediaId,
 			)
 		} catch (error: unknown) {
 			console.error(
@@ -370,11 +367,11 @@ export async function getLocalMdxDirList(contentDir: 'blog' | 'pages') {
 		}))
 }
 
-async function getBlurDataUrl(cloudinaryId: string) {
+async function getBlurDataUrl(mediaId: string) {
 	const origin =
 		process.env.MEDIA_ORIGIN ?? 'https://kentcdodds-com.kentcdodds.workers.dev'
 	const imageURL = buildMediaUrl(
-		cloudinaryId,
+		mediaId,
 		{ width: 100, blur: 100, format: 'webp' },
 		{ origin },
 	)
