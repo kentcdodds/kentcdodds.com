@@ -127,12 +127,16 @@ export async function migrateClientPostReadsToUser({
 	userId: string
 	clientId: string
 }) {
-	await db.updateMany(
+	const updated = await db.updateMany(
 		postReadTable,
 		{ userId, clientId: null },
 		{ where: { clientId } },
 	)
-	await db.exec(insertPostReadReaderSql('user', userId))
+	// Only users who actually had anonymous PostRead rows are unique readers.
+	// Login/signup/reset always call this when a clientId cookie exists.
+	if ((updated.affectedRows ?? 0) > 0) {
+		await db.exec(insertPostReadReaderSql('user', userId))
+	}
 	await db.exec(
 		sql`DELETE FROM "PostReadReader" WHERE "id" = ${postReadReaderId('client', clientId)}`,
 	)
