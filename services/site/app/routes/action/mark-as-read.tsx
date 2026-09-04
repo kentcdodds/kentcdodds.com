@@ -2,12 +2,14 @@ import { invariantResponse } from '@epic-web/invariant'
 import { data as json } from 'react-router'
 import {
 	addPostRead,
+	applyPostReadToCachedAnalytics,
 	getBlogReadRankings,
 	notifyOfOverallTeamLeaderChange,
 	notifyOfTeamLeaderChangeOnPost,
 } from '#app/utils/blog.server.ts'
 import { getRankingLeader } from '#app/utils/blog.ts'
 import { getClientSession } from '#app/utils/client.server.ts'
+import { isTeam } from '#app/utils/misc.ts'
 import { getSession } from '#app/utils/session.server.ts'
 import { type Route } from './+types/mark-as-read'
 
@@ -18,10 +20,12 @@ export async function action({ request }: Route.ActionArgs) {
 	const session = await getSession(request)
 	const user = await session.getUser()
 
-	const [beforePostLeader, beforeOverallLeader] = await Promise.all([
-		getBlogReadRankings({ request, slug }).then(getRankingLeader),
-		getBlogReadRankings({ request }).then(getRankingLeader),
+	const [beforePostRankings, beforeOverallRankings] = await Promise.all([
+		getBlogReadRankings({ request, slug }),
+		getBlogReadRankings({ request }),
 	])
+	const beforePostLeader = getRankingLeader(beforePostRankings)
+	const beforeOverallLeader = getRankingLeader(beforeOverallRankings)
 	let createdPostRead = null
 	if (user) {
 		createdPostRead = await addPostRead({
@@ -37,23 +41,24 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	// Rankings only change when a new PostRead row was actually created
-	// (addPostRead dedupes repeat reads within a week). Skip the forceFresh
-	// recompute otherwise: it bypasses the shared cache and re-runs 9 heavy
-	// PostRead aggregate queries per ranking, which is the expensive part of
-	// D1's rows-read billing.
+	// (addPostRead dedupes repeat reads within a week). Increment the cached
+	// analytics in-place instead of forceFresh-scanning PostRead.
 	if (!createdPostRead) {
 		return json({ success: true })
 	}
 
-	// trigger an update to the ranking cache and notify when the leader changed
-	const [afterPostLeader, afterOverallLeader] = await Promise.all([
-		getBlogReadRankings({
+	const { afterPostRankings, afterOverallRankings } =
+		await applyPostReadToCachedAnalytics({
 			request,
 			slug,
-			forceFresh: true,
-		}).then(getRankingLeader),
-		getBlogReadRankings({ request, forceFresh: true }).then(getRankingLeader),
-	])
+			team: user && isTeam(user.team) ? user.team : null,
+			newlyActive: createdPostRead.newlyActive,
+			newReader: createdPostRead.newReader,
+			beforePostRankings,
+			beforeOverallRankings,
+		})
+	const afterPostLeader = getRankingLeader(afterPostRankings)
+	const afterOverallLeader = getRankingLeader(afterOverallRankings)
 
 	if (
 		afterPostLeader?.team &&

@@ -14,11 +14,8 @@ import {
 	getPasswordHash,
 } from '#app/utils/password.server.ts'
 import { db } from '#app/utils/db.server.ts'
-import {
-	passwordTable,
-	postReadTable,
-	userTable,
-} from '#app/utils/db/schema.server.ts'
+import { passwordTable, userTable } from '#app/utils/db/schema.server.ts'
+import { migrateClientPostReadsToUser } from '#app/utils/post-read-aggregates.server.ts'
 import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
 import { upsertPasswordAndDeleteSessions } from '#app/utils/auth-write-flows.server.ts'
 import { getSession, getUser } from '#app/utils/session.server.ts'
@@ -280,11 +277,10 @@ export async function action({ request }: Route.ActionArgs) {
 		try {
 			const clientId = clientSession.getClientId()
 			if (clientId) {
-				await db.updateMany(
-					postReadTable,
-					{ userId: userRecord.id, clientId: null },
-					{ where: { clientId } },
-				)
+				await migrateClientPostReadsToUser({
+					userId: userRecord.id,
+					clientId,
+				})
 				await migrateHomeworkCompletionsToUser({
 					userId: userRecord.id,
 					clientId,

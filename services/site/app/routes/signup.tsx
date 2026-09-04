@@ -27,10 +27,10 @@ import {
 import { db, isUniqueConstraintError } from '#app/utils/db.server.ts'
 import {
 	passwordTable,
-	postReadTable,
 	userTable,
 	verificationTable,
 } from '#app/utils/db/schema.server.ts'
+import { migrateClientPostReadsToUser } from '#app/utils/post-read-aggregates.server.ts'
 import { migrateHomeworkCompletionsToUser } from '#app/utils/user-data.server.ts'
 import { runBackgroundTask } from '#app/utils/background-task.server.ts'
 import { sendSignupVerificationEmail } from '#app/utils/send-email.server.ts'
@@ -347,11 +347,10 @@ export async function action({ request }: Route.ActionArgs) {
 			const clientId = clientSession.getClientId()
 			// update all PostReads from clientId to userId
 			if (clientId) {
-				await db.updateMany(
-					postReadTable,
-					{ userId: user.id, clientId: null },
-					{ where: { clientId } },
-				)
+				await migrateClientPostReadsToUser({
+					userId: user.id,
+					clientId,
+				})
 				await migrateHomeworkCompletionsToUser({
 					userId: user.id,
 					clientId,

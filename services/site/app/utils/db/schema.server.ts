@@ -184,6 +184,24 @@ export const postReadTable = table({
 	afterRead: reviveDateColumns(dateColumns.postRead),
 })
 
+export const postReadSlugCountTable = table({
+	name: 'PostReadSlugCount',
+	columns: {
+		postSlug: c.text(),
+		count: c.integer(),
+	},
+	primaryKey: 'postSlug',
+})
+
+export const postReadReaderTable = table({
+	name: 'PostReadReader',
+	columns: {
+		id: c.text(),
+		kind: c.text(),
+	},
+	primaryKey: 'id',
+})
+
 export const passkeyTable = table({
 	name: 'Passkey',
 	columns: {
@@ -365,6 +383,14 @@ export type PostRead = {
 	userId: string | null
 	clientId: string | null
 	postSlug: string
+}
+export type PostReadSlugCount = {
+	postSlug: string
+	count: number
+}
+export type PostReadReader = {
+	id: string
+	kind: string
 }
 export type Passkey = {
 	id: string

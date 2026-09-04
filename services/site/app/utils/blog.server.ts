@@ -1,17 +1,30 @@
 import { subMonths, subYears } from 'date-fns'
-import { and, eq, gt, notInList, sql } from '@remix-run/data-table'
+import { and, eq, gt, notInList } from '@remix-run/data-table'
 import pLimit from 'p-limit'
 import { type MdxListItem, type Team, type User } from '#app/types.ts'
+import {
+	hasIncrementableRankings,
+	incrementTeamRankings,
+	type BlogReadRanking,
+} from '#app/utils/blog-rankings.ts'
 import { shuffle } from '#app/utils/cjs/lodash.ts'
 import { db } from '#app/utils/db.server.ts'
 import { postReadTable } from '#app/utils/db/schema.server.ts'
+import {
+	countPostReadReaders,
+	incrementPostReadSlugCount,
+	listPostReadSlugCounts,
+	loadBlogReadRankings,
+	recordPostReadReader,
+	userHasPostReadSince,
+} from '#app/utils/post-read-aggregates.server.ts'
 import { filterPosts } from './blog.ts'
 import { cache, cachified, lruCache } from './cache.server.ts'
 import { getClientSession, hasClientSessionCookie } from './client.server.ts'
 import { sendMessageFromDiscordBot } from './discord.server.ts'
 import { getEnv } from './env.server.ts'
 import { getBlogMdxListItems } from './mdx.server.ts'
-import { getDomainUrl, getOptionalTeam, teams, typedBoolean } from './misc.ts'
+import { getDomainUrl, getOptionalTeam, typedBoolean } from './misc.ts'
 import { getUser } from './session.server.ts'
 import { teamEmoji } from './team-provider.tsx'
 import { time, type Timings } from './timing.server.ts'
@@ -38,12 +51,21 @@ async function addPostRead({
 		return null
 	}
 
+	const yearAgo = subYears(new Date(), 1)
+	const newlyActive = userId
+		? !(await userHasPostReadSince({ userId, since: yearAgo }))
+		: false
+
 	const postRead = await db.create(
 		postReadTable,
 		{ postSlug: slug, ...ownerWhere },
 		{ returnRow: true },
 	)
-	return { id: postRead.id }
+	await incrementPostReadSlugCount(slug)
+	const newReader = userId
+		? await recordPostReadReader('user', userId)
+		: await recordPostReadReader('client', clientId as string)
+	return { id: postRead.id, newlyActive, newReader }
 }
 
 async function getBlogRecommendations({
@@ -226,9 +248,9 @@ async function getBlogPostReadCounts({
 		key: `blog:post-read-counts`,
 		ttl: 1000 * 60 * 30,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
-		// Must be the shared KV cache: getFreshValue scans the whole PostRead
-		// table (D1 bills rows read) and lruCache is per-isolate, so isolate
-		// churn would re-run the full scan far more often than the TTL implies.
+		// Shared KV cache: isolate-local lruCache would recompute on every
+		// isolate churn. The fresh value now reads PostReadSlugCount (~one row
+		// per slug) instead of GROUP BY PostRead.
 		cache,
 		request,
 		timings,
@@ -242,19 +264,7 @@ async function getBlogPostReadCounts({
 		getFreshValue: async (context) => {
 			try {
 				const timeoutMs = context.background ? 1000 * 10 : 1000 * 5
-				const result = await promiseWithTimeout(
-					(async () => {
-						const queryResult = await db.exec(
-							sql`SELECT "postSlug", count(*) as count FROM "PostRead" GROUP BY "postSlug"`,
-						)
-						return queryResult.rows ?? []
-					})(),
-					timeoutMs,
-				)
-
-				return Object.fromEntries(
-					result.map((row) => [row.postSlug as string, Number(row.count)]),
-				) as Record<string, number>
+				return await promiseWithTimeout(listPostReadSlugCounts(), timeoutMs)
 			} catch (error: unknown) {
 				// Popularity counts should not take down the whole /blog page.
 				console.error(`Failed to get blog post read counts`, error)
@@ -294,12 +304,6 @@ async function getTotalPostReads({
 	})
 }
 
-function isRawQueryResult(
-	result: any,
-): result is Array<Record<string, unknown>> {
-	return Array.isArray(result) && result.every((r) => typeof r === 'object')
-}
-
 async function getReaderCount({
 	request,
 	timings,
@@ -310,36 +314,29 @@ async function getReaderCount({
 	const key = 'total-reader-count'
 	return cachified({
 		key,
-		// Must be the shared KV cache: the COUNT(DISTINCT ...) below scans the
-		// whole PostRead table (D1 bills rows read), so per-isolate lruCache
-		// would re-run it on every isolate churn. The count moves slowly, so an
-		// hour of staleness is fine.
+		// Shared KV cache: isolate-local lruCache would recompute on every
+		// isolate churn. Fresh value is COUNT(*) on PostReadReader (unique
+		// readers), not COUNT(DISTINCT) over PostRead.
 		cache,
 		ttl: 1000 * 60 * 60,
 		staleWhileRevalidate: 1000 * 60 * 60 * 24,
 		request,
 		timings,
 		checkValue: (value: unknown) => typeof value === 'number',
-		getFreshValue: async () => {
-			// couldn't figure out how to do this in one query without raw SQL 🤷‍♂️
-			const queryResult = await db.exec(
-				sql`SELECT
-        (SELECT COUNT(DISTINCT "userId") FROM "PostRead" WHERE "userId" IS NOT NULL) +
-        (SELECT COUNT(DISTINCT "clientId") FROM "PostRead" WHERE "clientId" IS NOT NULL) as count`,
-			)
-			const result = queryResult.rows ?? []
-			if (!isRawQueryResult(result)) {
-				console.error(`Unexpected result from getReaderCount: ${result}`)
-				return 0
-			}
-			const count = Object.values(result[0] ?? [])[0] ?? 0
-			// the count is a BigInt, so we need to convert it to a number
-			return Number(count)
-		},
+		getFreshValue: async () => countPostReadReaders(),
 	})
 }
 
-export type ReadRankings = Awaited<ReturnType<typeof getBlogReadRankings>>
+export type ReadRankings = Array<BlogReadRanking>
+
+const OVERALL_RANKINGS_CACHE_KEY = 'blog:rankings'
+const ALL_POST_RANKINGS_CACHE_KEY = 'all-blog-post-read-rankings'
+const POST_READ_COUNTS_CACHE_KEY = 'blog:post-read-counts'
+const READER_COUNT_CACHE_KEY = 'total-reader-count'
+
+function blogSlugRankingsCacheKey(slug: string) {
+	return `blog:${slug}:rankings`
+}
 
 async function getBlogReadRankings({
 	slug,
@@ -352,7 +349,7 @@ async function getBlogReadRankings({
 	forceFresh?: boolean
 	timings?: Timings
 }) {
-	const key = slug ? `blog:${slug}:rankings` : `blog:rankings`
+	const key = slug ? blogSlugRankingsCacheKey(slug) : OVERALL_RANKINGS_CACHE_KEY
 	const rankingObjs = await cachified({
 		key,
 		cache,
@@ -365,45 +362,20 @@ async function getBlogReadRankings({
 			Array.isArray(value) &&
 			value.every((v) => typeof v === 'object' && 'team' in v),
 		getFreshValue: async () => {
-			const rawRankingData = await Promise.all(
-				teams.map(async function getRankingsForTeam(team): Promise<{
-					team: Team
-					totalReads: number
-					ranking: number
-				}> {
-					const totalReads = await countPostReadsForTeam({
-						slug,
-						team,
-						timings,
-					})
-					const activeMembers = await getActiveMembers({ team, timings })
-					const recentReads = await getRecentReads({ slug, team, timings })
-					let ranking = 0
-					if (activeMembers) {
-						ranking = Number((recentReads / activeMembers).toFixed(4))
-					}
-					return { team, totalReads, ranking }
+			return time(
+				loadBlogReadRankings({
+					slug,
+					recentAfter: subMonths(new Date(), 6),
+					activeSince: subYears(new Date(), 1),
 				}),
-			)
-			const rankings = rawRankingData.map((r) => r.ranking)
-			const maxRanking = Math.max(...rankings)
-			const minRanking = Math.min(...rankings)
-			const rankPercentages = rawRankingData.map(
-				({ team, totalReads, ranking }) => {
-					return {
-						team,
-						totalReads,
-						ranking,
-						percent: Number(
-							((ranking - minRanking) / (maxRanking - minRanking || 1)).toFixed(
-								2,
-							),
-						),
-					}
+				{
+					timings,
+					type: 'loadBlogReadRankings',
+					desc: slug
+						? `Loading team rankings for ${slug}`
+						: 'Loading overall team rankings',
 				},
 			)
-
-			return rankPercentages
 		},
 	})
 
@@ -438,10 +410,8 @@ async function getAllBlogPostReadRankings({
 		getFreshValue: async () => {
 			const posts = await getBlogMdxListItems({ request, timings })
 
-			// each of the getBlogReadRankings calls results in 9 database queries
-			// and we don't want to hit the limit of connections so we limit this
-			// to 2 at a time. Though most of the data should be cached anyway.
-			// This is good to just be certain.
+			// each slug ranking is itself cached; limit concurrency so a cold
+			// all-posts refresh cannot fan out unbounded D1 queries.
 			const limit = pLimit(2)
 			const allPostReadRankings: Record<string, ReadRankings> = {}
 			await Promise.all(
@@ -460,114 +430,140 @@ async function getAllBlogPostReadRankings({
 	})
 }
 
-async function countPostReadsForTeam({
-	slug,
-	team,
-	createdAfter,
-	timings,
-}: {
-	slug?: string
-	team: Team
-	createdAfter?: Date
-	timings?: Timings
-}) {
-	const count = await time(
-		(async () => {
-			if (slug && createdAfter) {
-				const result = await db.exec(
-					sql`SELECT count(*) as count FROM "PostRead" pr
-              INNER JOIN "User" u ON pr."userId" = u."id"
-              WHERE pr."postSlug" = ${slug}
-                AND pr."createdAt" > ${createdAfter.toISOString()}
-                AND u."team" = ${team}`,
-				)
-				return Number(result.rows?.[0]?.count ?? 0)
-			}
-
-			if (slug) {
-				const result = await db.exec(
-					sql`SELECT count(*) as count FROM "PostRead" pr
-              INNER JOIN "User" u ON pr."userId" = u."id"
-              WHERE pr."postSlug" = ${slug}
-                AND u."team" = ${team}`,
-				)
-				return Number(result.rows?.[0]?.count ?? 0)
-			}
-
-			if (createdAfter) {
-				const result = await db.exec(
-					sql`SELECT count(*) as count FROM "PostRead" pr
-              INNER JOIN "User" u ON pr."userId" = u."id"
-              WHERE pr."createdAt" > ${createdAfter.toISOString()}
-                AND u."team" = ${team}`,
-				)
-				return Number(result.rows?.[0]?.count ?? 0)
-			}
-
-			const result = await db.exec(
-				sql`SELECT count(*) as count FROM "PostRead" pr
-            INNER JOIN "User" u ON pr."userId" = u."id"
-            WHERE u."team" = ${team}`,
-			)
-			return Number(result.rows?.[0]?.count ?? 0)
-		})(),
-		{
-			timings,
-			type: createdAfter ? 'getRecentReads' : 'countPostReadsForTeam',
-			desc: createdAfter
-				? `Getting reads of ${slug} by ${team} within the last 6 months`
-				: `Getting total reads for ${team}`,
+async function writeCacheValue<Value>(
+	key: string,
+	value: Value,
+	fallbackTtl: number,
+) {
+	const existing = await cache.get(key)
+	await cache.set(key, {
+		value,
+		metadata: {
+			createdTime: existing?.metadata.createdTime ?? Date.now(),
+			ttl: existing?.metadata.ttl ?? fallbackTtl,
+			swr: existing?.metadata.swr ?? 1000 * 60 * 60 * 24,
 		},
-	)
-	return count
-}
-
-async function getRecentReads({
-	slug,
-	team,
-	timings,
-}: {
-	slug: string | undefined
-	team: Team
-	timings?: Timings
-}) {
-	const withinTheLastSixMonths = subMonths(new Date(), 6)
-
-	return countPostReadsForTeam({
-		slug,
-		team,
-		createdAfter: withinTheLastSixMonths,
-		timings,
 	})
 }
 
-async function getActiveMembers({
-	team,
-	timings,
+async function incrementCachedPostReadCounts({
+	slug,
+	newReader,
 }: {
-	team: Team
-	timings?: Timings
+	slug: string
+	newReader: boolean
 }) {
-	const withinTheLastYear = subYears(new Date(), 1)
+	const countsEntry = await cache.get(POST_READ_COUNTS_CACHE_KEY)
+	if (
+		countsEntry &&
+		typeof countsEntry.value === 'object' &&
+		countsEntry.value !== null &&
+		!Array.isArray(countsEntry.value)
+	) {
+		const value = {
+			...(countsEntry.value as Record<string, number>),
+		}
+		value[slug] = (value[slug] ?? 0) + 1
+		await writeCacheValue(POST_READ_COUNTS_CACHE_KEY, value, 1000 * 60 * 30)
+	}
 
-	const count = await time(
-		(async () => {
-			const result = await db.exec(
-				sql`SELECT count(DISTINCT u."id") as count FROM "User" u
-            INNER JOIN "PostRead" pr ON pr."userId" = u."id"
-            WHERE u."team" = ${team}
-              AND pr."createdAt" > ${withinTheLastYear.toISOString()}`,
+	const slugTotalKey = `total-post-reads:${slug}`
+	const allTotalKey = 'total-post-reads:__all-posts__'
+	const slugTotal = lruCache.get(slugTotalKey)
+	if (typeof slugTotal?.value === 'number') {
+		lruCache.set(slugTotalKey, {
+			...slugTotal,
+			value: slugTotal.value + 1,
+		})
+	}
+	const allTotal = lruCache.get(allTotalKey)
+	if (typeof allTotal?.value === 'number') {
+		lruCache.set(allTotalKey, {
+			...allTotal,
+			value: allTotal.value + 1,
+		})
+	}
+
+	if (newReader) {
+		const readerEntry = await cache.get(READER_COUNT_CACHE_KEY)
+		if (typeof readerEntry?.value === 'number') {
+			await writeCacheValue(
+				READER_COUNT_CACHE_KEY,
+				readerEntry.value + 1,
+				1000 * 60 * 60,
 			)
-			return Number(result.rows?.[0]?.count ?? 0)
-		})(),
-		{
-			timings,
-			type: 'getActiveMembers',
-			desc: `Getting active members of ${team}`,
-		},
-	)
+		}
+	}
+}
 
-	return count
+async function patchAllBlogPostReadRankingsCache(
+	slug: string,
+	rankings: ReadRankings,
+) {
+	const entry = await cache.get(ALL_POST_RANKINGS_CACHE_KEY)
+	if (!entry || typeof entry.value !== 'object' || entry.value === null) {
+		return
+	}
+	await writeCacheValue(
+		ALL_POST_RANKINGS_CACHE_KEY,
+		{
+			...(entry.value as Record<string, ReadRankings>),
+			[slug]: rankings,
+		},
+		1000 * 60 * 5,
+	)
+}
+
+async function applyPostReadToCachedAnalytics({
+	request,
+	slug,
+	team,
+	newlyActive,
+	newReader,
+	beforePostRankings,
+	beforeOverallRankings,
+}: {
+	request: Request
+	slug: string
+	team: Team | null
+	newlyActive: boolean
+	newReader: boolean
+	beforePostRankings: ReadRankings
+	beforeOverallRankings: ReadRankings
+}) {
+	await incrementCachedPostReadCounts({ slug, newReader })
+
+	if (!team) {
+		return {
+			afterPostRankings: beforePostRankings,
+			afterOverallRankings: beforeOverallRankings,
+		}
+	}
+
+	const afterPostRankings = hasIncrementableRankings(beforePostRankings)
+		? incrementTeamRankings(beforePostRankings, team, { newlyActive })
+		: await getBlogReadRankings({ request, slug, forceFresh: true })
+	const afterOverallRankings = hasIncrementableRankings(beforeOverallRankings)
+		? incrementTeamRankings(beforeOverallRankings, team, { newlyActive })
+		: await getBlogReadRankings({ request, forceFresh: true })
+
+	if (hasIncrementableRankings(beforePostRankings)) {
+		await writeCacheValue(
+			blogSlugRankingsCacheKey(slug),
+			afterPostRankings,
+			1000 * 60 * 60 * 24 * 7,
+		)
+	}
+	if (hasIncrementableRankings(beforeOverallRankings)) {
+		await writeCacheValue(
+			OVERALL_RANKINGS_CACHE_KEY,
+			afterOverallRankings,
+			1000 * 60 * 60,
+		)
+	}
+	await patchAllBlogPostReadRankingsCache(slug, afterPostRankings)
+
+	return { afterPostRankings, afterOverallRankings }
 }
 
 async function getSlugReadsByUser({
@@ -581,16 +577,19 @@ async function getSlugReadsByUser({
 	const clientSession = await getClientSession(request, user)
 	const clientId = clientSession.getClientId()
 	const reads = await time(
-		db.findMany(postReadTable, {
-			where: user ? { userId: user.id } : { clientId },
-		}),
+		db
+			.query(postReadTable)
+			.where(user ? { userId: user.id } : { clientId })
+			.groupBy('postSlug')
+			.select('postSlug')
+			.all(),
 		{
 			timings,
 			type: 'getSlugReadsByUser',
 			desc: `Getting reads by ${user ? user.id : clientId}`,
 		},
 	)
-	return Array.from(new Set(reads.map((read) => read.postSlug)))
+	return reads.map((read) => read.postSlug)
 }
 
 async function getPostJson(request: Request) {
@@ -717,6 +716,7 @@ export {
 	getBlogPostReadCounts,
 	getTotalPostReads,
 	getReaderCount,
+	applyPostReadToCachedAnalytics,
 	getPostJson,
 	notifyOfTeamLeaderChangeOnPost,
 	notifyOfOverallTeamLeaderChange,

@@ -8,8 +8,23 @@ Runtime DB access uses `@remix-run/data-table`. SQL migrations live in
 
 D1 bills **rows scanned**, not rows returned. A `GROUP BY` or
 `COUNT(DISTINCT ...)` over `PostRead` (~1M rows) scans the whole table on every
-execution, so where a query's result is cached matters as much as the query:
+execution. Request-path popularity / reader-count reads must **not** scan
+`PostRead`:
 
+- `PostReadSlugCount` (`postSlug` PK) is the source for `blog:post-read-counts`
+  / `getTotalPostReads`. Increment it in `addPostRead`; never
+  `GROUP BY "PostRead"."postSlug"` on a request path (including MCP
+  `get_most_popular_posts`).
+- `PostReadReader` (`u:{userId}` / `c:{clientId}`) is the source for
+  `total-reader-count`. Increment with `INSERT OR IGNORE` on new reads;
+  reassign client → user in `migrateClientPostReadsToUser` (login / signup /
+  password reset). Do not `COUNT(DISTINCT userId/clientId)` over `PostRead`.
+- Team rankings still join `PostRead` ↔ `User` on cache miss / SWR, but only
+  as **two** grouped queries (`teamReadStatsSql` + `activeMembersByTeamSql`),
+  not 9 per-team scans. `/action/mark-as-read` increments the cached ranking
+  objects (`recentReads`, `activeMembers`, `totalReads`) instead of
+  `forceFresh`. Fallback `forceFresh` is only for pre-increment cache entries
+  that lack those fields.
 - `lruCache` (`app/utils/cache.server.ts`) is **per-isolate memory**. Isolates
   churn constantly (deploys, eviction, the warmup cron), so an `lruCache`-only
   cachified value re-runs its `getFreshValue` on every new isolate regardless
@@ -17,8 +32,8 @@ execution, so where a query's result is cached matters as much as the query:
   (`blog:post-read-counts`, `total-reader-count` in `app/utils/blog.server.ts`)
   run ~53k times/week ≈ 51B rows read/week ≈ a $195/month D1 line item.
 - `cache` (KV-backed via `CACHE_RPC`) is shared across isolates. Any cachified
-  value whose `getFreshValue` scans a large table MUST use `cache`, not
-  `lruCache`. Reserve `lruCache` for values that are cheap to recompute.
+  value whose `getFreshValue` used to scan a large table MUST use `cache`,
+  not `lruCache`. Reserve `lruCache` for values that are cheap to recompute.
 - Also avoid `forceFresh: true` on request paths (e.g. actions) unless the
   underlying data actually changed; it bypasses the shared cache and re-runs
   the aggregate queries.
@@ -66,11 +81,11 @@ type D1RpcBinding = D1SqlExecutor & {
 Structured clone does **not** reliably round-trip `Date` values. RPC boundaries
 use explicit serialization in `row-serialization.server.ts`:
 
-| Type | On the wire | After read |
-| --- | --- | --- |
-| `Date` | ISO string | `Date` (when field matches ISO prefix) |
-| `bigint` | `number` | `number` |
-| `Uint8Array` / `Buffer` | `ArrayBuffer` | `Uint8Array` (`Passkey.publicKey`) |
+| Type                    | On the wire   | After read                             |
+| ----------------------- | ------------- | -------------------------------------- |
+| `Date`                  | ISO string    | `Date` (when field matches ISO prefix) |
+| `bigint`                | `number`      | `number`                               |
+| `Uint8Array` / `Buffer` | `ArrayBuffer` | `Uint8Array` (`Passkey.publicKey`)     |
 
 WebAuthn `counter` is stored as SQLite `BIGINT` but coerced to `number` at read
 boundaries (counters are small).
@@ -88,27 +103,27 @@ Row types are exported as `User`, `Session`, `Call`, etc. (`TableRow<typeof …>
 
 ## Error mapping
 
-| Prisma | data-table / SQLite |
-| --- | --- |
-| `P2002` unique violation | `isUniqueConstraintError(error)` |
-| `P2025` not found | `isNotFoundError(error)`; `db.delete` returns `false` when missing |
+| Prisma                   | data-table / SQLite                                                |
+| ------------------------ | ------------------------------------------------------------------ |
+| `P2002` unique violation | `isUniqueConstraintError(error)`                                   |
+| `P2025` not found        | `isNotFoundError(error)`; `db.delete` returns `false` when missing |
 
 Import from `#app/utils/db.server.ts`.
 
 ## Operation mapping (our patterns)
 
-| Prisma | data-table |
-| --- | --- |
-| `findUnique({ where: { id } })` | `db.find(table, id)` or `db.findOne(table, { where: { id } })` |
-| `findUnique({ where: { email } })` | `db.findOne(table, { where: { email } })` |
-| `findFirst({ where, select })` | `db.findOne(table, { where })` or `db.query(table).where(...).select({...}).first()` |
-| `findMany({ where, include })` | `db.findMany(table, { where, with: { relation } })` |
-| `create({ data })` | `db.create(table, data)` or `{ returnRow: true }` |
-| `update({ where: { id }, data })` | `db.update(table, id, data)` |
-| `updateMany({ where, data })` | `db.updateMany(table, data, { where })` |
-| `delete` / `deleteMany` | `db.delete(table, id)` / `db.deleteMany(table, { where })` |
-| `upsert` (single field unique) | `db.query(table).upsert(values, { conflictTarget: ['email'], update })` |
-| `upsert` (composite unique) | `db.query(table).upsert(values, { conflictTarget: [...], update, touch: true })` |
+| Prisma                             | data-table                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| `findUnique({ where: { id } })`    | `db.find(table, id)` or `db.findOne(table, { where: { id } })`                       |
+| `findUnique({ where: { email } })` | `db.findOne(table, { where: { email } })`                                            |
+| `findFirst({ where, select })`     | `db.findOne(table, { where })` or `db.query(table).where(...).select({...}).first()` |
+| `findMany({ where, include })`     | `db.findMany(table, { where, with: { relation } })`                                  |
+| `create({ data })`                 | `db.create(table, data)` or `{ returnRow: true }`                                    |
+| `update({ where: { id }, data })`  | `db.update(table, id, data)`                                                         |
+| `updateMany({ where, data })`      | `db.updateMany(table, data, { where })`                                              |
+| `delete` / `deleteMany`            | `db.delete(table, id)` / `db.deleteMany(table, { where })`                           |
+| `upsert` (single field unique)     | `db.query(table).upsert(values, { conflictTarget: ['email'], update })`              |
+| `upsert` (composite unique)        | `db.query(table).upsert(values, { conflictTarget: [...], update, touch: true })`     |
 
 ### Upsert bind-order caveat
 
@@ -118,6 +133,6 @@ bound values before ON CONFLICT UPDATE values. SQL placeholder order is
 params are pushed first, columns get the wrong bindings (e.g. Password
 `userId` receiving the hash → FK failure / 500 on password set/reset).
 | `count` | `db.count(table, { where })` |
-| `groupBy` | `db.query(table).groupBy('col').select({...})` **or** `db.exec(sql\`...\`)` |
-| `$queryRaw` / `$executeRaw` | `db.exec(sql\`...\`)` or `db.exec({ text, values })` |
-| `lt` / `gt` in `where` | `import { lt, gt } from '@remix-run/data-table'` |
+| `groupBy` | `db.query(table).groupBy('col').select({...})` **or** `db.exec(sql\`...\`)`|
+|`$queryRaw` / `$executeRaw`|`db.exec(sql\`...\`)`or`db.exec({ text, values })`|
+|`lt`/`gt`in`where`|`import { lt, gt } from '@remix-run/data-table'` |
