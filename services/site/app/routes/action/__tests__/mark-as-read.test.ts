@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 
 const blogServerMocks = vi.hoisted(() => ({
 	addPostRead: vi.fn(),
+	applyPostReadToCachedAnalytics: vi.fn(),
 	getBlogReadRankings: vi.fn(),
 	notifyOfOverallTeamLeaderChange: vi.fn(),
 	notifyOfTeamLeaderChangeOnPost: vi.fn(),
@@ -24,7 +25,11 @@ vi.mock('#app/utils/client.server.ts', () => clientServerMocks)
 // Import after mocks so the action sees the mocked deps.
 import { action, markAsRead } from '../mark-as-read.tsx'
 
-function setup({ user }: { user: { id: string } | null }) {
+function setup({
+	user,
+}: {
+	user: { id: string; team?: 'RED' | 'BLUE' | 'YELLOW' } | null
+}) {
 	vi.clearAllMocks()
 	sessionServerMocks.getSession.mockResolvedValue({
 		getUser: async () => user,
@@ -33,6 +38,10 @@ function setup({ user }: { user: { id: string } | null }) {
 		getClientId: () => 'client-1',
 	})
 	blogServerMocks.getBlogReadRankings.mockResolvedValue([])
+	blogServerMocks.applyPostReadToCachedAnalytics.mockResolvedValue({
+		afterPostRankings: [],
+		afterOverallRankings: [],
+	})
 	return {
 		request: new Request('http://localhost/action/mark-as-read', {
 			method: 'POST',
@@ -46,8 +55,8 @@ afterEach(() => {
 	vi.restoreAllMocks()
 })
 
-test('action skips the forceFresh ranking recompute when the read was a repeat', async () => {
-	const { request } = setup({ user: { id: 'user-1' } })
+test('action skips ranking cache updates when the read was a repeat', async () => {
+	const { request } = setup({ user: { id: 'user-1', team: 'BLUE' } })
 	// addPostRead returns null when this user already read the post this week.
 	blogServerMocks.addPostRead.mockResolvedValue(null)
 
@@ -55,15 +64,20 @@ test('action skips the forceFresh ranking recompute when the read was a repeat',
 
 	expect(response.data).toEqual({ success: true })
 	expect(blogServerMocks.addPostRead).toHaveBeenCalledOnce()
+	expect(blogServerMocks.applyPostReadToCachedAnalytics).not.toHaveBeenCalled()
 	const forceFreshCalls = blogServerMocks.getBlogReadRankings.mock.calls.filter(
 		([args]) => args.forceFresh,
 	)
 	expect(forceFreshCalls).toHaveLength(0)
 })
 
-test('action force-refreshes rankings when a new PostRead row was created', async () => {
+test('action increments cached rankings when a new PostRead row was created', async () => {
 	const { request } = setup({ user: null })
-	blogServerMocks.addPostRead.mockResolvedValue({ id: 'post-read-1' })
+	blogServerMocks.addPostRead.mockResolvedValue({
+		id: 'post-read-1',
+		newlyActive: false,
+		newReader: true,
+	})
 
 	const response = await action({ request, params: {}, context: {} } as any)
 
@@ -72,11 +86,39 @@ test('action force-refreshes rankings when a new PostRead row was created', asyn
 		slug: 'some-post',
 		clientId: 'client-1',
 	})
+	expect(blogServerMocks.applyPostReadToCachedAnalytics).toHaveBeenCalledWith({
+		request,
+		slug: 'some-post',
+		team: null,
+		newlyActive: false,
+		newReader: true,
+		beforePostRankings: [],
+		beforeOverallRankings: [],
+	})
 	const forceFreshCalls = blogServerMocks.getBlogReadRankings.mock.calls.filter(
 		([args]) => args.forceFresh,
 	)
-	// one per-slug refresh and one overall refresh
-	expect(forceFreshCalls).toHaveLength(2)
+	expect(forceFreshCalls).toHaveLength(0)
+})
+
+test('action passes the reader team when incrementing cached rankings', async () => {
+	const { request } = setup({ user: { id: 'user-1', team: 'BLUE' } })
+	blogServerMocks.addPostRead.mockResolvedValue({
+		id: 'post-read-1',
+		newlyActive: true,
+		newReader: true,
+	})
+
+	await action({ request, params: {}, context: {} } as any)
+
+	expect(blogServerMocks.applyPostReadToCachedAnalytics).toHaveBeenCalledWith(
+		expect.objectContaining({
+			slug: 'some-post',
+			team: 'BLUE',
+			newlyActive: true,
+			newReader: true,
+		}),
+	)
 })
 
 test('markAsRead posts the slug to the mark-as-read action', async () => {

@@ -8,6 +8,8 @@ import {
 	homeworkCompletionTable,
 	passkeyTable,
 	passwordTable,
+	postReadReaderTable,
+	postReadSlugCountTable,
 	postReadTable,
 	sessionTable,
 	userTable,
@@ -29,6 +31,8 @@ const appTables = [
 	callKentEpisodeDraftTable,
 	callKentCallerEpisodeTable,
 	postReadTable,
+	postReadSlugCountTable,
+	postReadReaderTable,
 	passkeyTable,
 	favoriteTable,
 	homeworkCompletionTable,
@@ -47,9 +51,9 @@ test('migrated sqlite schema matches data-table definitions', () => {
 		expect(tableRow, `missing table ${tableName}`).toBeTruthy()
 
 		const columnNames = (
-			sqlite
-				.prepare(`PRAGMA table_info("${tableName}")`)
-				.all() as Array<{ name: string }>
+			sqlite.prepare(`PRAGMA table_info("${tableName}")`).all() as Array<{
+				name: string
+			}>
 		).map((column) => column.name)
 
 		for (const columnName of Object.keys(getTableColumns(table))) {

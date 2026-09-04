@@ -8,12 +8,14 @@ import {
 import { type SearchResult } from '@kcd-internal/search-shared'
 import { z } from 'zod'
 import { addSubscriberToForm } from '#app/kit/kit.server.js'
-import { getBlogRecommendations } from '#app/utils/blog.server.js'
+import {
+	getBlogPostReadCounts,
+	getBlogRecommendations,
+} from '#app/utils/blog.server.js'
 import { cache, cachified } from '#app/utils/cache.server.js'
 import { groupBy } from '#app/utils/cjs/lodash.ts'
 import { GITHUB_CONTENT_PATH } from '#app/utils/github-content-paths.server.js'
 import { getDomainUrl, getErrorMessage } from '#app/utils/misc.js'
-import { sql } from '@remix-run/data-table'
 import { db } from '#app/utils/db.server.js'
 import { postReadTable, userTable } from '#app/utils/db/schema.server.js'
 import { searchKCD } from '#app/utils/search.server.js'
@@ -175,22 +177,14 @@ function createServer() {
 		async () => {
 			const request = requireRequest()
 			const domainUrl = getDomainUrl(request)
-			const popularPostsResult = await db.exec(sql`
-				SELECT "postSlug", COUNT(*) AS count
-				FROM "PostRead"
-				GROUP BY "postSlug"
-				ORDER BY count DESC
-				LIMIT 10
-			`)
-			const mostPopularPosts = (popularPostsResult.rows ?? []).map((row) => ({
-				postSlug: String(row.postSlug),
-				_count: Number(row.count),
-			}))
-
-			const posts = mostPopularPosts.map(({ postSlug, _count }) => ({
-				url: `${domainUrl}/blog/${postSlug}`,
-				readCount: _count,
-			}))
+			const readCounts = await getBlogPostReadCounts({ request })
+			const posts = Object.entries(readCounts)
+				.sort(([, aCount], [, bCount]) => bCount - aCount)
+				.slice(0, 10)
+				.map(([postSlug, readCount]) => ({
+					url: `${domainUrl}/blog/${postSlug}`,
+					readCount,
+				}))
 
 			return {
 				content: [{ type: 'text', text: JSON.stringify(posts) }],
