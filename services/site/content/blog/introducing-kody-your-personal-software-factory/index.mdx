@@ -1,0 +1,117 @@
+---
+title: 'Introducing Kody: Your Personal Software Factory'
+date: 2026-09-08
+description: Kody turns the good answer into a package you keep.
+categories:
+  - ai
+meta:
+  keywords:
+    - ai
+    - agents
+    - kody
+    - mcp
+    - personal software
+    - security
+bannerMediaId: kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/banner
+bannerAlt: Kody the koala in a bright personal software factory, presenting floating integration icons at a workstation
+---
+
+In just the last couple days I've seen a lot of people complaining about the
+same category of problems:
+
+![Thomas Gauvin on X: i wish there was a harness as good as claude/codex/cursor that lets you swap between all models](/media/w_1600/kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/kit-1.png)
+
+![Larsen Cundric on X: How hard can it be to share memory across all agents?](/media/w_1600/kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/kit-2.png)
+
+![Oliver on X: how do people keep their remote devbox in-sync with their local machine?](/media/w_1600/kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/kit-3.png)
+
+![Klaas on X: can someone build a cursor/codex alternative that just works with all models](/media/w_1600/kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/kit-4.png)
+
+![Lord Bean on X: every time i switch AI coding tools i have to re-explain my entire life](/media/w_1600/kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/kit-5.png)
+
+I expect many of you can relate to this pain. In fact, I tested it:
+
+Most of you have more than one agent you're using weekly
+
+![Kent C. Dodds poll on X: How many companies do you give agent work to in a normal week? Most respondents use more than one.](/media/w_1600/kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/kit-6.png)
+
+The fact is that while these agents continue to get better all the time, there
+is some stiff competition and we find ourselves picking one over the other in a
+variety of situations.
+
+It's not like the choice between an Android and iPhone that you make once and
+stick with for years.
+
+It's more like what outfit you decide to wear based on the activities of the
+day.
+
+But the Android/iPhone analogy is still relevant here because each of these
+companies is doing their best to build a walled garden where you'll be happy so
+long as you never leave ("Aye Calypso" or "Hotel California" style).
+
+Yes, you can set up automations and integrations in Codex, but if you decide
+you want to try out Fable 5.1 or Grok Bot you've got to set all that stuff up
+again. And keeping track of where you're doing that is a pain.
+
+Oh, and speaking of integrations...
+
+Your .env file is not safe and you know it...
+
+![Tangled Circuit on X: Wrapping everything in python makes it pretty hard to give a model proper restrictions. Models do this regularly to bypass safety instructions such as reading the .env](/media/w_1600/kentcdodds.com/content/blog/introducing-kody-your-personal-software-factory/kit-7.png)
+
+If these problems sound relatable to you, I have a solution that I've been
+building for the last several months and I think it's really unique. It solves
+the walled garden problem, makes it impossible for agents to get at your
+secrets or fall prey to prompt injection and send them somewhere you don't
+approve, and saves you tokens with deterministic software that runs in an
+isolated sandbox.
+
+That solution is Kody.
+
+https://www.youtube.com/watch?v=QA0xYMAMjEg
+
+Kody is a sandboxed runtime in the cloud where your agents can author and
+execute code. You can integrate it with literally anything that has an API, has
+built-in and generic OAuth support, and can connect to MCP servers. Then Kody
+makes all of that available in the Kody runtime and your agents can author ad
+hoc code to interact with those integrations.
+
+Once you're happy with it, the agent turns that ad hoc code into a durable
+Kody-hosted repository and package so any of your agents can reference it in
+the future. Packages also have their own SQLite database, scheduled jobs,
+webhooks, or even full blown web apps for you to interact with those
+integrations. This makes it run faster, cheaper, and more reliably than any
+SKILL.md file you could come up with.
+
+And then if your package is really good, you can publish it to the public
+community of packages so anyone can find it and fork it into their own personal
+software factory and adapt it to their own needs. There are already hundreds of
+packages for interfacing with services you use.
+
+And Kody's secret storage means that you can safely store encrypted secrets
+(that are in a completely isolated database of your own) and agents don't have
+the ability to see those secrets even if they wanted to. They can use them to
+interact with services and your packages, but that's all. Safer than your .env.
+
+I've been using Kody like crazy over the last several months as I've been
+building it, and I've given early access to some of you as well to validate the
+product as well as improve its features, positioning, and framing. I created an
+MCP server for my home so Kody can control my lights/blinds/TVs/speakers/etc.
+Kody's become an integral part of my software development process (or
+"factory" if you want to call it that) with the integrations with Stripe,
+Cursor, Cloudflare, Sentry, Kit, Fathom, etc. And not having to set up
+automations, memories, and integrations in every agent every time has been
+really nice.
+
+I spent the last several months on a bet that you'd think it's really nice too
+and I'm excited to share it with you to try it out for FREE. I hope it helps
+you the way it helps me.
+
+So what are you waiting for? The doors are finally open! Go connect your agents
+to Kody!
+
+[https://kody.codes](https://kody.codes)
+
+P.S. Got questions? Just ask your agent "What is kody.codes?". Got problems
+once you're connected? Just ask your agent to submit feedback. My kody kicks
+off an agent to triage the feedback automatically.
