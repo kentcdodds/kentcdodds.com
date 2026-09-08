@@ -32,11 +32,16 @@ import {
 import { type Route } from './+types/root'
 import { AppHotkeys } from './components/app-hotkeys.tsx'
 import { ArrowLink } from './components/arrow-button.tsx'
+import { ButtonLink } from './components/button.tsx'
 import { ErrorPage, FourHundred, FourOhFour } from './components/errors.tsx'
 import { Footer } from './components/footer.tsx'
 import { Grimmacing } from './components/kifs.tsx'
 import { Navbar } from './components/navbar.tsx'
 import { NotificationMessage } from './components/notification-message.tsx'
+import {
+	Promotification,
+	getPromoCookieValue,
+} from './routes/resources/promotification.tsx'
 import { Spacer } from './components/spacer.tsx'
 import { TeamCircle } from './components/team-circle.tsx'
 import { illustrationImages, images } from './images.tsx'
@@ -48,6 +53,10 @@ import vendorStyles from './styles/vendors.css?url'
 import { ClientHintCheck, getHints } from './utils/client-hints.tsx'
 import { getClientSession } from './utils/client.server.ts'
 import { getPublicEnv } from './utils/env.server.ts'
+import {
+	KODY_LAUNCH_URL,
+	getKodyLaunchPromotification,
+} from './utils/kody-launch-promotification.ts'
 import { getLoginInfoSession } from './utils/login.server.ts'
 import { useNonce } from './utils/nonce-provider.ts'
 import { getSession } from './utils/session.server.ts'
@@ -121,6 +130,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const randomFooterImageKey = randomFooterImageKeys[
 		Math.floor(Math.random() * randomFooterImageKeys.length)
 	] as keyof typeof illustrationImages
+	const kodyLaunchPromotification = getKodyLaunchPromotification()
 
 	const requestInfo = {
 		hints: getHints(request),
@@ -141,6 +151,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 		latestPodcastSeasonLinks: PODCAST_LINKS_FALLBACK,
 		ENV: getPublicEnv(),
 		randomFooterImageKey,
+		kodyLaunchPromotification: kodyLaunchPromotification
+			? {
+					...kodyLaunchPromotification,
+					promoEndTime: kodyLaunchPromotification.promoEndTime.toISOString(),
+				}
+			: null,
+		kodyLaunchPromotificationCookieValue: kodyLaunchPromotification
+			? getPromoCookieValue({
+					promoName: kodyLaunchPromotification.promoName,
+					request,
+				})
+			: undefined,
 		requestInfo,
 		rootSocialMetas: (
 			await import('#app/og/page-meta.server.ts')
@@ -354,6 +376,30 @@ function App({
 			</head>
 			<body className="bg-white transition duration-500 dark:bg-gray-900">
 				<PageLoadingMessage />
+				{data.kodyLaunchPromotification ? (
+					<Promotification
+						key={data.kodyLaunchPromotification.promoName}
+						position="top-center"
+						promoName={data.kodyLaunchPromotification.promoName}
+						cookieValue={data.kodyLaunchPromotificationCookieValue}
+						promoEndTime={new Date(data.kodyLaunchPromotification.promoEndTime)}
+						hidePermanentlyOnInteraction
+					>
+						<div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+							<p className="max-w-md text-base leading-snug font-semibold">
+								{data.kodyLaunchPromotification.message}
+							</p>
+							<ButtonLink
+								to={KODY_LAUNCH_URL}
+								variant="secondary"
+								size="medium"
+								className="justify-self-start sm:justify-self-end"
+							>
+								{data.kodyLaunchPromotification.buttonText}
+							</ButtonLink>
+						</div>
+					</Promotification>
+				) : null}
 				<NotificationMessage queryStringKey="message" delay={0.3} />
 				<Navbar />
 				<AppHotkeys />

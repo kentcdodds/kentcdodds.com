@@ -99,6 +99,11 @@ reference:
   leaves the source unmarked and the next sync retries instead of skipping.
   Keep that ordering. `queryLexicalSearch` joins `lexical_sources` so partial
   rows written mid-replace are not searchable until the source is marked.
+- Site-wide promotifications are hardcoded (for example
+  `app/utils/kody-launch-promotification.ts`) and rendered from `root.tsx`
+  via `routes/resources/promotification.tsx`. Tito/workshop automatic
+  promos were removed. A promo getter should return `null` after its
+  `promoEndTime`. Dismiss uses an httpOnly cookie named `promoName`.
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
   `README.md` is repository documentation, not a post, and must stay out of
   `blogList`; syndication routes consume that list directly.
