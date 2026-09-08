@@ -81,6 +81,30 @@ test('getPromoCookieValue reads the hidden dismiss cookie for the promo name', (
 	).toBe('hidden')
 })
 
+test('action rejects non-POST methods', async () => {
+	const formData = new FormData()
+	formData.set('promoName', 'kody-launch-2026-09')
+
+	const result = (await action({
+		request: new Request('http://localhost/resources/promotification', {
+			method: 'PUT',
+			body: formData,
+		}),
+	} as any)) as {
+		type?: string
+		data?: unknown
+		init?: ResponseInit | null
+	}
+
+	expect(result.type).toBe('DataWithResponseInit')
+	expect(result.init?.status).toBe(405)
+	expect(new Headers(result.init?.headers).get('Allow')).toBe('POST')
+	expect(result.data).toEqual({
+		success: false,
+		error: 'Method Not Allowed',
+	})
+})
+
 test('loader rejects get requests with method not allowed', async () => {
 	const result = (await loader()) as {
 		type?: string

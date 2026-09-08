@@ -53,6 +53,13 @@ export async function loader() {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+	if (request.method !== 'POST') {
+		return json({ success: false, error: 'Method Not Allowed' } as const, {
+			status: 405,
+			headers: { Allow: 'POST' },
+		})
+	}
+
 	const formData = await request.formData()
 	const promoName = formData.get('promoName')
 	invariantResponse(typeof promoName === 'string', 'promoName must be a string')
