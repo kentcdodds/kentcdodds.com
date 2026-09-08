@@ -153,8 +153,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 		randomFooterImageKey,
 		kodyLaunchPromotification: kodyLaunchPromotification
 			? {
-					...kodyLaunchPromotification,
-					promoEndTime: kodyLaunchPromotification.promoEndTime.toISOString(),
+					promoName: kodyLaunchPromotification.promoName,
+					message: kodyLaunchPromotification.message,
+					buttonText: kodyLaunchPromotification.buttonText,
 				}
 			: null,
 		kodyLaunchPromotificationCookieValue: kodyLaunchPromotification
@@ -382,7 +383,6 @@ function App({
 						position="top-center"
 						promoName={data.kodyLaunchPromotification.promoName}
 						cookieValue={data.kodyLaunchPromotificationCookieValue}
-						promoEndTime={new Date(data.kodyLaunchPromotification.promoEndTime)}
 						hidePermanentlyOnInteraction
 					>
 						<div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">

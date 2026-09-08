@@ -104,6 +104,9 @@ reference:
   via `routes/resources/promotification.tsx`. Tito/workshop automatic
   promos were removed. A promo getter should return `null` after its
   `promoEndTime`. Dismiss uses an httpOnly cookie named `promoName`.
+  Launch cards should omit `promoEndTime` on `<Promotification>` so the
+  countdown / "Remind me later" chrome stays off unless there is a real
+  sale or event deadline.
 - Content is filesystem-based: blog posts are MDX files in `services/site/content/blog/`.
   `README.md` is repository documentation, not a post, and must stay out of
   `blogList`; syndication routes consume that list directly.
