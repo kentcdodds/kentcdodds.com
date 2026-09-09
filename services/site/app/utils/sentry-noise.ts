@@ -207,6 +207,29 @@ const REACT_SCHEDULER_ALREADY_WORKING = /^Should not already be working\.?$/i
 const REACT_SCHEDULER_REENTRANCY_FRAME =
 	/performWorkUntilDeadline|performWorkOnRootViaSchedulerTask|performSyncWorkOnRoot|scheduler(?:\.production)?(?:\.min)?\.js|react-dom(?:-client)?(?:\.production)?(?:\.min)?\.js/i
 
+/**
+ * React Router `startNavigation` aborts any in-flight navigation via
+ * `pendingNavigationController.abort()` before starting the next one.
+ * Browsers surface that as AbortError / DOMException code 20 (KCD-10D).
+ * Do not add these phrases to `SENTRY_IGNORE_ERRORS` — app AbortErrors
+ * (TTS, recording, fetch timeouts) must still alert.
+ */
+const REACT_ROUTER_NAV_ABORT_MESSAGE =
+	/signal is aborted without reason|The operation was aborted\.?|The user aborted a request/i
+
+const REACT_ROUTER_NAV_ABORT_FUNCTION_DISTINCTIVE =
+	/(?:^|\.)(?:startNavigation|doNavigate)$/
+
+const REACT_ROUTER_NAV_ABORT_FUNCTION_GENERIC =
+	/(?:^|\.)(?:handleClick|navigate)$/
+
+const DOM_EXCEPTION_ABORT_ERR = 20
+
+function isReactRouterPackageFilename(filename: string): boolean {
+	if (/@sentry\/react-router/i.test(filename)) return false
+	return /(?:^|\/)react-router(?:\/|$)/i.test(filename)
+}
+
 function isReactSchedulerReentrancyFrame(frame: {
 	filename?: string | null
 	function?: string | null
@@ -459,6 +482,115 @@ export function isReactSchedulerAlreadyWorkingNoise(
 		.join('\n')}\n${stackBlob(event, original)}`
 	// Bundled/minified stacks without sourcemaps still count when the only
 	// frames are scheduler / react-dom — reject app route paths.
+	if (/\/app\/|\/routes\/|components\//i.test(blob)) return false
+
+	return true
+}
+
+function exceptionHasAbortErrorIdentity(
+	event: SentryEventLike,
+	original: unknown,
+): boolean {
+	if (
+		(event.exception?.values ?? []).some((value) => value.type === 'AbortError')
+	) {
+		return true
+	}
+
+	if (
+		eventMessages(event).some((message) =>
+			REACT_ROUTER_NAV_ABORT_MESSAGE.test(message),
+		)
+	) {
+		return true
+	}
+
+	if (typeof DOMException !== 'undefined' && original instanceof DOMException) {
+		return (
+			original.name === 'AbortError' ||
+			original.code === DOM_EXCEPTION_ABORT_ERR
+		)
+	}
+
+	if (original instanceof Error && original.name === 'AbortError') {
+		return true
+	}
+
+	if (original && typeof original === 'object') {
+		const name = (original as { name?: unknown }).name
+		const code = (original as { code?: unknown }).code
+		if (name === 'AbortError') return true
+		if (code === DOM_EXCEPTION_ABORT_ERR || code === '20') return true
+		const message = (original as { message?: unknown }).message
+		if (
+			typeof message === 'string' &&
+			REACT_ROUTER_NAV_ABORT_MESSAGE.test(message)
+		) {
+			return true
+		}
+	}
+
+	return false
+}
+
+function frameLooksLikeReactRouterNavigation(frame: {
+	filename?: string | null
+	absPath?: string | null
+	function?: string | null
+}): boolean {
+	const fn = frame.function ?? ''
+	if (REACT_ROUTER_NAV_ABORT_FUNCTION_DISTINCTIVE.test(fn)) return true
+
+	const file = `${frame.filename ?? ''}\n${frame.absPath ?? ''}`
+	return (
+		isReactRouterPackageFilename(file) &&
+		REACT_ROUTER_NAV_ABORT_FUNCTION_GENERIC.test(fn)
+	)
+}
+
+function hasReactRouterNavigationStackEvidence(
+	event: SentryEventLike,
+	original: unknown,
+): boolean {
+	const frames = (event.exception?.values ?? []).flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+	if (frames.some(frameLooksLikeReactRouterNavigation)) return true
+
+	const blob = stackBlob(event, original)
+	if (!/react-router/i.test(blob)) return false
+	return (
+		/\b(?:startNavigation|doNavigate)\b/.test(blob) ||
+		(/react-router(?:\/dist|\/lib)/i.test(blob) &&
+			/\b(?:handleClick|navigate)\b/.test(blob))
+	)
+}
+
+/**
+ * Drop AbortError noise from React Router cancelling a superseded SPA
+ * navigation (`pendingNavigationController.abort()` in `startNavigation`).
+ * Require AbortError identity + RR navigation frames + no in-app frames —
+ * never the abort message alone (KCD-10D).
+ */
+export function isReactRouterNavigationAbortNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const original = hint.originalException
+	if (!exceptionHasAbortErrorIdentity(event, original)) return false
+
+	const frames = (event.exception?.values ?? []).flatMap(
+		(value) => value.stacktrace?.frames ?? [],
+	)
+	// Need attributed frames so we can prove exclusivity — message alone is
+	// not enough, and mixed in-app frames must stay reportable.
+	if (frames.length === 0) return false
+	if (frames.some((frame) => frame.inApp)) return false
+	if (!hasReactRouterNavigationStackEvidence(event, original)) return false
+
+	const blob = `${frames
+		.map((frame) => `${frame.filename ?? ''} ${frame.function ?? ''}`)
+		.join('\n')}\n${stackBlob(event, original)}`
 	if (/\/app\/|\/routes\/|components\//i.test(blob)) return false
 
 	return true
@@ -1120,6 +1252,7 @@ export function shouldDropSentryEvent(
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
 	if (isReactRouterDataProtocolNoise(event, hint)) return true
+	if (isReactRouterNavigationAbortNoise(event, hint)) return true
 	if (isHtmlDocumentAsScriptNoise(event, hint)) return true
 	if (isReactRouterSanitizedServerError(event, hint)) return true
 	if (event.request?.url?.includes('/lookout')) return true

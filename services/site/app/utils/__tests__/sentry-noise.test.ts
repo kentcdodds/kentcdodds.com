@@ -20,6 +20,7 @@ import {
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
 	isReactRouterDataProtocolNoise,
+	isReactRouterNavigationAbortNoise,
 	isReactRouterEdgeHttpStatusError,
 	isReactRouterSanitizedServerError,
 	isReactRouterSanitizedServerErrorInstance,
@@ -270,6 +271,236 @@ test('filters injected elem.firstChild parsers (KCD-ZZ)', () => {
 			"undefined is not an object (evaluating 'elem.firstChild')",
 		),
 	).toBe(true)
+})
+
+test('filters React Router superseded-navigation AbortError (KCD-10D)', () => {
+	const reactRouterNavAbortEvent = {
+		exception: {
+			values: [
+				{
+					type: 'AbortError',
+					value: 'signal is aborted without reason',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../node_modules/react-router/dist/development/chunk.mjs',
+								function: 'startNavigation',
+								inApp: false,
+							},
+							{
+								filename:
+									'../../../node_modules/react-router/dist/development/chunk.mjs',
+								function: 'navigate',
+								inApp: false,
+							},
+							{
+								filename:
+									'../../../node_modules/react-router/dist/development/chunk.mjs',
+								function: 'handleClick',
+								inApp: false,
+							},
+							{
+								filename:
+									'../../../node_modules/@sentry/react-router/build/esm/client/hydratedRouter.js',
+								function: 'hydratedRouter.router.navigate',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactRouterNavigationAbortNoise(reactRouterNavAbortEvent)).toBe(true)
+	expect(shouldDropSentryEvent(reactRouterNavAbortEvent)).toBe(true)
+	expect(matchesIgnoreError('signal is aborted without reason')).toBe(false)
+	expect(matchesIgnoreError('The operation was aborted.')).toBe(false)
+	expect(matchesIgnoreError('The user aborted a request')).toBe(false)
+
+	const operationAbortedEvent = {
+		exception: {
+			values: [
+				{
+					type: 'DOMException',
+					value: 'The operation was aborted.',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../node_modules/react-router/dist/development/chunk.mjs',
+								function: 'doNavigate',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactRouterNavigationAbortNoise(operationAbortedEvent)).toBe(true)
+
+	const userAbortedEvent = {
+		exception: {
+			values: [
+				{
+					type: 'AbortError',
+					value: 'The user aborted a request',
+					stacktrace: {
+						frames: [
+							{
+								filename: 'react-router/dist/chunk.mjs',
+								function: 'handleClick',
+								inApp: false,
+							},
+							{
+								filename: 'react-router/dist/chunk.mjs',
+								function: 'navigate',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactRouterNavigationAbortNoise(userAbortedEvent)).toBe(true)
+
+	const abortDomException = new DOMException(
+		'signal is aborted without reason',
+		'AbortError',
+	)
+	abortDomException.stack =
+		'AbortError: signal is aborted without reason\n    at startNavigation (react-router/dist/development/chunk.mjs:1:1)'
+	expect(abortDomException.code).toBe(20)
+	expect(
+		isReactRouterNavigationAbortNoise(
+			{
+				exception: {
+					values: [
+						{
+							type: 'DOMException',
+							value: 'signal is aborted without reason',
+							stacktrace: {
+								frames: [
+									{
+										filename:
+											'../../../node_modules/react-router/dist/development/chunk.mjs',
+										function: 'startNavigation',
+										inApp: false,
+									},
+								],
+							},
+						},
+					],
+				},
+			},
+			{ originalException: abortDomException },
+		),
+	).toBe(true)
+
+	// Message alone (no RR navigation stack) must not drop.
+	expect(
+		isReactRouterNavigationAbortNoise({
+			exception: {
+				values: [
+					{
+						type: 'AbortError',
+						value: 'signal is aborted without reason',
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// Generic AbortError without a React Router navigation stack must not drop.
+	expect(
+		isReactRouterNavigationAbortNoise({
+			exception: {
+				values: [
+					{
+						type: 'AbortError',
+						value: 'signal is aborted without reason',
+						stacktrace: {
+							frames: [
+								{
+									filename: '[native code]',
+									function: 'fetch',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// RR data-fetch abort frames without navigation functions are not enough.
+	expect(
+		isReactRouterNavigationAbortNoise({
+			exception: {
+				values: [
+					{
+						type: 'AbortError',
+						value: 'The operation was aborted.',
+						stacktrace: {
+							frames: [
+								{
+									filename:
+										'../../../node_modules/react-router/dist/development/chunk.mjs',
+									function: 'fetchAndDecodeViaTurboStream',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	// In-app frames mean a real app AbortError — keep reporting.
+	expect(
+		isReactRouterNavigationAbortNoise({
+			exception: {
+				values: [
+					{
+						type: 'AbortError',
+						value: 'signal is aborted without reason',
+						stacktrace: {
+							frames: [
+								{
+									filename: '/app/components/calls/recording-form.tsx',
+									function: 'stopRecording',
+									inApp: true,
+								},
+								{
+									filename:
+										'../../../node_modules/react-router/dist/development/chunk.mjs',
+									function: 'startNavigation',
+									inApp: false,
+								},
+							],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(false)
+
+	expect(
+		shouldDropSentryEvent({
+			exception: {
+				values: [
+					{
+						type: 'AbortError',
+						value: 'signal is aborted without reason',
+					},
+				],
+			},
+		}),
+	).toBe(false)
 })
 
 test('filters React Firefox scheduler re-entrancy (KCD-YT)', () => {

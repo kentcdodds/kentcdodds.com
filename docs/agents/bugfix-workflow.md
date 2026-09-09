@@ -45,6 +45,17 @@ fetch resource` / Safari `Load failed` with React Router stacks
   `shouldShowSpaNavNetworkReconnecting` only renders “Reconnecting…” when
   storage reads show the one-shot is unused **and** a `setItem` write probe
   succeeds (so a write failure cannot leave a stuck reconnecting state).
+- Client `AbortError: signal is aborted without reason` (also
+  `The operation was aborted` / `The user aborted a request`, or
+  DOMException `AbortError` / code 20) with a React Router navigation stack
+  (`startNavigation`, and/or `navigate` / `handleClick` / `doNavigate` from
+  react-router) and no in-app frames is RR cancelling a superseded SPA
+  navigation — not an app bug (KCD-10D). Filter via
+  `isReactRouterNavigationAbortNoise`. Do not add AbortError / "signal is
+  aborted" to `ignoreErrors` (real app AbortErrors from TTS, recording, or
+  fetch timeouts must still alert). Sibling `Failed to fetch` / `Load failed`
+  / `NetworkError` issues (KCD-Y0 / KCD-YC / KCD-QG / KCD-10B) stay on the
+  SPA hard-reload UX, not ignoreErrors.
 - Blog `markAsRead()` (`routes/action/mark-as-read.tsx`) is best-effort read
   tracking. Uncaught `fetch` rejections from that path are app noise: keep the
   catch inside `markAsRead` (KCD-FY / KCD-1R / KCD-ZW / KCD-WV), do not filter
