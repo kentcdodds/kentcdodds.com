@@ -84,6 +84,43 @@ test('filters injected extension post Method not found (KCD-W9)', () => {
 	expect(matchesIgnoreError('Error invoking post: Method not found')).toBe(true)
 })
 
+test('filters Chrome extension receiving-end-gone messaging (KCD-10F)', () => {
+	expect(
+		matchesIgnoreError(
+			'Could not establish connection. Receiving end does not exist.',
+		),
+	).toBe(true)
+	expect(
+		matchesIgnoreError(
+			'Could not establish connection. Receiving end does not exist',
+		),
+	).toBe(true)
+	// Generic connection failures must still alert.
+	expect(matchesIgnoreError('Could not establish connection.')).toBe(false)
+	expect(matchesIgnoreError('Receiving end does not exist.')).toBe(false)
+})
+
+test('filters injected Symbol.hasInstance redefine (KCD-10E)', () => {
+	expect(
+		matchesIgnoreError(
+			"can't redefine non-configurable property Symbol.hasInstance",
+		),
+	).toBe(true)
+	expect(
+		matchesIgnoreError(
+			'Cannot redefine non-configurable property: Symbol.hasInstance',
+		),
+	).toBe(true)
+	expect(
+		matchesIgnoreError('Cannot redefine property: Symbol.hasInstance'),
+	).toBe(true)
+	// Generic redefine / TypeError must still alert.
+	expect(
+		matchesIgnoreError("can't redefine non-configurable property foo"),
+	).toBe(false)
+	expect(matchesIgnoreError('Cannot redefine property: length')).toBe(false)
+})
+
 test('scopes EIP-1193 wallet user rejection (KCD-ZV)', () => {
 	expect(matchesIgnoreError('user rejected the request')).toBe(false)
 
