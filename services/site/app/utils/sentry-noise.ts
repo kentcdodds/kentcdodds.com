@@ -70,6 +70,13 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	/Invalid call to runtime\.sendMessage\(\)\. Tab not found/,
 	// Injected extension post bridge (KCD-W9).
 	/Error invoking post: Method not found/,
+	// Chrome extension messaging when the receiving end is gone (KCD-10F).
+	// Distinctive chrome.runtime lastError — no chrome-extension:// stack.
+	/Could not establish connection\. Receiving end does not exist\.?/i,
+	// Firefox injected redefine of Symbol.hasInstance (KCD-10E) plus Chrome
+	// sibling wording. Stack is only `<anonymous code>` — not site bundles.
+	/can'?t redefine non-configurable property Symbol\.hasInstance/i,
+	/Cannot redefine (?:non-configurable )?property[: ]*Symbol\.hasInstance/i,
 	// Android in-app browser (Instagram/etc.) native bridge (KCD-ZM).
 	/Error invoking postMessage: Java object is gone/,
 	// Injected social/OG scrapers reading meta tags that aren't present (KCD-2K family).
