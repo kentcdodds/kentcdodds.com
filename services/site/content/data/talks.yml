@@ -1,7 +1,5 @@
 - title: TBD
   deliveries:
-    - event: '[Nerdearla Argentina 2026](https://nerdearla.com/en/argentina/)'
-      date: 2026-09-24
     - event: '[React Summit Asia](https://reactsummit.asia/)'
       date: 2027-04-15
     - event: '[AI Coding Summit Asia](https://aicodingsummit.com/asia/)'
@@ -88,6 +86,8 @@
     - event: '[Laracon 2026](https://laracon.us/)'
       date: 2026-07-28
       recording: https://www.youtube.com/watch?v=zZPV_ggx5F8&list=PLV5CVI1eNcJgNqzNwcs4UKrlJdhfDjshf
+    - event: '[Nerdearla Argentina 2026](https://nerdearla.com/en/argentina/)'
+      date: 2026-09-24
     - event: '[All Things Open](https://allthingsopen.org/)'
       date: 2026-10-19
     - event: '[React Summit US](https://reactsummit.us/)'
