@@ -90,6 +90,8 @@
       date: 2026-09-24
     - event: '[All Things Open](https://allthingsopen.org/)'
       date: 2026-10-19
+    - event: '[BIOS SPHERE](https://biossphere.dev/)'
+      date: 2026-11-02
     - event: '[React Summit US](https://reactsummit.us/)'
       date: 2026-11-17
   tags:
