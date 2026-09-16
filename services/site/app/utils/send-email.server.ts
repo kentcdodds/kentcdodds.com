@@ -63,21 +63,29 @@ class EmailSendError extends Error {
 	}
 }
 
+function unwrapDisplayName(rawName: string) {
+	let name = rawName.trim()
+	if (name.startsWith('"') && name.endsWith('"') && name.length >= 2) {
+		name = name.slice(1, -1)
+	}
+	return name.replace(/\\"/g, '"').trim()
+}
+
 function parseEmailSendingAddress(value: string): {
 	address: string
 	name?: string
 } {
 	const trimmed = value.trim()
-	const angled =
-		/^(?:"((?:[^"\\]|\\.)*)"|([^<"]*?))\s*<([^<>\s]+@[^<>\s]+)>\s*$/.exec(
-			trimmed,
-		)
-	if (!angled) return { address: trimmed }
+	const close = trimmed.lastIndexOf('>')
+	const open = trimmed.lastIndexOf('<', close)
+	if (open === -1 || close <= open) return { address: trimmed }
 
-	const rawName = angled[1] ?? angled[2] ?? ''
-	const name = rawName.replace(/\\"/g, '"').trim()
-	const address = angled[3]
-	if (!address) return { address: trimmed }
+	const address = trimmed.slice(open + 1, close).trim()
+	if (!address.includes('@') || /[\s<>]/.test(address)) {
+		return { address: trimmed }
+	}
+
+	const name = unwrapDisplayName(trimmed.slice(0, open))
 	return name ? { address, name } : { address }
 }
 
@@ -131,23 +139,13 @@ async function sendEmail({
 	}
 
 	for (let attempt = 1; attempt <= EMAIL_SEND_MAX_ATTEMPTS; attempt++) {
-		let response: Response
-		try {
-			response = await fetch(url, {
-				method: 'POST',
-				headers,
-				body: JSON.stringify(payload),
-			})
-		} catch (error: unknown) {
-			if (attempt < EMAIL_SEND_MAX_ATTEMPTS) {
-				console.warn(
-					`Email send fetch failed (attempt ${attempt}/${EMAIL_SEND_MAX_ATTEMPTS}), retrying`,
-					error,
-				)
-				continue
-			}
-			throw error
-		}
+		// Do not retry thrown fetch: a reset after Cloudflare accepted the
+		// request would send a second independent message (no idempotency key).
+		const response = await fetch(url, {
+			method: 'POST',
+			headers,
+			body: JSON.stringify(payload),
+		})
 
 		const body = await response.text().catch(() => '<unreadable>')
 		const parsed = parseCloudflareEmailSendResponse(body)

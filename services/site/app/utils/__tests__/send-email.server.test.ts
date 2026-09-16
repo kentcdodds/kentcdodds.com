@@ -63,6 +63,10 @@ test('toEmailSendingAddress converts RFC 5322 senders to Cloudflare objects', ()
 	expect(toEmailSendingAddress('paul@datascienceinstitute.ai')).toBe(
 		'paul@datascienceinstitute.ai',
 	)
+	expect(toEmailSendingAddress('"Ada "AJ"" <ada@example.com>')).toEqual({
+		address: 'ada@example.com',
+		name: 'Ada "AJ"',
+	})
 })
 
 test('sendEmail posts structured from/to/reply_to to Cloudflare Email Sending', async () => {
@@ -217,6 +221,29 @@ test('sendEmail retries a transient 429 then succeeds', async () => {
 	})
 
 	expect(fetchMock).toHaveBeenCalledTimes(2)
+})
+
+test('sendEmail does not retry a thrown fetch', async () => {
+	using _ignoredEnv = setEnv({
+		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
+		CLOUDFLARE_API_TOKEN: 'token-test',
+	})
+	const fetchMock = vi
+		.fn()
+		.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+		.mockResolvedValueOnce(okSendResponse())
+	vi.stubGlobal('fetch', fetchMock)
+
+	await expect(
+		sendEmail({
+			to: 'paul@datascienceinstitute.ai',
+			from: 'team+kcd@kentcdodds.com',
+			subject: 'Hi',
+			text: 'Hi',
+			html: 'Hi',
+		}),
+	).rejects.toThrow('Failed to fetch')
+	expect(fetchMock).toHaveBeenCalledOnce()
 })
 
 test('email mock serializes Cloudflare address objects for captured fixtures', async () => {

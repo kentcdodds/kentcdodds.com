@@ -302,8 +302,10 @@ Sharp edges:
 - `CLOUDFLARE_API_TOKEN` must include **Email Sending: Edit** (and the
   account must be entitled). 401/403 here fail every transactional
   email, not one domain.
-- Transient 429 / 500 / 503 are retried once. Recipient rejects, invalid
-  schema, and auth errors are not.
+- Transient 429 / 500 / 503 responses are retried once. Thrown `fetch`
+  errors, recipient rejects, invalid schema, and auth errors are not
+  retried (a dropped response after accept would otherwise duplicate
+  mail).
 
 ## Dynamic worker env contract
 
