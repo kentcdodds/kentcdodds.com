@@ -77,6 +77,7 @@ function parseEmailSendingAddress(value: string): {
 	const rawName = angled[1] ?? angled[2] ?? ''
 	const name = rawName.replace(/\\"/g, '"').trim()
 	const address = angled[3]
+	if (!address) return { address: trimmed }
 	return name ? { address, name } : { address }
 }
 

@@ -53,7 +53,9 @@ test('toEmailSendingAddress converts RFC 5322 senders to Cloudflare objects', ()
 		name: 'Kent C. Dodds Team',
 	})
 	expect(
-		toEmailSendingAddress('Ada (via KCD contact form) <contact@kentcdodds.com>'),
+		toEmailSendingAddress(
+			'Ada (via KCD contact form) <contact@kentcdodds.com>',
+		),
 	).toEqual({
 		address: 'contact@kentcdodds.com',
 		name: 'Ada (via KCD contact form)',
@@ -64,7 +66,7 @@ test('toEmailSendingAddress converts RFC 5322 senders to Cloudflare objects', ()
 })
 
 test('sendEmail posts structured from/to/reply_to to Cloudflare Email Sending', async () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
 		CLOUDFLARE_API_TOKEN: 'token-test',
 	})
@@ -98,7 +100,7 @@ test('sendEmail posts structured from/to/reply_to to Cloudflare Email Sending', 
 })
 
 test('signup verification email uses a structured team+kcd from address', async () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
 		CLOUDFLARE_API_TOKEN: 'token-test',
 	})
@@ -129,7 +131,7 @@ test('signup verification email uses a structured team+kcd from address', async 
 })
 
 test('sendEmail throws EmailSendError with Cloudflare codes on 400', async () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
 		CLOUDFLARE_API_TOKEN: 'token-test',
 	})
@@ -159,7 +161,7 @@ test('sendEmail throws EmailSendError with Cloudflare codes on 400', async () =>
 })
 
 test('sendEmail treats HTTP 200 with success:false as a failure', async () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
 		CLOUDFLARE_API_TOKEN: 'token-test',
 	})
@@ -190,7 +192,7 @@ test('sendEmail treats HTTP 200 with success:false as a failure', async () => {
 })
 
 test('sendEmail retries a transient 429 then succeeds', async () => {
-	using ignoredEnv = setEnv({
+	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
 		CLOUDFLARE_API_TOKEN: 'token-test',
 	})
