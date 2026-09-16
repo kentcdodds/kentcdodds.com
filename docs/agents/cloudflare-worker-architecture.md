@@ -275,6 +275,38 @@ The dynamic worker is created with `globalOutbound` pointing at the parent's
 `mermaid-to-svg.kentcdodds.workers.dev` is compile-time only (not fetched at
 runtime in the worker).
 
+### Transactional email (Cloudflare Email Sending)
+
+Signup, password reset, contact, and Call Kent mail go through
+`services/site/app/utils/send-email.server.ts` →
+`POST /accounts/{account_id}/email/sending/send`.
+
+Sharp edges:
+
+- REST `from` / `to` / `reply_to` must be a **plain address**
+  (`team+kcd@kentcdodds.com`) or `{ address, name }`. RFC 5322
+  `"Name" <addr>` strings fail schema validation
+  (`email.sending.error.invalid_request_schema` / HTTP 400). App helpers
+  still accept the quoted form and convert before send.
+- `from` must be on the onboarded sending domain (`kentcdodds.com`).
+  Before the domain is onboarded, Cloudflare only delivers to **verified
+  destination addresses** — public signup would fail for everyone else.
+- The user-facing signup error
+  `Unable to send verification email right now. Please try again.` is a
+  catch-all around `sendSignupVerificationEmail`. Nothing in app code
+  special-cases a recipient TLD or Google Workspace / `smtp.google.com`
+  MX. Check worker logs for `Email send failed (status) …` plus the
+  Cloudflare JSON (`errors[].code` / `message`), then the Email Sending
+  dashboard (delivery, bounces, suppression, daily quota, sending
+  disabled).
+- `CLOUDFLARE_API_TOKEN` must include **Email Sending: Edit** (and the
+  account must be entitled). 401/403 here fail every transactional
+  email, not one domain.
+- Transient 429 / 500 / 503 responses are retried once. Thrown `fetch`
+  errors, recipient rejects, invalid schema, and auth errors are not
+  retried (a dropped response after accept would otherwise duplicate
+  mail).
+
 ## Dynamic worker env contract
 
 - All string values from the parent worker env (vars + secrets) are passed

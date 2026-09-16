@@ -2,17 +2,39 @@ export type OutboundEmailMockOptions = {
 	onOutboundEmail?: (body: Record<string, string>) => void | Promise<void>
 }
 
+type EmailSendingAddress =
+	| string
+	| {
+			address: string
+			name?: string | null
+	  }
+
 type EmailSendingRequestBody = {
-	to?: string | Array<string>
-	from?: string
+	to?: EmailSendingAddress | Array<EmailSendingAddress>
+	from?: EmailSendingAddress
 	subject?: string
 	text?: string
 	html?: string | null
-	reply_to?: string
+	reply_to?: EmailSendingAddress
 }
 
 function json(data: unknown, init?: ResponseInit) {
 	return Response.json(data, init)
+}
+
+function stringifyEmailSendingAddress(
+	value: EmailSendingAddress | undefined,
+): string | undefined {
+	if (!value) return undefined
+	if (typeof value === 'string') return value
+	const name = value.name?.trim()
+	if (!name) return value.address
+	const escapedName = name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+	return `"${escapedName}" <${value.address}>`
+}
+
+function emailSendingAddressValue(value: EmailSendingAddress): string {
+	return typeof value === 'string' ? value : value.address
 }
 
 function emailBodyToFixture(
@@ -20,8 +42,10 @@ function emailBodyToFixture(
 	to: string,
 ): Record<string, string> {
 	const fixture: Record<string, string> = { to }
-	if (body.from) fixture.from = body.from
-	if (body.reply_to) fixture.replyTo = body.reply_to
+	const from = stringifyEmailSendingAddress(body.from)
+	if (from) fixture.from = from
+	const replyTo = stringifyEmailSendingAddress(body.reply_to)
+	if (replyTo) fixture.replyTo = replyTo
 	if (body.subject) fixture.subject = body.subject
 	if (body.text) fixture.text = body.text
 	if (typeof body.html === 'string') fixture.html = body.html
@@ -29,8 +53,8 @@ function emailBodyToFixture(
 }
 
 function recipientsFromBody(body: EmailSendingRequestBody): Array<string> {
-	if (typeof body.to === 'string') return [body.to]
-	if (Array.isArray(body.to)) return body.to
+	if (Array.isArray(body.to)) return body.to.map(emailSendingAddressValue)
+	if (body.to) return [emailSendingAddressValue(body.to)]
 	return []
 }
 

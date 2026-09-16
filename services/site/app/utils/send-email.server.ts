@@ -19,6 +19,90 @@ type EmailMessage = {
 }
 
 /**
+ * Cloudflare Email Sending REST `from` / `to` / `reply_to` accept a plain
+ * address string or `{ address, name }` — not RFC 5322 `"Name" <addr>`
+ * strings (those fail `email.sending.error.invalid_request_schema`).
+ * https://developers.cloudflare.com/api/resources/email_sending
+ */
+type EmailSendingAddress =
+	| string
+	| {
+			address: string
+			name?: string
+	  }
+
+type CloudflareEmailSendResponse = {
+	success?: boolean
+	errors?: Array<{ code?: number; message?: string }>
+	result?: { permanent_bounces?: Array<string> }
+}
+
+const TRANSIENT_EMAIL_SEND_STATUSES = new Set([429, 500, 503])
+const EMAIL_SEND_MAX_ATTEMPTS = 2
+
+class EmailSendError extends Error {
+	readonly status: number
+	readonly codes: Array<number>
+	readonly providerBody: string
+
+	constructor({
+		status,
+		codes,
+		providerBody,
+	}: {
+		status: number
+		codes: Array<number>
+		providerBody: string
+	}) {
+		const codeSuffix = codes.length > 0 ? ` codes=${codes.join(',')}` : ''
+		super(`Email send failed with status ${status}${codeSuffix}`)
+		this.name = 'EmailSendError'
+		this.status = status
+		this.codes = codes
+		this.providerBody = providerBody
+	}
+}
+
+function unwrapDisplayName(rawName: string) {
+	let name = rawName.trim()
+	if (name.startsWith('"') && name.endsWith('"') && name.length >= 2) {
+		name = name.slice(1, -1)
+	}
+	return name.replace(/\\"/g, '"').trim()
+}
+
+function parseEmailSendingAddress(value: string): {
+	address: string
+	name?: string
+} {
+	const trimmed = value.trim()
+	const close = trimmed.lastIndexOf('>')
+	const open = trimmed.lastIndexOf('<', close)
+	if (open === -1 || close <= open) return { address: trimmed }
+
+	const address = trimmed.slice(open + 1, close).trim()
+	if (!address.includes('@') || /[\s<>]/.test(address)) {
+		return { address: trimmed }
+	}
+
+	const name = unwrapDisplayName(trimmed.slice(0, open))
+	return name ? { address, name } : { address }
+}
+
+function toEmailSendingAddress(value: string): EmailSendingAddress {
+	const parsed = parseEmailSendingAddress(value)
+	return parsed.name ? parsed : parsed.address
+}
+
+function parseCloudflareEmailSendResponse(body: string) {
+	try {
+		return JSON.parse(body) as CloudflareEmailSendResponse
+	} catch {
+		return null
+	}
+}
+
+/**
  * Sends via Cloudflare Email Service (Email Sending REST API).
  * https://developers.cloudflare.com/email-service/api/send-emails/rest-api/
  * Uses the shared CLOUDFLARE_API_TOKEN, which has the Email Sending Edit
@@ -40,39 +124,62 @@ async function sendEmail({
 		html = text
 	}
 
-	const response = await fetch(
-		`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/email/sending/send`,
-		{
-			method: 'POST',
-			headers: {
-				authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-				'content-type': 'application/json',
-			},
-			body: JSON.stringify({
-				to,
-				from,
-				subject,
-				text,
-				html,
-				...(replyTo ? { reply_to: replyTo } : {}),
-			}),
-		},
-	)
-
-	if (!response.ok) {
-		const body = await response.text().catch(() => '<unreadable>')
-		console.error(
-			`Email send failed (${response.status}) to=${to} subject=${JSON.stringify(subject)}: ${body.slice(0, 500)}`,
-		)
-		throw new Error(`Email send failed with status ${response.status}`)
+	const payload = {
+		to: toEmailSendingAddress(to),
+		from: toEmailSendingAddress(from),
+		subject,
+		text,
+		html,
+		...(replyTo ? { reply_to: toEmailSendingAddress(replyTo) } : {}),
+	}
+	const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/email/sending/send`
+	const headers = {
+		authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
+		'content-type': 'application/json',
 	}
 
-	const result = (await response.json().catch(() => null)) as {
-		result?: { permanent_bounces?: Array<string> }
-	} | null
-	const bounces = result?.result?.permanent_bounces ?? []
-	if (bounces.length > 0) {
-		console.warn(`Email permanently bounced for: ${bounces.join(', ')}`)
+	for (let attempt = 1; attempt <= EMAIL_SEND_MAX_ATTEMPTS; attempt++) {
+		// Do not retry thrown fetch: a reset after Cloudflare accepted the
+		// request would send a second independent message (no idempotency key).
+		const response = await fetch(url, {
+			method: 'POST',
+			headers,
+			body: JSON.stringify(payload),
+		})
+
+		const body = await response.text().catch(() => '<unreadable>')
+		const parsed = parseCloudflareEmailSendResponse(body)
+		const codes =
+			parsed?.errors
+				?.map((error) => error.code)
+				.filter((code): code is number => typeof code === 'number') ?? []
+
+		if (
+			TRANSIENT_EMAIL_SEND_STATUSES.has(response.status) &&
+			attempt < EMAIL_SEND_MAX_ATTEMPTS
+		) {
+			console.warn(
+				`Email send transient failure (${response.status}) attempt ${attempt}/${EMAIL_SEND_MAX_ATTEMPTS} to=${to} subject=${JSON.stringify(subject)}: ${body.slice(0, 500)}`,
+			)
+			continue
+		}
+
+		if (!response.ok || parsed?.success !== true) {
+			console.error(
+				`Email send failed (${response.status}) to=${to} subject=${JSON.stringify(subject)}: ${body.slice(0, 500)}`,
+			)
+			throw new EmailSendError({
+				status: response.status,
+				codes,
+				providerBody: body.slice(0, 500),
+			})
+		}
+
+		const bounces = parsed?.result?.permanent_bounces ?? []
+		if (bounces.length > 0) {
+			console.warn(`Email permanently bounced for: ${bounces.join(', ')}`)
+		}
+		return
 	}
 }
 
@@ -206,7 +313,13 @@ async function sendPasswordResetEmail({
 	})
 }
 
-export { sendEmail, sendSignupVerificationEmail, sendPasswordResetEmail }
+export {
+	EmailSendError,
+	sendEmail,
+	sendSignupVerificationEmail,
+	sendPasswordResetEmail,
+	toEmailSendingAddress,
+}
 
 /*
 eslint

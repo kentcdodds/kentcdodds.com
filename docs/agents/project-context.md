@@ -77,6 +77,13 @@ reference:
 - If Playwright E2E tests fail with D1 "table does not exist" errors, run
   `npm run db:reset --workspace kentcdodds.com` to apply migrations and seed
   data against the local Miniflare D1 database.
+- Transactional email (signup / password reset / contact / Call Kent) uses
+  Cloudflare Email Sending REST. Its `from` / `to` / `reply_to` payload
+  fields must be a plain address or `{ address, name }`. Application
+  helpers may accept RFC 5322 `"Name" <addr>` strings and normalize them
+  before sending. See
+  [`cloudflare-worker-architecture.md`](./cloudflare-worker-architecture.md)
+  (`Transactional email`).
 - Production schema changes must follow widen-then-narrow rollouts:
   deploy backward-compatible "widen" changes first, then ship narrowing
   constraints/removals in a follow-up deploy. Apply D1 migrations with
