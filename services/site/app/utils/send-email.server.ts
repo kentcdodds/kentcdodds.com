@@ -164,7 +164,7 @@ async function sendEmail({
 			continue
 		}
 
-		if (!response.ok || parsed?.success === false) {
+		if (!response.ok || parsed?.success !== true) {
 			console.error(
 				`Email send failed (${response.status}) to=${to} subject=${JSON.stringify(subject)}: ${body.slice(0, 500)}`,
 			)

@@ -164,6 +164,64 @@ test('sendEmail throws EmailSendError with Cloudflare codes on 400', async () =>
 	expect(fetchMock).toHaveBeenCalledOnce()
 })
 
+test('sendEmail treats HTTP 200 without an explicit success envelope as a failure', async () => {
+	using _ignoredEnv = setEnv({
+		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
+		CLOUDFLARE_API_TOKEN: 'token-test',
+	})
+	vi.stubGlobal(
+		'fetch',
+		vi.fn().mockResolvedValue(
+			new Response('not-json', {
+				status: 200,
+				headers: { 'content-type': 'text/plain' },
+			}),
+		),
+	)
+
+	await expect(
+		sendEmail({
+			to: 'paul@datascienceinstitute.ai',
+			from: 'team+kcd@kentcdodds.com',
+			subject: 'Hi',
+			text: 'Hi',
+			html: 'Hi',
+		}),
+	).rejects.toMatchObject({
+		name: 'EmailSendError',
+		status: 200,
+	})
+})
+
+test('sendEmail treats HTTP 200 with an empty JSON object as a failure', async () => {
+	using _ignoredEnv = setEnv({
+		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
+		CLOUDFLARE_API_TOKEN: 'token-test',
+	})
+	vi.stubGlobal(
+		'fetch',
+		vi.fn().mockResolvedValue(
+			new Response('{}', {
+				status: 200,
+				headers: { 'content-type': 'application/json' },
+			}),
+		),
+	)
+
+	await expect(
+		sendEmail({
+			to: 'paul@datascienceinstitute.ai',
+			from: 'team+kcd@kentcdodds.com',
+			subject: 'Hi',
+			text: 'Hi',
+			html: 'Hi',
+		}),
+	).rejects.toMatchObject({
+		name: 'EmailSendError',
+		status: 200,
+	})
+})
+
 test('sendEmail treats HTTP 200 with success:false as a failure', async () => {
 	using _ignoredEnv = setEnv({
 		CLOUDFLARE_ACCOUNT_ID: 'acct-test',
@@ -278,4 +336,31 @@ test('email mock serializes Cloudflare address objects for captured fixtures', a
 		from: '"Kent C. Dodds Team" <team+kcd@kentcdodds.com>',
 		subject: 'Your verification code for kentcdodds.com',
 	})
+})
+
+test('email mock escapes quotes in captured display names', async () => {
+	let captured: Record<string, string> | undefined
+	const response = await maybeHandleEmailMockFetch(
+		new Request(
+			'https://api.cloudflare.com/client/v4/accounts/test/email/sending/send',
+			{
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					to: 'ada@example.com',
+					from: { address: 'contact@kentcdodds.com', name: 'Ada "AJ"' },
+					subject: 'Hi',
+					text: 'Hi',
+				}),
+			},
+		),
+		{
+			onOutboundEmail: (body) => {
+				captured = body
+			},
+		},
+	)
+
+	expect(response?.ok).toBe(true)
+	expect(captured?.from).toBe('"Ada \\"AJ\\"" <contact@kentcdodds.com>')
 })

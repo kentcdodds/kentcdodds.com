@@ -28,7 +28,9 @@ function stringifyEmailSendingAddress(
 	if (!value) return undefined
 	if (typeof value === 'string') return value
 	const name = value.name?.trim()
-	return name ? `"${name}" <${value.address}>` : value.address
+	if (!name) return value.address
+	const escapedName = name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+	return `"${escapedName}" <${value.address}>`
 }
 
 function emailSendingAddressValue(value: EmailSendingAddress): string {
