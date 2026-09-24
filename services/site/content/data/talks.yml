@@ -73,6 +73,35 @@
     and run software for everyone, this is what the infrastructure underneath
     looks like. You can start building it today.
 
+- title: 'Product Engineering in the Age of AI'
+  resources:
+    - '[webhookSyntheticDispatch (built live · kody#2594)](https://github.com/kentcdodds/kody/pull/2594)'
+  deliveries:
+    - event:
+        '[Meetup Especial! Edición Nerdearla · React Buenos
+        Aires](https://www.meetup.com/react-en-buenos-aires/events/316594866/)'
+      date: 2026-09-24
+  tags:
+    - ai
+    - live coding
+    - product engineering
+  description: >-
+    AI is changing how we ship, but the hard part is still deciding what's worth
+    shipping. Product engineering is the skill of holding judgment,
+    accountability, and trade-offs when the implementation loop gets
+    ridiculously fast.
+
+
+    In this talk, I'll share how I think about building product in an AI era,
+    and we'll do it the only way that feels honest: live. On stage I built and
+    shipped a real Kody capability, `webhookSyntheticDispatch`, an MCP-only
+    synthetic webhook smoke path so agents can verify webhook behavior without
+    hitting the public URL.
+
+
+    Hosted with Distillery and React Buenos Aires as a Nerdearla-edition meetup.
+    Thanks to Distillery and Nerdearla for making the room possible.
+
 - title: 'The Last Software Engineer'
   resources:
     - '[article](https://www.epicproduct.engineer/the-last-software-engineer)'
