@@ -75,11 +75,12 @@
 
 - title: 'Product Engineering in the Age of AI'
   resources:
-    - '[webhookSyntheticDispatch (built live · kody#2594)](https://github.com/kentcdodds/kody/pull/2594)'
+    - '[webhookSyntheticDispatch (built live ·
+      kody#2594)](https://github.com/kentcdodds/kody/pull/2594)'
   deliveries:
     - event:
-        '[Meetup Especial! Edición Nerdearla · React Buenos
-        Aires](https://www.meetup.com/react-en-buenos-aires/events/316594866/)'
+        '[Tech Talk @Distillery (React Buenos
+        Aires)](https://www.meetup.com/es-ES/react-en-buenos-aires/)'
       date: 2026-09-24
   tags:
     - ai
@@ -87,20 +88,18 @@
     - product engineering
   description: >-
     AI is changing how we ship, but the hard part is still deciding what's worth
-    shipping. Product engineering is the skill of holding judgment,
-    accountability, and trade-offs when the implementation loop gets
-    ridiculously fast.
+    shipping. Product engineering is judgment, accountability, and trade-offs
+    when the implementation loop gets ridiculously fast.
 
 
-    In this talk, I'll share how I think about building product in an AI era,
-    and we'll do it the only way that feels honest: live. On stage I built and
-    shipped a real Kody capability, `webhookSyntheticDispatch`, an MCP-only
-    synthetic webhook smoke path so agents can verify webhook behavior without
-    hitting the public URL.
+    In this live-coded Distillery talk (with Q&A), I'll walk the
+    ship-without-reading-diffs loop: outcomes over diffs, gates, and primitives.
+    On stage I built and shipped a real Kody capability,
+    `webhookSyntheticDispatch`, an MCP-only synthetic webhook smoke path so
+    agents can verify webhook behavior without hitting the public URL.
 
 
-    Hosted with Distillery and React Buenos Aires as a Nerdearla-edition meetup.
-    Thanks to Distillery and Nerdearla for making the room possible.
+    Short evening talk at Humboldt 1967 Distillery with React Buenos Aires.
 
 - title: 'The Last Software Engineer'
   resources:
