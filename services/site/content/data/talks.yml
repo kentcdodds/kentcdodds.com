@@ -73,33 +73,37 @@
     and run software for everyone, this is what the infrastructure underneath
     looks like. You can start building it today.
 
-- title: 'Product Engineering in the Age of AI'
+- title: 'You Own the Outcome: Product Engineering in the Age of AI'
   resources:
+    - '[blog post](/blog/you-own-the-outcome)'
     - '[webhookSyntheticDispatch (built live ·
       kody#2594)](https://github.com/kentcdodds/kody/pull/2594)'
   deliveries:
     - event:
         '[Tech Talk @Distillery (React Buenos
-        Aires)](https://www.meetup.com/es-ES/react-en-buenos-aires/)'
+        Aires)](https://www.meetup.com/react-en-buenos-aires/events/316594866/)'
       date: 2026-09-24
   tags:
     - ai
     - live coding
     - product engineering
   description: >-
-    AI is changing how we ship, but the hard part is still deciding what's worth
-    shipping. Product engineering is judgment, accountability, and trade-offs
-    when the implementation loop gets ridiculously fast.
+    Agents are great at output: the code, the files, the diff. What they can't
+    do for you is own the outcome, which is what that code actually does for the
+    people using it. That's the work that's left for us, and I think it's the
+    most valuable work there is.
 
 
-    In this live-coded Distillery talk (with Q&A), I'll walk the
-    ship-without-reading-diffs loop: outcomes over diffs, gates, and primitives.
-    On stage I built and shipped a real Kody capability,
-    `webhookSyntheticDispatch`, an MCP-only synthetic webhook smoke path so
-    agents can verify webhook behavior without hitting the public URL.
+    In this live-coded Distillery talk (with Q&A), I'll show how I build product
+    with agents as collaborators today: building shared understanding first,
+    asking for options with trade-offs and one-way vs two-way doors, making the
+    product calls myself, and letting gates and AI reviewers check the work
+    instead of reading every diff. On stage I shipped a real Kody capability,
+    `webhookSyntheticDispatch`, to production.
 
 
-    Short evening talk at Humboldt 1967 Distillery with React Buenos Aires.
+    Given at Distillery's coworking space (Humboldt 1967, Palermo) with the
+    React Buenos Aires community.
 
 - title: 'The Last Software Engineer'
   resources:
