@@ -384,6 +384,17 @@ parent worker serves them at `/media/<transform-segment>/<id>`
 - In dev, missing local objects proxy from the deployed endpoint; transformed
   variants are proxied whole because the local miniflare images binding is
   low-fidelity (letterboxes instead of cover-cropping).
+- Nothing in CI uploads content media. Committing
+  `content/blog/<slug>/banner.png` does not publish it; the R2 object (bucket
+  `kentcdodds-com`, KCD account) must be written separately. The key is the
+  `bannerMediaId` exactly, with no extension (e.g.
+  `kentcdodds.com/content/blog/<slug>/banner`). Cloud agents lack Cloudflare
+  credentials but can upload through Kody: stage the bytes with
+  `@kentcdodds/agent-files` `create-upload`, then from Kody `execute` PUT them to
+  `/client/v4/accounts/<id>/r2/buckets/kentcdodds-com/objects/<encoded key>`
+  with the `cloudflareApiToken` secret placeholder. `/media` responses are
+  immutable, so replace a wrong image by bumping the id (`banner-v2`), not by
+  overwriting.
 
 ## Scheduled tasks (crons)
 
