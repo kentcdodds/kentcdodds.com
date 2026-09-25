@@ -1,0 +1,225 @@
+---
+title: 'You Own the Outcome: Product Engineering in the Age of AI'
+date: 2026-09-24
+description:
+  Agents are great at producing code. The valuable work left for you is deciding
+  what should exist, how it should behave, and what you're willing to trade for
+  it.
+categories:
+  - ai
+meta:
+  keywords:
+    - ai
+    - agents
+    - product engineering
+    - kody
+    - judgment
+bannerMediaId: kentcdodds.com/content/blog/you-own-the-outcome/banner
+bannerAlt:
+  Kent C. Dodds taking a selfie in front of a room full of developers at a
+  Distillery Tech Night in Buenos Aires, with a Distillery banner in the
+  background
+---
+
+I recently gave a talk where I shipped a real feature to production without
+writing the implementation myself. I didn't read the diff line by line either.
+An agent wrote the code. I spent the whole time on something else, and I want
+to tell you what that something else was, because I think it's the most
+important skill you can be developing right now.
+
+A while back I wrote about
+[The Last Software Engineer](https://www.epicproduct.engineer/the-last-software-engineer)
+as a thought experiment: if AI keeps taking over more of the implementation
+work, what's left for us? My answer was judgment. This post is the practical
+side of that answer. Not "someday," but how I'm actually building product today
+with agents as collaborators.
+
+## Output vs outcome
+
+Here's the distinction I keep coming back to:
+
+- **Output** is the code. The files, the functions, the diff.
+- **Outcome** is what that code does for the people using it.
+
+For most of our careers, those two were tightly coupled. If you wanted an
+outcome, you had to personally produce the output, and producing the output was
+slow and expensive. So we got really good at output, and we measured ourselves
+by it. Lines shipped, tickets closed, PRs merged.
+
+That coupling is breaking. Agents are _really_ good at output now, and they're
+getting better fast. What they're not good at is knowing which output is worth
+producing in the first place.
+
+**Agents produce output. You own the outcome.**
+
+That's not a consolation prize. Owning the outcome was always the valuable part.
+It just used to be buried under all the typing.
+
+## A real product to think with
+
+I'll ground this in the thing I've been building, because abstract advice about
+AI is cheap. [Kody](https://kody.codes) is the first real SaaS I've built after
+years of mostly making educational products, and building it has forced me to
+practice everything in this post.
+
+Kody exists because of two problems I ran into once I went all in on agents.
+
+**Problem one: agents are too expensive for recurring work.** I had an agent
+controlling the shades in my house. It worked! But paying for inference every
+single time I wanted to open the blinds is silly. That's a job for a tiny bit of
+deterministic software, not a language model thinking hard about window
+coverings. The better pattern is to spend inference _once_ to create durable
+software, then run that software cheaply forever. Kody is where that software
+lives.
+
+**Problem two: your automations get trapped.** Every agent platform wants to be
+the place where your integrations, memories, and automations live. Set it all
+up in one and you're stuck, or you get to set it all up again in the next one.
+With Kody, Kody is the home and the agents are guests. It isn't competing with
+Claude, Cursor, Devin, or OpenAI. It's the thing that lets all of them share and
+reuse the same durable software.
+
+I'll be honest: that second point was hard to explain. My early positioning was
+all over the place. The version that finally landed was simple: your agents
+share and reuse durable software without lock-in. Figuring that out wasn't a
+coding problem. No agent was going to hand it to me. It was outcome work.
+
+## Shipping a feature without writing it
+
+So here's the feature I built live. Kody packages can declare webhooks, and when
+you're building one, you want to know it works before real traffic shows up.
+People were testing webhooks with awkward workarounds, and that's a signal
+worth paying attention to (more on that in a bit).
+
+I didn't open an editor and start typing. I worked with an agent the same way
+I'd work with a sharp teammate who knows the codebase better than I do.
+
+### First, build shared understanding
+
+Before asking for anything, I made sure we agreed on the problem: who hits it,
+what they're trying to do, and what "done" looks like. If you skip this, the
+agent will happily solve a slightly different problem than the one you have,
+and it'll do it very convincingly.
+
+### Then, ask for options instead of an answer
+
+I asked for a few options, and for each one:
+
+- roughly how much effort it is,
+- what it trades off,
+- whether it's a **one-way door** (hard to undo) or a **two-way door** (easy to
+  change later),
+- and which one the agent recommends and why.
+
+That door distinction matters a lot. Two-way doors you can walk through quickly
+and let the agent run. One-way doors (public API names, data shapes, pricing)
+are where you slow down and think.
+
+### Then, make the calls
+
+Here's what we landed on, and notice that none of these decisions are about
+code:
+
+- **Ship the smallest useful slice.** A synthetic dispatch through Kody's MCP
+  and API surface: invoke the webhook's handler directly with a fixture you
+  provide. That covers the "does my handler work?" question for agents, which
+  is where most of this testing happens.
+- **Defer the UI test button.** Nice to have, but not what unblocks people
+  today. Easy to add later (two-way door).
+- **Defer a true end-to-end ingress dry run.** Valuable, but much bigger, and
+  the smaller slice answers most of the real question.
+- **Don't promise what we can't keep.** My first instinct was to call it a "dry
+  run." But the handler is real code that can call real services. We can't
+  honestly promise it's free of side effects, so we shouldn't name it like it
+  is.
+- **Synthetic runs count against usage.** They consume real compute. Making
+  them free would be a nice gesture that quietly breaks the unit economics.
+- **Name it carefully.** `webhookDispatch` sounded like it sends real webhooks.
+  `webhookSyntheticDispatch` says exactly what it is. Capability names are
+  public API, and that's a one-way door.
+
+The agent wrote the implementation, tests, and PR. Automated gates and AI
+reviewers checked the work. It shipped to production before the Q&A was over:
+[kody#2594](https://github.com/kentcdodds/kody/pull/2594).
+
+I didn't read that diff line by line. I read the _outcome_: does it do what we
+decided it should do, and did the gates I trust pass? That's only reasonable
+because of everything I'd set up ahead of time, which brings me to the part
+that actually makes this work.
+
+## How to be a good collaborator for agents
+
+A few patterns that have made the biggest difference for me:
+
+- **Shared understanding first.** Context before commands, every time.
+- **Ask for options with trade-offs and a recommendation.** You want the
+  agent's thinking, not just its typing.
+- **Ask questions instead of micromanaging.** "What would break if we did X?"
+  gets you further than a ten-step instruction list. If you're dictating every
+  step, you're doing the agent's job and not yours.
+- **Keep skills small.** A focused skill that does one thing well beats an
+  overstuffed one that tries to cover everything. Agents follow small, clear
+  instructions much more reliably.
+
+## What the human work actually is
+
+If agents handle the output, what should you be spending your time on? I think
+it falls into three buckets.
+
+### Decide what should exist
+
+- **Treat workarounds as product signal.** When people (or agents) keep hacking
+  around something, that's a feature request nobody wrote down. The webhook
+  feature started exactly this way.
+- **Don't be a ticket translator.** If your job is taking a product request and
+  rewriting it into instructions for an implementer, an agent can do that now.
+  The valuable part is deciding whether the request should be built at all, and
+  what it should actually be.
+
+### Design the playground
+
+- **Build good primitives.** Agents are only as good as the building blocks you
+  give them. When the primitives are right, you can hand over a job instead of
+  a massive spec. I dig into this more in my talk
+  [Thinking in Primitives](/talks/thinking-in-primitives-how-to-make-your-agents-produce-better-results-with-looser-specs).
+- **Automate shipping where the risk is low or medium.** Well-structured PRs,
+  tests, and AI reviewers let a lot of changes ship without you in the middle.
+  Save your attention for the high-risk, one-way-door stuff.
+- **Isolate secrets.** Agents should be able to _use_ credentials without ever
+  _seeing_ them. This is non-negotiable once agents are acting on your behalf.
+
+### Watch the outcomes
+
+- **Build self-healing automations.** Things will break. Set things up so that
+  failures get noticed and triaged (often by another agent) instead of silently
+  rotting.
+- **Know your metrics and unit economics.** "It works" isn't the bar. Does it
+  work at a cost that makes sense? The usage decision for synthetic dispatch is
+  a tiny example of this.
+
+You might notice what's _not_ on that list. Which framework you pick matters
+less than it used to. Whether you use a frontier model or a local one for a
+given job is a practical trade-off, not an identity. Those are output-level
+choices, and agents are increasingly good at navigating them with you.
+
+## Where this leaves your career
+
+If you're wondering what to get better at, here's my advice: **invest in
+judgment and outcomes.** Get closer to the people using what you build. Practice
+making trade-offs out loud and explaining why. Get comfortable being
+accountable for whether something _worked_, not just whether it _shipped_.
+
+Agents write code. The work that's most valuable, and most human, is deciding
+what should exist, how it should behave, what trade-offs are worth it, and which
+primitives will make all of that easier next time.
+
+Pick one feature you're working on this week and try it: build shared
+understanding with your agent, ask for options with trade-offs, make the calls
+yourself, and let the agent handle the output. I think you'll be surprised how
+much of your time is freed up for the work that actually matters.
+
+P.S. This post came out of a talk I gave at a
+[Distillery](https://distillery.com) Tech Night with the React Buenos Aires
+community. If you've been on the fence about giving a meetup talk, do it. You
+learn a ton by explaining what you know to a room full of people, and it's a
+great way to find out what you actually think.
