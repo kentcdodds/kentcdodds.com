@@ -4,14 +4,13 @@ import { invariantResponse } from '@epic-web/invariant'
 import * as cookie from 'cookie'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { useFetcher, useRevalidator, data as json } from 'react-router'
+import { useRevalidator, data as json } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 
 import { useCountdown } from '#app/components/hooks/use-countdown.ts'
 import { AlarmIcon } from '#app/components/icons.tsx'
 import { NotificationMessage } from '#app/components/notification-message.tsx'
 import { Spinner } from '#app/components/spinner.tsx'
-import { type SerializeFrom } from '#app/utils/serialize-from.ts'
 import { type Route } from './+types/promotification'
 
 export const PROMO_HIDDEN_COOKIE_VALUE = 'hidden'
@@ -84,6 +83,56 @@ export async function action({ request }: Route.ActionArgs) {
 	})
 }
 
+/**
+ * Best-effort promo dismiss cookie write. Offline / flaky mobile networks reject
+ * `fetch` with TypeError (Chrome "Failed to fetch", Safari "Load failed",
+ * Firefox "NetworkError…") — catch so callers never surface that as a React
+ * Router fetcher action error (which `setFetcherError` would put on the nearest
+ * ErrorBoundary and take down the page) (KCD-10H / KCD-Y0).
+ *
+ * Prefer plain `fetch` over `useFetcher().submit`: fetcher actions also trigger
+ * fog-of-war `__manifest` discovery, which can fail the same way before POST.
+ */
+export async function dismissPromotification({
+	promoName,
+	maxAge,
+}: {
+	promoName: string
+	maxAge: number
+}): Promise<{ success: true } | { success: false; error: string } | undefined> {
+	try {
+		const response = await fetch('/resources/promotification', {
+			method: 'POST',
+			body: new URLSearchParams({
+				promoName,
+				maxAge: String(maxAge),
+			}),
+		})
+		if (!response.ok) {
+			let error = 'Could not save preference. Please try again.'
+			try {
+				const body: unknown = await response.json()
+				if (
+					body &&
+					typeof body === 'object' &&
+					'success' in body &&
+					(body as { success?: unknown }).success === false &&
+					'error' in body &&
+					typeof (body as { error?: unknown }).error === 'string'
+				) {
+					error = (body as { error: string }).error
+				}
+			} catch {
+				// Non-JSON error bodies (edge HTML, empty) — keep the generic message.
+			}
+			return { success: false, error }
+		}
+		return { success: true }
+	} catch {
+		return undefined
+	}
+}
+
 type NotificationMessageProps = Parameters<typeof NotificationMessage>[0]
 const ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 10
 
@@ -115,31 +164,43 @@ export function Promotification({
 	const [visible, setVisible] = useState(
 		cookieValue !== PROMO_HIDDEN_COOKIE_VALUE,
 	)
-	const [submittedPromoName, setSubmittedPromoName] = useState<string | null>(
-		null,
-	)
-	const fetcher = useFetcher<SerializeFrom<typeof action>>()
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [dismissError, setDismissError] = useState<string | null>(null)
+	const [dismissedSubmittedPromo, setDismissedSubmittedPromo] = useState(false)
 	const revalidator = useRevalidator()
 	const revalidatedEndTimeRef = React.useRef<number | null>(null)
-	const showSpinner = useSpinDelay(fetcher.state !== 'idle')
-	const dismissedSubmittedPromo =
-		fetcher.data?.success && submittedPromoName === promoName
-	const disableLink = fetcher.state !== 'idle' || dismissedSubmittedPromo
+	const showSpinner = useSpinDelay(isSubmitting)
+	const disableLink = isSubmitting || dismissedSubmittedPromo
 
-	function submitDismiss(maxAge: number) {
-		const formData = new FormData()
-		formData.set('promoName', promoName)
-		formData.set('maxAge', String(maxAge))
-		setSubmittedPromoName(promoName)
-		fetcher.submit(formData, {
-			action: '/resources/promotification',
-			method: 'POST',
+	function submitDismiss(
+		maxAge: number,
+		{ hideLocally }: { hideLocally: boolean },
+	) {
+		if (hideLocally) setVisible(false)
+		setDismissError(null)
+		setIsSubmitting(true)
+		void dismissPromotification({ promoName, maxAge }).then((result) => {
+			setIsSubmitting(false)
+			if (result === undefined) {
+				// Network failure — best-effort. Keep local hide when already hidden;
+				// for "Remind me later" (still visible), show the inline error.
+				if (!hideLocally) {
+					setDismissError('Could not save preference. Please try again.')
+				}
+				return
+			}
+			if (result.success === false) {
+				setDismissError(result.error)
+				return
+			}
+			setDismissedSubmittedPromo(true)
+			setVisible(false)
 		})
 	}
 
 	function handleInteraction(event: React.MouseEvent<HTMLDivElement>) {
 		if (!hidePermanentlyOnInteraction) return
-		if (fetcher.state !== 'idle' || dismissedSubmittedPromo) return
+		if (isSubmitting || dismissedSubmittedPromo) return
 		const target = event.target
 		if (!(target instanceof HTMLElement)) return
 		const interactiveElement = target.closest(
@@ -147,25 +208,16 @@ export function Promotification({
 		)
 		if (!interactiveElement) return
 		if (interactiveElement.closest('[data-promotification-snooze]')) return
-		setVisible(false)
-		submitDismiss(ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS)
+		submitDismiss(ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS, {
+			hideLocally: true,
+		})
 	}
 
 	useEffect(() => {
-		if (dismissedSubmittedPromo) {
-			setVisible(false)
-		}
-	}, [dismissedSubmittedPromo])
-
-	useEffect(() => {
 		setVisible(cookieValue !== PROMO_HIDDEN_COOKIE_VALUE)
-		setSubmittedPromoName(null)
+		setDismissedSubmittedPromo(false)
+		setDismissError(null)
 	}, [cookieValue, promoName])
-
-	const dismissError =
-		fetcher.state === 'idle' && fetcher.data && fetcher.data.success === false
-			? fetcher.data.error
-			: null
 
 	useEffect(() => {
 		// `promoEndTime` can change if a parent swaps promos; keep this derived.
@@ -199,7 +251,9 @@ export function Promotification({
 			onDismiss={() => {
 				setVisible(false)
 				if (hidePermanentlyOnInteraction) {
-					submitDismiss(ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS)
+					submitDismiss(ONE_TIME_PROMOTIFICATION_MAX_AGE_SECONDS, {
+						hideLocally: true,
+					})
 				}
 			}}
 		>
@@ -259,7 +313,11 @@ export function Promotification({
 										}`}
 										data-promotification-snooze
 										disabled={disableLink}
-										onClick={() => submitDismiss(dismissTimeSeconds)}
+										onClick={() =>
+											submitDismiss(dismissTimeSeconds, {
+												hideLocally: false,
+											})
+										}
 									>
 										<span>Remind me later</span>
 										<AlarmIcon />
