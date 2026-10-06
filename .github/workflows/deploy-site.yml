@@ -21,6 +21,9 @@ jobs:
   verify:
     name: ✅ Site Gate
     runs-on: ubuntu-latest
+    # Healthy gate is ~3.5m (verify ~2m). Bound the job so a stalled
+    # lint/typecheck/test/build cannot sit in_progress for the 6h default.
+    timeout-minutes: 25
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v6
@@ -55,6 +58,7 @@ jobs:
         run: npm run test:e2e:install --workspace kentcdodds.com
 
       - name: 🔬 Verify site
+        timeout-minutes: 10
         run: npm run ci:verify --workspace=kentcdodds.com
 
   playwright:
