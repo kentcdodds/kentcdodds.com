@@ -213,6 +213,11 @@ Kody/workflows/GitHub create the initial PR as a substitute.
   100% (`extract-zip` / `yauzl` — microsoft/playwright#40998). Site Gate and
   the Playwright job install browsers with a 10-minute step timeout so a
   stalled extract fails the check instead of sitting `in_progress`.
+  `🔬 Verify site` (`ci:verify`: lint, typecheck, test, build) also has a
+  10-minute step timeout, and the Site Gate job itself is capped at 25
+  minutes. Healthy verify is ~2 minutes; without those bounds a hung
+  typecheck/browser-test/build leaves the required check `in_progress`
+  until GitHub's 6-hour job default (see #923 / #907).
 - Run the Playwright e2e suite with `npm run test:e2e:run` (CI mode, its own
   server on port 8811). It fails to start if a dev server is already bound to
   port 3000/3099 (the MDX sidecar), so stop `npm run dev` first, or set
