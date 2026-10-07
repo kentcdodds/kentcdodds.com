@@ -5,6 +5,7 @@ import {
 	type HotkeysHelpCombo,
 	type HotkeysHelpGroup,
 } from '#app/utils/hotkeys.ts'
+import { subscribeMediaQuery } from '#app/utils/subscribe-media-query.ts'
 import { CloseIcon } from './icons.tsx'
 import { H3, Paragraph } from './typography.tsx'
 
@@ -72,11 +73,7 @@ function HotkeysHelpDialog({
 		}
 
 		updateReducedMotionPreference()
-		mediaQuery.addEventListener('change', updateReducedMotionPreference)
-
-		return () => {
-			mediaQuery.removeEventListener('change', updateReducedMotionPreference)
-		}
+		return subscribeMediaQuery(mediaQuery, updateReducedMotionPreference)
 	}, [])
 
 	React.useEffect(() => {
