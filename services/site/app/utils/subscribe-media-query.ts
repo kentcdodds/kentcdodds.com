@@ -17,10 +17,16 @@ function subscribeMediaQuery(
 	}
 
 	// Legacy MediaQueryList (Safari < 14)
-	mediaQuery.addListener(listener)
-	return () => {
-		mediaQuery.removeListener(listener)
+	if (typeof mediaQuery.addListener === 'function') {
+		mediaQuery.addListener(listener)
+		return () => {
+			mediaQuery.removeListener(listener)
+		}
 	}
+
+	// Neither API is available (e.g. matchMedia proxied by a browser extension
+	// on Chrome 127+ where addListener was removed). Return a no-op cleanup.
+	return () => {}
 }
 
 export { subscribeMediaQuery }
