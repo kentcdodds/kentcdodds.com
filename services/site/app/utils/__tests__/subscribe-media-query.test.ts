@@ -69,3 +69,20 @@ test('subscribeMediaQuery falls back to addListener when addEventListener is mis
 	mediaQuery.dispatch(event)
 	expect(listener).toHaveBeenCalledTimes(1)
 })
+
+test('subscribeMediaQuery no-ops when neither listener API exists (KCD-10K)', () => {
+	const listener = vi.fn()
+	const mediaQuery = {
+		matches: true,
+		media: '(prefers-reduced-motion: reduce)',
+		onchange: null,
+		dispatchEvent: vi.fn(),
+	} as unknown as MediaQueryList
+
+	expect(mediaQuery.matches).toBe(true)
+
+	const unsubscribe = subscribeMediaQuery(mediaQuery, listener)
+
+	expect(listener).not.toHaveBeenCalled()
+	expect(() => unsubscribe()).not.toThrow()
+})
