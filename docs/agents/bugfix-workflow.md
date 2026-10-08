@@ -45,6 +45,17 @@ fetch resource` / Safari `Load failed` with React Router stacks
   `shouldShowSpaNavNetworkReconnecting` only renders “Reconnecting…” when
   storage reads show the one-shot is unused **and** a `setItem` write probe
   succeeds (so a write failure cannot leave a stuck reconnecting state).
+  Production minified `Error.stack` often lacks RR function names while Sentry
+  sourcemaps restore them on event frames — `beforeSend` also drops via
+  `isReactRouterClientDataNetworkErrorEvent` (same message + RR frames; never
+  the phrase alone). Fetcher-action stacks (`handleFetcherAction` /
+  `singleFetchActionStrategy`) are excluded from the hard-reload signature.
+- Promo dismiss (`routes/resources/promotification.tsx` `dismissPromotification`)
+  is best-effort cookie write like `markAsRead`. Do **not** use
+  `useFetcher().submit` for it: RR `setFetcherError` puts network TypeErrors on
+  the nearest ErrorBoundary and replaces the page (KCD-10H / KCD-Y0 — including
+  fog-of-war `__manifest` failures before the POST). Keep the catch inside
+  `dismissPromotification`; do not filter generic network strings for this.
 - Client `AbortError: signal is aborted without reason` (also
   `The operation was aborted` / `The user aborted a request`, or
   DOMException `AbortError` / code 20) with a React Router navigation stack
@@ -55,7 +66,8 @@ fetch resource` / Safari `Load failed` with React Router stacks
   aborted" to `ignoreErrors` (real app AbortErrors from TTS, recording, or
   fetch timeouts must still alert). Sibling `Failed to fetch` / `Load failed`
   / `NetworkError` issues (KCD-Y0 / KCD-YC / KCD-QG / KCD-10B) stay on the
-  SPA hard-reload UX, not ignoreErrors.
+  SPA hard-reload UX **or** the promo best-effort dismiss path (KCD-Y0 /
+  KCD-10H fetcher-action), not ignoreErrors.
 - Blog `markAsRead()` (`routes/action/mark-as-read.tsx`) is best-effort read
   tracking. Uncaught `fetch` rejections from that path are app noise: keep the
   catch inside `markAsRead` (KCD-FY / KCD-1R / KCD-ZW / KCD-WV), do not filter

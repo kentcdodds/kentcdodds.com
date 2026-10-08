@@ -1078,9 +1078,20 @@ const REACT_ROUTER_SPA_NAV_NETWORK_STACK =
 const POST_USER_DATA_FUNCTION = /(?:^|\.)postUserData$/
 
 /**
+ * Fetcher action stacks (promo dismiss, etc.). Same network TypeError message /
+ * turbo-stream frames as SPA nav, but hard-reloading the document does not
+ * recover a best-effort cookie POST — leave those to app-level catch (KCD-10H).
+ */
+const REACT_ROUTER_FETCHER_ACTION_STACK =
+	/handleFetcherAction|singleFetchActionStrategy/i
+
+/**
  * Browser network-layer TypeError during React Router SPA navigation.
  * Live endpoints often still return 200; do not broadly `ignoreErrors` —
  * prefer a one-shot document hard-reload in the route error boundary.
+ *
+ * Excludes fetcher-action stacks: those are not SPA navigations and must not
+ * trigger the hard-reload UX (KCD-10H / KCD-Y0).
  */
 export function isReactRouterSpaNavNetworkError(error: unknown): boolean {
 	if (!(error instanceof TypeError)) return false
@@ -1088,7 +1099,45 @@ export function isReactRouterSpaNavNetworkError(error: unknown): boolean {
 		return false
 	}
 	const stack = error.stack ?? ''
+	if (REACT_ROUTER_FETCHER_ACTION_STACK.test(stack)) return false
 	return REACT_ROUTER_SPA_NAV_NETWORK_STACK.test(stack)
+}
+
+/**
+ * beforeSend safety net for React Router client data/manifest network
+ * TypeErrors (SPA nav or fetcher action). `useCapturedRouteError` skips
+ * capture when `Error.stack` still has RR function names, but production
+ * minified stacks often lack those names while Sentry sourcemaps restore them
+ * on event frames — so captureException still fires (KCD-10H). Drop only when
+ * the message is a browser network TypeError **and** sourcemapped / raw stack
+ * evidence shows RR data-protocol frames. Never the phrase alone.
+ */
+export function isReactRouterClientDataNetworkErrorEvent(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const original = hint.originalException
+	const messages = eventMessages(event)
+	if (original instanceof Error) messages.push(original.message)
+
+	if (
+		!messages.some((message) =>
+			BROWSER_NETWORK_FETCH_TYPEERROR.test(message.trim()),
+		)
+	) {
+		return false
+	}
+
+	const namedTypeError = (event.exception?.values ?? []).some(
+		(value) => value.type === 'TypeError',
+	)
+	if (!namedTypeError && !(original instanceof TypeError)) return false
+
+	const frameBlob = exceptionFrames(event)
+		.map((frame) => `${frame.function ?? ''}\n${frame.filename ?? ''}`)
+		.join('\n')
+	const evidence = `${frameBlob}\n${stackBlob(event, original)}`
+	return REACT_ROUTER_SPA_NAV_NETWORK_STACK.test(evidence)
 }
 
 function isAnonymousStackFilename(value: string | null | undefined): boolean {
@@ -1259,6 +1308,7 @@ export function shouldDropSentryEvent(
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
 	if (isReactRouterDataProtocolNoise(event, hint)) return true
+	if (isReactRouterClientDataNetworkErrorEvent(event, hint)) return true
 	if (isReactRouterNavigationAbortNoise(event, hint)) return true
 	if (isHtmlDocumentAsScriptNoise(event, hint)) return true
 	if (isReactRouterSanitizedServerError(event, hint)) return true

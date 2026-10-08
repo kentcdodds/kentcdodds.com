@@ -1,7 +1,17 @@
 // @vitest-environment node
-import { expect, test } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 
-import { action, getPromoCookieValue, loader } from '../promotification.tsx'
+import {
+	action,
+	dismissPromotification,
+	getPromoCookieValue,
+	loader,
+} from '../promotification.tsx'
+
+afterEach(() => {
+	vi.unstubAllGlobals()
+	vi.restoreAllMocks()
+})
 
 function makeRequest(formData: FormData) {
 	return new Request('http://localhost/resources/promotification', {
@@ -119,4 +129,60 @@ test('loader rejects get requests with method not allowed', async () => {
 		success: false,
 		error: 'Method Not Allowed',
 	})
+})
+
+test('dismissPromotification posts promoName and maxAge', async () => {
+	const fetchMock = vi
+		.fn()
+		.mockResolvedValue(new Response(null, { status: 200 }))
+	vi.stubGlobal('fetch', fetchMock)
+
+	const result = await dismissPromotification({
+		promoName: 'kody-launch-2026-09',
+		maxAge: 86400,
+	})
+
+	expect(result).toEqual({ success: true })
+	expect(fetchMock).toHaveBeenCalledOnce()
+	expect(fetchMock.mock.calls[0]?.[0]).toBe('/resources/promotification')
+	expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'POST' })
+	const body = fetchMock.mock.calls[0]?.[1]?.body
+	expect(body).toBeInstanceOf(URLSearchParams)
+	expect(String(body)).toBe('promoName=kody-launch-2026-09&maxAge=86400')
+})
+
+test('dismissPromotification swallows network TypeErrors (KCD-10H)', async () => {
+	vi.stubGlobal(
+		'fetch',
+		vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),
+	)
+
+	await expect(
+		dismissPromotification({
+			promoName: 'kody-launch-2026-09',
+			maxAge: 86400,
+		}),
+	).resolves.toBeUndefined()
+})
+
+test('dismissPromotification returns action error bodies without throwing', async () => {
+	vi.stubGlobal(
+		'fetch',
+		vi.fn().mockResolvedValue(
+			new Response(
+				JSON.stringify({ success: false, error: 'Invalid promoName' }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' },
+				},
+			),
+		),
+	)
+
+	await expect(
+		dismissPromotification({
+			promoName: 'bad name',
+			maxAge: 86400,
+		}),
+	).resolves.toEqual({ success: false, error: 'Invalid promoName' })
 })

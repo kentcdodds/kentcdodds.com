@@ -19,6 +19,7 @@ import {
 	isInjectedPostUserDataFetchError,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
+	isReactRouterClientDataNetworkErrorEvent,
 	isReactRouterDataProtocolNoise,
 	isReactRouterNavigationAbortNoise,
 	isReactRouterEdgeHttpStatusError,
@@ -1124,7 +1125,9 @@ test('drops injected Object.postUserData Failed to fetch noise (KCD-10A)', () =>
 	expect(isInjectedPostUserDataFetchError(genericFetchEvent)).toBe(false)
 	expect(shouldDropSentryEvent(genericFetchEvent)).toBe(false)
 
-	// React Router SPA-nav Failed to fetch must still alert (KCD-XZ family).
+	// React Router SPA-nav / fetcher Failed to fetch is not injected postUserData
+	// noise (KCD-10A), but beforeSend drops it via the RR data-network safety net
+	// (KCD-10H) when sourcemapped frames show turbo-stream / manifest stacks.
 	const reactRouterFetchEvent = {
 		exception: {
 			values: [
@@ -1146,7 +1149,10 @@ test('drops injected Object.postUserData Failed to fetch noise (KCD-10A)', () =>
 		},
 	}
 	expect(isInjectedPostUserDataFetchError(reactRouterFetchEvent)).toBe(false)
-	expect(shouldDropSentryEvent(reactRouterFetchEvent)).toBe(false)
+	expect(isReactRouterClientDataNetworkErrorEvent(reactRouterFetchEvent)).toBe(
+		true,
+	)
+	expect(shouldDropSentryEvent(reactRouterFetchEvent)).toBe(true)
 
 	// First-party /assets/ stacks must still alert even with postUserData.
 	const firstPartyPostUserDataEvent = {
@@ -1230,6 +1236,80 @@ test('detects React Router SPA-nav browser network TypeErrors (KCD-10B)', () => 
 	expect(isReactRouterSpaNavNetworkError(plainError)).toBe(false)
 
 	expect(isReactRouterSpaNavNetworkError('Failed to fetch')).toBe(false)
+
+	// Fetcher-action stacks share turbo-stream frames but are not SPA nav —
+	// hard-reload must not run for best-effort cookie POSTs (KCD-10H).
+	const fetcherActionError = new TypeError('Failed to fetch (kentcdodds.com)')
+	fetcherActionError.stack = `TypeError: Failed to fetch (kentcdodds.com)
+    at fetchAndDecodeViaTurboStream (react-router/dist/chunk.js:1:1)
+    at singleFetchActionStrategy (react-router/dist/chunk.js:1:1)
+    at handleFetcherAction (react-router/dist/chunk.js:1:1)`
+	expect(isReactRouterSpaNavNetworkError(fetcherActionError)).toBe(false)
+})
+
+test('drops React Router client data-network TypeErrors via beforeSend frames (KCD-10H)', () => {
+	// Production minified Error.stack often lacks RR function names; Sentry
+	// sourcemaps restore them on event frames. beforeSend must drop those.
+	const fetcherEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+					stacktrace: {
+						frames: [
+							{ function: 'handleFetcherAction', filename: 'chunk.js' },
+							{
+								function: 'fetchAndDecodeViaTurboStream',
+								filename:
+									'../../../../../node_modules/react-router/dist/development/chunk-LFPYN7LY.mjs',
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactRouterClientDataNetworkErrorEvent(fetcherEvent)).toBe(true)
+	expect(shouldDropSentryEvent(fetcherEvent)).toBe(true)
+
+	const spaNavEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{
+								function: 'fetchAndApplyManifestPatches',
+								filename: 'react-router/dist/chunk.js',
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactRouterClientDataNetworkErrorEvent(spaNavEvent)).toBe(true)
+	expect(shouldDropSentryEvent(spaNavEvent)).toBe(true)
+
+	// Message alone (no RR frames) must still alert — first-party fetch bugs.
+	const bareEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+					stacktrace: {
+						frames: [{ function: 'doStuff', filename: '/assets/app.js' }],
+					},
+				},
+			],
+		},
+	}
+	expect(isReactRouterClientDataNetworkErrorEvent(bareEvent)).toBe(false)
+	expect(shouldDropSentryEvent(bareEvent)).toBe(false)
 })
 
 test('filters Cloudflare edge RouteErrorResponse HTML (KCD-VH family)', () => {
