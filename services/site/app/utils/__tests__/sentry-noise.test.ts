@@ -17,6 +17,7 @@ import {
 	isInjectedBlobAddListenerError,
 	isInjectedInputOnchangeLocationError,
 	isInjectedPostUserDataFetchError,
+	isObscuraHeadlessBrowserNoise,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
 	isReactRouterClientDataNetworkErrorEvent,
@@ -1052,6 +1053,122 @@ test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => 
 					{
 						type: 'TypeError',
 						value: "Cannot read properties of undefined (reading 'location')",
+					},
+				],
+			},
+		}),
+	).toBe(false)
+})
+
+test('drops Obscura headless-browser stack frames (KCD-10M)', () => {
+	const obscuraEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'e.formData is not a function',
+					stacktrace: {
+						frames: [
+							{
+								filename: '<obscura:bootstrap>',
+								function: 'HTMLFormElement.requestSubmit',
+								inApp: false,
+							},
+							{
+								filename: '<eval>',
+								function: 'createRequestInit',
+								inApp: false,
+							},
+							{
+								filename:
+									'../../../../../node_modules/react-router/dist/development/chunk.mjs',
+								function: 'fetchAndDecodeViaTurboStream',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+
+	expect(isObscuraHeadlessBrowserNoise(obscuraEvent)).toBe(true)
+	expect(shouldDropSentryEvent(obscuraEvent)).toBe(true)
+	// Do not broadly ignore the formData message — only the Obscura signature.
+	expect(matchesIgnoreError('e.formData is not a function')).toBe(false)
+	expect(matchesIgnoreError('formData is not a function')).toBe(false)
+
+	// absPath fallback when filename is missing.
+	expect(
+		isObscuraHeadlessBrowserNoise({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: 'e.formData is not a function',
+						stacktrace: {
+							frames: [{ absPath: '<obscura:bootstrap>' }],
+						},
+					},
+				],
+			},
+		}),
+	).toBe(true)
+
+	// Ordinary app errors without Obscura frames must still alert — including
+	// a formData TypeError from real browser / app code.
+	const ordinaryFormDataEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'e.formData is not a function',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/assets/entry.client-AbCd1234.js',
+								function: 'createRequestInit',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isObscuraHeadlessBrowserNoise(ordinaryFormDataEvent)).toBe(false)
+	expect(shouldDropSentryEvent(ordinaryFormDataEvent)).toBe(false)
+
+	const ordinaryAppError = {
+		exception: {
+			values: [
+				{
+					type: 'Error',
+					value: 'Real app bug',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/app/routes/subscribe.tsx',
+								function: 'SubscribeScreen',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isObscuraHeadlessBrowserNoise(ordinaryAppError)).toBe(false)
+	expect(shouldDropSentryEvent(ordinaryAppError)).toBe(false)
+
+	// Message alone / no frames — not enough.
+	expect(
+		isObscuraHeadlessBrowserNoise({
+			exception: {
+				values: [
+					{
+						type: 'TypeError',
+						value: 'e.formData is not a function',
 					},
 				],
 			},
