@@ -1211,6 +1211,24 @@ export function isInjectedPostUserDataFetchError(
 		return exceptionValueHasOnlyInjectedAttribution(frames)
 	})
 }
+
+/**
+ * Obscura headless scraping browser (KCD-10M). Its JS DOM shim attributes
+ * frames to filenames like `<obscura:bootstrap>` and ships a `Request`
+ * without `formData()`, so React Router form submits throw
+ * `TypeError: e.formData is not a function`. Real browsers implement
+ * `Request.prototype.formData` — drop on the `<obscura:` runtime signature
+ * alone. Do not ignore the formData message broadly (that could hide real
+ * bugs).
+ */
+const OBSCURA_STACK_FILENAME = /^<obscura:/
+
+export function isObscuraHeadlessBrowserNoise(event: SentryEventLike): boolean {
+	return exceptionFrames(event).some((frame) => {
+		const filename = frame.filename ?? frame.absPath ?? ''
+		return OBSCURA_STACK_FILENAME.test(filename)
+	})
+}
 /**
  * React Router production `sanitizeError` replaces thrown Errors with
  * `new Error("Unexpected Server Error")` and clears `stack` before they reach
@@ -1304,6 +1322,7 @@ export function shouldDropSentryEvent(
 	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isInjectedInputOnchangeLocationError(event)) return true
 	if (isInjectedPostUserDataFetchError(event)) return true
+	if (isObscuraHeadlessBrowserNoise(event)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
