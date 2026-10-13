@@ -31,11 +31,20 @@ import {
  * Prefer Sentry fetch breadcrumbs when deciding SPA-nav hard-reload so a
  * leftover `.data` tracker note cannot override a newer unrelated Failed to
  * fetch (KCD-10N review). Safe when Sentry is not initialized.
+ *
+ * Fetch instrumentation writes via `addBreadcrumb` to the **isolation** scope
+ * (not the current scope) — read that list first.
  */
 function getSentryBreadcrumbsSafely(): Array<DataProtocolFetchBreadcrumbLike> {
 	try {
-		const breadcrumbs = Sentry.getCurrentScope().getScopeData().breadcrumbs
-		return Array.isArray(breadcrumbs) ? breadcrumbs : []
+		const isolation =
+			Sentry.getIsolationScope().getScopeData().breadcrumbs ?? []
+		const current = Sentry.getCurrentScope().getScopeData().breadcrumbs ?? []
+		if (!Array.isArray(isolation) && !Array.isArray(current)) return []
+		return [
+			...(Array.isArray(isolation) ? isolation : []),
+			...(Array.isArray(current) ? current : []),
+		]
 	} catch {
 		return []
 	}

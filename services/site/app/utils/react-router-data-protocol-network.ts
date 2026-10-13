@@ -229,48 +229,43 @@ export function findFailedDataProtocolNetworkFetchBreadcrumb(
 }
 
 /**
- * True when the newest fresh error-level fetch/xhr breadcrumb exists and is
- * **not** a data-protocol network failure. In that case a leftover tracker note
- * from an earlier `.data`/`__manifest` failure must not classify this error.
+ * Newest fresh error-level fetch/xhr breadcrumb, or null when none / stale.
  */
-export function hasNewerUnrelatedNetworkFetchBreadcrumb(
+export function findNewestErrorFetchBreadcrumb(
 	breadcrumbs: Array<DataProtocolFetchBreadcrumbLike> | null | undefined,
 	now: number = Date.now(),
 	maxAgeMs: number = DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
-): boolean {
+): DataProtocolFetchBreadcrumbLike | null {
 	const crumbs = breadcrumbs ?? []
 	for (let i = crumbs.length - 1; i >= 0; i--) {
 		const crumb = crumbs[i]
 		if (crumb == null) continue
 		if (!isErrorFetchBreadcrumb(crumb)) continue
-		if (!isBreadcrumbFresh(crumb, now, maxAgeMs)) return false
-		return !isFailedDataProtocolNetworkFetchBreadcrumb(crumb)
+		if (!isBreadcrumbFresh(crumb, now, maxAgeMs)) return null
+		return crumb
 	}
-	return false
+	return null
 }
 
 /**
  * SPA-nav hard-reload evidence: recent GET `.data` network failure only.
  * Excludes `__manifest` (fetcher fog-of-war before actions — KCD-10H) and
- * non-GET `.data` (fetcher actions — KCD-Y0). Does not consume the tracker
- * note — `isReactRouterSpaNavNetworkError` may run several times per render
- * (reconnecting UI + hard-reload + skip-capture); callers that commit to a
- * reload should call `consumeRecentFailedDataProtocolNetworkFetch`.
+ * non-GET `.data` (fetcher actions — KCD-Y0). When any recent error fetch
+ * breadcrumb exists, only that crumb can authorize — never a leftover tracker
+ * note (so a later POST `.data` / unrelated fetch cannot hard-reload via an
+ * earlier GET `.data` note). Tracker fallback is only when breadcrumbs are
+ * absent (Sentry not ready). Callers that commit to a reload should call
+ * `consumeRecentFailedDataProtocolNetworkFetch`.
  */
 export function hasSpaNavDataProtocolNetworkFailureEvidence(
 	breadcrumbs?: Array<DataProtocolFetchBreadcrumbLike> | null,
 	now: number = Date.now(),
 ): boolean {
-	if (
-		findFailedDataProtocolNetworkFetchBreadcrumb(breadcrumbs, {
-			navigationOnly: true,
-			now,
-		}) != null
-	) {
-		return true
-	}
-	if (hasNewerUnrelatedNetworkFetchBreadcrumb(breadcrumbs, now)) {
-		return false
+	const newestError = findNewestErrorFetchBreadcrumb(breadcrumbs, now)
+	if (newestError != null) {
+		if (!isFailedDataProtocolNetworkFetchBreadcrumb(newestError)) return false
+		const method = (newestError.data?.method ?? 'GET').toString().toUpperCase()
+		return isSpaNavHardReloadDataRequest(breadcrumbUrl(newestError), method)
 	}
 	const recent = getRecentFailedDataProtocolNetworkFetch(
 		DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
@@ -285,19 +280,15 @@ export function hasSpaNavDataProtocolNetworkFailureEvidence(
  * beforeSend safety-net evidence: most recent error fetch is a failed
  * `.data` / `__manifest` request (SPA nav or fetcher) with no HTTP status,
  * within the same recency window as the tracker. A leftover tracker note must
- * not override a newer unrelated error-level fetch breadcrumb.
+ * not override a newer error-level fetch breadcrumb of any kind.
  */
 export function hasClientDataProtocolNetworkFailureEvidence(
 	breadcrumbs?: Array<DataProtocolFetchBreadcrumbLike> | null,
 	now: number = Date.now(),
 ): boolean {
-	if (
-		findFailedDataProtocolNetworkFetchBreadcrumb(breadcrumbs, { now }) != null
-	) {
-		return true
-	}
-	if (hasNewerUnrelatedNetworkFetchBreadcrumb(breadcrumbs, now)) {
-		return false
+	const newestError = findNewestErrorFetchBreadcrumb(breadcrumbs, now)
+	if (newestError != null) {
+		return isFailedDataProtocolNetworkFetchBreadcrumb(newestError)
 	}
 	return (
 		getRecentFailedDataProtocolNetworkFetch(

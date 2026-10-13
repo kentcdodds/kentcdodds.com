@@ -64,11 +64,13 @@ fetch resource` / Safari `Load failed` during React Router SPA nav are browser
     fetcher submissions). Also excludes unminified `handleFetcherAction` /
     `singleFetchActionStrategy` stacks and non-GET `.data` (KCD-10H / KCD-Y0).
     Committing to a hard-reload clears the sync tracker note so it cannot
-    classify a later unrelated network TypeError. When breadcrumbs show a
-    newer unrelated error-level fetch, do not fall back to a leftover
-    tracker note. Residual: `fetcher.load()` GET `.data` failures can still
-    hard-reload in minified builds (navigation is idle by ErrorBoundary time,
-    so navigation-state gating is unreliable); that recovery is acceptable.
+    classify a later unrelated network TypeError. When any recent error-level
+    fetch breadcrumb exists, only that crumb authorizes (never a leftover
+    tracker note) — including when the crumb is a POST `.data` / unrelated
+    URL. Read Sentry breadcrumbs from the isolation scope (where
+    `addBreadcrumb` writes). Residual: `fetcher.load()` GET `.data` failures
+    can still hard-reload in minified builds (navigation is idle by
+    ErrorBoundary time); that recovery is acceptable.
 - Promo dismiss (`routes/resources/promotification.tsx` `dismissPromotification`)
   is best-effort cookie write like `markAsRead`. Do **not** use
   `useFetcher().submit` for it: RR `setFetcherError` puts network TypeErrors on
