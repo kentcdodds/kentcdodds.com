@@ -200,7 +200,7 @@ test('consumeRecentFailedDataProtocolNetworkFetch clears the tracker note', () =
 	expect(getRecentFailedDataProtocolNetworkFetch()).toBe(null)
 })
 
-test('tracker note does not override a newer unrelated error fetch breadcrumb', () => {
+test('tracker note does not override a newer error fetch breadcrumb', () => {
 	resetFailedDataProtocolNetworkFetchForTests()
 	const now = Date.now()
 	noteFailedDataProtocolNetworkFetch(
@@ -225,8 +225,30 @@ test('tracker note does not override a newer unrelated error fetch breadcrumb', 
 	expect(
 		hasSpaNavDataProtocolNetworkFailureEvidence(unrelatedCrumbs, now),
 	).toBe(false)
+
+	// Later POST .data is data-protocol for beforeSend, but not SPA-nav hard-reload
+	// — must not use the earlier GET .data tracker note to authorize reload.
+	const postDataCrumbs = [
+		{
+			category: 'fetch',
+			level: 'error',
+			timestamp: now / 1000,
+			data: {
+				method: 'POST',
+				url: 'https://kentcdodds.com/resources/promotification.data',
+			},
+		},
+	]
+	expect(hasClientDataProtocolNetworkFailureEvidence(postDataCrumbs, now)).toBe(
+		true,
+	)
+	expect(hasSpaNavDataProtocolNetworkFailureEvidence(postDataCrumbs, now)).toBe(
+		false,
+	)
+
 	// Without breadcrumbs, the tracker note still counts (Sentry not ready).
 	expect(hasClientDataProtocolNetworkFailureEvidence(null, now)).toBe(true)
+	expect(hasSpaNavDataProtocolNetworkFailureEvidence(null, now)).toBe(true)
 	resetFailedDataProtocolNetworkFetchForTests()
 })
 
