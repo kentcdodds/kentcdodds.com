@@ -30,26 +30,38 @@ fixes it.
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
 - Client `TypeError: Failed to fetch` / Firefox `NetworkError when attempting to
-fetch resource` / Safari `Load failed` with React Router stacks
-  (`fetchAndDecodeViaTurboStream`, `fetchAndApplyManifestPatches`) and a
-  failing `.data` / `__manifest` breadcrumb **without** `status_code` are
-  browser network-layer failures during SPA nav (idle tab, offline, flaky
-  mobile) — not an app throw. Live endpoints often still return 200. Do not
-  broadly `ignoreErrors` these (KCD-XZ / KCD-QG / KCD-10B family). Product UX:
-  `useCapturedRouteError` hard-reloads the document once per location
-  (`isReactRouterSpaNavNetworkError` + `shouldHardReloadSpaNavNetworkError`)
-  and skips Sentry capture for that signature. If `sessionStorage` is
-  unavailable (including when accessing `window.sessionStorage` itself throws),
-  skip the hard-reload (avoid loops) and show the normal error UI;
-  `getSessionStorageSafely` returns null in that case.
-  `shouldShowSpaNavNetworkReconnecting` only renders “Reconnecting…” when
-  storage reads show the one-shot is unused **and** a `setItem` write probe
-  succeeds (so a write failure cannot leave a stuck reconnecting state).
-  Production minified `Error.stack` often lacks RR function names while Sentry
-  sourcemaps restore them on event frames — `beforeSend` also drops via
-  `isReactRouterClientDataNetworkErrorEvent` (same message + RR frames; never
-  the phrase alone). Fetcher-action stacks (`handleFetcherAction` /
-  `singleFetchActionStrategy`) are excluded from the hard-reload signature.
+fetch resource` / Safari `Load failed` during React Router SPA nav are browser
+  network-layer failures (idle tab, offline, flaky mobile) — not an app throw
+  (KCD-XZ / KCD-QG / KCD-10B / KCD-10N). Live endpoints often still return 200.
+  Do not broadly `ignoreErrors` these. Signature evidence (never the phrase
+  alone):
+  - **Dev / unminified:** RR function names in `Error.stack` /
+    event frames (`fetchAndDecodeViaTurboStream`,
+    `fetchAndApplyManifestPatches`, or the surviving literal
+    `Failed to fetch manifest patches`).
+  - **Production Vite builds:** those RR names are mangled away in the
+    browser (`async function yl…`); Sentry restores them via sourcemaps only
+    **after** upload, so `beforeSend` and `useCapturedRouteError` never see
+    them. Rely on request-shape evidence instead: a failed fetch for a
+    `.data` / `__manifest` URL with **no** `status_code` (Sentry fetch
+    breadcrumb at `error` level, and/or the sync fetch-failure tracker in
+    `react-router-data-protocol-network.ts` installed from `entry.client`
+    before hydrate — Sentry init is async and gated).
+    Product UX: `useCapturedRouteError` hard-reloads the document once per
+    location (`isReactRouterSpaNavNetworkError` +
+    `shouldHardReloadSpaNavNetworkError`) and skips Sentry capture. If
+    `sessionStorage` is unavailable (including when accessing
+    `window.sessionStorage` itself throws), skip the hard-reload (avoid loops)
+    and show the normal error UI; `getSessionStorageSafely` returns null in
+    that case. `shouldShowSpaNavNetworkReconnecting` only renders
+    “Reconnecting…” when storage reads show the one-shot is unused **and** a
+    `setItem` write probe succeeds (so a write failure cannot leave a stuck
+    reconnecting state). `beforeSend` also drops via
+    `isReactRouterClientDataNetworkErrorEvent` (same message + RR names **or**
+    failed `.data`/`__manifest` breadcrumb/tracker evidence). Hard-reload
+    excludes fetcher actions: unminified `handleFetcherAction` /
+    `singleFetchActionStrategy` stacks, or non-GET `.data` failures when
+    minified (KCD-10H / KCD-Y0).
 - Promo dismiss (`routes/resources/promotification.tsx` `dismissPromotification`)
   is best-effort cookie write like `markAsRead`. Do **not** use
   `useFetcher().submit` for it: RR `setFetcherError` puts network TypeErrors on
