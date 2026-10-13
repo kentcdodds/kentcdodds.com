@@ -229,6 +229,27 @@ export function findFailedDataProtocolNetworkFetchBreadcrumb(
 }
 
 /**
+ * True when the newest fresh error-level fetch/xhr breadcrumb exists and is
+ * **not** a data-protocol network failure. In that case a leftover tracker note
+ * from an earlier `.data`/`__manifest` failure must not classify this error.
+ */
+export function hasNewerUnrelatedNetworkFetchBreadcrumb(
+	breadcrumbs: Array<DataProtocolFetchBreadcrumbLike> | null | undefined,
+	now: number = Date.now(),
+	maxAgeMs: number = DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
+): boolean {
+	const crumbs = breadcrumbs ?? []
+	for (let i = crumbs.length - 1; i >= 0; i--) {
+		const crumb = crumbs[i]
+		if (crumb == null) continue
+		if (!isErrorFetchBreadcrumb(crumb)) continue
+		if (!isBreadcrumbFresh(crumb, now, maxAgeMs)) return false
+		return !isFailedDataProtocolNetworkFetchBreadcrumb(crumb)
+	}
+	return false
+}
+
+/**
  * SPA-nav hard-reload evidence: recent GET `.data` network failure only.
  * Excludes `__manifest` (fetcher fog-of-war before actions — KCD-10H) and
  * non-GET `.data` (fetcher actions — KCD-Y0). Does not consume the tracker
@@ -248,6 +269,9 @@ export function hasSpaNavDataProtocolNetworkFailureEvidence(
 	) {
 		return true
 	}
+	if (hasNewerUnrelatedNetworkFetchBreadcrumb(breadcrumbs, now)) {
+		return false
+	}
 	const recent = getRecentFailedDataProtocolNetworkFetch(
 		DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
 		now,
@@ -260,7 +284,8 @@ export function hasSpaNavDataProtocolNetworkFailureEvidence(
 /**
  * beforeSend safety-net evidence: most recent error fetch is a failed
  * `.data` / `__manifest` request (SPA nav or fetcher) with no HTTP status,
- * within the same recency window as the tracker.
+ * within the same recency window as the tracker. A leftover tracker note must
+ * not override a newer unrelated error-level fetch breadcrumb.
  */
 export function hasClientDataProtocolNetworkFailureEvidence(
 	breadcrumbs?: Array<DataProtocolFetchBreadcrumbLike> | null,
@@ -270,6 +295,9 @@ export function hasClientDataProtocolNetworkFailureEvidence(
 		findFailedDataProtocolNetworkFetchBreadcrumb(breadcrumbs, { now }) != null
 	) {
 		return true
+	}
+	if (hasNewerUnrelatedNetworkFetchBreadcrumb(breadcrumbs, now)) {
+		return false
 	}
 	return (
 		getRecentFailedDataProtocolNetworkFetch(

@@ -200,6 +200,36 @@ test('consumeRecentFailedDataProtocolNetworkFetch clears the tracker note', () =
 	expect(getRecentFailedDataProtocolNetworkFetch()).toBe(null)
 })
 
+test('tracker note does not override a newer unrelated error fetch breadcrumb', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
+	const now = Date.now()
+	noteFailedDataProtocolNetworkFetch(
+		'https://kentcdodds.com/blog/foo.data',
+		'GET',
+		now - 1000,
+	)
+	const unrelatedCrumbs = [
+		{
+			category: 'fetch',
+			level: 'error',
+			timestamp: now / 1000,
+			data: {
+				method: 'GET',
+				url: 'https://kentcdodds.com/api/custom',
+			},
+		},
+	]
+	expect(
+		hasClientDataProtocolNetworkFailureEvidence(unrelatedCrumbs, now),
+	).toBe(false)
+	expect(
+		hasSpaNavDataProtocolNetworkFailureEvidence(unrelatedCrumbs, now),
+	).toBe(false)
+	// Without breadcrumbs, the tracker note still counts (Sentry not ready).
+	expect(hasClientDataProtocolNetworkFailureEvidence(null, now)).toBe(true)
+	resetFailedDataProtocolNetworkFetchForTests()
+})
+
 test('installReactRouterDataProtocolFetchFailureTracker notes TypeError on .data', async () => {
 	resetFailedDataProtocolNetworkFetchForTests()
 	const originalFetch = vi.fn(async () => {
