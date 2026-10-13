@@ -30,26 +30,47 @@ fixes it.
   an external source (distinctive third-party signature, extension/IAB URL, or
   provider error code such as EIP-1193 `4001`) — never a generic phrase alone.
 - Client `TypeError: Failed to fetch` / Firefox `NetworkError when attempting to
-fetch resource` / Safari `Load failed` with React Router stacks
-  (`fetchAndDecodeViaTurboStream`, `fetchAndApplyManifestPatches`) and a
-  failing `.data` / `__manifest` breadcrumb **without** `status_code` are
-  browser network-layer failures during SPA nav (idle tab, offline, flaky
-  mobile) — not an app throw. Live endpoints often still return 200. Do not
-  broadly `ignoreErrors` these (KCD-XZ / KCD-QG / KCD-10B family). Product UX:
-  `useCapturedRouteError` hard-reloads the document once per location
-  (`isReactRouterSpaNavNetworkError` + `shouldHardReloadSpaNavNetworkError`)
-  and skips Sentry capture for that signature. If `sessionStorage` is
-  unavailable (including when accessing `window.sessionStorage` itself throws),
-  skip the hard-reload (avoid loops) and show the normal error UI;
-  `getSessionStorageSafely` returns null in that case.
-  `shouldShowSpaNavNetworkReconnecting` only renders “Reconnecting…” when
-  storage reads show the one-shot is unused **and** a `setItem` write probe
-  succeeds (so a write failure cannot leave a stuck reconnecting state).
-  Production minified `Error.stack` often lacks RR function names while Sentry
-  sourcemaps restore them on event frames — `beforeSend` also drops via
-  `isReactRouterClientDataNetworkErrorEvent` (same message + RR frames; never
-  the phrase alone). Fetcher-action stacks (`handleFetcherAction` /
-  `singleFetchActionStrategy`) are excluded from the hard-reload signature.
+fetch resource` / Safari `Load failed` during React Router SPA nav are browser
+  network-layer failures (idle tab, offline, flaky mobile) — not an app throw
+  (KCD-XZ / KCD-QG / KCD-10B / KCD-10N). Live endpoints often still return 200.
+  Do not broadly `ignoreErrors` these. Signature evidence (never the phrase
+  alone):
+  - **Dev / unminified:** RR function names in `Error.stack` /
+    event frames (`fetchAndDecodeViaTurboStream`,
+    `fetchAndApplyManifestPatches`, or the surviving literal
+    `Failed to fetch manifest patches`).
+  - **Production Vite builds:** those RR names are mangled away in the
+    browser (`async function yl…`); Sentry restores them via sourcemaps only
+    **after** upload, so `beforeSend` and `useCapturedRouteError` never see
+    them. Rely on request-shape evidence instead: a failed fetch for a
+    `.data` / `__manifest` URL with **no** `status_code` (Sentry fetch
+    breadcrumb at `error` level, and/or the sync fetch-failure tracker in
+    `react-router-data-protocol-network.ts` installed from `entry.client`
+    before hydrate — Sentry init is async and gated).
+    Product UX: `useCapturedRouteError` hard-reloads the document once per
+    location (`isReactRouterSpaNavNetworkError` +
+    `shouldHardReloadSpaNavNetworkError`) and skips Sentry capture. If
+    `sessionStorage` is unavailable (including when accessing
+    `window.sessionStorage` itself throws), skip the hard-reload (avoid loops)
+    and show the normal error UI; `getSessionStorageSafely` returns null in
+    that case. `shouldShowSpaNavNetworkReconnecting` only renders
+    “Reconnecting…” when storage reads show the one-shot is unused **and** a
+    `setItem` write probe succeeds (so a write failure cannot leave a stuck
+    reconnecting state). `beforeSend` also drops via
+    `isReactRouterClientDataNetworkErrorEvent` (same message + RR names **or**
+    the most recent error-level fetch breadcrumb / tracker note for `.data` /
+    `__manifest` with no `status_code`, within ~10s). Hard-reload is narrower:
+    GET `.data` only (not fog-of-war `__manifest`, which also fails during
+    fetcher submissions). Also excludes unminified `handleFetcherAction` /
+    `singleFetchActionStrategy` stacks and non-GET `.data` (KCD-10H / KCD-Y0).
+    Committing to a hard-reload clears the sync tracker note so it cannot
+    classify a later unrelated network TypeError. When any recent error-level
+    fetch breadcrumb exists, only that crumb authorizes (never a leftover
+    tracker note) — including when the crumb is a POST `.data` / unrelated
+    URL. Read Sentry breadcrumbs from the isolation scope (where
+    `addBreadcrumb` writes). Residual: `fetcher.load()` GET `.data` failures
+    can still hard-reload in minified builds (navigation is idle by
+    ErrorBoundary time); that recovery is acceptable.
 - Promo dismiss (`routes/resources/promotification.tsx` `dismissPromotification`)
   is best-effort cookie write like `markAsRead`. Do **not** use
   `useFetcher().submit` for it: RR `setFetcherError` puts network TypeErrors on

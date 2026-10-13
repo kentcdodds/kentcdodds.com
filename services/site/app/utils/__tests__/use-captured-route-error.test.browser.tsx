@@ -26,6 +26,10 @@ vi.mock('react-router', async () => {
 })
 
 import {
+	noteFailedDataProtocolNetworkFetch,
+	resetFailedDataProtocolNetworkFetchForTests,
+} from '../react-router-data-protocol-network.ts'
+import {
 	getSessionStorageSafely,
 	shouldHardReloadSpaNavNetworkError,
 	shouldShowSpaNavNetworkReconnecting,
@@ -47,9 +51,20 @@ function spaNavNetworkTypeError(
 	return error
 }
 
+function minifiedSpaNavNetworkTypeError(
+	message = 'Failed to fetch (kentcdodds.com)',
+): TypeError {
+	const error = new TypeError(message)
+	error.stack = `${error.name}: ${message}
+    at yl (https://kentcdodds.com/assets/chunk-LFPYN7LY-7E_DIvSm.js:1:1)
+    at https://kentcdodds.com/assets/monitoring.client-WofqKXz_.js:16:1`
+	return error
+}
+
 describe('useCapturedRouteError', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		resetFailedDataProtocolNetworkFetchForTests()
 	})
 
 	it('captures 5xx route error responses as Error instances', async () => {
@@ -156,9 +171,30 @@ describe('useCapturedRouteError', () => {
 
 		expect(mockCaptureException).not.toHaveBeenCalled()
 	})
+
+	it('does not capture minified SPA-nav network TypeErrors with .data evidence (KCD-10N)', async () => {
+		const spaNavError = minifiedSpaNavNetworkTypeError()
+		noteFailedDataProtocolNetworkFetch(
+			'https://kentcdodds.com/blog/fix-the-slow-render-before-you-fix-the-re-render.data',
+			'GET',
+		)
+		mockUseRouteError.mockReturnValue(spaNavError)
+		mockIsRouteErrorResponse.mockReturnValue(false)
+
+		const locationKey = `${window.location.pathname}${window.location.search}`
+		window.sessionStorage.setItem(
+			`kcd:spa-nav-network-reload:${locationKey}`,
+			'1',
+		)
+
+		await render(<TestComponent />)
+
+		expect(mockCaptureException).not.toHaveBeenCalled()
+	})
 })
 
 test('shouldHardReloadSpaNavNetworkError is one-shot per location', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
 	const storage = new Map<string, string>()
 	const sessionStorageLike = {
 		getItem: (key: string) => storage.get(key) ?? null,
@@ -199,7 +235,45 @@ test('shouldHardReloadSpaNavNetworkError is one-shot per location', () => {
 	).toBe(false)
 })
 
+test('shouldHardReloadSpaNavNetworkError works with minified stacks + .data tracker (KCD-10N)', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
+	const storage = new Map<string, string>()
+	const sessionStorageLike = {
+		getItem: (key: string) => storage.get(key) ?? null,
+		setItem: (key: string, value: string) => {
+			storage.set(key, value)
+		},
+	}
+	const error = minifiedSpaNavNetworkTypeError()
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog'),
+	).toBe(false)
+
+	noteFailedDataProtocolNetworkFetch(
+		'https://kentcdodds.com/blog/fix-the-slow-render-before-you-fix-the-re-render.data',
+		'GET',
+	)
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog'),
+	).toBe(true)
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog'),
+	).toBe(false)
+
+	// Fetcher-action POST .data must not hard-reload.
+	resetFailedDataProtocolNetworkFetchForTests()
+	storage.clear()
+	noteFailedDataProtocolNetworkFetch(
+		'https://kentcdodds.com/resources/promotification.data',
+		'POST',
+	)
+	expect(
+		shouldHardReloadSpaNavNetworkError(error, sessionStorageLike, '/blog'),
+	).toBe(false)
+})
+
 test('shouldHardReloadSpaNavNetworkError skips reload when storage throws', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
 	const error = spaNavNetworkTypeError('Failed to fetch')
 	const brokenStorage = {
 		getItem: () => {
@@ -218,6 +292,7 @@ test('shouldHardReloadSpaNavNetworkError skips reload when storage throws', () =
 })
 
 test('shouldShowSpaNavNetworkReconnecting is false when setItem throws', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
 	const error = spaNavNetworkTypeError('Failed to fetch')
 	const readOkWriteFails = {
 		getItem: () => null,
@@ -234,6 +309,7 @@ test('shouldShowSpaNavNetworkReconnecting is false when setItem throws', () => {
 })
 
 test('getSessionStorageSafely returns null when the getter throws', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
 	const throwingWindow = {
 		get sessionStorage(): Storage {
 			throw new Error('SecurityError')

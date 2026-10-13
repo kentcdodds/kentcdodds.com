@@ -12,6 +12,13 @@
  * is wired from `entry.server.tsx` `handleError` (KCD-YN).
  */
 
+import {
+	REACT_ROUTER_DATA_PROTOCOL_REQUEST,
+	hasClientDataProtocolNetworkFailureEvidence,
+	hasSpaNavDataProtocolNetworkFailureEvidence,
+	type DataProtocolFetchBreadcrumbLike,
+} from './react-router-data-protocol-network.ts'
+
 /**
  * React Router `throwIfPotentialCSRFAttack` rejects cross-origin POSTs with
  * these exact messages, then `handleError` would otherwise report them.
@@ -47,7 +54,7 @@ const SCRIPT_OR_ASSET_FILENAME =
 const REACT_ROUTER_TURBO_STREAM_STACK = /fetchAndDecodeViaTurboStream/
 const REACT_ROUTER_DATA_PROTOCOL_MANIFEST_STACK =
 	/fetchAndApplyManifestPatches|Failed to fetch manifest patches/i
-const DATA_PROTOCOL_REQUEST = /\/(?:__manifest|\S+\.data)(?:\?|$)/i
+const DATA_PROTOCOL_REQUEST = REACT_ROUTER_DATA_PROTOCOL_REQUEST
 
 /** Safari / extension CustomEvent wrapping unhandledrejection (KCD-S8). */
 const CUSTOM_EVENT_UNHANDLED_REJECTION_MESSAGE =
@@ -144,11 +151,13 @@ type RouteErrorResponseExtra = {
 	data?: unknown
 }
 
-type SentryBreadcrumbLike = {
-	category?: string | null
+type SentryBreadcrumbLike = DataProtocolFetchBreadcrumbLike & {
 	message?: string | null
+	timestamp?: number | null
 	data?: {
 		url?: string | null
+		method?: string | null
+		status_code?: number | string | null
 		arguments?: Array<unknown> | null
 	} | null
 }
@@ -1069,8 +1078,10 @@ const BROWSER_NETWORK_FETCH_TYPEERROR =
 /**
  * React Router client data/manifest fetches that fail at the browser network
  * layer (no HTTP status) during SPA navigation / revalidation (KCD-XZ /
- * KCD-QG / KCD-10B). Require a RR stack signature so a first-party
- * `TypeError: Failed to fetch` still alerts.
+ * KCD-QG / KCD-10B / KCD-10N). Dev stacks may still include RR function names;
+ * production Vite builds minify them away, so prefer `.data` / `__manifest`
+ * request evidence (fetch tracker or Sentry fetch breadcrumbs with no
+ * `status_code`). Never match the network TypeError phrase alone.
  */
 const REACT_ROUTER_SPA_NAV_NETWORK_STACK =
 	/fetchAndApplyManifestPatches|fetchAndDecodeViaTurboStream|Failed to fetch manifest patches/i
@@ -1081,6 +1092,7 @@ const POST_USER_DATA_FUNCTION = /(?:^|\.)postUserData$/
  * Fetcher action stacks (promo dismiss, etc.). Same network TypeError message /
  * turbo-stream frames as SPA nav, but hard-reloading the document does not
  * recover a best-effort cookie POST — leave those to app-level catch (KCD-10H).
+ * Only present in unminified stacks; production uses non-GET `.data` method.
  */
 const REACT_ROUTER_FETCHER_ACTION_STACK =
 	/handleFetcherAction|singleFetchActionStrategy/i
@@ -1090,27 +1102,36 @@ const REACT_ROUTER_FETCHER_ACTION_STACK =
  * Live endpoints often still return 200; do not broadly `ignoreErrors` —
  * prefer a one-shot document hard-reload in the route error boundary.
  *
- * Excludes fetcher-action stacks: those are not SPA navigations and must not
- * trigger the hard-reload UX (KCD-10H / KCD-Y0).
+ * Excludes fetcher-action stacks / non-GET `.data` failures: those are not SPA
+ * navigations and must not trigger the hard-reload UX (KCD-10H / KCD-Y0).
+ *
+ * Optional `breadcrumbs` are Sentry-style fetch crumbs (tests / beforeSend).
+ * When omitted, the sync fetch-failure tracker installed from `entry.client`
+ * supplies production evidence after minification strips RR names (KCD-10N).
  */
-export function isReactRouterSpaNavNetworkError(error: unknown): boolean {
+export function isReactRouterSpaNavNetworkError(
+	error: unknown,
+	breadcrumbs?: Array<DataProtocolFetchBreadcrumbLike> | null,
+): boolean {
 	if (!(error instanceof TypeError)) return false
 	if (!BROWSER_NETWORK_FETCH_TYPEERROR.test(error.message.trim())) {
 		return false
 	}
 	const stack = error.stack ?? ''
 	if (REACT_ROUTER_FETCHER_ACTION_STACK.test(stack)) return false
-	return REACT_ROUTER_SPA_NAV_NETWORK_STACK.test(stack)
+	if (REACT_ROUTER_SPA_NAV_NETWORK_STACK.test(stack)) return true
+	return hasSpaNavDataProtocolNetworkFailureEvidence(breadcrumbs)
 }
 
 /**
  * beforeSend safety net for React Router client data/manifest network
- * TypeErrors (SPA nav or fetcher action). `useCapturedRouteError` skips
- * capture when `Error.stack` still has RR function names, but production
- * minified stacks often lack those names while Sentry sourcemaps restore them
- * on event frames — so captureException still fires (KCD-10H). Drop only when
- * the message is a browser network TypeError **and** sourcemapped / raw stack
- * evidence shows RR data-protocol frames. Never the phrase alone.
+ * TypeErrors (SPA nav or fetcher action). Production Vite minifies RR function
+ * names out of `Error.stack` and event frames beforeSend sees; Sentry
+ * sourcemaps restore names only on the server after upload (KCD-10N). Drop
+ * when the message is a browser network TypeError **and** evidence shows a
+ * failed `.data` / `__manifest` fetch (RR names when present, otherwise a
+ * fetch breadcrumb / tracker note with no `status_code`). Never the phrase
+ * alone.
  */
 export function isReactRouterClientDataNetworkErrorEvent(
 	event: SentryEventLike,
@@ -1137,7 +1158,8 @@ export function isReactRouterClientDataNetworkErrorEvent(
 		.map((frame) => `${frame.function ?? ''}\n${frame.filename ?? ''}`)
 		.join('\n')
 	const evidence = `${frameBlob}\n${stackBlob(event, original)}`
-	return REACT_ROUTER_SPA_NAV_NETWORK_STACK.test(evidence)
+	if (REACT_ROUTER_SPA_NAV_NETWORK_STACK.test(evidence)) return true
+	return hasClientDataProtocolNetworkFailureEvidence(event.breadcrumbs)
 }
 
 function isAnonymousStackFilename(value: string | null | undefined): boolean {

@@ -1,5 +1,9 @@
 import { expect, test } from 'vitest'
 import {
+	noteFailedDataProtocolNetworkFetch,
+	resetFailedDataProtocolNetworkFetchForTests,
+} from '../react-router-data-protocol-network.ts'
+import {
 	SENTRY_DENY_URLS,
 	SENTRY_IGNORE_ERRORS,
 	hasInjectedFetchInterceptorBreadcrumbs,
@@ -1244,7 +1248,7 @@ test('drops injected Object.postUserData Failed to fetch noise (KCD-10A)', () =>
 
 	// React Router SPA-nav / fetcher Failed to fetch is not injected postUserData
 	// noise (KCD-10A), but beforeSend drops it via the RR data-network safety net
-	// (KCD-10H) when sourcemapped frames show turbo-stream / manifest stacks.
+	// (KCD-10H/KCD-10N) when RR names or `.data`/`__manifest` evidence is present.
 	const reactRouterFetchEvent = {
 		exception: {
 			values: [
@@ -1364,9 +1368,79 @@ test('detects React Router SPA-nav browser network TypeErrors (KCD-10B)', () => 
 	expect(isReactRouterSpaNavNetworkError(fetcherActionError)).toBe(false)
 })
 
+test('detects SPA-nav network TypeErrors from minified stacks via .data evidence (KCD-10N)', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
+	// Production Vite mangles fetchAndDecodeViaTurboStream → yl; Error.stack
+	// and beforeSend frames never see the RR name (sourcemaps are server-side).
+	const minifiedSpaNav = new TypeError('Failed to fetch (kentcdodds.com)')
+	minifiedSpaNav.stack = `TypeError: Failed to fetch (kentcdodds.com)
+    at yl (https://kentcdodds.com/assets/chunk-LFPYN7LY-7E_DIvSm.js:1:1)
+    at https://kentcdodds.com/assets/monitoring.client-WofqKXz_.js:16:1`
+	expect(isReactRouterSpaNavNetworkError(minifiedSpaNav)).toBe(false)
+
+	noteFailedDataProtocolNetworkFetch(
+		'https://kentcdodds.com/blog/fix-the-slow-render-before-you-fix-the-re-render.data',
+		'GET',
+	)
+	expect(isReactRouterSpaNavNetworkError(minifiedSpaNav)).toBe(true)
+
+	resetFailedDataProtocolNetworkFetchForTests()
+	const failedDataBreadcrumb = {
+		category: 'fetch',
+		level: 'error',
+		data: {
+			method: 'GET',
+			url: 'https://kentcdodds.com/blog/fix-the-slow-render-before-you-fix-the-re-render.data',
+		},
+	}
+	expect(
+		isReactRouterSpaNavNetworkError(minifiedSpaNav, [failedDataBreadcrumb]),
+	).toBe(true)
+
+	// Successful .data crumbs (status_code present) are not network-layer failures.
+	expect(
+		isReactRouterSpaNavNetworkError(minifiedSpaNav, [
+			{
+				category: 'fetch',
+				level: 'info',
+				data: {
+					method: 'GET',
+					status_code: 200,
+					url: 'https://kentcdodds.com/blog/foo.data',
+				},
+			},
+		]),
+	).toBe(false)
+
+	// Non-GET .data failures are fetcher actions — no hard-reload (KCD-10H).
+	resetFailedDataProtocolNetworkFetchForTests()
+	noteFailedDataProtocolNetworkFetch(
+		'https://kentcdodds.com/resources/promotification.data',
+		'POST',
+	)
+	expect(isReactRouterSpaNavNetworkError(minifiedSpaNav)).toBe(false)
+	expect(
+		isReactRouterSpaNavNetworkError(minifiedSpaNav, [
+			{
+				category: 'fetch',
+				level: 'error',
+				data: {
+					method: 'POST',
+					url: 'https://kentcdodds.com/resources/promotification.data',
+				},
+			},
+		]),
+	).toBe(false)
+
+	resetFailedDataProtocolNetworkFetchForTests()
+	// First-party Failed to fetch without data-protocol evidence still alerts.
+	const firstParty = new TypeError('Failed to fetch')
+	firstParty.stack = `TypeError: Failed to fetch\n    at doStuff (/assets/app.js:1:1)`
+	expect(isReactRouterSpaNavNetworkError(firstParty)).toBe(false)
+})
+
 test('drops React Router client data-network TypeErrors via beforeSend frames (KCD-10H)', () => {
-	// Production minified Error.stack often lacks RR function names; Sentry
-	// sourcemaps restore them on event frames. beforeSend must drop those.
+	// Unminified / sourcemapped RR names (dev stacks, or post-upload Sentry UI).
 	const fetcherEvent = {
 		exception: {
 			values: [
@@ -1411,7 +1485,7 @@ test('drops React Router client data-network TypeErrors via beforeSend frames (K
 	expect(isReactRouterClientDataNetworkErrorEvent(spaNavEvent)).toBe(true)
 	expect(shouldDropSentryEvent(spaNavEvent)).toBe(true)
 
-	// Message alone (no RR frames) must still alert — first-party fetch bugs.
+	// Message alone (no RR frames / data-protocol evidence) must still alert.
 	const bareEvent = {
 		exception: {
 			values: [
@@ -1427,6 +1501,119 @@ test('drops React Router client data-network TypeErrors via beforeSend frames (K
 	}
 	expect(isReactRouterClientDataNetworkErrorEvent(bareEvent)).toBe(false)
 	expect(shouldDropSentryEvent(bareEvent)).toBe(false)
+})
+
+test('drops minified SPA-nav Failed to fetch via .data breadcrumb (KCD-10N)', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
+	const nowSec = Date.now() / 1000
+	// beforeSend runs in the browser on minified frames (function: yl / ?);
+	// Sentry restores names only after upload. Match the KCD-10N breadcrumb.
+	const minifiedEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+					stacktrace: {
+						frames: [
+							{
+								function: 'yl',
+								filename: '/assets/chunk-LFPYN7LY-7E_DIvSm.js',
+								inApp: false,
+							},
+							{
+								function: '?',
+								filename: '/assets/monitoring.client-WofqKXz_.js',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'info',
+				timestamp: nowSec - 1,
+				data: {
+					method: 'GET',
+					status_code: 200,
+					url: 'https://kentcdodds.com/blog/fix-the-slow-render-before-you-fix-the-re-render.data',
+				},
+			},
+			{
+				category: 'fetch',
+				level: 'error',
+				timestamp: nowSec,
+				data: {
+					method: 'GET',
+					url: 'https://kentcdodds.com/blog/fix-the-slow-render-before-you-fix-the-re-render.data',
+				},
+			},
+		],
+	}
+	expect(isReactRouterClientDataNetworkErrorEvent(minifiedEvent)).toBe(true)
+	expect(shouldDropSentryEvent(minifiedEvent)).toBe(true)
+
+	// Fetcher-action POST .data failures are also dropped from Sentry (noise),
+	// even though hard-reload stays off for them.
+	const fetcherPostEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+					stacktrace: {
+						frames: [{ function: 'yl', filename: '/assets/chunk-LFPYN7LY.js' }],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'error',
+				data: {
+					method: 'POST',
+					url: 'https://kentcdodds.com/resources/promotification.data',
+				},
+			},
+		],
+	}
+	expect(isReactRouterClientDataNetworkErrorEvent(fetcherPostEvent)).toBe(true)
+	expect(shouldDropSentryEvent(fetcherPostEvent)).toBe(true)
+
+	// Minified stack + no data-protocol breadcrumb / tracker: still alert.
+	const firstPartyMinified = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{ function: 'a', filename: '/assets/app.js', inApp: true },
+						],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'error',
+				data: {
+					method: 'GET',
+					url: 'https://kentcdodds.com/api/custom',
+				},
+			},
+		],
+	}
+	expect(isReactRouterClientDataNetworkErrorEvent(firstPartyMinified)).toBe(
+		false,
+	)
+	expect(shouldDropSentryEvent(firstPartyMinified)).toBe(false)
 })
 
 test('filters Cloudflare edge RouteErrorResponse HTML (KCD-VH family)', () => {

@@ -18,10 +18,37 @@ import { images } from '../images.tsx'
 import { buildMediaUrl } from './media.ts'
 import { getOptionalTeam } from './misc.ts'
 import {
+	consumeRecentFailedDataProtocolNetworkFetch,
+	type DataProtocolFetchBreadcrumbLike,
+} from './react-router-data-protocol-network.ts'
+import {
 	isCloudflareEdgeRouteError,
 	isReactRouterSanitizedServerErrorInstance,
 	isReactRouterSpaNavNetworkError,
 } from './sentry-noise.ts'
+
+/**
+ * Prefer Sentry fetch breadcrumbs when deciding SPA-nav hard-reload so a
+ * leftover `.data` tracker note cannot override a newer unrelated Failed to
+ * fetch (KCD-10N review). Safe when Sentry is not initialized.
+ *
+ * Fetch instrumentation writes via `addBreadcrumb` to the **isolation** scope
+ * (not the current scope) — read that list first.
+ */
+function getSentryBreadcrumbsSafely(): Array<DataProtocolFetchBreadcrumbLike> {
+	try {
+		const isolation =
+			Sentry.getIsolationScope().getScopeData().breadcrumbs ?? []
+		const current = Sentry.getCurrentScope().getScopeData().breadcrumbs ?? []
+		if (!Array.isArray(isolation) && !Array.isArray(current)) return []
+		return [
+			...(Array.isArray(isolation) ? isolation : []),
+			...(Array.isArray(current) ? current : []),
+		]
+	} catch {
+		return []
+	}
+}
 
 const SPA_NAV_NETWORK_RELOAD_STORAGE_PREFIX = 'kcd:spa-nav-network-reload:'
 
@@ -70,13 +97,17 @@ export function shouldHardReloadSpaNavNetworkError(
 	error: unknown,
 	storage: Pick<Storage, 'getItem' | 'setItem'> | null,
 	locationKey: string,
+	breadcrumbs: Array<DataProtocolFetchBreadcrumbLike> | null = getSentryBreadcrumbsSafely(),
 ): boolean {
 	if (storage == null) return false
-	if (!isReactRouterSpaNavNetworkError(error)) return false
+	if (!isReactRouterSpaNavNetworkError(error, breadcrumbs)) return false
 	const key = spaNavNetworkReloadStorageKey(locationKey)
 	try {
 		if (storage.getItem(key) === '1') return false
 		storage.setItem(key, '1')
+		// Clear the sync `.data` failure note so it cannot classify a later
+		// unrelated network TypeError within the recency window (KCD-10N).
+		consumeRecentFailedDataProtocolNetworkFetch()
 		return true
 	} catch {
 		return false
@@ -94,9 +125,10 @@ export function shouldShowSpaNavNetworkReconnecting(
 	error: unknown,
 	storage: Pick<Storage, 'getItem' | 'setItem'> | null,
 	locationKey: string,
+	breadcrumbs: Array<DataProtocolFetchBreadcrumbLike> | null = getSentryBreadcrumbsSafely(),
 ): boolean {
 	if (storage == null) return false
-	if (!isReactRouterSpaNavNetworkError(error)) return false
+	if (!isReactRouterSpaNavNetworkError(error, breadcrumbs)) return false
 	const key = spaNavNetworkReloadStorageKey(locationKey)
 	try {
 		if (storage.getItem(key) === '1') return false
@@ -325,6 +357,7 @@ export function useCapturedRouteError() {
 				error,
 				getSessionStorageSafely(window),
 				getSpaNavNetworkLocationKey(window),
+				getSentryBreadcrumbsSafely(),
 			)
 		) {
 			return
@@ -357,7 +390,7 @@ export function useCapturedRouteError() {
 	// app throws (KCD-XZ / KCD-QG / KCD-10B).
 	if (
 		!isReactRouterSanitizedServerErrorInstance(error) &&
-		!isReactRouterSpaNavNetworkError(error)
+		!isReactRouterSpaNavNetworkError(error, getSentryBreadcrumbsSafely())
 	) {
 		Sentry.captureException(error)
 	}
