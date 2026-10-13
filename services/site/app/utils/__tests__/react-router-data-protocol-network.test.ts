@@ -1,5 +1,7 @@
 import { expect, test, vi } from 'vitest'
 import {
+	DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
+	consumeRecentFailedDataProtocolNetworkFetch,
 	getRecentFailedDataProtocolNetworkFetch,
 	hasClientDataProtocolNetworkFailureEvidence,
 	hasSpaNavDataProtocolNetworkFailureEvidence,
@@ -29,9 +31,10 @@ test('notes only .data / __manifest URLs', () => {
 		'get',
 	)
 	expect(getRecentFailedDataProtocolNetworkFetch()?.method).toBe('GET')
+	resetFailedDataProtocolNetworkFetchForTests()
 })
 
-test('SPA-nav evidence requires GET; client evidence allows POST', () => {
+test('SPA-nav evidence requires GET .data; excludes POST and __manifest', () => {
 	resetFailedDataProtocolNetworkFetchForTests()
 	noteFailedDataProtocolNetworkFetch(
 		'https://kentcdodds.com/resources/promotification.data',
@@ -42,10 +45,20 @@ test('SPA-nav evidence requires GET; client evidence allows POST', () => {
 
 	resetFailedDataProtocolNetworkFetchForTests()
 	noteFailedDataProtocolNetworkFetch(
+		'https://kentcdodds.com/__manifest?paths=%2Fblog&version=abc',
+		'GET',
+	)
+	// Fog-of-war __manifest can fail during fetcher submissions — not hard-reload.
+	expect(hasSpaNavDataProtocolNetworkFailureEvidence()).toBe(false)
+	expect(hasClientDataProtocolNetworkFailureEvidence()).toBe(true)
+
+	resetFailedDataProtocolNetworkFetchForTests()
+	noteFailedDataProtocolNetworkFetch(
 		'https://kentcdodds.com/blog/foo.data',
 		'GET',
 	)
 	expect(hasSpaNavDataProtocolNetworkFailureEvidence()).toBe(true)
+	resetFailedDataProtocolNetworkFetchForTests()
 })
 
 test('failed fetch breadcrumbs require error level and no status_code', () => {
@@ -92,6 +105,101 @@ test('failed fetch breadcrumbs require error level and no status_code', () => {
 	).toBe(false)
 })
 
+test('breadcrumb evidence uses only the most recent error fetch within max age', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
+	const now = Date.now()
+	const staleTs = (now - DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS - 1000) / 1000
+	const freshTs = now / 1000
+
+	expect(
+		hasClientDataProtocolNetworkFailureEvidence(
+			[
+				{
+					category: 'fetch',
+					level: 'error',
+					timestamp: staleTs,
+					data: {
+						method: 'GET',
+						url: 'https://kentcdodds.com/blog/foo.data',
+					},
+				},
+			],
+			now,
+		),
+	).toBe(false)
+
+	// A later unrelated Failed to fetch must not be classified by an older .data.
+	expect(
+		hasClientDataProtocolNetworkFailureEvidence(
+			[
+				{
+					category: 'fetch',
+					level: 'error',
+					timestamp: freshTs - 1,
+					data: {
+						method: 'GET',
+						url: 'https://kentcdodds.com/blog/foo.data',
+					},
+				},
+				{
+					category: 'fetch',
+					level: 'error',
+					timestamp: freshTs,
+					data: {
+						method: 'GET',
+						url: 'https://kentcdodds.com/api/custom',
+					},
+				},
+			],
+			now,
+		),
+	).toBe(false)
+
+	expect(
+		hasSpaNavDataProtocolNetworkFailureEvidence(
+			[
+				{
+					category: 'fetch',
+					level: 'error',
+					timestamp: freshTs,
+					data: {
+						method: 'GET',
+						url: 'https://kentcdodds.com/blog/foo.data',
+					},
+				},
+			],
+			now,
+		),
+	).toBe(true)
+
+	expect(
+		hasSpaNavDataProtocolNetworkFailureEvidence(
+			[
+				{
+					category: 'fetch',
+					level: 'error',
+					timestamp: freshTs,
+					data: {
+						method: 'GET',
+						url: 'https://kentcdodds.com/__manifest?paths=%2Fblog',
+					},
+				},
+			],
+			now,
+		),
+	).toBe(false)
+})
+
+test('consumeRecentFailedDataProtocolNetworkFetch clears the tracker note', () => {
+	resetFailedDataProtocolNetworkFetchForTests()
+	noteFailedDataProtocolNetworkFetch(
+		'https://kentcdodds.com/blog/foo.data',
+		'GET',
+	)
+	expect(consumeRecentFailedDataProtocolNetworkFetch()?.url).toContain('.data')
+	expect(getRecentFailedDataProtocolNetworkFetch()).toBe(null)
+})
+
 test('installReactRouterDataProtocolFetchFailureTracker notes TypeError on .data', async () => {
 	resetFailedDataProtocolNetworkFetchForTests()
 	const originalFetch = vi.fn(async () => {
@@ -112,4 +220,5 @@ test('installReactRouterDataProtocolFetchFailureTracker notes TypeError on .data
 		target.fetch('https://kentcdodds.com/api/custom'),
 	).rejects.toThrow(TypeError)
 	expect(getRecentFailedDataProtocolNetworkFetch()).toBe(null)
+	resetFailedDataProtocolNetworkFetchForTests()
 })

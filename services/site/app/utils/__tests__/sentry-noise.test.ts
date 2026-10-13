@@ -1505,6 +1505,7 @@ test('drops React Router client data-network TypeErrors via beforeSend frames (K
 
 test('drops minified SPA-nav Failed to fetch via .data breadcrumb (KCD-10N)', () => {
 	resetFailedDataProtocolNetworkFetchForTests()
+	const nowSec = Date.now() / 1000
 	// beforeSend runs in the browser on minified frames (function: yl / ?);
 	// Sentry restores names only after upload. Match the KCD-10N breadcrumb.
 	const minifiedEvent = {
@@ -1534,6 +1535,7 @@ test('drops minified SPA-nav Failed to fetch via .data breadcrumb (KCD-10N)', ()
 			{
 				category: 'fetch',
 				level: 'info',
+				timestamp: nowSec - 1,
 				data: {
 					method: 'GET',
 					status_code: 200,
@@ -1543,6 +1545,7 @@ test('drops minified SPA-nav Failed to fetch via .data breadcrumb (KCD-10N)', ()
 			{
 				category: 'fetch',
 				level: 'error',
+				timestamp: nowSec,
 				data: {
 					method: 'GET',
 					url: 'https://kentcdodds.com/blog/fix-the-slow-render-before-you-fix-the-re-render.data',

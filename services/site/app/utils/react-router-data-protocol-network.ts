@@ -12,6 +12,11 @@
 export const REACT_ROUTER_DATA_PROTOCOL_REQUEST =
 	/\/(?:__manifest|\S+\.data)(?:\?|$)/i
 
+/** Single-fetch loader/action URLs — hard-reload signal (not fog-of-war). */
+export const REACT_ROUTER_SINGLE_FETCH_DATA_REQUEST = /\.data(?:\?|$)/i
+
+export const DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS = 10_000
+
 export type FailedDataProtocolNetworkFetch = {
 	url: string
 	method: string
@@ -22,6 +27,8 @@ export type DataProtocolFetchBreadcrumbLike = {
 	category?: string | null
 	level?: string | null
 	message?: string | null
+	/** Sentry breadcrumb time in seconds (unix). */
+	timestamp?: number | null
 	data?: {
 		url?: string | null
 		method?: string | null
@@ -55,12 +62,26 @@ export function noteFailedDataProtocolNetworkFetch(
  * `maxAgeMs`, or null when none / stale.
  */
 export function getRecentFailedDataProtocolNetworkFetch(
-	maxAgeMs = 10_000,
+	maxAgeMs = DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
 	now: number = Date.now(),
 ): FailedDataProtocolNetworkFetch | null {
 	const recent = lastFailedDataProtocolNetworkFetch
 	if (recent == null) return null
 	if (now - recent.at > maxAgeMs) return null
+	return recent
+}
+
+/**
+ * Read + clear a recent tracker note so a stale `.data` failure cannot classify
+ * a later unrelated network TypeError (Devin review on KCD-10N).
+ */
+export function consumeRecentFailedDataProtocolNetworkFetch(
+	maxAgeMs = DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
+	now: number = Date.now(),
+): FailedDataProtocolNetworkFetch | null {
+	const recent = getRecentFailedDataProtocolNetworkFetch(maxAgeMs, now)
+	if (recent == null) return null
+	lastFailedDataProtocolNetworkFetch = null
 	return recent
 }
 
@@ -131,6 +152,28 @@ function breadcrumbHasHttpStatus(
 	return status != null && status !== ''
 }
 
+function isErrorFetchBreadcrumb(
+	crumb: DataProtocolFetchBreadcrumbLike,
+): boolean {
+	if (crumb.category !== 'fetch' && crumb.category !== 'xhr') return false
+	return (crumb.level ?? '').toLowerCase() === 'error'
+}
+
+function isBreadcrumbFresh(
+	crumb: DataProtocolFetchBreadcrumbLike,
+	now: number,
+	maxAgeMs: number,
+): boolean {
+	if (typeof crumb.timestamp !== 'number') {
+		// Missing timestamp: allow only when this is the most recent error fetch
+		// (caller already enforces that). Age is unknown — prefer matching KCD-10N
+		// events that omit timestamps over silently dropping them.
+		return true
+	}
+	// Sentry stores breadcrumb timestamps in seconds.
+	return now - crumb.timestamp * 1000 <= maxAgeMs
+}
+
 /**
  * Sentry fetch instrumentation records network-layer failures as `fetch`
  * breadcrumbs at `error` level with a `.data` / `__manifest` URL and no
@@ -139,24 +182,46 @@ function breadcrumbHasHttpStatus(
 export function isFailedDataProtocolNetworkFetchBreadcrumb(
 	crumb: DataProtocolFetchBreadcrumbLike,
 ): boolean {
-	if (crumb.category !== 'fetch' && crumb.category !== 'xhr') return false
-	if ((crumb.level ?? '').toLowerCase() !== 'error') return false
+	if (!isErrorFetchBreadcrumb(crumb)) return false
 	if (breadcrumbHasHttpStatus(crumb)) return false
 	return REACT_ROUTER_DATA_PROTOCOL_REQUEST.test(breadcrumbUrl(crumb))
 }
 
+function isSpaNavHardReloadDataRequest(url: string, method: string): boolean {
+	// Hard-reload is only for single-fetch `.data` GETs. Fog-of-war `__manifest`
+	// GETs also fail during fetcher submissions (KCD-10H) — reloading the
+	// document there is wrong when stacks are minified.
+	if (method !== 'GET') return false
+	return REACT_ROUTER_SINGLE_FETCH_DATA_REQUEST.test(url)
+}
+
+/**
+ * Only the most recent error-level fetch/xhr breadcrumb can establish
+ * data-protocol evidence. Older `.data` failures must not classify a later
+ * unrelated `Failed to fetch` (CodeRabbit / Devin on KCD-10N).
+ */
 export function findFailedDataProtocolNetworkFetchBreadcrumb(
 	breadcrumbs: Array<DataProtocolFetchBreadcrumbLike> | null | undefined,
-	options: { navigationOnly?: boolean } = {},
+	options: {
+		navigationOnly?: boolean
+		now?: number
+		maxAgeMs?: number
+	} = {},
 ): DataProtocolFetchBreadcrumbLike | null {
 	const crumbs = breadcrumbs ?? []
+	const now = options.now ?? Date.now()
+	const maxAgeMs = options.maxAgeMs ?? DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS
+
 	for (let i = crumbs.length - 1; i >= 0; i--) {
 		const crumb = crumbs[i]
 		if (crumb == null) continue
-		if (!isFailedDataProtocolNetworkFetchBreadcrumb(crumb)) continue
+		if (!isErrorFetchBreadcrumb(crumb)) continue
+		if (!isBreadcrumbFresh(crumb, now, maxAgeMs)) return null
+		if (!isFailedDataProtocolNetworkFetchBreadcrumb(crumb)) return null
 		if (options.navigationOnly) {
 			const method = (crumb.data?.method ?? 'GET').toString().toUpperCase()
-			if (method !== 'GET') continue
+			const url = breadcrumbUrl(crumb)
+			if (!isSpaNavHardReloadDataRequest(url, method)) return null
 		}
 		return crumb
 	}
@@ -164,8 +229,12 @@ export function findFailedDataProtocolNetworkFetchBreadcrumb(
 }
 
 /**
- * SPA-nav (loader / manifest) network failure evidence for hard-reload.
- * Excludes non-GET `.data` requests (fetcher actions — KCD-10H / KCD-Y0).
+ * SPA-nav hard-reload evidence: recent GET `.data` network failure only.
+ * Excludes `__manifest` (fetcher fog-of-war before actions — KCD-10H) and
+ * non-GET `.data` (fetcher actions — KCD-Y0). Does not consume the tracker
+ * note — `isReactRouterSpaNavNetworkError` may run several times per render
+ * (reconnecting UI + hard-reload + skip-capture); callers that commit to a
+ * reload should call `consumeRecentFailedDataProtocolNetworkFetch`.
  */
 export function hasSpaNavDataProtocolNetworkFailureEvidence(
 	breadcrumbs?: Array<DataProtocolFetchBreadcrumbLike> | null,
@@ -174,24 +243,38 @@ export function hasSpaNavDataProtocolNetworkFailureEvidence(
 	if (
 		findFailedDataProtocolNetworkFetchBreadcrumb(breadcrumbs, {
 			navigationOnly: true,
+			now,
 		}) != null
 	) {
 		return true
 	}
-	const recent = getRecentFailedDataProtocolNetworkFetch(10_000, now)
-	return recent != null && recent.method === 'GET'
+	const recent = getRecentFailedDataProtocolNetworkFetch(
+		DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
+		now,
+	)
+	return (
+		recent != null && isSpaNavHardReloadDataRequest(recent.url, recent.method)
+	)
 }
 
 /**
- * beforeSend safety-net evidence: any failed `.data` / `__manifest` fetch
- * (SPA nav or fetcher) with no HTTP status.
+ * beforeSend safety-net evidence: most recent error fetch is a failed
+ * `.data` / `__manifest` request (SPA nav or fetcher) with no HTTP status,
+ * within the same recency window as the tracker.
  */
 export function hasClientDataProtocolNetworkFailureEvidence(
 	breadcrumbs?: Array<DataProtocolFetchBreadcrumbLike> | null,
 	now: number = Date.now(),
 ): boolean {
-	if (findFailedDataProtocolNetworkFetchBreadcrumb(breadcrumbs) != null) {
+	if (
+		findFailedDataProtocolNetworkFetchBreadcrumb(breadcrumbs, { now }) != null
+	) {
 		return true
 	}
-	return getRecentFailedDataProtocolNetworkFetch(10_000, now) != null
+	return (
+		getRecentFailedDataProtocolNetworkFetch(
+			DATA_PROTOCOL_NETWORK_FAILURE_MAX_AGE_MS,
+			now,
+		) != null
+	)
 }

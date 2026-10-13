@@ -17,6 +17,7 @@ import { type OptionalTeam, type User } from '#app/types.ts'
 import { images } from '../images.tsx'
 import { buildMediaUrl } from './media.ts'
 import { getOptionalTeam } from './misc.ts'
+import { consumeRecentFailedDataProtocolNetworkFetch } from './react-router-data-protocol-network.ts'
 import {
 	isCloudflareEdgeRouteError,
 	isReactRouterSanitizedServerErrorInstance,
@@ -77,6 +78,9 @@ export function shouldHardReloadSpaNavNetworkError(
 	try {
 		if (storage.getItem(key) === '1') return false
 		storage.setItem(key, '1')
+		// Clear the sync `.data` failure note so it cannot classify a later
+		// unrelated network TypeError within the recency window (KCD-10N).
+		consumeRecentFailedDataProtocolNetworkFetch()
 		return true
 	} catch {
 		return false

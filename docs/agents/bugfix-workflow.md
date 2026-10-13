@@ -58,10 +58,13 @@ fetch resource` / Safari `Load failed` during React Router SPA nav are browser
     `setItem` write probe succeeds (so a write failure cannot leave a stuck
     reconnecting state). `beforeSend` also drops via
     `isReactRouterClientDataNetworkErrorEvent` (same message + RR names **or**
-    failed `.data`/`__manifest` breadcrumb/tracker evidence). Hard-reload
-    excludes fetcher actions: unminified `handleFetcherAction` /
-    `singleFetchActionStrategy` stacks, or non-GET `.data` failures when
-    minified (KCD-10H / KCD-Y0).
+    the most recent error-level fetch breadcrumb / tracker note for `.data` /
+    `__manifest` with no `status_code`, within ~10s). Hard-reload is narrower:
+    GET `.data` only (not fog-of-war `__manifest`, which also fails during
+    fetcher submissions). Also excludes unminified `handleFetcherAction` /
+    `singleFetchActionStrategy` stacks and non-GET `.data` (KCD-10H / KCD-Y0).
+    Committing to a hard-reload clears the sync tracker note so it cannot
+    classify a later unrelated network TypeError.
 - Promo dismiss (`routes/resources/promotification.tsx` `dismissPromotification`)
   is best-effort cookie write like `markAsRead`. Do **not** use
   `useFetcher().submit` for it: RR `setFetcherError` puts network TypeErrors on

@@ -153,6 +153,7 @@ type RouteErrorResponseExtra = {
 
 type SentryBreadcrumbLike = DataProtocolFetchBreadcrumbLike & {
 	message?: string | null
+	timestamp?: number | null
 	data?: {
 		url?: string | null
 		method?: string | null
