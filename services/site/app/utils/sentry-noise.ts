@@ -14,6 +14,7 @@
 
 import {
 	REACT_ROUTER_DATA_PROTOCOL_REQUEST,
+	findNewestErrorFetchBreadcrumb,
 	hasClientDataProtocolNetworkFailureEvidence,
 	hasSpaNavDataProtocolNetworkFailureEvidence,
 	type DataProtocolFetchBreadcrumbLike,
@@ -73,6 +74,13 @@ export const SENTRY_IGNORE_ERRORS: Array<string | RegExp> = [
 	// Firefox for iOS content-script bridge (KCD-RB).
 	/Can't find variable: __firefox__/,
 	/__firefox__ is not defined/,
+	// Brave iOS / Firefox-iOS-derived bridge reading window.__firefox__.reader
+	// (and similar) — Safari "undefined is not an object (evaluating '…')"
+	// with HTML-document `global code` stacks (KCD-2K). Keep narrow: do not
+	// ignore generic "undefined is not an object".
+	/evaluating 'window\.__firefox__\./,
+	// Brave wallet inject setting window.ethereum.selectedAddress (KCD-2K).
+	/evaluating 'window\.ethereum\.selectedAddress = undefined'/,
 	// WebExtension messaging API leaking into the page (KCD-JC).
 	/Invalid call to runtime\.sendMessage\(\)\. Tab not found/,
 	// Injected extension post bridge (KCD-W9).
@@ -1235,6 +1243,109 @@ export function isInjectedPostUserDataFetchError(
 }
 
 /**
+ * Injected reader/automation scripts RPC over `fetch` to the fake host
+ * `reader.self` (`.self` is not a TLD). Chrome appends the failed host to
+ * network TypeErrors (`Failed to fetch (reader.self)`). Stacks include an
+ * anonymous `magicRPC` frame; our `installReactRouterDataProtocolFetchFailureTracker`
+ * wrapper and Sentry's fetch instrumentation may also appear because they wrap
+ * `window.fetch` — do not require every frame to be anonymous (KCD-10P).
+ *
+ * Require the browser network TypeError message plus `reader.self` evidence
+ * (message host suffix or newest error-level fetch breadcrumb host). An
+ * explicit non-`reader.self` host suffix on the exception rejects breadcrumb
+ * fallback (a leftover injected fetch must not classify a later first-party
+ * TypeError). Breadcrumb-only host evidence always requires an `<anonymous>`
+ * `magicRPC` frame on the same exception value; message-suffix evidence only
+ * requires magicRPC when frames are present. Never drop generic
+ * `Failed to fetch` for first-party / `.data` / `__manifest` on this path alone.
+ */
+const NETWORK_TYPEERROR_HOST_SUFFIX = /\(([^)]+)\)\s*$/
+const MAGIC_RPC_FUNCTION = /(?:^|\.)magicRPC$/
+
+function breadcrumbFetchUrl(crumb: SentryBreadcrumbLike): string {
+	if (typeof crumb.data?.url === 'string' && crumb.data.url) {
+		return crumb.data.url
+	}
+	if (typeof crumb.message === 'string' && crumb.message) {
+		return crumb.message
+	}
+	return ''
+}
+
+function hostnameFromUrl(url: string): string | null {
+	try {
+		return new URL(url).hostname.toLowerCase()
+	} catch {
+		return null
+	}
+}
+
+function networkTypeErrorHostSuffix(message: string): string | null {
+	const match = NETWORK_TYPEERROR_HOST_SUFFIX.exec(message)
+	const host = match?.[1]?.trim().toLowerCase()
+	return host || null
+}
+
+function newestErrorFetchBreadcrumbHost(event: SentryEventLike): string | null {
+	const newestError = findNewestErrorFetchBreadcrumb(event.breadcrumbs)
+	if (newestError == null) return null
+	return hostnameFromUrl(breadcrumbFetchUrl(newestError))
+}
+
+function hasAnonymousMagicRpcFrame(
+	frames: NonNullable<
+		NonNullable<SentryExceptionValue['stacktrace']>['frames']
+	>,
+): boolean {
+	return frames.some((frame) => {
+		if (!MAGIC_RPC_FUNCTION.test(frame.function ?? '')) return false
+		const candidates = [frame.filename, frame.absPath].filter(
+			(value, index, values) => values.indexOf(value) === index,
+		)
+		if (candidates.length === 0) return true
+		return candidates.every(
+			(value) =>
+				isUnattributedStackFilename(value) || isAnonymousStackFilename(value),
+		)
+	})
+}
+
+export function isInjectedReaderSelfFetchError(
+	event: SentryEventLike,
+): boolean {
+	return (event.exception?.values ?? []).some((value) => {
+		const message = value.value?.trim() ?? ''
+		if (!BROWSER_NETWORK_FETCH_TYPEERROR.test(message)) return false
+		if (value.type != null && value.type !== 'TypeError') return false
+
+		const messageHost = networkTypeErrorHostSuffix(message)
+		// Chrome's host suffix names *this* failed fetch. A non-reader.self
+		// suffix means the exception is not injected reader RPC — do not let
+		// a leftover reader.self breadcrumb reclassify it.
+		if (messageHost != null && messageHost !== 'reader.self') return false
+
+		const fromMessage = messageHost === 'reader.self'
+		const fromBreadcrumb =
+			newestErrorFetchBreadcrumbHost(event) === 'reader.self'
+		if (!fromMessage && !fromBreadcrumb) return false
+
+		const frames = value.stacktrace?.frames ?? []
+		// Breadcrumb host is event-level context for any recent failed fetch.
+		// Without a same-exception magicRPC frame it can mis-attribute a later
+		// frameless first-party TypeError — require magicRPC on that path.
+		if (!fromMessage) {
+			return frames.length > 0 && hasAnonymousMagicRpcFrame(frames)
+		}
+		// Message already names reader.self. When frames exist, still require
+		// anonymous magicRPC; other frames may be fetch-tracker / Sentry.
+		if (frames.length > 0 && !hasAnonymousMagicRpcFrame(frames)) {
+			return false
+		}
+		return true
+	})
+}
+
+/**
  * Obscura headless scraping browser (KCD-10M). Its JS DOM shim attributes
  * frames to filenames like `<obscura:bootstrap>` and ships a `Request`
  * without `formData()`, so React Router form submits throw
@@ -1344,6 +1455,7 @@ export function shouldDropSentryEvent(
 	if (isInjectedBlobAddListenerError(event, hint)) return true
 	if (isInjectedInputOnchangeLocationError(event)) return true
 	if (isInjectedPostUserDataFetchError(event)) return true
+	if (isInjectedReaderSelfFetchError(event)) return true
 	if (isObscuraHeadlessBrowserNoise(event)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
