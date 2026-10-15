@@ -1568,6 +1568,51 @@ test('drops injected reader.self magicRPC Failed to fetch noise (KCD-10P)', () =
 	}
 	expect(isInjectedReaderSelfFetchError(readerSelfWithoutMagicRpc)).toBe(false)
 	expect(shouldDropSentryEvent(readerSelfWithoutMagicRpc)).toBe(false)
+
+	// Leftover reader.self breadcrumb must not drop a frameless first-party
+	// Failed to fetch whose message names a different host (Devin on KCD-10P).
+	const firstPartyWithStaleReaderBreadcrumb = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'error',
+				data: { method: 'POST', url: 'https://reader.self' },
+			},
+		],
+	}
+	expect(
+		isInjectedReaderSelfFetchError(firstPartyWithStaleReaderBreadcrumb),
+	).toBe(false)
+	expect(shouldDropSentryEvent(firstPartyWithStaleReaderBreadcrumb)).toBe(false)
+
+	// Breadcrumb-only host without magicRPC frames must not drop.
+	const breadcrumbWithoutMagicRpc = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'error',
+				data: { method: 'POST', url: 'https://reader.self' },
+			},
+		],
+	}
+	expect(isInjectedReaderSelfFetchError(breadcrumbWithoutMagicRpc)).toBe(false)
+	expect(shouldDropSentryEvent(breadcrumbWithoutMagicRpc)).toBe(false)
 })
 
 test('keeps Module load timeout filter (KCD-ZS / KCD-ZT)', () => {

@@ -1251,12 +1251,15 @@ export function isInjectedPostUserDataFetchError(
  * `window.fetch` — do not require every frame to be anonymous (KCD-10P).
  *
  * Require the browser network TypeError message plus `reader.self` evidence
- * (message host suffix or newest error-level fetch breadcrumb host) and, when
- * frames are present, an `<anonymous>` `magicRPC` frame on the same exception
- * value. Never drop generic `Failed to fetch` for first-party / `.data` /
- * `__manifest` URLs on this path alone.
+ * (message host suffix or newest error-level fetch breadcrumb host). An
+ * explicit non-`reader.self` host suffix on the exception rejects breadcrumb
+ * fallback (a leftover injected fetch must not classify a later first-party
+ * TypeError). Breadcrumb-only host evidence always requires an `<anonymous>`
+ * `magicRPC` frame on the same exception value; message-suffix evidence only
+ * requires magicRPC when frames are present. Never drop generic
+ * `Failed to fetch` for first-party / `.data` / `__manifest` on this path alone.
  */
-const READER_SELF_HOST_SUFFIX = /\(reader\.self\)\s*$/i
+const NETWORK_TYPEERROR_HOST_SUFFIX = /\(([^)]+)\)\s*$/
 const MAGIC_RPC_FUNCTION = /(?:^|\.)magicRPC$/
 
 function breadcrumbFetchUrl(crumb: SentryBreadcrumbLike): string {
@@ -1277,15 +1280,16 @@ function hostnameFromUrl(url: string): string | null {
 	}
 }
 
-function hasReaderSelfHostEvidence(
-	message: string,
-	event: SentryEventLike,
-): boolean {
-	if (READER_SELF_HOST_SUFFIX.test(message)) return true
+function networkTypeErrorHostSuffix(message: string): string | null {
+	const match = NETWORK_TYPEERROR_HOST_SUFFIX.exec(message)
+	const host = match?.[1]?.trim().toLowerCase()
+	return host || null
+}
+
+function newestErrorFetchBreadcrumbHost(event: SentryEventLike): string | null {
 	const newestError = findNewestErrorFetchBreadcrumb(event.breadcrumbs)
-	if (newestError == null) return false
-	const host = hostnameFromUrl(breadcrumbFetchUrl(newestError))
-	return host === 'reader.self'
+	if (newestError == null) return null
+	return hostnameFromUrl(breadcrumbFetchUrl(newestError))
 }
 
 function hasAnonymousMagicRpcFrame(
@@ -1313,11 +1317,27 @@ export function isInjectedReaderSelfFetchError(
 		const message = value.value?.trim() ?? ''
 		if (!BROWSER_NETWORK_FETCH_TYPEERROR.test(message)) return false
 		if (value.type != null && value.type !== 'TypeError') return false
-		if (!hasReaderSelfHostEvidence(message, event)) return false
+
+		const messageHost = networkTypeErrorHostSuffix(message)
+		// Chrome's host suffix names *this* failed fetch. A non-reader.self
+		// suffix means the exception is not injected reader RPC — do not let
+		// a leftover reader.self breadcrumb reclassify it.
+		if (messageHost != null && messageHost !== 'reader.self') return false
+
+		const fromMessage = messageHost === 'reader.self'
+		const fromBreadcrumb =
+			newestErrorFetchBreadcrumbHost(event) === 'reader.self'
+		if (!fromMessage && !fromBreadcrumb) return false
 
 		const frames = value.stacktrace?.frames ?? []
-		// When frames are present, require the distinctive anonymous magicRPC
-		// signature. Other frames may be first-party fetch-tracker / Sentry.
+		// Breadcrumb host is event-level context for any recent failed fetch.
+		// Without a same-exception magicRPC frame it can mis-attribute a later
+		// frameless first-party TypeError — require magicRPC on that path.
+		if (!fromMessage) {
+			return frames.length > 0 && hasAnonymousMagicRpcFrame(frames)
+		}
+		// Message already names reader.self. When frames exist, still require
+		// anonymous magicRPC; other frames may be fetch-tracker / Sentry.
 		if (frames.length > 0 && !hasAnonymousMagicRpcFrame(frames)) {
 			return false
 		}
