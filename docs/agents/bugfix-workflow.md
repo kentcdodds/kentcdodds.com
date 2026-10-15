@@ -217,3 +217,19 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   injected third-party script noise — not app or React Router SPA-nav fetch
   failures (KCD-10A). Filter via `isInjectedPostUserDataFetchError`; never
   broadly `ignoreErrors` generic network TypeErrors (KCD-XZ / KCD-QG).
+- Client `TypeError: Failed to fetch (reader.self)` (or the same network
+  TypeError with newest error-level fetch breadcrumb host `reader.self`) plus
+  an `<anonymous>` `magicRPC` frame is injected reader/automation RPC — not a
+  first-party host (`.self` is not a TLD). Our fetch-tracker wrapper and
+  Sentry fetch instrumentation may appear in the stack because they wrap
+  `window.fetch`; do not require every frame to be anonymous (KCD-10P). Filter
+  via `isInjectedReaderSelfFetchError`; never drop generic `Failed to fetch`
+  for kentcdodds.com / `.data` / `__manifest` on this path alone.
+- Client Safari/Brave-iOS `undefined is not an object (evaluating
+'window.__firefox__.…')` and `…(evaluating 'window.ethereum.selectedAddress
+= undefined')` with HTML-document `global code` stacks are Firefox-iOS-
+  derived bridge / Brave wallet injection — not site code (KCD-2K). Extend
+  `SENTRY_IGNORE_ERRORS` with those narrow `evaluating 'window.__firefox__.`
+  / `evaluating 'window.ethereum.selectedAddress = undefined'` signatures
+  (alongside KCD-RB `__firefox__ is not defined`); do not ignore generic
+  `undefined is not an object`.

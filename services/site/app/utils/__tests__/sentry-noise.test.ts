@@ -21,6 +21,7 @@ import {
 	isInjectedBlobAddListenerError,
 	isInjectedInputOnchangeLocationError,
 	isInjectedPostUserDataFetchError,
+	isInjectedReaderSelfFetchError,
 	isObscuraHeadlessBrowserNoise,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
@@ -78,6 +79,31 @@ test('filters Outlook SafeLinks Non-Error rejection (KCD-1K)', () => {
 test('filters Firefox for iOS __firefox__ bridge (KCD-RB)', () => {
 	expect(matchesIgnoreError("Can't find variable: __firefox__")).toBe(true)
 	expect(matchesIgnoreError('__firefox__ is not defined')).toBe(true)
+})
+
+test('filters Brave iOS __firefox__ / ethereum bridge TypeErrors (KCD-2K)', () => {
+	expect(
+		matchesIgnoreError(
+			"undefined is not an object (evaluating 'window.__firefox__.reader')",
+		),
+	).toBe(true)
+	expect(
+		matchesIgnoreError(
+			"TypeError: undefined is not an object (evaluating 'window.__firefox__.pagedata')",
+		),
+	).toBe(true)
+	expect(
+		matchesIgnoreError(
+			"undefined is not an object (evaluating 'window.ethereum.selectedAddress = undefined')",
+		),
+	).toBe(true)
+	// Generic undefined-is-not-an-object must still alert.
+	expect(matchesIgnoreError('undefined is not an object')).toBe(false)
+	expect(
+		matchesIgnoreError(
+			"undefined is not an object (evaluating 'someOtherThing.foo')",
+		),
+	).toBe(false)
 })
 
 test('filters WebExtension runtime.sendMessage tab-not-found (KCD-JC)', () => {
@@ -1314,6 +1340,236 @@ test('drops injected Object.postUserData Failed to fetch noise (KCD-10A)', () =>
 	expect(isInjectedPostUserDataFetchError(messageOnlyFetchEvent)).toBe(false)
 	expect(shouldDropSentryEvent(messageOnlyFetchEvent)).toBe(false)
 })
+
+test('drops injected reader.self magicRPC Failed to fetch noise (KCD-10P)', () => {
+	const injectedEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (reader.self)',
+					stacktrace: {
+						frames: [
+							{
+								filename: 'app/utils/react-router-data-protocol-network.ts',
+								function: 'target.fetch',
+								inApp: true,
+							},
+							{
+								filename: '@sentry/core/instrument/fetch.js',
+								function: 'Instrumented.fetch',
+								inApp: false,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: 'magicRPC',
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: null,
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								absPath: '<anonymous>',
+								function: 'handlePageLoad',
+								inApp: true,
+							},
+							{
+								filename: '@sentry/browser/helpers.js',
+								function: 'sentryWrapped',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'info',
+				data: {
+					method: 'GET',
+					url: 'https://kentcdodds.com/__manifest?paths=%2Fblog&version=abc',
+					status_code: 200,
+				},
+			},
+			{
+				category: 'fetch',
+				level: 'error',
+				data: {
+					method: 'POST',
+					url: 'https://reader.self',
+				},
+			},
+		],
+	}
+
+	expect(isInjectedReaderSelfFetchError(injectedEvent)).toBe(true)
+	expect(shouldDropSentryEvent(injectedEvent)).toBe(true)
+
+	// Breadcrumb host alone (no message suffix) still drops with magicRPC.
+	const breadcrumbOnlyHost = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{
+								filename: '<anonymous>',
+								function: 'magicRPC',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'error',
+				data: { method: 'POST', url: 'https://reader.self/rpc' },
+			},
+		],
+	}
+	expect(isInjectedReaderSelfFetchError(breadcrumbOnlyHost)).toBe(true)
+	expect(shouldDropSentryEvent(breadcrumbOnlyHost)).toBe(true)
+
+	// Plain Failed to fetch without reader.self / magicRPC must still alert.
+	const plainFetchEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch',
+					stacktrace: {
+						frames: [
+							{
+								filename: '<anonymous>',
+								function: 'anonymous',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedReaderSelfFetchError(plainFetchEvent)).toBe(false)
+	expect(shouldDropSentryEvent(plainFetchEvent)).toBe(false)
+
+	// First-party host suffix is not reader.self noise.
+	const kentHostFetchEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+					stacktrace: {
+						frames: [
+							{
+								filename: '<anonymous>',
+								function: 'magicRPC',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedReaderSelfFetchError(kentHostFetchEvent)).toBe(false)
+
+	// reader.self-like message on a non-TypeError must not drop via this filter.
+	const nonTypeErrorEvent = {
+		exception: {
+			values: [
+				{
+					type: 'Error',
+					value: 'Failed to fetch (reader.self)',
+					stacktrace: {
+						frames: [
+							{
+								filename: '<anonymous>',
+								function: 'magicRPC',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedReaderSelfFetchError(nonTypeErrorEvent)).toBe(false)
+	expect(shouldDropSentryEvent(nonTypeErrorEvent)).toBe(false)
+
+	// Real `.data` failure must flow to existing RR data-network logic, not
+	// this injected-reader filter (even if a stale magicRPC frame appears).
+	const dataProtocolEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (kentcdodds.com)',
+					stacktrace: {
+						frames: [
+							{
+								filename:
+									'../../../../../node_modules/react-router/dist/development/chunk.mjs',
+								function: 'fetchAndDecodeViaTurboStream',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+		breadcrumbs: [
+			{
+				category: 'fetch',
+				level: 'error',
+				data: {
+					method: 'GET',
+					url: 'https://kentcdodds.com/blog/the-testing-trophy.data',
+				},
+			},
+		],
+	}
+	expect(isInjectedReaderSelfFetchError(dataProtocolEvent)).toBe(false)
+	expect(isReactRouterClientDataNetworkErrorEvent(dataProtocolEvent)).toBe(true)
+	expect(shouldDropSentryEvent(dataProtocolEvent)).toBe(true)
+
+	// reader.self message without magicRPC when frames exist must not drop.
+	const readerSelfWithoutMagicRpc = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Failed to fetch (reader.self)',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/assets/root-j32IyX5o.js',
+								function: 'loadBlog',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedReaderSelfFetchError(readerSelfWithoutMagicRpc)).toBe(false)
+	expect(shouldDropSentryEvent(readerSelfWithoutMagicRpc)).toBe(false)
+})
+
 test('keeps Module load timeout filter (KCD-ZS / KCD-ZT)', () => {
 	expect(matchesIgnoreError('Module load timeout: m_1001')).toBe(true)
 	expect(matchesIgnoreError('Module load timeout: m_1004')).toBe(true)
