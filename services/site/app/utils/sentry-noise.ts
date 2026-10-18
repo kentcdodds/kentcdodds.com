@@ -132,26 +132,30 @@ export const SENTRY_DENY_URLS: Array<RegExp> = [
 	/webkit-masked-url:\/\//i,
 	// Android in-app browser injected scripts (Instagram, etc.).
 	/iabjs:/i,
-	// Greasemonkey / Tampermonkey userscript URLs (KCD-10Q).
-	/userscript:/i,
 	// Check Point Zero Phishing corporate security inject (KCD-102).
 	/(?:^|\/\/)zerophishing\.iaas\.checkpoint\.com(?::\d+)?(?:\/|$|\?)/i,
+	// Note: do not add `userscript:` here. denyUrls only inspects the last
+	// valid frame URL and would drop mixed first-party stacks that end on a
+	// userscript frame before beforeSend can apply exclusivity (KCD-10Q).
 ]
+
+type SentryStackFrame = {
+	filename?: string | null
+	/** CamelCase used by existing filters / tests. */
+	absPath?: string | null
+	/** Protocol field from @sentry/core StackFrame. */
+	abs_path?: string | null
+	function?: string | null
+	inApp?: boolean | null
+	/** Sentry source context: [lineNo, lineText] pairs when available. */
+	context?: Array<[number, string] | { line?: number; value?: string }> | null
+}
 
 type SentryExceptionValue = {
 	type?: string | null
 	value?: string | null
 	stacktrace?: {
-		frames?: Array<{
-			filename?: string | null
-			absPath?: string | null
-			function?: string | null
-			inApp?: boolean | null
-			/** Sentry source context: [lineNo, lineText] pairs when available. */
-			context?: Array<
-				[number, string] | { line?: number; value?: string }
-			> | null
-		}> | null
+		frames?: Array<SentryStackFrame> | null
 	} | null
 }
 
@@ -1371,32 +1375,38 @@ export function isObscuraHeadlessBrowserNoise(event: SentryEventLike): boolean {
 /**
  * Greasemonkey / Tampermonkey userscripts (scheme `userscript:GM-…`) inject
  * into all sites and often call native APIs with the wrong `this`, surfacing
- * as `TypeError: Illegal invocation`. Sentry's `denyUrls` only checks the
- * last valid frame URL; when that frame is Sentry's own browserApiErrors
- * wrapper on kentcdodds.com, denyUrls misses the event (KCD-10Q).
+ * as `TypeError: Illegal invocation`. Do not use `denyUrls` for `userscript:`
+ * — that only checks the last valid frame and would drop mixed first-party
+ * stacks. beforeSend exclusivity handles KCD-10Q.
  *
  * Drop when the stack has at least one `userscript:` frame and every other
- * frame is either userscript or a Sentry SDK (`@sentry/`) frame. Mixed stacks
- * with first-party `/assets/` or app frames must still alert. Never ignore
- * the generic "Illegal invocation" message alone.
+ * frame is a userscript or Sentry wrapper frame. Production beforeSend runs
+ * before sourcemaps, so Sentry's browserApiErrors wrapper is often a bundled
+ * `/assets/` URL with `Proxy.<anonymous>` — not an `@sentry/` path. Mixed
+ * stacks with first-party `/assets/` / `/app/` / `/routes/` app frames must
+ * still alert. Never ignore the generic "Illegal invocation" message alone.
  */
 const USERSCRIPT_STACK_FILENAME = /^userscript:/i
 const SENTRY_SDK_STACK_FILENAME = /@sentry\//i
+/** Exact function names from event frames. */
+const SENTRY_WRAPPER_FUNCTION_NAME =
+	/^(?:Proxy\.<anonymous>|sentryWrapped)$|Instrumented\./i
+/** Same markers when scanning raw Error.stack lines. */
+const SENTRY_WRAPPER_IN_STACK =
+	/\bProxy\.<anonymous>|\bsentryWrapped\b|Instrumented\./i
+const SENTRY_CLIENT_BUNDLE_FILENAME = /monitoring\.client/i
+const FIRST_PARTY_APP_STACK_PATH = /\/(?:app|routes)\//i
 
-function framePathCandidates(frame: {
-	filename?: string | null
-	absPath?: string | null
-}): Array<string> {
-	return [frame.filename, frame.absPath].filter(
+function framePathCandidates(frame: SentryStackFrame): Array<string> {
+	return [frame.filename, frame.absPath, frame.abs_path].filter(
 		(value, index, values): value is string =>
-			typeof value === 'string' && values.indexOf(value) === index,
+			typeof value === 'string' &&
+			value.length > 0 &&
+			values.indexOf(value) === index,
 	)
 }
 
-function isUserscriptFrame(frame: {
-	filename?: string | null
-	absPath?: string | null
-}): boolean {
+function isUserscriptFrame(frame: SentryStackFrame): boolean {
 	const candidates = framePathCandidates(frame)
 	return (
 		candidates.length > 0 &&
@@ -1404,36 +1414,49 @@ function isUserscriptFrame(frame: {
 	)
 }
 
-function isSentrySdkFrame(frame: {
-	filename?: string | null
-	absPath?: string | null
-}): boolean {
+/**
+ * Sentry SDK / instrumentation frames — including production Vite bundles
+ * where sourcemaps have not yet restored `@sentry/` paths (beforeSend).
+ */
+function isSentryWrapperFrame(frame: SentryStackFrame): boolean {
+	const fn = frame.function ?? ''
+	if (SENTRY_WRAPPER_FUNCTION_NAME.test(fn)) return true
+
 	const candidates = framePathCandidates(frame)
-	return (
-		candidates.length > 0 &&
-		candidates.every((value) => SENTRY_SDK_STACK_FILENAME.test(value))
+	if (candidates.length === 0) return false
+	return candidates.every(
+		(value) =>
+			SENTRY_SDK_STACK_FILENAME.test(value) ||
+			SENTRY_CLIENT_BUNDLE_FILENAME.test(value),
 	)
 }
 
+function isUserscriptNoiseCompanionFrame(frame: SentryStackFrame): boolean {
+	return isUserscriptFrame(frame) || isSentryWrapperFrame(frame)
+}
+
 /**
- * When Sentry omitted event frames, parse Error.stack URLs and apply the same
- * exclusivity rule (at least one userscript; every URL userscript or @sentry/).
- * First-party `/assets/` / `/app/` / `/routes/` paths keep the event.
+ * When Sentry omitted event frames, classify each `at …` line with the same
+ * exclusivity rule. Do not parse userscript URLs via `scriptUrlsFromStackBlob`
+ * — those names embed `https://` and spaces and fragment incorrectly.
  */
 function isUserscriptOnlyErrorStack(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
 	const stack = exception.stack
 	if (!/userscript:/i.test(stack)) return false
-	if (/\/assets\/|\/app\/|\/routes\//i.test(stack)) return false
+	if (FIRST_PARTY_APP_STACK_PATH.test(stack)) return false
 
-	const urls = scriptUrlsFromStackBlob(stack)
-	if (urls.length === 0) return false
-	if (!urls.some((url) => USERSCRIPT_STACK_FILENAME.test(url))) return false
-	return urls.every(
-		(url) =>
-			USERSCRIPT_STACK_FILENAME.test(url) ||
-			SENTRY_SDK_STACK_FILENAME.test(url),
-	)
+	const frameLines = stack.split('\n').filter((line) => /^\s*at\s/.test(line))
+	if (frameLines.length === 0) return false
+	if (!frameLines.some((line) => /userscript:/i.test(line))) return false
+
+	return frameLines.every((line) => {
+		if (/userscript:/i.test(line)) return true
+		if (SENTRY_WRAPPER_IN_STACK.test(line)) return true
+		if (SENTRY_SDK_STACK_FILENAME.test(line)) return true
+		if (SENTRY_CLIENT_BUNDLE_FILENAME.test(line)) return true
+		return false
+	})
 }
 
 export function isInjectedUserscriptNoise(
@@ -1443,12 +1466,11 @@ export function isInjectedUserscriptNoise(
 	const frames = exceptionFrames(event)
 	if (frames.length > 0) {
 		if (!frames.some(isUserscriptFrame)) return false
-		return frames.every(
-			(frame) => isUserscriptFrame(frame) || isSentrySdkFrame(frame),
-		)
+		return frames.every(isUserscriptNoiseCompanionFrame)
 	}
 	return isUserscriptOnlyErrorStack(hint.originalException)
 }
+
 /**
  * React Router production `sanitizeError` replaces thrown Errors with
  * `new Error("Unexpected Server Error")` and clears `stack` before they reach

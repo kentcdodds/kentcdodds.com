@@ -1134,7 +1134,9 @@ test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
 
 	expect(isInjectedUserscriptNoise(userscriptEvent)).toBe(true)
 	expect(shouldDropSentryEvent(userscriptEvent)).toBe(true)
-	expect(matchesDenyUrl(userscriptFilename)).toBe(true)
+	// denyUrls must not list userscript: — last-frame semantics would drop
+	// mixed first-party stacks before beforeSend exclusivity runs.
+	expect(matchesDenyUrl(userscriptFilename)).toBe(false)
 	// Do not broadly ignore Illegal invocation — only the userscript signature.
 	expect(matchesIgnoreError('Illegal invocation')).toBe(false)
 
@@ -1165,6 +1167,57 @@ test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
 				},
 			},
 			{ originalException: userscriptOnlyStackError },
+		),
+	).toBe(true)
+
+	// Production beforeSend (pre-sourcemap): Sentry wrapper is a bundled
+	// /assets/ URL with Proxy.<anonymous>, not an @sentry/ path.
+	const productionBundledSentryEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: userscriptFilename,
+								abs_path: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: userscriptFilename,
+								abs_path: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: '/assets/monitoring.client-WofqKXz_.js',
+								abs_path:
+									'https://kentcdodds.com/assets/monitoring.client-WofqKXz_.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(productionBundledSentryEvent)).toBe(true)
+	expect(shouldDropSentryEvent(productionBundledSentryEvent)).toBe(true)
+
+	const productionBundledStackError = new Error('Illegal invocation')
+	productionBundledStackError.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at Proxy.<anonymous> (https://kentcdodds.com/assets/chunk-LFPYN7LY-7E_DIvSm.js:1:1)`
+	expect(
+		isInjectedUserscriptNoise(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: productionBundledStackError },
 		),
 	).toBe(true)
 
@@ -2531,7 +2584,9 @@ test('detects browser extension stacks and denyUrls', () => {
 	expect(isBrowserExtensionError(extensionError)).toBe(true)
 	expect(matchesDenyUrl('chrome-extension://abc/content.js')).toBe(true)
 	expect(matchesDenyUrl('moz-extension://abc/content.js')).toBe(true)
-	expect(matchesDenyUrl('userscript:GM-https://example.com//script')).toBe(true)
+	expect(matchesDenyUrl('userscript:GM-https://example.com//script')).toBe(
+		false,
+	)
 
 	const anonymousScriptError = new Error('boom')
 	anonymousScriptError.stack =
