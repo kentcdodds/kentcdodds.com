@@ -1206,6 +1206,45 @@ test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
 	expect(isInjectedUserscriptNoise(productionBundledSentryEvent)).toBe(true)
 	expect(shouldDropSentryEvent(productionBundledSentryEvent)).toBe(true)
 
+	// Native / anonymous frames under Illegal invocation are companions, not
+	// first-party app code — still drop when a userscript frame is present.
+	const userscriptWithNativeFrameEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: '[native code]',
+								function: 'HTMLElement.click',
+								inApp: false,
+							},
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								function: null,
+								inApp: true,
+							},
+							{
+								filename: '/assets/monitoring.client-WofqKXz_.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(userscriptWithNativeFrameEvent)).toBe(true)
+	expect(shouldDropSentryEvent(userscriptWithNativeFrameEvent)).toBe(true)
+
 	const productionBundledStackError = new Error('Illegal invocation')
 	productionBundledStackError.stack = `TypeError: Illegal invocation
     at ${userscriptFilename}:238:3

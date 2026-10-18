@@ -1431,8 +1431,30 @@ function isSentryWrapperFrame(frame: SentryStackFrame): boolean {
 	)
 }
 
+/**
+ * Native API / unattributed frames often sit under Illegal invocation when a
+ * userscript calls a method with the wrong `this`. Allow them as companions
+ * only after we already require a userscript frame elsewhere.
+ */
+function isNativeOrUnattributedCompanionFrame(
+	frame: SentryStackFrame,
+): boolean {
+	const candidates = framePathCandidates(frame)
+	if (candidates.length === 0) return true
+	return candidates.every(
+		(value) =>
+			isUnattributedStackFilename(value) ||
+			isAnonymousStackFilename(value) ||
+			value === '[native code]',
+	)
+}
+
 function isUserscriptNoiseCompanionFrame(frame: SentryStackFrame): boolean {
-	return isUserscriptFrame(frame) || isSentryWrapperFrame(frame)
+	return (
+		isUserscriptFrame(frame) ||
+		isSentryWrapperFrame(frame) ||
+		isNativeOrUnattributedCompanionFrame(frame)
+	)
 }
 
 /**
@@ -1455,6 +1477,9 @@ function isUserscriptOnlyErrorStack(exception: unknown): boolean {
 		if (SENTRY_WRAPPER_IN_STACK.test(line)) return true
 		if (SENTRY_SDK_STACK_FILENAME.test(line)) return true
 		if (SENTRY_CLIENT_BUNDLE_FILENAME.test(line)) return true
+		if (/\[native code\]|<anonymous>|\banonymous\b/i.test(line)) {
+			return true
+		}
 		return false
 	})
 }

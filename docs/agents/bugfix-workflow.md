@@ -239,9 +239,10 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   noise — not site code (KCD-10Q). Do **not** put `userscript:` in
   `denyUrls` (last-frame-only would drop mixed first-party stacks). Filter
   via `isInjectedUserscriptNoise`: require at least one `userscript:` frame;
-  every other frame userscript or a Sentry wrapper (`@sentry/` path,
+  every other frame userscript, a Sentry wrapper (`@sentry/` path,
   `Proxy.<anonymous>` / `sentryWrapped`, or `monitoring.client` bundle —
-  production beforeSend sees bundled `/assets/` URLs before sourcemaps).
-  Never ignore the generic "Illegal invocation" message alone. Mixed stacks
-  with first-party `/assets/` / `/app/` / `/routes/` app frames must still
-  alert; do not match `userscript:` in `isBrowserExtensionError`.
+  production beforeSend sees bundled `/assets/` URLs before sourcemaps),
+  or native/unattributed (`[native code]`, `<anonymous>`). Never ignore the
+  generic "Illegal invocation" message alone. Mixed stacks with first-party
+  `/assets/` / `/app/` / `/routes/` app frames must still alert; do not match
+  `userscript:` in `isBrowserExtensionError`.
