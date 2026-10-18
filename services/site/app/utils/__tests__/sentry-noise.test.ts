@@ -22,6 +22,7 @@ import {
 	isInjectedInputOnchangeLocationError,
 	isInjectedPostUserDataFetchError,
 	isInjectedReaderSelfFetchError,
+	isInjectedUserscriptNoise,
 	isObscuraHeadlessBrowserNoise,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
@@ -1085,6 +1086,126 @@ test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => 
 						value: "Cannot read properties of undefined (reading 'location')",
 					},
 				],
+			},
+		}),
+	).toBe(false)
+})
+
+test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
+	const userscriptFilename =
+		'userscript:GM-https://web.whatsapp.com//Fix web WhatsApp Notifications'
+	const userscriptEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename:
+									'../../../../../node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js',
+								absPath:
+									'https://kentcdodds.com/node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+
+	expect(isInjectedUserscriptNoise(userscriptEvent)).toBe(true)
+	expect(shouldDropSentryEvent(userscriptEvent)).toBe(true)
+	expect(matchesDenyUrl(userscriptFilename)).toBe(true)
+	// Do not broadly ignore Illegal invocation — only the userscript signature.
+	expect(matchesIgnoreError('Illegal invocation')).toBe(false)
+
+	const userscriptStackError = new Error('Illegal invocation')
+	userscriptStackError.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at ${userscriptFilename}:233:3`
+	expect(isBrowserExtensionError(userscriptStackError)).toBe(true)
+
+	// Mixed stack with a first-party /assets/ frame must still alert.
+	const mixedFirstPartyEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: '/assets/entry.client-AbCd1234.js',
+								function: 'handleClick',
+								inApp: true,
+							},
+							{
+								filename:
+									'../../../../../node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(mixedFirstPartyEvent)).toBe(false)
+	expect(shouldDropSentryEvent(mixedFirstPartyEvent)).toBe(false)
+
+	// Plain Illegal invocation with first-party frames (no userscript) must alert.
+	const plainIllegalInvocationEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/assets/root-j32IyX5o.js',
+								function: 'callNativeApi',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(plainIllegalInvocationEvent)).toBe(false)
+	expect(shouldDropSentryEvent(plainIllegalInvocationEvent)).toBe(false)
+
+	// Message alone / no frames — not enough.
+	expect(
+		isInjectedUserscriptNoise({
+			exception: {
+				values: [{ type: 'TypeError', value: 'Illegal invocation' }],
 			},
 		}),
 	).toBe(false)
@@ -2372,6 +2493,7 @@ test('detects browser extension stacks and denyUrls', () => {
 	expect(isBrowserExtensionError(extensionError)).toBe(true)
 	expect(matchesDenyUrl('chrome-extension://abc/content.js')).toBe(true)
 	expect(matchesDenyUrl('moz-extension://abc/content.js')).toBe(true)
+	expect(matchesDenyUrl('userscript:GM-https://example.com//script')).toBe(true)
 
 	const anonymousScriptError = new Error('boom')
 	anonymousScriptError.stack =

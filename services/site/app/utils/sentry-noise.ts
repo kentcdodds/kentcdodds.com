@@ -132,6 +132,8 @@ export const SENTRY_DENY_URLS: Array<RegExp> = [
 	/webkit-masked-url:\/\//i,
 	// Android in-app browser injected scripts (Instagram, etc.).
 	/iabjs:/i,
+	// Greasemonkey / Tampermonkey userscript URLs (KCD-10Q).
+	/userscript:/i,
 	// Check Point Zero Phishing corporate security inject (KCD-102).
 	/(?:^|\/\/)zerophishing\.iaas\.checkpoint\.com(?::\d+)?(?:\/|$|\?)/i,
 ]
@@ -265,7 +267,7 @@ function isReactSchedulerReentrancyFrame(frame: {
 
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
-	return /chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:/i.test(
+	return /chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:|userscript:/i.test(
 		exception.stack,
 	)
 }
@@ -695,7 +697,7 @@ export function isHtmlDocumentScriptFilename(filename: string): boolean {
 	const value = filename.trim()
 	if (!value) return false
 	if (
-		/^(?:blob:|data:|webpack:|chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:)/i.test(
+		/^(?:blob:|data:|webpack:|chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:|userscript:)/i.test(
 			value,
 		)
 	) {
@@ -933,7 +935,7 @@ export function isCustomEventUnhandledRejectionNoise(
 }
 
 const STACK_SCRIPT_URL =
-	/\b(?:blob:|https?:\/\/|webkit-masked-url:|chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|iabjs:)[^\s)]+/gi
+	/\b(?:blob:|https?:\/\/|webkit-masked-url:|chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|iabjs:|userscript:)[^\s)]+/gi
 
 function scriptUrlsFromStackBlob(stack: string): Array<string> {
 	return [...stack.matchAll(STACK_SCRIPT_URL)].map((match) => match[0] ?? '')
@@ -1362,6 +1364,62 @@ export function isObscuraHeadlessBrowserNoise(event: SentryEventLike): boolean {
 		return OBSCURA_STACK_FILENAME.test(filename)
 	})
 }
+
+/**
+ * Greasemonkey / Tampermonkey userscripts (scheme `userscript:GM-…`) inject
+ * into all sites and often call native APIs with the wrong `this`, surfacing
+ * as `TypeError: Illegal invocation`. Sentry's `denyUrls` only checks the
+ * last valid frame URL; when that frame is Sentry's own browserApiErrors
+ * wrapper on kentcdodds.com, denyUrls misses the event (KCD-10Q).
+ *
+ * Drop when the stack has at least one `userscript:` frame and every other
+ * frame is either userscript or a Sentry SDK (`@sentry/`) frame. Mixed stacks
+ * with first-party `/assets/` or app frames must still alert. Never ignore
+ * the generic "Illegal invocation" message alone.
+ */
+const USERSCRIPT_STACK_FILENAME = /^userscript:/i
+const SENTRY_SDK_STACK_FILENAME = /@sentry\//i
+
+function framePathCandidates(frame: {
+	filename?: string | null
+	absPath?: string | null
+}): Array<string> {
+	return [frame.filename, frame.absPath].filter(
+		(value, index, values): value is string =>
+			typeof value === 'string' && values.indexOf(value) === index,
+	)
+}
+
+function isUserscriptFrame(frame: {
+	filename?: string | null
+	absPath?: string | null
+}): boolean {
+	const candidates = framePathCandidates(frame)
+	return (
+		candidates.length > 0 &&
+		candidates.every((value) => USERSCRIPT_STACK_FILENAME.test(value))
+	)
+}
+
+function isSentrySdkFrame(frame: {
+	filename?: string | null
+	absPath?: string | null
+}): boolean {
+	const candidates = framePathCandidates(frame)
+	return (
+		candidates.length > 0 &&
+		candidates.every((value) => SENTRY_SDK_STACK_FILENAME.test(value))
+	)
+}
+
+export function isInjectedUserscriptNoise(event: SentryEventLike): boolean {
+	const frames = exceptionFrames(event)
+	if (frames.length === 0) return false
+	if (!frames.some(isUserscriptFrame)) return false
+	return frames.every(
+		(frame) => isUserscriptFrame(frame) || isSentrySdkFrame(frame),
+	)
+}
 /**
  * React Router production `sanitizeError` replaces thrown Errors with
  * `new Error("Unexpected Server Error")` and clears `stack` before they reach
@@ -1457,6 +1515,7 @@ export function shouldDropSentryEvent(
 	if (isInjectedPostUserDataFetchError(event)) return true
 	if (isInjectedReaderSelfFetchError(event)) return true
 	if (isObscuraHeadlessBrowserNoise(event)) return true
+	if (isInjectedUserscriptNoise(event)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true
