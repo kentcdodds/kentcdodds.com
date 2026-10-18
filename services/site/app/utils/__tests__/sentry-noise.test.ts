@@ -22,6 +22,7 @@ import {
 	isInjectedInputOnchangeLocationError,
 	isInjectedPostUserDataFetchError,
 	isInjectedReaderSelfFetchError,
+	isInjectedUserscriptNoise,
 	isObscuraHeadlessBrowserNoise,
 	isPageTranslatorCallStackOverflow,
 	isReactRouterCsrfAbortError,
@@ -1085,6 +1086,283 @@ test('drops injected HTMLInputElement.onchange location noise (KCD-109)', () => 
 						value: "Cannot read properties of undefined (reading 'location')",
 					},
 				],
+			},
+		}),
+	).toBe(false)
+})
+
+test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
+	const userscriptFilename =
+		'userscript:GM-https://web.whatsapp.com//Fix web WhatsApp Notifications'
+	const userscriptEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename:
+									'../../../../../node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js',
+								absPath:
+									'https://kentcdodds.com/node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+
+	expect(isInjectedUserscriptNoise(userscriptEvent)).toBe(true)
+	expect(shouldDropSentryEvent(userscriptEvent)).toBe(true)
+	// denyUrls must not list userscript: — last-frame semantics would drop
+	// mixed first-party stacks before beforeSend exclusivity runs.
+	expect(matchesDenyUrl(userscriptFilename)).toBe(false)
+	// Do not broadly ignore Illegal invocation — only the userscript signature.
+	expect(matchesIgnoreError('Illegal invocation')).toBe(false)
+
+	const userscriptOnlyStackError = new Error('Illegal invocation')
+	userscriptOnlyStackError.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at ${userscriptFilename}:233:3
+    at Proxy.<anonymous> (https://kentcdodds.com/node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js:95:21)`
+	// Userscript is not a broad isBrowserExtensionError match (would drop mixed
+	// stacks); exclusivity lives in isInjectedUserscriptNoise.
+	expect(isBrowserExtensionError(userscriptOnlyStackError)).toBe(false)
+	expect(
+		isInjectedUserscriptNoise(userscriptEvent, {
+			originalException: userscriptOnlyStackError,
+		}),
+	).toBe(true)
+	expect(
+		shouldDropSentryEvent(userscriptEvent, {
+			originalException: userscriptOnlyStackError,
+		}),
+	).toBe(true)
+	// Error.stack exclusivity when Sentry omitted event frames.
+	expect(
+		isInjectedUserscriptNoise(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: userscriptOnlyStackError },
+		),
+	).toBe(true)
+
+	// Production beforeSend (pre-sourcemap): Sentry wrapper is a bundled
+	// /assets/ URL with Proxy.<anonymous>, not an @sentry/ path.
+	const productionBundledSentryEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: userscriptFilename,
+								abs_path: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: userscriptFilename,
+								abs_path: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: '/assets/monitoring.client-WofqKXz_.js',
+								abs_path:
+									'https://kentcdodds.com/assets/monitoring.client-WofqKXz_.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(productionBundledSentryEvent)).toBe(true)
+	expect(shouldDropSentryEvent(productionBundledSentryEvent)).toBe(true)
+
+	// Native / anonymous frames under Illegal invocation are companions, not
+	// first-party app code — still drop when a userscript frame is present.
+	const userscriptWithNativeFrameEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: '[native code]',
+								function: 'HTMLElement.click',
+								inApp: false,
+							},
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: '<anonymous>',
+								function: null,
+								inApp: true,
+							},
+							{
+								filename: '/assets/monitoring.client-WofqKXz_.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(userscriptWithNativeFrameEvent)).toBe(true)
+	expect(shouldDropSentryEvent(userscriptWithNativeFrameEvent)).toBe(true)
+
+	const productionBundledStackError = new Error('Illegal invocation')
+	productionBundledStackError.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at Proxy.<anonymous> (https://kentcdodds.com/assets/chunk-LFPYN7LY-7E_DIvSm.js:1:1)`
+	expect(
+		isInjectedUserscriptNoise(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: productionBundledStackError },
+		),
+	).toBe(true)
+
+	// Error.stack with userscript + anonymous *function* on an /assets/ file
+	// must still alert (not treat "anonymous" as a location companion).
+	const mixedAnonymousFnOnAssetsStack = new Error('Illegal invocation')
+	mixedAnonymousFnOnAssetsStack.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at <anonymous> (https://kentcdodds.com/assets/entry.client-AbCd1234.js:1:1)`
+	expect(
+		isInjectedUserscriptNoise(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: mixedAnonymousFnOnAssetsStack },
+		),
+	).toBe(false)
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: mixedAnonymousFnOnAssetsStack },
+		),
+	).toBe(false)
+
+	// Mixed stack with a first-party /assets/ frame must still alert.
+	const mixedFirstPartyEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: userscriptFilename,
+								absPath: userscriptFilename,
+								inApp: true,
+							},
+							{
+								filename: '/assets/entry.client-AbCd1234.js',
+								function: 'handleClick',
+								inApp: true,
+							},
+							{
+								filename:
+									'../../../../../node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js',
+								function: 'Proxy.<anonymous>',
+								inApp: false,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(mixedFirstPartyEvent)).toBe(false)
+	expect(shouldDropSentryEvent(mixedFirstPartyEvent)).toBe(false)
+
+	// Mixed event + originalException whose stack also mentions userscript must
+	// still alert (must not early-drop via isBrowserExtensionError).
+	const mixedOriginalException = new Error('Illegal invocation')
+	mixedOriginalException.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at handleClick (/assets/entry.client-AbCd1234.js:1:1)
+    at Proxy.<anonymous> (https://kentcdodds.com/node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js:95:21)`
+	expect(isBrowserExtensionError(mixedOriginalException)).toBe(false)
+	expect(
+		shouldDropSentryEvent(mixedFirstPartyEvent, {
+			originalException: mixedOriginalException,
+		}),
+	).toBe(false)
+
+	// Plain Illegal invocation with first-party frames (no userscript) must alert.
+	const plainIllegalInvocationEvent = {
+		exception: {
+			values: [
+				{
+					type: 'TypeError',
+					value: 'Illegal invocation',
+					stacktrace: {
+						frames: [
+							{
+								filename: '/assets/root-j32IyX5o.js',
+								function: 'callNativeApi',
+								inApp: true,
+							},
+						],
+					},
+				},
+			],
+		},
+	}
+	expect(isInjectedUserscriptNoise(plainIllegalInvocationEvent)).toBe(false)
+	expect(shouldDropSentryEvent(plainIllegalInvocationEvent)).toBe(false)
+
+	// Message alone / no frames — not enough.
+	expect(
+		isInjectedUserscriptNoise({
+			exception: {
+				values: [{ type: 'TypeError', value: 'Illegal invocation' }],
 			},
 		}),
 	).toBe(false)
@@ -2372,6 +2650,9 @@ test('detects browser extension stacks and denyUrls', () => {
 	expect(isBrowserExtensionError(extensionError)).toBe(true)
 	expect(matchesDenyUrl('chrome-extension://abc/content.js')).toBe(true)
 	expect(matchesDenyUrl('moz-extension://abc/content.js')).toBe(true)
+	expect(matchesDenyUrl('userscript:GM-https://example.com//script')).toBe(
+		false,
+	)
 
 	const anonymousScriptError = new Error('boom')
 	anonymousScriptError.stack =

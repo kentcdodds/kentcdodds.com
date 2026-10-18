@@ -233,3 +233,16 @@ action request. Aborting the action.`, invalid/`missing host` Origin variants)
   / `evaluating 'window.ethereum.selectedAddress = undefined'` signatures
   (alongside KCD-RB `__firefox__ is not defined`); do not ignore generic
   `undefined is not an object`.
+- Client `TypeError: Illegal invocation` with Greasemonkey/Tampermonkey
+  `userscript:GM-…` frames (often a script written for another origin that
+  matches all sites) plus only Sentry wrapper frames is injected userscript
+  noise — not site code (KCD-10Q). Do **not** put `userscript:` in
+  `denyUrls` (last-frame-only would drop mixed first-party stacks). Filter
+  via `isInjectedUserscriptNoise`: require at least one `userscript:` frame;
+  every other frame userscript, a Sentry wrapper (`@sentry/` path,
+  `Proxy.<anonymous>` / `sentryWrapped`, or `monitoring.client` bundle —
+  production beforeSend sees bundled `/assets/` URLs before sourcemaps),
+  or native/unattributed (`[native code]`, `<anonymous>`). Never ignore the
+  generic "Illegal invocation" message alone. Mixed stacks with first-party
+  `/assets/` / `/app/` / `/routes/` app frames must still alert; do not match
+  `userscript:` in `isBrowserExtensionError`.
