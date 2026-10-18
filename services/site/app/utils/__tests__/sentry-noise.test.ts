@@ -1260,6 +1260,33 @@ test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
 		),
 	).toBe(true)
 
+	// Error.stack with userscript + anonymous *function* on an /assets/ file
+	// must still alert (not treat "anonymous" as a location companion).
+	const mixedAnonymousFnOnAssetsStack = new Error('Illegal invocation')
+	mixedAnonymousFnOnAssetsStack.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at <anonymous> (https://kentcdodds.com/assets/entry.client-AbCd1234.js:1:1)`
+	expect(
+		isInjectedUserscriptNoise(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: mixedAnonymousFnOnAssetsStack },
+		),
+	).toBe(false)
+	expect(
+		shouldDropSentryEvent(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: mixedAnonymousFnOnAssetsStack },
+		),
+	).toBe(false)
+
 	// Mixed stack with a first-party /assets/ frame must still alert.
 	const mixedFirstPartyEvent = {
 		exception: {

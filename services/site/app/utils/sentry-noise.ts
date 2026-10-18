@@ -1477,11 +1477,30 @@ function isUserscriptOnlyErrorStack(exception: unknown): boolean {
 		if (SENTRY_WRAPPER_IN_STACK.test(line)) return true
 		if (SENTRY_SDK_STACK_FILENAME.test(line)) return true
 		if (SENTRY_CLIENT_BUNDLE_FILENAME.test(line)) return true
-		if (/\[native code\]|<anonymous>|\banonymous\b/i.test(line)) {
-			return true
-		}
+		if (isNativeOrAnonymousLocationStackLine(line)) return true
 		return false
 	})
+}
+
+/**
+ * Error.stack companion check: only when the *location* is native/anonymous,
+ * not when the function is `<anonymous>` / `Object.<anonymous>` but the file
+ * is a first-party `/assets/` URL (those must still alert).
+ */
+function isNativeOrAnonymousLocationStackLine(line: string): boolean {
+	if (/\[native code\]/.test(line)) return true
+	// Parenthesized location: `at foo ([native code])` already handled;
+	// `at <anonymous> (https://host/assets/app.js:1:1)` must NOT match.
+	const parenLocation = /\(([^)]+)\)\s*$/.exec(line)?.[1]?.trim()
+	if (parenLocation) {
+		return (
+			parenLocation === '<anonymous>' ||
+			parenLocation === 'anonymous' ||
+			parenLocation === '[native code]'
+		)
+	}
+	// Bare location with no URL: `at <anonymous>:1:1`
+	return /(?:^|\s)at\s+<anonymous>(?::\d+:\d+)?\s*$/i.test(line)
 }
 
 export function isInjectedUserscriptNoise(
