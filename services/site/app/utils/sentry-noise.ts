@@ -267,7 +267,10 @@ function isReactSchedulerReentrancyFrame(frame: {
 
 export function isBrowserExtensionError(exception: unknown): boolean {
 	if (!(exception instanceof Error) || !exception.stack) return false
-	return /chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:|userscript:/i.test(
+	// Intentionally omit `userscript:` — a broad stack substring match would
+	// drop mixed first-party stacks. Userscript noise uses exclusivity via
+	// `isInjectedUserscriptNoise` (KCD-10Q).
+	return /chrome-extension:|moz-extension:|safari-web-extension:|safari-extension:|webkit-masked-url:|iabjs:/i.test(
 		exception.stack,
 	)
 }
@@ -1412,13 +1415,39 @@ function isSentrySdkFrame(frame: {
 	)
 }
 
-export function isInjectedUserscriptNoise(event: SentryEventLike): boolean {
-	const frames = exceptionFrames(event)
-	if (frames.length === 0) return false
-	if (!frames.some(isUserscriptFrame)) return false
-	return frames.every(
-		(frame) => isUserscriptFrame(frame) || isSentrySdkFrame(frame),
+/**
+ * When Sentry omitted event frames, parse Error.stack URLs and apply the same
+ * exclusivity rule (at least one userscript; every URL userscript or @sentry/).
+ * First-party `/assets/` / `/app/` / `/routes/` paths keep the event.
+ */
+function isUserscriptOnlyErrorStack(exception: unknown): boolean {
+	if (!(exception instanceof Error) || !exception.stack) return false
+	const stack = exception.stack
+	if (!/userscript:/i.test(stack)) return false
+	if (/\/assets\/|\/app\/|\/routes\//i.test(stack)) return false
+
+	const urls = scriptUrlsFromStackBlob(stack)
+	if (urls.length === 0) return false
+	if (!urls.some((url) => USERSCRIPT_STACK_FILENAME.test(url))) return false
+	return urls.every(
+		(url) =>
+			USERSCRIPT_STACK_FILENAME.test(url) ||
+			SENTRY_SDK_STACK_FILENAME.test(url),
 	)
+}
+
+export function isInjectedUserscriptNoise(
+	event: SentryEventLike,
+	hint: { originalException?: unknown } = {},
+): boolean {
+	const frames = exceptionFrames(event)
+	if (frames.length > 0) {
+		if (!frames.some(isUserscriptFrame)) return false
+		return frames.every(
+			(frame) => isUserscriptFrame(frame) || isSentrySdkFrame(frame),
+		)
+	}
+	return isUserscriptOnlyErrorStack(hint.originalException)
 }
 /**
  * React Router production `sanitizeError` replaces thrown Errors with
@@ -1515,7 +1544,7 @@ export function shouldDropSentryEvent(
 	if (isInjectedPostUserDataFetchError(event)) return true
 	if (isInjectedReaderSelfFetchError(event)) return true
 	if (isObscuraHeadlessBrowserNoise(event)) return true
-	if (isInjectedUserscriptNoise(event)) return true
+	if (isInjectedUserscriptNoise(event, hint)) return true
 	if (isDegradedUiPerformanceEvent(event)) return true
 	if (isCloudflareEdgeRouteErrorEvent(event)) return true
 	if (isReactRouterEdgeHttpStatusError(event, hint)) return true

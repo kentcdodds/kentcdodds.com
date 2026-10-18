@@ -1138,11 +1138,35 @@ test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
 	// Do not broadly ignore Illegal invocation — only the userscript signature.
 	expect(matchesIgnoreError('Illegal invocation')).toBe(false)
 
-	const userscriptStackError = new Error('Illegal invocation')
-	userscriptStackError.stack = `TypeError: Illegal invocation
+	const userscriptOnlyStackError = new Error('Illegal invocation')
+	userscriptOnlyStackError.stack = `TypeError: Illegal invocation
     at ${userscriptFilename}:238:3
-    at ${userscriptFilename}:233:3`
-	expect(isBrowserExtensionError(userscriptStackError)).toBe(true)
+    at ${userscriptFilename}:233:3
+    at Proxy.<anonymous> (https://kentcdodds.com/node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js:95:21)`
+	// Userscript is not a broad isBrowserExtensionError match (would drop mixed
+	// stacks); exclusivity lives in isInjectedUserscriptNoise.
+	expect(isBrowserExtensionError(userscriptOnlyStackError)).toBe(false)
+	expect(
+		isInjectedUserscriptNoise(userscriptEvent, {
+			originalException: userscriptOnlyStackError,
+		}),
+	).toBe(true)
+	expect(
+		shouldDropSentryEvent(userscriptEvent, {
+			originalException: userscriptOnlyStackError,
+		}),
+	).toBe(true)
+	// Error.stack exclusivity when Sentry omitted event frames.
+	expect(
+		isInjectedUserscriptNoise(
+			{
+				exception: {
+					values: [{ type: 'TypeError', value: 'Illegal invocation' }],
+				},
+			},
+			{ originalException: userscriptOnlyStackError },
+		),
+	).toBe(true)
 
 	// Mixed stack with a first-party /assets/ frame must still alert.
 	const mixedFirstPartyEvent = {
@@ -1177,6 +1201,20 @@ test('drops injected userscript Illegal invocation noise (KCD-10Q)', () => {
 	}
 	expect(isInjectedUserscriptNoise(mixedFirstPartyEvent)).toBe(false)
 	expect(shouldDropSentryEvent(mixedFirstPartyEvent)).toBe(false)
+
+	// Mixed event + originalException whose stack also mentions userscript must
+	// still alert (must not early-drop via isBrowserExtensionError).
+	const mixedOriginalException = new Error('Illegal invocation')
+	mixedOriginalException.stack = `TypeError: Illegal invocation
+    at ${userscriptFilename}:238:3
+    at handleClick (/assets/entry.client-AbCd1234.js:1:1)
+    at Proxy.<anonymous> (https://kentcdodds.com/node_modules/@sentry/browser/build/npm/esm/prod/integrations/browserapierrors.js:95:21)`
+	expect(isBrowserExtensionError(mixedOriginalException)).toBe(false)
+	expect(
+		shouldDropSentryEvent(mixedFirstPartyEvent, {
+			originalException: mixedOriginalException,
+		}),
+	).toBe(false)
 
 	// Plain Illegal invocation with first-party frames (no userscript) must alert.
 	const plainIllegalInvocationEvent = {
