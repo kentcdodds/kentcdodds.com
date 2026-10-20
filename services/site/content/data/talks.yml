@@ -7,11 +7,6 @@
 
 - title: >-
     Closing the Agentic Loop: Getting Agents to Safely Build, Verify, and Ship
-  # Keep the pre-rename URL/favorite id stable after the longer title landed.
-  slug: closing-the-agentic-loop
-  # Title-derived slug that was live briefly after the title change.
-  previousSlugs:
-    - closing-the-agentic-loop-getting-agents-to-safely-build-verify-and-ship
   deliveries:
     - event: '[AI DevCraft](https://ai-devcraft.com/)'
       date: 2026-10-27
