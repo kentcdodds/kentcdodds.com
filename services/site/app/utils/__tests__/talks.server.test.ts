@@ -3,7 +3,7 @@ import {
 	findTalkBySlug,
 	normalizeSlugList,
 	resolveTalkSlug,
-} from '../talks.server.ts'
+} from '#app/utils/talks.server.ts'
 
 test('resolveTalkSlug prefers an explicit slug over the title', () => {
 	expect(

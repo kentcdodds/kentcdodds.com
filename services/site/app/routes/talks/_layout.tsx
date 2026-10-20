@@ -79,9 +79,11 @@ function Card({
 	resourceHTMLs,
 	active,
 	isFavorite,
+	favoriteContentId,
 }: SerializeFrom<typeof loader>['talks'][0] & {
 	active: boolean
 	isFavorite: boolean
+	favoriteContentId: string
 }) {
 	const latestDelivery = deliveries
 		.filter((x) => x.date)
@@ -128,7 +130,7 @@ function Card({
 					<FavoriteToggle
 						mode="icon"
 						contentType="talk"
-						contentId={slug}
+						contentId={favoriteContentId}
 						initialIsFavorite={isFavorite}
 					/>
 				</div>
@@ -361,6 +363,10 @@ export default function TalksScreen({
 						<div className="col-span-full">
 							<Grid nested rowGap>
 								{talks.map((talk) => {
+									const favoriteContentId =
+										[talk.slug, ...talk.previousSlugs].find((id) =>
+											favoriteTalkIds.has(id),
+										) ?? talk.slug
 									return (
 										<div
 											key={talk.slug}
@@ -371,12 +377,8 @@ export default function TalksScreen({
 													activeSlug === talk.slug ||
 													talk.previousSlugs.includes(activeSlug)
 												}
-												isFavorite={
-													favoriteTalkIds.has(talk.slug) ||
-													talk.previousSlugs.some((slug) =>
-														favoriteTalkIds.has(slug),
-													)
-												}
+												isFavorite={favoriteTalkIds.has(favoriteContentId)}
+												favoriteContentId={favoriteContentId}
 												{...talk}
 											/>
 										</div>

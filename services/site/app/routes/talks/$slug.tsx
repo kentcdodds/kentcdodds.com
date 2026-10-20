@@ -8,7 +8,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	const { talks } = await getTalksAndTags({ request })
 	const talk = findTalkBySlug(talks, params.slug)
 	if (talk && params.slug && talk.slug !== params.slug) {
-		return redirect(`/talks/${talk.slug}`)
+		const url = new URL(request.url)
+		return redirect(`/talks/${talk.slug}${url.search}`)
 	}
 	const title = talk ? talk.title : '404: Talk not found'
 	const socialMetas = (
