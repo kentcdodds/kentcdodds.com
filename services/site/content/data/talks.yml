@@ -5,34 +5,41 @@
     - event: '[AI Coding Summit Asia](https://aicodingsummit.com/asia/)'
       date: 2027-04-16
 
-- title: 'Closing the Agentic Loop'
+- title: >-
+    Closing the Agentic Loop: Getting Agents to Safely Build, Verify, and Ship
   deliveries:
     - event: '[AI DevCraft](https://ai-devcraft.com/)'
       date: 2026-10-27
-    - event: '[All Things Open](https://allthingsopen.org/)'
+    - event: >-
+        [All Things
+        Open](https://2026.allthingsopen.org/sessions/closing-the-agentic-loop)
+        (Raleigh, NC; 2-hour Deep Dive, 11:00am to 1:00pm ET)
       date: 2026-10-19
+    - event: >-
+        [AI Engineer Code Summit](https://ai.engineer/code/2026) (San Francisco,
+        Hilton Union Square; Workshop on Tue Nov 10, 2026)
+      date: 2026-11-10
+    - event: >-
+        BIOS SPHERE (Science World theatre; hands-on 3-hour workshop, 9:00 AM to
+        12:00 PM Pacific)
+      date: 2026-11-02
   tags:
     - ai
     - agent
     - mcp
     - workflows
-  description: >-
-    Agents get a lot more useful when they can finish the job without you
-    sitting in the middle of every step. The missing piece is usually the loop:
-    act, observe, verify, and only stop when the work is actually done.
+  description: |-
+    Agents can write code. That's not the hard part anymore. The hard part is trusting what they ship. In this hands-on workshop, I'll show you the loop I run every day: agents safely build, verify, and deploy the outcomes I want, and that loop is hooked up to signal (my own ideas, user feedback, bug reports, and friction) so it keeps itself going. I haven't read 1% of the code in my product, and agents author and merge most of the PRs. That only works because of the system around them.
 
+    We'll start by running autopilot (`npx kcd-skills@latest autopilot`) on a real repo, yours if you want, and use the questions it asks to lay the foundation: invariants, decision records that say when it's OK to change them, a primitives catalog, and an AGENTS.md that's a router, not a novel. Then we'll get into verification. That means separate reviewer agents, PR templates that have you review systems instead of code, cloud agents with their own computers that show their work, and a control CLI your agents maintain for themselves. Finally, we'll limit the blast radius with feature flags, health checks, and backups you've actually restored, and wire up the loops that keep it all moving. Bring a laptop and a repo you own.
 
-    In this talk, I'll show how to close that agentic loop. We'll look at how
-    agents can verify their own work, how good system design shows up in the
-    diffs they produce, and which primitives you can compose so they operate
-    with real autonomy. I'll also share how Kody MCP fits into this picture:
-    searchable capabilities, sandboxed execution, memory, and the surfaces
-    agents need to check their work before they hand it back to you.
-
-
-    You'll leave with a practical model for widening the loop—trading a bit of
-    compute for a lot less babysitting—so your agents ship work you're willing
-    to trust.
+    What you'll walk away with:
+    - An autopilot plan for your own repo, with each step your agents can take on next
+    - A primitives catalog and invariants your agents actually follow
+    - A PR template built around intent, one-way vs. two-way doors, and system diagrams, so you review systems instead of code
+    - A verification setup: an AI reviewer, agents that test the running app, and a control CLI they maintain
+    - A blast-radius checklist: flags with an owner, a metric, and a removal condition, health checks after deploy, and tested restores
+    - The loops that keep it going: bug reports, user feedback, friction, and nightly cleanup
 
 - title: 'I Built Your Personal Software Ecosystem'
   deliveries:
