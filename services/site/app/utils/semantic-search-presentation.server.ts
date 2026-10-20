@@ -306,6 +306,8 @@ async function loadTalksBySlug() {
 			talksBySlug = new Map()
 			return talksBySlug
 		}
+		const slugify = slugifyWithCounter()
+		slugify.reset()
 		const map = new Map<string, TalkMeta>()
 		for (const talk of parsed) {
 			if (!talk || typeof talk !== 'object') continue
@@ -314,7 +316,8 @@ async function loadTalksBySlug() {
 				(talk as { description?: string }).description,
 			)
 			const meta = { title, description } satisfies TalkMeta
-			const slug = asNonEmptyString((talk as { slug?: string }).slug) ?? title
+			const explicitSlug = asNonEmptyString((talk as { slug?: string }).slug)
+			const slug = explicitSlug || slugify(title || 'tba')
 			map.set(slug, meta)
 			const previousSlugs = (talk as { previousSlugs?: Array<unknown> })
 				.previousSlugs
