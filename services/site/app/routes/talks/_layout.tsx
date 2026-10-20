@@ -56,12 +56,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 	})
 
-	return json({ ...talksAndTags, socialMetas }, {
-		headers: {
-			'Cache-Control': 'public, max-age=3600',
-			Vary: 'Cookie',
+	return json(
+		{ ...talksAndTags, socialMetas },
+		{
+			headers: {
+				'Cache-Control': 'public, max-age=3600',
+				Vary: 'Cookie',
+			},
 		},
-	})
+	)
 }
 
 export const headers: HeadersFunction = reuseUsefulLoaderHeaders
@@ -76,9 +79,11 @@ function Card({
 	resourceHTMLs,
 	active,
 	isFavorite,
+	favoriteContentId,
 }: SerializeFrom<typeof loader>['talks'][0] & {
 	active: boolean
 	isFavorite: boolean
+	favoriteContentId: string
 }) {
 	const latestDelivery = deliveries
 		.filter((x) => x.date)
@@ -125,7 +130,7 @@ function Card({
 					<FavoriteToggle
 						mode="icon"
 						contentType="talk"
-						contentId={slug}
+						contentId={favoriteContentId}
 						initialIsFavorite={isFavorite}
 					/>
 				</div>
@@ -226,7 +231,7 @@ export default function TalksScreen({
 	loaderData: data,
 }: Route.ComponentProps) {
 	const { pathname } = useLocation()
-	const [activeSlug] = pathname.split('/').slice(-1)
+	const activeSlug = pathname.split('/').slice(-1)[0] ?? ''
 	const user = useOptionalUser()
 	const talkFavoritesFetcher = useFetcher<{ contentIds: Array<string> }>({
 		key: 'favorites:talk',
@@ -244,8 +249,14 @@ export default function TalksScreen({
 	// An effect to scroll to the talk's position when opening a direct link,
 	// use a ref so that it doesn't hijack scroll when the user is browsing talks
 	React.useEffect(() => {
-		document.querySelector(`[data-talk="${activeSlug}"]`)?.scrollIntoView()
-	}, [activeSlug])
+		const talk = data.talks.find(
+			(candidate) =>
+				candidate.slug === activeSlug ||
+				candidate.previousSlugs.includes(activeSlug),
+		)
+		const scrollSlug = talk?.slug ?? activeSlug
+		document.querySelector(`[data-talk="${scrollSlug}"]`)?.scrollIntoView()
+	}, [activeSlug, data.talks])
 
 	// this bit is very similar to what's on the blogs page.
 	// Next time we need to do work in here, let's make an abstraction for them
@@ -352,14 +363,22 @@ export default function TalksScreen({
 						<div className="col-span-full">
 							<Grid nested rowGap>
 								{talks.map((talk) => {
+									const favoriteContentId =
+										[talk.slug, ...talk.previousSlugs].find((id) =>
+											favoriteTalkIds.has(id),
+										) ?? talk.slug
 									return (
 										<div
 											key={talk.slug}
 											className="col-span-full lg:col-span-6"
 										>
 											<Card
-												active={activeSlug === talk.slug}
-												isFavorite={favoriteTalkIds.has(talk.slug)}
+												active={
+													activeSlug === talk.slug ||
+													talk.previousSlugs.includes(activeSlug)
+												}
+												isFavorite={favoriteTalkIds.has(favoriteContentId)}
+												favoriteContentId={favoriteContentId}
 												{...talk}
 											/>
 										</div>
