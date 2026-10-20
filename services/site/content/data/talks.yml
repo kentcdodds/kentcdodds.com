@@ -13,15 +13,10 @@
     - event: >-
         [All Things
         Open](https://2026.allthingsopen.org/sessions/closing-the-agentic-loop)
-        (Raleigh, NC; 2-hour Deep Dive, 11:00am to 1:00pm ET)
       date: 2026-10-19
-    - event: >-
-        [AI Engineer Code Summit](https://ai.engineer/code/2026) (San Francisco,
-        Hilton Union Square; Workshop on Tue Nov 10, 2026)
+    - event: '[AI Engineer Code Summit](https://ai.engineer/code/2026)'
       date: 2026-11-10
-    - event: >-
-        [BIOS SPHERE](https://biossphere.dev/) (Vancouver, Science World
-        theatre; hands-on 3-hour workshop, 9:00 AM to 12:00 PM Pacific)
+    - event: '[BIOS SPHERE](https://biossphere.dev/)'
       date: 2026-11-02
   tags:
     - ai
