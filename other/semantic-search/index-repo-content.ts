@@ -236,7 +236,8 @@ async function loadTalksIndex() {
   for (const talk of parsed as Array<any>) {
     const title = typeof talk?.title === "string" ? talk.title : "TBA";
     const explicitSlug = typeof talk?.slug === "string" ? talk.slug.trim() : "";
-    const slug = explicitSlug || slugify(title || "tba");
+    const generatedSlug = slugify(title || "tba");
+    const slug = explicitSlug || generatedSlug;
     const tags = Array.isArray(talk?.tags)
       ? talk.tags.filter((t: any) => typeof t === "string")
       : [];

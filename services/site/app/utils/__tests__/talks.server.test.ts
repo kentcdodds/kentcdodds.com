@@ -6,6 +6,7 @@ import {
 } from '#app/utils/talks.server.ts'
 
 test('resolveTalkSlug prefers an explicit slug over the title', () => {
+	const calls: Array<string> = []
 	expect(
 		resolveTalkSlug(
 			{
@@ -13,9 +14,15 @@ test('resolveTalkSlug prefers an explicit slug over the title', () => {
 					'Closing the Agentic Loop: Getting Agents to Safely Build, Verify, and Ship',
 				slug: 'closing-the-agentic-loop',
 			},
-			(title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+			(title) => {
+				calls.push(title)
+				return title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+			},
 		),
 	).toBe('closing-the-agentic-loop')
+	expect(calls).toEqual([
+		'Closing the Agentic Loop: Getting Agents to Safely Build, Verify, and Ship',
+	])
 })
 
 test('resolveTalkSlug falls back to slugifying the title', () => {
@@ -24,6 +31,20 @@ test('resolveTalkSlug falls back to slugifying the title', () => {
 			title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
 		),
 	).toBe('closing-the-agentic-loop')
+})
+
+test('resolveTalkSlug still advances the slugify counter when an explicit slug wins', () => {
+	let count = 0
+	const slugify = (_title: string) => {
+		count += 1
+		return count === 1 ? 'shared-title' : `shared-title-${count}`
+	}
+	expect(
+		resolveTalkSlug({ title: 'Shared Title', slug: 'custom-slug' }, slugify),
+	).toBe('custom-slug')
+	expect(resolveTalkSlug({ title: 'Shared Title' }, slugify)).toBe(
+		'shared-title-2',
+	)
 })
 
 test('normalizeSlugList trims, drops empties, and dedupes', () => {

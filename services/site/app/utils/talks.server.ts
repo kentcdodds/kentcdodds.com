@@ -57,9 +57,11 @@ function resolveTalkSlug(
 	rawTalk: Pick<RawTalk, 'title' | 'slug'>,
 	slugify: (input: string) => string,
 ): string {
+	// Always slugify so @sindresorhus/slugify's duplicate counter stays stable
+	// across talks even when an explicit slug is used.
+	const generated = slugify(rawTalk.title ?? 'TBA')
 	const explicit = rawTalk.slug?.trim()
-	if (explicit) return explicit
-	return slugify(rawTalk.title ?? 'TBA')
+	return explicit || generated
 }
 
 function findTalkBySlug<

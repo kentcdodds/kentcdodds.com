@@ -316,8 +316,9 @@ async function loadTalksBySlug() {
 				(talk as { description?: string }).description,
 			)
 			const meta = { title, description } satisfies TalkMeta
+			const generatedSlug = slugify(title || 'tba')
 			const explicitSlug = asNonEmptyString((talk as { slug?: string }).slug)
-			const slug = explicitSlug || slugify(title || 'tba')
+			const slug = explicitSlug || generatedSlug
 			map.set(slug, meta)
 			const previousSlugs = (talk as { previousSlugs?: Array<unknown> })
 				.previousSlugs
@@ -345,8 +346,9 @@ async function loadTalksBySlug() {
 	const map = new Map<string, TalkMeta>()
 	for (const talk of parsed as Array<any>) {
 		const title = typeof talk?.title === 'string' ? talk.title : 'TBA'
+		const generatedSlug = slugify(title || 'tba')
 		const explicitSlug = typeof talk?.slug === 'string' ? talk.slug.trim() : ''
-		const slug = explicitSlug || slugify(title || 'tba')
+		const slug = explicitSlug || generatedSlug
 		const description =
 			typeof talk?.description === 'string' ? talk.description : undefined
 		const meta = { title, description }
