@@ -20,7 +20,10 @@ type RawTalk = {
 	title?: string
 	tag?: string
 	tags?: Array<string>
-	slug: string
+	/** Stable URL/favorite id. Defaults to a slugified title when omitted. */
+	slug?: string
+	/** Former slugs that should redirect to the canonical `slug`. */
+	previousSlugs?: Array<string>
 	resources?: Array<string>
 	description?: string
 	deliveries?: Array<{ event?: string; date?: string; recording?: string }>
@@ -37,8 +40,44 @@ async function getSlugify() {
 	return _slugify
 }
 
+function normalizeSlugList(slugs: Array<string> | undefined): Array<string> {
+	if (!slugs?.length) return []
+	const seen = new Set<string>()
+	const normalized: Array<string> = []
+	for (const slug of slugs) {
+		const trimmed = typeof slug === 'string' ? slug.trim() : ''
+		if (!trimmed || seen.has(trimmed)) continue
+		seen.add(trimmed)
+		normalized.push(trimmed)
+	}
+	return normalized
+}
+
+function resolveTalkSlug(
+	rawTalk: Pick<RawTalk, 'title' | 'slug'>,
+	slugify: (input: string) => string,
+): string {
+	const explicit = rawTalk.slug?.trim()
+	if (explicit) return explicit
+	return slugify(rawTalk.title ?? 'TBA')
+}
+
+function findTalkBySlug<
+	T extends { slug: string; previousSlugs: Array<string> },
+>(talks: Array<T>, requestSlug: string | undefined): T | undefined {
+	if (!requestSlug) return undefined
+	return talks.find(
+		(talk) =>
+			talk.slug === requestSlug || talk.previousSlugs.includes(requestSlug),
+	)
+}
+
 async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
 	const slugify = await getSlugify()
+	const slug = resolveTalkSlug(rawTalk, slugify)
+	const previousSlugs = normalizeSlugList(rawTalk.previousSlugs).filter(
+		(previousSlug) => previousSlug !== slug,
+	)
 	const descriptionHTML = rawTalk.description
 		? await markdownToHtml(rawTalk.description)
 		: ''
@@ -47,7 +86,8 @@ async function getTalk(rawTalk: RawTalk, allTags: Array<string>) {
 		tag:
 			allTags.find((tag) => rawTalk.tags?.includes(tag)) ?? rawTalk.tags?.[0],
 		tags: rawTalk.tags ?? [],
-		slug: slugify(rawTalk.title ?? 'TBA'),
+		slug,
+		previousSlugs,
 		resourceHTMLs: rawTalk.resources
 			? await Promise.all(rawTalk.resources.map((r) => markdownToHtml(r)))
 			: [],
@@ -174,4 +214,4 @@ async function getTalksAndTags({
 	}
 }
 
-export { getTalksAndTags }
+export { findTalkBySlug, getTalksAndTags, normalizeSlugList, resolveTalkSlug }

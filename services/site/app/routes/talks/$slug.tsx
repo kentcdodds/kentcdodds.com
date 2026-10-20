@@ -1,15 +1,15 @@
 // this is a placeholder to make /routes/talks/_layout catch nested paths
 
-import {
-	data as json,
-	type MetaFunction,
-} from 'react-router'
-import { getTalksAndTags } from '#app/utils/talks.server.ts'
+import { data as json, redirect, type MetaFunction } from 'react-router'
+import { findTalkBySlug, getTalksAndTags } from '#app/utils/talks.server.ts'
 import { type Route } from './+types/$slug'
 
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const { talks } = await getTalksAndTags({ request })
-	const talk = params.slug ? talks.find((t) => t.slug === params.slug) : null
+	const talk = findTalkBySlug(talks, params.slug)
+	if (talk && params.slug && talk.slug !== params.slug) {
+		return redirect(`/talks/${talk.slug}`)
+	}
 	const title = talk ? talk.title : '404: Talk not found'
 	const socialMetas = (
 		await import('#app/og/page-meta.server.ts')

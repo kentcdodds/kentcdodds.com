@@ -56,7 +56,7 @@ import {
 	requireUser,
 } from '#app/utils/session.server.ts'
 import { getSeasonListItems } from '#app/utils/simplecast.server.ts'
-import { getTalksAndTags } from '#app/utils/talks.server.ts'
+import { findTalkBySlug, getTalksAndTags } from '#app/utils/talks.server.ts'
 import { getServerTimeHeader } from '#app/utils/timing.server.ts'
 import { getEpisodes } from '#app/utils/transistor.server.ts'
 import { useRootData } from '#app/utils/use-root-data.ts'
@@ -127,9 +127,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const blogTitleBySlug = new Map(
 		blogPosts.map((post) => [post.slug, post.frontmatter.title ?? post.slug]),
 	)
-	const talkTitleBySlug = new Map(
-		talksAndTags.talks.map((talk) => [talk.slug, talk.title]),
-	)
 	const callEpisodeById = new Map(
 		callEpisodes.map((episode) => [
 			getEpisodeFavoriteContentId({
@@ -169,13 +166,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 					}
 				}
 				case 'talk': {
-					const title =
-						talkTitleBySlug.get(favorite.contentId) ?? favorite.contentId
+					const talk = findTalkBySlug(talksAndTags.talks, favorite.contentId)
 					return {
 						contentType: 'talk',
 						contentId: favorite.contentId,
-						title,
-						href: `/talks/${favorite.contentId}`,
+						title: talk?.title ?? favorite.contentId,
+						href: `/talks/${talk?.slug ?? favorite.contentId}`,
 						subtitle: 'Talk',
 					}
 				}

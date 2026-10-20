@@ -306,19 +306,26 @@ async function loadTalksBySlug() {
 			talksBySlug = new Map()
 			return talksBySlug
 		}
-		talksBySlug = new Map(
-			parsed
-				.filter((talk) => talk && typeof talk === 'object')
-				.map((talk) => {
-					const title = asNonEmptyString((talk as TalkMeta).title) ?? 'TBA'
-					const description = asNonEmptyString(
-						(talk as { description?: string }).description,
-					)
-					const slug =
-						asNonEmptyString((talk as { slug?: string }).slug) ?? title
-					return [slug, { title, description }] satisfies [string, TalkMeta]
-				}),
-		)
+		const map = new Map<string, TalkMeta>()
+		for (const talk of parsed) {
+			if (!talk || typeof talk !== 'object') continue
+			const title = asNonEmptyString((talk as TalkMeta).title) ?? 'TBA'
+			const description = asNonEmptyString(
+				(talk as { description?: string }).description,
+			)
+			const meta = { title, description } satisfies TalkMeta
+			const slug = asNonEmptyString((talk as { slug?: string }).slug) ?? title
+			map.set(slug, meta)
+			const previousSlugs = (talk as { previousSlugs?: Array<unknown> })
+				.previousSlugs
+			if (Array.isArray(previousSlugs)) {
+				for (const previousSlug of previousSlugs) {
+					const normalized = asNonEmptyString(previousSlug)
+					if (normalized) map.set(normalized, meta)
+				}
+			}
+		}
+		talksBySlug = map
 		return talksBySlug
 	}
 	const root = getRepoRootDir()
@@ -335,10 +342,19 @@ async function loadTalksBySlug() {
 	const map = new Map<string, TalkMeta>()
 	for (const talk of parsed as Array<any>) {
 		const title = typeof talk?.title === 'string' ? talk.title : 'TBA'
-		const slug = slugify(title || 'tba')
+		const explicitSlug = typeof talk?.slug === 'string' ? talk.slug.trim() : ''
+		const slug = explicitSlug || slugify(title || 'tba')
 		const description =
 			typeof talk?.description === 'string' ? talk.description : undefined
-		map.set(slug, { title, description })
+		const meta = { title, description }
+		map.set(slug, meta)
+		if (Array.isArray(talk?.previousSlugs)) {
+			for (const previousSlug of talk.previousSlugs) {
+				if (typeof previousSlug === 'string' && previousSlug.trim()) {
+					map.set(previousSlug.trim(), meta)
+				}
+			}
+		}
 	}
 	talksBySlug = map
 	return map
